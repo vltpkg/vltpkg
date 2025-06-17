@@ -12,7 +12,7 @@ exports[`test/ideal/build.ts > TAP > build from actual files > should build an i
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(foo@1.0.0) -foo@1.0.0-> to: Node {
+      Edge spec(foo@1.0.0) -prod-> to: Node {
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo'
       }

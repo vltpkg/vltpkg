@@ -8,11 +8,12 @@
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colors > should use colors 1`] = `
 [0mmy-project
 ├── link (linked@1.0.0)
-├── foo (custom:foo@1.0.0)
+├── foo@1.0.0
 ├── extraneous@1.0.0
 ├─┬ bar@1.0.0
 │ ├── blooo@1.0.0
 │ └── baz (custom:baz@1.0.0)
+├── aliased (custom:foo@1.0.0)
 ├─┬ @scoped/b@1.0.0
 │ └── @scoped/c@1.0.0
 ├── @scoped/a@1.0.0
@@ -35,11 +36,12 @@ my-project
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > should print from an actual loaded graph 1`] = `
 my-project
 ├── link (linked@1.0.0)
-├── foo (custom:foo@1.0.0)
+├── foo@1.0.0
 ├── extraneous@1.0.0
 ├─┬ bar@1.0.0
 │ ├── blooo@1.0.0
 │ └── baz (custom:baz@1.0.0)
+├── aliased (custom:foo@1.0.0)
 ├─┬ @scoped/b@1.0.0
 │ └── @scoped/c@1.0.0
 ├── @scoped/a@1.0.0
@@ -54,7 +56,7 @@ workspace-a
 
 exports[`test/visualization/human-readable-output.ts > TAP > aliased package > should print both edge and node names 1`] = `
 my-project
-└── @myscope/foo (npm:@myscope/foo@1.0.0)
+└── a (npm:@myscope/foo@1.0.0)
 
 `
 

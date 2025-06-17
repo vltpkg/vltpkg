@@ -12,7 +12,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > add from manifest
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(baz@^1.0.0) -baz@^1.0.0-> to: Node {
+      Edge spec(baz@^1.0.0) -prod-> to: Node {
         id: '··baz@1.0.0',
         location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
@@ -40,7 +40,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
-      Edge spec(missing@^1.0.0) -missing@^1.0.0-> to: Node {
+      Edge spec(missing@^1.0.0) -prod-> to: Node {
         id: '··missing@1.0.0',
         location: './node_modules/.vlt/··missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
@@ -55,7 +55,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
         location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       },
-      Edge spec(ipsum@github:lorem/ipsum) -ipsum@github:lorem/ipsum-> to: Node {
+      Edge spec(ipsum@github:lorem/ipsum) -prod-> to: Node {
         id: 'git·github%3Alorem§ipsum·',
         location: './node_modules/.vlt/git·github%3Alorem§ipsum·/node_modules/ipsum',
         resolved: 'github:lorem/ipsum'
@@ -72,27 +72,31 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(link@file:./linked) -link@file:./linked-> to: Node { id: 'file·linked', location: './linked' },
-      Edge spec(foo@^1.0.0) -foo@^1.0.0-> to: Node {
+      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file·linked', location: './linked' },
+      Edge spec(foo@^1.0.0) -prod-> to: Node {
+        id: '··foo@1.0.0',
+        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo'
+      },
+      Edge spec(aliased@custom:foo@^1.0.0) -dev-> to: Node {
         id: '·custom·foo@1.0.0',
         location: './node_modules/.vlt/·custom·foo@1.0.0/node_modules/foo',
         dev: true
       },
-      Edge spec(@scoped/b@^1.0.0) -@scoped/b@^1.0.0-> to: Node {
+      Edge spec(@scoped/b@^1.0.0) -prod-> to: Node {
         id: '··@scoped§b@1.0.0',
         location: './node_modules/.vlt/··@scoped§b@1.0.0/node_modules/@scoped/b',
         edgesOut: [
-          Edge spec(@scoped/c@^1.0.0) -@scoped/c@^1.0.0-> to: Node {
+          Edge spec(@scoped/c@^1.0.0) -prod-> to: Node {
             id: '··@scoped§c@1.0.0',
             location: './node_modules/.vlt/··@scoped§c@1.0.0/node_modules/@scoped/c'
           }
         ]
       },
-      Edge spec(@scoped/a@^1.0.0) -@scoped/a@^1.0.0-> to: Node {
+      Edge spec(@scoped/a@^1.0.0) -prod-> to: Node {
         id: '··@scoped§a@1.0.0',
         location: './node_modules/.vlt/··@scoped§a@1.0.0/node_modules/@scoped/a'
       },
-      Edge spec(missing@^1.0.0) -missing@^1.0.0-> to: Node {
+      Edge spec(missing@^1.0.0) -prod-> to: Node {
         id: '··missing@1.0.0',
         location: './node_modules/.vlt/··missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
@@ -100,8 +104,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
       Edge spec(baz@^1.0.0) -prod-> to: Node {
         id: '·custom·baz@1.0.0',
         location: './node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz'
-      },
-      Edge spec(aliased@custom:foo@^1.0.0) -dev-> to: Node { ref: '·custom·foo@1.0.0' }
+      }
     ]
   },
   Node {
@@ -117,16 +120,13 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     location: './packages/workspace-a',
     importer: true,
     edgesOut: [
-      Edge spec(workspace-b@workspace:*) -workspace-b@workspace:*-> to: Node { ref: 'workspace·packages§workspace-b' },
-      Edge spec(ipsum@^1.0.0) -ipsum@^1.0.0-> to: Node {
+      Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace·packages§workspace-b' },
+      Edge spec(ipsum@^1.0.0) -dev-> to: Node {
         id: '··ipsum@1.0.0',
         location: './node_modules/.vlt/··ipsum@1.0.0/node_modules/ipsum',
         dev: true
       },
-      Edge spec(foo@^1.0.0) -foo@^1.0.0-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo'
-      }
+      Edge spec(foo@^1.0.0) -dev-> to: Node { ref: '··foo@1.0.0' }
     ]
   }
 ]

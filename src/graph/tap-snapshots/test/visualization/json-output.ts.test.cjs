@@ -5,6 +5,412 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/visualization/json-output.ts > TAP > actual graph > selected packages > should print selected packages 1`] = `
+[
+  {
+    "name": "baz",
+    "fromID": "··bar@1.0.0",
+    "spec": "baz@custom:baz@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "·custom·baz@1.0.0",
+      "name": "baz",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "importer": false,
+      "manifest": {
+        "name": "baz",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true,
+      "confused": false
+    }
+  }
+]
+`
+
+exports[`test/visualization/json-output.ts > TAP > actual graph > should print from an actual loaded graph 1`] = `
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "my-project",
+        "version": "1.0.0",
+        "dependencies": {
+          "@scoped/a": "^1.0.0",
+          "@scoped/b": "^1.0.0",
+          "foo": "^1.0.0",
+          "bar": "^1.0.0",
+          "link": "file:./linked",
+          "missing": "^1.0.0"
+        },
+        "bundleDependencies": [
+          "bundled"
+        ],
+        "optionalDependencies": {
+          "bar": "^1.0.0"
+        },
+        "devDependencies": {
+          "aliased": "custom:foo@^1.0.0"
+        }
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "workspace-b",
+    "to": {
+      "id": "workspace·packages§workspace-b",
+      "name": "workspace-b",
+      "version": "1.0.0",
+      "location": "./packages/workspace-b",
+      "importer": true,
+      "manifest": {
+        "name": "workspace-b",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "workspace-a",
+    "to": {
+      "id": "workspace·packages§workspace-a",
+      "name": "workspace-a",
+      "version": "1.0.0",
+      "location": "./packages/workspace-a",
+      "importer": true,
+      "manifest": {
+        "name": "workspace-a",
+        "version": "1.0.0",
+        "devDependencies": {
+          "foo": "^1.0.0",
+          "ipsum": "^1.0.0",
+          "workspace-b": "workspace:*"
+        }
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "link",
+    "fromID": "file·.",
+    "spec": "link@file:./linked",
+    "type": "prod",
+    "to": {
+      "id": "file·linked",
+      "name": "linked",
+      "version": "1.0.0",
+      "location": "./linked",
+      "importer": false,
+      "manifest": {
+        "name": "linked",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "foo",
+    "fromID": "file·.",
+    "spec": "foo@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··foo@1.0.0",
+      "name": "foo",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "importer": false,
+      "manifest": {
+        "name": "foo",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "extraneous",
+    "fromID": "file·.",
+    "spec": "extraneous@*",
+    "type": "prod",
+    "to": {
+      "id": "··extraneous@1.0.0",
+      "name": "extraneous",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··extraneous@1.0.0/node_modules/extraneous",
+      "importer": false,
+      "manifest": {
+        "name": "extraneous",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "bar",
+    "fromID": "file·.",
+    "spec": "bar@^1.0.0",
+    "type": "optional",
+    "to": {
+      "id": "··bar@1.0.0",
+      "name": "bar",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "importer": false,
+      "manifest": {
+        "name": "bar",
+        "version": "1.0.0",
+        "dependencies": {
+          "baz": "custom:baz@^1.0.0",
+          "blooo": "1"
+        }
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true,
+      "confused": false
+    }
+  },
+  {
+    "name": "aliased",
+    "fromID": "file·.",
+    "spec": "aliased@custom:foo@^1.0.0",
+    "type": "dev",
+    "to": {
+      "id": "·custom·foo@1.0.0",
+      "name": "foo",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/·custom·foo@1.0.0/node_modules/foo",
+      "importer": false,
+      "manifest": {
+        "name": "foo",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": true,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "@scoped/b",
+    "fromID": "file·.",
+    "spec": "@scoped/b@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··@scoped§b@1.0.0",
+      "name": "@scoped/b",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··@scoped§b@1.0.0/node_modules/@scoped/b",
+      "importer": false,
+      "manifest": {
+        "name": "@scoped/b",
+        "version": "1.0.0",
+        "dependencies": {
+          "@scoped/c": "^1.0.0"
+        },
+        "bundleDependencies": [
+          "not",
+          "string array",
+          {
+            "so": "this is ignored"
+          }
+        ]
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "@scoped/a",
+    "fromID": "file·.",
+    "spec": "@scoped/a@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··@scoped§a@1.0.0",
+      "name": "@scoped/a",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··@scoped§a@1.0.0/node_modules/@scoped/a",
+      "importer": false,
+      "manifest": {
+        "name": "@scoped/a",
+        "version": "1.0.0",
+        "dependencies": {
+          "bundled": "2.3.4"
+        },
+        "bundleDependencies": [
+          "bundled"
+        ]
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "missing",
+    "fromID": "file·.",
+    "spec": "missing@^1.0.0",
+    "type": "prod"
+  },
+  {
+    "name": "workspace-b",
+    "fromID": "workspace·packages§workspace-a",
+    "spec": "workspace-b@workspace:*",
+    "type": "dev",
+    "to": {
+      "id": "workspace·packages§workspace-b",
+      "name": "workspace-b",
+      "version": "1.0.0",
+      "location": "./packages/workspace-b",
+      "importer": true,
+      "manifest": {
+        "name": "workspace-b",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "ipsum",
+    "fromID": "workspace·packages§workspace-a",
+    "spec": "ipsum@^1.0.0",
+    "type": "dev",
+    "to": {
+      "id": "··ipsum@1.0.0",
+      "name": "ipsum",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··ipsum@1.0.0/node_modules/ipsum",
+      "importer": false,
+      "manifest": {
+        "name": "ipsum",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": true,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "foo",
+    "fromID": "workspace·packages§workspace-a",
+    "spec": "foo@^1.0.0",
+    "type": "dev",
+    "to": {
+      "id": "··foo@1.0.0",
+      "name": "foo",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "importer": false,
+      "manifest": {
+        "name": "foo",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  },
+  {
+    "name": "blooo",
+    "fromID": "··bar@1.0.0",
+    "spec": "blooo@1",
+    "type": "prod",
+    "to": {
+      "id": "··blooo@1.0.0",
+      "name": "blooo",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··blooo@1.0.0/node_modules/blooo",
+      "importer": false,
+      "manifest": {
+        "name": "blooo",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true,
+      "confused": false
+    }
+  },
+  {
+    "name": "baz",
+    "fromID": "··bar@1.0.0",
+    "spec": "baz@custom:baz@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "·custom·baz@1.0.0",
+      "name": "baz",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "importer": false,
+      "manifest": {
+        "name": "baz",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true,
+      "confused": false
+    }
+  },
+  {
+    "name": "@scoped/c",
+    "fromID": "··@scoped§b@1.0.0",
+    "spec": "@scoped/c@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··@scoped§c@1.0.0",
+      "name": "@scoped/c",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··@scoped§c@1.0.0/node_modules/@scoped/c",
+      "importer": false,
+      "manifest": {
+        "name": "@scoped/c",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    }
+  }
+]
+`
+
 exports[`test/visualization/json-output.ts > TAP > aliased package > should print both edge and node names 1`] = `
 [
   {
@@ -29,82 +435,10 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
     }
   },
   {
-    "name": "@myscope/foo",
+    "name": "a",
     "fromID": "file·.",
-    "spec": "@myscope/foo@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "@myscope/foo@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "@myscope/foo",
-      "scope": "@myscope",
-      "bareSpec": "^1.0.0",
-      "namedRegistry": "npm",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "spec": "a@npm:@myscope/foo@^1.0.0",
+    "type": "optional",
     "to": {
       "id": "·npm·@myscope§foo@1.0.0",
       "name": "@myscope/foo",
@@ -151,77 +485,7 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
     "name": "a",
     "fromID": "file·.",
     "spec": "a@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "a@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "a",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "prod",
     "to": {
       "id": "··a@1.0.0",
       "name": "a",
@@ -242,77 +506,7 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
     "name": "b",
     "fromID": "··a@1.0.0",
     "spec": "b@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "b@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "b",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "prod",
     "to": {
       "id": "··b@1.0.0",
       "name": "b",
@@ -336,77 +530,7 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
     "name": "a",
     "fromID": "··b@1.0.0",
     "spec": "a@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "a@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "a",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "prod",
     "to": {
       "id": "··a@1.0.0",
       "name": "a",
@@ -455,77 +579,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "name": "foo",
     "fromID": "file·.",
     "spec": "foo@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "foo@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "foo",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "dev",
     "to": {
       "id": "··foo@1.0.0",
       "name": "foo",
@@ -546,77 +600,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "name": "bar",
     "fromID": "file·.",
     "spec": "bar@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "bar@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "bar",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "optional",
     "to": {
       "id": "··bar@1.0.0",
       "name": "bar",
@@ -637,92 +621,18 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     }
   },
   {
-    "name": "bar",
+    "name": "baz",
     "fromID": "··bar@1.0.0",
-    "spec": "bar@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "bar@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "registry": "http://example.com",
-        "registries": {
-          "custom": "http://example.com",
-          "npm": "https://registry.npmjs.org/"
-        },
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "bar",
-      "bareSpec": "^1.0.0",
-      "namedRegistry": "custom",
-      "registry": "http://example.com",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "spec": "baz@custom:bar@^1.0.0",
+    "type": "dev",
     "to": {
       "id": "·custom·baz@1.0.0",
-      "name": "bar",
+      "name": "baz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
       "importer": false,
       "manifest": {
-        "name": "bar",
+        "name": "baz",
         "version": "1.0.0",
         "dist": {
           "tarball": "http://example.com/baz",
@@ -734,15 +644,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "resolved": "http://example.com/baz",
       "dev": true,
       "optional": true,
-      "confused": true,
-      "rawManifest": {
-        "name": "baz",
-        "version": "1.0.0",
-        "dist": {
-          "tarball": "http://example.com/baz",
-          "integrity": "sha512-deadbeef"
-        }
-      }
+      "confused": false
     }
   },
   {
@@ -755,77 +657,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "name": "foo",
     "fromID": "·custom·baz@1.0.0",
     "spec": "foo@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "foo@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "foo",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "prod",
     "to": {
       "id": "··foo@1.0.0",
       "name": "foo",
@@ -846,40 +678,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "name": "extraneous",
     "fromID": "··bar@1.0.0",
     "spec": "extraneous@extraneous@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "extraneous@extraneous@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "registry": "https://registry.npmjs.org/",
-        "registries": {
-          "custom": "http://example.com",
-          "npm": "https://registry.npmjs.org/"
-        },
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "extraneous",
-      "bareSpec": "extraneous@^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "extraneous@^1.0.0",
-      "distTag": "extraneous@^1.0.0"
-    },
+    "type": "prod",
     "to": {
       "id": "··extraneous@1.0.0",
       "name": "extraneous",
@@ -977,77 +776,7 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
     "name": "a",
     "fromID": "file·.",
     "spec": "a@^1.0.0",
-    "type": {
-      "type": "registry",
-      "spec": "a@^1.0.0",
-      "options": {
-        "catalog": {},
-        "catalogs": {},
-        "jsr-registries": {
-          "jsr": "https://npm.jsr.io/"
-        },
-        "registry": "https://registry.npmjs.org/",
-        "scope-registries": {},
-        "git-hosts": {
-          "github": "git+ssh://git@github.com:$1/$2.git",
-          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
-          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
-          "gist": "git+ssh://git@gist.github.com/$1.git"
-        },
-        "registries": {},
-        "git-host-archives": {
-          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
-          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
-          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
-        }
-      },
-      "name": "a",
-      "bareSpec": "^1.0.0",
-      "registry": "https://registry.npmjs.org/",
-      "registrySpec": "^1.0.0",
-      "semver": "^1.0.0",
-      "range": {
-        "raw": "^1.0.0",
-        "isAny": false,
-        "isSingle": false,
-        "set": [
-          {
-            "includePrerelease": false,
-            "raw": "^1.0.0",
-            "tokens": [
-              "^1.0.0"
-            ],
-            "tuples": [
-              [
-                ">=",
-                {
-                  "raw": "1.0.0",
-                  "major": 1,
-                  "minor": 0,
-                  "patch": 0
-                }
-              ],
-              [
-                "<",
-                {
-                  "raw": "1.0.0",
-                  "major": 2,
-                  "minor": 0,
-                  "patch": 0,
-                  "prerelease": [
-                    0
-                  ]
-                }
-              ]
-            ],
-            "isNone": false,
-            "isAny": false
-          }
-        ],
-        "includePrerelease": false
-      }
-    },
+    "type": "optional",
     "to": {
       "id": "··a@%5E1.0.0",
       "name": "a",

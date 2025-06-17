@@ -3,7 +3,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import t from 'tap'
-import { Graph } from '../src/graph.ts'
+import { Graph } from '../src/index.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -16,7 +16,7 @@ t.test('Peer Dependency Resolution', async t => {
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
-    peerDependencies: {
+    dependencies: {
       'peer-dep': '^1.0.0',
     },
   }
@@ -29,9 +29,24 @@ t.test('Peer Dependency Resolution', async t => {
     projectRoot,
   })
 
-  // Create a package that depends on peer-dep
-  const pkgWithPeerDep = graph.addNode(
-    undefined,
+  // First, place the peer dependency in the main project
+  const mainPeerDep = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('peer-dep@^1.0.0'),
+    {
+      name: 'peer-dep',
+      version: '1.0.0',
+    },
+  )
+
+  t.ok(mainPeerDep, 'should place peer-dep in main project')
+
+  // Now place a package that has peer-dep as a peer dependency
+  const pkgWithPeerDep = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('pkg-with-peer@^1.0.0'),
     {
       name: 'pkg-with-peer',
       version: '1.0.0',
@@ -39,52 +54,59 @@ t.test('Peer Dependency Resolution', async t => {
         'peer-dep': '^1.0.0',
       },
     },
+  )
+
+  t.ok(pkgWithPeerDep, 'should create a node for pkg-with-peer')
+
+  // Test that the node ID doesn't include peer dependency information
+  t.equal(
+    pkgWithPeerDep?.id,
+    joinDepIDTuple(['registry', '', 'pkg-with-peer@1.0.0']),
+    'should not include peer dependency information in node ID',
+  )
+
+  // Test findResolution with peer dependency context
+  const foundResolution = graph.findResolution(
     Spec.parse('pkg-with-peer@^1.0.0'),
+    graph.mainImporter,
   )
 
-  // Create two versions of peer-dep
-  const peerDepV1 = graph.addNode(
-    undefined,
-    {
-      name: 'peer-dep',
+  t.equal(
+    foundResolution,
+    pkgWithPeerDep,
+    'should find the correct node when peer dependencies are satisfied',
+  )
+
+  // Test that packages with incompatible peer dependencies still work (non-blocking)
+  // Create a new graph with incompatible peer-dep version
+  const incompatibleGraph = new Graph({
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
       version: '1.0.0',
+      dependencies: {
+        'peer-dep': '^2.0.0',
+      },
     },
-    Spec.parse('peer-dep@^1.0.0'),
-  )
+    projectRoot,
+  })
 
-  // Create peer-dep v2 for testing incompatible versions
-  graph.addNode(
-    undefined,
+  // Place peer-dep v2
+  const peerDepV2 = incompatibleGraph.placePackage(
+    incompatibleGraph.mainImporter,
+    'prod',
+    Spec.parse('peer-dep@^2.0.0'),
     {
       name: 'peer-dep',
       version: '2.0.0',
     },
-    Spec.parse('peer-dep@^2.0.0'),
   )
 
-  // Test that findResolution returns the correct peer dependency version
-  t.equal(
-    graph.findResolution(
-      Spec.parse('peer-dep@^1.0.0'),
-      pkgWithPeerDep,
-    ),
-    peerDepV1,
-    'should find the correct peer dependency version',
-  )
+  t.ok(peerDepV2, 'should place peer-dep v2')
 
-  // Test that findResolution returns undefined for incompatible peer dependency version
-  t.equal(
-    graph.findResolution(
-      Spec.parse('peer-dep@^2.0.0'),
-      pkgWithPeerDep,
-    ),
-    undefined,
-    'should not find incompatible peer dependency version',
-  )
-
-  // Test that placePackage creates nodes with correct peer dependency information
-  const newPkgWithPeerDep = graph.placePackage(
-    graph.mainImporter,
+  // Try to place a package that requires peer-dep v1 in context where only v2 exists
+  const pkgWithIncompatiblePeer = incompatibleGraph.placePackage(
+    incompatibleGraph.mainImporter,
     'prod',
     Spec.parse('pkg-with-peer@^1.0.0'),
     {
@@ -96,58 +118,33 @@ t.test('Peer Dependency Resolution', async t => {
     },
   )
 
-  t.ok(newPkgWithPeerDep, 'should create a node for pkg-with-peer')
-  if (!newPkgWithPeerDep) {
-    throw new Error('Failed to create node for pkg-with-peer')
-  }
-
-  t.equal(
-    newPkgWithPeerDep.id,
-    joinDepIDTuple([
-      'registry',
-      '',
-      'pkg-with-peer@1.0.0',
-      'peer-dep@^1.0.0',
-    ]),
-    'should include peer dependency information in node ID',
+  // This should still create the node (non-blocking validation)
+  t.ok(
+    pkgWithIncompatiblePeer,
+    'should create node even when peer dependencies are incompatible (non-blocking)',
   )
 
-  // Test that nodes with different peer dependency resolutions are treated as distinct
-  const pkgWithDifferentPeerDep = graph.placePackage(
+  // Test optional peer dependencies
+  const pkgWithOptionalPeer = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('pkg-with-peer@^1.0.0'),
+    Spec.parse('pkg-with-optional-peer@^1.0.0'),
     {
-      name: 'pkg-with-peer',
+      name: 'pkg-with-optional-peer',
       version: '1.0.0',
       peerDependencies: {
-        'peer-dep': '^2.0.0',
+        'optional-peer': '^1.0.0',
+      },
+      peerDependenciesMeta: {
+        'optional-peer': {
+          optional: true,
+        },
       },
     },
   )
 
   t.ok(
-    pkgWithDifferentPeerDep,
-    'should create a node for pkg-with-peer with different peer dep',
-  )
-  if (!pkgWithDifferentPeerDep) {
-    throw new Error(
-      'Failed to create node for pkg-with-peer with different peer dep',
-    )
-  }
-
-  t.not(
-    newPkgWithPeerDep.id === pkgWithDifferentPeerDep.id,
-    'should create distinct nodes for different peer dependency resolutions',
-  )
-
-  // Test that findResolution returns the correct node based on peer dependency information
-  t.equal(
-    graph.findResolution(
-      Spec.parse('pkg-with-peer@^1.0.0'),
-      graph.mainImporter,
-    ),
-    newPkgWithPeerDep,
-    'should find the correct node based on peer dependency information',
+    pkgWithOptionalPeer,
+    'should create node even when optional peer dependency is missing',
   )
 })
