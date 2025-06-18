@@ -181,10 +181,10 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
         updateQuery(`:root`)
         return
       }
-      const selectedName =
-        item.to?.name ? `[name="${item.to.name}"]` : ''
+      const useVersion = true as boolean
+      const selectedName = item.to?.name ? `#${item.to.name}` : ''
       const selectedVersion =
-        item.to?.version ? `:v(${item.to.version})` : ''
+        useVersion && item.to?.version ? `:v(${item.to.version})` : ''
       const newQuery =
         isParent &&
         query.endsWith(`> ${selectedName}${selectedVersion}`) &&
@@ -192,10 +192,11 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
       if (newQuery) {
         updateQuery(newQuery.trim())
       } else {
-        const name =
-          item.from?.name ? `[name="${item.from.name}"]` : ''
+        const name = item.from?.name ? `#${item.from.name}` : ''
         const version =
-          item.from?.version ? `:v(${item.from.version})` : ''
+          useVersion && item.from?.version ?
+            `:v(${item.from.version})`
+          : ''
         updateQuery(`${name}${version}`.trim())
       }
       return undefined

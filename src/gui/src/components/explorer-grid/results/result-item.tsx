@@ -71,24 +71,38 @@ const onResultItemClick =
     if (!item.to) return
     let newQuery = ''
     if (item.stacked) {
-      const name = item.to.name ? `[name="${item.to.name}"]` : ''
-      const version = item.to.version ? `:v(${item.to.version})` : ''
+      // TODO: useVersion not needed for stacked items
+      const useVersion = false as boolean
+      const name = item.to.name ? `#${item.to.name}` : ''
+      const version =
+        useVersion && item.to.version ? `:v(${item.to.version})` : ''
       newQuery = `${query.trim()}${name}${version}`
     } else {
       let suffix = ''
       if (!item.sameItems) {
-        const name = item.to.name ? `[name="${item.to.name}"]` : ''
+        // TODO: useVersion not needed for same items
+        const useVersion = false as boolean
+        const name = item.to.name ? `#${item.to.name}` : ''
         const version =
-          item.to.version ? `:v(${item.to.version})` : ''
+          useVersion && item.to.version ?
+            `:v(${item.to.version})`
+          : ''
         suffix = `${name}${version}`
       }
       if (item.to.importer && !item.from) {
-        newQuery = `:project[name="${item.to.name}"]`
+        newQuery = `:project#${item.to.name}`
       } else if (item.from) {
-        const fromName = `[name="${item.from.name}"]`
+        // use version on the parent node if there are multiple nodes in the graph with the same name
+        const useVersion =
+          [...item.from.graph.nodes.values()].filter(
+            n => n.name === item.from?.name,
+          ).length > 1
+        const fromName = `#${item.from.name}`
         const fromVersion =
-          item.from.version ? `:v(${item.from.version})` : ''
-        newQuery = `${fromName}${fromVersion} > :is(${query.trim()}${suffix})`
+          useVersion && item.from.version ?
+            `:v(${item.from.version})`
+          : ''
+        newQuery = `${fromName}${fromVersion} > ${query.trim()}${suffix}`
       } else {
         newQuery = `${query.trim()}${suffix}`
       }
