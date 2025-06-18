@@ -3,6 +3,9 @@ import {
   parseBreadcrumb,
   InteractiveBreadcrumb,
   specificitySort,
+  extractPseudoParameter,
+  getPseudoSelectorFullText,
+  removeQuotes,
 } from '../src/index.ts'
 
 t.test('Breadcrumb', async t => {
@@ -27,11 +30,6 @@ t.test('Breadcrumb', async t => {
 
   await t.test('error cases', async t => {
     // Test selectors that should throw "Invalid query"
-    t.throws(
-      () => parseBreadcrumb(':foo'),
-      /Invalid query/,
-      'should throw on invalid pseudo selector',
-    )
 
     t.throws(
       () => parseBreadcrumb('[name=foo]'),
@@ -41,14 +39,29 @@ t.test('Breadcrumb', async t => {
 
     t.throws(
       () => parseBreadcrumb(':root:prod'),
-      /Invalid query/,
-      'should throw on non-allowed pseudo selector',
+      /Invalid pseudo selector/,
+      'should throw on chained pseudo selectors',
     )
 
+    // Test invalid pseudo selector (not in supported list)
     t.throws(
-      () => parseBreadcrumb(':has(#a)'),
+      () => parseBreadcrumb(':unknown'),
+      /Invalid pseudo selector/,
+      'should throw on unsupported pseudo selector',
+    )
+
+    // Test chained pseudo selectors during consolidation
+    t.throws(
+      () => parseBreadcrumb(':root:workspace'),
       /Invalid query/,
-      'should throw on nested selector',
+      'should throw on chained pseudo selectors during consolidation',
+    )
+
+    const semverBreadcrumb = parseBreadcrumb(':semver(1)')
+    t.equal(
+      semverBreadcrumb.first.value,
+      ':semver(1)',
+      'should accept :semver pseudo selector with parameter',
     )
   })
 
@@ -93,6 +106,493 @@ t.test('Breadcrumb', async t => {
       true,
       ':root should have importer=true',
     )
+  })
+
+  await t.test('pseudo selector support', async t => {
+    // Test other custom pseudo selectors
+    const customPseudos = [':semver', ':v']
+    for (const pseudo of customPseudos) {
+      const breadcrumb = parseBreadcrumb(pseudo)
+      t.equal(
+        breadcrumb.first.value,
+        pseudo,
+        `should accept ${pseudo} pseudo selector`,
+      )
+      t.equal(
+        breadcrumb.first.type,
+        'pseudo',
+        `${pseudo} should have type "pseudo"`,
+      )
+      t.equal(
+        breadcrumb.first.importer,
+        false,
+        `${pseudo} should have importer=false`,
+      )
+    }
+
+    const complexPseudo = parseBreadcrumb(':project > #a > #b')
+    t.equal(
+      complexPseudo.first.value,
+      ':project',
+      'should handle :project in complex query',
+    )
+    t.equal(
+      complexPseudo.last.value,
+      '#b',
+      'should handle rest of complex query with custom pseudo',
+    )
+
+    // Test pseudo selector consolidation with custom pseudo
+    const customIdBreadcrumb = parseBreadcrumb(':project#a')
+    t.equal(
+      customIdBreadcrumb.first.value,
+      ':project#a',
+      'should consolidate :project and ID into a single item',
+    )
+    t.equal(
+      customIdBreadcrumb.first.type,
+      'pseudo',
+      'consolidated project pseudo item should maintain pseudo type',
+    )
+    t.equal(
+      customIdBreadcrumb.first.importer,
+      true,
+      'consolidated :project#id should have importer=true',
+    )
+    t.equal(
+      customIdBreadcrumb.first.name,
+      'a',
+      'consolidated :project#id should have name="a"',
+    )
+
+    // Test ID + custom pseudo consolidation
+    const idCustomBreadcrumb = parseBreadcrumb('#a:workspace')
+    t.equal(
+      idCustomBreadcrumb.first.value,
+      '#a:workspace',
+      'should consolidate ID and :workspace into a single item',
+    )
+    t.equal(
+      idCustomBreadcrumb.first.type,
+      'id',
+      'consolidated item should maintain ID type',
+    )
+    t.equal(
+      idCustomBreadcrumb.first.importer,
+      true,
+      'consolidated id:workspace should have importer=true',
+    )
+    t.equal(
+      idCustomBreadcrumb.first.name,
+      'a',
+      'consolidated id:workspace should have name="a"',
+    )
+  })
+
+  await t.test('semver selector support', async t => {
+    // Test basic semver selector without parameters
+    const semverBreadcrumb = parseBreadcrumb(':semver')
+    t.equal(
+      semverBreadcrumb.first.value,
+      ':semver',
+      'should accept :semver pseudo selector',
+    )
+    t.equal(
+      semverBreadcrumb.first.type,
+      'pseudo',
+      ':semver should have type "pseudo"',
+    )
+    t.equal(
+      semverBreadcrumb.first.importer,
+      false,
+      ':semver should have importer=false',
+    )
+
+    // Test :v alias
+    const vBreadcrumb = parseBreadcrumb(':v')
+    t.equal(
+      vBreadcrumb.first.value,
+      ':v',
+      'should accept :v pseudo selector',
+    )
+
+    // Test semver comparator with no version provided
+    t.equal(
+      semverBreadcrumb.first.comparator({}),
+      false,
+      'comparator should return false when no version is provided',
+    )
+
+    // Test semver comparator without range parameter (should return false when no range)
+    t.equal(
+      semverBreadcrumb.first.comparator({ version: '1.0.0' }),
+      false,
+      'comparator should return false when no range parameter is provided',
+    )
+
+    // Test comparator functionality
+    const customBreadcrumb = parseBreadcrumb(':workspace')
+    t.equal(
+      customBreadcrumb.first.comparator({}),
+      true,
+      'non-semver selector comparator should return true',
+    )
+    t.equal(
+      customBreadcrumb.first.comparator({ version: '1.0.0' }),
+      true,
+      'non-semver selector comparator should return true even with version',
+    )
+
+    // Test semver selectors in complex queries
+    const complexSemver = parseBreadcrumb(':semver > #a > #b')
+    t.equal(
+      complexSemver.first.value,
+      ':semver',
+      'should handle :semver in complex query',
+    )
+    t.equal(
+      complexSemver.last.value,
+      '#b',
+      'should handle rest of complex query with semver',
+    )
+
+    // Test semver selector consolidation with ID
+    const semverIdBreadcrumb = parseBreadcrumb(':semver#test')
+    t.equal(
+      semverIdBreadcrumb.first.value,
+      ':semver#test',
+      'should consolidate :semver and ID into a single item',
+    )
+    t.equal(
+      semverIdBreadcrumb.first.type,
+      'pseudo',
+      'consolidated semver item should maintain pseudo type',
+    )
+    t.equal(
+      semverIdBreadcrumb.first.importer,
+      false,
+      'consolidated :semver#id should have importer=false',
+    )
+    t.equal(
+      semverIdBreadcrumb.first.name,
+      'test',
+      'consolidated :semver#id should have name="test"',
+    )
+
+    // Test ID + semver consolidation
+    const idSemverBreadcrumb = parseBreadcrumb('#test:v')
+    t.equal(
+      idSemverBreadcrumb.first.value,
+      '#test:v',
+      'should consolidate ID and :v into a single item',
+    )
+    t.equal(
+      idSemverBreadcrumb.first.type,
+      'id',
+      'consolidated item should maintain ID type',
+    )
+    t.equal(
+      idSemverBreadcrumb.first.importer,
+      false,
+      'consolidated id:v should have importer=false',
+    )
+    t.equal(
+      idSemverBreadcrumb.first.name,
+      'test',
+      'consolidated id:v should have name="test"',
+    )
+
+    // Test semver selectors with actual parameters
+    await t.test('semver with range parameters', async t => {
+      // Test case 1: #foo > #bar:semver(^1.0.0)
+      const breadcrumb1 = parseBreadcrumb(
+        '#foo > #bar:semver(^1.0.0)',
+      )
+      const lastItem1 = breadcrumb1.last
+
+      t.equal(
+        lastItem1.value,
+        '#bar:semver(^1.0.0)',
+        'should parse consolidated selector with semver parameter',
+      )
+      t.equal(
+        lastItem1.type,
+        'id',
+        'consolidated item should maintain ID type',
+      )
+      t.equal(lastItem1.name, 'bar', 'should extract correct name')
+
+      // Test comparator with versions that should match ^1.0.0
+      t.equal(
+        lastItem1.comparator({ version: '1.0.0' }),
+        true,
+        'should match 1.0.0 for ^1.0.0 range',
+      )
+      t.equal(
+        lastItem1.comparator({ version: '1.2.3' }),
+        true,
+        'should match 1.2.3 for ^1.0.0 range',
+      )
+      t.equal(
+        lastItem1.comparator({ version: '2.0.0' }),
+        false,
+        'should not match 2.0.0 for ^1.0.0 range',
+      )
+
+      // Test case 2: :root > #foo:semver(">=2")
+      const breadcrumb2 = parseBreadcrumb(
+        ':root > #foo:semver(">=2")',
+      )
+      const lastItem2 = breadcrumb2.last
+
+      t.equal(
+        lastItem2.value,
+        '#foo:semver(">=2")',
+        'should parse quoted parameter',
+      )
+      t.equal(
+        lastItem2.type,
+        'id',
+        'consolidated item should maintain ID type',
+      )
+      t.equal(lastItem2.name, 'foo', 'should extract correct name')
+
+      // Test comparator with versions for >=2 range
+      t.equal(
+        lastItem2.comparator({ version: '2.0.0' }),
+        true,
+        'should match 2.0.0 for >=2 range',
+      )
+      t.equal(
+        lastItem2.comparator({ version: '3.3.3' }),
+        true,
+        'should match 3.3.3 for >=2 range',
+      )
+      t.equal(
+        lastItem2.comparator({ version: '1.0.0' }),
+        false,
+        'should not match 1.0.0 for >=2 range',
+      )
+
+      // Test case 3: #bar:v(1) > #baz > #lorem:semver("~2.0.0")
+      const breadcrumb3 = parseBreadcrumb(
+        '#bar:v(1) > #baz > #lorem:semver("~2.0.0")',
+      )
+      const firstItem3 = breadcrumb3.first
+      const lastItem3 = breadcrumb3.last
+
+      // Test first item with :v(1)
+      t.equal(
+        firstItem3.value,
+        '#bar:v(1)',
+        'should parse :v selector with parameter',
+      )
+      t.equal(
+        firstItem3.type,
+        'id',
+        'first item should maintain ID type',
+      )
+      t.equal(
+        firstItem3.name,
+        'bar',
+        'should extract correct name from first item',
+      )
+
+      // Test comparator for first item with version 1
+      t.equal(
+        firstItem3.comparator({ version: '1.0.0' }),
+        true,
+        'should match 1.0.0 for version 1',
+      )
+      t.equal(
+        firstItem3.comparator({ version: '1.2.3' }),
+        true,
+        'should match 1.2.3 for version 1',
+      )
+      t.equal(
+        firstItem3.comparator({ version: '2.0.0' }),
+        false,
+        'should not match 2.0.0 for version 1',
+      )
+      t.equal(
+        firstItem3.comparator({ version: '0.0.1' }),
+        false,
+        'should not match 0.0.1 for version 1',
+      )
+
+      // Test last item with :semver("~2.0.0")
+      t.equal(
+        lastItem3.value,
+        '#lorem:semver("~2.0.0")',
+        'should parse last item with quoted semver parameter',
+      )
+      t.equal(
+        lastItem3.type,
+        'id',
+        'last item should maintain ID type',
+      )
+      t.equal(
+        lastItem3.name,
+        'lorem',
+        'should extract correct name from last item',
+      )
+
+      // Test comparator for last item with ~2.0.0 range
+      t.equal(
+        lastItem3.comparator({ version: '2.0.0' }),
+        true,
+        'should match 2.0.0 for ~2.0.0 range',
+      )
+      t.equal(
+        lastItem3.comparator({ version: '2.0.5' }),
+        true,
+        'should match 2.0.5 for ~2.0.0 range',
+      )
+      t.equal(
+        lastItem3.comparator({ version: '2.2.2' }),
+        false,
+        'should not match 2.2.2 for ~2.0.0 range (minor bump)',
+      )
+      t.equal(
+        lastItem3.comparator({ version: '1.0.0' }),
+        false,
+        'should not match 1.0.0 for ~2.0.0 range',
+      )
+      t.equal(
+        lastItem3.comparator({ version: '3.0.0' }),
+        false,
+        'should not match 3.0.0 for ~2.0.0 range',
+      )
+
+      // Test middle item (should have default comparator)
+      const middleItem3 = [...breadcrumb3][1]
+      t.equal(
+        middleItem3!.value,
+        '#baz',
+        'middle item should be parsed correctly',
+      )
+      t.equal(
+        middleItem3!.comparator({ version: '1.0.0' }),
+        true,
+        'middle item should have default comparator returning true',
+      )
+    })
+
+    // Test edge cases for semver parameters
+    await t.test('semver parameter edge cases', async t => {
+      // Test unquoted parameter
+      const breadcrumb1 = parseBreadcrumb(':semver(>=1.0.0)')
+      t.equal(
+        breadcrumb1.first.value,
+        ':semver(>=1.0.0)',
+        'should handle unquoted parameter',
+      )
+      t.equal(
+        breadcrumb1.first.comparator({ version: '1.5.0' }),
+        true,
+        'should work with unquoted parameter',
+      )
+      t.equal(
+        breadcrumb1.first.comparator({ version: '0.9.0' }),
+        false,
+        'should correctly reject with unquoted parameter',
+      )
+
+      // Test parameter with spaces (quoted)
+      const breadcrumb2 = parseBreadcrumb(':semver(" >= 2.0.0 ")')
+      t.equal(
+        breadcrumb2.first.value,
+        ':semver(" >= 2.0.0 ")',
+        'should handle parameter with spaces',
+      )
+      t.equal(
+        breadcrumb2.first.comparator({ version: '2.1.0' }),
+        true,
+        'should work with spaced parameter',
+      )
+
+      // Test complex range
+      const breadcrumb3 = parseBreadcrumb('#test:v("1.0.0 - 2.0.0")')
+      t.equal(
+        breadcrumb3.first.value,
+        '#test:v("1.0.0 - 2.0.0")',
+        'should handle range parameter',
+      )
+      t.equal(
+        breadcrumb3.first.comparator({ version: '1.5.0' }),
+        true,
+        'should match version in range',
+      )
+      t.equal(
+        breadcrumb3.first.comparator({ version: '2.5.0' }),
+        false,
+        'should not match version outside range',
+      )
+    })
+
+    // Test chained semver selectors
+    await t.test('chained semver selectors', async t => {
+      // Test case: #bar:semver(">1"):semver("<=2.5.0")
+      // This should match versions that are both >1 AND <=2.5.0
+      const chainedBreadcrumb = parseBreadcrumb(
+        '#bar:semver(">1"):semver("<=2.5.0")',
+      )
+
+      t.equal(
+        chainedBreadcrumb.first.value,
+        '#bar:semver(">1"):semver("<=2.5.0")',
+        'should parse chained semver selectors correctly',
+      )
+      t.equal(
+        chainedBreadcrumb.first.type,
+        'id',
+        'chained item should maintain ID type',
+      )
+      t.equal(
+        chainedBreadcrumb.first.name,
+        'bar',
+        'chained item should have correct name',
+      )
+
+      // Test version combinations with AND logic
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '1.2.3' }),
+        false,
+        'should reject 1.2.3 (not > 1)',
+      )
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '3.0.0' }),
+        false,
+        'should reject 3.0.0 (not <= 2.5.0)',
+      )
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '2.0.0' }),
+        true,
+        'should accept 2.0.0 (> 1 AND <= 2.5.0)',
+      )
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '2.4.9' }),
+        true,
+        'should accept 2.4.9 (> 1 AND <= 2.5.0)',
+      )
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '2.6.0' }),
+        false,
+        'should reject 2.6.0 (not <= 2.5.0)',
+      )
+
+      // Test edge case: version exactly at boundary
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '1.0.0' }),
+        false,
+        'should reject 1.0.0 (not > 1)',
+      )
+      t.equal(
+        chainedBreadcrumb.first.comparator({ version: '2.5.0' }),
+        true,
+        'should accept 2.5.0 (> 1 AND <= 2.5.0)',
+      )
+    })
   })
 
   await t.test('last getter', async t => {
@@ -342,6 +842,68 @@ t.test('Breadcrumb', async t => {
       1,
       'should count one pseudo selector in consolidated selector',
     )
+
+    // Test custom pseudo selector specificity
+    const customBreadcrumb = parseBreadcrumb(':semver(*)')
+    t.equal(
+      customBreadcrumb.specificity.idCounter,
+      0,
+      'should count zero ID selectors for custom pseudo',
+    )
+    t.equal(
+      customBreadcrumb.specificity.commonCounter,
+      1,
+      'should count one pseudo selector for custom pseudo',
+    )
+
+    // Test complex custom pseudo selector
+    const complexCustomBreadcrumb = parseBreadcrumb(
+      ':root > #a > #b:semver(1)',
+    )
+    t.equal(
+      complexCustomBreadcrumb.specificity.idCounter,
+      2,
+      'should count two ID selectors in complex custom query',
+    )
+    t.equal(
+      complexCustomBreadcrumb.specificity.commonCounter,
+      2,
+      'should count two pseudo selectors (:custom and :dev) in complex query',
+    )
+
+    // Test edge cases for better coverage
+    await t.test('edge cases for coverage', async t => {
+      // Test combination of non-semver pseudo selector with ID - should use AND logic
+      const combinedBreadcrumb = parseBreadcrumb(':project#test')
+      const combinedComparator = combinedBreadcrumb.first.comparator
+      t.equal(
+        combinedComparator({ version: '1.0.0' }),
+        true,
+        'combined non-semver pseudo selector should use AND logic (true && true = true)',
+      )
+      t.equal(
+        combinedComparator({}),
+        true,
+        'combined non-semver pseudo selector should return true without version',
+      )
+
+      // Test helper function edge cases for getPseudoSelectorFullText
+      // These test the fallback paths and edge cases
+      const hasSelector = parseBreadcrumb(':semver(1)')
+      t.equal(
+        hasSelector.first.value,
+        ':semver(1)',
+        'should reconstruct complex pseudo selector with child selectors',
+      )
+
+      // Test a pseudo selector without children
+      const simplePseudo = parseBreadcrumb(':root')
+      t.equal(
+        simplePseudo.first.value,
+        ':root',
+        'should handle simple pseudo selector without parameters',
+      )
+    })
   })
 })
 
@@ -636,4 +1198,112 @@ t.test('linked list navigation', async t => {
   t.equal(third!.prev, second, 'third.prev should point to second')
   t.equal(second!.prev, first, 'second.prev should point to first')
   t.equal(first!.prev, undefined, 'first.prev should be undefined')
+})
+
+t.test('Helper Functions', async t => {
+  await t.test('removeQuotes', async t => {
+    // Test removing double quotes
+    t.equal(
+      removeQuotes('"hello"'),
+      'hello',
+      'should remove double quotes',
+    )
+
+    // Test with no quotes
+    t.equal(
+      removeQuotes('hello'),
+      'hello',
+      'should return unchanged if no quotes',
+    )
+
+    // Test with partial quotes
+    t.equal(
+      removeQuotes('"hello'),
+      '"hello',
+      'should not remove partial quotes',
+    )
+
+    // Test with empty string
+    t.equal(removeQuotes(''), '', 'should handle empty string')
+
+    // Test with only quotes
+    t.equal(
+      removeQuotes('""'),
+      '',
+      'should handle empty quoted string',
+    )
+  })
+
+  await t.test('extractPseudoParameter edge cases', async t => {
+    // Test with item that has no children
+    const itemNoChildren = {
+      value: ':test',
+    }
+    t.same(
+      extractPseudoParameter(itemNoChildren),
+      {},
+      'should return empty object for item with no children',
+    )
+
+    // Test with item that has no first node
+    const itemNoFirstNode = {
+      value: ':test',
+      nodes: [],
+    }
+    t.same(
+      extractPseudoParameter(itemNoFirstNode),
+      {},
+      'should return empty object for item with no first node',
+    )
+
+    // Test with non-semver pseudo selector
+    const itemNonSemver = {
+      value: ':custom',
+      type: 'pseudo',
+      nodes: ['something'],
+    }
+    t.same(
+      extractPseudoParameter(itemNonSemver),
+      {},
+      'should return empty object for non-semver selector',
+    )
+  })
+
+  await t.test('getPseudoSelectorFullText edge cases', async t => {
+    // Test with item that has no children
+    const itemNoChildren = {
+      value: ':root',
+    } as any
+    t.equal(
+      getPseudoSelectorFullText(itemNoChildren),
+      ':root',
+      'should return base value for item with no children',
+    )
+
+    // Test with item that has undefined value
+    const itemUndefinedValue = {
+      value: undefined,
+    } as any
+    t.equal(
+      getPseudoSelectorFullText(itemUndefinedValue),
+      '',
+      'should return empty string for undefined value',
+    )
+
+    // Test with a selector that has comments in parameters to potentially trigger different node types
+    const commentSelector = parseBreadcrumb(':semver(/* test */1)')
+    t.equal(
+      commentSelector.first.value,
+      ':semver(/* test */1)',
+      'should handle selectors with comments in parameters',
+    )
+
+    // Use real parsed selectors to test the actual function behavior
+    const realSelector = parseBreadcrumb(':semver(/*comment*/1)')
+    t.equal(
+      realSelector.first.value,
+      ':semver(/*comment*/1)',
+      'should handle real parsed selector with parameters',
+    )
+  })
 })
