@@ -222,7 +222,12 @@ const main = async () => {
                 prepare: prepareCmd,
                 replaceDir: (v, p) => replaceDir(v, [p, ...source]),
                 file: artifact.bin(bin),
-                env: Object.entries(env ?? {}),
+                env: Object.entries({
+                  ...env,
+                  ...(variantName === 'Node' ?
+                    { __VLT_INTERNAL_LIVE_RELOAD: '1' }
+                  : undefined),
+                }),
                 cmd: args(bin),
               }),
             )
