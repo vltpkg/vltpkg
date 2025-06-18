@@ -344,8 +344,11 @@ export class Graph implements GraphLike {
         depType === 'peerOptional',
     }
 
-    const f = spec.final
-    const saveType = resolveSaveType(fromNode, f.name, depType)
+    const saveType = resolveSaveType(
+      fromNode,
+      spec.final.name,
+      depType,
+    )
 
     // Don't include modifier information in regular dependency node IDs
     // Modifiers are stored as a property on the node, not in the ID
