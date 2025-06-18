@@ -270,7 +270,6 @@ export class Graph implements GraphLike {
         return node
       }
     }
-    return undefined
   }
 
   /**
