@@ -18,6 +18,7 @@ import {
   validRange,
   increment,
   satisfies,
+  intersects,
   sort,
   compare,
   rsort,
@@ -90,6 +91,8 @@ Unless otherwise noted, they throw an error on invalid versions.
   valid
 - `satisfies(version, range)`: Return true if the version satisfies
   the range.
+- `intersects(range1, range2)`: Return true if the two ranges
+  intersect (have any version that satisfies both ranges).
 - `highest(versions, range)`: Return the highest version in the list
   that satisfies the range, or `null` if none of them do.
 - `sortedHighest(versions, range)`: Optimized form of `highest`, if
@@ -125,8 +128,8 @@ Unless otherwise noted, they throw an error on invalid versions.
 ### Differences from `node-semver` (the one used by `npm`)
 
 - The API is slightly different. Most notably, `@vltpkg/semver` lacks
-  range intersection and other methods that are not needed by `vlt`.
-  Of course, these may be added eventually if we find a need for them.
+  some methods that are not needed by `vlt`. Of course, these may be
+  added eventually if we find a need for them.
 
 - Build metadata is preserved on `Version` objects and in `toString()`
   values.

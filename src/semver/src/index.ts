@@ -1,5 +1,6 @@
 import { Range } from './range.ts'
 import { Version } from './version.ts'
+import type { Comparator, OVTuple } from './comparator.ts'
 import type { IncrementType } from './version.ts'
 import { syntaxError } from '@vltpkg/error-cause'
 
@@ -428,3 +429,146 @@ export const stable = <T extends Version | string = Version | string>(
     if (!p) return false
     return !p.prerelease?.length
   })
+
+/**
+ * Return true if the range r1 intersects any of the ranges r2
+ * r1 and r2 are either Range objects or range strings.
+ * Returns true if any version would satisfy both ranges.
+ */
+export const intersects = (
+  r1: Range | string,
+  r2: Range | string,
+  includePrerelease?: boolean,
+) => {
+  const range1 =
+    typeof r1 === 'string' ? parseRange(r1, includePrerelease) : r1
+  const range2 =
+    typeof r2 === 'string' ? parseRange(r2, includePrerelease) : r2
+
+  if (!range1 || !range2) return false
+
+  // If either range is 'any', they intersect
+  if (range1.isAny || range2.isAny) return true
+
+  // Check if any set from range1 intersects with any set from range2
+  return range1.set.some(set1 =>
+    range2.set.some(set2 => intersectComparators(set1, set2)),
+  )
+}
+
+/**
+ * Check if two comparators can be satisfied simultaneously
+ */
+const intersectComparators = (
+  comp1: Comparator,
+  comp2: Comparator,
+): boolean => {
+  // Collect all tuples from both comparators
+  const tuples1 = comp1.tuples.filter((t): t is OVTuple =>
+    Array.isArray(t),
+  )
+  const tuples2 = comp2.tuples.filter((t): t is OVTuple =>
+    Array.isArray(t),
+  )
+
+  // Check if there's a satisfiable combination
+  return satisfiableRange(tuples1.concat(tuples2))
+}
+
+/**
+ * Check if a set of operator-version tuples represents a satisfiable range
+ * This is a simplified implementation that handles the most common cases
+ */
+const satisfiableRange = (tuples: OVTuple[]): boolean => {
+  // Find bounds
+  let lowerBound: Version | null = null
+  let lowerInclusive = false
+  let upperBound: Version | null = null
+  let upperInclusive = false
+  let hasExact: Version | null = null
+
+  for (const [op, ver] of tuples) {
+    switch (op) {
+      case '':
+        // Exact match - if we already have a different exact match, no intersection
+        if (hasExact && !eq(hasExact, ver)) return false
+        hasExact = ver
+        break
+
+      case '>=':
+        /* c8 ignore start */
+        if (
+          !lowerBound ||
+          gt(ver, lowerBound) ||
+          (eq(ver, lowerBound) && !lowerInclusive)
+        ) {
+          lowerBound = ver
+          lowerInclusive = true
+        }
+        /* c8 ignore stop */
+        break
+
+      case '>':
+        if (!lowerBound || gt(ver, lowerBound)) {
+          lowerBound = ver
+          lowerInclusive = false
+        }
+        break
+
+      case '<=':
+        if (!upperBound || lt(ver, upperBound)) {
+          upperBound = ver
+          upperInclusive = true
+        }
+        break
+
+      case '<':
+        /* c8 ignore start */
+        if (
+          !upperBound ||
+          lt(ver, upperBound) ||
+          eq(ver, upperBound)
+        ) {
+          upperBound = ver
+          upperInclusive = false
+        }
+        /* c8 ignore stop */
+        break
+    }
+  }
+
+  // If we have an exact match, check if it's within bounds
+  if (hasExact) {
+    if (lowerBound) {
+      if (
+        lowerInclusive ?
+          lt(hasExact, lowerBound)
+        : lte(hasExact, lowerBound)
+      ) {
+        return false
+      }
+    }
+    if (upperBound) {
+      if (
+        upperInclusive ?
+          gt(hasExact, upperBound)
+        : gte(hasExact, upperBound)
+      ) {
+        return false
+      }
+    }
+    return true
+  }
+
+  // Check if lower bound is less than or equal to upper bound
+  if (lowerBound && upperBound) {
+    if (gt(lowerBound, upperBound)) return false
+    if (
+      eq(lowerBound, upperBound) &&
+      !(lowerInclusive && upperInclusive)
+    )
+      return false
+  }
+
+  return true
+}
