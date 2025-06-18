@@ -7,9 +7,24 @@ export type BreadcrumbSpecificity = {
 }
 
 /**
+ * Options for the higher-level comparing breadcrumbs function.
+ */
+export type InternalModifierComparatorOptions = {
+  range?: string
+}
+
+/**
+ * Options for comparing breadcrumbs.
+ */
+export type ModifierComparatorOptions = {
+  version?: string
+}
+
+/**
  * A valid item of a given breadcrumb.
  */
 export type ModifierBreadcrumbItem = {
+  comparator: (opts: ModifierComparatorOptions) => boolean
   name?: string
   value: string
   type: string
