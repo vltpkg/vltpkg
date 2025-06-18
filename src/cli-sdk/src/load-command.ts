@@ -22,6 +22,9 @@ export type Command<T> = {
 export const loadCommand = async <T>(
   command: Commands[keyof Commands] | undefined,
 ): Promise<Command<T>> => {
+  if (command === 'help') {
+    console.log('help')
+  }
   try {
     return (await import(`./commands/${command}.ts`)) as Command<T>
   } catch (e) {

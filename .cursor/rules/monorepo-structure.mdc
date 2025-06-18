@@ -1,5 +1,5 @@
 ---
-description:
+description: 
 globs: 
 alwaysApply: true
 ---
@@ -114,6 +114,12 @@ actions:
       1. Navigate to the specific workspace directory (e.g., `cd src/semver`)
       2. Each workspace has its own `package.json` and dependencies
       3. Unit tests are located in each workspace's `test/` folder
+
+      **Running Tests:**
+      - To run tests for a single file, use: `pnpm --filter ./src/<workspace> test -- ./test/<test-file>`
+      - Example: `pnpm --filter ./src/cli-sdk test -- ./test/load-command.ts`
+      - Tests require 100% coverage to pass - the command will exit with status 1 if coverage is incomplete
+      - Test results will show coverage metrics for statements, branches, functions, and lines
 
       **Code Validation:**
       For all code formatting, linting, testing, coverage, and type checking operations, follow the standardized workflow defined in `@code-validation-workflow.mdc`.
