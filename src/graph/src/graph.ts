@@ -347,9 +347,10 @@ export class Graph implements GraphLike {
     const f = spec.final
     const saveType = resolveSaveType(fromNode, f.name, depType)
 
-    // Don't include peer dependency information in node IDs
-    // Peer dependencies should be resolved from parent context, not stored in the ID
-    const depId = id || (manifest && getId(spec, manifest, extra))
+    // Don't include modifier information in regular dependency node IDs
+    // Modifiers are stored as a property on the node, not in the ID
+    // This ensures that normal dependencies can be properly resolved and cached
+    const depId = id || (manifest && getId(spec, manifest))
 
     /* c8 ignore start - should not be possible */
     if (!depId) {
