@@ -253,7 +253,6 @@ export class Graph implements GraphLike {
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
     if (!nbn) return undefined
-
     for (const node of nbn) {
       if (
         satisfies(
