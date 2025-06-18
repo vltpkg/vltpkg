@@ -241,7 +241,7 @@ export class Graph implements GraphLike {
   }
 
   /**
-   * Find an existing node in the graph that satisfies a given {@link Spec}.
+   * Find an existing node to satisfy a dependency
    */
   findResolution(spec: Spec, fromNode: Node) {
     const f = spec.final
