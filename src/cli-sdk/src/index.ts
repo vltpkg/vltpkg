@@ -82,6 +82,26 @@ const run = async () => {
     }
   }
 
+  if (
+    (vlt.get('workspace') || vlt.get('workspace-group')) &&
+    ![...(monorepo?.values() ?? [])].length
+  ) {
+    stderr(
+      `Error: No matching workspaces found. Make sure the vlt.json config contains the correct workspaces.`,
+    )
+    if (vlt.get('workspace')) {
+      stderr(indent(`Workspace: ${format(vlt.get('workspace'))}`))
+    }
+    if (vlt.get('workspace-group')) {
+      stderr(
+        indent(
+          `Workspace Group: ${format(vlt.get('workspace-group'))}`,
+        ),
+      )
+    }
+    return process.exit(process.exitCode || 1)
+  }
+
   const command = await loadCommand(vlt.command)
   await outputCommand(command, vlt, { start })
 }

@@ -14,6 +14,21 @@ Invalid value string for color, expected boolean
   Run 'vlt help' for more information about available options.
 `
 
+exports[`test/index.ts > TAP > invalid workspace - no vlt.json > must match snapshot 1`] = `
+Error: No matching workspaces found. Make sure the vlt.json config contains the correct workspaces.
+  Workspace: [ 'src/bar' ]
+`
+
+exports[`test/index.ts > TAP > invalid workspace > must match snapshot 1`] = `
+Error: No matching workspaces found. Make sure the vlt.json config contains the correct workspaces.
+  Workspace: [ 'src/bar' ]
+`
+
+exports[`test/index.ts > TAP > invalid workspace-group > must match snapshot 1`] = `
+Error: No matching workspaces found. Make sure the vlt.json config contains the correct workspaces.
+  Workspace Group: [ 'a' ]
+`
+
 exports[`test/index.ts > TAP > unknown config > must match snapshot 1`] = `
 Invalid Option Flag
 Unknown option '--unknown'. To specify a positional argument starting with a '-', place it at the end of the command after '--', as in '-- --unknown'
