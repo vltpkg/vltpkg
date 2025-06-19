@@ -3,7 +3,10 @@ import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.ts'
-import { mermaidOutput } from '../../src/visualization/mermaid-output.ts'
+import {
+  mermaidOutput,
+  generateShortId,
+} from '../../src/visualization/mermaid-output.ts'
 import { loadActualGraph } from '../fixtures/actual.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
@@ -94,7 +97,7 @@ t.test('actual graph', async t => {
     'should print from an actual loaded graph',
   )
 
-  t.test('selected packages', async t => {
+  await t.test('selected packages', async t => {
     const edges = [...graph.edges].filter(e => e.name === 'baz')
     const nodes = [
       graph.nodes.get(
@@ -199,5 +202,44 @@ t.test('cycle', async t => {
       nodes: [...graph.nodes.values()],
     }),
     'should print cycle mermaid output',
+  )
+})
+
+t.test('large scale identifier generation', async t => {
+  // Test basic single character cases
+  t.equal(generateShortId(0), 'a', 'index 0 should be "a"')
+  t.equal(generateShortId(25), 'z', 'index 25 should be "z"')
+  t.equal(generateShortId(26), 'A', 'index 26 should be "A"')
+  t.equal(generateShortId(51), 'Z', 'index 51 should be "Z"')
+
+  // Test two character cases
+  t.equal(generateShortId(52), 'aa', 'index 52 should be "aa"')
+  t.equal(generateShortId(53), 'ab', 'index 53 should be "ab"')
+  t.equal(generateShortId(77), 'az', 'index 77 should be "az"')
+  t.equal(generateShortId(78), 'aA', 'index 78 should be "aA"')
+  t.equal(generateShortId(103), 'aZ', 'index 103 should be "aZ"')
+  t.equal(generateShortId(104), 'ba', 'index 104 should be "ba"')
+
+  // Test boundary cases for two-character identifiers (corrected values)
+  t.equal(generateShortId(2755), 'ZZ', 'index 2755 should be "ZZ"')
+
+  // Test three character cases (corrected values)
+  t.equal(generateShortId(2756), 'aaa', 'index 2756 should be "aaa"')
+  t.equal(generateShortId(2757), 'aab', 'index 2757 should be "aab"')
+
+  // Test a large number to ensure it works for 10,000+ cases
+  const largeId = generateShortId(10000)
+  t.type(
+    largeId,
+    'string',
+    'should generate valid string for index 10000',
+  )
+  t.ok(
+    largeId.length > 0,
+    'should generate non-empty string for large index',
+  )
+  t.ok(
+    /^[a-zA-Z]+$/.test(largeId),
+    'should only contain letters for large index',
   )
 })
