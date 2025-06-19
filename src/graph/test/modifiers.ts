@@ -1197,11 +1197,11 @@ t.test('GraphModifier', async t => {
         // Use nodes from the simple graph
         const simpleGraph = getSimpleGraph()
         const mainImporter = simpleGraph.mainImporter as Node
-        const invalidModifier = new GraphModifier(options)
-        invalidModifier.tryImporter(mainImporter)
+        const modifier = new GraphModifier(options)
+        modifier.tryImporter(mainImporter)
 
         // Test invalid semver match - dependency 'a' with spec '^1.0.0' should not match :semver(^2.0.0)
-        const invalidResult = invalidModifier.tryNewDependency(
+        const invalidResult = modifier.tryNewDependency(
           mainImporter,
           Spec.parse('a', '^1.0.0', options),
         )
@@ -1276,7 +1276,12 @@ t.test('GraphModifier', async t => {
           ':root > #b:semver(^1.0.0) > #d',
           'should complete the three-level selector with valid intermediary semver',
         )
+      },
+    )
 
+    await t.test(
+      'intermediary invalid dependency semver matching',
+      async t => {
         // Test that the invalid semver selector doesn't have any results
         const invalidTestDir2 = t.testdir({
           'vlt.json': JSON.stringify({
@@ -1286,14 +1291,22 @@ t.test('GraphModifier', async t => {
             },
           }),
         })
+        const options = {
+          ...mockSpecOptions,
+        }
+        // Reload vlt.json to ensure we have the latest config
         t.chdir(invalidTestDir2)
         reload('modifiers', 'project')
 
-        const invalidModifier2 = new GraphModifier(options)
-        invalidModifier2.tryImporter(mainImporter)
+        // Use nodes from the simple graph
+        const simpleGraph = getSimpleGraph()
+        const mainImporter = simpleGraph.mainImporter as Node
+
+        const modifier = new GraphModifier(options)
+        modifier.tryImporter(mainImporter)
 
         // Test invalid semver match in intermediary - dependency 'b' with spec '^1.0.0' should not match :semver(^2.0.0)
-        const invalidResultB = invalidModifier2.tryNewDependency(
+        const invalidResultB = modifier.tryNewDependency(
           mainImporter,
           Spec.parse('b', '^1.0.0', options),
         )
