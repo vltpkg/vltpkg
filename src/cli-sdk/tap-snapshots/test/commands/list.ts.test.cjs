@@ -221,29 +221,29 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in mermaid format 1`] = `
 flowchart TD
-file%C2%B7.("root:my-project")
-file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-%C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+a("root:my-project")
+a("root:my-project") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
+b("npm:#64;foo/bazz#64;1.0.0")
+a("root:my-project") -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+c("npm:bar#64;1.0.0")
+c("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+d("custom:baz#64;1.0.0")
+d("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
 
-file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
+a("root:my-project") -->|"missing#64;^1.0.0"| missing-0(Missing)
 
 `
 
 exports[`test/commands/list.ts > TAP > list > should list mermaid in json format 1`] = `
 flowchart TD
-file%C2%B7.("root:my-project")
-file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-%C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+a("root:my-project")
+a("root:my-project") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
+b("npm:#64;foo/bazz#64;1.0.0")
+a("root:my-project") -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+c("npm:bar#64;1.0.0")
+c("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+d("custom:baz#64;1.0.0")
+d("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
 
 `
 

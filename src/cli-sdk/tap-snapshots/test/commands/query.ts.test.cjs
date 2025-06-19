@@ -78,16 +78,16 @@ CSS-like attributes, pseudo selectors & combinators.
 
 exports[`test/commands/query.ts > TAP > query > should list mermaid in json format 1`] = `
 flowchart TD
-file%C2%B7.("root:my-project")
-file%C2%B7.("root:my-project") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-%C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
+a("root:my-project")
+a("root:my-project") -->|"foo#64;^1.0.0"| b("npm:foo#64;1.0.0")
+b("npm:foo#64;1.0.0")
+a("root:my-project") -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+c("npm:bar#64;1.0.0")
+c("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+d("custom:baz#64;1.0.0")
+d("custom:baz#64;1.0.0") -->|"foo#64;^1.0.0"| b("npm:foo#64;1.0.0")
 
-file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
+a("root:my-project") -->|"missing#64;^1.0.0"| missing-0(Missing)
 
 `
 
