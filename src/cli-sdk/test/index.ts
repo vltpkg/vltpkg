@@ -139,3 +139,112 @@ t.test('invalid config in file', async t => {
   t.equal(exitCode, 1)
   t.matchSnapshot(logs.join('\n'))
 })
+
+t.test('valid workspace', async t => {
+  const cwd = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: ['src/foo'],
+    }),
+    'package.json': JSON.stringify({ name: '@acme/root' }),
+    src: {
+      foo: {
+        'package.json': JSON.stringify({ name: '@acme/foo' }),
+      },
+    },
+  })
+  await t.resolves(
+    run(t, {
+      argv: ['--workspace', 'src/foo'],
+      cwd,
+    }),
+  )
+})
+
+t.test('invalid workspace', async t => {
+  let exitCode = 0
+  const cwd = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: ['src/foo'],
+    }),
+    'package.json': JSON.stringify({ name: '@acme/root' }),
+    src: {
+      foo: {
+        'package.json': JSON.stringify({ name: '@acme/foo' }),
+      },
+    },
+  })
+
+  // intercept process.exit to throw so that the test will finish
+  // but the run will not continue
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+
+  const { error, logs } = await run(t, {
+    argv: ['--workspace', 'src/bar'],
+    cwd,
+  })
+  t.ok(error instanceof Error)
+  t.equal(exitCode, 1)
+  t.matchSnapshot(logs.join('\n'))
+})
+
+t.test('invalid workspace - no vlt.json', async t => {
+  let exitCode = 0
+  const cwd = t.testdir({
+    '.git': {},
+    'package.json': JSON.stringify({ name: '@acme/root' }),
+  })
+
+  // intercept process.exit to throw so that the test will finish
+  // but the run will not continue
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+
+  const { error, logs } = await run(t, {
+    argv: ['--workspace', 'src/bar'],
+    cwd,
+  })
+  t.ok(error instanceof Error)
+  t.equal(exitCode, 1)
+  t.matchSnapshot(logs.join('\n'))
+})
+
+t.test('invalid workspace-group', async t => {
+  let exitCode = 0
+  const cwd = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: ['src/foo'],
+    }),
+  })
+
+  // intercept process.exit to throw so that the test will finish
+  // but the run will not continue
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+
+  const { error, logs } = await run(t, {
+    argv: ['--workspace-group', 'a'],
+    cwd,
+  })
+  t.ok(error instanceof Error)
+  t.equal(exitCode, 1)
+  t.matchSnapshot(logs.join('\n'))
+})

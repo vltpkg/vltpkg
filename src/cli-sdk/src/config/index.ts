@@ -242,6 +242,10 @@ export class Config {
       monorepo: Monorepo.maybeLoad(this.projectRoot, {
         scurry,
         packageJson,
+        load: {
+          paths: asRecords.workspace,
+          groups: asRecords['workspace-group'],
+        },
       }),
       catalog: load<Record<string, string>>(
         'catalog',
