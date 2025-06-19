@@ -1172,35 +1172,46 @@ t.test('GraphModifier', async t => {
         bResult,
         'should not match dependency b with invalid semver comparison',
       )
-
-      // Test that the invalid semver selector doesn't have any results
-      // Since we only have ':root > #a:semver(^2.0.0)' in config and our spec is '^1.0.0'
-      // this should return undefined because the semver doesn't match
-      const invalidTestDir = t.testdir({
-        'vlt.json': JSON.stringify({
-          modifiers: {
-            // Only invalid semver match - should not work
-            ':root > #a:semver(^2.0.0)': '3.0.0',
-          },
-        }),
-      })
-      t.chdir(invalidTestDir)
-      reload('modifiers', 'project')
-
-      const invalidModifier = new GraphModifier(options)
-      invalidModifier.tryImporter(mainImporter)
-
-      // Test invalid semver match - dependency 'a' with spec '^1.0.0' should not match :semver(^2.0.0)
-      const invalidResult = invalidModifier.tryNewDependency(
-        mainImporter,
-        Spec.parse('a', '^1.0.0', options),
-      )
-      t.equal(
-        invalidResult,
-        undefined,
-        'should not match dependency a with invalid semver comparison',
-      )
     })
+
+    await t.test(
+      'invalid direct dependency semver matching',
+      async t => {
+        // Test that the invalid semver selector doesn't have any results
+        // Since we only have ':root > #a:semver(^2.0.0)' in config and our spec is '^1.0.0'
+        // this should return undefined because the semver doesn't match
+        const invalidTestDir = t.testdir({
+          'vlt.json': JSON.stringify({
+            modifiers: {
+              // Only invalid semver match - should not work
+              ':root > #a:semver(^2.0.0)': '3.0.0',
+            },
+          }),
+        })
+        const options = {
+          ...mockSpecOptions,
+        }
+        t.chdir(invalidTestDir)
+        reload('modifiers', 'project')
+
+        // Use nodes from the simple graph
+        const simpleGraph = getSimpleGraph()
+        const mainImporter = simpleGraph.mainImporter as Node
+        const invalidModifier = new GraphModifier(options)
+        invalidModifier.tryImporter(mainImporter)
+
+        // Test invalid semver match - dependency 'a' with spec '^1.0.0' should not match :semver(^2.0.0)
+        const invalidResult = invalidModifier.tryNewDependency(
+          mainImporter,
+          Spec.parse('a', '^1.0.0', options),
+        )
+        t.equal(
+          invalidResult,
+          undefined,
+          'should not match dependency a with invalid semver comparison',
+        )
+      },
+    )
 
     await t.test(
       'intermediary dependency semver matching',
