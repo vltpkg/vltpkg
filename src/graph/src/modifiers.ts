@@ -110,9 +110,9 @@ export type ModifierActiveEntry = {
  * `modifier.tryImporter(graph.mainImporter)`
  *
  * When traversing the graph, use the `tryNewDependency` method to check
- * if a given dependency name to the current traversed node has matching
+ * if a given dependency spec to the current traversed node has matching
  * registered modifiers, e.g:
- * `const entries = modifier.tryNewDependency(fromNode, depName)`
+ * `const entries = modifier.tryNewDependency(fromNode, depSpec)`
  *
  * Use `updateActiveEntry` to update a given active modifier entry state
  * with the current node of the graph being traversed. e.g:
@@ -271,7 +271,7 @@ export class GraphModifier {
   }
 
   /**
-   * Try matching the provided node and dependency name to the current
+   * Try matching the provided node and spec to the current
    * active parsing modifier entries along with possible starting-level
    * modifiers.
    *
@@ -288,8 +288,9 @@ export class GraphModifier {
    */
   tryNewDependency(
     from: Node,
-    name: string,
+    spec: Spec,
   ): ModifierActiveEntry | undefined {
+    const { name, semver } = spec
     // here we use a map instead of a set so that we can associate each
     // modifier active entry with its breadcrumb so that it's easier to
     // pick the correct entry when we sort breadcrbumbs by specificity
@@ -339,7 +340,17 @@ export class GraphModifier {
     // it will return undefined as no entry is found in the `all` map
     const entries = completeEntries.length ? completeEntries : arr
     return all.get(
-      specificitySort(entries.map(i => i.modifier.breadcrumb))[0],
+      specificitySort(
+        entries
+          // here we filter out any entries that do not match the
+          // pseudo selector comparators used in the breadcrumb item
+          .filter(i =>
+            i.interactiveBreadcrumb.current?.comparator({
+              semver,
+            }),
+          )
+          .map(i => i.modifier.breadcrumb),
+      )[0],
     )
   }
 
@@ -356,7 +367,7 @@ export class GraphModifier {
   ): Map<string, ModifierActiveEntry> {
     const modifierRefs = new Map<string, ModifierActiveEntry>()
     for (const { spec } of dependencies) {
-      const active = this.tryNewDependency(from, spec.name)
+      const active = this.tryNewDependency(from, spec)
       if (active) {
         modifierRefs.set(spec.name, active)
       }
