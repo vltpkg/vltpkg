@@ -180,7 +180,7 @@ const getSimpleGraph = (): GraphLike => {
   // more attribute selector scenarios
   b.manifest = {
     ...b.manifest,
-    version: '2.0.0',
+    version: '1.0.0',
     scripts: {
       postinstall: 'postinstall',
       test: 'test',
@@ -488,7 +488,10 @@ t.test('GraphModifier', async t => {
       )
 
       // Test tryNewDependency
-      const result = modifier.tryNewDependency(mainImporter, 'a')
+      const result = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('a', '^1.0.0', options),
+      )
       t.ok(
         result,
         'should return a modifier active entry for matching name',
@@ -515,7 +518,7 @@ t.test('GraphModifier', async t => {
       // Test with non-matching name
       const nonMatchingResult = modifier.tryNewDependency(
         nodeA,
-        'nonexistent',
+        Spec.parse('nonexistent', '^1.0.0', options),
       )
       t.equal(
         nonMatchingResult,
@@ -660,7 +663,10 @@ t.test('GraphModifier', async t => {
       )
 
       // try to match 'a' from root
-      const resultA = modifier.tryNewDependency(mainImporter, 'a')
+      const resultA = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('a', '^1.0.0', options),
+      )
       t.ok(resultA, 'should find a match for "a" from root')
       t.equal(
         resultA?.modifier.query,
@@ -669,7 +675,10 @@ t.test('GraphModifier', async t => {
       )
 
       // try to match 'b' from root
-      const resultB = modifier.tryNewDependency(mainImporter, 'b')
+      const resultB = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('b', '^1.0.0', options),
+      )
       t.ok(resultB, 'should find a match for "b" from root')
       t.equal(
         resultB?.modifier.query,
@@ -678,7 +687,10 @@ t.test('GraphModifier', async t => {
       )
 
       // try to match '@x/y' from root (should not match)
-      const resultY = modifier.tryNewDependency(mainImporter, '@x/y')
+      const resultY = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('@x/y', '^1.0.0', options),
+      )
       t.equal(
         resultY,
         undefined,
@@ -696,7 +708,10 @@ t.test('GraphModifier', async t => {
       )
 
       // Now try to match deps of b
-      const resultC = modifier.tryNewDependency(nodeB, 'c')
+      const resultC = modifier.tryNewDependency(
+        nodeB,
+        Spec.parse('c', '^1.0.0', options),
+      )
       t.ok(resultC, 'should find a match for "c" from node b')
 
       // When there are multiple matching selectors, we pick the most specific one
@@ -708,7 +723,10 @@ t.test('GraphModifier', async t => {
         'should match most specific modifier for c',
       )
 
-      const resultD = modifier.tryNewDependency(nodeB, 'd')
+      const resultD = modifier.tryNewDependency(
+        nodeB,
+        Spec.parse('d', '^1.0.0', options),
+      )
       t.equal(
         resultD,
         undefined,
@@ -757,7 +775,10 @@ t.test('GraphModifier', async t => {
     const nodeA = nodes.find(n => n.name === 'a') as Node
     const nodeB = nodes.find(n => n.name === 'b') as Node
 
-    const resultA = modifier.tryNewDependency(mainImporter, 'a')
+    const resultA = modifier.tryNewDependency(
+      mainImporter,
+      Spec.parse('a', '^1.0.0', options),
+    )
     // call updateActiveEntry to set an active entry for nodeA
     if (resultA) {
       modifier.updateActiveEntry(nodeA, resultA)
@@ -779,7 +800,10 @@ t.test('GraphModifier', async t => {
     }
 
     // traverse again
-    const newResultA = modifier.tryNewDependency(mainImporter, 'a')
+    const newResultA = modifier.tryNewDependency(
+      mainImporter,
+      Spec.parse('a', '^1.0.0', options),
+    )
     if (newResultA) {
       modifier.updateActiveEntry(nodeA, newResultA)
       t.equal(
@@ -787,7 +811,10 @@ t.test('GraphModifier', async t => {
         1,
         'should have one active entry after processing a again',
       )
-      const resultB = modifier.tryNewDependency(nodeA, 'b')
+      const resultB = modifier.tryNewDependency(
+        nodeA,
+        Spec.parse('b', '^1.0.0', options),
+      )
       if (resultB) {
         modifier.updateActiveEntry(nodeB, resultB)
         t.equal(
@@ -835,7 +862,10 @@ t.test('GraphModifier', async t => {
     modifier.tryImporter(mainImporter)
 
     // Process multiple paths to build up multiple active entries
-    const resultA = modifier.tryNewDependency(mainImporter, 'a')
+    const resultA = modifier.tryNewDependency(
+      mainImporter,
+      Spec.parse('a', '^1.0.0', options),
+    )
     if (resultA) {
       t.equal(
         resultA.modifier.query,
@@ -844,7 +874,10 @@ t.test('GraphModifier', async t => {
       )
     }
 
-    const resultB = modifier.tryNewDependency(mainImporter, 'b')
+    const resultB = modifier.tryNewDependency(
+      mainImporter,
+      Spec.parse('b', '^1.0.0', options),
+    )
     if (resultB) {
       // :root > #b is matching a breadcrumb last-element
       // in its query so that's picked up
@@ -858,7 +891,10 @@ t.test('GraphModifier', async t => {
       modifier.updateActiveEntry(nodeB, resultB)
 
       // Now try to match c from b
-      const resultC = modifier.tryNewDependency(nodeB, 'c')
+      const resultC = modifier.tryNewDependency(
+        nodeB,
+        Spec.parse('c', '^1.0.0', options),
+      )
       if (resultC) {
         t.equal(
           resultC.modifier.query,
@@ -1026,7 +1062,10 @@ t.test('GraphModifier', async t => {
     modifier.tryImporter(workspaceC)
 
     // Test :workspace modifier for dependency 'd' from workspace 'b'
-    const resultD = modifier.tryNewDependency(workspaceB, 'd')
+    const resultD = modifier.tryNewDependency(
+      workspaceB,
+      Spec.parse('d', '^1.0.0', options),
+    )
     t.ok(resultD, 'should match d from workspace b')
     t.equal(
       resultD?.modifier.query,
@@ -1035,7 +1074,10 @@ t.test('GraphModifier', async t => {
     )
 
     // Test :workspace modifier for dependency 'f' from workspace 'a'
-    const resultF = modifier.tryNewDependency(workspaceA, 'f')
+    const resultF = modifier.tryNewDependency(
+      workspaceA,
+      Spec.parse('f', '^1.0.0', options),
+    )
     t.ok(resultF, 'should match f from workspace a')
     t.equal(
       resultF?.modifier.query,
@@ -1044,7 +1086,10 @@ t.test('GraphModifier', async t => {
     )
 
     // Test that no modifiers match for dependency 'e' from workspace 'b'
-    const resultE = modifier.tryNewDependency(workspaceB, 'e')
+    const resultE = modifier.tryNewDependency(
+      workspaceB,
+      Spec.parse('e', '^1.0.0', options),
+    )
     t.equal(
       resultE,
       undefined,
@@ -1067,5 +1112,296 @@ t.test('GraphModifier', async t => {
       0,
       'should have no leftover active entries after rollback',
     )
+  })
+
+  await t.test('semver pseudo selector', async t => {
+    await t.test('direct dependency semver matching', async t => {
+      const testdir = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: {
+            // Valid semver match - should work
+            ':root > #a:semver(^1.0.0)': '2.0.0',
+            // Invalid semver match - should not work
+            ':root > #b:semver(^2.0.0)': '3.0.0',
+          },
+        }),
+      })
+
+      const options = {
+        ...mockSpecOptions,
+      }
+      // Reload vlt.json to ensure we have the latest config
+      t.chdir(testdir)
+      reload('modifiers', 'project')
+
+      const modifier = new GraphModifier(options)
+
+      // Use nodes from the simple graph
+      const simpleGraph = getSimpleGraph()
+      const mainImporter = simpleGraph.mainImporter as Node
+
+      // Process the root
+      modifier.tryImporter(mainImporter)
+
+      // Test valid semver match - dependency 'a' with spec '^1.0.0' should match :semver(^1.0.0)
+      const validResult = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('a', '^1.0.0', options),
+      )
+      t.ok(
+        validResult,
+        'should match dependency a with valid semver comparison',
+      )
+      t.equal(
+        validResult?.modifier.query,
+        ':root > #a:semver(^1.0.0)',
+        'should match the correct modifier query with valid semver',
+      )
+      t.equal(
+        validResult?.modifier.value,
+        '2.0.0',
+        'should have the correct modifier value for valid semver match',
+      )
+
+      // will fail to match the defined :semver(^2.0.0)
+      const bResult = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('b', '^1.0.0', options),
+      )
+      t.notOk(
+        bResult,
+        'should not match dependency b with invalid semver comparison',
+      )
+    })
+
+    await t.test(
+      'invalid direct dependency semver matching',
+      async t => {
+        // Test that the invalid semver selector doesn't have any results
+        // Since we only have ':root > #a:semver(^2.0.0)' in config and our spec is '^1.0.0'
+        // this should return undefined because the semver doesn't match
+        const invalidTestDir = t.testdir({
+          'vlt.json': JSON.stringify({
+            modifiers: {
+              // Only invalid semver match - should not work
+              ':root > #a:semver(^2.0.0)': '3.0.0',
+            },
+          }),
+        })
+        const options = {
+          ...mockSpecOptions,
+        }
+        t.chdir(invalidTestDir)
+        reload('modifiers', 'project')
+
+        // Use nodes from the simple graph
+        const simpleGraph = getSimpleGraph()
+        const mainImporter = simpleGraph.mainImporter as Node
+        const modifier = new GraphModifier(options)
+        modifier.tryImporter(mainImporter)
+
+        // Test invalid semver match - dependency 'a' with spec '^1.0.0' should not match :semver(^2.0.0)
+        const invalidResult = modifier.tryNewDependency(
+          mainImporter,
+          Spec.parse('a', '^1.0.0', options),
+        )
+        t.equal(
+          invalidResult,
+          undefined,
+          'should not match dependency a with invalid semver comparison',
+        )
+      },
+    )
+
+    await t.test(
+      'intermediary dependency semver matching',
+      async t => {
+        const testdir = t.testdir({
+          'vlt.json': JSON.stringify({
+            modifiers: {
+              // Valid semver match in intermediary - should work
+              ':root > #b:semver(^1.0.0) > #d': '2.0.0',
+            },
+          }),
+        })
+
+        const options = {
+          ...mockSpecOptions,
+        }
+        // Reload vlt.json to ensure we have the latest config
+        t.chdir(testdir)
+        reload('modifiers', 'project')
+
+        const modifier = new GraphModifier(options)
+
+        // Use nodes from the simple graph
+        const simpleGraph = getSimpleGraph()
+        const mainImporter = simpleGraph.mainImporter as Node
+        const nodeB = Array.from(simpleGraph.nodes.values()).find(
+          n => n.name === 'b',
+        )! as Node
+
+        // Process the root
+        modifier.tryImporter(mainImporter)
+
+        // First, match dependency 'b' from root with valid semver
+        const resultB = modifier.tryNewDependency(
+          mainImporter,
+          Spec.parse('b', '^1.0.0', options),
+        )
+        t.ok(
+          resultB,
+          'should find a match for "b" from root with valid semver',
+        )
+        t.equal(
+          resultB?.modifier.query,
+          ':root > #b:semver(^1.0.0) > #d',
+          'should match modifier with valid intermediary semver',
+        )
+
+        // Update the active entry for nodeB
+        if (resultB) modifier.updateActiveEntry(nodeB, resultB)
+
+        // Now try to match 'd' from 'b'
+        const resultD = modifier.tryNewDependency(
+          nodeB,
+          Spec.parse('d', '^1.0.0', options),
+        )
+        t.ok(
+          resultD,
+          'should find a match for "d" from node b after valid intermediary semver match',
+        )
+        t.equal(
+          resultD?.modifier.query,
+          ':root > #b:semver(^1.0.0) > #d',
+          'should complete the three-level selector with valid intermediary semver',
+        )
+      },
+    )
+
+    await t.test(
+      'intermediary invalid dependency semver matching',
+      async t => {
+        // Test that the invalid semver selector doesn't have any results
+        const invalidTestDir2 = t.testdir({
+          'vlt.json': JSON.stringify({
+            modifiers: {
+              // Only invalid semver match in intermediary - should not work
+              ':root > #b:semver(^2.0.0) > #d': '3.0.0',
+            },
+          }),
+        })
+        const options = {
+          ...mockSpecOptions,
+        }
+        // Reload vlt.json to ensure we have the latest config
+        t.chdir(invalidTestDir2)
+        reload('modifiers', 'project')
+
+        // Use nodes from the simple graph
+        const simpleGraph = getSimpleGraph()
+        const mainImporter = simpleGraph.mainImporter as Node
+
+        const modifier = new GraphModifier(options)
+        modifier.tryImporter(mainImporter)
+
+        // Test invalid semver match in intermediary - dependency 'b' with spec '^1.0.0' should not match :semver(^2.0.0)
+        const invalidResultB = modifier.tryNewDependency(
+          mainImporter,
+          Spec.parse('b', '^1.0.0', options),
+        )
+        t.equal(
+          invalidResultB,
+          undefined,
+          'should not match dependency b with invalid intermediary semver comparison',
+        )
+      },
+    )
+
+    await t.test('mixed semver and regular selectors', async t => {
+      const testdir = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: {
+            // Mix of semver and regular selectors
+            ':root > #a:semver(^1.0.0)': '2.0.0',
+            ':root > #b > #c': '3.0.0',
+            '#d:v(^1.0.0)': '4.0.0',
+          },
+        }),
+      })
+
+      const options = {
+        ...mockSpecOptions,
+      }
+      // Reload vlt.json to ensure we have the latest config
+      t.chdir(testdir)
+      reload('modifiers', 'project')
+
+      const modifier = new GraphModifier(options)
+
+      // Use nodes from the simple graph
+      const simpleGraph = getSimpleGraph()
+      const mainImporter = simpleGraph.mainImporter as Node
+      const nodeB = Array.from(simpleGraph.nodes.values()).find(
+        n => n.name === 'b',
+      )! as Node
+
+      // Process the root
+      modifier.tryImporter(mainImporter)
+
+      // Test semver selector for 'a'
+      const resultA = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('a', '^1.0.0', options),
+      )
+      t.ok(resultA, 'should match dependency a with semver selector')
+      t.equal(
+        resultA?.modifier.query,
+        ':root > #a:semver(^1.0.0)',
+        'should match the semver-specific modifier',
+      )
+
+      // Test regular selector for 'b'
+      const resultB = modifier.tryNewDependency(
+        mainImporter,
+        Spec.parse('b', '^1.0.0', options),
+      )
+      t.ok(resultB, 'should match dependency b with regular selector')
+      t.equal(
+        resultB?.modifier.query,
+        ':root > #b > #c',
+        'should match the regular multi-level selector',
+      )
+
+      // Update active entry for nodeB
+      if (resultB) modifier.updateActiveEntry(nodeB, resultB)
+
+      // Test regular selector for 'c' from 'b'
+      const resultC = modifier.tryNewDependency(
+        nodeB,
+        Spec.parse('c', '^1.0.0', options),
+      )
+      t.ok(resultC, 'should match dependency c with regular selector')
+      t.equal(
+        resultC?.modifier.query,
+        ':root > #b > #c',
+        'should complete the regular multi-level selector',
+      )
+
+      // Test non-importer semver selector for 'd'
+      const resultD = modifier.tryNewDependency(
+        nodeB,
+        Spec.parse('d', '^1.0.0', options),
+      )
+      t.ok(
+        resultD,
+        'should match dependency d with non-importer semver selector',
+      )
+      t.equal(
+        resultD?.modifier.query,
+        '#d:v(^1.0.0)',
+        'should match the non-importer semver selector',
+      )
+    })
   })
 })

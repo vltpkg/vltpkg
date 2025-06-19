@@ -156,9 +156,9 @@ t.test(
         modifierCalls.tryImporter++
         return undefined
       },
-      tryNewDependency: (_: Node, name: string) => {
+      tryNewDependency: (_: Node, spec: Spec) => {
         modifierCalls.tryNewDependency++
-        if (name === 'foo') {
+        if (spec.name === 'foo') {
           return {
             modifier: {
               type: 'edge' as const,
@@ -324,8 +324,8 @@ t.test('checkNodes with multiple dependencies to modify', async t => {
   // Create a modifier that returns different specs for different deps
   const mockModifier = {
     tryImporter: () => undefined,
-    tryNewDependency: (_: Node, name: string) => {
-      if (name === 'foo') {
+    tryNewDependency: (_: Node, spec: Spec) => {
+      if (spec.name === 'foo') {
         return {
           modifier: {
             type: 'edge' as const,
@@ -343,7 +343,7 @@ t.test('checkNodes with multiple dependencies to modify', async t => {
           originalFrom: graph.mainImporter,
         } as unknown as ModifierActiveEntry
       }
-      if (name === 'baz') {
+      if (spec.name === 'baz') {
         return {
           modifier: {
             type: 'edge' as const,
@@ -488,8 +488,8 @@ t.test('checkNodes with incomplete modifier breadcrumb', async t => {
   // Create a modifier with incomplete breadcrumb
   const mockModifier = {
     tryImporter: () => undefined,
-    tryNewDependency: (_: Node, name: string) => {
-      if (name === 'foo') {
+    tryNewDependency: (_: Node, spec: Spec) => {
+      if (spec.name === 'foo') {
         return {
           modifier: {
             type: 'edge' as const,

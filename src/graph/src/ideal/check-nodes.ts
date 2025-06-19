@@ -66,7 +66,7 @@ export const checkNodes = async ({
     for (const [name, edge] of node.edgesOut) {
       // when we find a modifier that applies to a direct dependency, mark
       // that dependency as a dependency to be added by append-nodes
-      const modifierRef = modifiers?.tryNewDependency(node, name)
+      const modifierRef = modifiers?.tryNewDependency(node, edge.spec)
       if (modifierRef && 'spec' in modifierRef.modifier) {
         modifiedDeps.set(
           name,
