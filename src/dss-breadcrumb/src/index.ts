@@ -13,7 +13,7 @@ import {
 } from '@vltpkg/dss-parser'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
-import { satisfies } from '@vltpkg/semver'
+import { intersects } from '@vltpkg/semver'
 import type {
   ModifierBreadcrumb,
   ModifierBreadcrumbItem,
@@ -49,9 +49,9 @@ const passthroughComparator = () => () => true
  */
 const semverComparator =
   ({ range }: InternalModifierComparatorOptions) =>
-  ({ version }: ModifierComparatorOptions) => {
-    if (range && version) {
-      return satisfies(version, range)
+  ({ semver }: ModifierComparatorOptions) => {
+    if (range && semver) {
+      return intersects(semver, range)
     }
     return false
   }

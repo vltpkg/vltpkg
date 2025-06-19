@@ -225,7 +225,7 @@ t.test('Breadcrumb', async t => {
 
     // Test semver comparator without range parameter (should return false when no range)
     t.equal(
-      semverBreadcrumb.first.comparator({ version: '1.0.0' }),
+      semverBreadcrumb.first.comparator({ semver: '1.0.0' }),
       false,
       'comparator should return false when no range parameter is provided',
     )
@@ -238,7 +238,7 @@ t.test('Breadcrumb', async t => {
       'non-semver selector comparator should return true',
     )
     t.equal(
-      customBreadcrumb.first.comparator({ version: '1.0.0' }),
+      customBreadcrumb.first.comparator({ semver: '1.0.0' }),
       true,
       'non-semver selector comparator should return true even with version',
     )
@@ -324,17 +324,17 @@ t.test('Breadcrumb', async t => {
 
       // Test comparator with versions that should match ^1.0.0
       t.equal(
-        lastItem1.comparator({ version: '1.0.0' }),
+        lastItem1.comparator({ semver: '1.0.0' }),
         true,
         'should match 1.0.0 for ^1.0.0 range',
       )
       t.equal(
-        lastItem1.comparator({ version: '1.2.3' }),
+        lastItem1.comparator({ semver: '1.2.3' }),
         true,
         'should match 1.2.3 for ^1.0.0 range',
       )
       t.equal(
-        lastItem1.comparator({ version: '2.0.0' }),
+        lastItem1.comparator({ semver: '2.0.0' }),
         false,
         'should not match 2.0.0 for ^1.0.0 range',
       )
@@ -359,17 +359,17 @@ t.test('Breadcrumb', async t => {
 
       // Test comparator with versions for >=2 range
       t.equal(
-        lastItem2.comparator({ version: '2.0.0' }),
+        lastItem2.comparator({ semver: '2.0.0' }),
         true,
         'should match 2.0.0 for >=2 range',
       )
       t.equal(
-        lastItem2.comparator({ version: '3.3.3' }),
+        lastItem2.comparator({ semver: '3.3.3' }),
         true,
         'should match 3.3.3 for >=2 range',
       )
       t.equal(
-        lastItem2.comparator({ version: '1.0.0' }),
+        lastItem2.comparator({ semver: '1.0.0' }),
         false,
         'should not match 1.0.0 for >=2 range',
       )
@@ -400,22 +400,22 @@ t.test('Breadcrumb', async t => {
 
       // Test comparator for first item with version 1
       t.equal(
-        firstItem3.comparator({ version: '1.0.0' }),
+        firstItem3.comparator({ semver: '1.0.0' }),
         true,
         'should match 1.0.0 for version 1',
       )
       t.equal(
-        firstItem3.comparator({ version: '1.2.3' }),
+        firstItem3.comparator({ semver: '1.2.3' }),
         true,
         'should match 1.2.3 for version 1',
       )
       t.equal(
-        firstItem3.comparator({ version: '2.0.0' }),
+        firstItem3.comparator({ semver: '2.0.0' }),
         false,
         'should not match 2.0.0 for version 1',
       )
       t.equal(
-        firstItem3.comparator({ version: '0.0.1' }),
+        firstItem3.comparator({ semver: '0.0.1' }),
         false,
         'should not match 0.0.1 for version 1',
       )
@@ -439,27 +439,27 @@ t.test('Breadcrumb', async t => {
 
       // Test comparator for last item with ~2.0.0 range
       t.equal(
-        lastItem3.comparator({ version: '2.0.0' }),
+        lastItem3.comparator({ semver: '2.0.0' }),
         true,
         'should match 2.0.0 for ~2.0.0 range',
       )
       t.equal(
-        lastItem3.comparator({ version: '2.0.5' }),
+        lastItem3.comparator({ semver: '2.0.5' }),
         true,
         'should match 2.0.5 for ~2.0.0 range',
       )
       t.equal(
-        lastItem3.comparator({ version: '2.2.2' }),
+        lastItem3.comparator({ semver: '2.2.2' }),
         false,
         'should not match 2.2.2 for ~2.0.0 range (minor bump)',
       )
       t.equal(
-        lastItem3.comparator({ version: '1.0.0' }),
+        lastItem3.comparator({ semver: '1.0.0' }),
         false,
         'should not match 1.0.0 for ~2.0.0 range',
       )
       t.equal(
-        lastItem3.comparator({ version: '3.0.0' }),
+        lastItem3.comparator({ semver: '3.0.0' }),
         false,
         'should not match 3.0.0 for ~2.0.0 range',
       )
@@ -472,7 +472,7 @@ t.test('Breadcrumb', async t => {
         'middle item should be parsed correctly',
       )
       t.equal(
-        middleItem3!.comparator({ version: '1.0.0' }),
+        middleItem3!.comparator({ semver: '1.0.0' }),
         true,
         'middle item should have default comparator returning true',
       )
@@ -488,12 +488,12 @@ t.test('Breadcrumb', async t => {
         'should handle unquoted parameter',
       )
       t.equal(
-        breadcrumb1.first.comparator({ version: '1.5.0' }),
+        breadcrumb1.first.comparator({ semver: '1.5.0' }),
         true,
         'should work with unquoted parameter',
       )
       t.equal(
-        breadcrumb1.first.comparator({ version: '0.9.0' }),
+        breadcrumb1.first.comparator({ semver: '0.9.0' }),
         false,
         'should correctly reject with unquoted parameter',
       )
@@ -505,8 +505,9 @@ t.test('Breadcrumb', async t => {
         ':semver(" >= 2.0.0 ")',
         'should handle parameter with spaces',
       )
+      // should compare ranges correctly
       t.equal(
-        breadcrumb2.first.comparator({ version: '2.1.0' }),
+        breadcrumb2.first.comparator({ semver: '^2.1.0' }),
         true,
         'should work with spaced parameter',
       )
@@ -519,12 +520,12 @@ t.test('Breadcrumb', async t => {
         'should handle range parameter',
       )
       t.equal(
-        breadcrumb3.first.comparator({ version: '1.5.0' }),
+        breadcrumb3.first.comparator({ semver: '1.5.0' }),
         true,
         'should match version in range',
       )
       t.equal(
-        breadcrumb3.first.comparator({ version: '2.5.0' }),
+        breadcrumb3.first.comparator({ semver: '2.5.0' }),
         false,
         'should not match version outside range',
       )
@@ -556,39 +557,39 @@ t.test('Breadcrumb', async t => {
 
       // Test version combinations with AND logic
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '1.2.3' }),
+        chainedBreadcrumb.first.comparator({ semver: '1.2.3' }),
         false,
         'should reject 1.2.3 (not > 1)',
       )
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '3.0.0' }),
+        chainedBreadcrumb.first.comparator({ semver: '3.0.0' }),
         false,
         'should reject 3.0.0 (not <= 2.5.0)',
       )
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '2.0.0' }),
+        chainedBreadcrumb.first.comparator({ semver: '2.0.0' }),
         true,
         'should accept 2.0.0 (> 1 AND <= 2.5.0)',
       )
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '2.4.9' }),
+        chainedBreadcrumb.first.comparator({ semver: '2.4.9' }),
         true,
         'should accept 2.4.9 (> 1 AND <= 2.5.0)',
       )
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '2.6.0' }),
+        chainedBreadcrumb.first.comparator({ semver: '2.6.0' }),
         false,
         'should reject 2.6.0 (not <= 2.5.0)',
       )
 
       // Test edge case: version exactly at boundary
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '1.0.0' }),
+        chainedBreadcrumb.first.comparator({ semver: '1.0.0' }),
         false,
         'should reject 1.0.0 (not > 1)',
       )
       t.equal(
-        chainedBreadcrumb.first.comparator({ version: '2.5.0' }),
+        chainedBreadcrumb.first.comparator({ semver: '2.5.0' }),
         true,
         'should accept 2.5.0 (> 1 AND <= 2.5.0)',
       )
@@ -877,7 +878,7 @@ t.test('Breadcrumb', async t => {
       const combinedBreadcrumb = parseBreadcrumb(':project#test')
       const combinedComparator = combinedBreadcrumb.first.comparator
       t.equal(
-        combinedComparator({ version: '1.0.0' }),
+        combinedComparator({ semver: '1.0.0' }),
         true,
         'combined non-semver pseudo selector should use AND logic (true && true = true)',
       )

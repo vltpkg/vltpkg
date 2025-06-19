@@ -17,7 +17,7 @@ export type InternalModifierComparatorOptions = {
  * Options for comparing breadcrumbs.
  */
 export type ModifierComparatorOptions = {
-  version?: string
+  semver?: string
 }
 
 /**
