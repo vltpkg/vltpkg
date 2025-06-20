@@ -1,0 +1,451 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`InsightsTabButton renders default 1`] = `
+
+<gui-tabs-trigger
+  value="insights"
+  variant="nestedCard"
+>
+  Insights
+</gui-tabs-trigger>
+
+`;
+
+exports[`InsightsTabButton renders with insight count 1`] = `
+
+<gui-tabs-trigger
+  value="insights"
+  variant="nestedCard"
+>
+  Insights
+  <gui-data-badge
+    variant="count"
+    classnames="[object Object]"
+    content="6"
+  >
+  </gui-data-badge>
+</gui-tabs-trigger>
+
+`;
+
+exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
+
+<gui-tabs-content value="insights">
+  <div class="flex flex-col gap-3 py-4">
+    <div class="flex px-6 gap-6">
+      <div
+        role="button"
+        class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors hover:border-muted-foreground/30 hover:bg-secondary/60"
+      >
+        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+          Dependencies scanned
+        </p>
+        <p class="font-mono text-2xl font-medium tabular-nums text-foreground">
+          2
+          <span class="ml-0.5 text-muted-foreground/80">
+            /3
+          </span>
+        </p>
+        <div class="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
+          <gui-alert-triangle-icon classname="mb-0.5 size-4 text-yellow-500">
+          </gui-alert-triangle-icon>
+        </div>
+        <p class="text-xs font-medium text-yellow-500">
+          1 Dependencies not scanned
+        </p>
+      </div>
+      <div class="relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3">
+        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+          Average package score
+        </p>
+        <p
+          class="font-mono text-2xl font-medium tabular-nums text-foreground"
+          style="color: oklch(0.623 0.214 259.815);"
+        >
+          75
+          <span class="ml-0.5 text-muted-foreground/80">
+            /100
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-3 px-6">
+      <gui-warning
+        warning="1 medium severity"
+        classname="rounded-sm px-2 py-1"
+        severity="medium"
+      >
+      </gui-warning>
+    </div>
+    <gui-table classname="border-t-[1px] border-muted">
+      <gui-table-header>
+        <gui-table-row>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 80px;"
+          >
+            <gui-sorting-header
+              header="Total"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 150px;"
+          >
+            <gui-sorting-header
+              header="Insight"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 100px;"
+          >
+            <gui-sorting-header
+              header="Severity"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 100px;"
+          >
+            <gui-sorting-header
+              header="Category"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+        </gui-table-row>
+      </gui-table-header>
+      <gui-table-body>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              3
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            <gui-insight-badge
+              color="yellow"
+              classname="lowercase"
+            >
+              :abandoned
+            </gui-insight-badge>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            medium
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            Supply Chain
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              2
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            <gui-insight-badge
+              color="yellow"
+              classname="lowercase"
+            >
+              :confused
+            </gui-insight-badge>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            medium
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            Supply Chain
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              1
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            <gui-insight-badge
+              color="yellow"
+              classname="lowercase"
+            >
+              :eval
+            </gui-insight-badge>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            medium
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            Supply Chain
+          </gui-table-cell>
+        </gui-table-row>
+      </gui-table-body>
+    </gui-table>
+  </div>
+</gui-tabs-content>
+
+`;
+
+exports[`InsightsTabContent renders with an empty state 1`] = `
+
+<gui-tabs-content value="insights">
+  <gui-empty-state
+    icon="gui-shield-x-icon"
+    message="No insights were available"
+  >
+  </gui-empty-state>
+</gui-tabs-content>
+
+`;
+
+exports[`InsightsTabContent renders with insights 1`] = `
+
+<gui-tabs-content value="insights">
+  <div class="flex flex-col gap-3 py-4">
+    <div class="flex gap-3 px-6">
+      <div class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors">
+        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+          Dependencies scanned
+        </p>
+        <p class="font-mono text-2xl font-medium tabular-nums text-foreground">
+          3
+          <span class="ml-0.5 text-muted-foreground/80">
+            /3
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-3 px-6">
+      <gui-warning
+        warning="1 medium severity"
+        classname="rounded-sm px-2 py-1"
+        severity="medium"
+      >
+      </gui-warning>
+    </div>
+    <gui-table classname="border-t-[1px] border-muted">
+      <gui-table-header>
+        <gui-table-row>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 80px;"
+          >
+            <gui-sorting-header
+              header="Total"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 150px;"
+          >
+            <gui-sorting-header
+              header="Insight"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 100px;"
+          >
+            <gui-sorting-header
+              header="Severity"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 100px;"
+          >
+            <gui-sorting-header
+              header="Category"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+        </gui-table-row>
+      </gui-table-header>
+      <gui-table-body>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              3
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            <gui-insight-badge
+              color="yellow"
+              classname="lowercase"
+            >
+              :abandoned
+            </gui-insight-badge>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            medium
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            Supply Chain
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              2
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            <gui-insight-badge
+              color="yellow"
+              classname="lowercase"
+            >
+              :confused
+            </gui-insight-badge>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            medium
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            Supply Chain
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              1
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            <gui-insight-badge
+              color="yellow"
+              classname="lowercase"
+            >
+              :eval
+            </gui-insight-badge>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            medium
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 100px;"
+          >
+            Supply Chain
+          </gui-table-cell>
+        </gui-table-row>
+      </gui-table-body>
+    </gui-table>
+  </div>
+</gui-tabs-content>
+
+`;

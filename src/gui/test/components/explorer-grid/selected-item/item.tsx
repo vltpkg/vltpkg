@@ -66,6 +66,14 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx',
+  () => ({
+    DependenciesTabsButton: 'gui-dependencies-tabs-button',
+    DependenciesTabContent: 'gui-dependencies-tab-content',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -92,6 +100,18 @@ test('Item renders with the default structure', () => {
     publisherAvatar: undefined,
     versions: undefined,
     greaterVersions: undefined,
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore)
 
   const Container = () => {
@@ -116,6 +136,18 @@ test('Item renders connection lines', () => {
     publisherAvatar: undefined,
     versions: undefined,
     greaterVersions: undefined,
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore)
 
   const Container = () => {

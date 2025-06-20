@@ -109,6 +109,18 @@ test('OverviewTabButton renders default', () => {
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -133,6 +145,18 @@ test('OverviewTabContent renders default', () => {
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -159,6 +183,18 @@ test('OverviewTabContent renders with content', () => {
       description: '## Description\n\nThis is a custom description',
       keywords: ['testing', 'vitest'],
     },
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -209,6 +245,18 @@ test('OverviewTabContent renders with an aside and content', () => {
         url: 'https://acme.com/funding',
       },
     },
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

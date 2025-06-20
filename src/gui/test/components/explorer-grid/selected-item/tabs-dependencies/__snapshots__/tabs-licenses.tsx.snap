@@ -1,0 +1,460 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LicensesTabButton renders default 1`] = `
+
+<gui-tabs-trigger
+  value="licenses"
+  variant="nestedCard"
+>
+  Licenses
+</gui-tabs-trigger>
+
+`;
+
+exports[`LicensesTabButton renders with license count 1`] = `
+
+<gui-tabs-trigger
+  value="licenses"
+  variant="nestedCard"
+>
+  Licenses
+  <gui-data-badge
+    variant="count"
+    classnames="[object Object]"
+    content="8"
+  >
+  </gui-data-badge>
+</gui-tabs-trigger>
+
+`;
+
+exports[`LicensesTabContent renders with an empty state 1`] = `
+
+<gui-tabs-content value="licenses">
+  <gui-empty-state
+    icon="gui-scale-icon"
+    message="No license data was found"
+  >
+  </gui-empty-state>
+</gui-tabs-content>
+
+`;
+
+exports[`LicensesTabContent renders with licenses 1`] = `
+
+<gui-tabs-content value="licenses">
+  <div class="flex flex-col gap-3 py-4">
+    <div class="px-6">
+      <div
+        role="button"
+        class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors hover:border-muted-foreground/30 hover:bg-secondary/60"
+      >
+        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+          Licenses warnings
+        </p>
+        <p class="font-mono text-2xl font-medium tabular-nums text-foreground">
+          27
+        </p>
+        <div class="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
+          <gui-alert-triangle-icon classname="mb-0.5 size-4 text-yellow-500">
+          </gui-alert-triangle-icon>
+        </div>
+        <p class="text-xs font-medium text-yellow-500">
+          Potential license issues detected
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-3 px-6">
+      <gui-warning
+        severity="high"
+        count="4"
+        warning="unlicensed"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="medium"
+        count="5"
+        warning="misc"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="low"
+        count="3"
+        warning="restricted"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="low"
+        count="3"
+        warning="ambiguous"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="low"
+        count="3"
+        warning="copyleft"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="low"
+        count="3"
+        warning="unknown"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="low"
+        count="3"
+        warning="none"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+      <gui-warning
+        severity="low"
+        count="3"
+        warning="exception"
+        hideicon="true"
+        classname="px-2 py-1"
+      >
+      </gui-warning>
+    </div>
+    <gui-table classname="border-t-[1px] border-muted">
+      <gui-table-header>
+        <gui-table-row>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 80px;"
+          >
+            <gui-sorting-header
+              header="Count"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 200px;"
+          >
+            <gui-sorting-header
+              header="License"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 60px;"
+          >
+            <gui-sorting-header
+              header="Severity"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 80px;"
+          >
+            <gui-sorting-header
+              header="Warnings"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+        </gui-table-row>
+      </gui-table-header>
+      <gui-table-body>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              8
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            unlicensed
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-red-500/5 dark:bg-red-600/10 hover:bg-red-500/15 border-red-600/80 hover:border-red-500/80 text-red-600 dark:text-red-500">
+              high
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            unlicensed
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              10
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            misc
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-yellow-500/5 dark:bg-yellow-600/10 hover:bg-yellow-500/15 border-yellow-600/80 hover:border-yellow-500/80 text-yellow-700 dark:text-yellow-600">
+              medium
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            misc
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              6
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            restricted
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15 border-gray-600/80 hover:border-gray-500/80 text-gray-600 dark:text-gray-500">
+              low
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            restricted
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              5
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            ambiguous
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15 border-gray-600/80 hover:border-gray-500/80 text-gray-600 dark:text-gray-500">
+              low
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            ambiguous
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              4
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            copyleft
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15 border-gray-600/80 hover:border-gray-500/80 text-gray-600 dark:text-gray-500">
+              low
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            copyleft
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              3
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            unknown
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15 border-gray-600/80 hover:border-gray-500/80 text-gray-600 dark:text-gray-500">
+              low
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            unknown
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              3
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            none
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15 border-gray-600/80 hover:border-gray-500/80 text-gray-600 dark:text-gray-500">
+              low
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            none
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              3
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            exception
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 60px;"
+          >
+            <div class="inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15 border-gray-600/80 hover:border-gray-500/80 text-gray-600 dark:text-gray-500">
+              low
+            </div>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            exception
+          </gui-table-cell>
+        </gui-table-row>
+      </gui-table-body>
+    </gui-table>
+  </div>
+</gui-tabs-content>
+
+`;

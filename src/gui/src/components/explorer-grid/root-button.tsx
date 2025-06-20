@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.ts'
 
@@ -32,7 +33,9 @@ const RootButton = () => {
             <House />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Go to project root</TooltipContent>
+        <TooltipPortal>
+          <TooltipContent>Go to project root</TooltipContent>
+        </TooltipPortal>
       </Tooltip>
     </TooltipProvider>
   )
