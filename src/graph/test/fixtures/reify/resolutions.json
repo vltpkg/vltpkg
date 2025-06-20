@@ -811,5 +811,15 @@
         "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
       }
     ]
+  },
+  "string-width@^5.0.1": {
+    "resolved": "https://registry.npmjs.org/string-width/-/string-width-5.1.2.tgz",
+    "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
+    "signatures": [
+      {
+        "sig": "MEUCIFh4IjLA+aBQo7r/VZcidTSCApNLobLlmjMKnBREpog9AiEApke6FV5/3E44vAJKBbdIZ832/aqqaNMi8TFY+Px6Rwc=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
   }
 }

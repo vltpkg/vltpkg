@@ -342,7 +342,15 @@ export class Graph implements GraphLike {
         depType === 'peerOptional',
     }
 
-    const depId = id || (manifest && getId(spec, manifest, extra))
+    // Don't include modifier information in regular dependency node IDs
+    // Modifiers are stored as a property on the node, not in the ID
+    // This ensures that normal dependencies can be properly resolved and cached
+    const depId = id || (manifest && getId(spec, manifest))
+    const saveType = resolveSaveType(
+      fromNode,
+      spec.final.name,
+      depType,
+    )
 
     /* c8 ignore start - should not be possible */
     if (!depId) {
@@ -357,7 +365,7 @@ export class Graph implements GraphLike {
     // in the graph, then just creates a new edge to that node
     const toFoundNode = this.nodes.get(depId)
     if (toFoundNode) {
-      this.addEdge(depType, spec, fromNode, toFoundNode)
+      this.addEdge(saveType, spec, fromNode, toFoundNode)
       // the current only stays dev/optional if this dep lets it remain so
       // if it's not already, we don't make it dev or optional.
       toFoundNode.dev &&= flags.dev
@@ -370,8 +378,13 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
-    toNode.modifier = extra
-    this.addEdge(depType, spec, fromNode, toNode)
+
+    // Set the modifier if provided via extra parameter
+    if (extra) {
+      toNode.modifier = extra
+    }
+
+    this.addEdge(saveType, spec, fromNode, toNode)
     return toNode
   }
 
