@@ -156,6 +156,18 @@ test('VersionsTabButton renders default', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -177,6 +189,18 @@ test('VersionsTabContent renders with versions', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -198,6 +222,18 @@ test('VersionsTabContent renders an empty state', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -219,6 +255,18 @@ test('VersionsTabContent filters versions', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -246,6 +294,18 @@ test('VersionsTabContent toggles pre-releases', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -273,6 +333,18 @@ test('VersionsTabContent filters pre-releases', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -304,6 +376,18 @@ test('VersionsTabContent filters newer versions', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -335,6 +419,18 @@ test('VersionsTabContent handles missing manifest version', () => {
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

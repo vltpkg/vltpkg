@@ -82,6 +82,18 @@ test('TabsManifestButton renders default', () => {
     insights: undefined,
     activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -105,6 +117,18 @@ test('TabsManifestContent renders an empty state', () => {
     insights: undefined,
     activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -128,6 +152,18 @@ test('TabsManifestContent renders with a manifest', () => {
     manifest: MOCK_MANIFEST,
     rawManifest: null,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

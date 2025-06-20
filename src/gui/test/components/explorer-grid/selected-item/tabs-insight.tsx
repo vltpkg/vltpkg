@@ -124,6 +124,18 @@ test('InsightTabContent renders an empty state', () => {
     rawManifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -147,6 +159,18 @@ test('InsightTabContent renders with insights', () => {
     rawManifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -171,6 +195,18 @@ test('InsightTabContent renders with no insights but a package score', () => {
     activeTab: 'insights' as const,
     packageScore: MOCK_PACKAGE_SCORE,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -194,6 +230,18 @@ test('InsightTabButton renders default', () => {
     rawManifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
