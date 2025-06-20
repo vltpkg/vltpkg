@@ -248,6 +248,20 @@ export class Query {
     })
   }
 
+  /**
+   * Populates security insights for all nodes in the graph if a security
+   * archive is available. This ensures insights are available even when
+   * nodes haven't been returned by a query yet.
+   */
+  populateAllNodeInsights(): void {
+    if (!this.#securityArchive) {
+      return
+    }
+
+    const allNodes = new Set(this.#graph.nodes.values())
+    this.#getQueryResponseNodes(allNodes)
+  }
+
   constructor({
     graph,
     retries,

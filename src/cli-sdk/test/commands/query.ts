@@ -450,4 +450,45 @@ t.test('query', async t => {
       'should use colors when set in human readable format',
     )
   })
+
+  await t.test('security insights populated for non-security queries', async t => {
+    let populateAllNodeInsightsCalled = false
+    
+    const mockSecurityArchive = {
+      ok: true,
+      packageReports: new Map(),
+    }
+    
+    const Command = await mockQuery(t, {
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return mockSecurityArchive
+          },
+        },
+      },
+      '@vltpkg/query': {
+        Query: class MockQuery {
+          constructor() {}
+          populateAllNodeInsights() {
+            populateAllNodeInsightsCalled = true
+          }
+          async search() {
+            return { nodes: [], edges: [] }
+          }
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+    })
+
+    await Command.command({
+      positionals: ['#foo'],
+      values: { view: 'json' },
+      options,
+    } as LoadedConfig)
+
+    t.ok(populateAllNodeInsightsCalled, 'populateAllNodeInsights should be called for non-security queries')
+  })
 })
