@@ -1048,17 +1048,19 @@ t.test('funding normalization', async t => {
     version: '1.0.0',
     funding: 'https://github.com/sponsors/user', // String funding
     dist: {
-      tarball: 'https://registry.npmjs.org/test-package/-/test-package-1.0.0.tgz',
-      integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const
-    }
+      tarball:
+        'https://registry.npmjs.org/test-package/-/test-package-1.0.0.tgz',
+      integrity:
+        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const,
+    },
   }
 
   const { PackageInfoClient } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
     '@vltpkg/pick-manifest': {
-      pickManifest: () => mockManifest
-    }
+      pickManifest: () => mockManifest,
+    },
   })
 
   const client = new PackageInfoClient(options)
@@ -1066,17 +1068,17 @@ t.test('funding normalization', async t => {
   client.packument = async () => ({
     name: 'test-package',
     'dist-tags': { latest: '1.0.0' },
-    versions: { '1.0.0': mockManifest }
+    versions: { '1.0.0': mockManifest },
   })
-  
+
   const manifest = await client.manifest('test-package@1.0.0')
-  
+
   t.same(
     manifest.funding,
-    [{ url: 'https://github.com/sponsors/user' }],
-    'string funding should be normalized to array format'
+    [{ url: 'https://github.com/sponsors/user', type: 'github' }],
+    'string funding should be normalized to array format',
   )
-  
+
   t.end()
 })
 
@@ -1086,20 +1088,22 @@ t.test('funding normalization with array', async t => {
     version: '1.0.0',
     funding: [
       'https://github.com/sponsors/user',
-      { url: 'https://patreon.com/user' }
+      { url: 'https://patreon.com/user' },
     ],
     dist: {
-      tarball: 'https://registry.npmjs.org/test-package/-/test-package-1.0.0.tgz',
-      integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const
-    }
+      tarball:
+        'https://registry.npmjs.org/test-package/-/test-package-1.0.0.tgz',
+      integrity:
+        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const,
+    },
   }
 
   const { PackageInfoClient } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
     '@vltpkg/pick-manifest': {
-      pickManifest: () => mockManifest
-    }
+      pickManifest: () => mockManifest,
+    },
   })
 
   const client = new PackageInfoClient(options)
@@ -1107,19 +1111,19 @@ t.test('funding normalization with array', async t => {
   client.packument = async () => ({
     name: 'test-package',
     'dist-tags': { latest: '1.0.0' },
-    versions: { '1.0.0': mockManifest }
+    versions: { '1.0.0': mockManifest },
   })
-  
+
   const manifest = await client.manifest('test-package@1.0.0')
-  
+
   t.same(
     manifest.funding,
     [
-      { url: 'https://github.com/sponsors/user' },
-      { url: 'https://patreon.com/user' }
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+      { url: 'https://patreon.com/user', type: 'patreon' },
     ],
-    'mixed array funding should be normalized to object format'
+    'mixed array funding should be normalized to object format',
   )
-  
+
   t.end()
 })

@@ -13,7 +13,11 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
-import { asPackument, isIntegrity, normalizeManifest } from '@vltpkg/types'
+import {
+  asPackument,
+  isIntegrity,
+  normalizeManifest,
+} from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'node:crypto'
@@ -433,7 +437,7 @@ export class PackageInfoClient {
             this.#trustedIntegrities.set(tarball, integrity)
           }
         }
-        
+
         // Normalize funding information to standard format while preserving the original
         return normalizeManifest(mani)
       }

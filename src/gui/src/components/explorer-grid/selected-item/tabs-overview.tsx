@@ -167,14 +167,14 @@ const TabContentAside = () => {
           </h4>
           <div className="flex flex-col gap-2">
             {(() => {
-              const entries = Array.isArray(manifest.funding) ? 
-                manifest.funding : 
-                [manifest.funding]
+              const entries =
+                Array.isArray(manifest.funding) ?
+                  manifest.funding
+                : [manifest.funding]
 
               return entries.map((entry, idx) => {
-                // After normalization, entries should be { url: string } objects
-                // but we handle both formats for safety
-                const url = typeof entry === 'string' ? entry : entry.url
+                const url =
+                  typeof entry === 'string' ? entry : entry.url
                 if (!url) return null
 
                 return (

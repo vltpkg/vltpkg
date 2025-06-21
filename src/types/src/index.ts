@@ -56,27 +56,58 @@ export type Exports =
 
 export type Imports = Record<`#${string}`, ConditionalValue>
 
-export type FundingEntry = string | { url: string }
+export type FundingEntry =
+  | string
+  | { url: string; type?: string; [key: string]: JSONField }
 export type Funding = FundingEntry | FundingEntry[]
 
-/** Normalized funding entry - always an object with url */
-export type NormalizedFundingEntry = { url: string }
+/** Normalized funding entry - always an object with url and optional additional properties */
+export type NormalizedFundingEntry = {
+  url: string
+  type?: string
+  [key: string]: JSONField
+}
 /** Normalized funding - always an array of objects */
 export type NormalizedFunding = NormalizedFundingEntry[]
 
-/**
- * Normalize funding information to a consistent format.
- * Always returns an array of funding objects with { url: string } format.
- * Supports object funding and string shorthand, or an array of these.
- */
-export const normalizeFunding = (funding: unknown): NormalizedFunding | undefined => {
+/** Normalize funding information to a consistent format. */
+export const normalizeFunding = (
+  funding: unknown,
+): NormalizedFunding | undefined => {
   if (funding === undefined || funding === null) {
     return undefined
   }
 
   const normalizeItem = (item: unknown): NormalizedFundingEntry => {
+    const getTypeFromUrl = (url: string): string => {
+      try {
+        const { hostname } = new URL(url)
+        const domain =
+          hostname.startsWith('www.') ? hostname.slice(4) : hostname
+        if (domain === 'github.com') return 'github'
+        if (domain === 'patreon.com') return 'patreon'
+        if (domain === 'opencollective.com') return 'opencollective'
+        return 'individual'
+      } catch {
+        return 'invalid'
+      }
+    }
+
+    const validateType = (
+      url: string,
+      type?: string,
+    ): string | undefined => {
+      const urlType = getTypeFromUrl(url)
+      if (!type) return urlType
+      if (urlType === 'invalid') return undefined
+      if (['github', 'patreon', 'opencollective'].includes(type)) {
+        return type === urlType ? type : undefined
+      }
+      return type
+    }
+
     if (typeof item === 'string') {
-      return { url: item }
+      return { url: item, type: getTypeFromUrl(item) }
     }
     if (
       typeof item === 'object' &&
@@ -84,10 +115,21 @@ export const normalizeFunding = (funding: unknown): NormalizedFunding | undefine
       'url' in item &&
       typeof (item as Record<string, unknown>).url === 'string'
     ) {
-      return item as NormalizedFundingEntry
+      const obj = item as Record<string, unknown>
+      const url = obj.url as string
+      const validatedType = validateType(
+        url,
+        obj.type as string | undefined,
+      )
+      const result = { ...obj, url } as Record<string, unknown>
+      if (validatedType) {
+        result.type = validatedType
+      } else {
+        delete result.type
+      }
+      return result as NormalizedFundingEntry
     }
-    // Invalid funding entry, convert to empty URL
-    return { url: '' }
+    return { url: '', type: 'individual' }
   }
 
   const fundingArray = Array.isArray(funding) ? funding : [funding]
@@ -409,19 +451,14 @@ export const asManifest = (
   return normalizeManifest(m)
 }
 
-/**
- * Normalize a manifest by standardizing its funding information.
- * Returns a new manifest object with normalized funding.
- */
+/** Normalize a manifest by standardizing its funding information. */
 export const normalizeManifest = (manifest: Manifest): Manifest => {
   if (manifest.funding === undefined) {
     return manifest
   }
-  
+
   const normalizedFunding = normalizeFunding(manifest.funding)
-  
-  // Create a shallow copy with normalized funding
-  // The funding will be normalized to an array format
+
   return { ...manifest, funding: normalizedFunding as Funding }
 }
 
