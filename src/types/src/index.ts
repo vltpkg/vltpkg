@@ -59,6 +59,42 @@ export type Imports = Record<`#${string}`, ConditionalValue>
 export type FundingEntry = string | { url: string }
 export type Funding = FundingEntry | FundingEntry[]
 
+/** Normalized funding entry - always an object with url */
+export type NormalizedFundingEntry = { url: string }
+/** Normalized funding - always an array of objects */
+export type NormalizedFunding = NormalizedFundingEntry[]
+
+/**
+ * Normalize funding information to a consistent format.
+ * Always returns an array of funding objects with { url: string } format.
+ * Supports object funding and string shorthand, or an array of these.
+ */
+export const normalizeFunding = (funding: unknown): NormalizedFunding | undefined => {
+  if (funding === undefined || funding === null) {
+    return undefined
+  }
+
+  const normalizeItem = (item: unknown): NormalizedFundingEntry => {
+    if (typeof item === 'string') {
+      return { url: item }
+    }
+    if (
+      typeof item === 'object' &&
+      item !== null &&
+      'url' in item &&
+      typeof (item as Record<string, unknown>).url === 'string'
+    ) {
+      return item as NormalizedFundingEntry
+    }
+    // Invalid funding entry, convert to empty URL
+    return { url: '' }
+  }
+
+  const fundingArray = Array.isArray(funding) ? funding : [funding]
+  const sources = fundingArray.map(normalizeItem)
+  return sources
+}
+
 export type Person =
   | string
   | {
@@ -370,7 +406,23 @@ export const asManifest = (
   if (!isManifest(m)) {
     throw error('invalid manifest', { found: m }, from ?? asManifest)
   }
-  return m
+  return normalizeManifest(m)
+}
+
+/**
+ * Normalize a manifest by standardizing its funding information.
+ * Returns a new manifest object with normalized funding.
+ */
+export const normalizeManifest = (manifest: Manifest): Manifest => {
+  if (manifest.funding === undefined) {
+    return manifest
+  }
+  
+  const normalizedFunding = normalizeFunding(manifest.funding)
+  
+  // Create a shallow copy with normalized funding
+  // The funding will be normalized to an array format
+  return { ...manifest, funding: normalizedFunding as Funding }
 }
 
 export const asManifestRegistry = (

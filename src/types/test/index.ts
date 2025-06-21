@@ -39,6 +39,8 @@ import {
   isRecordStringString,
   isRecordStringT,
   longDependencyTypes,
+  normalizeFunding,
+  normalizeManifest,
 } from '../src/index.ts'
 
 import t from 'tap'
@@ -391,4 +393,109 @@ t.test('assertRecordStringT', async t => {
   t.throws(() => assertRecordStringT(['1'], isRegExp, wanted), {
     cause: { wanted },
   })
+})
+
+t.test('normalizeFunding', t => {
+  
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeFunding(undefined), undefined)
+    t.equal(normalizeFunding(null), undefined)
+    t.end()
+  })
+  
+  t.test('handles string funding', t => {
+    const result = normalizeFunding('https://github.com/sponsors/user')
+    t.same(result, [{ url: 'https://github.com/sponsors/user' }])
+    t.end()
+  })
+  
+  t.test('handles object funding', t => {
+    const funding = { url: 'https://github.com/sponsors/user' }
+    const result = normalizeFunding(funding)
+    t.same(result, [funding])
+    t.end()
+  })
+  
+  t.test('handles array of strings', t => {
+    const funding = ['https://github.com/sponsors/user', 'https://patreon.com/user']
+    const result = normalizeFunding(funding)
+    t.same(result, [
+      { url: 'https://github.com/sponsors/user' },
+      { url: 'https://patreon.com/user' }
+    ])
+    t.end()
+  })
+  
+  t.test('handles mixed array', t => {
+    const funding = [
+      'https://github.com/sponsors/user',
+      { url: 'https://patreon.com/user' }
+    ]
+    const result = normalizeFunding(funding)
+    t.same(result, [
+      { url: 'https://github.com/sponsors/user' },
+      { url: 'https://patreon.com/user' }
+    ])
+    t.end()
+  })
+  
+  t.test('handles invalid funding entries', t => {
+    const result = normalizeFunding({ invalid: 'data' })
+    t.same(result, [{ url: '' }])
+    t.end()
+  })
+  
+  t.end()
+})
+
+t.test('normalizeManifest', t => {
+  
+  t.test('returns same manifest when no funding', t => {
+    const manifest = { name: 'test', version: '1.0.0' }
+    const result = normalizeManifest(manifest)
+    t.equal(result, manifest, 'should return same object reference')
+    t.end()
+  })
+  
+  t.test('normalizes manifest with object funding', t => {
+    const manifest = { 
+      name: 'test', 
+      version: '1.0.0',
+      funding: { url: 'https://github.com/sponsors/user' }
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.funding, [{ url: 'https://github.com/sponsors/user' }])
+    t.end()
+  })
+  
+  t.test('normalizes manifest with string funding', t => {
+    const manifest = { 
+      name: 'test', 
+      version: '1.0.0',
+      funding: 'https://github.com/sponsors/user'
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.funding, [{ url: 'https://github.com/sponsors/user' }])
+    t.end()
+  })
+  
+  t.test('preserves other manifest properties', t => {
+    const manifest = { 
+      name: 'test', 
+      version: '1.0.0',
+      description: 'A test package',
+      funding: 'https://github.com/sponsors/user',
+      dependencies: { foo: '^1.0.0' }
+    }
+    const result = normalizeManifest(manifest)
+    t.same(result.funding, [{ url: 'https://github.com/sponsors/user' }])
+    t.same(result.name, manifest.name)
+    t.same(result.description, manifest.description)
+    t.same(result.dependencies, manifest.dependencies)
+    t.end()
+  })
+  
+  t.end()
 })
