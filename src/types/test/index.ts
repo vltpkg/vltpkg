@@ -39,6 +39,8 @@ import {
   isRecordStringString,
   isRecordStringT,
   longDependencyTypes,
+  normalizeFunding,
+  normalizeManifest,
 } from '../src/index.ts'
 
 import t from 'tap'
@@ -391,4 +393,194 @@ t.test('assertRecordStringT', async t => {
   t.throws(() => assertRecordStringT(['1'], isRegExp, wanted), {
     cause: { wanted },
   })
+})
+
+t.test('normalizeFunding', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeFunding(undefined), undefined)
+    t.equal(normalizeFunding(null), undefined)
+    t.end()
+  })
+
+  t.test('handles string funding', t => {
+    const result = normalizeFunding(
+      'https://github.com/sponsors/user',
+    )
+    t.same(result, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+    ])
+    t.end()
+  })
+
+  t.test('handles object funding', t => {
+    const funding = { url: 'https://github.com/sponsors/user' }
+    const result = normalizeFunding(funding)
+    t.same(result, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+    ])
+    t.end()
+  })
+
+  t.test('handles array of strings', t => {
+    const funding = [
+      'https://github.com/sponsors/user',
+      'https://patreon.com/user',
+    ]
+    const result = normalizeFunding(funding)
+    t.same(result, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+      { url: 'https://patreon.com/user', type: 'patreon' },
+    ])
+    t.end()
+  })
+
+  t.test('handles mixed array', t => {
+    const funding = [
+      'https://github.com/sponsors/user',
+      { url: 'https://patreon.com/user' },
+    ]
+    const result = normalizeFunding(funding)
+    t.same(result, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+      { url: 'https://patreon.com/user', type: 'patreon' },
+    ])
+    t.end()
+  })
+
+  t.test('handles invalid funding entries', t => {
+    const result = normalizeFunding({ invalid: 'data' })
+    t.same(result, [{ url: '', type: 'individual' }])
+    t.end()
+  })
+
+  t.test('preserves valid type for known domains', t => {
+    const result = normalizeFunding({
+      url: 'https://patreon.com/user',
+      type: 'patreon',
+    })
+    t.same(result, [
+      { url: 'https://patreon.com/user', type: 'patreon' },
+    ])
+    t.end()
+  })
+
+  t.test('preserves custom type for unknown domains', t => {
+    const result = normalizeFunding({
+      url: 'https://example.com/donate',
+      type: 'custom',
+    })
+    t.same(result, [
+      { url: 'https://example.com/donate', type: 'custom' },
+    ])
+    t.end()
+  })
+
+  t.test('preserves custom type for valid URLs', t => {
+    const result = normalizeFunding({
+      url: 'https://buymeacoffee.com/user',
+      type: 'buymeacoffee',
+    })
+    t.same(result, [
+      { url: 'https://buymeacoffee.com/user', type: 'buymeacoffee' },
+    ])
+    t.end()
+  })
+
+  t.test('handles invalid URLs', t => {
+    const result = normalizeFunding('not-a-valid-url')
+    t.same(result, [{ url: 'not-a-valid-url', type: 'invalid' }])
+    t.end()
+  })
+
+  t.test('handles invalid URLs with custom type', t => {
+    const result = normalizeFunding({
+      url: 'invalid-url-format',
+      type: 'custom',
+    })
+    // When URL is invalid, even custom types get removed
+    t.same(result, [{ url: 'invalid-url-format' }])
+    t.end()
+  })
+
+  t.test('handles www subdomain URLs', t => {
+    const result = normalizeFunding(
+      'https://www.github.com/sponsors/user',
+    )
+    t.same(result, [
+      { url: 'https://www.github.com/sponsors/user', type: 'github' },
+    ])
+    t.end()
+  })
+
+  t.test('handles opencollective URLs', t => {
+    const result = normalizeFunding(
+      'https://opencollective.com/project',
+    )
+    t.same(result, [
+      {
+        url: 'https://opencollective.com/project',
+        type: 'opencollective',
+      },
+    ])
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('normalizeManifest', t => {
+  t.test('returns same manifest when no funding', t => {
+    const manifest = { name: 'test', version: '1.0.0' }
+    const result = normalizeManifest(manifest)
+    t.equal(result, manifest, 'should return same object reference')
+    t.end()
+  })
+
+  t.test('normalizes manifest with object funding', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      funding: { url: 'https://github.com/sponsors/user' },
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.funding, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+    ])
+    t.end()
+  })
+
+  t.test('normalizes manifest with string funding', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      funding: 'https://github.com/sponsors/user',
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.funding, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+    ])
+    t.end()
+  })
+
+  t.test('preserves other manifest properties', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      description: 'A test package',
+      funding: 'https://github.com/sponsors/user',
+      dependencies: { foo: '^1.0.0' },
+    }
+    const result = normalizeManifest(manifest)
+    t.same(result.funding, [
+      { url: 'https://github.com/sponsors/user', type: 'github' },
+    ])
+    t.same(result.name, manifest.name)
+    t.same(result.description, manifest.description)
+    t.same(result.dependencies, manifest.dependencies)
+    t.end()
+  })
+
+  t.end()
 })

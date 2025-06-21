@@ -56,8 +56,86 @@ export type Exports =
 
 export type Imports = Record<`#${string}`, ConditionalValue>
 
-export type FundingEntry = string | { url: string }
+export type FundingEntry =
+  | string
+  | { url: string; type?: string; [key: string]: JSONField }
 export type Funding = FundingEntry | FundingEntry[]
+
+/** Normalized funding entry - always an object with url and optional additional properties */
+export type NormalizedFundingEntry = {
+  url: string
+  type?: string
+  [key: string]: JSONField
+}
+/** Normalized funding - always an array of objects */
+export type NormalizedFunding = NormalizedFundingEntry[]
+
+/** Normalize funding information to a consistent format. */
+export const normalizeFunding = (
+  funding: unknown,
+): NormalizedFunding | undefined => {
+  if (funding === undefined || funding === null) {
+    return undefined
+  }
+
+  const normalizeItem = (item: unknown): NormalizedFundingEntry => {
+    const getTypeFromUrl = (url: string): string => {
+      try {
+        const { hostname } = new URL(url)
+        const domain =
+          hostname.startsWith('www.') ? hostname.slice(4) : hostname
+        if (domain === 'github.com') return 'github'
+        if (domain === 'patreon.com') return 'patreon'
+        if (domain === 'opencollective.com') return 'opencollective'
+        return 'individual'
+      } catch {
+        return 'invalid'
+      }
+    }
+
+    const validateType = (
+      url: string,
+      type?: string,
+    ): string | undefined => {
+      const urlType = getTypeFromUrl(url)
+      if (
+        !type ||
+        ['github', 'patreon', 'opencollective'].includes(urlType)
+      )
+        return urlType
+      if (urlType === 'invalid') return undefined
+      return type
+    }
+
+    if (typeof item === 'string') {
+      return { url: item, type: getTypeFromUrl(item) }
+    }
+    if (
+      isObject(item) &&
+      'url' in item &&
+      typeof item.url === 'string'
+    ) {
+      const obj = item
+      const url = obj.url as string
+      const validatedType = validateType(
+        url,
+        obj.type as string | undefined,
+      )
+      const result = { ...obj, url } as Record<string, unknown>
+      if (validatedType) {
+        result.type = validatedType
+      } else {
+        delete result.type
+      }
+      return result as NormalizedFundingEntry
+    }
+    return { url: '', type: 'individual' }
+  }
+
+  const fundingArray = Array.isArray(funding) ? funding : [funding]
+  const sources = fundingArray.map(normalizeItem)
+  return sources
+}
 
 export type Person =
   | string
@@ -370,7 +448,20 @@ export const asManifest = (
   if (!isManifest(m)) {
     throw error('invalid manifest', { found: m }, from ?? asManifest)
   }
-  return m
+  return normalizeManifest(m)
+}
+
+/**
+ * Returns a {@link Manifest} with normalized data.
+ */
+export const normalizeManifest = (manifest: Manifest): Manifest => {
+  if (manifest.funding === undefined) {
+    return manifest
+  }
+
+  const normalizedFunding = normalizeFunding(manifest.funding)
+
+  return { ...manifest, funding: normalizedFunding as Funding }
 }
 
 export const asManifestRegistry = (
