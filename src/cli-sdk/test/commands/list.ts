@@ -356,6 +356,47 @@ t.test('list', async t => {
     )
   })
 
+  await t.test('security insights populated for all queries', async t => {
+    let populateAllNodeInsightsCalled = false
+    
+    const mockSecurityArchive = {
+      ok: true,
+      packageReports: new Map(),
+    }
+    
+    const Command = await mockList(t, {
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return mockSecurityArchive
+          },
+        },
+      },
+      '@vltpkg/query': {
+        Query: class MockQuery {
+          constructor() {}
+          populateAllNodeInsights() {
+            populateAllNodeInsightsCalled = true
+          }
+          async search() {
+            return { nodes: [], edges: [] }
+          }
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+    })
+
+    await Command.command({
+      positionals: ['*'],
+      values: { view: 'json' },
+      options,
+    } as LoadedConfig)
+
+    t.ok(populateAllNodeInsightsCalled, 'populateAllNodeInsights should be called even for non-security queries')
+  })
+
   await t.test('colors', async t => {
     const C = await mockList(t)
 

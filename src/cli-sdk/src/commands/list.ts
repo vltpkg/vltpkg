@@ -95,18 +95,16 @@ export const command: CommandFn<ListResult> = async conf => {
   const queryString = conf.positionals
     .map(k => (/^[@\w-]/.test(k) ? `#${k.replace(/\//, '\\/')}` : k))
     .join(', ')
-  const securityArchive =
-    Query.hasSecuritySelectors(queryString) ?
-      await SecurityArchive.start({
-        graph,
-        specOptions: conf.options,
-      })
-    : undefined
+  const securityArchive = await SecurityArchive.start({
+    graph,
+    specOptions: conf.options,
+  })
   const query = new Query({
     graph,
     specOptions: conf.options,
     securityArchive,
   })
+  query.populateAllNodeInsights()
   const projectQueryString = ':project, :project > *'
   const selectImporters: string[] = []
 
