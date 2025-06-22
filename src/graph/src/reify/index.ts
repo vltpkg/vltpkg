@@ -12,6 +12,7 @@ import type {
 import { Diff } from '../diff.ts'
 import type { Graph } from '../graph.ts'
 import { lockfile } from '../index.ts'
+import type { GraphModifier } from '../modifiers.ts'
 import {
   lockfileData,
   saveData,
@@ -25,6 +26,7 @@ import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
+import { copyFileSync } from 'node:fs'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 
@@ -37,6 +39,7 @@ export type ReifyOptions = LoadOptions & {
   graph: Graph
   actual?: Graph
   packageInfo: PackageInfoClient
+  modifiers?: GraphModifier
 }
 
 /**
@@ -124,7 +127,7 @@ const reify_ = async (
   lockfile.save(options)
 
   // if we had to change the actual graph along the way,
-  // make sure we do not leave behind any unreachable nodes
+  // make sure we do njkot leave behind any unreachable nodes
   if (diff.hadOptionalFailures) {
     for (const node of options.graph.gc().values()) {
       diff.nodes.add.delete(node)
@@ -146,4 +149,12 @@ const reify_ = async (
 
   // write the ideal graph data to the lockfile
   saveData(lfData, scurry.resolve('vlt-lock.json'), false)
+
+  // update the store config reference if a config file was used
+  if (scurry.lstatSync('vlt.json')) {
+    copyFileSync(
+      scurry.resolve('vlt.json'),
+      scurry.resolve('node_modules/.vlt/vlt.json'),
+    )
+  }
 }

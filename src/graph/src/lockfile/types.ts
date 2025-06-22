@@ -15,7 +15,9 @@ import type { Graph } from '../graph.ts'
  * a {@link Graph} representing a previous install.
  */
 export type LockfileData = {
-  options: SpecOptions
+  options: SpecOptions & {
+    modifiers?: Record<string, string> | undefined
+  }
   nodes: Record<DepID, LockfileNode>
   edges: LockfileEdges
 }

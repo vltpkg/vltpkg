@@ -166,3 +166,161 @@ t.test('load nodes with confused manifest', async t => {
     'should load node with confused manifest',
   )
 })
+
+t.test(
+  'load nodes with modifier from extra DepID parameter',
+  async t => {
+    const graph = new Graph({
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      projectRoot: t.testdirName,
+    })
+
+    // Create DepIDs with extra parameters for different dependency types
+    const nodes = {
+      // Registry dependency with extra parameter (modifier)
+      [joinDepIDTuple([
+        'registry',
+        '',
+        'modified-pkg@1.0.0',
+        ':root > #modified-pkg',
+      ])]: [
+        0,
+        'modified-pkg',
+        'sha512-example==',
+        'https://registry.npmjs.org/modified-pkg/-/modified-pkg-1.0.0.tgz',
+        null,
+        {
+          name: 'modified-pkg',
+          version: '1.0.0',
+        },
+      ],
+      // Git dependency with extra parameter (modifier)
+      [joinDepIDTuple([
+        'git',
+        'https://github.com/user/repo.git',
+        'main',
+        ':root > #git-pkg',
+      ])]: [
+        0,
+        'git-pkg',
+        null,
+        null,
+        null,
+        {
+          name: 'git-pkg',
+          version: '1.0.0',
+        },
+      ],
+      // File dependency with extra parameter (modifier)
+      [joinDepIDTuple(['file', './local-pkg', ':root > #file-pkg'])]:
+        [
+          0,
+          'file-pkg',
+          null,
+          null,
+          './packages/local-pkg',
+          {
+            name: 'file-pkg',
+            version: '1.0.0',
+          },
+        ],
+      // Registry dependency without extra parameter (no modifier)
+      [joinDepIDTuple(['registry', '', 'regular-pkg@1.0.0'])]: [
+        0,
+        'regular-pkg',
+        'sha512-example==',
+        null,
+        null,
+        {
+          name: 'regular-pkg',
+          version: '1.0.0',
+        },
+      ],
+    } as LockfileData['nodes']
+
+    loadNodes(graph, nodes)
+
+    // Verify registry node with modifier
+    const modifiedPkgNode = graph.nodes.get(
+      joinDepIDTuple([
+        'registry',
+        '',
+        'modified-pkg@1.0.0',
+        ':root > #modified-pkg',
+      ]),
+    )
+    t.ok(
+      modifiedPkgNode,
+      'should load modified registry package node',
+    )
+    t.equal(
+      modifiedPkgNode?.modifier,
+      ':root > #modified-pkg',
+      'registry node should have correct modifier',
+    )
+
+    // Verify git node with modifier
+    const gitPkgNode = graph.nodes.get(
+      joinDepIDTuple([
+        'git',
+        'https://github.com/user/repo.git',
+        'main',
+        ':root > #git-pkg',
+      ]),
+    )
+    t.ok(gitPkgNode, 'should load modified git package node')
+    t.equal(
+      gitPkgNode?.modifier,
+      ':root > #git-pkg',
+      'git node should have correct modifier',
+    )
+
+    // Verify file node with modifier
+    const filePkgNode = graph.nodes.get(
+      joinDepIDTuple(['file', './local-pkg', ':root > #file-pkg']),
+    )
+    t.ok(filePkgNode, 'should load modified file package node')
+    t.equal(
+      filePkgNode?.modifier,
+      ':root > #file-pkg',
+      'file node should have correct modifier',
+    )
+
+    // Verify regular node without modifier
+    const regularPkgNode = graph.nodes.get(
+      joinDepIDTuple(['registry', '', 'regular-pkg@1.0.0']),
+    )
+    t.ok(regularPkgNode, 'should load regular package node')
+    t.equal(
+      regularPkgNode?.modifier,
+      undefined,
+      'regular node should have no modifier',
+    )
+
+    // Verify that all nodes with modifiers have them set correctly
+    const nodesWithModifiers = [...graph.nodes.values()].filter(
+      node => node.modifier !== undefined,
+    )
+    t.equal(
+      nodesWithModifiers.length,
+      3,
+      'should have 4 nodes with modifiers',
+    )
+
+    // Snapshot test to verify the complete structure
+    t.matchSnapshot(
+      [...graph.nodes.values()]
+        .filter(node => node.name !== 'my-project') // Exclude main importer
+        .map(n => ({
+          id: n.id,
+          name: n.name,
+          modifier: n.modifier,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      'should load nodes with correct modifiers from extra DepID parameters',
+    )
+  },
+)
