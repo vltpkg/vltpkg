@@ -213,3 +213,28 @@ Array [
   },
 ]
 `
+
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with modifier from extra DepID parameter > should load nodes with correct modifiers from extra DepID parameters 1`] = `
+Array [
+  Object {
+    "id": "file·.§local-pkg·%3Aroot%20%3E%20%23file-pkg",
+    "modifier": ":root > #file-pkg",
+    "name": "file-pkg",
+  },
+  Object {
+    "id": "git·https%3A§§github.com§user§repo.git·main·%3Aroot%20%3E%20%23git-pkg",
+    "modifier": ":root > #git-pkg",
+    "name": "git-pkg",
+  },
+  Object {
+    "id": "··modified-pkg@1.0.0·%3Aroot%20%3E%20%23modified-pkg",
+    "modifier": ":root > #modified-pkg",
+    "name": "modified-pkg",
+  },
+  Object {
+    "id": "··regular-pkg@1.0.0",
+    "modifier": undefined,
+    "name": "regular-pkg",
+  },
+]
+`

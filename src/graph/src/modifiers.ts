@@ -152,6 +152,8 @@ export class GraphModifier {
    * A set of currently active modifiers, which are being parsed.
    */
   activeModifiers = new Set<ModifierActiveEntry>()
+  /** A set of all modifier string values loaded from vlt.json */
+  modifierNames = new Set<string>()
 
   constructor(options: SpecOptions) {
     this.load(options)
@@ -172,6 +174,7 @@ export class GraphModifier {
    */
   load(options: SpecOptions) {
     for (const [key, value] of Object.entries(this.config)) {
+      this.modifierNames.add(key)
       const breadcrumb = parseBreadcrumb(key)
       /* c8 ignore start - should not be possible */
       if (!breadcrumb.last.name) {
@@ -215,30 +218,6 @@ export class GraphModifier {
         this.#initialEntries.set(breadcrumb.first.name, initialSet)
       }
     }
-  }
-
-  /**
-   * Check if a given importer dependency name has potentially a registered
-   * modifier. In case of an ambiguous modifier, the method will always
-   * return `true`, it only returns `false` in the case that only fully
-   * qualified modifiers are registered and none are targeting the given
-   * top-level dependency name.
-   *
-   * This method is useful to help avoiding traversing the sub graph of
-   * a direct dependency when we know that it's impossible to ever match
-   * beforehand.
-   */
-  maybeHasModifier(depName: string): boolean {
-    for (const mod of this.#modifiers) {
-      const matchingName =
-        mod.breadcrumb.first.importer &&
-        mod.breadcrumb.first.next?.name === depName
-      const rootlessBreadcrumb = !mod.breadcrumb.first.importer
-      if (rootlessBreadcrumb || matchingName) {
-        return true
-      }
-    }
-    return false
   }
 
   /**
@@ -363,7 +342,7 @@ export class GraphModifier {
    */
   tryDependencies(
     from: Node,
-    dependencies: Dependency[],
+    dependencies: Dependency[] | Edge[],
   ): Map<string, ModifierActiveEntry> {
     const modifierRefs = new Map<string, ModifierActiveEntry>()
     for (const { spec } of dependencies) {
