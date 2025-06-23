@@ -1,0 +1,65 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DependenciesTabContent renders an empty state 1`] = `
+
+<gui-tabs-content value="dependencies">
+  <gui-tabs value="insights">
+    <gui-tabs-list variant="nestedCard">
+      <gui-insights-tab-button>
+      </gui-insights-tab-button>
+      <gui-licenses-tab-button>
+      </gui-licenses-tab-button>
+      <gui-duplicates-tab-button>
+      </gui-duplicates-tab-button>
+    </gui-tabs-list>
+    <gui-insights-tab-content>
+    </gui-insights-tab-content>
+    <gui-licenses-tab-content>
+    </gui-licenses-tab-content>
+    <gui-duplicates-tab-content>
+    </gui-duplicates-tab-content>
+  </gui-tabs>
+</gui-tabs-content>
+
+`;
+
+exports[`DependenciesTabContent renders default 1`] = `
+
+<gui-tabs-content value="dependencies">
+  <gui-tabs value="insights">
+    <gui-tabs-list variant="nestedCard">
+      <gui-insights-tab-button>
+      </gui-insights-tab-button>
+      <gui-licenses-tab-button>
+      </gui-licenses-tab-button>
+      <gui-duplicates-tab-button>
+      </gui-duplicates-tab-button>
+    </gui-tabs-list>
+    <gui-insights-tab-content>
+    </gui-insights-tab-content>
+    <gui-licenses-tab-content>
+    </gui-licenses-tab-content>
+    <gui-duplicates-tab-content>
+    </gui-duplicates-tab-content>
+  </gui-tabs>
+</gui-tabs-content>
+
+`;
+
+exports[`DependenciesTabsButton renders correctly 1`] = `
+
+<gui-tabs-trigger
+  variant="ghost"
+  value="dependencies"
+  classname="w-fit px-2"
+>
+  Dependencies
+  <gui-data-badge
+    variant="count"
+    classnames="[object Object]"
+    content="2"
+  >
+  </gui-data-badge>
+</gui-tabs-trigger>
+
+`;
