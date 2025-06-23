@@ -46,8 +46,8 @@ catalogs:
       specifier: ^5.0.0
       version: 5.0.0
     prettier:
-      specifier: ^3.5.3
-      version: 3.5.3
+      specifier: ^3.6.0
+      version: 3.6.0
     promise-call-limit:
       specifier: ^3.0.2
       version: 3.0.2
@@ -144,13 +144,13 @@ importers:
         version: 0.3.1
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       prettier-plugin-astro:
         specifier: ^0.14.1
         version: 0.14.1
       prettier-plugin-tailwindcss:
         specifier: ^0.6.12
-        version: 0.6.12(prettier-plugin-astro@0.14.1)(prettier@3.5.3)
+        version: 0.6.12(prettier-plugin-astro@0.14.1)(prettier@3.6.0)
       semver:
         specifier: 'catalog:'
         version: 7.7.2
@@ -187,7 +187,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -218,7 +218,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -314,7 +314,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -358,7 +358,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -398,7 +398,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -528,7 +528,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)(supports-color@10.0.0)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -565,7 +565,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -605,7 +605,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -635,7 +635,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -672,7 +672,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -709,7 +709,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -739,7 +739,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -769,7 +769,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -839,7 +839,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -869,7 +869,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -957,7 +957,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1156,7 +1156,7 @@ importers:
         version: 2.9.0(@types/node@22.15.29)(typescript@5.7.3)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1193,7 +1193,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1227,7 +1227,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1261,7 +1261,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1340,7 +1340,7 @@ importers:
         version: 21.0.0
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1380,7 +1380,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1429,7 +1429,7 @@ importers:
         version: 10.0.0
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1463,7 +1463,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       spawk:
         specifier: ^1.8.2
         version: 1.8.2
@@ -1530,7 +1530,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1594,7 +1594,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1628,7 +1628,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1677,7 +1677,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1723,7 +1723,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1781,7 +1781,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1827,7 +1827,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       semver:
         specifier: 'catalog:'
         version: 7.7.2
@@ -1912,7 +1912,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -1958,7 +1958,7 @@ importers:
         version: 12.0.2
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2010,7 +2010,7 @@ importers:
         version: 21.0.0
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2044,7 +2044,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2081,7 +2081,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2124,7 +2124,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2188,7 +2188,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2222,7 +2222,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2280,7 +2280,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2310,7 +2310,7 @@ importers:
         version: 9.28.0(jiti@2.4.2)
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
@@ -2331,7 +2331,7 @@ importers:
     dependencies:
       '@astrojs/check':
         specifier: ^0.9.4
-        version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.7.3)
+        version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.6.0)(typescript@5.7.3)
       '@astrojs/mdx':
         specifier: ^4.3.0
         version: 4.3.0(astro@5.8.1(@types/node@22.15.29)(encoding@0.1.13)(jiti@2.4.2)(rollup@4.40.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.1))
@@ -2443,7 +2443,7 @@ importers:
         version: 4.0.0
       prettier:
         specifier: 'catalog:'
-        version: 3.5.3
+        version: 3.6.0
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -2455,7 +2455,7 @@ importers:
         version: 11.0.5
       unified-prettier:
         specifier: ^2.0.1
-        version: 2.0.1(prettier@3.5.3)
+        version: 2.0.1(prettier@3.6.0)
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
@@ -7570,8 +7570,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  prettier@3.5.3:
-    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
+  prettier@3.6.0:
+    resolution: {integrity: sha512-ujSB9uXHJKzM/2GBuE0hBOUgC77CN3Bnpqa+g80bkv3T3A93wL/xlzDATHhnhkzifz/UE2SNOvmbTz5hSkDlHw==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -9243,9 +9243,9 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.3
       lru-cache: 10.4.3
 
-  '@astrojs/check@0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.7.3)':
+  '@astrojs/check@0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.6.0)(typescript@5.7.3)':
     dependencies:
-      '@astrojs/language-server': 2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.7.3)
+      '@astrojs/language-server': 2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.6.0)(typescript@5.7.3)
       chokidar: 4.0.1
       kleur: 4.1.5
       typescript: 5.7.3
@@ -9260,7 +9260,7 @@ snapshots:
 
   '@astrojs/internal-helpers@0.6.1': {}
 
-  '@astrojs/language-server@2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.7.3)':
+  '@astrojs/language-server@2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.6.0)(typescript@5.7.3)':
     dependencies:
       '@astrojs/compiler': 2.11.0
       '@astrojs/yaml2ts': 0.2.1
@@ -9274,14 +9274,14 @@ snapshots:
       volar-service-css: 0.0.61(@volar/language-service@2.4.6)
       volar-service-emmet: 0.0.61(@volar/language-service@2.4.6)
       volar-service-html: 0.0.61(@volar/language-service@2.4.6)
-      volar-service-prettier: 0.0.61(@volar/language-service@2.4.6)(prettier@3.5.3)
+      volar-service-prettier: 0.0.61(@volar/language-service@2.4.6)(prettier@3.6.0)
       volar-service-typescript: 0.0.61(@volar/language-service@2.4.6)
       volar-service-typescript-twoslash-queries: 0.0.61(@volar/language-service@2.4.6)
       volar-service-yaml: 0.0.61(@volar/language-service@2.4.6)
       vscode-html-languageservice: 5.3.1
       vscode-uri: 3.0.8
     optionalDependencies:
-      prettier: 3.5.3
+      prettier: 3.6.0
       prettier-plugin-astro: 0.14.1
     transitivePeerDependencies:
       - typescript
@@ -15367,19 +15367,19 @@ snapshots:
   prettier-plugin-astro@0.14.1:
     dependencies:
       '@astrojs/compiler': 2.10.3
-      prettier: 3.5.3
+      prettier: 3.6.0
       sass-formatter: 0.7.9
 
-  prettier-plugin-tailwindcss@0.6.12(prettier-plugin-astro@0.14.1)(prettier@3.5.3):
+  prettier-plugin-tailwindcss@0.6.12(prettier-plugin-astro@0.14.1)(prettier@3.6.0):
     dependencies:
-      prettier: 3.5.3
+      prettier: 3.6.0
     optionalDependencies:
       prettier-plugin-astro: 0.14.1
 
   prettier@2.8.7:
     optional: true
 
-  prettier@3.5.3: {}
+  prettier@3.6.0: {}
 
   pretty-bytes@6.1.1: {}
 
@@ -16683,9 +16683,9 @@ snapshots:
       pako: 0.2.9
       tiny-inflate: 1.0.3
 
-  unified-prettier@2.0.1(prettier@3.5.3):
+  unified-prettier@2.0.1(prettier@3.6.0):
     dependencies:
-      prettier: 3.5.3
+      prettier: 3.6.0
       unified: 11.0.5
 
   unified@11.0.5:
@@ -17021,12 +17021,12 @@ snapshots:
     optionalDependencies:
       '@volar/language-service': 2.4.6
 
-  volar-service-prettier@0.0.61(@volar/language-service@2.4.6)(prettier@3.5.3):
+  volar-service-prettier@0.0.61(@volar/language-service@2.4.6)(prettier@3.6.0):
     dependencies:
       vscode-uri: 3.0.8
     optionalDependencies:
       '@volar/language-service': 2.4.6
-      prettier: 3.5.3
+      prettier: 3.6.0
 
   volar-service-typescript-twoslash-queries@0.0.61(@volar/language-service@2.4.6):
     dependencies:
