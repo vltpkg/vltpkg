@@ -1,11 +1,12 @@
 import { longDependencyTypes, shorten } from '@vltpkg/graph/browser'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.ts'
-import { SideItem } from '@/components/explorer-grid/side-item.tsx'
 import { Item } from '@/components/explorer-grid/selected-item/item.tsx'
-import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import { GridHeader } from '@/components/explorer-grid/header.tsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
+import { OverviewSidebar } from '@/components/explorer-grid/overview-sidebar/index.tsx'
+
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { QueryResponseNode } from '@vltpkg/query'
 
 const getParent = (
@@ -220,47 +221,15 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
 
   return (
     <div className="grid w-full max-w-8xl grid-cols-8 gap-4 pb-8">
-      <div className="col-span-2">
-        {parentItem ?
-          <>
-            <GridHeader>Parent</GridHeader>
-            <SideItem
-              parent={true}
-              item={parentItem}
-              highlight={true}
-              onSelect={dependentsClick(parentItem, true)}
-            />
-          </>
-        : ''}
-        {workspaces.length > 0 ?
-          <>
-            <GridHeader>Workspaces</GridHeader>
-            {workspaces.map(item => (
-              <SideItem
-                item={item}
-                isWorkspace
-                key={item.id}
-                dependencies={false}
-                onSelect={workspaceClick(item)}
-              />
-            ))}
-          </>
-        : ''}
-        {dependents.length > 0 ?
-          <>
-            <GridHeader>Dependents</GridHeader>
-            <div className="flex flex-col gap-4">
-              {dependents.map(item => (
-                <SideItem
-                  item={item}
-                  key={item.id}
-                  dependencies={false}
-                  onSelect={dependentsClick(item)}
-                />
-              ))}
-            </div>
-          </>
-        : ''}
+      <div className="relative col-span-2">
+        <OverviewSidebar
+          dependencies={dependencies}
+          parentItem={parentItem}
+          workspaces={workspaces}
+          dependents={dependents}
+          onWorkspaceClick={workspaceClick}
+          onDependentClick={dependentsClick}
+        />
       </div>
       <div className="col-span-4">
         <GridHeader>Selected</GridHeader>
