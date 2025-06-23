@@ -1,0 +1,101 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OverviewSidebar contains SuggestedQueries when dependencies are present 1`] = `
+
+<gui-suggested-queries>
+</gui-suggested-queries>
+
+`;
+
+exports[`OverviewSidebar renders with a parent 1`] = `
+
+<gui-grid-header>
+  Parent
+</gui-grid-header>
+<gui-side-item
+  parent="false"
+  item="[object Object]"
+  highlight="false"
+>
+</gui-side-item>
+
+`;
+
+exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
+
+<gui-grid-header>
+  Parent
+</gui-grid-header>
+<gui-side-item
+  parent="false"
+  item="[object Object]"
+  highlight="false"
+>
+</gui-side-item>
+<gui-grid-header>
+  Workspaces
+</gui-grid-header>
+<div class="flex flex-col gap-4">
+  <gui-side-item
+    item="[object Object]"
+    isworkspace="false"
+    dependencies="false"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="[object Object]"
+    isworkspace="false"
+    dependencies="false"
+  >
+  </gui-side-item>
+</div>
+
+`;
+
+exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] = `
+
+<gui-grid-header>
+  Parent
+</gui-grid-header>
+<gui-side-item
+  parent="false"
+  item="[object Object]"
+  highlight="false"
+>
+</gui-side-item>
+<gui-grid-header>
+  Workspaces
+</gui-grid-header>
+<div class="flex flex-col gap-4">
+  <gui-side-item
+    item="[object Object]"
+    isworkspace="false"
+    dependencies="false"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="[object Object]"
+    isworkspace="false"
+    dependencies="false"
+  >
+  </gui-side-item>
+</div>
+<gui-grid-header>
+  Dependents
+</gui-grid-header>
+<div class="flex flex-col gap-4">
+  <gui-side-item
+    item="[object Object]"
+    isworkspace="false"
+    dependencies="false"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="[object Object]"
+    isworkspace="false"
+    dependencies="false"
+  >
+  </gui-side-item>
+</div>
+
+`;

@@ -1,5 +1,5 @@
 import { test, expect, vi, afterEach } from 'vitest'
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore as useStore } from '@/state/index.ts'
@@ -206,4 +206,37 @@ test('SideItem render as workspace item', async () => {
     />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('SideItem clicks on a workspace item change the query', () => {
+  const mockOnWorkspaceClick = vi.fn()
+
+  const item = {
+    id: '1',
+    labels: ['prod'],
+    name: 'workspace-item',
+    title: 'workspace-item',
+    version: '1.0.0',
+    stacked: false,
+    size: 1,
+    spec: Spec.parse('workspace-item', '^1.0.0'),
+  } satisfies GridItemData
+
+  const Container = () => {
+    return (
+      <SideItem
+        item={item}
+        dependencies={false}
+        isWorkspace={true}
+        onSelect={() => mockOnWorkspaceClick(item)}
+      />
+    )
+  }
+
+  const { container, getByText } = render(<Container />)
+  const workspaceItem = getByText('workspace-item')
+  fireEvent.click(workspaceItem)
+
+  expect(container.innerHTML).toMatchSnapshot()
+  expect(mockOnWorkspaceClick).toHaveBeenCalledWith(item)
 })
