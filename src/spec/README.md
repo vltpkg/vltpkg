@@ -38,7 +38,6 @@ The following specifier types are supported:
   a monorepo. The package name _must_ exist as a workspace project in
   the monorepo. If a semver range is provided, then it must match the
   referenced workspace package version. Otherwise:
-
   - `*` - Fill in whatever version is in the workspace, without any
     prefix. So, if `./packages/foo` depends on `bar@workspace*`, and
     `bar` is version `1.2.3`, then `foo` will be published with
@@ -56,7 +55,6 @@ The following specifier types are supported:
   `git+ssh` or `git+https` url will be checked out by git. If no 'git
   selector' is provided, then it will attempt to install from the
   default version. The git selector can be:
-
   - `#committish` Any valid `committish` value will be checked out.
     So, shasum, branch, tag, etc., would all work.
   - `#semver:<range>` If a semver range is provided, it will select

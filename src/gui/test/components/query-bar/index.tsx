@@ -49,7 +49,8 @@ test('query-bar updates query store value', async () => {
 
   let query = ''
   const RetrieveQuery = () => (
-    (query = useStore(state => state.query)), ''
+    (query = useStore(state => state.query)),
+    ''
   )
   render(<RetrieveQuery />)
 

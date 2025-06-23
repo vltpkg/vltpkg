@@ -145,7 +145,6 @@ Unless otherwise noted, they throw an error on invalid versions.
 
 - There's no switch for `loose` vs `strict` mode. It just always works
   the same way.
-
   - A leading `v` or `=` on a version is always allowed
   - Prereleases _must_ be prefixed by a `-`.
   - Excessively large numbers in prerelease identifiers are treated as
