@@ -129,7 +129,8 @@ describe('ResultItem updates query store value', () => {
 
     let query = ''
     const RetrieveQuery = () => (
-      (query = useStore(state => state.query)), ''
+      (query = useStore(state => state.query)),
+      ''
     )
     render(<RetrieveQuery />)
 
@@ -163,7 +164,8 @@ describe('ResultItem updates query store value', () => {
 
     let query = ''
     const RetrieveQuery = () => (
-      (query = useStore(state => state.query)), ''
+      (query = useStore(state => state.query)),
+      ''
     )
     render(<RetrieveQuery />)
 
@@ -199,7 +201,8 @@ describe('ResultItem updates query store value', () => {
 
     let query = ''
     const RetrieveQuery = () => (
-      (query = useStore(state => state.query)), ''
+      (query = useStore(state => state.query)),
+      ''
     )
     render(<RetrieveQuery />)
 
@@ -232,7 +235,8 @@ describe('ResultItem updates query store value', () => {
 
     let query = ''
     const RetrieveQuery = () => (
-      (query = useStore(state => state.query)), ''
+      (query = useStore(state => state.query)),
+      ''
     )
     render(<RetrieveQuery />)
 
