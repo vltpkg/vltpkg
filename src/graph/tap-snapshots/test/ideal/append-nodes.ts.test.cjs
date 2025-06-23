@@ -91,6 +91,39 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
 ]
 `
 
+exports[`test/ideal/append-nodes.ts > TAP > direct install from subdirectory should resolve relative paths correctly > should resolve direct install from subdirectory correctly 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(c@file:../c) -prod-> to: Node { id: 'file·c', location: 'c', resolved: 'c' }
+    ]
+  }
+]
+`
+
+exports[`test/ideal/append-nodes.ts > TAP > relative file dependencies should resolve correctly > should have a graph with transitive relative file dependencies 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(b@file:./packages/b) -prod-> to: Node {
+        id: 'file·packages§b',
+        location: 'packages/b',
+        resolved: 'packages/b',
+        edgesOut: [
+          Edge spec(c@file:../../other/c) -prod-> to: Node { id: 'file·other§c', location: 'other/c', resolved: 'other/c' }
+        ]
+      }
+    ]
+  }
+]
+`
+
 exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registries > must match snapshot 1`] = `
 @vltpkg/graph.Graph {
   options: {

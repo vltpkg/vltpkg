@@ -7,6 +7,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { longDependencyTypes } from '@vltpkg/types'
 import type { DependencyTypeLong } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
+import { PathScurry as PathScurryConstructor } from 'path-scurry'
 import { asDependency, shorten } from '../dependencies.ts'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
@@ -42,6 +43,7 @@ const getFileTypeInfo = (
   spec: Spec,
   fromNode: Node,
   scurry: PathScurry,
+  graph: Graph,
 ): FileTypeInfo | undefined => {
   const f = spec.final
   if (f.type !== 'file') return
@@ -56,7 +58,11 @@ const getFileTypeInfo = (
   // usage of the `file:` spec prefix) location needs to be relative to their
   // parents, build the expected path and use it for both location and id
   const target = scurry.cwd.resolve(fromNode.location).resolve(f.file)
-  const path = target.relativePosix()
+  
+  // The path for the ID should be relative to the project root, not the current working directory
+  // This fixes the issue where relative paths from subdirectories would include .. segments
+  const projectRootScurry = new PathScurryConstructor(graph.projectRoot)
+  const path = projectRootScurry.relative(target.fullpath())
   const id = joinDepIDTuple(['file', path])
 
   return {
@@ -88,7 +94,7 @@ export const appendNodes = async (
   await Promise.all(
     deps.map(async ({ spec, type }) => {
       // see if there's a satisfying node in the graph currently
-      const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
+      const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry, graph)
       const activeModifier = modifierRefs?.get(spec.name)
 
       // here is the place we swap specs if a edge modifier was defined

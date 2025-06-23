@@ -403,6 +403,80 @@ t.test('append file type of nodes', async t => {
   )
 })
 
+t.test('direct install from subdirectory should resolve relative paths correctly', async t => {
+  // Simulate the CLI scenario: user is in subdirectory b and runs `vlt install file:../c`
+  // This should resolve ../c relative to the current working directory (b), not project root
+  
+  const cManifest: Manifest = {
+    name: 'c',
+    version: '1.0.0',
+  }
+  
+  const mainManifest: Manifest = {
+    name: 'a',
+    version: '1.0.0',
+  }
+  
+  const graph = new Graph({
+    projectRoot: t.testdir({
+      b: {},  // subdirectory where user runs the command
+      c: { 'package.json': JSON.stringify(cManifest) },
+    }),
+    ...configData,
+    mainManifest,
+  })
+  
+  // This simulates what happens when user runs `vlt install file:../c` from directory b
+  // The fromNode would be the main importer (project root)
+  // But the file spec should be resolved relative to cwd (directory b)
+  
+  const spec = Spec.parse('c@file:../c')  // User typed this from directory b
+  const depC = asDependency({
+    spec,
+    type: 'prod',
+  })
+  
+  const add = new Map([
+    ['c', depC],
+  ])
+  
+  const packageInfo = {
+    async manifest(specArg: Spec, options: any) {
+      if (specArg.name === 'c') {
+        return cManifest
+      }
+      return null
+    },
+  } as PackageInfoClient
+  
+  // Simulate being in subdirectory b by using PathScurry with b as cwd
+  const testDir = t.testdirName
+  const subdirB = testDir + '/b'
+  
+  await appendNodes(
+    add,
+    packageInfo,
+    graph,
+    graph.mainImporter,  // fromNode is main importer (project root)
+    [depC],
+    new PathScurry(subdirB),  // But scurry cwd is the subdirectory
+    configData,
+    new Set(),
+  )
+  
+  const nodeC = graph.nodes.get('file·c')  // Should resolve to c, not ../c outside project
+  
+  t.ok(nodeC, 'Package c should be resolved correctly from subdirectory')
+  if (nodeC) {
+    t.equal(nodeC.name, 'c', 'Node c should have correct name')
+  }
+  
+  t.matchSnapshot(
+    objectLikeOutput(graph),
+    'should resolve direct install from subdirectory correctly',
+  )
+})
+
 t.test('relative file dependencies should resolve correctly', async t => {
   // Create a structure where the relative path would be wrong if resolved from project root:
   // a/ (project root)
@@ -469,18 +543,6 @@ t.test('relative file dependencies should resolve correctly', async t => {
   const packageInfo = {
     async manifest(spec: Spec, options: any) {
       const specStr = String(spec)
-      console.log('Manifest requested for spec:', specStr, 'from:', options?.from)
-      
-      // Let's also check what the actual file path would be
-      if (options?.from && spec.final.type === 'file') {
-        const { resolve } = await import('path')
-        const resolvedPath = resolve(options.from, spec.final.file)
-        console.log('  -> Resolved file path:', resolvedPath)
-        
-        // Check if files exist
-        const { existsSync } = await import('fs')
-        console.log('  -> File exists:', existsSync(resolvedPath + '/package.json'))
-      }
       
       switch (spec.name) {
         case 'b':
@@ -513,16 +575,9 @@ t.test('relative file dependencies should resolve correctly', async t => {
   )
   
   // Check that both b and c are in the graph
-  console.log('Graph nodes:', Array.from(graph.nodes.keys()))
-  console.log('Test directory:', t.testdirName)
-  
   const nodeB = graph.nodes.get('file·packages§b')
   const nodeCCorrect = graph.nodes.get('file·other§c')
   const nodeCWrong = graph.nodes.get('file·c')
-  
-  console.log('Node B:', nodeB?.name, nodeB?.location)
-  console.log('Node C (correct):', nodeCCorrect?.name, nodeCCorrect?.manifest?.description)
-  console.log('Node C (wrong):', nodeCWrong?.name, nodeCWrong?.manifest?.description)
   
   t.ok(nodeB, 'Package b should be in the graph')
   t.ok(nodeCCorrect, 'Package c should be resolved from other/c (correct location)')
