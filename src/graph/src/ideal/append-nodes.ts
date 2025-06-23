@@ -105,11 +105,16 @@ export const appendNodes = async (
         spec = activeModifier.modifier.spec
       }
 
-      const existingNode = graph.findResolution(spec, fromNode)
-      if (existingNode && !queryModifier) {
+      const existingNode = graph.findResolution(
+        spec,
+        fromNode,
+        queryModifier,
+      )
+      if (existingNode) {
         graph.addEdge(type, spec, fromNode, existingNode)
         return
       }
+
       const edgeOptional =
         type === 'optional' || type === 'peerOptional'
       const mani = await packageInfo

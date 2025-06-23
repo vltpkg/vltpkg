@@ -1,5 +1,3 @@
-import type { DepID } from '@vltpkg/dep-id'
-import type { SpecOptions } from '@vltpkg/spec'
 import { isRecordStringString } from '@vltpkg/types'
 import {
   defaultGitHostArchives,
@@ -11,6 +9,9 @@ import {
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
+import { getFlagNumFromNode } from './types.ts'
+import type { DepID } from '@vltpkg/dep-id'
+import type { SpecOptions } from '@vltpkg/spec'
 import type { Edge } from '../edge.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
@@ -21,13 +22,17 @@ import type {
   LockfileEdgeValue,
   LockfileNode,
 } from './types.ts'
-import { getFlagNumFromNode } from './types.ts'
+import type { GraphModifier } from '../modifiers.ts'
 
 export type SaveOptions = SpecOptions & {
   /**
    * The graph to be stored in the lockfile.
    */
   graph: Graph
+  /**
+   * The graph modifiers helper object.
+   */
+  modifiers?: GraphModifier
   /**
    * Should it save manifest data in the lockfile?
    */
@@ -133,6 +138,7 @@ export const lockfileData = ({
   catalogs,
   'git-hosts': gitHosts,
   'git-host-archives': gitHostArchives,
+  modifiers,
   registry,
   registries,
   saveManifests,
@@ -146,6 +152,10 @@ export const lockfileData = ({
   const cleanGitHostArchives =
     isRecordStringString(gitHostArchives) ?
       removeDefaultItems(defaultGitHostArchives, gitHostArchives)
+    : undefined
+  const cleanModifiers =
+    modifiers && isRecordStringString(modifiers.config) ?
+      modifiers.config
     : undefined
   const cleanRegistries =
     isRecordStringString(registries) ?
@@ -163,6 +173,9 @@ export const lockfileData = ({
     clean && Object.keys(clean).length
   return {
     options: {
+      ...(hasItems(cleanModifiers) ?
+        { modifiers: cleanModifiers }
+      : {}),
       ...(hasItems(catalog) ? { catalog } : {}),
       ...(hasItems(catalogs) ? { catalogs } : {}),
       ...(hasItems(cleanScopeRegistries) ?

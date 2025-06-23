@@ -224,6 +224,106 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 `
 
+exports[`test/lockfile/save.ts > TAP > store modifiers > with empty modifiers config > should save lockfile without modifiers when config is empty 1`] = `
+Object {
+  "edges": Object {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+  },
+  "nodes": Object {
+    "··foo@1.0.0": Array [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+    ],
+  },
+  "options": Object {
+    "registries": Object {
+      "custom": "http://example.com",
+    },
+  },
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > store modifiers > with invalid scope registries > should save lockfile without scope registries when invalid type 1`] = `
+Object {
+  "edges": Object {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+  },
+  "nodes": Object {
+    "··foo@1.0.0": Array [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+    ],
+  },
+  "options": Object {
+    "registries": Object {
+      "custom": "http://example.com",
+    },
+  },
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > store modifiers > with missing modifiers > should save lockfile without modifiers when undefined 1`] = `
+Object {
+  "edges": Object {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+  },
+  "nodes": Object {
+    "··foo@1.0.0": Array [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+    ],
+  },
+  "options": Object {
+    "registries": Object {
+      "custom": "http://example.com",
+    },
+  },
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > store modifiers > with undefined scope registries > should save lockfile without scope registries when undefined 1`] = `
+Object {
+  "edges": Object {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+  },
+  "nodes": Object {
+    "··foo@1.0.0": Array [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+    ],
+  },
+  "options": Object {
+    "registries": Object {
+      "custom": "http://example.com",
+    },
+  },
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > should save lockfile with modifiers 1`] = `
+{
+  "options": {
+    "modifiers": {
+      ":root > #foo": "2"
+    },
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··foo@2.0.0·%3Aroot%20%3E%20%23foo": [0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@2.0.0·%3Aroot%20%3E%20%23foo"
+  }
+}
+
+`
+
 exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match snapshot 1`] = `
 {
   "options": {

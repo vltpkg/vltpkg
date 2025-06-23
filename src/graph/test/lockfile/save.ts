@@ -13,6 +13,7 @@ import {
   save,
   saveHidden,
 } from '../../src/lockfile/save.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -404,4 +405,232 @@ t.test('confused manifest', async t => {
     ),
     'should save lockfile with confused manifest',
   )
+})
+
+t.test('store modifiers', async t => {
+  await t.test('with valid modifiers', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #foo': '2',
+        },
+      }),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      {
+        name: 'foo',
+        version: '2.0.0',
+        dist: {
+          integrity:
+            'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        },
+      },
+      undefined,
+      ':root > #foo',
+    )
+    if (!foo) {
+      throw new Error('Missing expected package')
+    }
+    foo.setResolved()
+    save({
+      ...configData,
+      modifiers: new GraphModifier(configData),
+      graph,
+    })
+    t.matchSnapshot(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+      'should save lockfile with modifiers',
+    )
+  })
+
+  await t.test('with missing modifiers', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({})
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity:
+            'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        },
+      },
+    )!
+    foo.setResolved()
+
+    // Test with undefined modifiers
+    // (should not include modifiers in lockfile data)
+    t.matchSnapshot(
+      lockfileData({ ...configData, graph, modifiers: undefined }),
+      'should save lockfile without modifiers when undefined',
+    )
+  })
+
+  await t.test('with empty modifiers config', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity:
+            'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        },
+      },
+    )!
+    foo.setResolved()
+
+    // Create a modifiers object with empty config
+    const mockModifiers = {
+      config: {}, // Empty config should not be included in lockfile
+    }
+
+    // Test with empty modifiers config (should not include modifiers in lockfile)
+    t.matchSnapshot(
+      lockfileData({
+        ...configData,
+        graph,
+        modifiers: mockModifiers as any,
+      }),
+      'should save lockfile without modifiers when config is empty',
+    )
+  })
+
+  await t.test('with undefined scope registries', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity:
+            'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        },
+      },
+    )!
+    foo.setResolved()
+
+    // Test with undefined scope registries
+    // (should not include scope-registries in lockfile)
+    t.matchSnapshot(
+      lockfileData({
+        ...configData,
+        graph,
+        'scope-registries': undefined,
+      }),
+      'should save lockfile without scope registries when undefined',
+    )
+  })
+
+  await t.test('with invalid scope registries', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity:
+            'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        },
+      },
+    )
+    if (!foo) {
+      throw new Error('Missing expected package')
+    }
+    foo.setResolved()
+
+    // Test with invalid scope registries (not a record of strings) - should not include scope-registries in lockfile
+    t.matchSnapshot(
+      lockfileData({
+        ...configData,
+        graph,
+        'scope-registries': 'invalid-type' as any,
+      }),
+      'should save lockfile without scope registries when invalid type',
+    )
+  })
 })

@@ -23,7 +23,10 @@ export const loadNodes = (
       manifest,
       rawManifest,
     ] = lockfileNode
-    const [type, , spec] = splitDepID(id)
+    const [type, , maybeExtra, lastExtra] = splitDepID(id)
+    const extra =
+      type === 'registry' || type === 'git' ? lastExtra : maybeExtra
+    const registrySpec = maybeExtra
 
     // if the lockfile has manifest data then it should just use that
     // otherwise tries to infer name / version value from the lockfile node
@@ -35,10 +38,17 @@ export const loadNodes = (
           undefined,
           undefined,
           name ?? undefined,
-          type === 'registry' && spec.indexOf('@') > 0 ?
-            spec.split('@').slice(-1)[0]
+          (
+            type === 'registry' &&
+              registrySpec &&
+              registrySpec.indexOf('@') > 0
+          ) ?
+            registrySpec.split('@').slice(-1)[0]
           : undefined,
         )
+    if (extra) {
+      node.modifier = extra
+    }
 
     const { dev, optional } = getBooleanFlagsFromNum(flags)
     node.dev = dev

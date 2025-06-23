@@ -1,6 +1,7 @@
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import type { Spec } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec/browser'
+import type { SpecOptions } from '@vltpkg/spec'
 import type {
   DependencySaveType,
   DependencyTypeLong,
@@ -12,6 +13,7 @@ import {
   longDependencyTypes,
   shortDependencyTypes,
 } from '@vltpkg/types'
+import type { NodeLike } from './types.ts'
 
 export const isDependencyTypeShort = (
   obj: unknown,
@@ -112,7 +114,7 @@ export const asDependency = (obj: unknown): Dependency => {
 export const shorten = (
   typeLong: DependencyTypeLong,
   name?: string,
-  manifest?: Manifest,
+  manifest?: Manifest | null,
 ): DependencyTypeShort => {
   const shortName = dependencyTypes.get(typeLong)
   if (!shortName) {
@@ -131,4 +133,78 @@ export const shorten = (
     return 'peerOptional'
   }
   return 'peer'
+}
+
+const isStringArray = (a: unknown): a is string[] =>
+  Array.isArray(a) && !a.some(b => typeof b !== 'string')
+
+/*
+ * Retrieves a map of all dependencies, of all types, that can be iterated
+ * on and consulted when parsing the directory contents of a given node.
+ */
+export const getRawDependencies = (node: NodeLike) => {
+  const dependencies = new Map<string, RawDependency>()
+  const bundleDeps: unknown = node.manifest?.bundleDependencies ?? []
+  // if it's an importer, bundleDeps are just normal. if it's a dep,
+  // then they're ignored entirely.
+  const bundled =
+    (
+      !node.importer &&
+      !node.id.startsWith('git') &&
+      isStringArray(bundleDeps)
+    ) ?
+      new Set(bundleDeps)
+    : new Set<string>()
+  for (const depType of longDependencyTypes) {
+    const obj: Record<string, string> | undefined =
+      node.manifest?.[depType]
+    // only care about devDeps for importers and git or symlink deps
+    // technically this will also include devDeps for tarball file: specs,
+    // but that is likely rare enough to not worry about too much.
+    if (
+      depType === 'devDependencies' &&
+      !node.importer &&
+      !node.id.startsWith('git') &&
+      !node.id.startsWith('file')
+    ) {
+      continue
+    }
+    if (obj) {
+      for (const [name, bareSpec] of Object.entries(obj)) {
+        // if it's a bundled dependency, we just ignore it entirely.
+        if (bundled.has(name)) continue
+        dependencies.set(name, {
+          name,
+          type: depType,
+          bareSpec,
+          registry: node.registry,
+        })
+      }
+    }
+  }
+  return dependencies
+}
+
+/**
+ * Retrieves a map of all dependencies, of all types, that can be inferred
+ * from a given node manifest, including missing dependencies.
+ */
+export const getDependencies = (
+  node: NodeLike,
+  options: SpecOptions,
+): Map<string, Dependency> => {
+  const res = new Map<string, Dependency>()
+  const dependencies = getRawDependencies(node)
+  for (const { name, type, bareSpec } of dependencies.values()) {
+    const depType = shorten(type, name, node.manifest)
+    const spec = Spec.parse(name, bareSpec, {
+      ...options,
+      registry: node.registry,
+    })
+    res.set(name, {
+      spec,
+      type: depType,
+    })
+  }
+  return res
 }

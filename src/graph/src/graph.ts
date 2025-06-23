@@ -26,6 +26,21 @@ export type ManifestInventory = Map<DepID, Manifest>
 const getMap = <T extends Map<any, any>>(m?: T) =>
   m ?? (new Map() as T)
 
+/**
+ * Get a cache key for a resolution based on the
+ * spec, location and query modifier.
+ */
+const getResolutionCacheKey = (
+  spec: Spec,
+  location: string,
+  queryModifier: string,
+): string => {
+  const f = spec.final
+  // if it's a file: dep, then the fromNode location matters
+  const fromPref = f.type === 'file' ? location + ' : ' : ''
+  return fromPref + String(f) + queryModifier
+}
+
 export type GraphOptions = SpecOptions & {
   /**
    * The main importer manifest info.
@@ -243,12 +258,13 @@ export class Graph implements GraphLike {
   /**
    * Find an existing node to satisfy a dependency
    */
-  findResolution(spec: Spec, fromNode: Node) {
+  findResolution(spec: Spec, fromNode: Node, queryModifier = '') {
     const f = spec.final
-    // if it's a file: dep, then the fromNode location matters
-    const fromPref =
-      f.type === 'file' ? fromNode.location + ' : ' : ''
-    const sf = fromPref + String(f)
+    const sf = getResolutionCacheKey(
+      f,
+      fromNode.location,
+      queryModifier,
+    )
     const cached = this.resolutions.get(sf)
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
@@ -411,6 +427,28 @@ export class Graph implements GraphLike {
       } else {
         edge.from.edgesOut.delete(edge.spec.name)
         this.edges.delete(edge)
+      }
+    }
+  }
+
+  /**
+   * Removes the resolved node of a given edge.
+   */
+  removeEdgeResolution(edge: Edge, queryModifier = '') {
+    const node = edge.to
+    const resolutionKey = getResolutionCacheKey(
+      edge.spec,
+      edge.from.location,
+      queryModifier,
+    )
+    if (node) {
+      edge.to = undefined
+      this.resolutions.delete(resolutionKey)
+      this.resolutionsReverse.get(node)?.delete(resolutionKey)
+      this.nodesByName.delete(node.name)
+      node.edgesIn.delete(edge)
+      if (node.edgesIn.size === 0) {
+        this.nodes.delete(node.id)
       }
     }
   }

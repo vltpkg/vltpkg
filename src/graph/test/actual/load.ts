@@ -5,9 +5,14 @@ import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { load, getPathBasedId } from '../../src/actual/load.ts'
+import {
+  load,
+  getPathBasedId,
+  asStoreConfigObject,
+} from '../../src/actual/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { actualGraph } from '../fixtures/actual.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 import type { Path } from 'path-scurry'
 import type { SpecOptions } from '@vltpkg/spec'
 
@@ -393,5 +398,322 @@ t.test('extra parameter in DepID', async t => {
   t.matchSnapshot(
     serializedGraph,
     'should preserve extra parameters in DepIDs when loading the graph',
+  )
+})
+
+t.test('skipLoadingNodesOnModifiersChange behavior', async t => {
+  // Modifiers have changed - should not load dependencies
+  await t.test(
+    'modifiers changed - should skip loading dependencies',
+    async t => {
+      const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-test-project',
+          version: '1.0.0',
+          dependencies: {
+            a: '^1.0.0',
+          },
+        }),
+        // Project-level vlt.json with some modifiers
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #a': '^2.0.0' },
+        }),
+        node_modules: {
+          '.vlt': {
+            // Store config with no modifiers (empty object) - this should be different
+            'vlt.json': JSON.stringify({
+              modifiers: {},
+            }),
+            [aDepID]: {
+              node_modules: {
+                a: {
+                  'package.json': JSON.stringify({
+                    name: 'a',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          a: t.fixture('symlink', '.vlt/${aDepID}/node_modules/a'),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        skipLoadingNodesOnModifiersChange: true, // This is the key option
+        modifiers,
+        ...configData,
+      })
+
+      // Since modifiers changed, dependencies should not be loaded
+      // since it's using skipLoadingNodesOnModifiersChange=true
+      const nodeA = graph.nodes.get(aDepID)
+      t.notOk(
+        nodeA,
+        'dependency "a" should not be loaded because modifiers changed',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain just the root node',
+      )
+    },
+  )
+
+  // Modifiers haven't changed - should load dependencies
+  await t.test(
+    'modifiers unchanged - should load dependencies',
+    async t => {
+      const bDepID = joinDepIDTuple(['registry', '', 'b@1.0.0'])
+      const modifiersConfig = JSON.stringify({
+        modifiers: { ':root > #b': '^1.0.0' },
+      })
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-test-project-2',
+          version: '1.0.0',
+          dependencies: {
+            b: '^1.0.0',
+          },
+        }),
+        // Project-level vlt.json with same modifiers as store
+        'vlt.json': modifiersConfig,
+        node_modules: {
+          '.vlt': {
+            // Store config with same modifiers as project
+            'vlt.json': modifiersConfig,
+            [bDepID]: {
+              node_modules: {
+                b: {
+                  'package.json': JSON.stringify({
+                    name: 'b',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          b: t.fixture('symlink', `.vlt/${bDepID}/node_modules/b`),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        skipLoadingNodesOnModifiersChange: true, // This is the key option
+        modifiers,
+        ...configData,
+      })
+
+      // Since modifiers are the same, dependencies should be loaded
+      // even though skipLoadingNodesOnModifiersChange=true
+      const nodeB = graph.nodes.get(bDepID)
+      t.ok(
+        nodeB,
+        'dependency "b" should be loaded because modifiers are unchanged ' +
+          'even though skipLoadingNodesOnModifiersChange is true',
+      )
+      t.equal(
+        nodeB?.name,
+        'b',
+        'loaded node should have correct name',
+      )
+      t.equal(
+        graph.nodes.size,
+        2,
+        'graph should contain loaded nodes',
+      )
+    },
+  )
+
+  // Test scenario 3: skipLoadingNodesOnModifiersChange disabled - should always load
+  await t.test(
+    'skipLoadingNodesOnModifiersChange disabled - should always load',
+    async t => {
+      const modifiersConfig = { ':root > #c': '^1.0.0' }
+
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-test-project-3',
+          version: '1.0.0',
+          dependencies: {
+            c: '^1.0.0',
+          },
+        }),
+        // Project-level vlt.json with same modifiers as store
+        'vlt.json': JSON.stringify({
+          modifiers: modifiersConfig,
+        }),
+        node_modules: {
+          '.vlt': {
+            // Store config with same modifiers as project
+            'vlt.json': JSON.stringify({
+              modifiers: modifiersConfig,
+            }),
+            [joinDepIDTuple(['registry', '', 'c@1.0.0'])]: {
+              node_modules: {
+                c: {
+                  'package.json': JSON.stringify({
+                    name: 'c',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          c: t.fixture(
+            'symlink',
+            '.vlt/' +
+              joinDepIDTuple(['registry', '', 'c@1.0.0']) +
+              '/node_modules/c',
+          ),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      // Create modifiers - it will load from the project-level vlt.json
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        skipLoadingNodesOnModifiersChange: false, // Disabled - should always load
+        modifiers,
+        ...configData,
+      })
+
+      // Even with same modifiers, dependencies should be loaded because skipLoadingNodesOnModifiersChange: false
+      const nodeC = graph.nodes.get(
+        joinDepIDTuple(['registry', '', 'c@1.0.0']),
+      )
+      t.ok(
+        nodeC,
+        'dependency "c" should be loaded because skipLoadingNodesOnModifiersChange is disabled',
+      )
+      t.equal(
+        nodeC?.name,
+        'c',
+        'loaded node should have correct name',
+      )
+      t.equal(
+        graph.nodes.size > 1,
+        true,
+        'graph should contain more than just the root node',
+      )
+    },
+  )
+
+  await t.test(
+    'store config file missing - should skip loading dependencies',
+    async t => {
+      const dDepID = joinDepIDTuple(['registry', '', 'd@1.0.0'])
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-test-project-4',
+          version: '1.0.0',
+          dependencies: {
+            d: '^1.0.0',
+          },
+        }),
+        // Project-level vlt.json with modifiers
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #d': '^1.0.0' },
+        }),
+        node_modules: {
+          '.vlt': {
+            // NOTE: No vlt.json file in the store - this is the key difference
+            // The store config will default to { modifiers: undefined }
+            [dDepID]: {
+              node_modules: {
+                d: {
+                  'package.json': JSON.stringify({
+                    name: 'd',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          d: t.fixture('symlink', `.vlt/${dDepID}/node_modules/d`),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        skipLoadingNodesOnModifiersChange: true, // This is the key option
+        modifiers,
+        ...configData,
+      })
+
+      // Since store config file is missing (defaults to no modifiers) but project has modifiers,
+      // they are different, so dependencies should not be loaded
+      const nodeD = graph.nodes.get(dDepID)
+      t.notOk(
+        nodeD,
+        'dependency "d" should not be loaded because store config file is missing ' +
+          '(causing modifiers comparison to fail)',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain just the root node',
+      )
+    },
+  )
+})
+
+t.test('asStoreConfigObject', async t => {
+  t.strictSame(
+    asStoreConfigObject({ modifiers: { '#a': '1' } }),
+    { modifiers: { '#a': '1' } },
+    'should convert simple selector to store config object',
+  )
+  t.throws(
+    () => asStoreConfigObject({ modifiers: '#a' }),
+    /Expected a store config object, got/,
+    'should throw on invalid selector',
+  )
+  t.throws(
+    () => asStoreConfigObject({ foo: 'foo' }),
+    /Expected a store config object, got/,
+    'should throw on invalid selector',
   )
 })

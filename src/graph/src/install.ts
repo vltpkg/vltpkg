@@ -28,6 +28,7 @@ export const install = async (
     ...options,
     mainManifest,
     loadManifests: true,
+    modifiers: undefined, // modifiers should not be used here
   })
   const diff = await reify({
     ...options,
@@ -35,6 +36,7 @@ export const install = async (
     actual: act,
     graph,
     loadManifests: true,
+    modifiers,
   })
 
   return { graph, diff }

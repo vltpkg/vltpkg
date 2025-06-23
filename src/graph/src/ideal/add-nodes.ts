@@ -14,6 +14,9 @@ import type { GraphModifier } from '../modifiers.ts'
 export type AddNodesOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
   SpecOptions & {
+    /**
+     * The graph modifiers helper object.
+     */
     modifiers?: GraphModifier
     /**
      * A {@link PathScurry} instance based on the `projectRoot` path

@@ -1,12 +1,14 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { DepIDTuple } from '@vltpkg/dep-id'
-import { PackageInfoClient } from '@vltpkg/package-info'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { build } from '../../src/ideal/build.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import type { DepIDTuple } from '@vltpkg/dep-id'
+import type { Manifest } from '@vltpkg/types'
+import type { Spec } from '@vltpkg/spec'
 import type { LockfileEdgeKey } from '../../src/index.ts'
 import type {
   AddImportersDependenciesMap,
@@ -15,6 +17,24 @@ import type {
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
+
+const packageInfo = {
+  async manifest(spec: Spec) {
+    switch (spec.name) {
+      case 'foo':
+        return {
+          name: 'foo',
+          version: '1.0.0',
+          dist: {
+            integrity:
+              'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ==',
+          } as Manifest,
+        }
+      default:
+        throw new Error('404 - ' + spec.name, { cause: { spec } })
+    }
+  },
+} as PackageInfoClient
 
 t.test('build from lockfile', async t => {
   const projectRoot = t.testdir({
@@ -31,7 +51,7 @@ t.test('build from lockfile', async t => {
         [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
           0,
           'foo',
-          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+          'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ==',
         ],
       },
       edges: {
@@ -46,7 +66,7 @@ t.test('build from lockfile', async t => {
     scurry: new PathScurry(projectRoot),
     monorepo: Monorepo.maybeLoad(projectRoot),
     packageJson: new PackageJson(),
-    packageInfo: new PackageInfoClient({ projectRoot }),
+    packageInfo,
     projectRoot,
     add: new Map([
       [joinDepIDTuple(['file', '.']), new Map()],
@@ -95,7 +115,7 @@ t.test('build from actual files', async t => {
     scurry: new PathScurry(projectRoot),
     monorepo: Monorepo.maybeLoad(projectRoot),
     packageJson: new PackageJson(),
-    packageInfo: new PackageInfoClient({ projectRoot }),
+    packageInfo,
     projectRoot,
   })
 

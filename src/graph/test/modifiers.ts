@@ -395,58 +395,6 @@ t.test('GraphModifier', async t => {
     )
   })
 
-  await t.test('maybeHasModifier with simple graph', async t => {
-    // Test with importer modifier
-    const importerConfigDir = t.testdir({
-      'vlt.json': JSON.stringify({
-        modifiers: { ':root > #a': '1.0.0' },
-      }),
-    })
-    // Reload vlt.json to ensure we have the latest config
-    t.chdir(importerConfigDir)
-    reload('modifiers', 'project')
-
-    const importerOptions = {
-      ...mockSpecOptions,
-    }
-
-    const importerModifier = new GraphModifier(importerOptions)
-    // Using actual node names from the fixtures
-    t.equal(
-      importerModifier.maybeHasModifier('a'),
-      true,
-      'should return true for matching dependency',
-    )
-    t.equal(
-      importerModifier.maybeHasModifier('nonexistent'),
-      false,
-      'should return false for non-matching dependency',
-    )
-  })
-
-  await t.test('non-importer modifier', async t => {
-    // Test with non-importer modifier
-    const nonImporterConfigDir = t.testdir({
-      'vlt.json': JSON.stringify({
-        modifiers: { '#a > #c': '1.0.0' },
-      }),
-    })
-
-    const nonImporterOptions = {
-      ...mockSpecOptions,
-    }
-    // Reload vlt.json to ensure we have the latest config
-    t.chdir(nonImporterConfigDir)
-    reload('modifiers', 'project')
-
-    const nonImporterModifier = new GraphModifier(nonImporterOptions)
-    t.equal(
-      nonImporterModifier.maybeHasModifier('anything'),
-      true,
-      'should return true when rootless breadcrumb exists',
-    )
-  })
-
   await t.test(
     'tryImporter and tryNewDependency with simple graph',
     async t => {

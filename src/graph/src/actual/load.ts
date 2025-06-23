@@ -4,20 +4,21 @@ import {
   joinDepIDTuple,
   splitDepID,
 } from '@vltpkg/dep-id'
+import { Spec } from '@vltpkg/spec'
+import { graphStep } from '@vltpkg/output'
+import { isObject } from '@vltpkg/types'
+import { shorten, getRawDependencies } from '../dependencies.ts'
+import { Graph } from '../graph.ts'
+import { loadHidden } from '../lockfile/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageJson } from '@vltpkg/package-json'
-import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import { longDependencyTypes } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Path, PathScurry } from 'path-scurry'
-import { shorten } from '../dependencies.ts'
-import type { RawDependency } from '../dependencies.ts'
-import { Graph } from '../graph.ts'
-import { loadHidden } from '../lockfile/load.ts'
 import type { Node } from '../node.ts'
-import { graphStep } from '@vltpkg/output'
+import type { GraphModifier } from '../modifiers.ts'
+import { readFileSync } from 'node:fs'
 
 export type LoadOptions = SpecOptions & {
   /**
@@ -28,6 +29,10 @@ export type LoadOptions = SpecOptions & {
    * The project root manifest.
    */
   mainManifest?: Manifest
+  /**
+   * The graph modifiers helper object.
+   */
+  modifiers?: GraphModifier
   /**
    * A {@link Monorepo} object, for managing workspaces
    */
@@ -54,12 +59,46 @@ export type LoadOptions = SpecOptions & {
    * hidden lockfile at `node_modules/.vlt-lock.json`
    */
   skipHiddenLockfile?: boolean
+  /**
+   * Load only importers into the graph if the modifiers have changed.
+   */
+  skipLoadingNodesOnModifiersChange?: boolean
 }
 
 export type ReadEntry = {
   alias: string
   name: string
   realpath: Path
+}
+
+/**
+ * The configuration object type as it is saved in the `.vlt/vlt.json`
+ */
+export type StoreConfigObject = {
+  modifiers: Record<string, string> | undefined
+}
+
+/**
+ * Checks if a given object is a {@link StoreConfigObject}.
+ */
+export const isStoreConfigObject = (
+  obj: unknown,
+): obj is StoreConfigObject =>
+  isObject(obj) &&
+  Object.prototype.hasOwnProperty.call(obj, 'modifiers') &&
+  isObject(obj.modifiers)
+
+/**
+ * Returns a {@link StoreConfigObject} from a given object.
+ * Throws a TypeError if the object can't be converted.
+ */
+export const asStoreConfigObject = (
+  obj: unknown,
+): StoreConfigObject => {
+  if (!isStoreConfigObject(obj)) {
+    throw new TypeError(`Expected a store config object, got ${obj}`)
+  }
+  return obj
 }
 
 // path-based refer to the types of dependencies that are directly linked to
@@ -107,56 +146,6 @@ const findNodeModules = ({
  */
 const findName = ({ parent, name }: Path): string =>
   parent?.name.startsWith('@') ? `${parent.name}/${name}` : name
-
-const isStringArray = (a: unknown): a is string[] =>
-  Array.isArray(a) && !a.some(b => typeof b !== 'string')
-
-/*
- * Retrieves a map of all dependencies, of all types, that can be iterated
- * on and consulted when parsing the directory contents of the current node.
- */
-const getDeps = (node: Node) => {
-  const dependencies = new Map<string, RawDependency>()
-  const bundleDeps: unknown = node.manifest?.bundleDependencies ?? []
-  // if it's an importer, bundleDeps are just normal. if it's a dep,
-  // then they're ignored entirely.
-  const bundled =
-    (
-      !node.importer &&
-      !node.id.startsWith('git') &&
-      isStringArray(bundleDeps)
-    ) ?
-      new Set(bundleDeps)
-    : new Set<string>()
-  for (const depType of longDependencyTypes) {
-    const obj: Record<string, string> | undefined =
-      node.manifest?.[depType]
-    // only care about devDeps for importers and git or symlink deps
-    // technically this will also include devDeps for tarball file: specs,
-    // but that is likely rare enough to not worry about too much.
-    if (
-      depType === 'devDependencies' &&
-      !node.importer &&
-      !node.id.startsWith('git') &&
-      !node.id.startsWith('file')
-    ) {
-      continue
-    }
-    if (obj) {
-      for (const [name, bareSpec] of Object.entries(obj)) {
-        // if it's a bundled dependency, we just ignore it entirely.
-        if (bundled.has(name)) continue
-        dependencies.set(name, {
-          name,
-          type: depType,
-          bareSpec,
-          registry: node.registry,
-        })
-      }
-    }
-  }
-  return dependencies
-}
 
 /**
  * Reads the current directory defined at `currDir` and looks for folder
@@ -221,7 +210,7 @@ const parseDir = (
   currDir: Path,
 ) => {
   const { loadManifests } = options
-  const dependencies = getDeps(fromNode)
+  const dependencies = getRawDependencies(fromNode)
   const seenDeps = new Set<string>()
   const readItems: Set<ReadEntry> = readDir(
     scurry,
@@ -356,11 +345,13 @@ export const load = (options: LoadOptions): Graph => {
   const done = graphStep('actual')
   // TODO: once hidden lockfile is more reliable, default to false here
   const {
-    skipHiddenLockfile = true,
+    modifiers,
+    monorepo,
     projectRoot,
     packageJson,
     scurry,
-    monorepo,
+    skipHiddenLockfile = true,
+    skipLoadingNodesOnModifiersChange = false,
   } = options
   const mainManifest =
     options.mainManifest ?? packageJson.read(projectRoot)
@@ -380,29 +371,55 @@ export const load = (options: LoadOptions): Graph => {
   }
 
   const graph = new Graph({ ...options, mainManifest })
-  const depsFound = new Map<Node, Path>()
 
-  // starts the list of initial folders to parse using the importer nodes
-  for (const importer of graph.importers) {
-    depsFound.set(
-      importer,
-      scurry.cwd.resolve(`${importer.location}/node_modules`),
+  // retrieve the configuration object from the store
+  let storeConfig: StoreConfigObject = { modifiers: undefined }
+  try {
+    storeConfig = asStoreConfigObject(
+      JSON.parse(
+        readFileSync(
+          scurry.resolve('node_modules/.vlt/vlt.json'),
+          'utf8',
+        ),
+      ),
     )
-  }
+  } catch {}
+  const storeModifiers = JSON.stringify(storeConfig.modifiers ?? {})
+  const optionsModifiers = JSON.stringify(modifiers?.config)
+  const modifiersChanged = storeModifiers !== optionsModifiers
+  const shouldLoadDependencies = !(
+    skipLoadingNodesOnModifiersChange && modifiersChanged
+  )
 
-  // breadth-first traversal of the file system tree reading deps found
-  // starting from the node_modules folder of every importer in order to
-  // find the actual installed dependencies at each location
-  for (const [node, path] of depsFound.entries()) {
-    parseDir(
-      options,
-      scurry,
-      packageJson,
-      depsFound,
-      graph,
-      node,
-      path,
-    )
+  // will only skip loading dependencies if the
+  // skipLoadingNodesOnModifiersChange option is set to true
+  // and the current modifiers have not changed when compared
+  // to the modifiers stored in the `node_modules/.vlt/vlt.json` store config
+  if (shouldLoadDependencies) {
+    const depsFound = new Map<Node, Path>()
+
+    // starts the list of initial folders to parse using the importer nodes
+    for (const importer of graph.importers) {
+      depsFound.set(
+        importer,
+        scurry.cwd.resolve(`${importer.location}/node_modules`),
+      )
+    }
+
+    // breadth-first traversal of the file system tree reading deps found
+    // starting from the node_modules folder of every importer in order to
+    // find the actual installed dependencies at each location
+    for (const [node, path] of depsFound.entries()) {
+      parseDir(
+        options,
+        scurry,
+        packageJson,
+        depsFound,
+        graph,
+        node,
+        path,
+      )
+    }
   }
 
   done()
