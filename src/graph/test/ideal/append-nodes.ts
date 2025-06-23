@@ -403,6 +403,150 @@ t.test('append file type of nodes', async t => {
   )
 })
 
+t.test('relative file dependencies should resolve correctly', async t => {
+  // Create a structure where the relative path would be wrong if resolved from project root:
+  // a/ (project root)
+  // ├── packages/
+  // │   └── b/
+  // │       └── package.json (depends on "c": "file:../../other/c")  
+  // ├── other/
+  // │   └── c/
+  // │       └── package.json
+  // └── c/  <-- this exists, but is NOT the right c
+  //     └── package.json (different package)
+  
+  const correctCManifest: Manifest = {
+    name: 'c',
+    version: '2.0.0',  // Different version to distinguish
+    description: 'correct c package',
+  }
+  
+  const wrongCManifest: Manifest = {
+    name: 'c',
+    version: '1.0.0',  
+    description: 'wrong c package at root level',
+  }
+  
+  const bManifest: Manifest = {
+    name: 'b',
+    version: '1.0.0',
+    dependencies: {
+      c: 'file:../../other/c',  // Should resolve to a/other/c, not a/c
+    },
+  }
+  
+  const mainManifest: Manifest = {
+    name: 'a',
+    version: '1.0.0',
+    dependencies: {
+      b: 'file:./packages/b',
+    },
+  }
+  
+  const graph = new Graph({
+    projectRoot: t.testdir({
+      packages: {
+        b: { 'package.json': JSON.stringify(bManifest) },
+      },
+      other: {
+        c: { 'package.json': JSON.stringify(correctCManifest) },
+      },
+      c: { 'package.json': JSON.stringify(wrongCManifest) }, // Wrong c at root
+    }),
+    ...configData,
+    mainManifest,
+  })
+  
+  const depB = asDependency({
+    spec: Spec.parse('b@file:./packages/b'),
+    type: 'prod',
+  })
+  
+  const add = new Map([
+    ['b', depB],
+  ])
+  
+  const packageInfo = {
+    async manifest(spec: Spec, options: any) {
+      const specStr = String(spec)
+      console.log('Manifest requested for spec:', specStr, 'from:', options?.from)
+      
+      // Let's also check what the actual file path would be
+      if (options?.from && spec.final.type === 'file') {
+        const { resolve } = await import('path')
+        const resolvedPath = resolve(options.from, spec.final.file)
+        console.log('  -> Resolved file path:', resolvedPath)
+        
+        // Check if files exist
+        const { existsSync } = await import('fs')
+        console.log('  -> File exists:', existsSync(resolvedPath + '/package.json'))
+      }
+      
+      switch (spec.name) {
+        case 'b':
+          return bManifest
+        case 'c':
+          // Return the correct manifest based on the resolved path
+          if (options?.from && spec.final.type === 'file') {
+            const { resolve } = await import('path')
+            const resolvedPath = resolve(options.from, spec.final.file)
+            if (resolvedPath.includes('other/c')) {
+              return correctCManifest
+            }
+          }
+          return wrongCManifest
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
+  
+  await appendNodes(
+    add,
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [depB],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+  )
+  
+  // Check that both b and c are in the graph
+  console.log('Graph nodes:', Array.from(graph.nodes.keys()))
+  console.log('Test directory:', t.testdirName)
+  
+  const nodeB = graph.nodes.get('file·packages§b')
+  const nodeCCorrect = graph.nodes.get('file·other§c')
+  const nodeCWrong = graph.nodes.get('file·c')
+  
+  console.log('Node B:', nodeB?.name, nodeB?.location)
+  console.log('Node C (correct):', nodeCCorrect?.name, nodeCCorrect?.manifest?.description)
+  console.log('Node C (wrong):', nodeCWrong?.name, nodeCWrong?.manifest?.description)
+  
+  t.ok(nodeB, 'Package b should be in the graph')
+  t.ok(nodeCCorrect, 'Package c should be resolved from other/c (correct location)')
+  t.notOk(nodeCWrong, 'Package c should NOT be resolved from root c (wrong location)')
+  
+  if (nodeB && nodeCCorrect) {
+    t.equal(nodeB.name, 'b', 'Node b should have correct name')
+    t.equal(nodeCCorrect.name, 'c', 'Node c should have correct name')
+    t.equal(nodeCCorrect.manifest?.version, '2.0.0', 'Should have resolved to the correct c package')
+    
+    // Check that b depends on the correct c
+    const edgeToC = nodeB.edgesOut.get('c')
+    t.ok(edgeToC, 'Package b should have an edge to package c')
+    if (edgeToC) {
+      t.equal(edgeToC.to, nodeCCorrect, 'Edge from b should point to the correct c')
+    }
+  }
+  
+  t.matchSnapshot(
+    objectLikeOutput(graph),
+    'should have a graph with transitive relative file dependencies',
+  )
+})
+
 t.test('resolve against the correct registries', async t => {
   const mainManifest = {
     version: '1.0.0',
