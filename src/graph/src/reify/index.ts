@@ -127,7 +127,7 @@ const reify_ = async (
   lockfile.save(options)
 
   // if we had to change the actual graph along the way,
-  // make sure we do njkot leave behind any unreachable nodes
+  // make sure we do not leave behind any unreachable nodes
   if (diff.hadOptionalFailures) {
     for (const node of options.graph.gc().values()) {
       diff.nodes.add.delete(node)
