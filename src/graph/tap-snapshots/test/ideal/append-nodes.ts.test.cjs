@@ -104,7 +104,43 @@ exports[`test/ideal/append-nodes.ts > TAP > direct install from subdirectory sho
 ]
 `
 
+exports[`test/ideal/append-nodes.ts > TAP > edge case: nested relative paths work correctly > should create correct node IDs for deeply nested relative paths 1`] = `
+Array [
+  "file·.",
+  "file·other",
+  "file·packages§deep§nested",
+]
+`
+
+exports[`test/ideal/append-nodes.ts > TAP > edge case: relative paths that stay within project work > should create correct node IDs for sibling relative paths 1`] = `
+Array [
+  "file·.",
+  "file·libs§utils1",
+  "file·libs§utils2",
+]
+`
+
 exports[`test/ideal/append-nodes.ts > TAP > relative file dependencies should resolve correctly > should have a graph with transitive relative file dependencies 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(b@file:./packages/b) -prod-> to: Node {
+        id: 'file·packages§b',
+        location: 'packages/b',
+        resolved: 'packages/b',
+        edgesOut: [
+          Edge spec(c@file:../../other/c) -prod-> to: Node { id: 'file·other§c', location: 'other/c', resolved: 'other/c' }
+        ]
+      }
+    ]
+  }
+]
+`
+
+exports[`test/ideal/append-nodes.ts > TAP > relative file dependencies should resolve correctly > should have a graph with transitive relative file dependencies 2`] = `
 [
   Node {
     id: 'file·.',

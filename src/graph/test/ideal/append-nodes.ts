@@ -403,6 +403,150 @@ t.test('append file type of nodes', async t => {
   )
 })
 
+t.test('relative file dependencies should resolve correctly', async t => {
+  // Create a structure where the relative path would be wrong if resolved from project root:
+  // a/ (project root)
+  // ├── packages/
+  // │   └── b/
+  // │       └── package.json (depends on "c": "file:../../other/c")  
+  // ├── other/
+  // │   └── c/
+  // │       └── package.json
+  // └── c/  <-- this exists, but is NOT the right c
+  //     └── package.json (different package)
+  
+  const correctCManifest: Manifest = {
+    name: 'c',
+    version: '2.0.0',  // Different version to distinguish
+    description: 'correct c package',
+  }
+  
+  const wrongCManifest: Manifest = {
+    name: 'c',
+    version: '1.0.0',  
+    description: 'wrong c package at root level',
+  }
+  
+  const bManifest: Manifest = {
+    name: 'b',
+    version: '1.0.0',
+    dependencies: {
+      c: 'file:../../other/c',  // Should resolve to a/other/c, not a/c
+    },
+  }
+  
+  const mainManifest: Manifest = {
+    name: 'a',
+    version: '1.0.0',
+    dependencies: {
+      b: 'file:./packages/b',
+    },
+  }
+  
+  const graph = new Graph({
+    projectRoot: t.testdir({
+      packages: {
+        b: { 'package.json': JSON.stringify(bManifest) },
+      },
+      other: {
+        c: { 'package.json': JSON.stringify(correctCManifest) },
+      },
+      c: { 'package.json': JSON.stringify(wrongCManifest) }, // Wrong c at root
+    }),
+    ...configData,
+    mainManifest,
+  })
+  
+  const depB = asDependency({
+    spec: Spec.parse('b@file:./packages/b'),
+    type: 'prod',
+  })
+  
+  const add = new Map([
+    ['b', depB],
+  ])
+  
+  const packageInfo = {
+    async manifest(spec: Spec, options: any) {
+      const specStr = String(spec)
+      console.log('Manifest requested for spec:', specStr, 'from:', options?.from)
+      
+      // Let's also check what the actual file path would be
+      if (options?.from && spec.final.type === 'file') {
+        const { resolve } = await import('path')
+        const resolvedPath = resolve(options.from, spec.final.file)
+        console.log('  -> Resolved file path:', resolvedPath)
+        
+        // Check if files exist
+        const { existsSync } = await import('fs')
+        console.log('  -> File exists:', existsSync(resolvedPath + '/package.json'))
+      }
+      
+      switch (spec.name) {
+        case 'b':
+          return bManifest
+        case 'c':
+          // Return the correct manifest based on the resolved path
+          if (options?.from && spec.final.type === 'file') {
+            const { resolve } = await import('path')
+            const resolvedPath = resolve(options.from, spec.final.file)
+            if (resolvedPath.includes('other/c')) {
+              return correctCManifest
+            }
+          }
+          return wrongCManifest
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
+  
+  await appendNodes(
+    add,
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [depB],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+  )
+  
+  // Check that both b and c are in the graph
+  console.log('Graph nodes:', Array.from(graph.nodes.keys()))
+  console.log('Test directory:', t.testdirName)
+  
+  const nodeB = graph.nodes.get('file·packages§b')
+  const nodeCCorrect = graph.nodes.get('file·other§c')
+  const nodeCWrong = graph.nodes.get('file·c')
+  
+  console.log('Node B:', nodeB?.name, nodeB?.location)
+  console.log('Node C (correct):', nodeCCorrect?.name, nodeCCorrect?.manifest?.description)
+  console.log('Node C (wrong):', nodeCWrong?.name, nodeCWrong?.manifest?.description)
+  
+  t.ok(nodeB, 'Package b should be in the graph')
+  t.ok(nodeCCorrect, 'Package c should be resolved from other/c (correct location)')
+  t.notOk(nodeCWrong, 'Package c should NOT be resolved from root c (wrong location)')
+  
+  if (nodeB && nodeCCorrect) {
+    t.equal(nodeB.name, 'b', 'Node b should have correct name')
+    t.equal(nodeCCorrect.name, 'c', 'Node c should have correct name')
+    t.equal(nodeCCorrect.manifest?.version, '2.0.0', 'Should have resolved to the correct c package')
+    
+    // Check that b depends on the correct c
+    const edgeToC = nodeB.edgesOut.get('c')
+    t.ok(edgeToC, 'Package b should have an edge to package c')
+    if (edgeToC) {
+      t.equal(edgeToC.to, nodeCCorrect, 'Edge from b should point to the correct c')
+    }
+  }
+  
+  t.matchSnapshot(
+    objectLikeOutput(graph),
+    'should have a graph with transitive relative file dependencies',
+  )
+})
+
 t.test('direct install from subdirectory should resolve relative paths correctly', async t => {
   // Simulate the CLI scenario: user is in subdirectory b and runs `vlt install file:../c`
   // This should resolve ../c relative to the current working directory (b), not project root
@@ -1069,3 +1213,185 @@ t.test(
     t.ok(barNode, 'bar node should be added as a nested dependency')
   },
 )
+
+t.test('edge case: nested relative paths work correctly', async t => {
+  // Test deeply nested relative paths: packages/deep/nested -> ../../../other
+  
+  const otherManifest: Manifest = {
+    name: 'other',
+    version: '1.0.0',
+  }
+  
+  const nestedManifest: Manifest = {
+    name: 'nested',
+    version: '1.0.0',
+    dependencies: {
+      other: 'file:../../../other',  // Go up 3 levels to reach project root, then to other
+    },
+  }
+  
+  const mainManifest: Manifest = {
+    name: 'main',
+    version: '1.0.0',
+  }
+  
+  const graph = new Graph({
+    projectRoot: t.testdir({
+      packages: {
+        deep: {
+          nested: { 'package.json': JSON.stringify(nestedManifest) },
+        },
+      },
+      other: { 'package.json': JSON.stringify(otherManifest) },
+    }),
+    ...configData,
+    mainManifest,
+  })
+  
+  const depNested = asDependency({
+    spec: Spec.parse('nested@file:./packages/deep/nested'),
+    type: 'prod',
+  })
+  
+  const add = new Map([
+    ['nested', depNested],
+  ])
+  
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'nested':
+          return nestedManifest
+        case 'other':
+          return otherManifest
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
+  
+  await appendNodes(
+    add,
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [depNested],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+  )
+  
+  // Check that both nested and other are in the graph with correct IDs
+  const nodeNested = graph.nodes.get('file·packages§deep§nested')
+  const nodeOther = graph.nodes.get('file·other')  // Should be 'other', not '../../../other'
+  
+  t.ok(nodeNested, 'Package nested should be in the graph')
+  t.ok(nodeOther, 'Package other should be resolved correctly despite deep relative path')
+  
+  if (nodeNested && nodeOther) {
+    t.equal(nodeNested.name, 'nested', 'Node nested should have correct name')
+    t.equal(nodeOther.name, 'other', 'Node other should have correct name')
+    
+    // Check that nested depends on other
+    const edgeToOther = nodeNested.edgesOut.get('other')
+    t.ok(edgeToOther, 'Package nested should have an edge to package other')
+    if (edgeToOther) {
+      t.equal(edgeToOther.to, nodeOther, 'Edge from nested should point to other')
+    }
+  }
+  
+  t.matchSnapshot(
+    Array.from(graph.nodes.keys()).sort(),
+    'should create correct node IDs for deeply nested relative paths',
+  )
+})
+
+t.test('edge case: relative paths that stay within project work', async t => {
+  // Test relative paths within the project structure
+  
+  const utils1Manifest: Manifest = {
+    name: 'utils1',
+    version: '1.0.0',
+  }
+  
+  const utils2Manifest: Manifest = {
+    name: 'utils2',
+    version: '1.0.0',
+    dependencies: {
+      utils1: 'file:../utils1',  // Sibling directory
+    },
+  }
+  
+  const mainManifest: Manifest = {
+    name: 'main',
+    version: '1.0.0',
+  }
+  
+  const graph = new Graph({
+    projectRoot: t.testdir({
+      libs: {
+        utils1: { 'package.json': JSON.stringify(utils1Manifest) },
+        utils2: { 'package.json': JSON.stringify(utils2Manifest) },
+      },
+    }),
+    ...configData,
+    mainManifest,
+  })
+  
+  const depUtils2 = asDependency({
+    spec: Spec.parse('utils2@file:./libs/utils2'),
+    type: 'prod',
+  })
+  
+  const add = new Map([
+    ['utils2', depUtils2],
+  ])
+  
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'utils1':
+          return utils1Manifest
+        case 'utils2':
+          return utils2Manifest
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
+  
+  await appendNodes(
+    add,
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [depUtils2],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+  )
+  
+  // Check that both utils packages are in the graph with correct IDs
+  const nodeUtils1 = graph.nodes.get('file·libs§utils1')
+  const nodeUtils2 = graph.nodes.get('file·libs§utils2')
+  
+  t.ok(nodeUtils1, 'Package utils1 should be in the graph')
+  t.ok(nodeUtils2, 'Package utils2 should be in the graph')
+  
+  if (nodeUtils1 && nodeUtils2) {
+    t.equal(nodeUtils1.name, 'utils1', 'Node utils1 should have correct name')
+    t.equal(nodeUtils2.name, 'utils2', 'Node utils2 should have correct name')
+    
+    // Check that utils2 depends on utils1
+    const edgeToUtils1 = nodeUtils2.edgesOut.get('utils1')
+    t.ok(edgeToUtils1, 'Package utils2 should have an edge to package utils1')
+    if (edgeToUtils1) {
+      t.equal(edgeToUtils1.to, nodeUtils1, 'Edge from utils2 should point to utils1')
+    }
+  }
+  
+  t.matchSnapshot(
+    Array.from(graph.nodes.keys()).sort(),
+    'should create correct node IDs for sibling relative paths',
+  )
+})
