@@ -56,7 +56,6 @@ export const buildIdealFromStartingGraph = async (
   await addNodes(options)
 
   // check nodes for modifiers
-  //await checkNodes({ check: importerSpecs.check, ...options })
 
   // move things into their default locations, if possible
   for (const node of options.graph.nodes.values()) {
