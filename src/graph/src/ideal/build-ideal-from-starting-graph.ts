@@ -55,8 +55,6 @@ export const buildIdealFromStartingGraph = async (
   // add nodes, fetching remote manifests for each dependency to be added
   await addNodes(options)
 
-  // check nodes for modifiers
-
   // move things into their default locations, if possible
   for (const node of options.graph.nodes.values()) {
     node.setDefaultLocation()
