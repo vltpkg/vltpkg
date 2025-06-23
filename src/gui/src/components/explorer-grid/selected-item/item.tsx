@@ -20,6 +20,10 @@ import {
   TabsManifestButton,
   TabsManifestContent,
 } from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
+import {
+  DependenciesTabsButton,
+  DependenciesTabContent,
+} from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
@@ -56,11 +60,13 @@ const SelectedItemTabs = () => {
           <TabsManifestButton />
           <InsightTabButton />
           <VersionsTabButton />
+          <DependenciesTabsButton />
         </TabsList>
         <OverviewTabContent />
         <TabsManifestContent />
         <InsightTabContent />
         <VersionsTabContent />
+        <DependenciesTabContent />
       </Tabs>
     </div>
   )

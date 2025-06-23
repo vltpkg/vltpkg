@@ -24,6 +24,8 @@ exports[`Item renders connection lines 1`] = `
             </gui-insight-tab-button>
             <gui-versions-tab-button>
             </gui-versions-tab-button>
+            <gui-dependencies-tabs-button>
+            </gui-dependencies-tabs-button>
           </gui-tabs-list>
           <gui-overview-tab-content>
           </gui-overview-tab-content>
@@ -33,6 +35,8 @@ exports[`Item renders connection lines 1`] = `
           </gui-insight-tab-content>
           <gui-versions-tab-content>
           </gui-versions-tab-content>
+          <gui-dependencies-tab-content>
+          </gui-dependencies-tab-content>
         </gui-tabs>
       </div>
     </gui-card>
@@ -65,6 +69,8 @@ exports[`Item renders with the default structure 1`] = `
             </gui-insight-tab-button>
             <gui-versions-tab-button>
             </gui-versions-tab-button>
+            <gui-dependencies-tabs-button>
+            </gui-dependencies-tabs-button>
           </gui-tabs-list>
           <gui-overview-tab-content>
           </gui-overview-tab-content>
@@ -74,6 +80,8 @@ exports[`Item renders with the default structure 1`] = `
           </gui-insight-tab-content>
           <gui-versions-tab-content>
           </gui-versions-tab-content>
+          <gui-dependencies-tab-content>
+          </gui-dependencies-tab-content>
         </gui-tabs>
       </div>
     </gui-card>

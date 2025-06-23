@@ -21,6 +21,7 @@ vi.mock('@/components/ui/tooltip.tsx', () => ({
   TooltipTrigger: 'gui-tooltip-trigger',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
+  TooltipPortal: 'gui-tooltip-portal',
 }))
 
 expect.addSnapshotSerializer({

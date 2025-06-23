@@ -59,6 +59,8 @@ const tabsListVariants = cva('inline-flex ', {
         'items-center justify-center h-10 rounded-md bg-muted p-1 text-muted-foreground',
       outline: 'border-b-[1px] border-muted w-full',
       ghost: 'pb-1 bg-transparent border-b-[2px] border-muted w-full',
+      nestedCard:
+        'flex gap-4 rounded-none bg-background w-full border-b-[1px] border-muted py-2 px-6',
     },
   },
   defaultVariants: {
@@ -75,6 +77,8 @@ const tabsTriggerVariants = cva(
         outline:
           'relative px-3 py-1.5 text-sm font-medium after:mt-[1px] after:absolute after:inset-0 after:border-b-[1px] after:border-transparent after:data-[state=active]:border-muted-foreground after:content=[""] after:h-full after:w-full ring-offset-background transition-all data-[state=active]:text-foreground text-muted-foreground',
         ghost: 'text-sm font-medium px-0 py-1.5',
+        nestedCard:
+          'inline-flex items-center w-fit text-sm py-1.5 font-medium ring-offset-background transition-all px-2 data-[state=active]:text-foreground text-muted-foreground',
       },
     },
     defaultVariants: {
@@ -137,7 +141,52 @@ const TabsTrigger = React.forwardRef<
           : '',
         )}
         {...props}>
-        <span className="z-[2]">{children}</span>
+        <span
+          className={cn(
+            'z-[2]',
+            variant === 'nestedCard' &&
+              'inline-flex w-fit items-center gap-1',
+          )}>
+          {children}
+        </span>
+
+        {variant === 'nestedCard' && (
+          <>
+            <AnimatePresence>
+              {focused === value && (
+                <motion.div
+                  layoutId={`tabs-highlight-${uniqueId ?? 'default'}-hover`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{
+                    type: 'spring',
+                    duration: 0.3,
+                    bounce: 0.1,
+                  }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-100/80 dark:bg-neutral-800/80"
+                />
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {activeValue === value && (
+                <motion.div
+                  layoutId={`tabs-highlight-${uniqueId ?? 'default'}-bg`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{
+                    type: 'spring',
+                    duration: 0.3,
+                    bounce: 0.1,
+                  }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-[1] h-full w-full rounded-sm border-[1px] border-neutral-200 bg-neutral-100 dark:border-[#313131] dark:bg-neutral-800"
+                />
+              )}
+            </AnimatePresence>
+          </>
+        )}
 
         {variant === 'ghost' && (
           <>

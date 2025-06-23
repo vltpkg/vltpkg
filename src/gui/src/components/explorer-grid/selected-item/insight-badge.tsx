@@ -8,6 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
   TooltipContent,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 
 export const getAlertColor = (
@@ -103,10 +104,12 @@ export const InsightBadge = forwardRef<
     return tooltipContent ?
         <TooltipProvider delayDuration={100}>
           <Tooltip>
-            <TooltipTrigger className="cursor-default">
+            <TooltipTrigger className="inline-flex cursor-default items-center justify-center">
               {badge}
             </TooltipTrigger>
-            <TooltipContent>{tooltipContent}</TooltipContent>
+            <TooltipPortal>
+              <TooltipContent>{tooltipContent}</TooltipContent>
+            </TooltipPortal>
           </Tooltip>
         </TooltipProvider>
       : badge
