@@ -2,7 +2,7 @@
 
 exports[`OverviewSidebar contains SuggestedQueries when dependencies are present 1`] = `
 
-<gui-suggested-queries>
+<gui-suggested-queries classname="mt-[3rem]">
 </gui-suggested-queries>
 
 `;

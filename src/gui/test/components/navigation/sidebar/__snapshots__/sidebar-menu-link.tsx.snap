@@ -18,7 +18,7 @@ exports[`SidebarMenuLink handles active state 1`] = `
         <button
           to
           role="button"
-          class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+          class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
           <span
             class="text-muted-foreground"
@@ -56,7 +56,7 @@ exports[`SidebarMenuLink handles active state 1`] = `
                     <gui-nav-link
                       to="/settings/profile"
                       role="button"
-                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
                       <span
                         class="text-muted-foreground"
@@ -86,7 +86,7 @@ exports[`SidebarMenuLink handles active state 1`] = `
                     <gui-nav-link
                       to="/settings/security"
                       role="button"
-                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
                       <span
                         class="text-muted-foreground"
@@ -126,7 +126,7 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
         <button
           to
           role="button"
-          class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+          class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
           <span
             class="text-muted-foreground"
@@ -164,7 +164,7 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
                     <gui-nav-link
                       to="/settings/profile"
                       role="button"
-                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
                       <span
                         class="text-muted-foreground"
@@ -194,7 +194,7 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
                     <gui-nav-link
                       to="/settings/security"
                       role="button"
-                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
                       <span
                         class="text-muted-foreground"
@@ -234,7 +234,7 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
         <button
           to
           role="button"
-          class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+          class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
           <span
             class="text-muted-foreground"
@@ -272,7 +272,7 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                     <gui-nav-link
                       to="/products"
                       role="button"
-                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                      classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
                       <span
                         class="text-muted-foreground"
@@ -302,7 +302,7 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                     <button
                       to
                       role="button"
-                      class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                      class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
                       <span
                         class="text-muted-foreground"
@@ -340,7 +340,7 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                                 <gui-nav-link
                                   to="/products/electronics"
                                   role="button"
-                                  classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                                  classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                                 >
                                   <span
                                     class="text-muted-foreground"
@@ -370,7 +370,7 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                                 <gui-nav-link
                                   to="/products/clothing"
                                   role="button"
-                                  classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+                                  classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
                                 >
                                   <span
                                     class="text-muted-foreground"
@@ -416,7 +416,7 @@ exports[`SidebarMenuLink renders basic menu item 1`] = `
         <gui-nav-link
           to="/"
           role="button"
-          classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+          classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
           <span
             class="text-muted-foreground"
@@ -450,7 +450,7 @@ exports[`SidebarMenuLink renders external link 1`] = `
         <gui-nav-link
           to="https://docs.example.com"
           role="button"
-          classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+          classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
           <span
             class="text-muted-foreground"
@@ -484,7 +484,7 @@ exports[`SidebarMenuLink renders menu item with badge 1`] = `
         <gui-nav-link
           to="/notifications"
           role="button"
-          classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
+          classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
           <span
             class="text-muted-foreground"

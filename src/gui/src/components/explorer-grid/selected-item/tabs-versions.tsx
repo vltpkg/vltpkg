@@ -91,7 +91,7 @@ const VersionHeaderButton = ({
 }) => {
   return (
     <button
-      className="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-all hover:bg-secondary hover:text-foreground [&>svg]:size-4"
+      className="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&>svg]:size-4"
       onClick={onClick}>
       {children}
     </button>
@@ -743,14 +743,12 @@ export const VersionsTabContent = () => {
                   <div className="relative">
                     {isScrolling && (
                       <>
-                        <div className="absolute -inset-x-6 top-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card blur-sm" />
-                        <div className="absolute -inset-x-6 -top-2 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card" />
+                        <div className="absolute -inset-x-6 top-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-b from-card" />
                       </>
                     )}
                     {!isScrolledBottom && (
                       <>
-                        <div className="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card blur-sm" />
-                        <div className="absolute -inset-x-6 -bottom-2 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card" />
+                        <div className="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card" />
                       </>
                     )}
 

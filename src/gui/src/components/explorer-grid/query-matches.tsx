@@ -114,7 +114,7 @@ const Notification = ({
   return (
     <NavLink
       to={`/queries?query=${encodeURIComponent(query)}`}
-      className={`flex h-[1.5rem] cursor-pointer items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted px-2 py-1 text-[10px] transition-all ${className}`}>
+      className={`flex h-[1.5rem] cursor-pointer items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted px-2 py-1 text-[10px] transition-colors ${className}`}>
       Matches {numberOfQueries} Queries
     </NavLink>
   )

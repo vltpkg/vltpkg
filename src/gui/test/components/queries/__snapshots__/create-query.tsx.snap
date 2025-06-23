@@ -2,7 +2,7 @@
 
 exports[`create-query > should render correctly 1`] = `
 
-<div class="rounded-sm border-[1px] border-muted-foreground/25 bg-card transition-all">
+<div class="rounded-sm border-[1px] border-muted-foreground/25 bg-card transition-colors">
   <div class="flex flex-col gap-3 px-3 py-3">
     <div class="flex w-full items-center">
       <p class="text-base font-medium">

@@ -14,6 +14,7 @@ import {
 } from '@/components/explorer-grid/dependency-sidebar/filter.tsx'
 import { DependencyEmptyState } from '@/components/explorer-grid/dependency-sidebar/empty-state.tsx'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
+import { memo, useMemo } from 'react'
 
 import type { DepID } from '@vltpkg/dep-id/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -25,14 +26,16 @@ export type DependencySideBarProps = {
   uninstalledDependencies: GridItemData[]
 }
 
-export const DependencySideBar = (props: DependencySideBarProps) => {
-  return (
-    <DependencySidebarProvider {...props}>
-      <SidebarHeader />
-      <DependencyList />
-    </DependencySidebarProvider>
-  )
-}
+export const DependencySideBar = memo(
+  (props: DependencySideBarProps) => {
+    return (
+      <DependencySidebarProvider {...props}>
+        <SidebarHeader />
+        <DependencyList />
+      </DependencySidebarProvider>
+    )
+  },
+)
 
 const SidebarHeader = () => {
   const importerId = useDependencySidebarStore(
@@ -115,21 +118,34 @@ const DependencyList = () => {
   )
   const { operation } = useOperation()
 
+  // Memoize sorted dependencies to prevent unnecessary re-sorting
+  const sortedDependencies = useMemo(() => {
+    const added = filteredDependencies
+      .filter(item => addedDependencies.includes(item.name))
+      .sort((a, b) => a.name.localeCompare(b.name, 'en'))
+
+    const notAdded = filteredDependencies
+      .filter(item => !addedDependencies.includes(item.name))
+      .sort((a, b) => a.name.localeCompare(b.name, 'en'))
+
+    return [...added, ...notAdded]
+  }, [filteredDependencies, addedDependencies])
+
+  // Memoize sorted uninstalled dependencies
+  const sortedUninstalledDependencies = useMemo(
+    () =>
+      uninstalledDependencies.sort((a, b) =>
+        a.name.localeCompare(b.name, 'en'),
+      ),
+    [uninstalledDependencies],
+  )
+
   return (
     <LayoutGroup>
       <FilterListEmptyState />
       <motion.div layout="position" className="flex flex-col gap-4">
         <AnimatePresence initial={false} mode="popLayout">
-          {[
-            // added dependencies should come first
-            ...filteredDependencies
-              .filter(item => addedDependencies.includes(item.name))
-              .sort((a, b) => a.name.localeCompare(b.name, 'en')),
-            // then we display the rest of dependencies, sorted by name
-            ...filteredDependencies
-              .filter(item => !addedDependencies.includes(item.name))
-              .sort((a, b) => a.name.localeCompare(b.name, 'en')),
-          ].map(item => (
+          {sortedDependencies.map(item => (
             <SideItem
               item={item}
               key={item.id}
@@ -149,18 +165,14 @@ const DependencyList = () => {
         </AnimatePresence>
       </motion.div>
       <DependencyEmptyState />
-      {uninstalledDependencies.length > 0 && (
+      {sortedUninstalledDependencies.length > 0 && (
         <motion.div
           layout="position"
           className="mt-8 flex flex-col gap-4">
           <GridHeader className="h-fit">
             Uninstalled Dependencies
           </GridHeader>
-          {[
-            ...uninstalledDependencies.sort((a, b) =>
-              a.name.localeCompare(b.name, 'en'),
-            ),
-          ].map(item => (
+          {sortedUninstalledDependencies.map(item => (
             <SideItem
               item={item}
               key={item.id}

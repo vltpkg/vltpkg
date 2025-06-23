@@ -12,7 +12,7 @@ export const markdownComponents: Components = {
         className="group relative inline-flex text-blue-500">
         <span>{children}</span>
         <ArrowUpRight
-          className="duration-250 transition-all group-hover:-translate-y-[2px] group-hover:translate-x-[2px]"
+          className="duration-250 transition-transform group-hover:-translate-y-[2px] group-hover:translate-x-[2px]"
           size={14}
         />
       </a>

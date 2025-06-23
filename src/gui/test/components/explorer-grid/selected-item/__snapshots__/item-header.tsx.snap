@@ -54,7 +54,7 @@ exports[`ItemHeader renders with a package score 1`] = `
       </gui-scroll-area>
     </div>
     <div class="pb-3 pr-6 pt-6">
-      <div class="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
+      <div class="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-colors after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
         <gui-progress-circle
           value="80"
           variant="success"
@@ -203,13 +203,9 @@ exports[`ItemHeader renders with a version information 1`] = `
   </div>
   <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
     <gui-scroll-area classname="relative overflow-hidden border-b-[1px] border-muted py-3 w-full">
-      <div class="absolute right-0 top-0 z-[100] h-full w-[24px] bg-card blur-sm">
+      <div class="pointer-events-none absolute right-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-l from-card">
       </div>
-      <div class="absolute -right-2 top-0 z-[101] h-full w-[24px] bg-card">
-      </div>
-      <div class="absolute left-0 top-0 z-[100] h-full w-[24px] bg-card blur-sm">
-      </div>
-      <div class="absolute -left-2 top-0 z-[101] h-full w-[24px] bg-card">
+      <div class="pointer-events-none absolute left-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-r from-card">
       </div>
       <div class="flex w-max gap-2 overflow-x-hidden px-6">
         <gui-data-badge

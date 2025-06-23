@@ -49,7 +49,7 @@ export const DashboardItem = ({
       className="group relative w-full cursor-default"
       onClick={onDashboardItemClick}>
       {/* top */}
-      <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
+      <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-colors group-hover:bg-card-accent">
         <div className="flex px-3 py-2">
           <CardTitle className="text-md z-[1] font-medium">
             {item.name}
@@ -81,7 +81,7 @@ export const DashboardItem = ({
       </div>
 
       {/* footer */}
-      <div className="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-all group-hover:bg-card-accent">
+      <div className="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-colors group-hover:bg-card-accent">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger className="truncate text-left text-xs text-muted-foreground">

@@ -73,12 +73,12 @@ const tabsTriggerVariants = cva(
     variants: {
       variant: {
         default:
-          'whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
+          'whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-opacity transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
         outline:
-          'relative px-3 py-1.5 text-sm font-medium after:mt-[1px] after:absolute after:inset-0 after:border-b-[1px] after:border-transparent after:data-[state=active]:border-muted-foreground after:content=[""] after:h-full after:w-full ring-offset-background transition-all data-[state=active]:text-foreground text-muted-foreground',
+          'relative px-3 py-1.5 text-sm font-medium after:mt-[1px] after:absolute after:inset-0 after:border-b-[1px] after:border-transparent after:data-[state=active]:border-muted-foreground after:content=[""] after:h-full after:w-full ring-offset-background transition-opacity transition-colors data-[state=active]:text-foreground text-muted-foreground',
         ghost: 'text-sm font-medium px-0 py-1.5',
         nestedCard:
-          'inline-flex items-center w-fit text-sm py-1.5 font-medium ring-offset-background transition-all px-2 data-[state=active]:text-foreground text-muted-foreground',
+          'inline-flex items-center w-fit text-sm py-1.5 font-medium ring-offset-background transition-opacity transition-colors px-2 data-[state=active]:text-foreground text-muted-foreground',
       },
     },
     defaultVariants: {

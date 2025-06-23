@@ -83,7 +83,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
 
   return (
     <div
-      className={`group rounded-sm border border-[1px] bg-card transition-all hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
+      className={`group rounded-sm border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
       <div className="flex grid grid-cols-8 items-center px-3 py-2">
         <div className="col-span-2 flex items-center gap-3">
           <Checkbox
