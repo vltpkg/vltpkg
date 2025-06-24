@@ -35,7 +35,7 @@ pnpm vlt # OR ./node_modules/.bin/vlt
 See the [contributing guide](./CONTRIBUTING.md) for more information
 on how to build and develop the various workspaces.
 
-### LICENSES
+### Licenses
 
 Below you can find a complete table of each workspace available in
 this repository and its corresponding license:
