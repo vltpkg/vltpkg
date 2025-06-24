@@ -11,7 +11,7 @@ exports[`SideItem clicks on a workspace item change the query 1`] = `
   <span data-state="closed">
     <gui-card
       role="article"
-      classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+      classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
         <button
@@ -24,7 +24,7 @@ exports[`SideItem clicks on a workspace item change the query 1`] = `
           v1.0.0
         </span>
         <div class="absolute -bottom-3 right-2.5">
-          <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+          <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
             prod
           </gui-badge>
         </div>
@@ -47,7 +47,7 @@ exports[`SideItem render as aliased dependency 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -68,7 +68,7 @@ exports[`SideItem render as aliased dependency 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>
@@ -92,7 +92,7 @@ exports[`SideItem render as dependency 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -113,7 +113,7 @@ exports[`SideItem render as dependency 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40 h-[18px] rounded-full text-xxs font-normal">
               peer
             </gui-badge>
           </div>
@@ -137,7 +137,7 @@ exports[`SideItem render as dependency with long name 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -158,7 +158,7 @@ exports[`SideItem render as dependency with long name 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40 h-[18px] rounded-full text-xxs font-normal">
               peer
             </gui-badge>
           </div>
@@ -182,7 +182,7 @@ exports[`SideItem render as dependent 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -203,7 +203,7 @@ exports[`SideItem render as dependent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>
@@ -227,7 +227,7 @@ exports[`SideItem render as git dependency 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -248,7 +248,7 @@ exports[`SideItem render as git dependency 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>
@@ -272,7 +272,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -296,7 +296,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>
@@ -320,7 +320,7 @@ exports[`SideItem render as parent 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all border-muted hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors border-muted hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -341,7 +341,7 @@ exports[`SideItem render as parent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>
@@ -365,7 +365,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -389,7 +389,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>
@@ -413,7 +413,7 @@ exports[`SideItem render as workspace item 1`] = `
     <span data-state="closed">
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <button
@@ -426,7 +426,7 @@ exports[`SideItem render as workspace item 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal">
               prod
             </gui-badge>
           </div>

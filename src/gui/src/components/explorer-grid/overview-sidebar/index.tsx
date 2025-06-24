@@ -1,6 +1,7 @@
 import { GridHeader } from '@/components/explorer-grid/header.tsx'
 import { SideItem } from '@/components/explorer-grid/side-item.tsx'
 import { SuggestedQueries } from '@/components/explorer-grid/overview-sidebar/suggested-queries.tsx'
+import { cn } from '@/lib/utils.ts'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
@@ -41,7 +42,13 @@ export const OverviewSidebar = ({
         items={dependents}
         onClick={onDependentClick}
       />
-      {dependencies.length > 0 && <SuggestedQueries />}
+      {dependencies.length > 0 && (
+        <SuggestedQueries
+          className={cn(
+            workspaces.length === 0 && !parentItem && 'mt-[3rem]',
+          )}
+        />
+      )}
     </>
   )
 }

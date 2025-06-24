@@ -20,7 +20,7 @@ exports[`select render default 1`] = `
       dependencies
     </span>
     <gui-chevron-down-icon
-      classname="h-4 w-4 opacity-50 transition-all duration-300 group-data-[state=open]:-rotate-180"
+      classname="h-4 w-4 opacity-50 transition-colors transition-opacity transition-transform duration-300 group-data-[state=open]:-rotate-180"
       aria-hidden="true"
     >
     </gui-chevron-down-icon>
@@ -60,7 +60,7 @@ exports[`select render open 1`] = `
       dependencies
     </span>
     <gui-chevron-down-icon
-      classname="h-4 w-4 opacity-50 transition-all duration-300 group-data-[state=open]:-rotate-180"
+      classname="h-4 w-4 opacity-50 transition-colors transition-opacity transition-transform duration-300 group-data-[state=open]:-rotate-180"
       aria-hidden="true"
     >
     </gui-chevron-down-icon>

@@ -110,7 +110,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             <Card
               role="article"
               className={cn(
-                'group relative z-[10] cursor-default transition-all',
+                'group relative z-[10] cursor-default transition-colors',
                 highlight && 'border-muted',
                 onSelect && 'hover:border-muted hover:bg-card-accent',
               )}
@@ -167,7 +167,7 @@ const SideItemBadges = ({
           key={`${label}-${idx}`}
           className={cn(
             labelClassNamesMap.get(label as DependencyTypeShort),
-            'h-[18px] rounded-full text-xxs font-normal backdrop-blur-md',
+            'h-[18px] rounded-full text-xxs font-normal',
           )}>
           {label}
         </Badge>
