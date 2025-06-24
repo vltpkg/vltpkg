@@ -10,6 +10,7 @@ import {
   humanReadableOutput,
   jsonOutput,
   mermaidOutput,
+  GraphModifier,
 } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { Query } from '@vltpkg/query'
@@ -103,6 +104,7 @@ export const views = {
 } as const satisfies Views<QueryResult>
 
 export const command: CommandFn<QueryResult> = async conf => {
+  const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
@@ -110,6 +112,7 @@ export const command: CommandFn<QueryResult> = async conf => {
   const graph = actual.load({
     ...conf.options,
     mainManifest,
+    modifiers,
     monorepo,
     loadManifests: true,
   })

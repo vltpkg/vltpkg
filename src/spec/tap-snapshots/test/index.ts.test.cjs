@@ -53,8 +53,10 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
         }
       ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -85,8 +87,10 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
       isSingle: true,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -117,8 +121,10 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
       isSingle: [33mtrue[39m,
       set: [ [36m[Comparator][39m ],
       includePrerelease: [33mfalse[39m
-    }
-  }
+    },
+    overridden: [33mfalse[39m
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -158,7 +164,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect deep 1`
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -178,7 +185,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect default
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -198,7 +206,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect with co
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -238,7 +247,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect deep 1
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -258,7 +268,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect defaul
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -278,7 +289,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect with c
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -295,7 +307,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect deep
   bareSpec: 'baz',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'baz',
-  distTag: 'baz'
+  distTag: 'baz',
+  overridden: false
 }
 `
 
@@ -308,7 +321,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect defa
   bareSpec: 'baz',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'baz',
-  distTag: 'baz'
+  distTag: 'baz',
+  overridden: false
 }
 `
 
@@ -321,7 +335,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect with
   bareSpec: [32m'baz'[39m,
   registry: [32m'https://registry.npmjs.org/'[39m,
   registrySpec: [32m'baz'[39m,
-  distTag: [32m'baz'[39m
+  distTag: [32m'baz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -336,7 +351,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucke
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://bitbucket.org/user/foo',
-  gitRemote: 'git+ssh://bitbucket.org/user/foo'
+  gitRemote: 'git+ssh://bitbucket.org/user/foo',
+  overridden: false
 }
 `
 
@@ -347,7 +363,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucke
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://bitbucket.org/user/foo',
-  gitRemote: 'git+ssh://bitbucket.org/user/foo'
+  gitRemote: 'git+ssh://bitbucket.org/user/foo',
+  overridden: false
 }
 `
 
@@ -358,7 +375,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucke
   name: [32m'@foo/bar'[39m,
   scope: [32m'@foo'[39m,
   bareSpec: [32m'git+ssh://bitbucket.org/user/foo'[39m,
-  gitRemote: [32m'git+ssh://bitbucket.org/user/foo'[39m
+  gitRemote: [32m'git+ssh://bitbucket.org/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -373,7 +391,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.c
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://github.com/user/foo',
-  gitRemote: 'git+ssh://github.com/user/foo'
+  gitRemote: 'git+ssh://github.com/user/foo',
+  overridden: false
 }
 `
 
@@ -384,7 +403,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.c
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://github.com/user/foo',
-  gitRemote: 'git+ssh://github.com/user/foo'
+  gitRemote: 'git+ssh://github.com/user/foo',
+  overridden: false
 }
 `
 
@@ -395,7 +415,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.c
   name: [32m'@foo/bar'[39m,
   scope: [32m'@foo'[39m,
   bareSpec: [32m'git+ssh://github.com/user/foo'[39m,
-  gitRemote: [32m'git+ssh://github.com/user/foo'[39m
+  gitRemote: [32m'git+ssh://github.com/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -410,7 +431,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.c
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://gitlab.com/user/foo',
-  gitRemote: 'git+ssh://gitlab.com/user/foo'
+  gitRemote: 'git+ssh://gitlab.com/user/foo',
+  overridden: false
 }
 `
 
@@ -421,7 +443,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.c
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://gitlab.com/user/foo',
-  gitRemote: 'git+ssh://gitlab.com/user/foo'
+  gitRemote: 'git+ssh://gitlab.com/user/foo',
+  overridden: false
 }
 `
 
@@ -432,7 +455,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.c
   name: [32m'@foo/bar'[39m,
   scope: [32m'@foo'[39m,
   bareSpec: [32m'git+ssh://gitlab.com/user/foo'[39m,
-  gitRemote: [32m'git+ssh://gitlab.com/user/foo'[39m
+  gitRemote: [32m'git+ssh://gitlab.com/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -447,7 +471,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithu
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://notgithub.com/user/foo',
-  gitRemote: 'git+ssh://notgithub.com/user/foo'
+  gitRemote: 'git+ssh://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -458,7 +483,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithu
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://notgithub.com/user/foo',
-  gitRemote: 'git+ssh://notgithub.com/user/foo'
+  gitRemote: 'git+ssh://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -469,7 +495,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithu
   name: [32m'@foo/bar'[39m,
   scope: [32m'@foo'[39m,
   bareSpec: [32m'git+ssh://notgithub.com/user/foo'[39m,
-  gitRemote: [32m'git+ssh://notgithub.com/user/foo'[39m
+  gitRemote: [32m'git+ssh://notgithub.com/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -485,7 +512,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > insp
   scope: '@x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -497,7 +525,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > insp
   scope: '@x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -509,7 +538,8 @@ exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > insp
   scope: [32m'@x'[39m,
   bareSpec: [32m'workspace:@a/b@'[39m,
   workspaceSpec: [32m'*'[39m,
-  workspace: [32m'@a/b'[39m
+  workspace: [32m'@a/b'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -548,7 +578,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect deep 1`] = `
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -567,7 +598,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect default 1`] =
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -586,7 +618,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect with color 1`
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -625,7 +658,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect deep 1`] = `
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -644,7 +678,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect default 1`] 
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -663,7 +698,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect with color 1
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -718,7 +754,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect deep 1`]
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -737,7 +774,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect default 
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -756,7 +794,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect with col
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -801,7 +840,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect deep 1
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -842,7 +882,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect deep 2
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -862,7 +903,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect defaul
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -882,7 +924,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect defaul
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -902,7 +945,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect with c
     isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -922,7 +966,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect with c
     isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -971,7 +1016,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect deep 
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -991,7 +1037,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect defau
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1011,7 +1058,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect with 
     isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1066,7 +1114,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect deep 1`]
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1085,7 +1134,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect default 
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1104,7 +1154,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect with col
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1159,7 +1210,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect deep 1`] 
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1178,7 +1230,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect default 1
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1197,7 +1250,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect with colo
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1242,7 +1296,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect deep 1`
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1283,7 +1338,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect deep 2`
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1303,7 +1359,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect default
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1323,7 +1380,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect default
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1343,7 +1401,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect with co
     isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1363,7 +1422,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect with co
     isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1383,7 +1443,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect deep 
   bareSpec: 'github:bar/foo',
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'bar/foo'
+  namedGitHostPath: 'bar/foo',
+  overridden: false
 }
 `
 
@@ -1395,7 +1456,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect defau
   bareSpec: 'github:bar/foo',
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'bar/foo'
+  namedGitHostPath: 'bar/foo',
+  overridden: false
 }
 `
 
@@ -1407,7 +1469,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect with 
   bareSpec: [32m'github:bar/foo'[39m,
   gitRemote: [32m'git+ssh://git@github.com:bar/foo.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'bar/foo'[39m
+  namedGitHostPath: [32m'bar/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1423,7 +1486,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1435,7 +1499,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1447,7 +1512,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   bareSpec: [32m'bitbucket:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
   namedGitHost: [32m'bitbucket'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1463,7 +1529,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1475,7 +1542,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1487,7 +1555,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   bareSpec: [32m'gitlab:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
   namedGitHost: [32m'gitlab'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1544,7 +1613,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1565,7 +1635,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -1586,7 +1657,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1602,7 +1674,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect deep 1
   bareSpec: 'latest',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'latest',
-  distTag: 'latest'
+  distTag: 'latest',
+  overridden: false
 }
 `
 
@@ -1614,7 +1687,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect defaul
   bareSpec: 'latest',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'latest',
-  distTag: 'latest'
+  distTag: 'latest',
+  overridden: false
 }
 `
 
@@ -1626,7 +1700,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect with c
   bareSpec: [32m'latest'[39m,
   registry: [32m'https://registry.npmjs.org/'[39m,
   registrySpec: [32m'latest'[39m,
-  distTag: [32m'latest'[39m
+  distTag: [32m'latest'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1673,8 +1748,10 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect deep
         }
       ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -1701,8 +1778,10 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect defa
       isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -1729,8 +1808,10 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect with
       isSingle: [33mfalse[39m,
       set: [ [36m[Comparator][39m ],
       includePrerelease: [33mfalse[39m
-    }
-  }
+    },
+    overridden: [33mfalse[39m
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1746,7 +1827,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect d
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1758,7 +1840,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect d
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1770,7 +1853,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect w
   bareSpec: [32m'github:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1784,7 +1868,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect deep 1`] 
   spec: 'x@file:./foo',
   name: 'x',
   bareSpec: 'file:./foo',
-  file: './foo'
+  file: './foo',
+  overridden: false
 }
 `
 
@@ -1794,7 +1879,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect default 1
   spec: 'x@file:./foo',
   name: 'x',
   bareSpec: 'file:./foo',
-  file: './foo'
+  file: './foo',
+  overridden: false
 }
 `
 
@@ -1804,7 +1890,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect with colo
   spec: [32m'x@file:./foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./foo'[39m,
-  file: [32m'./foo'[39m
+  file: [32m'./foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1818,7 +1905,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect de
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -1828,7 +1916,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect de
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -1838,7 +1927,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect wi
   spec: [32m'x@file:///path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:///path/to/foo'[39m,
-  file: [32m'/path/to/foo'[39m
+  file: [32m'/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1852,7 +1942,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspec
   spec: 'x@file:///path/to/foo.tar',
   name: 'x',
   bareSpec: 'file:///path/to/foo.tar',
-  file: '/path/to/foo.tar'
+  file: '/path/to/foo.tar',
+  overridden: false
 }
 `
 
@@ -1862,7 +1953,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspec
   spec: 'x@file:///path/to/foo.tar',
   name: 'x',
   bareSpec: 'file:///path/to/foo.tar',
-  file: '/path/to/foo.tar'
+  file: '/path/to/foo.tar',
+  overridden: false
 }
 `
 
@@ -1872,7 +1964,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspec
   spec: [32m'x@file:///path/to/foo.tar'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:///path/to/foo.tar'[39m,
-  file: [32m'/path/to/foo.tar'[39m
+  file: [32m'/path/to/foo.tar'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1886,7 +1979,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspec
   spec: 'x@file:///path/to/foo.tgz',
   name: 'x',
   bareSpec: 'file:///path/to/foo.tgz',
-  file: '/path/to/foo.tgz'
+  file: '/path/to/foo.tgz',
+  overridden: false
 }
 `
 
@@ -1896,7 +1990,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspec
   spec: 'x@file:///path/to/foo.tgz',
   name: 'x',
   bareSpec: 'file:///path/to/foo.tgz',
-  file: '/path/to/foo.tgz'
+  file: '/path/to/foo.tgz',
+  overridden: false
 }
 `
 
@@ -1906,7 +2001,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspec
   spec: [32m'x@file:///path/to/foo.tgz'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:///path/to/foo.tgz'[39m,
-  file: [32m'/path/to/foo.tgz'[39m
+  file: [32m'/path/to/foo.tgz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1926,7 +2022,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/.
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'
+  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz',
+  overridden: false
 }
 `
 
@@ -1942,7 +2039,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/.
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'
+  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz',
+  overridden: false
 }
 `
 
@@ -1958,7 +2056,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/.
   gitCommittish: [32m' . . . . . some . tags / / /'[39m,
   namedGitHost: [32m'bitbucket'[39m,
   namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
-  remoteURL: [32m'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'[39m
+  remoteURL: [32m'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -1974,7 +2073,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1986,7 +2086,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -1998,7 +2099,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   bareSpec: [32m'bitbucket:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
   namedGitHost: [32m'bitbucket'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2018,7 +2120,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitCommittish: 'bar/baz',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz',
+  overridden: false
 }
 `
 
@@ -2034,7 +2137,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitCommittish: 'bar/baz',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz',
+  overridden: false
 }
 `
 
@@ -2050,7 +2154,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitCommittish: [32m'bar/baz'[39m,
   namedGitHost: [32m'bitbucket'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'[39m
+  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2070,7 +2175,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz',
+  overridden: false
 }
 `
 
@@ -2086,7 +2192,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz',
+  overridden: false
 }
 `
 
@@ -2102,7 +2209,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitCommittish: [32m'bar/baz/bin'[39m,
   namedGitHost: [32m'bitbucket'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'[39m
+  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2118,7 +2226,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   bareSpec: 'github:f fo o al/ a d s ;f',
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'f fo o al/ a d s ;f'
+  namedGitHostPath: 'f fo o al/ a d s ;f',
+  overridden: false
 }
 `
 
@@ -2130,7 +2239,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   bareSpec: 'github:f fo o al/ a d s ;f',
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'f fo o al/ a d s ;f'
+  namedGitHostPath: 'f fo o al/ a d s ;f',
+  overridden: false
 }
 `
 
@@ -2142,7 +2252,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   bareSpec: [32m'github:f fo o al/ a d s ;f'[39m,
   gitRemote: [32m'git+ssh://git@github.com:f fo o al/ a d s ;f.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'f fo o al/ a d s ;f'[39m
+  namedGitHostPath: [32m'f fo o al/ a d s ;f'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2156,7 +2267,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect deep 1`] 
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2166,7 +2278,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect default 1
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2176,7 +2289,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect with colo
   spec: [32m'x@file:.'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:.'[39m,
-  file: [32m'.'[39m
+  file: [32m'.'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2190,7 +2304,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > ins
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -2200,7 +2315,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > ins
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -2210,7 +2326,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > ins
   spec: [32m'x@file:../path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:../path/to/foo'[39m,
-  file: [32m'../path/to/foo'[39m
+  file: [32m'../path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2224,7 +2341,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > insp
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2234,7 +2352,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > insp
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2244,7 +2363,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > insp
   spec: [32m'x@file:./path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./path/to/foo'[39m,
-  file: [32m'./path/to/foo'[39m
+  file: [32m'./path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2258,7 +2378,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect deep 1`
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2268,7 +2389,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect default
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2278,7 +2400,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect with co
   spec: [32m'x@file:.'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:.'[39m,
-  file: [32m'.'[39m
+  file: [32m'.'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2292,7 +2415,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect deep 1
   spec: 'x@file:..',
   name: 'x',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -2302,7 +2426,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect defaul
   spec: 'x@file:..',
   name: 'x',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -2312,7 +2437,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect with c
   spec: [32m'x@file:..'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:..'[39m,
-  file: [32m'..'[39m
+  file: [32m'..'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2326,7 +2452,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > in
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -2336,7 +2463,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > in
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -2346,7 +2474,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > in
   spec: [32m'x@file:../path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:../path/to/foo'[39m,
-  file: [32m'../path/to/foo'[39m
+  file: [32m'../path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2360,7 +2489,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > ins
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2370,7 +2500,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > ins
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2380,7 +2511,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > ins
   spec: [32m'x@file:./path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./path/to/foo'[39m,
-  file: [32m'./path/to/foo'[39m
+  file: [32m'./path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2394,7 +2526,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > insp
   spec: 'x@file:///.path/to/foo',
   name: 'x',
   bareSpec: 'file:///.path/to/foo',
-  file: '/.path/to/foo'
+  file: '/.path/to/foo',
+  overridden: false
 }
 `
 
@@ -2404,7 +2537,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > insp
   spec: 'x@file:///.path/to/foo',
   name: 'x',
   bareSpec: 'file:///.path/to/foo',
-  file: '/.path/to/foo'
+  file: '/.path/to/foo',
+  overridden: false
 }
 `
 
@@ -2414,7 +2548,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > insp
   spec: [32m'x@file:///.path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:///.path/to/foo'[39m,
-  file: [32m'/.path/to/foo'[39m
+  file: [32m'/.path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2428,7 +2563,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect deep 1`
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2438,7 +2574,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect default
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2448,7 +2585,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect with co
   spec: [32m'x@file:.'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:.'[39m,
-  file: [32m'.'[39m
+  file: [32m'.'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2462,7 +2600,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect deep 1
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2472,7 +2611,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect defaul
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -2482,7 +2622,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect with c
   spec: [32m'x@file:.'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:.'[39m,
-  file: [32m'.'[39m
+  file: [32m'.'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2496,7 +2637,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect deep 
   spec: 'x@file:..',
   name: 'x',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -2506,7 +2648,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect defau
   spec: 'x@file:..',
   name: 'x',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -2516,7 +2659,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect with 
   spec: [32m'x@file:..'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:..'[39m,
-  file: [32m'..'[39m
+  file: [32m'..'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2530,7 +2674,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > i
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -2540,7 +2685,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > i
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -2550,7 +2696,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > i
   spec: [32m'x@file:../path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:../path/to/foo'[39m,
-  file: [32m'../path/to/foo'[39m
+  file: [32m'../path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2564,7 +2711,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > in
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2574,7 +2722,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > in
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2584,7 +2733,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > in
   spec: [32m'x@file:./path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./path/to/foo'[39m,
-  file: [32m'./path/to/foo'[39m
+  file: [32m'./path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2598,7 +2748,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > in
   spec: 'x@file:////path/to/foo',
   name: 'x',
   bareSpec: 'file:////path/to/foo',
-  file: '//path/to/foo'
+  file: '//path/to/foo',
+  overridden: false
 }
 `
 
@@ -2608,7 +2759,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > in
   spec: 'x@file:////path/to/foo',
   name: 'x',
   bareSpec: 'file:////path/to/foo',
-  file: '//path/to/foo'
+  file: '//path/to/foo',
+  overridden: false
 }
 `
 
@@ -2618,7 +2770,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > in
   spec: [32m'x@file:////path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:////path/to/foo'[39m,
-  file: [32m'//path/to/foo'[39m
+  file: [32m'//path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2632,7 +2785,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > i
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2642,7 +2796,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > i
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2652,7 +2807,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > i
   spec: [32m'x@file:~/path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:~/path/to/foo'[39m,
-  file: [32m'/mock/home/path/to/foo'[39m
+  file: [32m'/mock/home/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2666,7 +2822,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > ins
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2676,7 +2833,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > ins
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2686,7 +2844,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > ins
   spec: [32m'x@file:///path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:///path/to/foo'[39m,
-  file: [32m'/path/to/foo'[39m
+  file: [32m'/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2700,7 +2859,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > in
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2710,7 +2870,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > in
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2720,7 +2881,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > in
   spec: [32m'x@file:~/path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:~/path/to/foo'[39m,
-  file: [32m'/mock/home/path/to/foo'[39m
+  file: [32m'/mock/home/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2734,7 +2896,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > ins
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2744,7 +2907,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > ins
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2754,7 +2918,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > ins
   spec: [32m'x@file:~/path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:~/path/to/foo'[39m,
-  file: [32m'/mock/home/path/to/foo'[39m
+  file: [32m'/mock/home/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2768,7 +2933,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspe
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2778,7 +2944,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspe
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2788,7 +2955,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspe
   spec: [32m'x@file:///path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:///path/to/foo'[39m,
-  file: [32m'/path/to/foo'[39m
+  file: [32m'/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2802,7 +2970,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > insp
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2812,7 +2981,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > insp
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -2822,7 +2992,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > insp
   spec: [32m'x@file:~/path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:~/path/to/foo'[39m,
-  file: [32m'/mock/home/path/to/foo'[39m
+  file: [32m'/mock/home/path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2836,7 +3007,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspec
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2846,7 +3018,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspec
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -2856,7 +3029,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspec
   spec: [32m'x@file:./path/to/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./path/to/foo'[39m,
-  file: [32m'./path/to/foo'[39m
+  file: [32m'./path/to/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2870,7 +3044,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz >
   spec: 'x@file:./path/to/foo.tar.gz',
   name: 'x',
   bareSpec: 'file:./path/to/foo.tar.gz',
-  file: './path/to/foo.tar.gz'
+  file: './path/to/foo.tar.gz',
+  overridden: false
 }
 `
 
@@ -2880,7 +3055,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz >
   spec: 'x@file:./path/to/foo.tar.gz',
   name: 'x',
   bareSpec: 'file:./path/to/foo.tar.gz',
-  file: './path/to/foo.tar.gz'
+  file: './path/to/foo.tar.gz',
+  overridden: false
 }
 `
 
@@ -2890,7 +3066,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz >
   spec: [32m'x@file:./path/to/foo.tar.gz'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./path/to/foo.tar.gz'[39m,
-  file: [32m'./path/to/foo.tar.gz'[39m
+  file: [32m'./path/to/foo.tar.gz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2904,7 +3081,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect dee
   spec: 'x@file:./foo/bar/baz',
   name: 'x',
   bareSpec: 'file:./foo/bar/baz',
-  file: './foo/bar/baz'
+  file: './foo/bar/baz',
+  overridden: false
 }
 `
 
@@ -2914,7 +3092,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect def
   spec: 'x@file:./foo/bar/baz',
   name: 'x',
   bareSpec: 'file:./foo/bar/baz',
-  file: './foo/bar/baz'
+  file: './foo/bar/baz',
+  overridden: false
 }
 `
 
@@ -2924,7 +3103,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect wit
   spec: [32m'x@file:./foo/bar/baz'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'file:./foo/bar/baz'[39m,
-  file: [32m'./foo/bar/baz'[39m
+  file: [32m'./foo/bar/baz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2938,7 +3118,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo
   spec: 'x@git://github.com/user/foo',
   name: 'x',
   bareSpec: 'git://github.com/user/foo',
-  gitRemote: 'git://github.com/user/foo'
+  gitRemote: 'git://github.com/user/foo',
+  overridden: false
 }
 `
 
@@ -2948,7 +3129,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo
   spec: 'x@git://github.com/user/foo',
   name: 'x',
   bareSpec: 'git://github.com/user/foo',
-  gitRemote: 'git://github.com/user/foo'
+  gitRemote: 'git://github.com/user/foo',
+  overridden: false
 }
 `
 
@@ -2958,7 +3140,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo
   spec: [32m'x@git://github.com/user/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'git://github.com/user/foo'[39m,
-  gitRemote: [32m'git://github.com/user/foo'[39m
+  gitRemote: [32m'git://github.com/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -2972,7 +3155,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/
   spec: 'x@git://notgithub.com/user/foo',
   name: 'x',
   bareSpec: 'git://notgithub.com/user/foo',
-  gitRemote: 'git://notgithub.com/user/foo'
+  gitRemote: 'git://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -2982,7 +3166,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/
   spec: 'x@git://notgithub.com/user/foo',
   name: 'x',
   bareSpec: 'git://notgithub.com/user/foo',
-  gitRemote: 'git://notgithub.com/user/foo'
+  gitRemote: 'git://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -2992,7 +3177,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/
   spec: [32m'x@git://notgithub.com/user/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'git://notgithub.com/user/foo'[39m,
-  gitRemote: [32m'git://notgithub.com/user/foo'[39m
+  gitRemote: [32m'git://notgithub.com/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3008,7 +3194,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
   bareSpec: 'github:12345/foo',
   gitRemote: 'git+ssh://git@github.com:12345/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: '12345/foo'
+  namedGitHostPath: '12345/foo',
+  overridden: false
 }
 `
 
@@ -3020,7 +3207,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
   bareSpec: 'github:12345/foo',
   gitRemote: 'git+ssh://git@github.com:12345/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: '12345/foo'
+  namedGitHostPath: '12345/foo',
+  overridden: false
 }
 `
 
@@ -3032,7 +3220,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
   bareSpec: [32m'github:12345/foo'[39m,
   gitRemote: [32m'git+ssh://git@github.com:12345/foo.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'12345/foo'[39m
+  namedGitHostPath: [32m'12345/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3048,7 +3237,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect
   bareSpec: 'git@npm:not-git',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'git@npm:not-git',
-  distTag: 'git@npm:not-git'
+  distTag: 'git@npm:not-git',
+  overridden: false
 }
 `
 
@@ -3060,7 +3250,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect
   bareSpec: 'git@npm:not-git',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'git@npm:not-git',
-  distTag: 'git@npm:not-git'
+  distTag: 'git@npm:not-git',
+  overridden: false
 }
 `
 
@@ -3072,7 +3263,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect
   bareSpec: [32m'git@npm:not-git'[39m,
   registry: [32m'https://registry.npmjs.org/'[39m,
   registrySpec: [32m'git@npm:not-git'[39m,
-  distTag: [32m'git@npm:not-git'[39m
+  distTag: [32m'git@npm:not-git'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3089,7 +3281,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1
   gitRemote: 'git+file://path/to/repo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3102,7 +3295,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1
   gitRemote: 'git+file://path/to/repo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3115,7 +3309,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1
   gitRemote: [32m'git+file://path/to/repo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3132,7 +3327,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.o
   gitRemote: 'git+ssh://git@bitbucket.org/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3145,7 +3341,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.o
   gitRemote: 'git+ssh://git@bitbucket.org/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3158,7 +3355,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.o
   gitRemote: [32m'git+ssh://git@bitbucket.org/user/foo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3178,7 +3376,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   gitCommittish: '1.2.3',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
-  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3'
+  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3',
+  overridden: false
 }
 `
 
@@ -3194,7 +3393,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   gitCommittish: '1.2.3',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
-  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3'
+  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3',
+  overridden: false
 }
 `
 
@@ -3210,7 +3410,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   gitCommittish: [32m'1.2.3'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo'[39m,
-  remoteURL: [32m'https://codeload.github.com/user/foo/tar.gz/1.2.3'[39m
+  remoteURL: [32m'https://codeload.github.com/user/foo/tar.gz/1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3267,7 +3468,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3288,7 +3490,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3309,7 +3512,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3326,7 +3530,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
   gitRemote: 'git+ssh://git@github.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3339,7 +3544,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
   gitRemote: 'git+ssh://git@github.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3352,7 +3558,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
   gitRemote: [32m'git+ssh://git@github.com/user/foo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3407,7 +3614,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3426,7 +3634,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3445,7 +3654,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3462,7 +3672,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/
   gitRemote: 'git+ssh://git@gitlab.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3475,7 +3686,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/
   gitRemote: 'git+ssh://git@gitlab.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3488,7 +3700,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/
   gitRemote: [32m'git+ssh://git@gitlab.com/user/foo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3502,7 +3715,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   spec: 'x@git+ssh://git@notgithub.com:user/foo',
   name: 'x',
   bareSpec: 'git+ssh://git@notgithub.com:user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  overridden: false
 }
 `
 
@@ -3512,7 +3726,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   spec: 'x@git+ssh://git@notgithub.com:user/foo',
   name: 'x',
   bareSpec: 'git+ssh://git@notgithub.com:user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  overridden: false
 }
 `
 
@@ -3522,7 +3737,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   spec: [32m'x@git+ssh://git@notgithub.com:user/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'git+ssh://git@notgithub.com:user/foo'[39m,
-  gitRemote: [32m'git+ssh://git@notgithub.com:user/foo'[39m
+  gitRemote: [32m'git+ssh://git@notgithub.com:user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3539,7 +3755,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   gitRemote: 'git+ssh://git@notgithub.com:user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3552,7 +3769,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   gitRemote: 'git+ssh://git@notgithub.com:user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3565,7 +3783,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   gitRemote: [32m'git+ssh://git@notgithub.com:user/foo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3620,7 +3839,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3639,7 +3859,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3658,7 +3879,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3672,7 +3894,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   spec: 'x@git+ssh://git@notgithub.com/user/foo',
   name: 'x',
   bareSpec: 'git+ssh://git@notgithub.com/user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -3682,7 +3905,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   spec: 'x@git+ssh://git@notgithub.com/user/foo',
   name: 'x',
   bareSpec: 'git+ssh://git@notgithub.com/user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -3692,7 +3916,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   spec: [32m'x@git+ssh://git@notgithub.com/user/foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'git+ssh://git@notgithub.com/user/foo'[39m,
-  gitRemote: [32m'git+ssh://git@notgithub.com/user/foo'[39m
+  gitRemote: [32m'git+ssh://git@notgithub.com/user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3709,7 +3934,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   gitRemote: 'git+ssh://git@notgithub.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3722,7 +3948,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   gitRemote: 'git+ssh://git@notgithub.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3735,7 +3962,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   gitRemote: [32m'git+ssh://git@notgithub.com/user/foo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3790,7 +4018,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3809,7 +4038,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -3828,7 +4058,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3842,7 +4073,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   spec: 'x@git+ssh://mydomain.com:1234/hey',
   name: 'x',
   bareSpec: 'git+ssh://mydomain.com:1234/hey',
-  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  overridden: false
 }
 `
 
@@ -3852,7 +4084,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   spec: 'x@git+ssh://mydomain.com:1234/hey',
   name: 'x',
   bareSpec: 'git+ssh://mydomain.com:1234/hey',
-  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  overridden: false
 }
 `
 
@@ -3862,7 +4095,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   spec: [32m'x@git+ssh://mydomain.com:1234/hey'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'git+ssh://mydomain.com:1234/hey'[39m,
-  gitRemote: [32m'git+ssh://mydomain.com:1234/hey'[39m
+  gitRemote: [32m'git+ssh://mydomain.com:1234/hey'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3879,7 +4113,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   gitRemote: 'git+ssh://mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3892,7 +4127,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   gitRemote: 'git+ssh://mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3905,7 +4141,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   gitRemote: [32m'git+ssh://mydomain.com:1234/hey'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3922,7 +4159,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   gitRemote: 'git+ssh://mydomain.com:1234',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3935,7 +4173,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   gitRemote: 'git+ssh://mydomain.com:1234',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -3948,7 +4187,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
   gitRemote: [32m'git+ssh://mydomain.com:1234'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3962,7 +4202,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   spec: 'x@git+ssh://mydomain.com:foo',
   name: 'x',
   bareSpec: 'git+ssh://mydomain.com:foo',
-  gitRemote: 'git+ssh://mydomain.com:foo'
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  overridden: false
 }
 `
 
@@ -3972,7 +4213,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   spec: 'x@git+ssh://mydomain.com:foo',
   name: 'x',
   bareSpec: 'git+ssh://mydomain.com:foo',
-  gitRemote: 'git+ssh://mydomain.com:foo'
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  overridden: false
 }
 `
 
@@ -3982,7 +4224,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   spec: [32m'x@git+ssh://mydomain.com:foo'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'git+ssh://mydomain.com:foo'[39m,
-  gitRemote: [32m'git+ssh://mydomain.com:foo'[39m
+  gitRemote: [32m'git+ssh://mydomain.com:foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -3999,7 +4242,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   gitRemote: 'git+ssh://mydomain.com:foo/bar',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -4012,7 +4256,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   gitRemote: 'git+ssh://mydomain.com:foo/bar',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -4025,7 +4270,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   gitRemote: [32m'git+ssh://mydomain.com:foo/bar'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4042,7 +4288,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   gitRemote: 'git+ssh://mydomain.com:foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -4055,7 +4302,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   gitRemote: 'git+ssh://mydomain.com:foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -4068,7 +4316,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
   gitRemote: [32m'git+ssh://mydomain.com:foo'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4085,7 +4334,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:passwo
   gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -4098,7 +4348,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:passwo
   gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -4111,7 +4362,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:passwo
   gitRemote: [32m'git+ssh://username:password@mydomain.com:1234/hey'[39m,
   gitSelector: [32m'1.2.3'[39m,
   gitSelectorParsed: {},
-  gitCommittish: [32m'1.2.3'[39m
+  gitCommittish: [32m'1.2.3'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4127,7 +4379,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -4139,7 +4392,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -4151,7 +4405,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   bareSpec: [32m'github:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4171,7 +4426,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..fo
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'
+  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /',
+  overridden: false
 }
 `
 
@@ -4187,7 +4443,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..fo
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'
+  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /',
+  overridden: false
 }
 `
 
@@ -4203,7 +4460,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..fo
   gitCommittish: [32m' . . . . . some . tags / / /'[39m,
   namedGitHost: [32m'gitlab'[39m,
   namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
-  remoteURL: [32m'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'[39m
+  remoteURL: [32m'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4219,7 +4477,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -4231,7 +4490,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -4243,7 +4503,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   bareSpec: [32m'gitlab:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
   namedGitHost: [32m'gitlab'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4263,7 +4524,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitCommittish: 'bar/baz',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz',
+  overridden: false
 }
 `
 
@@ -4279,7 +4541,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitCommittish: 'bar/baz',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz',
+  overridden: false
 }
 `
 
@@ -4295,7 +4558,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitCommittish: [32m'bar/baz'[39m,
   namedGitHost: [32m'gitlab'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'[39m
+  remoteURL: [32m'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4315,7 +4579,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin',
+  overridden: false
 }
 `
 
@@ -4331,7 +4596,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin',
+  overridden: false
 }
 `
 
@@ -4347,7 +4613,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitCommittish: [32m'bar/baz/bin'[39m,
   namedGitHost: [32m'gitlab'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'[39m
+  remoteURL: [32m'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4361,7 +4628,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.t
   spec: 'x@http://insecure.com/foo.tgz',
   name: 'x',
   bareSpec: 'http://insecure.com/foo.tgz',
-  remoteURL: 'http://insecure.com/foo.tgz'
+  remoteURL: 'http://insecure.com/foo.tgz',
+  overridden: false
 }
 `
 
@@ -4371,7 +4639,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.t
   spec: 'x@http://insecure.com/foo.tgz',
   name: 'x',
   bareSpec: 'http://insecure.com/foo.tgz',
-  remoteURL: 'http://insecure.com/foo.tgz'
+  remoteURL: 'http://insecure.com/foo.tgz',
+  overridden: false
 }
 `
 
@@ -4381,7 +4650,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.t
   spec: [32m'x@http://insecure.com/foo.tgz'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'http://insecure.com/foo.tgz'[39m,
-  remoteURL: [32m'http://insecure.com/foo.tgz'[39m
+  remoteURL: [32m'http://insecure.com/foo.tgz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4397,7 +4667,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
   bareSpec: 'bitbucket:user/foo',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -4409,7 +4680,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
   bareSpec: 'bitbucket:user/foo',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -4421,7 +4693,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
   bareSpec: [32m'bitbucket:user/foo'[39m,
   gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo.git'[39m,
   namedGitHost: [32m'bitbucket'[39m,
-  namedGitHostPath: [32m'user/foo'[39m
+  namedGitHostPath: [32m'user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4437,7 +4710,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
   bareSpec: 'github:user/foo',
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -4449,7 +4723,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
   bareSpec: 'github:user/foo',
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -4461,7 +4736,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
   bareSpec: [32m'github:user/foo'[39m,
   gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo'[39m
+  namedGitHostPath: [32m'user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4477,7 +4753,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
   bareSpec: 'github:user/project',
   gitRemote: 'git+ssh://git@github.com:user/project.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/project'
+  namedGitHostPath: 'user/project',
+  overridden: false
 }
 `
 
@@ -4489,7 +4766,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
   bareSpec: 'github:user/project',
   gitRemote: 'git+ssh://git@github.com:user/project.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/project'
+  namedGitHostPath: 'user/project',
+  overridden: false
 }
 `
 
@@ -4501,7 +4779,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
   bareSpec: [32m'github:user/project'[39m,
   gitRemote: [32m'git+ssh://git@github.com:user/project.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/project'[39m
+  namedGitHostPath: [32m'user/project'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4517,7 +4796,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
   bareSpec: 'gitlab:user/foo',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -4529,7 +4809,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
   bareSpec: 'gitlab:user/foo',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -4541,7 +4822,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
   bareSpec: [32m'gitlab:user/foo'[39m,
   gitRemote: [32m'git+ssh://git@gitlab.com:user/foo.git'[39m,
   namedGitHost: [32m'gitlab'[39m,
-  namedGitHostPath: [32m'user/foo'[39m
+  namedGitHostPath: [32m'user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4555,7 +4837,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tg
   spec: 'x@https://server.com/foo.tgz',
   name: 'x',
   bareSpec: 'https://server.com/foo.tgz',
-  remoteURL: 'https://server.com/foo.tgz'
+  remoteURL: 'https://server.com/foo.tgz',
+  overridden: false
 }
 `
 
@@ -4565,7 +4848,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tg
   spec: 'x@https://server.com/foo.tgz',
   name: 'x',
   bareSpec: 'https://server.com/foo.tgz',
-  remoteURL: 'https://server.com/foo.tgz'
+  remoteURL: 'https://server.com/foo.tgz',
+  overridden: false
 }
 `
 
@@ -4575,7 +4859,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tg
   spec: [32m'x@https://server.com/foo.tgz'[39m,
   name: [32m'x'[39m,
   bareSpec: [32m'https://server.com/foo.tgz'[39m,
-  remoteURL: [32m'https://server.com/foo.tgz'[39m
+  remoteURL: [32m'https://server.com/foo.tgz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4591,7 +4876,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   bareSpec: 'github:not-git@hostname.com:some/repo',
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'not-git@hostname.com:some/repo'
+  namedGitHostPath: 'not-git@hostname.com:some/repo',
+  overridden: false
 }
 `
 
@@ -4603,7 +4889,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   bareSpec: 'github:not-git@hostname.com:some/repo',
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'not-git@hostname.com:some/repo'
+  namedGitHostPath: 'not-git@hostname.com:some/repo',
+  overridden: false
 }
 `
 
@@ -4615,7 +4902,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   bareSpec: [32m'github:not-git@hostname.com:some/repo'[39m,
   gitRemote: [32m'git+ssh://git@github.com:not-git@hostname.com:some/repo.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'not-git@hostname.com:some/repo'[39m
+  namedGitHostPath: [32m'not-git@hostname.com:some/repo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4692,10 +4980,14 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
             }
           ],
           includePrerelease: false
-        }
-      }
-    }
-  }
+        },
+        overridden: false
+      },
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -4736,10 +5028,14 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
           isSingle: false,
           set: [ [Comparator] ],
           includePrerelease: false
-        }
-      }
-    }
-  }
+        },
+        overridden: false
+      },
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -4780,10 +5076,14 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
           isSingle: [33mfalse[39m,
           set: [ [36m[Comparator][39m ],
           includePrerelease: [33mfalse[39m
-        }
-      }
-    }
-  }
+        },
+        overridden: [33mfalse[39m
+      },
+      overridden: [33mfalse[39m
+    },
+    overridden: [33mfalse[39m
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4818,9 +5118,12 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       namedGitHost: 'github',
       namedGitHostPath: 'a/x',
       namedRegistry: 'npm',
-      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch'
-    }
-  }
+      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch',
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -4851,9 +5154,12 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       namedGitHost: 'github',
       namedGitHostPath: 'a/x',
       namedRegistry: 'npm',
-      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch'
-    }
-  }
+      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch',
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -4884,9 +5190,12 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       namedGitHost: [32m'github'[39m,
       namedGitHostPath: [32m'a/x'[39m,
       namedRegistry: [32m'npm'[39m,
-      remoteURL: [32m'https://codeload.github.com/a/x/tar.gz/branch'[39m
-    }
-  }
+      remoteURL: [32m'https://codeload.github.com/a/x/tar.gz/branch'[39m,
+      overridden: [33mfalse[39m
+    },
+    overridden: [33mfalse[39m
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4909,8 +5218,10 @@ exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.
     bareSpec: 'latest',
     registry: 'https://example.com/npm/',
     registrySpec: 'latest',
-    distTag: 'latest'
-  }
+    distTag: 'latest',
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -4929,8 +5240,10 @@ exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.
     bareSpec: 'latest',
     registry: 'https://example.com/npm/',
     registrySpec: 'latest',
-    distTag: 'latest'
-  }
+    distTag: 'latest',
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -4949,8 +5262,10 @@ exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.
     bareSpec: [32m'latest'[39m,
     registry: [32m'https://example.com/npm/'[39m,
     registrySpec: [32m'latest'[39m,
-    distTag: [32m'latest'[39m
-  }
+    distTag: [32m'latest'[39m,
+    overridden: [33mfalse[39m
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -4970,7 +5285,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'github',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'
+  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /',
+  overridden: false
 }
 `
 
@@ -4986,7 +5302,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'github',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'
+  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /',
+  overridden: false
 }
 `
 
@@ -5002,7 +5319,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
   gitCommittish: [32m' . . . . . some . tags / / /'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
-  remoteURL: [32m'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'[39m
+  remoteURL: [32m'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5018,7 +5336,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect dee
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -5030,7 +5349,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect def
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -5042,7 +5362,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect wit
   bareSpec: [32m'github:user/foo-js'[39m,
   gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo-js'[39m
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5062,7 +5383,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
   gitCommittish: 'bar/baz',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz',
+  overridden: false
 }
 `
 
@@ -5078,7 +5400,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
   gitCommittish: 'bar/baz',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz',
+  overridden: false
 }
 `
 
@@ -5094,7 +5417,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
   gitCommittish: [32m'bar/baz'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'[39m
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5114,7 +5438,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin',
+  overridden: false
 }
 `
 
@@ -5130,7 +5455,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin',
+  overridden: false
 }
 `
 
@@ -5146,7 +5472,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
   gitCommittish: [32m'bar/baz/bin'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'[39m
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5165,7 +5492,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist 
   gitSelectorParsed: { path: 'dist' },
   gitCommittish: '1234',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -5180,7 +5508,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist 
   gitSelectorParsed: { path: 'dist' },
   gitCommittish: '1234',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -5195,7 +5524,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist 
   gitSelectorParsed: { path: [32m'dist'[39m },
   gitCommittish: [32m'1234'[39m,
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo'[39m
+  namedGitHostPath: [32m'user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5213,7 +5543,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitSelector: 'notimplemented:value',
   gitSelectorParsed: {},
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -5227,7 +5558,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitSelector: 'notimplemented:value',
   gitSelectorParsed: {},
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -5241,7 +5573,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitSelector: [32m'notimplemented:value'[39m,
   gitSelectorParsed: {},
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo'[39m
+  namedGitHostPath: [32m'user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5259,7 +5592,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > insp
   gitSelector: 'path:dist',
   gitSelectorParsed: { path: 'dist' },
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -5273,7 +5607,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > insp
   gitSelector: 'path:dist',
   gitSelectorParsed: { path: 'dist' },
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -5287,7 +5622,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > insp
   gitSelector: [32m'path:dist'[39m,
   gitSelectorParsed: { path: [32m'dist'[39m },
   namedGitHost: [32m'github'[39m,
-  namedGitHostPath: [32m'user/foo'[39m
+  namedGitHostPath: [32m'user/foo'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5344,7 +5680,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5365,7 +5702,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5386,7 +5724,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5425,7 +5764,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect deep
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5444,7 +5784,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect defa
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5463,7 +5804,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect with
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5478,7 +5820,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect
   name: 'x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -5489,7 +5832,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect
   name: 'x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -5500,7 +5844,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:@a/b@'[39m,
   workspaceSpec: [32m'*'[39m,
-  workspace: [32m'@a/b'[39m
+  workspace: [32m'@a/b'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5515,7 +5860,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect dee
   name: 'x',
   bareSpec: 'workspace:*',
   workspaceSpec: '*',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -5526,7 +5872,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect def
   name: 'x',
   bareSpec: 'workspace:*',
   workspaceSpec: '*',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -5537,7 +5884,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect wit
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:*'[39m,
   workspaceSpec: [32m'*'[39m,
-  workspace: [32m'x'[39m
+  workspace: [32m'x'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5552,7 +5900,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect dee
   name: 'x',
   bareSpec: 'workspace:^',
   workspaceSpec: '^',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -5563,7 +5912,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect def
   name: 'x',
   bareSpec: 'workspace:^',
   workspaceSpec: '^',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -5574,7 +5924,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect wit
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:^'[39m,
   workspaceSpec: [32m'^'[39m,
-  workspace: [32m'x'[39m
+  workspace: [32m'x'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5589,7 +5940,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect dee
   name: 'x',
   bareSpec: 'workspace:~',
   workspaceSpec: '~',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -5600,7 +5952,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect def
   name: 'x',
   bareSpec: 'workspace:~',
   workspaceSpec: '~',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -5611,7 +5964,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect wit
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:~'[39m,
   workspaceSpec: [32m'~'[39m,
-  workspace: [32m'x'[39m
+  workspace: [32m'x'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5666,7 +6020,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect d
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5685,7 +6040,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect d
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5704,7 +6060,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect w
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5719,7 +6076,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect de
   name: 'x',
   bareSpec: 'workspace:y@',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5730,7 +6088,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect de
   name: 'x',
   bareSpec: 'workspace:y@',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5741,7 +6100,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect wi
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:y@'[39m,
   workspaceSpec: [32m'*'[39m,
-  workspace: [32m'y'[39m
+  workspace: [32m'y'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5756,7 +6116,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect d
   name: 'x',
   bareSpec: 'workspace:y@*',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5767,7 +6128,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect d
   name: 'x',
   bareSpec: 'workspace:y@*',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5778,7 +6140,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect w
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:y@*'[39m,
   workspaceSpec: [32m'*'[39m,
-  workspace: [32m'y'[39m
+  workspace: [32m'y'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5793,7 +6156,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect d
   name: 'x',
   bareSpec: 'workspace:y@^',
   workspaceSpec: '^',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5804,7 +6168,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect d
   name: 'x',
   bareSpec: 'workspace:y@^',
   workspaceSpec: '^',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5815,7 +6180,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect w
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:y@^'[39m,
   workspaceSpec: [32m'^'[39m,
-  workspace: [32m'y'[39m
+  workspace: [32m'y'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5830,7 +6196,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect d
   name: 'x',
   bareSpec: 'workspace:y@~',
   workspaceSpec: '~',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5841,7 +6208,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect d
   name: 'x',
   bareSpec: 'workspace:y@~',
   workspaceSpec: '~',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -5852,7 +6220,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect w
   name: [32m'x'[39m,
   bareSpec: [32m'workspace:y@~'[39m,
   workspaceSpec: [32m'~'[39m,
-  workspace: [32m'y'[39m
+  workspace: [32m'y'[39m,
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5907,7 +6276,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
       }
     ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5926,7 +6296,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -5945,7 +6316,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
     isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
-  }
+  },
+  overridden: [33mfalse[39m
 }
 `
 
@@ -5990,9 +6362,12 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a 1`] = `
         isSingle: true,
         set: [ [Comparator] ],
         includePrerelease: false
-      }
-    }
-  }
+      },
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6034,9 +6409,12 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y 1`] = `
         isSingle: true,
         set: [ [Comparator] ],
         includePrerelease: false
-      }
-    }
-  }
+      },
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6079,9 +6457,12 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y, @j 1`] 
         isSingle: true,
         set: [ [Comparator] ],
         includePrerelease: false
-      }
-    }
-  }
+      },
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6091,7 +6472,8 @@ exports[`test/index.ts > TAP > parse args > ./foo > inspect default 1`] = `
   spec: '(unknown)@file:./foo',
   name: '(unknown)',
   bareSpec: 'file:./foo',
-  file: './foo'
+  file: './foo',
+  overridden: false
 }
 `
 
@@ -6104,7 +6486,8 @@ exports[`test/index.ts > TAP > parse args > @a/b@bitbucket:a/b > inspect default
   bareSpec: 'bitbucket:a/b',
   gitRemote: 'git+ssh://git@bitbucket.org:a/b.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'a/b'
+  namedGitHostPath: 'a/b',
+  overridden: false
 }
 `
 
@@ -6135,8 +6518,10 @@ exports[`test/index.ts > TAP > parse args > @a/b@npm:@y/z@1.2.3 > inspect defaul
       isSingle: true,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6156,7 +6541,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6176,7 +6562,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@ > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6196,7 +6583,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@* > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6209,7 +6597,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@baz > inspect default 1`] =
   bareSpec: 'baz',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'baz',
-  distTag: 'baz'
+  distTag: 'baz',
+  overridden: false
 }
 `
 
@@ -6220,7 +6609,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://bitbucket.org/use
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://bitbucket.org/user/foo',
-  gitRemote: 'git+ssh://bitbucket.org/user/foo'
+  gitRemote: 'git+ssh://bitbucket.org/user/foo',
+  overridden: false
 }
 `
 
@@ -6231,7 +6621,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://github.com/user/f
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://github.com/user/foo',
-  gitRemote: 'git+ssh://github.com/user/foo'
+  gitRemote: 'git+ssh://github.com/user/foo',
+  overridden: false
 }
 `
 
@@ -6242,7 +6633,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://gitlab.com/user/f
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://gitlab.com/user/foo',
-  gitRemote: 'git+ssh://gitlab.com/user/foo'
+  gitRemote: 'git+ssh://gitlab.com/user/foo',
+  overridden: false
 }
 `
 
@@ -6253,7 +6645,8 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://notgithub.com/use
   name: '@foo/bar',
   scope: '@foo',
   bareSpec: 'git+ssh://notgithub.com/user/foo',
-  gitRemote: 'git+ssh://notgithub.com/user/foo'
+  gitRemote: 'git+ssh://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -6265,7 +6658,8 @@ exports[`test/index.ts > TAP > parse args > @x/y@workspace:@a/b@ > inspect defau
   scope: '@x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -6275,7 +6669,8 @@ exports[`test/index.ts > TAP > parse args > /path/to/foo > inspect default 1`] =
   spec: '(unknown)@file:///path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6285,7 +6680,8 @@ exports[`test/index.ts > TAP > parse args > /path/to/foo.tar > inspect default 1
   spec: '(unknown)@file:///path/to/foo.tar',
   name: '(unknown)',
   bareSpec: 'file:///path/to/foo.tar',
-  file: '/path/to/foo.tar'
+  file: '/path/to/foo.tar',
+  overridden: false
 }
 `
 
@@ -6295,7 +6691,8 @@ exports[`test/index.ts > TAP > parse args > /path/to/foo.tgz > inspect default 1
   spec: '(unknown)@file:///path/to/foo.tgz',
   name: '(unknown)',
   bareSpec: 'file:///path/to/foo.tgz',
-  file: '/path/to/foo.tgz'
+  file: '/path/to/foo.tgz',
+  overridden: false
 }
 `
 
@@ -6322,8 +6719,10 @@ exports[`test/index.ts > TAP > parse args > custom:foo > inspect default 1`] = `
       isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6350,8 +6749,10 @@ exports[`test/index.ts > TAP > parse args > custom:foo@1 > inspect default 1`] =
       isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6361,7 +6762,8 @@ exports[`test/index.ts > TAP > parse args > file: > inspect default 1`] = `
   spec: '(unknown)@file:.',
   name: '(unknown)',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -6371,7 +6773,8 @@ exports[`test/index.ts > TAP > parse args > file:../path/to/foo > inspect defaul
   spec: '(unknown)@file:../path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -6381,7 +6784,8 @@ exports[`test/index.ts > TAP > parse args > file:./path/to/foo > inspect default
   spec: '(unknown)@file:./path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -6391,7 +6795,8 @@ exports[`test/index.ts > TAP > parse args > file:/. > inspect default 1`] = `
   spec: '(unknown)@file:.',
   name: '(unknown)',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -6401,7 +6806,8 @@ exports[`test/index.ts > TAP > parse args > file:/.. > inspect default 1`] = `
   spec: '(unknown)@file:..',
   name: '(unknown)',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -6411,7 +6817,8 @@ exports[`test/index.ts > TAP > parse args > file:/../path/to/foo > inspect defau
   spec: '(unknown)@file:../path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -6421,7 +6828,8 @@ exports[`test/index.ts > TAP > parse args > file:/./path/to/foo > inspect defaul
   spec: '(unknown)@file:./path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -6431,7 +6839,8 @@ exports[`test/index.ts > TAP > parse args > file:/.path/to/foo > inspect default
   spec: '(unknown)@file:///.path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:///.path/to/foo',
-  file: '/.path/to/foo'
+  file: '/.path/to/foo',
+  overridden: false
 }
 `
 
@@ -6441,7 +6850,8 @@ exports[`test/index.ts > TAP > parse args > file:// > inspect default 1`] = `
   spec: '(unknown)@file:.',
   name: '(unknown)',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -6451,7 +6861,8 @@ exports[`test/index.ts > TAP > parse args > file://. > inspect default 1`] = `
   spec: '(unknown)@file:.',
   name: '(unknown)',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -6461,7 +6872,8 @@ exports[`test/index.ts > TAP > parse args > file://.. > inspect default 1`] = `
   spec: '(unknown)@file:..',
   name: '(unknown)',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -6471,7 +6883,8 @@ exports[`test/index.ts > TAP > parse args > file://../path/to/foo > inspect defa
   spec: '(unknown)@file:../path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -6481,7 +6894,8 @@ exports[`test/index.ts > TAP > parse args > file://./path/to/foo > inspect defau
   spec: '(unknown)@file:./path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -6491,7 +6905,8 @@ exports[`test/index.ts > TAP > parse args > file:////path/to/foo > inspect defau
   spec: '(unknown)@file:////path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:////path/to/foo',
-  file: '//path/to/foo'
+  file: '//path/to/foo',
+  overridden: false
 }
 `
 
@@ -6501,7 +6916,8 @@ exports[`test/index.ts > TAP > parse args > file:///~/path/to/foo > inspect defa
   spec: '(unknown)@file:~/path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6511,7 +6927,8 @@ exports[`test/index.ts > TAP > parse args > file:///path/to/foo > inspect defaul
   spec: '(unknown)@file:///path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6521,7 +6938,8 @@ exports[`test/index.ts > TAP > parse args > file://~/path/to/foo > inspect defau
   spec: '(unknown)@file:~/path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6531,7 +6949,8 @@ exports[`test/index.ts > TAP > parse args > file:/~/path/to/foo > inspect defaul
   spec: '(unknown)@file:~/path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6541,7 +6960,8 @@ exports[`test/index.ts > TAP > parse args > file:/path/to/foo > inspect default 
   spec: '(unknown)@file:///path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6551,7 +6971,8 @@ exports[`test/index.ts > TAP > parse args > file:~/path/to/foo > inspect default
   spec: '(unknown)@file:~/path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -6561,7 +6982,8 @@ exports[`test/index.ts > TAP > parse args > file:path/to/foo > inspect default 1
   spec: '(unknown)@file:./path/to/foo',
   name: '(unknown)',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -6571,7 +6993,8 @@ exports[`test/index.ts > TAP > parse args > file:path/to/foo.tar.gz > inspect de
   spec: '(unknown)@file:./path/to/foo.tar.gz',
   name: '(unknown)',
   bareSpec: 'file:./path/to/foo.tar.gz',
-  file: './path/to/foo.tar.gz'
+  file: './path/to/foo.tar.gz',
+  overridden: false
 }
 `
 
@@ -6590,7 +7013,8 @@ exports[`test/index.ts > TAP > parse args > foo > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6609,7 +7033,8 @@ exports[`test/index.ts > TAP > parse args > foo@ > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6628,7 +7053,8 @@ exports[`test/index.ts > TAP > parse args > foo@ 1.2 > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6648,7 +7074,8 @@ exports[`test/index.ts > TAP > parse args > foo@ 1.2.3 > inspect default 1`] = `
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6668,7 +7095,8 @@ exports[`test/index.ts > TAP > parse args > foo@ 1.2.3 > inspect default 2`] = `
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6688,7 +7116,8 @@ exports[`test/index.ts > TAP > parse args > foo@=v1.2.3 > inspect default 1`] = 
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6707,7 +7136,8 @@ exports[`test/index.ts > TAP > parse args > foo@~1.2 > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6726,7 +7156,8 @@ exports[`test/index.ts > TAP > parse args > foo@1.2 > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6746,7 +7177,8 @@ exports[`test/index.ts > TAP > parse args > foo@1.2.3 > inspect default 1`] = `
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6766,7 +7198,8 @@ exports[`test/index.ts > TAP > parse args > foo@1.2.3 > inspect default 2`] = `
     isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6778,7 +7211,8 @@ exports[`test/index.ts > TAP > parse args > foo@bar/foo > inspect default 1`] = 
   bareSpec: 'github:bar/foo',
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'bar/foo'
+  namedGitHostPath: 'bar/foo',
+  overridden: false
 }
 `
 
@@ -6790,7 +7224,8 @@ exports[`test/index.ts > TAP > parse args > foo@bitbucket:user/foo-js > inspect 
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -6802,7 +7237,8 @@ exports[`test/index.ts > TAP > parse args > foo@gitlab:user/foo-js > inspect def
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -6823,7 +7259,8 @@ exports[`test/index.ts > TAP > parse args > foo@https://bitbucket.org/user/proje
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6835,7 +7272,8 @@ exports[`test/index.ts > TAP > parse args > foo@latest > inspect default 1`] = `
   bareSpec: 'latest',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'latest',
-  distTag: 'latest'
+  distTag: 'latest',
+  overridden: false
 }
 `
 
@@ -6862,8 +7300,10 @@ exports[`test/index.ts > TAP > parse args > foo@npm:bar@ > inspect default 1`] =
       isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -6875,7 +7315,8 @@ exports[`test/index.ts > TAP > parse args > foo@user/foo-js > inspect default 1`
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -6885,7 +7326,8 @@ exports[`test/index.ts > TAP > parse args > foo/bar/baz > inspect default 1`] = 
   spec: '(unknown)@file:./foo/bar/baz',
   name: '(unknown)',
   bareSpec: 'file:./foo/bar/baz',
-  file: './foo/bar/baz'
+  file: './foo/bar/baz',
+  overridden: false
 }
 `
 
@@ -6895,7 +7337,8 @@ exports[`test/index.ts > TAP > parse args > git://notgithub.com/user/foo > inspe
   spec: '(unknown)@git://notgithub.com/user/foo',
   name: '(unknown)',
   bareSpec: 'git://notgithub.com/user/foo',
-  gitRemote: 'git://notgithub.com/user/foo'
+  gitRemote: 'git://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -6908,7 +7351,8 @@ exports[`test/index.ts > TAP > parse args > git+file://path/to/repo#1.2.3 > insp
   gitRemote: 'git+file://path/to/repo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -6929,7 +7373,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com:user/foo#se
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6942,7 +7387,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com/user/foo#1.
   gitRemote: 'git+ssh://git@github.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -6961,7 +7407,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com/user/foo#se
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -6971,7 +7418,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo
   spec: '(unknown)@git+ssh://git@notgithub.com:user/foo',
   name: '(unknown)',
   bareSpec: 'git+ssh://git@notgithub.com:user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  overridden: false
 }
 `
 
@@ -6984,7 +7432,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo
   gitRemote: 'git+ssh://git@notgithub.com:user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7003,7 +7452,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7013,7 +7463,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo
   spec: '(unknown)@git+ssh://git@notgithub.com/user/foo',
   name: '(unknown)',
   bareSpec: 'git+ssh://git@notgithub.com/user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -7026,7 +7477,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo
   gitRemote: 'git+ssh://git@notgithub.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7045,7 +7497,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7055,7 +7508,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:1234/hey > in
   spec: '(unknown)@git+ssh://mydomain.com:1234/hey',
   name: '(unknown)',
   bareSpec: 'git+ssh://mydomain.com:1234/hey',
-  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  overridden: false
 }
 `
 
@@ -7068,7 +7522,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:1234/hey#1.2.
   gitRemote: 'git+ssh://mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7081,7 +7536,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:1234#1.2.3 > 
   gitRemote: 'git+ssh://mydomain.com:1234',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7091,7 +7547,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:foo > inspect
   spec: '(unknown)@git+ssh://mydomain.com:foo',
   name: '(unknown)',
   bareSpec: 'git+ssh://mydomain.com:foo',
-  gitRemote: 'git+ssh://mydomain.com:foo'
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  overridden: false
 }
 `
 
@@ -7104,7 +7561,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:foo/bar#1.2.3
   gitRemote: 'git+ssh://mydomain.com:foo/bar',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7117,7 +7575,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:foo#1.2.3 > i
   gitRemote: 'git+ssh://mydomain.com:foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7130,7 +7589,8 @@ exports[`test/index.ts > TAP > parse args > git+ssh://username:password@mydomain
   gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7142,7 +7602,8 @@ exports[`test/index.ts > TAP > parse args > github:a/b > inspect default 1`] = `
   bareSpec: 'github:a/b',
   gitRemote: 'git+ssh://git@github.com:a/b.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'a/b'
+  namedGitHostPath: 'a/b',
+  overridden: false
 }
 `
 
@@ -7161,7 +7622,8 @@ exports[`test/index.ts > TAP > parse args > no options > no options 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7188,8 +7650,10 @@ exports[`test/index.ts > TAP > parse args > npm:foo > inspect default 1`] = `
       isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
-    }
-  }
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -7204,7 +7668,8 @@ exports[`test/index.ts > TAP > parse args > user/foo#1234::path:dist > inspect d
   gitSelectorParsed: { path: 'dist' },
   gitCommittish: '1234',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -7218,7 +7683,8 @@ exports[`test/index.ts > TAP > parse args > user/foo#notimplemented:value > insp
   gitSelector: 'notimplemented:value',
   gitSelectorParsed: {},
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -7232,7 +7698,8 @@ exports[`test/index.ts > TAP > parse args > user/foo#path:dist > inspect default
   gitSelector: 'path:dist',
   gitSelectorParsed: { path: 'dist' },
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -7253,7 +7720,8 @@ exports[`test/index.ts > TAP > parse args > user/foo#semver:^1.2.3 > inspect def
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7272,7 +7740,8 @@ exports[`test/index.ts > TAP > parse args > workspace: > inspect default 1`] = `
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7283,7 +7752,8 @@ exports[`test/index.ts > TAP > parse args > workspace:@a/b@ > inspect default 1`
   name: '(unknown)',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -7294,7 +7764,8 @@ exports[`test/index.ts > TAP > parse args > workspace:@a/b@ > inspect default 2`
   name: '(unknown)',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -7305,7 +7776,8 @@ exports[`test/index.ts > TAP > parse args > workspace:* > inspect default 1`] = 
   name: '(unknown)',
   bareSpec: 'workspace:*',
   workspaceSpec: '*',
-  workspace: '(unknown)'
+  workspace: '(unknown)',
+  overridden: false
 }
 `
 
@@ -7316,7 +7788,8 @@ exports[`test/index.ts > TAP > parse args > workspace:^ > inspect default 1`] = 
   name: '(unknown)',
   bareSpec: 'workspace:^',
   workspaceSpec: '^',
-  workspace: '(unknown)'
+  workspace: '(unknown)',
+  overridden: false
 }
 `
 
@@ -7327,7 +7800,8 @@ exports[`test/index.ts > TAP > parse args > workspace:~ > inspect default 1`] = 
   name: '(unknown)',
   bareSpec: 'workspace:~',
   workspaceSpec: '~',
-  workspace: '(unknown)'
+  workspace: '(unknown)',
+  overridden: false
 }
 `
 
@@ -7346,7 +7820,8 @@ exports[`test/index.ts > TAP > parse args > workspace:1.x > inspect default 1`] 
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7357,7 +7832,8 @@ exports[`test/index.ts > TAP > parse args > workspace:y@ > inspect default 1`] =
   name: '(unknown)',
   bareSpec: 'workspace:y@',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -7368,7 +7844,8 @@ exports[`test/index.ts > TAP > parse args > workspace:y@* > inspect default 1`] 
   name: '(unknown)',
   bareSpec: 'workspace:y@*',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -7379,7 +7856,8 @@ exports[`test/index.ts > TAP > parse args > workspace:y@^ > inspect default 1`] 
   name: '(unknown)',
   bareSpec: 'workspace:y@^',
   workspaceSpec: '^',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -7390,7 +7868,8 @@ exports[`test/index.ts > TAP > parse args > workspace:y@~ > inspect default 1`] 
   name: '(unknown)',
   bareSpec: 'workspace:y@~',
   workspaceSpec: '~',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -7409,7 +7888,8 @@ exports[`test/index.ts > TAP > parse args > workspace:y@1.x > inspect default 1`
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7419,7 +7899,8 @@ exports[`test/index.ts > TAP > parse args > x@./foo > inspect default 1`] = `
   spec: 'x@file:./foo',
   name: 'x',
   bareSpec: 'file:./foo',
-  file: './foo'
+  file: './foo',
+  overridden: false
 }
 `
 
@@ -7429,7 +7910,8 @@ exports[`test/index.ts > TAP > parse args > x@/path/to/foo > inspect default 1`]
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7439,7 +7921,8 @@ exports[`test/index.ts > TAP > parse args > x@/path/to/foo.tar > inspect default
   spec: 'x@file:///path/to/foo.tar',
   name: 'x',
   bareSpec: 'file:///path/to/foo.tar',
-  file: '/path/to/foo.tar'
+  file: '/path/to/foo.tar',
+  overridden: false
 }
 `
 
@@ -7449,7 +7932,8 @@ exports[`test/index.ts > TAP > parse args > x@/path/to/foo.tgz > inspect default
   spec: 'x@file:///path/to/foo.tgz',
   name: 'x',
   bareSpec: 'file:///path/to/foo.tgz',
-  file: '/path/to/foo.tgz'
+  file: '/path/to/foo.tgz',
+  overridden: false
 }
 `
 
@@ -7465,7 +7949,8 @@ exports[`test/index.ts > TAP > parse args > x@bitbucket:user..blerg--/..foo-js# 
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'
+  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz',
+  overridden: false
 }
 `
 
@@ -7477,7 +7962,8 @@ exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js > inspect de
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -7493,7 +7979,8 @@ exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js#bar/baz > in
   gitCommittish: 'bar/baz',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz',
+  overridden: false
 }
 `
 
@@ -7509,7 +7996,8 @@ exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js#bar/baz/bin 
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz',
+  overridden: false
 }
 `
 
@@ -7521,7 +8009,8 @@ exports[`test/index.ts > TAP > parse args > x@f fo o al/ a d s ;f > inspect defa
   bareSpec: 'github:f fo o al/ a d s ;f',
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'f fo o al/ a d s ;f'
+  namedGitHostPath: 'f fo o al/ a d s ;f',
+  overridden: false
 }
 `
 
@@ -7531,7 +8020,8 @@ exports[`test/index.ts > TAP > parse args > x@file: > inspect default 1`] = `
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -7541,7 +8031,8 @@ exports[`test/index.ts > TAP > parse args > x@file:../path/to/foo > inspect defa
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -7551,7 +8042,8 @@ exports[`test/index.ts > TAP > parse args > x@file:./path/to/foo > inspect defau
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -7561,7 +8053,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/. > inspect default 1`] = `
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -7571,7 +8064,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/.. > inspect default 1`] = `
   spec: 'x@file:..',
   name: 'x',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -7581,7 +8075,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/../path/to/foo > inspect def
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -7591,7 +8086,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/./path/to/foo > inspect defa
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -7601,7 +8097,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/.path/to/foo > inspect defau
   spec: 'x@file:///.path/to/foo',
   name: 'x',
   bareSpec: 'file:///.path/to/foo',
-  file: '/.path/to/foo'
+  file: '/.path/to/foo',
+  overridden: false
 }
 `
 
@@ -7611,7 +8108,8 @@ exports[`test/index.ts > TAP > parse args > x@file:// > inspect default 1`] = `
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -7621,7 +8119,8 @@ exports[`test/index.ts > TAP > parse args > x@file://. > inspect default 1`] = `
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
-  file: '.'
+  file: '.',
+  overridden: false
 }
 `
 
@@ -7631,7 +8130,8 @@ exports[`test/index.ts > TAP > parse args > x@file://.. > inspect default 1`] = 
   spec: 'x@file:..',
   name: 'x',
   bareSpec: 'file:..',
-  file: '..'
+  file: '..',
+  overridden: false
 }
 `
 
@@ -7641,7 +8141,8 @@ exports[`test/index.ts > TAP > parse args > x@file://../path/to/foo > inspect de
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  file: '../path/to/foo'
+  file: '../path/to/foo',
+  overridden: false
 }
 `
 
@@ -7651,7 +8152,8 @@ exports[`test/index.ts > TAP > parse args > x@file://./path/to/foo > inspect def
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -7661,7 +8163,8 @@ exports[`test/index.ts > TAP > parse args > x@file:////path/to/foo > inspect def
   spec: 'x@file:////path/to/foo',
   name: 'x',
   bareSpec: 'file:////path/to/foo',
-  file: '//path/to/foo'
+  file: '//path/to/foo',
+  overridden: false
 }
 `
 
@@ -7671,7 +8174,8 @@ exports[`test/index.ts > TAP > parse args > x@file:///~/path/to/foo > inspect de
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7681,7 +8185,8 @@ exports[`test/index.ts > TAP > parse args > x@file:///path/to/foo > inspect defa
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7691,7 +8196,8 @@ exports[`test/index.ts > TAP > parse args > x@file://~/path/to/foo > inspect def
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7701,7 +8207,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/~/path/to/foo > inspect defa
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7711,7 +8218,8 @@ exports[`test/index.ts > TAP > parse args > x@file:/path/to/foo > inspect defaul
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
-  file: '/path/to/foo'
+  file: '/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7721,7 +8229,8 @@ exports[`test/index.ts > TAP > parse args > x@file:~/path/to/foo > inspect defau
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '/mock/home/path/to/foo'
+  file: '/mock/home/path/to/foo',
+  overridden: false
 }
 `
 
@@ -7731,7 +8240,8 @@ exports[`test/index.ts > TAP > parse args > x@file:path/to/foo > inspect default
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  file: './path/to/foo'
+  file: './path/to/foo',
+  overridden: false
 }
 `
 
@@ -7741,7 +8251,8 @@ exports[`test/index.ts > TAP > parse args > x@file:path/to/foo.tar.gz > inspect 
   spec: 'x@file:./path/to/foo.tar.gz',
   name: 'x',
   bareSpec: 'file:./path/to/foo.tar.gz',
-  file: './path/to/foo.tar.gz'
+  file: './path/to/foo.tar.gz',
+  overridden: false
 }
 `
 
@@ -7751,7 +8262,8 @@ exports[`test/index.ts > TAP > parse args > x@foo/bar/baz > inspect default 1`] 
   spec: 'x@file:./foo/bar/baz',
   name: 'x',
   bareSpec: 'file:./foo/bar/baz',
-  file: './foo/bar/baz'
+  file: './foo/bar/baz',
+  overridden: false
 }
 `
 
@@ -7761,7 +8273,8 @@ exports[`test/index.ts > TAP > parse args > x@git://github.com/user/foo > inspec
   spec: 'x@git://github.com/user/foo',
   name: 'x',
   bareSpec: 'git://github.com/user/foo',
-  gitRemote: 'git://github.com/user/foo'
+  gitRemote: 'git://github.com/user/foo',
+  overridden: false
 }
 `
 
@@ -7771,7 +8284,8 @@ exports[`test/index.ts > TAP > parse args > x@git://notgithub.com/user/foo > ins
   spec: 'x@git://notgithub.com/user/foo',
   name: 'x',
   bareSpec: 'git://notgithub.com/user/foo',
-  gitRemote: 'git://notgithub.com/user/foo'
+  gitRemote: 'git://notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -7783,7 +8297,8 @@ exports[`test/index.ts > TAP > parse args > x@git@github.com:12345/foo > inspect
   bareSpec: 'github:12345/foo',
   gitRemote: 'git+ssh://git@github.com:12345/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: '12345/foo'
+  namedGitHostPath: '12345/foo',
+  overridden: false
 }
 `
 
@@ -7795,7 +8310,8 @@ exports[`test/index.ts > TAP > parse args > x@git@npm:not-git > inspect default 
   bareSpec: 'git@npm:not-git',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'git@npm:not-git',
-  distTag: 'git@npm:not-git'
+  distTag: 'git@npm:not-git',
+  overridden: false
 }
 `
 
@@ -7808,7 +8324,8 @@ exports[`test/index.ts > TAP > parse args > x@git+file://path/to/repo#1.2.3 > in
   gitRemote: 'git+file://path/to/repo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7821,7 +8338,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@bitbucket.org/user/f
   gitRemote: 'git+ssh://git@bitbucket.org/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7837,7 +8355,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com:user/foo#
   gitCommittish: '1.2.3',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
-  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3'
+  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3',
+  overridden: false
 }
 `
 
@@ -7858,7 +8377,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com:user/foo#
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7871,7 +8391,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com/user/foo#
   gitRemote: 'git+ssh://git@github.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7890,7 +8411,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com/user/foo#
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7903,7 +8425,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@gitlab.com/user/foo#
   gitRemote: 'git+ssh://git@gitlab.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7913,7 +8436,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/f
   spec: 'x@git+ssh://git@notgithub.com:user/foo',
   name: 'x',
   bareSpec: 'git+ssh://git@notgithub.com:user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  overridden: false
 }
 `
 
@@ -7926,7 +8450,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/f
   gitRemote: 'git+ssh://git@notgithub.com:user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7945,7 +8470,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/f
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7955,7 +8481,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/f
   spec: 'x@git+ssh://git@notgithub.com/user/foo',
   name: 'x',
   bareSpec: 'git+ssh://git@notgithub.com/user/foo',
-  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  overridden: false
 }
 `
 
@@ -7968,7 +8495,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/f
   gitRemote: 'git+ssh://git@notgithub.com/user/foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -7987,7 +8515,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/f
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -7997,7 +8526,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:1234/hey > 
   spec: 'x@git+ssh://mydomain.com:1234/hey',
   name: 'x',
   bareSpec: 'git+ssh://mydomain.com:1234/hey',
-  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  overridden: false
 }
 `
 
@@ -8010,7 +8540,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:1234/hey#1.
   gitRemote: 'git+ssh://mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -8023,7 +8554,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:1234#1.2.3 
   gitRemote: 'git+ssh://mydomain.com:1234',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -8033,7 +8565,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:foo > inspe
   spec: 'x@git+ssh://mydomain.com:foo',
   name: 'x',
   bareSpec: 'git+ssh://mydomain.com:foo',
-  gitRemote: 'git+ssh://mydomain.com:foo'
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  overridden: false
 }
 `
 
@@ -8046,7 +8579,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:foo/bar#1.2
   gitRemote: 'git+ssh://mydomain.com:foo/bar',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -8059,7 +8593,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:foo#1.2.3 >
   gitRemote: 'git+ssh://mydomain.com:foo',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -8072,7 +8607,8 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://username:password@mydoma
   gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  overridden: false
 }
 `
 
@@ -8084,7 +8620,8 @@ exports[`test/index.ts > TAP > parse args > x@github:user/foo-js > inspect defau
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -8100,7 +8637,8 @@ exports[`test/index.ts > TAP > parse args > x@gitlab:user..blerg--/..foo-js# . .
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'
+  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /',
+  overridden: false
 }
 `
 
@@ -8112,7 +8650,8 @@ exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js > inspect defau
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -8128,7 +8667,8 @@ exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js#bar/baz > inspe
   gitCommittish: 'bar/baz',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz',
+  overridden: false
 }
 `
 
@@ -8144,7 +8684,8 @@ exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js#bar/baz/bin > i
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin',
+  overridden: false
 }
 `
 
@@ -8154,7 +8695,8 @@ exports[`test/index.ts > TAP > parse args > x@http://insecure.com/foo.tgz > insp
   spec: 'x@http://insecure.com/foo.tgz',
   name: 'x',
   bareSpec: 'http://insecure.com/foo.tgz',
-  remoteURL: 'http://insecure.com/foo.tgz'
+  remoteURL: 'http://insecure.com/foo.tgz',
+  overridden: false
 }
 `
 
@@ -8166,7 +8708,8 @@ exports[`test/index.ts > TAP > parse args > x@https://bitbucket.org/user/foo.git
   bareSpec: 'bitbucket:user/foo',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
   namedGitHost: 'bitbucket',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -8178,7 +8721,8 @@ exports[`test/index.ts > TAP > parse args > x@https://github.com/user/foo.git > 
   bareSpec: 'github:user/foo',
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -8190,7 +8734,8 @@ exports[`test/index.ts > TAP > parse args > x@https://github.com/user/project > 
   bareSpec: 'github:user/project',
   gitRemote: 'git+ssh://git@github.com:user/project.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/project'
+  namedGitHostPath: 'user/project',
+  overridden: false
 }
 `
 
@@ -8202,7 +8747,8 @@ exports[`test/index.ts > TAP > parse args > x@https://gitlab.com/user/foo.git > 
   bareSpec: 'gitlab:user/foo',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
   namedGitHost: 'gitlab',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -8212,7 +8758,8 @@ exports[`test/index.ts > TAP > parse args > x@https://server.com/foo.tgz > inspe
   spec: 'x@https://server.com/foo.tgz',
   name: 'x',
   bareSpec: 'https://server.com/foo.tgz',
-  remoteURL: 'https://server.com/foo.tgz'
+  remoteURL: 'https://server.com/foo.tgz',
+  overridden: false
 }
 `
 
@@ -8224,7 +8771,8 @@ exports[`test/index.ts > TAP > parse args > x@not-git@hostname.com:some/repo > i
   bareSpec: 'github:not-git@hostname.com:some/repo',
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'not-git@hostname.com:some/repo'
+  namedGitHostPath: 'not-git@hostname.com:some/repo',
+  overridden: false
 }
 `
 
@@ -8265,10 +8813,14 @@ exports[`test/index.ts > TAP > parse args > x@npm:foo@npm:bar@npm:baz@1 > inspec
           isSingle: false,
           set: [ [Comparator] ],
           includePrerelease: false
-        }
-      }
-    }
-  }
+        },
+        overridden: false
+      },
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -8299,9 +8851,12 @@ exports[`test/index.ts > TAP > parse args > x@npm:y@npm:z@github:a/x#branch > in
       namedGitHost: 'github',
       namedGitHostPath: 'a/x',
       namedRegistry: 'npm',
-      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch'
-    }
-  }
+      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch',
+      overridden: false
+    },
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -8320,8 +8875,10 @@ exports[`test/index.ts > TAP > parse args > x@registry:https://example.com/npm#@
     bareSpec: 'latest',
     registry: 'https://example.com/npm/',
     registrySpec: 'latest',
-    distTag: 'latest'
-  }
+    distTag: 'latest',
+    overridden: false
+  },
+  overridden: false
 }
 `
 
@@ -8337,7 +8894,8 @@ exports[`test/index.ts > TAP > parse args > x@user..blerg--/..foo-js# . . . . . 
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'github',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'
+  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /',
+  overridden: false
 }
 `
 
@@ -8349,7 +8907,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo-js > inspect default 1`] 
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo-js'
+  namedGitHostPath: 'user/foo-js',
+  overridden: false
 }
 `
 
@@ -8365,7 +8924,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo-js#bar/baz > inspect defa
   gitCommittish: 'bar/baz',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz',
+  overridden: false
 }
 `
 
@@ -8381,7 +8941,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo-js#bar/baz/bin > inspect 
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin',
+  overridden: false
 }
 `
 
@@ -8396,7 +8957,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo#1234::path:dist > inspect
   gitSelectorParsed: { path: 'dist' },
   gitCommittish: '1234',
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -8410,7 +8972,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo#notimplemented:value > in
   gitSelector: 'notimplemented:value',
   gitSelectorParsed: {},
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -8424,7 +8987,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo#path:dist > inspect defau
   gitSelector: 'path:dist',
   gitSelectorParsed: { path: 'dist' },
   namedGitHost: 'github',
-  namedGitHostPath: 'user/foo'
+  namedGitHostPath: 'user/foo',
+  overridden: false
 }
 `
 
@@ -8445,7 +9009,8 @@ exports[`test/index.ts > TAP > parse args > x@user/foo#semver:^1.2.3 > inspect d
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -8464,7 +9029,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace: > inspect default 1`] =
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -8475,7 +9041,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:@a/b@ > inspect default 
   name: 'x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
-  workspace: '@a/b'
+  workspace: '@a/b',
+  overridden: false
 }
 `
 
@@ -8486,7 +9053,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:* > inspect default 1`] 
   name: 'x',
   bareSpec: 'workspace:*',
   workspaceSpec: '*',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -8497,7 +9065,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:^ > inspect default 1`] 
   name: 'x',
   bareSpec: 'workspace:^',
   workspaceSpec: '^',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -8508,7 +9077,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:~ > inspect default 1`] 
   name: 'x',
   bareSpec: 'workspace:~',
   workspaceSpec: '~',
-  workspace: 'x'
+  workspace: 'x',
+  overridden: false
 }
 `
 
@@ -8527,7 +9097,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:1.x > inspect default 1`
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 
@@ -8538,7 +9109,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:y@ > inspect default 1`]
   name: 'x',
   bareSpec: 'workspace:y@',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -8549,7 +9121,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:y@* > inspect default 1`
   name: 'x',
   bareSpec: 'workspace:y@*',
   workspaceSpec: '*',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -8560,7 +9133,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:y@^ > inspect default 1`
   name: 'x',
   bareSpec: 'workspace:y@^',
   workspaceSpec: '^',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -8571,7 +9145,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:y@~ > inspect default 1`
   name: 'x',
   bareSpec: 'workspace:y@~',
   workspaceSpec: '~',
-  workspace: 'y'
+  workspace: 'y',
+  overridden: false
 }
 `
 
@@ -8590,7 +9165,8 @@ exports[`test/index.ts > TAP > parse args > x@workspace:y@1.x > inspect default 
     isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
-  }
+  },
+  overridden: false
 }
 `
 

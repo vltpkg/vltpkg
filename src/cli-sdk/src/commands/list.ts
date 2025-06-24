@@ -9,6 +9,7 @@ import {
   humanReadableOutput,
   jsonOutput,
   mermaidOutput,
+  GraphModifier,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
@@ -81,6 +82,7 @@ export const views = {
 } as const satisfies Views<ListResult>
 
 export const command: CommandFn<ListResult> = async conf => {
+  const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
@@ -88,6 +90,7 @@ export const command: CommandFn<ListResult> = async conf => {
   const graph = actual.load({
     ...conf.options,
     mainManifest,
+    modifiers,
     monorepo,
     loadManifests: true,
   })
