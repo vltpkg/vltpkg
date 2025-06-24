@@ -136,6 +136,8 @@ test('InsightTabContent renders an empty state', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -171,6 +173,8 @@ test('InsightTabContent renders with insights', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -207,6 +211,8 @@ test('InsightTabContent renders with no insights but a package score', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -242,6 +248,8 @@ test('InsightTabButton renders default', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

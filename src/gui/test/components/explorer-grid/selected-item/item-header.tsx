@@ -128,6 +128,8 @@ test('ItemHeader renders with default item', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -166,6 +168,8 @@ test('ItemHeader renders with custom registry item', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -210,6 +214,8 @@ test('ItemHeader renders with scoped registry item', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -259,6 +265,8 @@ test('ItemHeader renders with default git host item', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -303,6 +311,8 @@ test('ItemHeader renders with a package score', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -341,6 +351,8 @@ test('ItemHeader renders with insights', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -399,6 +411,8 @@ test('ItemHeader renders with a version information', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 

@@ -168,6 +168,8 @@ test('VersionsTabButton renders default', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -201,6 +203,8 @@ test('VersionsTabContent renders with versions', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -234,6 +238,8 @@ test('VersionsTabContent renders an empty state', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -267,6 +273,8 @@ test('VersionsTabContent filters versions', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -306,6 +314,8 @@ test('VersionsTabContent toggles pre-releases', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -345,6 +355,8 @@ test('VersionsTabContent filters pre-releases', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -388,6 +400,8 @@ test('VersionsTabContent filters newer versions', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -431,6 +445,8 @@ test('VersionsTabContent handles missing manifest version', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

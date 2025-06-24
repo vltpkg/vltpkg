@@ -5,10 +5,10 @@ import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { SELECTED_ITEM } from '../__fixtures__/item.ts'
 import {
-  DuplicatesTabButton,
-  DuplicatesTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-duplicates.tsx'
-import type { DuplicatedDeps } from '@/components/explorer-grid/selected-item/context.tsx'
+  FundingTabButton,
+  FundingTabContent,
+} from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-funding.tsx'
+import type { DepFunding } from '@/components/explorer-grid/selected-item/context.tsx'
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
@@ -29,12 +29,17 @@ vi.mock('@/components/ui/tabs.tsx', () => ({
   TabsContent: 'gui-tabs-content',
 }))
 
-vi.mock('@/components/ui/data-badge.tsx', () => ({
-  DataBadge: 'gui-data-badge',
+vi.mock('@/components/ui/table.tsx', () => ({
+  Table: 'gui-table',
+  TableBody: 'gui-table-body',
+  TableCell: 'gui-table-cell',
+  TableHead: 'gui-table-head',
+  TableHeader: 'gui-table-header',
+  TableRow: 'gui-table-row',
 }))
 
 vi.mock('lucide-react', () => ({
-  Blocks: 'gui-blocks-icon',
+  HeartHandshake: 'gui-heart-handshake-icon',
 }))
 
 vi.mock(
@@ -43,6 +48,23 @@ vi.mock(
     EmptyState: 'gui-empty-state',
   }),
 )
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx',
+  async () => {
+    const actual = await import(
+      '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
+    )
+    return {
+      ...actual,
+      SortingHeader: 'gui-sorting-header',
+    }
+  },
+)
+
+vi.mock('@/components/ui/data-badge.tsx', () => ({
+  DataBadge: 'gui-data-badge',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -55,22 +77,20 @@ afterEach(() => {
   cleanup()
 })
 
-const mockDuplicatedDeps = {
-  next: {
-    count: 2,
-    versions: ['12.0.0', '12.1.0'],
+const mockDepFunding = {
+  darcyclake: {
+    type: 'github',
+    url: 'https://www.github.com/darcyclarke',
+    count: 4,
   },
-  react: {
-    count: 3,
-    versions: ['17.0.2', '18.0.0', '18.1.0'],
+  ruyadorno: {
+    type: 'github',
+    url: 'https://www.github.com/ruyadorno',
+    count: 4,
   },
-  lodash: {
-    count: 1,
-    versions: ['4.17.21'],
-  },
-} satisfies DuplicatedDeps
+} satisfies DepFunding
 
-test('DuplicatesTabButton renders correctly', () => {
+test('FundingTabButton renders correctly', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
@@ -96,22 +116,22 @@ test('DuplicatesTabButton renders correctly', () => {
       setDepLicenses: vi.fn(),
       depWarnings: undefined,
       setDepWarnings: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
-      depFunding: undefined,
-      setDepFunding: vi.fn(),
     }),
   )
 
   const Container = () => {
-    return <DuplicatesTabButton />
+    return <FundingTabButton />
   }
 
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('DuplicatesTabButton renders with a count', () => {
+test('FundingTabButton renders with a count', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
@@ -137,63 +157,22 @@ test('DuplicatesTabButton renders with a count', () => {
       setDepLicenses: vi.fn(),
       depWarnings: undefined,
       setDepWarnings: vi.fn(),
-      duplicatedDeps: mockDuplicatedDeps,
-      setDuplicatedDeps: vi.fn(),
-      depFunding: undefined,
+      depFunding: mockDepFunding,
       setDepFunding: vi.fn(),
-    }),
-  )
-
-  const Container = () => {
-    return <DuplicatesTabButton />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('DuplicatesTabContent renders with an empty state', () => {
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector({
-      selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      manifest: null,
-      rawManifest: null,
-      packageScore: undefined,
-      insights: undefined,
-      author: undefined,
-      favicon: undefined,
-      publisher: undefined,
-      publisherAvatar: undefined,
-      versions: undefined,
-      greaterVersions: undefined,
-      depCount: undefined,
-      setDepCount: vi.fn(),
-      scannedDeps: undefined,
-      setScannedDeps: vi.fn(),
-      depsAverageScore: undefined,
-      setDepsAverageScore: vi.fn(),
-      depLicenses: undefined,
-      setDepLicenses: vi.fn(),
-      depWarnings: undefined,
-      setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
-      depFunding: undefined,
-      setDepFunding: vi.fn(),
     }),
   )
 
   const Container = () => {
-    return <DuplicatesTabContent />
+    return <FundingTabButton />
   }
 
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('DuplicatesTabContent renders with duplicated deps', () => {
+test('FundingTabContent renders with an empty state ', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
@@ -219,15 +198,56 @@ test('DuplicatesTabContent renders with duplicated deps', () => {
       setDepLicenses: vi.fn(),
       depWarnings: undefined,
       setDepWarnings: vi.fn(),
-      duplicatedDeps: mockDuplicatedDeps,
-      setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      duplicatedDeps: undefined,
+      setDuplicatedDeps: vi.fn(),
     }),
   )
 
   const Container = () => {
-    return <DuplicatesTabContent />
+    return <FundingTabContent />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('FundingTabContent renders with an funding', () => {
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector({
+      selectedItem: SELECTED_ITEM,
+      activeTab: 'dependencies',
+      setActiveTab: vi.fn(),
+      manifest: null,
+      rawManifest: null,
+      packageScore: undefined,
+      insights: undefined,
+      author: undefined,
+      favicon: undefined,
+      publisher: undefined,
+      publisherAvatar: undefined,
+      versions: undefined,
+      greaterVersions: undefined,
+      depCount: undefined,
+      setDepCount: vi.fn(),
+      scannedDeps: undefined,
+      setScannedDeps: vi.fn(),
+      depsAverageScore: undefined,
+      setDepsAverageScore: vi.fn(),
+      depLicenses: undefined,
+      setDepLicenses: vi.fn(),
+      depWarnings: undefined,
+      setDepWarnings: vi.fn(),
+      depFunding: mockDepFunding,
+      setDepFunding: vi.fn(),
+      duplicatedDeps: undefined,
+      setDuplicatedDeps: vi.fn(),
+    }),
+  )
+
+  const Container = () => {
+    return <FundingTabContent />
   }
 
   const { container } = render(<Container />)

@@ -164,6 +164,8 @@ test('InsightsTabButton renders with insight count', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -203,6 +205,8 @@ test('InsightsTabContent renders with an empty state', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -242,6 +246,8 @@ test('InsightsTabContent renders with insights', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -281,6 +287,8 @@ test('InsightsTabContent renders with a warning for unscanned deps', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 

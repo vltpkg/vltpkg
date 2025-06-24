@@ -16,7 +16,7 @@ import type {
 import type { PropsWithChildren } from 'react'
 import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
-import type { Manifest } from '@vltpkg/types'
+import type { Manifest, NormalizedFunding } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
 
 export type Tab =
@@ -27,6 +27,15 @@ export type Tab =
   | 'dependencies'
 
 export type LicenseWarningType = keyof LicenseInsights
+
+export type DepFunding = Record<
+  string,
+  {
+    url: string
+    type: string | undefined
+    count: number
+  }
+>
 
 export type DepLicenses = {
   allLicenses: Record<string, number>
@@ -156,6 +165,7 @@ const initializeCounters = () => ({
   totalDepCount: 0,
   depWarnings: new Map<string, DepWarning>(),
   duplicatedDeps: {} as DuplicatedDeps,
+  depFunding: {} as DepFunding,
 })
 
 const processInsights = (
@@ -219,6 +229,19 @@ const processInsights = (
   }
 }
 
+const processFunding = (
+  funding: NormalizedFunding,
+  depFunding: DepFunding,
+) => {
+  for (const entry of funding) {
+    if (!entry.url) return
+
+    const { url, type } = entry
+    depFunding[url] ??= { url, type, count: 0 }
+    depFunding[url].count++
+  }
+}
+
 const processLicense = (
   license: string,
   licenseInsights: LicenseInsights | undefined,
@@ -266,6 +289,7 @@ const getDependencyInformation = async (
   setDepWarnings: SelectedItemStore['setDepWarnings'],
   setDepCount: SelectedItemStore['setDepCount'],
   setDuplicatedDeps: SelectedItemStore['setDuplicatedDeps'],
+  setDepFunding: SelectedItemStore['setDepFunding'],
 ): Promise<void> => {
   if (!q) return
 
@@ -294,6 +318,13 @@ const getDependencyInformation = async (
         counters.averageScore.count++
       }
 
+      if (manifest?.funding) {
+        processFunding(
+          manifest.funding as NormalizedFunding,
+          counters.depFunding,
+        )
+      }
+
       processLicense(license, licenseInsights, counters.depLicenses)
       processDuplicatedDeps(dep, counters.duplicatedDeps)
     }
@@ -307,6 +338,7 @@ const getDependencyInformation = async (
       depWarnings,
       totalDepCount,
       duplicatedDeps,
+      depFunding,
     } = counters
 
     setDepLicenses(depLicenses)
@@ -317,6 +349,7 @@ const getDependencyInformation = async (
     setDepWarnings(Array.from(depWarnings.values()))
     setDepCount(totalDepCount || undefined)
     setDuplicatedDeps(duplicatedDeps)
+    setDepFunding(depFunding)
   }
 }
 
@@ -333,6 +366,7 @@ type SelectedItemStoreState = DetailsInfo & {
   depLicenses: DepLicenses | undefined
   depWarnings: DepWarning[] | undefined
   duplicatedDeps: DuplicatedDeps | undefined
+  depFunding: DepFunding | undefined
 }
 
 type SelectedItemStoreAction = {
@@ -352,6 +386,9 @@ type SelectedItemStoreAction = {
   setDepCount: (depCount: SelectedItemStoreState['depCount']) => void
   setDuplicatedDeps: (
     duplicatedDeps: SelectedItemStoreState['duplicatedDeps'],
+  ) => void
+  setDepFunding: (
+    depFunding: SelectedItemStoreState['depFunding'],
   ) => void
 }
 
@@ -396,6 +433,7 @@ export const SelectedItemProvider = ({
       depWarnings: undefined,
       depCount: undefined,
       duplicatedDeps: undefined,
+      depFunding: undefined,
       setActiveTab: (
         activeTab: SelectedItemStoreState['activeTab'],
       ) => set(() => ({ activeTab })),
@@ -416,6 +454,9 @@ export const SelectedItemProvider = ({
       setDuplicatedDeps: (
         duplicatedDeps: SelectedItemStoreState['duplicatedDeps'],
       ) => set(() => ({ duplicatedDeps })),
+      setDepFunding: (
+        depFunding: SelectedItemStoreState['depFunding'],
+      ) => set(() => ({ depFunding })),
     })),
   ).current
 
@@ -458,6 +499,7 @@ export const SelectedItemProvider = ({
     selectedItemStore.getState().setDepWarnings,
     selectedItemStore.getState().setDepCount,
     selectedItemStore.getState().setDuplicatedDeps,
+    selectedItemStore.getState().setDepFunding,
   )
 
   return (
