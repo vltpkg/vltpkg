@@ -112,6 +112,8 @@ test('Item renders with the default structure', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore)
 
   const Container = () => {
@@ -148,6 +150,8 @@ test('Item renders connection lines', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore)
 
   const Container = () => {

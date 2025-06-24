@@ -94,6 +94,8 @@ test('TabsManifestButton renders default', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -129,6 +131,8 @@ test('TabsManifestContent renders an empty state', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -164,6 +168,8 @@ test('TabsManifestContent renders with a manifest', () => {
     setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
     setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

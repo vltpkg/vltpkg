@@ -177,6 +177,8 @@ test('LicensesTabButton renders default', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -216,6 +218,8 @@ test('LicensesTabButton renders with license count', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -255,6 +259,8 @@ test('LicensesTabContent renders with an empty state', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -294,6 +300,8 @@ test('LicensesTabContent renders with licenses', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 

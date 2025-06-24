@@ -22,6 +22,10 @@ import {
   DuplicatesTabContent,
   DuplicatesTabButton,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-duplicates.tsx'
+import {
+  FundingTabButton,
+  FundingTabContent,
+} from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-funding.tsx'
 
 type Tabs = 'insights' | 'licenses' | 'funding' | 'duplicates'
 
@@ -63,10 +67,12 @@ export const DependenciesTabContent = () => {
               <InsightsTabButton />
               <LicensesTabButton />
               <DuplicatesTabButton />
+              <FundingTabButton />
             </TabsList>
             <InsightsTabContent />
             <LicensesTabContent />
             <DuplicatesTabContent />
+            <FundingTabContent />
           </Tabs>
         </>
       : <EmptyState
