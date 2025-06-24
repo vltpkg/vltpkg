@@ -182,21 +182,29 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
         updateQuery(`:root`)
         return
       }
-      const selectedName =
-        item.to?.name ? `[name="${item.to.name}"]` : ''
+      const selectedName = item.to?.name ? `#${item.to.name}` : ''
       const selectedVersion =
         item.to?.version ? `:v(${item.to.version})` : ''
       const newQuery =
         isParent &&
-        query.endsWith(`> ${selectedName}${selectedVersion}`) &&
+        (query.endsWith(`> ${selectedName}${selectedVersion}`) ||
+          query.endsWith(`> ${selectedName}`)) &&
         query.slice(0, query.lastIndexOf('>'))
       if (newQuery) {
         updateQuery(newQuery.trim())
       } else {
-        const name =
-          item.from?.name ? `[name="${item.from.name}"]` : ''
+        // use version on the parent node if there are multiple nodes in the graph with the same name
+        const useVersion =
+          item.from ?
+            [...item.from.graph.nodes.values()].filter(
+              n => n.name === item.from?.name,
+            ).length > 1
+          : false
+        const name = item.from?.name ? `#${item.from.name}` : ''
         const version =
-          item.from?.version ? `:v(${item.from.version})` : ''
+          useVersion && item.from?.version ?
+            `:v(${item.from.version})`
+          : ''
         updateQuery(`${name}${version}`.trim())
       }
       return undefined
