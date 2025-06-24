@@ -35,6 +35,72 @@ pnpm vlt # OR ./node_modules/.bin/vlt
 See the [contributing guide](./CONTRIBUTING.md) for more information
 on how to build and develop the various workspaces.
 
-### License
+### LICENSES
 
-[BSD-2-Clause Plus Patent License](./LICENSE)
+Below you can find a complete table of each workspace available in
+this repository and its corresponding license:
+
+#### Reusable Client Internals (`src/*`)
+
+| Workspace Name           | License             |
+| ------------------------ | ------------------- |
+| @vltpkg/cache            | BSD-2-Clause-Patent |
+| @vltpkg/cache-unzip      | BSD-2-Clause-Patent |
+| @vltpkg/cli-sdk          | BSD-2-Clause-Patent |
+| @vltpkg/cmd-shim         | BSD-2-Clause-Patent |
+| @vltpkg/dep-id           | BSD-2-Clause-Patent |
+| @vltpkg/dot-prop         | MIT                 |
+| @vltpkg/dss-breadcrumb   | BSD-2-Clause-Patent |
+| @vltpkg/dss-parser       | BSD-2-Clause-Patent |
+| @vltpkg/error-cause      | BSD-2-Clause-Patent |
+| @vltpkg/fast-split       | BSD-2-Clause-Patent |
+| @vltpkg/git              | ISC                 |
+| @vltpkg/git-scp-url      | BSD-2-Clause-Patent |
+| @vltpkg/graph            | BSD-2-Clause-Patent |
+| @vltpkg/gui              | FSL-1.1-MIT         |
+| @vltpkg/init             | BSD-2-Clause-Patent |
+| @vltpkg/keychain         | BSD-2-Clause-Patent |
+| @vltpkg/output           | BSD-2-Clause-Patent |
+| @vltpkg/package-info     | BSD-2-Clause-Patent |
+| @vltpkg/package-json     | BSD-2-Clause-Patent |
+| @vltpkg/pick-manifest    | BSD-2-Clause-Patent |
+| @vltpkg/promise-spawn    | ISC                 |
+| @vltpkg/query            | BSD-2-Clause-Patent |
+| @vltpkg/registry-client  | BSD-2-Clause-Patent |
+| @vltpkg/rollback-remove  | BSD-2-Clause-Patent |
+| @vltpkg/run              | BSD-2-Clause-Patent |
+| @vltpkg/satisfies        | BSD-2-Clause-Patent |
+| @vltpkg/security-archive | BSD-2-Clause-Patent |
+| @vltpkg/semver           | BSD-2-Clause-Patent |
+| @vltpkg/server           | BSD-2-Clause-Patent |
+| @vltpkg/spec             | BSD-2-Clause-Patent |
+| @vltpkg/tar              | BSD-2-Clause-Patent |
+| @vltpkg/types            | BSD-2-Clause-Patent |
+| @vltpkg/url-open         | BSD-2-Clause-Patent |
+| @vltpkg/vlt-json         | BSD-2-Clause-Patent |
+| @vltpkg/vlx              | BSD-2-Clause-Patent |
+| @vltpkg/which            | ISC                 |
+| @vltpkg/workspaces       | BSD-2-Clause-Patent |
+| @vltpkg/xdg              | BSD-2-Clause-Patent |
+
+#### Infrastructure (`infra/*`)
+
+| Workspace Name           | License             |
+| ------------------------ | ------------------- |
+| @vltpkg/benchmark        | BSD-2-Clause-Patent |
+| @vltpkg/infra-build      | BSD-2-Clause-Patent |
+| vlt                      | BSD-2-Clause-Patent |
+| @vltpkg/cli-compiled     | BSD-2-Clause-Patent |
+| @vltpkg/cli-darwin-arm64 | BSD-2-Clause-Patent |
+| @vltpkg/cli-darwin-x64   | BSD-2-Clause-Patent |
+| @vltpkg/cli-js           | BSD-2-Clause-Patent |
+| @vltpkg/cli-linux-arm64  | BSD-2-Clause-Patent |
+| @vltpkg/cli-linux-x64    | BSD-2-Clause-Patent |
+| @vltpkg/cli-win32-x64    | BSD-2-Clause-Patent |
+| @vltpkg/smoke-test       | BSD-2-Clause-Patent |
+
+#### Documentation (`www/*`)
+
+| Workspace Name | License             |
+| -------------- | ------------------- |
+| @vltpkg/docs   | BSD-2-Clause-Patent |
