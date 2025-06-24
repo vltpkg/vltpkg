@@ -2,7 +2,7 @@
 
 exports[`label > should render correctly 1`] = `
 
-<div class="group rounded-sm border border-[1px] bg-card transition-all hover:bg-card-accent border-muted">
+<div class="group rounded-sm border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent border-muted">
   <div class="flex grid grid-cols-8 items-center px-3 py-2">
     <div class="col-span-2 flex items-center gap-3">
       <gui-checkbox

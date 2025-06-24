@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Check,
@@ -43,67 +43,44 @@ export const useDependencyFilters = () => {
   const setFilters = useDependencySidebarStore(
     state => state.setFilters,
   )
-  const dependencies = useDependencySidebarStore(
-    state => state.dependencies,
-  )
-  const setFilteredDependencies = useDependencySidebarStore(
-    state => state.setFilteredDependencies,
+
+  const toggleFilter = useCallback(
+    (filter: Filter) => {
+      const newFilters =
+        filters.includes(filter) ?
+          filters.filter((f: Filter) => f !== filter)
+        : [...filters, filter]
+      setFilters(newFilters)
+    },
+    [filters, setFilters],
   )
 
-  const updateFilters = (newFilters: Filter[]) => {
-    setFilters(newFilters)
-
-    const filtered = dependencies.filter(dep => {
-      const typeFilters = newFilters.filter(
-        f => !f.startsWith('search:'),
-      ) as DependencyTypeShort[]
-      const searchFilters = newFilters.filter(f =>
-        f.startsWith('search:'),
+  const removeFilter = useCallback(
+    (filterToRemove: Filter) => {
+      const newFilters = filters.filter(
+        (f: Filter) => f !== filterToRemove,
       )
+      setFilters(newFilters)
+    },
+    [filters, setFilters],
+  )
 
-      const matchesTypeFilter =
-        typeFilters.length === 0 ||
-        (dep.type && typeFilters.includes(dep.type))
+  const addSearchFilter = useCallback(
+    (searchTerm: string) => {
+      const trimmed = searchTerm.trim()
+      if (!trimmed) return
 
-      const matchesSearchFilter =
-        searchFilters.length === 0 ||
-        searchFilters.some(searchFilter => {
-          const searchTerm = searchFilter
-            .replace('search:', '')
-            .toLowerCase()
-          return dep.name.toLowerCase().includes(searchTerm)
-        })
+      const searchFilter = `search:${trimmed}` as Filter
+      if (!filters.includes(searchFilter)) {
+        setFilters([...filters, searchFilter])
+      }
+    },
+    [filters, setFilters],
+  )
 
-      return matchesTypeFilter && matchesSearchFilter
-    })
-    setFilteredDependencies(filtered)
-  }
-
-  const toggleFilter = (filter: Filter) => {
-    const newFilters =
-      filters.includes(filter) ?
-        filters.filter(f => f !== filter)
-      : [...filters, filter]
-    updateFilters(newFilters)
-  }
-
-  const removeFilter = (filterToRemove: Filter) => {
-    const newFilters = filters.filter(f => f !== filterToRemove)
-    updateFilters(newFilters)
-  }
-
-  const addSearchFilter = (searchTerm: string) => {
-    if (!searchTerm.trim()) return
-    const searchFilter = `search:${searchTerm}` as Filter
-    if (!filters.includes(searchFilter)) {
-      updateFilters([...filters, searchFilter])
-    }
-  }
-
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters([])
-    setFilteredDependencies(dependencies)
-  }
+  }, [setFilters])
 
   return {
     filters,

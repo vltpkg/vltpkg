@@ -1,10 +1,9 @@
-import { createContext, useEffect, useContext, useRef } from 'react'
+import { createContext, useEffect, useContext, useMemo } from 'react'
 import { createStore, useStore } from 'zustand'
 import { useToast } from '@/components/hooks/use-toast.ts'
 import { useNavigate } from 'react-router'
 import { useGraphStore } from '@/state/index.ts'
 import { addRemoveDependency } from '@/lib/add-remove-dependency.ts'
-import { deepEqual } from '@/utils/deep-equal.ts'
 
 import type { StoreApi } from 'zustand'
 import type { PropsWithChildren } from 'react'
@@ -25,6 +24,7 @@ type DependencySidebarState = {
   error?: string
   dependencyPopoverOpen?: boolean
 }
+
 type DependencySidebarAction = {
   setAddedDependencies: (
     deps: DependencySidebarState['addedDependencies'],
@@ -58,33 +58,37 @@ type DependencySidebarProviderProps = PropsWithChildren & {
   uninstalledDependencies: DependencySidebarState['uninstalledDependencies']
 }
 
-/**
- * Deeply compares incoming props and updates the store only if values have changed.
- * Prevents unnecessary store updates and downstream rerenders.
- */
-const useSyncStoreProps = <T,>(
-  store: StoreApi<T>,
-  props: Partial<T>,
-): void => {
-  const prevPropsRef = useRef<Partial<T>>({})
+const applyFilters = (
+  dependencies: GridItemData[],
+  filters: Filter[],
+): GridItemData[] => {
+  if (filters.length === 0) return dependencies
 
-  useEffect(() => {
-    const prev = prevPropsRef.current
-    const changedKeys = Object.keys(props).filter(key => {
-      const typedKey = key as keyof T
-      return !deepEqual(props[typedKey], prev[typedKey])
-    })
+  const typeFilters = filters.filter(f => !f.startsWith('search:'))
+  const searchTerms = filters
+    .filter(f => f.startsWith('search:'))
+    .map(f => f.replace('search:', '').toLowerCase())
+    .filter(Boolean)
 
-    if (changedKeys.length > 0) {
-      const updated: Partial<T> = {}
-      changedKeys.forEach(key => {
-        const typedKey = key as keyof T
-        updated[typedKey] = props[typedKey]
-      })
-      store.setState(updated)
-      prevPropsRef.current = props
+  if (typeFilters.length === 0 && searchTerms.length === 0) {
+    return dependencies
+  }
+
+  return dependencies.filter(dep => {
+    if (
+      typeFilters.length > 0 &&
+      (!dep.type || !typeFilters.includes(dep.type))
+    ) {
+      return false
     }
-  }, [props, store])
+
+    if (searchTerms.length > 0) {
+      const depName = dep.name.toLowerCase()
+      return searchTerms.every(term => depName.includes(term))
+    }
+
+    return true
+  })
 }
 
 export const DependencySidebarProvider = ({
@@ -95,10 +99,13 @@ export const DependencySidebarProvider = ({
   children,
 }: DependencySidebarProviderProps) => {
   const query = useGraphStore(state => state.query)
-  const dependencySidebarStore = useRef(
-    createStore<DependencySidebarStore>(set => ({
+
+  const dependencySidebarStore = useMemo(() => {
+    const initialFilteredDependencies = dependencies
+
+    return createStore<DependencySidebarStore>(set => ({
       dependencies,
-      filteredDependencies: dependencies,
+      filteredDependencies: initialFilteredDependencies,
       uninstalledDependencies,
       importerId,
       filters: [],
@@ -112,7 +119,13 @@ export const DependencySidebarProvider = ({
         deps: DependencySidebarState['addedDependencies'],
       ) => set(() => ({ addedDependencies: deps })),
       setFilters: (filters: DependencySidebarState['filters']) =>
-        set(() => ({ filters })),
+        set(state => ({
+          filters,
+          filteredDependencies: applyFilters(
+            state.dependencies,
+            filters,
+          ),
+        })),
       setSearchTerm: (search: string) =>
         set(() => ({ searchTerm: search })),
       setFilteredDependencies: (
@@ -125,13 +138,24 @@ export const DependencySidebarProvider = ({
       setDependencyPopoverOpen: (
         o: DependencySidebarState['dependencyPopoverOpen'],
       ) => set(() => ({ dependencyPopoverOpen: o })),
-    })),
-  ).current
+    }))
+  }, [
+    dependencies,
+    uninstalledDependencies,
+    importerId,
+    onDependencyClick,
+  ])
 
-  /** The `filteredDependencies` by default will the dependencies themselves */
+  /** Update filtered dependencies when dependencies change */
   useEffect(() => {
+    const currentFilters = dependencySidebarStore.getState().filters
+    const newFilteredDependencies = applyFilters(
+      dependencies,
+      currentFilters,
+    )
     dependencySidebarStore.setState(() => ({
-      filteredDependencies: dependencies,
+      dependencies,
+      filteredDependencies: newFilteredDependencies,
     }))
   }, [dependencies, dependencySidebarStore])
 
@@ -139,15 +163,9 @@ export const DependencySidebarProvider = ({
   useEffect(() => {
     dependencySidebarStore.setState(() => ({
       filters: [],
+      filteredDependencies: dependencies,
     }))
-  }, [query, dependencySidebarStore])
-
-  useSyncStoreProps(dependencySidebarStore, {
-    dependencies,
-    uninstalledDependencies,
-    importerId,
-    onDependencyClick,
-  })
+  }, [query, dependencySidebarStore, dependencies])
 
   return (
     <DependencySidebarContext.Provider value={dependencySidebarStore}>

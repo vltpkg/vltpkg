@@ -171,7 +171,7 @@ const InsightHeader = ({
       <div className="col-span-3 flex w-full items-start">
         <button
           onClick={onInsightClick}
-          className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+          className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
           <span>Insight</span>
           <ArrowUpDown size={16} />
         </button>
@@ -179,7 +179,7 @@ const InsightHeader = ({
       <div className="col-span-2 flex w-full items-start">
         <button
           onClick={onCategoryClick}
-          className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+          className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
           <span>Category</span>
           <ArrowUpDown size={16} />
         </button>
@@ -203,7 +203,7 @@ const InsightItem = ({
   description: string
 }) => {
   return (
-    <div className="duration-250 grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-all hover:bg-muted">
+    <div className="duration-250 grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-colors hover:bg-muted">
       <div className="col-span-3 flex w-full items-start">
         <InsightBadge
           color={getAlertColor(severity)}
@@ -344,7 +344,7 @@ export const InsightTabContent = () => {
       <div className="w-full px-6 py-4">
         <Link
           to="/help/selectors"
-          className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+          className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
           See all Selectors & Insights
         </Link>
       </div>

@@ -158,7 +158,7 @@ const SavedQueryItem = ({
 
   return (
     <div
-      className={`group flex flex-col rounded-sm border border-[1px] bg-card transition-all hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
+      className={`group flex flex-col rounded-sm border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
       <div className="grid grid-cols-12 gap-4 px-3 py-2">
         <div className="col-span-2 flex grow items-center gap-3">
           <Checkbox

@@ -122,7 +122,7 @@ const renderItems = ({
                   to={item.url ? item.url : ''}
                   onClick={item.onClick}
                   role="button"
-                  className="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent">
+                  className="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent">
                   {item.icon && (
                     <item.icon style={{ zIndex: depth + 1 }} />
                   )}
@@ -132,7 +132,7 @@ const renderItems = ({
                     {item.title}
                   </span>
                   {item.externalIcon && item.external && (
-                    <ArrowUpRight className="duration-250 z-[3] ml-auto transition-all group-hover/sidebar-button:-translate-y-0.5 group-hover/sidebar-button:translate-x-0.5" />
+                    <ArrowUpRight className="duration-250 z-[3] ml-auto transition-transform group-hover/sidebar-button:-translate-y-0.5 group-hover/sidebar-button:translate-x-0.5" />
                   )}
                   {item.items?.length && (
                     <>

@@ -96,7 +96,7 @@ exports[`dashboard-grid with results 1`] = `
           role="link"
           class="group relative w-full cursor-default"
         >
-          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
+          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-colors group-hover:bg-card-accent">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md z-[1] font-medium">
                 project-bar
@@ -115,7 +115,7 @@ exports[`dashboard-grid with results 1`] = `
               </gui-package-manager-pnpm-icon>
             </div>
           </div>
-          <div class="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-all group-hover:bg-card-accent">
+          <div class="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-colors group-hover:bg-card-accent">
             <gui-tooltip-provider>
               <gui-tooltip>
                 <gui-tooltip-trigger classname="truncate text-left text-xs text-muted-foreground">
@@ -132,7 +132,7 @@ exports[`dashboard-grid with results 1`] = `
           role="link"
           class="group relative w-full cursor-default"
         >
-          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
+          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-colors group-hover:bg-card-accent">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md z-[1] font-medium">
                 project-foo
@@ -156,7 +156,7 @@ exports[`dashboard-grid with results 1`] = `
               </gui-runtime-node-icon>
             </div>
           </div>
-          <div class="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-all group-hover:bg-card-accent">
+          <div class="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-colors group-hover:bg-card-accent">
             <gui-tooltip-provider>
               <gui-tooltip>
                 <gui-tooltip-trigger classname="truncate text-left text-xs text-muted-foreground">

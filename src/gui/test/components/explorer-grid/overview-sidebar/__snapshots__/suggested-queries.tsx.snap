@@ -34,11 +34,11 @@ exports[`suggested-queries renders default 1`] = `
       </p>
       <div
         role="button"
-        class="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-all hover:border-muted-foreground/50"
+        class="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50"
       >
         <gui-search
           size="16"
-          classname="duration-250 text-muted-foreground transition-all group-hover:text-foreground"
+          classname="duration-250 text-muted-foreground transition-colors group-hover:text-foreground"
         >
         </gui-search>
         <div class="flex">
@@ -54,7 +54,7 @@ exports[`suggested-queries renders default 1`] = `
         </div>
         <gui-corner-down-right
           size="16"
-          classname="duration-250 ml-auto text-muted-foreground/40 transition-all group-hover:text-foreground"
+          classname="duration-250 ml-auto text-muted-foreground/40 transition-colors group-hover:text-foreground"
         >
         </gui-corner-down-right>
       </div>
@@ -71,11 +71,11 @@ exports[`suggested-queries renders default 1`] = `
       </p>
       <div
         role="button"
-        class="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-all hover:border-muted-foreground/50"
+        class="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50"
       >
         <gui-search
           size="16"
-          classname="duration-250 text-muted-foreground transition-all group-hover:text-foreground"
+          classname="duration-250 text-muted-foreground transition-colors group-hover:text-foreground"
         >
         </gui-search>
         <div class="flex">
@@ -85,7 +85,7 @@ exports[`suggested-queries renders default 1`] = `
         </div>
         <gui-corner-down-right
           size="16"
-          classname="duration-250 ml-auto text-muted-foreground/40 transition-all group-hover:text-foreground"
+          classname="duration-250 ml-auto text-muted-foreground/40 transition-colors group-hover:text-foreground"
         >
         </gui-corner-down-right>
       </div>
@@ -102,11 +102,11 @@ exports[`suggested-queries renders default 1`] = `
       </p>
       <div
         role="button"
-        class="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-all hover:border-muted-foreground/50"
+        class="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50"
       >
         <gui-search
           size="16"
-          classname="duration-250 text-muted-foreground transition-all group-hover:text-foreground"
+          classname="duration-250 text-muted-foreground transition-colors group-hover:text-foreground"
         >
         </gui-search>
         <div class="flex">
@@ -128,7 +128,7 @@ exports[`suggested-queries renders default 1`] = `
         </div>
         <gui-corner-down-right
           size="16"
-          classname="duration-250 ml-auto text-muted-foreground/40 transition-all group-hover:text-foreground"
+          classname="duration-250 ml-auto text-muted-foreground/40 transition-colors group-hover:text-foreground"
         >
         </gui-corner-down-right>
       </div>

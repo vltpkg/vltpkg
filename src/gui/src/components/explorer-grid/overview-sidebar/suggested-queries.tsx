@@ -5,6 +5,7 @@ import { Query } from '@vltpkg/query'
 import { QueryToken } from '@/components/query-bar/query-token.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import { AnimatePresence, motion } from 'framer-motion'
+import { cn } from '@/lib/utils.ts'
 
 interface SuggestedQuery {
   name: string
@@ -31,7 +32,11 @@ export const queries: SuggestedQuery[] = [
   },
 ]
 
-export const SuggestedQueries = () => {
+export const SuggestedQueries = ({
+  className,
+}: {
+  className?: string
+}) => {
   const [expanded, setExpanded] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -59,7 +64,11 @@ export const SuggestedQueries = () => {
   if (expanded === null) return null
 
   return (
-    <div className="my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-lg border-[1px] border-dashed border-muted bg-muted-foreground/5 p-3">
+    <div
+      className={cn(
+        'my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-lg border-[1px] border-dashed border-muted bg-muted-foreground/5 p-3',
+        className,
+      )}>
       <div className="flex w-full items-center justify-between">
         <p className="text-sm font-medium tracking-tight">
           Suggested Queries
@@ -102,10 +111,10 @@ export const SuggestedQueries = () => {
                   <div
                     role="button"
                     onClick={() => runQuery(query.query)}
-                    className="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-all hover:border-muted-foreground/50">
+                    className="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50">
                     <Search
                       size={16}
-                      className="duration-250 text-muted-foreground transition-all group-hover:text-foreground"
+                      className="duration-250 text-muted-foreground transition-colors group-hover:text-foreground"
                     />
                     <div className="flex">
                       {tokens.map((segment, idx) => (
@@ -116,7 +125,7 @@ export const SuggestedQueries = () => {
                     </div>
                     <CornerDownRight
                       size={16}
-                      className="duration-250 ml-auto text-muted-foreground/40 transition-all group-hover:text-foreground"
+                      className="duration-250 ml-auto text-muted-foreground/40 transition-colors group-hover:text-foreground"
                     />
                   </div>
                 </div>
