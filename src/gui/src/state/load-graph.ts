@@ -132,6 +132,7 @@ export const load = (transfered: TransferData): LoadResponse => {
           this.rawManifest = confused
           this.confused = true
         },
+        maybeSetConfusedManifest() {},
         toJSON() {
           return {
             id: this.id,

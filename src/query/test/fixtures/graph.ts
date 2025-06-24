@@ -49,6 +49,7 @@ export const newNode =
     optional: false,
     setConfusedManifest() {},
     setResolved() {},
+    maybeSetConfusedManifest() {},
     toJSON() {
       return {
         id: this.id,

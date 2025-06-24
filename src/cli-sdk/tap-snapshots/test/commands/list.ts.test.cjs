@@ -106,7 +106,8 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "@foo/bazz",
@@ -130,7 +131,8 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "bar",
@@ -157,7 +159,8 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "baz",
@@ -184,13 +187,15 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "missing",
     "fromID": "file·.",
     "spec": "missing@^1.0.0",
-    "type": "prod"
+    "type": "prod",
+    "overridden": false
   },
   {
     "name": "@foo/bazz",
@@ -214,7 +219,8 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -280,7 +286,8 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "@foo/bazz",
@@ -304,7 +311,8 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "bar",
@@ -331,7 +339,8 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -369,7 +378,8 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "b",
@@ -390,7 +400,8 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -411,7 +422,8 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   }
 ]
 `
