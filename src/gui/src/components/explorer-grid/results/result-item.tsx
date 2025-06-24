@@ -70,24 +70,18 @@ const onResultItemClick =
     e.preventDefault()
     if (!item.to) return
     let newQuery = ''
+    const appendToQuery = (s: string) => {
+      const q = query.trim()
+      return q === s ? q : `${q}${s}`
+    }
     if (item.stacked) {
-      // TODO: useVersion not needed for stacked items
-      const useVersion = false as boolean
       const name = item.to.name ? `#${item.to.name}` : ''
-      const version =
-        useVersion && item.to.version ? `:v(${item.to.version})` : ''
-      newQuery = `${query.trim()}${name}${version}`
+      newQuery = appendToQuery(name)
     } else {
       let suffix = ''
       if (!item.sameItems) {
-        // TODO: useVersion not needed for same items
-        const useVersion = false as boolean
         const name = item.to.name ? `#${item.to.name}` : ''
-        const version =
-          useVersion && item.to.version ?
-            `:v(${item.to.version})`
-          : ''
-        suffix = `${name}${version}`
+        suffix = name
       }
       if (item.to.importer && !item.from) {
         newQuery = `:project#${item.to.name}`
@@ -102,9 +96,9 @@ const onResultItemClick =
           useVersion && item.from.version ?
             `:v(${item.from.version})`
           : ''
-        newQuery = `${fromName}${fromVersion} > ${query.trim()}${suffix}`
+        newQuery = `${fromName}${fromVersion} > ${appendToQuery(suffix)}`
       } else {
-        newQuery = `${query.trim()}${suffix}`
+        newQuery = appendToQuery(suffix)
       }
     }
     updateQuery(newQuery)
