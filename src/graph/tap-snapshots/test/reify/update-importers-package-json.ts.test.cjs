@@ -74,6 +74,19 @@ Array [
 ]
 `
 
+exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > multiple dependencies with mixed changes > should save manifest with mixed dependency changes 1`] = `
+Array [
+  Object {
+    "dependencies": Object {
+      "last-dep": "^2.0.0",
+      "new-dep": "^1.0.0",
+    },
+    "name": "root-with-deps",
+    "version": "1.0.0",
+  },
+]
+`
+
 exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > no semver dep > should use provided def in package json save 1`] = `
 Array [
   Object {

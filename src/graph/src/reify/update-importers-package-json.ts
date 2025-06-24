@@ -142,7 +142,7 @@ const addOrRemoveDeps = (
         node.version,
       )
       dependencies[name] = saveValue
-      manifestChanged = saveValue !== existing
+      manifestChanged = manifestChanged || saveValue !== existing
     }
   }
   return manifestChanged ? manifest : undefined

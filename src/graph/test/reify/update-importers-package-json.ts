@@ -525,4 +525,99 @@ t.test('updatePackageJson', async t => {
       'should use custom aliased registry in package json save',
     )
   })
+
+  await t.test(
+    'multiple dependencies with mixed changes',
+    async t => {
+      // Create a manifest that already has some dependencies
+      const rootManifestWithDeps = {
+        name: 'root-with-deps',
+        version: '1.0.0',
+        dependencies: {
+          'last-dep': '^2.0.0', // This will remain unchanged
+        },
+      }
+
+      const testGraph = new Graph({
+        mainManifest: rootManifestWithDeps,
+        projectRoot: t.testdirName,
+      })
+      const testRoot = testGraph.mainImporter
+
+      // Create nodes for testing
+      const newDepMani = { name: 'new-dep', version: '1.5.0' }
+      const newSpec = Spec.parse('new-dep@^1.0.0')
+      const newDep = testGraph.addNode(
+        undefined,
+        newDepMani,
+        newSpec,
+        newDepMani.name,
+        newDepMani.version,
+      )
+
+      // the already existing dep needs to come after in order to
+      // make sure we don't override the `manifestChanged` state
+      const existingDepMani = { name: 'last-dep', version: '2.0.0' }
+      const existingSpec = Spec.parse('last-dep@^2.0.0')
+      const existingDep = testGraph.addNode(
+        undefined,
+        existingDepMani,
+        existingSpec,
+        existingDepMani.name,
+        existingDepMani.version,
+      )
+
+      // Add edges
+      testGraph.addEdge('prod', newSpec, testRoot, newDep)
+      testGraph.addEdge('prod', existingSpec, testRoot, existingDep)
+
+      // Test adding multiple dependencies:
+      // - 'new-dep' is new (change required)
+      // - 'last-dep' already has '^2.0.0' and we add '^2.0.0' (no change)
+      const multiAdd = new Map<DepID, Map<string, Dependency>>([
+        [
+          testRoot.id,
+          new Map<string, Dependency>([
+            [
+              'new-dep',
+              asDependency({
+                spec: newSpec,
+                type: 'prod',
+              }),
+            ],
+            [
+              'last-dep',
+              asDependency({
+                spec: existingSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap
+
+      updatePackageJson({
+        add: multiAdd,
+        packageJson,
+        graph: testGraph,
+      })()
+
+      const res = retrieveManifestResult()
+
+      // The key test: Should still call save even though one dependency didn't change
+      // because the other dependency (new-dep) did cause a change.
+      // This validates that manifestChanged accumulates across multiple dependencies.
+      t.strictSame(
+        res.length,
+        1,
+        'should have been called once even with mixed changes',
+      )
+
+      const [mani] = res
+      t.matchSnapshot(
+        mani,
+        'should save manifest with mixed dependency changes',
+      )
+    },
+  )
 })
