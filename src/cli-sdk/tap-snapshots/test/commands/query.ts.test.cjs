@@ -127,7 +127,8 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "foo",
@@ -151,7 +152,8 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "bar",
@@ -178,7 +180,8 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "baz",
@@ -205,13 +208,15 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "missing",
     "fromID": "file·.",
     "spec": "missing@^1.0.0",
-    "type": "prod"
+    "type": "prod",
+    "overridden": false
   },
   {
     "name": "foo",
@@ -235,7 +240,8 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -273,7 +279,8 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "b",
@@ -294,7 +301,8 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -315,7 +323,8 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "insights": {
         "scanned": false
       }
-    }
+    },
+    "overridden": false
   }
 ]
 `

@@ -244,16 +244,6 @@ export class Node implements NodeLike {
     this.graph = options.graph
     this.manifest = manifest
 
-    if (isPackageNameConfused(spec, this.manifest?.name)) {
-      this.setConfusedManifest(
-        {
-          ...manifest,
-          name: spec?.name,
-        },
-        manifest,
-      )
-    }
-
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version
     if (this.version?.startsWith('v')) {
@@ -357,6 +347,21 @@ export class Node implements NodeLike {
     this.#rawManifest = confused
     this.confused = true
     this.#name = this.manifest.name
+  }
+
+  /**
+   * Sets this node as having a manifest-confused manifest.
+   */
+  maybeSetConfusedManifest(spec: Spec, confused?: Manifest) {
+    if (isPackageNameConfused(spec, this.manifest?.name)) {
+      this.setConfusedManifest(
+        {
+          ...this.manifest,
+          name: spec.name,
+        },
+        confused,
+      )
+    }
   }
 
   toJSON() {

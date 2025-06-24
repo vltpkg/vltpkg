@@ -138,6 +138,8 @@ export type SpecLikeBase = {
    * getter that retrieves the actual spec value to be used
    */
   final: SpecLikeBase
+  /** Is this a spec that overrides another spec? */
+  overridden: boolean
 
   toString(): string
 }

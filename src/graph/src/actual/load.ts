@@ -1,13 +1,12 @@
-import {
-  asDepID,
-  hydrate,
-  joinDepIDTuple,
-  splitDepID,
-} from '@vltpkg/dep-id'
+import { asDepID, hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { graphStep } from '@vltpkg/output'
 import { isObject } from '@vltpkg/types'
-import { shorten, getRawDependencies } from '../dependencies.ts'
+import {
+  shorten,
+  getRawDependencies,
+  getDependencies,
+} from '../dependencies.ts'
 import { Graph } from '../graph.ts'
 import { loadHidden } from '../lockfile/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
@@ -17,7 +16,10 @@ import type { Manifest } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Path, PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
-import type { GraphModifier } from '../modifiers.ts'
+import type {
+  GraphModifier,
+  ModifierActiveEntry,
+} from '../modifiers.ts'
 import { readFileSync } from 'node:fs'
 
 export type LoadOptions = SpecOptions & {
@@ -148,6 +150,36 @@ const findName = ({ parent, name }: Path): string =>
   parent?.name.startsWith('@') ? `${parent.name}/${name}` : name
 
 /**
+ * Helper function that gets a modified {@link Spec} when finding a modifier
+ * that applies to a given dependency. Otherwise returns the original spec
+ * value and no queryModifier.
+ */
+const maybeApplyModifierToSpec = (
+  spec: Spec,
+  depName: string,
+  modifierRefs?: Map<string, ModifierActiveEntry>,
+): { spec: Spec; queryModifier?: string } => {
+  const activeModifier = modifierRefs?.get(depName)
+  const queryModifier = activeModifier?.modifier.query
+  const completeModifier =
+    activeModifier &&
+    activeModifier.interactiveBreadcrumb.current ===
+      activeModifier.modifier.breadcrumb.last
+
+  if (
+    queryModifier &&
+    completeModifier &&
+    'spec' in activeModifier.modifier
+  ) {
+    const modifiedSpec = activeModifier.modifier.spec
+    modifiedSpec.overridden = true
+    return { spec: modifiedSpec, queryModifier }
+  }
+
+  return { spec, queryModifier }
+}
+
+/**
  * Reads the current directory defined at `currDir` and looks for folder
  * names and their realpath resolution, normalizing scoped package names
  * and removing any invalid symlinks from the list of items that should
@@ -209,7 +241,7 @@ const parseDir = (
   fromNode: Node,
   currDir: Path,
 ) => {
-  const { loadManifests } = options
+  const { loadManifests, modifiers } = options
   const dependencies = getRawDependencies(fromNode)
   const seenDeps = new Set<string>()
   const readItems: Set<ReadEntry> = readDir(
@@ -217,6 +249,11 @@ const parseDir = (
     currDir,
     fromNode.name,
   )
+
+  // Get modifier references for this node's dependencies
+  const modifierRefs = modifiers?.tryDependencies(fromNode, [
+    ...getDependencies(fromNode, options).values(),
+  ])
 
   for (const { alias, name, realpath } of readItems) {
     let node
@@ -231,10 +268,15 @@ const parseDir = (
       const depId = findDepID(realpath)
 
       if (depId) {
-        const h = hydrate(depId, alias, {
+        let h = hydrate(depId, alias, {
           ...options,
           registry: fromNode.registry,
         })
+
+        // Check for active modifiers and replace spec even when not loading manifests
+        const { spec: modifiedSpec, queryModifier } =
+          maybeApplyModifierToSpec(h, alias, modifierRefs)
+        h = modifiedSpec
 
         // graphs build with no manifest have no notion of
         // dependency types and or spec definitions since those
@@ -250,7 +292,14 @@ const parseDir = (
             : null),
           },
           depId,
+          queryModifier,
         )
+
+        // Update active entry after placing package
+        const activeModifier = modifierRefs?.get(alias)
+        if (activeModifier && node) {
+          modifiers?.updateActiveEntry(node, activeModifier)
+        }
       }
     }
 
@@ -271,28 +320,31 @@ const parseDir = (
       const bareSpec = deps?.bareSpec || '*'
 
       const depType = shorten(type, alias, fromNode.manifest)
-      const spec = Spec.parse(alias, bareSpec, {
+      let spec = Spec.parse(alias, bareSpec, {
         ...options,
         registry: fromNode.registry,
       })
+
+      // Check for active modifiers and replace spec if a modifier is complete
+      const { spec: modifiedSpec, queryModifier } =
+        maybeApplyModifierToSpec(spec, alias, modifierRefs)
+      spec = modifiedSpec
+
       const maybeId = getPathBasedId(spec, realpath)
-      // retrieves the extra information from the depID if one is available
-      let extra
-      if (maybeId) {
-        const [type, , maybeExtra, lastExtra] = splitDepID(maybeId)
-        extra =
-          type === 'registry' || type === 'git' ?
-            lastExtra
-          : maybeExtra
-      }
       node = graph.placePackage(
         fromNode,
         depType,
         spec,
         mani,
         maybeId,
-        extra,
+        queryModifier,
       )
+
+      // Update active entry after placing package
+      const activeModifier = modifierRefs?.get(alias)
+      if (activeModifier && node) {
+        modifiers?.updateActiveEntry(node, activeModifier)
+      }
     }
 
     if (node) {
@@ -327,11 +379,24 @@ const parseDir = (
   for (const { name, type, bareSpec } of dependencies.values()) {
     if (!seenDeps.has(name)) {
       const depType = shorten(type, name, fromNode.manifest)
-      const spec = Spec.parse(name, bareSpec, {
+      let spec = Spec.parse(name, bareSpec, {
         ...options,
         registry: fromNode.registry,
       })
-      graph.placePackage(fromNode, depType, spec)
+
+      // Check for active modifiers and replace spec for missing dependencies
+      const { spec: modifiedSpec, queryModifier } =
+        maybeApplyModifierToSpec(spec, name, modifierRefs)
+      spec = modifiedSpec
+
+      graph.placePackage(
+        fromNode,
+        depType,
+        spec,
+        undefined,
+        undefined,
+        queryModifier,
+      )
     }
   }
 }
@@ -400,6 +465,7 @@ export const load = (options: LoadOptions): Graph => {
 
     // starts the list of initial folders to parse using the importer nodes
     for (const importer of graph.importers) {
+      modifiers?.tryImporter(importer)
       depsFound.set(
         importer,
         scurry.cwd.resolve(`${importer.location}/node_modules`),
@@ -420,6 +486,9 @@ export const load = (options: LoadOptions): Graph => {
         path,
       )
     }
+
+    // Clean up any pending modifier entries that were never completed
+    modifiers?.rollbackActiveEntries()
   }
 
   done()

@@ -700,6 +700,390 @@ t.test('skipLoadingNodesOnModifiersChange behavior', async t => {
   )
 })
 
+t.test('modifiers integration', async t => {
+  await t.test(
+    'should apply modifiers when loading actual graph',
+    async t => {
+      const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+      const bDepID = joinDepIDTuple(['registry', '', 'b@2.0.0']) // Modified version
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-actual-test',
+          version: '1.0.0',
+          dependencies: {
+            a: '^1.0.0',
+            b: '^1.0.0', // Will be modified to 2.0.0
+          },
+        }),
+        'vlt.json': JSON.stringify({
+          modifiers: {
+            ':root > #b': '^2.0.0', // Override b to use 2.0.0
+          },
+        }),
+        node_modules: {
+          '.vlt': {
+            [aDepID]: {
+              node_modules: {
+                a: {
+                  'package.json': JSON.stringify({
+                    name: 'a',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+            [bDepID]: {
+              node_modules: {
+                b: {
+                  'package.json': JSON.stringify({
+                    name: 'b',
+                    version: '2.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+          b: t.fixture('symlink', `.vlt/${bDepID}/node_modules/b`),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        modifiers,
+        ...configData,
+      })
+
+      // Check that 'a' was loaded normally
+      const nodeA = graph.nodes.get(aDepID)
+      t.ok(nodeA, 'dependency "a" should be loaded normally')
+      t.equal(nodeA?.name, 'a', 'node a has correct name')
+      t.equal(nodeA?.version, '1.0.0', 'node a has correct version')
+
+      // Check that 'b' was loaded with modified spec (2.0.0 instead of 1.0.0)
+      const nodeB = graph.nodes.get(bDepID)
+      t.ok(
+        nodeB,
+        'dependency "b" should be loaded with modified spec',
+      )
+      t.equal(nodeB?.name, 'b', 'node b has correct name')
+      t.equal(
+        nodeB?.version,
+        '2.0.0',
+        'node b has modified version 2.0.0',
+      )
+      t.equal(
+        nodeB?.modifier,
+        ':root > #b',
+        'node b has correct modifier path',
+      )
+
+      // Check that the edge from root to 'b' has the modified spec
+      const rootNode = graph.mainImporter
+      const edgeToB = rootNode.edgesOut.get('b')
+      t.ok(edgeToB, 'edge to b should exist')
+      t.equal(
+        edgeToB?.spec.bareSpec,
+        '^2.0.0',
+        'edge spec should be modified',
+      )
+      t.equal(
+        edgeToB?.spec.overridden,
+        true,
+        'edge spec should be marked as overridden',
+      )
+    },
+  )
+
+  await t.test(
+    'should apply modifiers for missing dependencies',
+    async t => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-missing-test',
+          version: '1.0.0',
+          dependencies: {
+            missing: '^1.0.0', // This will be missing but modified
+          },
+        }),
+        'vlt.json': JSON.stringify({
+          modifiers: {
+            ':root > #missing': '^2.0.0', // Override missing to use 2.0.0
+          },
+        }),
+        // No node_modules for missing dependency
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        modifiers,
+        ...configData,
+      })
+
+      // Check that the missing dependency edge has the modified spec
+      const rootNode = graph.mainImporter
+      const edgeToMissing = rootNode.edgesOut.get('missing')
+      t.ok(edgeToMissing, 'edge to missing should exist')
+      t.equal(
+        edgeToMissing?.spec.bareSpec,
+        '^2.0.0',
+        'missing dep spec should be modified',
+      )
+      t.notOk(
+        edgeToMissing?.to,
+        'missing dep should have no target node',
+      )
+      t.ok(
+        edgeToMissing?.spec.overridden,
+        'missing dep spec should still be marked as overridden',
+      )
+    },
+  )
+
+  await t.test(
+    'should apply modifiers when loadManifests=false',
+    async t => {
+      const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+      const bDepID = joinDepIDTuple(['registry', '', 'b@2.0.0'])
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-no-manifest-test',
+          version: '1.0.0',
+          dependencies: {
+            a: '^1.0.0',
+            b: '^1.0.0',
+          },
+        }),
+        'vlt.json': JSON.stringify({
+          modifiers: {
+            ':root > #b': '^2.0.0',
+          },
+        }),
+        node_modules: {
+          '.vlt': {
+            [aDepID]: {
+              node_modules: {
+                a: {
+                  'package.json': JSON.stringify({
+                    name: 'a',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+            [bDepID]: {
+              node_modules: {
+                b: {
+                  'package.json': JSON.stringify({
+                    name: 'b',
+                    version: '2.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+          b: t.fixture('symlink', `.vlt/${bDepID}/node_modules/b`),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier({
+        ...configData,
+      })
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: false, // This is the key difference
+        modifiers,
+        ...configData,
+      })
+
+      // Even without loading manifests, modifiers should still apply
+      const nodeA = graph.nodes.get(aDepID)
+      t.ok(nodeA, 'dependency "a" should be loaded')
+
+      const nodeB = graph.nodes.get(bDepID)
+      t.ok(
+        nodeB,
+        'dependency "b" should be loaded with modified spec',
+      )
+      t.equal(
+        nodeB?.modifier,
+        ':root > #b',
+        'node b has correct modifier path',
+      )
+
+      // Check that edges have been created
+      const rootNode = graph.mainImporter
+      const edgeToA = rootNode.edgesOut.get('a')
+      const edgeToB = rootNode.edgesOut.get('b')
+      t.ok(edgeToA, 'edge to a should exist')
+      t.ok(edgeToB, 'edge to b should exist')
+      t.ok(
+        edgeToB?.spec.overridden,
+        'edge to b should be marked as overridden',
+      )
+    },
+  )
+
+  await t.test('should handle nested modifier queries', async t => {
+    const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+    const bDepID = joinDepIDTuple(['registry', '', 'b@1.0.0'])
+    const cDepID = joinDepIDTuple(['registry', '', 'c@2.0.0']) // Modified
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'modifiers-nested-test',
+        version: '1.0.0',
+        dependencies: {
+          a: '^1.0.0',
+        },
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #a > #c': '^2.0.0', // Nested modifier
+        },
+      }),
+      node_modules: {
+        '.vlt': {
+          [aDepID]: {
+            node_modules: {
+              a: {
+                'package.json': JSON.stringify({
+                  name: 'a',
+                  version: '1.0.0',
+                  dependencies: {
+                    b: '^1.0.0',
+                    c: '^1.0.0', // Will be modified
+                  },
+                }),
+              },
+              b: t.fixture(
+                'symlink',
+                `../../${bDepID}/node_modules/b`,
+              ),
+              c: t.fixture(
+                'symlink',
+                `../../${cDepID}/node_modules/c`,
+              ),
+            },
+          },
+          [bDepID]: {
+            node_modules: {
+              b: {
+                'package.json': JSON.stringify({
+                  name: 'b',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+          [cDepID]: {
+            node_modules: {
+              c: {
+                'package.json': JSON.stringify({
+                  name: 'c',
+                  version: '2.0.0',
+                }),
+              },
+            },
+          },
+        },
+        a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+      },
+    })
+
+    t.chdir(projectRoot)
+    unload('project')
+
+    const modifiers = new GraphModifier({
+      ...configData,
+    })
+
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests: true,
+      modifiers,
+      ...configData,
+    })
+
+    const nodeA = graph.nodes.get(aDepID)
+    const nodeB = graph.nodes.get(bDepID)
+    const nodeC = graph.nodes.get(cDepID)
+
+    t.ok(nodeA, 'dependency "a" should be loaded')
+    t.ok(nodeB, 'dependency "b" should be loaded normally')
+    t.ok(nodeC, 'dependency "c" should be loaded with modified spec')
+
+    t.equal(
+      nodeA?.modifier,
+      ':root > #a > #c',
+      'should have correct modifier path for affected nodes',
+    )
+    t.equal(
+      nodeC?.modifier,
+      ':root > #a > #c',
+      'should have correct modifier path for affected nodes',
+    )
+
+    // Check that c has the modified version
+    t.equal(
+      nodeC?.version,
+      '2.0.0',
+      'node c should have modified version',
+    )
+
+    // Check that the edge from a to c has modified spec
+    const edgeToA = graph.mainImporter.edgesOut.get('a')
+    const edgeToC = nodeA?.edgesOut.get('c')
+    t.ok(edgeToA, 'edge from root to a should exist')
+    t.notOk(
+      edgeToA?.spec.overridden,
+      'an edge that is not the target of a modifier should not be overridden',
+    )
+    t.ok(edgeToC, 'edge from a to c should exist')
+    t.equal(
+      edgeToC?.spec.bareSpec,
+      '^2.0.0',
+      'edge spec should be modified',
+    )
+    t.ok(
+      edgeToC?.spec.overridden,
+      'the target of a modifier should be overridden',
+    )
+  })
+})
+
 t.test('asStoreConfigObject', async t => {
   t.strictSame(
     asStoreConfigObject({ modifiers: { '#a': '1' } }),

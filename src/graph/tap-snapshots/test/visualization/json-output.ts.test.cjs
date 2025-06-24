@@ -26,7 +26,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > selected packa
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -66,7 +67,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "workspace-b",
@@ -84,7 +86,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "workspace-a",
@@ -107,7 +110,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "link",
@@ -128,7 +132,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "foo",
@@ -149,7 +154,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "extraneous",
@@ -170,7 +176,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "bar",
@@ -195,7 +202,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "aliased",
@@ -216,7 +224,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": true,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "@scoped/b",
@@ -247,7 +256,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "@scoped/a",
@@ -274,13 +284,15 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "missing",
     "fromID": "file·.",
     "spec": "missing@^1.0.0",
-    "type": "prod"
+    "type": "prod",
+    "overridden": false
   },
   {
     "name": "workspace-b",
@@ -301,7 +313,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "ipsum",
@@ -322,7 +335,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": true,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "foo",
@@ -343,7 +357,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "blooo",
@@ -364,7 +379,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "baz",
@@ -385,7 +401,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "@scoped/c",
@@ -406,7 +423,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -432,7 +450,8 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -453,7 +472,8 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -479,7 +499,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -500,7 +521,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "b",
@@ -524,7 +546,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -545,7 +568,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -573,7 +597,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "foo",
@@ -594,7 +619,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "dev": true,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "bar",
@@ -618,7 +644,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "baz",
@@ -645,13 +672,15 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "dev": true,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "missing",
     "fromID": "file·.",
     "spec": "missing@^1.0.0",
-    "type": "prod"
+    "type": "prod",
+    "overridden": false
   },
   {
     "name": "foo",
@@ -672,7 +701,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "dev": true,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "extraneous",
@@ -693,7 +723,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -719,13 +750,15 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
     "fromID": "file·.",
     "spec": "a@^1.0.0",
-    "type": "optional"
+    "type": "optional",
+    "overridden": false
   }
 ]
 `
@@ -744,7 +777,8 @@ exports[`test/visualization/json-output.ts > TAP > nameless package > should fal
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -770,7 +804,8 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -789,7 +824,8 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       "dev": false,
       "optional": true,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `
@@ -812,7 +848,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "b",
@@ -830,7 +867,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   },
   {
     "name": "a",
@@ -848,7 +886,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       "dev": false,
       "optional": false,
       "confused": false
-    }
+    },
+    "overridden": false
   }
 ]
 `

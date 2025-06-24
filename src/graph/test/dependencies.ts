@@ -166,6 +166,7 @@ const createMockNode = (
   toString: () => 'test-node',
   setResolved: () => {},
   setConfusedManifest: () => {},
+  maybeSetConfusedManifest: () => {},
   ...overrides,
 })
 

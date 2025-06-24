@@ -90,6 +90,7 @@ Spec {
     "registry": "https://registry.npmjs.org/",
     "scope-registries": Object {},
   },
+  "overridden": false,
   "range": undefined,
   "registry": undefined,
   "registrySpec": undefined,
@@ -170,6 +171,7 @@ Spec {
       "@myscope": "http://example.com",
     },
   },
+  "overridden": false,
   "range": Range {
     "includePrerelease": false,
     "isAny": false,

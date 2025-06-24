@@ -490,7 +490,9 @@ t.test('rawManifest getter and setter', t => {
   const spec = Spec.parse('foo', '^1.0.0')
   const node = new Node(opts, undefined, mani, spec)
 
-  // rawManifest should be set to the originally set manifest
+  // set a confused manifest if that's the case
+  node.maybeSetConfusedManifest(spec, mani)
+
   t.strictSame(node.rawManifest?.name, 'test')
   t.equal(node.confused, true)
 

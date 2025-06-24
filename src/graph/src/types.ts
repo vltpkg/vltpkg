@@ -73,4 +73,5 @@ export type NodeLike = {
   toString(): string
   setResolved(): void
   setConfusedManifest(fixed: Manifest, confused?: Manifest): void
+  maybeSetConfusedManifest(spec: Spec, confused?: Manifest): void
 }
