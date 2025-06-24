@@ -225,11 +225,14 @@ const fixTools = async (ws: Workspace) => {
 }
 
 const fixLicense = async (ws: Workspace) => {
-  const licenseFile = join(ws.dir, 'LICENSE')
+  const licenseFile = join(
+    ws.dir,
+    'LICENSE' + (ws.pj.name === '@vltpkg/gui' ? '.md' : ''),
+  )
   const license = await readFile(licenseFile, 'utf8').catch(() => '')
 
   const containsVlt = () => {
-    if (!license.includes('Copyright (c) vlt technology, Inc.')) {
+    if (!/Copyright (.*)? vlt technology, Inc\./.test(license)) {
       throw new Error(
         `${ws.pj.name} license should contain vlt company name`,
       )
@@ -265,6 +268,12 @@ const fixLicense = async (ws: Workspace) => {
       ws.pj.license = 'BSD-2-Clause-Patent'
       containsText(`ISC License`)
       containsText(`patent license`)
+      containsVlt()
+      break
+    }
+    case '@vltpkg/gui': {
+      ws.pj.license = 'FSL-1.1-MIT'
+      containsText(ws.pj.license)
       containsVlt()
       break
     }

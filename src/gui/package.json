@@ -73,7 +73,7 @@
     "typescript-eslint": "catalog:",
     "vitest": "^3.2.1"
   },
-  "license": "BSD-2-Clause-Patent",
+  "license": "FSL-1.1-MIT",
   "engines": {
     "node": ">=22"
   },
