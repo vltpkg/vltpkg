@@ -6,7 +6,7 @@ FSL-1.1-MIT
 
 ## Notice
 
-Copyright 2025 vlt technology inc.
+Copyright 2025 vlt technology, Inc.
 
 ## Terms and Conditions
 
