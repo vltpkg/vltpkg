@@ -193,6 +193,9 @@ describe('ResultItem updates query store value', () => {
         name: 'parent',
         version: '1.0.0',
         insights: {},
+        graph: {
+          nodes: new Map(),
+        },
       } as QueryResponseNode,
     } satisfies GridItemData
     render(<ResultItem item={item} />)
