@@ -43,4 +43,6 @@ information on how to build and develop the various workspaces.
 
 ### License
 
-[BSD-2-Clause Plus Patent License](../../LICENSE)
+This project is licensed under the
+[Functional Source License](https://fsl.software)
+([**FSL-1.1-MIT**](LICENSE.md)).

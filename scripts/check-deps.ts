@@ -128,6 +128,7 @@ const main = async () => {
     'Apache-2.0',
     '0BSD',
     'BSD-3-Clause',
+    'FSL-1.1-MIT',
     '(WTFPL OR MIT)',
     '(MIT OR CC0-1.0)',
   ])
