@@ -107,6 +107,8 @@ test('DependenciesTabsButton renders correctly', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -145,6 +147,8 @@ test('DependenciesTabContent renders default', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 
@@ -183,6 +187,8 @@ test('DependenciesTabContent renders an empty state', () => {
       setDepWarnings: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      depFunding: undefined,
+      setDepFunding: vi.fn(),
     }),
   )
 

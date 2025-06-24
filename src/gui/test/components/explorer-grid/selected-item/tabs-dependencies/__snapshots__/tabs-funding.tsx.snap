@@ -1,0 +1,174 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FundingTabButton renders correctly 1`] = `
+
+<gui-tabs-trigger
+  value="funding"
+  variant="nestedCard"
+  classname="flex"
+>
+  Funding
+</gui-tabs-trigger>
+
+`;
+
+exports[`FundingTabButton renders with a count 1`] = `
+
+<gui-tabs-trigger
+  value="funding"
+  variant="nestedCard"
+  classname="flex"
+>
+  Funding
+  <gui-data-badge
+    variant="count"
+    classnames="[object Object]"
+    content="8"
+  >
+  </gui-data-badge>
+</gui-tabs-trigger>
+
+`;
+
+exports[`FundingTabContent renders with an empty state  1`] = `
+
+<gui-tabs-content value="funding">
+  <gui-empty-state
+    icon="gui-heart-handshake-icon"
+    message="No dependencies are looking for funding"
+  >
+  </gui-empty-state>
+</gui-tabs-content>
+
+`;
+
+exports[`FundingTabContent renders with an funding 1`] = `
+
+<gui-tabs-content value="funding">
+  <div class="flex flex-col gap-3 py-4">
+    <div class="flex flex-col gap-3 px-6">
+      <div class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors">
+        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+          Packages looking for funding
+        </p>
+        <p class="inline-flex items-center gap-1 font-mono text-2xl font-medium tabular-nums text-foreground">
+          <span>
+            <gui-heart-handshake-icon
+              classname="text-pink-500"
+              size="24"
+            >
+            </gui-heart-handshake-icon>
+          </span>
+          8
+        </p>
+      </div>
+      <div class="my-2 flex w-2/3 flex-col gap-1 text-pretty">
+        <p class="text-medium text-sm capitalize text-foreground">
+          support the tools you rely on
+        </p>
+        <p class="text-sm font-medium text-muted-foreground">
+          Some of the packages you're using have funding options available. Supporting them helps ensure these projects remain maintained and sustainable for the community.
+        </p>
+      </div>
+    </div>
+    <gui-table classname="cursor-default border-t-[1px] border-muted">
+      <gui-table-header>
+        <gui-table-row>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 80px;"
+          >
+            <gui-sorting-header
+              header="Count"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 150px;"
+          >
+            <gui-sorting-header
+              header="Type"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+          <gui-table-head
+            classname="cursor-default capitalize h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&amp;>button]:first-of-type:pl-0 [&amp;>p]:last-of-type:pl-3"
+            style="width: 200px;"
+          >
+            <gui-sorting-header
+              header="Type"
+              column="[object Object]"
+              classname="px-3 py-3 align-top cursor-default capitalize"
+            >
+            </gui-sorting-header>
+          </gui-table-head>
+        </gui-table-row>
+      </gui-table-header>
+      <gui-table-body>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              4
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            github
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            <span class="lowercase">
+              darcyclake
+            </span>
+          </gui-table-cell>
+        </gui-table-row>
+        <gui-table-row
+          role="button"
+          classname="cursor-default"
+          data-state="false"
+        >
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 80px;"
+          >
+            <p class="font-mono text-sm font-medium tabular-nums">
+              4
+            </p>
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 150px;"
+          >
+            github
+          </gui-table-cell>
+          <gui-table-cell
+            classname="px-3 py-3 align-top cursor-default capitalize first-of-type:pl-8 last-of-type:pr-8"
+            style="width: 200px;"
+          >
+            <span class="lowercase">
+              ruyadorno
+            </span>
+          </gui-table-cell>
+        </gui-table-row>
+      </gui-table-body>
+    </gui-table>
+  </div>
+</gui-tabs-content>
+
+`;
