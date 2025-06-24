@@ -54,6 +54,7 @@ const newNode =
     dev: false,
     optional: false,
     setConfusedManifest() {},
+    maybeSetConfusedManifest() {},
     setResolved() {},
     toJSON() {
       return {

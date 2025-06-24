@@ -256,6 +256,7 @@ export class Spec implements SpecLike<Spec> {
   file?: string
   catalog?: string
   subspec?: Spec
+  overridden = false
   #final?: Spec & { type: Exclude<SpecType, 'catalog'> }
   #toString?: string
 

@@ -387,6 +387,8 @@ export class Graph implements GraphLike {
     toNode.dev = flags.dev
     toNode.optional = flags.optional
     toNode.modifier = extra
+    toNode.maybeSetConfusedManifest(spec, manifest)
+
     this.addEdge(depType, spec, fromNode, toNode)
     return toNode
   }

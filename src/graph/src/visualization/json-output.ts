@@ -26,6 +26,10 @@ export type JSONOutputItem = {
    * A representation of the package object that fulfills this dependency.
    */
   to?: NodeLike
+  /**
+   * Whether this edge was overridden by a graph modifier.
+   */
+  overridden: boolean
 }
 
 export type JSONOutputGraph = {
@@ -46,6 +50,7 @@ export function jsonOutput({ edges, nodes }: JSONOutputGraph) {
         /* c8 ignore next - name can't be missing but ts won't know */
         name: node.name || node.id,
         to: node,
+        overridden: false,
       })
     }
   }
@@ -58,6 +63,7 @@ export function jsonOutput({ edges, nodes }: JSONOutputGraph) {
       spec: String(edge.spec),
       type: edge.type,
       to: edge.to,
+      overridden: edge.spec.overridden,
     })
   }
 
