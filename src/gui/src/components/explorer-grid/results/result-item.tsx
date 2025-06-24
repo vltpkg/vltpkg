@@ -85,10 +85,8 @@ const onResultItemClick =
         newQuery = `:project#${item.to.name}`
       } else if (item.from) {
         // use version on the parent node if there are multiple nodes in the graph with the same name
-        const useVersion =
-          [...item.from.graph.nodes.values()].filter(
-            n => n.name === item.from?.name,
-          ).length > 1
+        const nodesFound = item.from.graph.nodesByName.get(item.from?.name)
+        const useVersion = nodesFound && nodesFound.size > 1
         const fromName = `#${item.from.name}`
         const fromVersion =
           useVersion && item.from.version ?
