@@ -75,13 +75,11 @@ const onResultItemClick =
       return q === s ? q : `${q}${s}`
     }
     if (item.stacked) {
-      const name = item.to.name ? `#${item.to.name}` : ''
-      newQuery = appendToQuery(name)
+      newQuery = appendToQuery(item.to.name ? `#${item.to.name}` : '')
     } else {
       let suffix = ''
       if (!item.sameItems) {
-        const name = item.to.name ? `#${item.to.name}` : ''
-        suffix = name
+        suffix = item.to.name ? `#${item.to.name}` : ''
       }
       if (item.to.importer && !item.from) {
         newQuery = `:project#${item.to.name}`
