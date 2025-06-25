@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
   TooltipContent,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 import { ChevronsUpDown, CircleHelp } from 'lucide-react'
 import { cn } from '@/lib/utils.ts'
@@ -132,10 +133,12 @@ export const CreateQuery = ({
                     size={18}
                   />
                 </TooltipTrigger>
-                <TooltipContent>
-                  Set directory to 'Global' to reuse across all
-                  projects.
-                </TooltipContent>
+                <TooltipPortal>
+                  <TooltipContent>
+                    Set directory to 'Global' to reuse across all
+                    projects.
+                  </TooltipContent>
+                </TooltipPortal>
               </Tooltip>
             </TooltipProvider>
             <DirectorySelect
