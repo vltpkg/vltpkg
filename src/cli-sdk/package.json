@@ -48,6 +48,7 @@
     "ink": "^5.2.1",
     "ink-spinner": "^5.0.0",
     "jackspeak": "^4.1.1",
+    "lz-string": "catalog:",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "pretty-bytes": "^6.1.1",
