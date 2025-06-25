@@ -13,6 +13,7 @@ import {
   GraphModifier,
 } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
+import LZString from 'lz-string'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import type { DepID } from '@vltpkg/dep-id'
@@ -98,7 +99,7 @@ export const views = {
   gui: async ({ queryString }, _, conf) => {
     await startGUI(
       conf,
-      '/explore?query=' + encodeURIComponent(queryString),
+      `/explore/${LZString.compressToEncodedURIComponent(queryString)}/overview`,
     )
   },
 } as const satisfies Views<QueryResult>
