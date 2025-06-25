@@ -1,5 +1,5 @@
 import type { Repository, Manifest, Packument } from '@vltpkg/types'
-import { compare, gt } from '@vltpkg/semver'
+import { compare, gt, prerelease } from '@vltpkg/semver'
 import { isRecord } from '@/utils/typeguards.ts'
 import type { Spec } from '@vltpkg/spec/browser'
 import {
@@ -463,7 +463,8 @@ export async function* fetchDetails(
                 resolvedVersions.filter(
                   v =>
                     manifest.version &&
-                    gt(v.version, manifest.version),
+                    gt(v.version, manifest.version) &&
+                    !prerelease(v.version)?.length,
                 )
               : undefined,
           }
