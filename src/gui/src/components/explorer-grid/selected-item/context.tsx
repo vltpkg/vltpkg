@@ -1,3 +1,4 @@
+import { useNavigate, useParams } from 'react-router'
 import {
   createContext,
   useContext,
@@ -24,7 +25,6 @@ import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 import type { Manifest, NormalizedFunding } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
-import { generatePath } from 'react-router'
 
 export type Tab =
   | 'overview'
@@ -428,17 +428,18 @@ export const SelectedItemProvider = ({
   const q = useGraphStore(state => state.q)
   const graph = useGraphStore(state => state.graph)
   const query = useGraphStore(state => state.query)
+  const params = useParams<{
+    query: string
+    tab: Tab
+    subTab?: SubTabDependencies
+  }>()
+  const navigate = useNavigate()
 
-  const getCurrentTabsFromUrl = useCallback(() => {
-    const currentPath = window.location.pathname
-    const segments = currentPath.split('/').filter(Boolean)
-    const tab = segments[2] as Tab
-    const subTab = segments[3] as SubTabDependencies
-    return { tab, subTab }
-  }, [])
-
-  const { tab: initialTab, subTab: initialSubTab } =
-    getCurrentTabsFromUrl()
+  const activeTab =
+    params.subTab ? 'dependencies' : (params.tab ?? 'overview')
+  const activeSubTab =
+    params.subTab ||
+    (activeTab === 'dependencies' ? 'insights' : undefined)
 
   /**
    * We initialize the zustand store as a scoped state within the context:
@@ -450,8 +451,8 @@ export const SelectedItemProvider = ({
   const selectedItemStore = useRef(
     createStore<SelectedItemStore>(set => ({
       selectedItem,
-      activeTab: initialTab,
-      activeSubTab: initialSubTab,
+      activeTab: activeTab,
+      activeSubTab: activeSubTab,
       manifest: selectedItem.to?.manifest ?? null,
       rawManifest: selectedItem.to?.rawManifest ?? null,
       packageScore: selectedItem.to?.insights.score,
@@ -464,78 +465,16 @@ export const SelectedItemProvider = ({
       duplicatedDeps: undefined,
       depFunding: undefined,
       setActiveTab: (newTab: SelectedItemStoreState['activeTab']) => {
-        set(() => ({ activeTab: newTab }))
-
-        const currentPath = window.location.pathname
-        const segments = currentPath.split('/').filter(Boolean)
-        const encodedQuery: string = segments[1] ?? ''
-
-        try {
-          if (newTab === 'overview') {
-            const targetPathWithTab = generatePath(
-              '/explore/:query/:tab',
-              {
-                query: encodedQuery,
-                tab: newTab,
-              },
-            )
-            window.history.pushState(null, '', targetPathWithTab)
-          } else if (newTab === 'dependencies') {
-            const targetPathWithTab = generatePath(
-              '/explore/:query/:tab/:subTab',
-              {
-                query: encodedQuery,
-                tab: newTab,
-                subTab: 'insights',
-              },
-            )
-            window.history.pushState(null, '', targetPathWithTab)
-          } else {
-            const targetPathWithTab = generatePath(
-              '/explore/:query/:tab',
-              {
-                query: encodedQuery,
-                tab: newTab,
-              },
-            )
-            window.history.pushState(null, '', targetPathWithTab)
-          }
-        } catch (error) {
-          console.error(
-            'Error updating URL for tab navigation:',
-            error,
-          )
-        }
+        set(state => ({ ...state, activeTab: newTab }))
+        void navigate(newTab)
       },
       setActiveSubTab: (
         newSubTab: SelectedItemStoreState['activeSubTab'],
       ) => {
-        if (!newSubTab) return
-
-        set(() => ({ activeSubTab: newSubTab }))
-
-        setTimeout(() => {
-          const currentPath = window.location.pathname
-          const segments = currentPath.split('/').filter(Boolean)
-          const encodedQuery: string = segments[1] ?? ''
-
-          try {
-            const targetPathWithTab = generatePath(
-              '/explore/:query/:tab/:subTab',
-              {
-                query: encodedQuery,
-                tab: 'dependencies',
-                subTab: newSubTab,
-              },
-            )
-            window.history.pushState(null, '', targetPathWithTab)
-          } catch (error) {
-            console.error(
-              'Error updating URL for sub-tab navigation:',
-              error,
-            )
-          }
-        }, 0)
+        set(state => ({ ...state, activeSubTab: newSubTab }))
+        if (newSubTab) {
+          void navigate(`dependencies/${newSubTab}`)
+        }
       },
       setDepLicenses: (
         depLicenses: SelectedItemStoreState['depLicenses'],
@@ -594,23 +533,6 @@ export const SelectedItemProvider = ({
   }, [fetchDetailsAsync, selectedItemStore])
 
   useEffect(() => {
-    const handlePopState = () => {
-      const { tab: newActiveTab, subTab: newActiveSubTab } =
-        getCurrentTabsFromUrl()
-
-      selectedItemStore.setState(state => ({
-        ...state,
-        activeTab: newActiveTab,
-        activeSubTab: newActiveSubTab,
-      }))
-    }
-
-    window.addEventListener('popstate', handlePopState)
-    return () =>
-      window.removeEventListener('popstate', handlePopState)
-  }, [selectedItemStore, getCurrentTabsFromUrl])
-
-  useEffect(() => {
     void getDependencyInformation(
       q,
       graph,
@@ -624,6 +546,14 @@ export const SelectedItemProvider = ({
       selectedItemStore.getState().setDepFunding,
     )
   }, [q, graph, query, selectedItemStore])
+
+  useEffect(() => {
+    selectedItemStore.setState(state => ({
+      ...state,
+      activeTab: activeTab,
+      activeSubTab: activeSubTab,
+    }))
+  }, [activeTab, activeSubTab, selectedItemStore])
 
   return (
     <SelectedItemContext.Provider value={selectedItemStore}>

@@ -14,14 +14,8 @@ exports[`DependenciesTabContent renders an empty state 1`] = `
       <gui-funding-tab-button>
       </gui-funding-tab-button>
     </gui-tabs-list>
-    <gui-insights-tab-content>
-    </gui-insights-tab-content>
-    <gui-licenses-tab-content>
-    </gui-licenses-tab-content>
-    <gui-duplicates-tab-content>
-    </gui-duplicates-tab-content>
-    <gui-funding-tab-content>
-    </gui-funding-tab-content>
+    <gui-router-outlet>
+    </gui-router-outlet>
   </gui-tabs>
 </gui-tabs-content>
 
@@ -41,14 +35,8 @@ exports[`DependenciesTabContent renders default 1`] = `
       <gui-funding-tab-button>
       </gui-funding-tab-button>
     </gui-tabs-list>
-    <gui-insights-tab-content>
-    </gui-insights-tab-content>
-    <gui-licenses-tab-content>
-    </gui-licenses-tab-content>
-    <gui-duplicates-tab-content>
-    </gui-duplicates-tab-content>
-    <gui-funding-tab-content>
-    </gui-funding-tab-content>
+    <gui-router-outlet>
+    </gui-router-outlet>
   </gui-tabs>
 </gui-tabs-content>
 

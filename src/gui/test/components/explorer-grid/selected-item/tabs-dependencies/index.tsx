@@ -9,6 +9,10 @@ import {
   DependenciesTabContent,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 
+vi.mock('react-router', () => ({
+  Outlet: 'gui-router-outlet',
+}))
+
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
   () => ({
