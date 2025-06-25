@@ -102,6 +102,18 @@ file·.
 
 `
 
+exports[`test/visualization/human-readable-output.ts > TAP > overridden package > colors > should use colors for overridden package 1`] = `
+[0mmy-project
+└── foo@2.0.0 [33m(overridden)[39m
+[0m
+`
+
+exports[`test/visualization/human-readable-output.ts > TAP > overridden package > should print overridden package 1`] = `
+my-project
+└── foo@2.0.0 (overridden)
+
+`
+
 exports[`test/visualization/human-readable-output.ts > TAP > versionless package > should skip printing version number 1`] = `
 my-project
 └── a@^1.0.0
