@@ -4,7 +4,10 @@ import {
   selectorFixture,
   copyGraphSelectionState,
 } from '../fixtures/selector.ts'
-import { getSemverRichGraph, getSimpleGraph } from '../fixtures/graph.ts'
+import {
+  getSemverRichGraph,
+  getSimpleGraph,
+} from '../fixtures/graph.ts'
 import type { TestCase } from '../fixtures/types.ts'
 import type { GraphSelectionState } from '../../src/types.ts'
 
@@ -50,9 +53,9 @@ t.test(':prerelease pseudo-selector', async t => {
 
   for (const [query, partial, expected] of queryToExpected) {
     const initial =
-      partial === allSemverRich ? initialSemverRich : 
-      partial === allSimple ? initialSimple : 
-      copyGraphSelectionState(empty)
+      partial === allSemverRich ? initialSemverRich
+      : partial === allSimple ? initialSimple
+      : copyGraphSelectionState(empty)
 
     const result = await testPseudo(
       query,
@@ -63,7 +66,11 @@ t.test(':prerelease pseudo-selector', async t => {
     t.strictSame(
       result.nodes.map(i => i.name).sort(),
       expected.sort(),
-      `query > "${query}" with ${partial === allSemverRich ? 'semver-rich' : partial === allSimple ? 'simple' : 'empty'} graph`,
+      `query > "${query}" with ${
+        partial === allSemverRich ? 'semver-rich'
+        : partial === allSimple ? 'simple'
+        : 'empty'
+      } graph`,
     )
 
     // Verify all returned nodes have prerelease versions
@@ -84,7 +91,9 @@ t.test(':prerelease pseudo-selector', async t => {
       copyGraphSelectionState(allSemverRich),
     )
 
-    const nodeVersions = result.nodes.map(n => `${n.name}@${n.version}`).sort()
+    const nodeVersions = result.nodes
+      .map(n => `${n.name}@${n.version}`)
+      .sort()
     t.strictSame(
       nodeVersions,
       ['e@1.3.4-beta.1', 'g@1.2.3-rc.1+rev.2'],

@@ -13,9 +13,12 @@ export const prereleaseParser = async (state: ParserState) => {
       removeNode(state, node)
       continue
     }
-    
+
     const prereleaseIdentifiers = prerelease(version)
-    if (!prereleaseIdentifiers || prereleaseIdentifiers.length === 0) {
+    if (
+      !prereleaseIdentifiers ||
+      prereleaseIdentifiers.length === 0
+    ) {
       removeNode(state, node)
     }
   }
