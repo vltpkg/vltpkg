@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button.tsx'
 import { House } from 'lucide-react'
 import {
@@ -11,13 +10,11 @@ import {
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.ts'
 
 const RootButton = () => {
-  const navigate = useNavigate()
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
 
   const onClick = () => {
-    void navigate('/explore')
-    updateQuery(':root')
+    updateQuery(DEFAULT_QUERY)
   }
 
   return (
