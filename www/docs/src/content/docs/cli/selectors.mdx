@@ -105,6 +105,10 @@ e.g: `#foo` is the same as `[name=foo]`
     current one
 - `:private` Matches packages that have the property `private` set on
   their `package.json` file.
+- `:prerelease` Matches packages that have prerelease versions
+  (e.g., `1.2.3-alpha.1`, `2.0.0-rc.2`). This can be useful for
+  selecting prerelease packages or excluding them with
+  `:not(:prerelease)`.
 - `:published(<date>)` Matches packages based on their publication
   date. The date parameter can be prefixed with a comparator (`>`,
   `<`, `>=`, `<=`). If no comparator is provided, it will match exact
