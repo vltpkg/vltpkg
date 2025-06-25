@@ -51,7 +51,7 @@ exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
           </gui-alert-triangle-icon>
         </div>
         <p class="text-xs font-medium text-yellow-500">
-          1 Dependencies not scanned
+          1 dependency not scanned
         </p>
       </div>
       <div class="relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3">
