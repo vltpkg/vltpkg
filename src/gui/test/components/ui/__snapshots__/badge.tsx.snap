@@ -3,7 +3,7 @@
 exports[`badge render custom class 1`] = `
 
 <div>
-  <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 custom-class">
+  <div class="inline-flex items-center rounded-full border px-2.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 custom-class">
   </div>
 </div>
 
@@ -12,7 +12,7 @@ exports[`badge render custom class 1`] = `
 exports[`badge render default 1`] = `
 
 <div>
-  <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
+  <div class="inline-flex items-center rounded-full border px-2.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
   </div>
 </div>
 
@@ -21,7 +21,7 @@ exports[`badge render default 1`] = `
 exports[`badge render destructive 1`] = `
 
 <div>
-  <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80">
+  <div class="inline-flex items-center rounded-full border px-2.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80">
   </div>
 </div>
 
@@ -30,7 +30,7 @@ exports[`badge render destructive 1`] = `
 exports[`badge render outline 1`] = `
 
 <div>
-  <div class="inline-flex items-center rounded-full border border-muted px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground bg-background">
+  <div class="inline-flex items-center rounded-full border border-muted px-2.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground bg-background">
   </div>
 </div>
 
@@ -39,7 +39,7 @@ exports[`badge render outline 1`] = `
 exports[`badge render secondary 1`] = `
 
 <div>
-  <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
+  <div class="inline-flex items-center rounded-full border px-2.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
   </div>
 </div>
 
