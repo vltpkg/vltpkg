@@ -61,7 +61,7 @@ exports[`ResultItem render stacked many 1`] = `
         </div>
         <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
           <div>
-            <div class="inline-flex items-center px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40 h-[18px] rounded-full font-normal text-inherit">
+            <div class="inline-flex items-center px-2.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-[1px] border-lime-600 dark:border-lime-700 bg-lime-100 dark:bg-lime-300 dark:text-lime-900 hover:bg-lime-100/80 h-[18px] rounded-full font-normal text-inherit">
               peer
             </div>
           </div>
@@ -104,7 +104,7 @@ exports[`ResultItem render stacked two 1`] = `
         </div>
         <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
           <div>
-            <div class="inline-flex items-center px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-fuchsia-500/20 border-[1px] dark:border-fuchsia-400 border-fuchsia-500 hover:bg-fuchsia-400/30 dark:bg-fuchsia-500/30 dark:text-fuchsia-400 dark:hover:bg-fuchsia-500/40 h-[18px] rounded-full font-normal text-inherit">
+            <div class="inline-flex items-center px-2.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-[1px] dark:border-fuchsia-600 border-fuchsia-500 bg-fuchsia-100 dark:bg-fuchsia-300 dark:text-fuchsia-900 hover:bg-fuchsia-100/80 h-[18px] rounded-full font-normal text-inherit">
               dev
             </div>
           </div>
@@ -145,7 +145,7 @@ exports[`ResultItem render with item 1`] = `
         </div>
         <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
           <div>
-            <div class="inline-flex items-center px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full font-normal text-inherit">
+            <div class="inline-flex items-center border px-2.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full font-normal text-inherit">
               prod
             </div>
           </div>
@@ -198,7 +198,7 @@ exports[`ResultItem render with type 1`] = `
         </div>
         <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
           <div>
-            <div class="inline-flex items-center px-2.5 py-0.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full font-normal text-inherit">
+            <div class="inline-flex items-center border px-2.5 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full font-normal text-inherit">
               prod
             </div>
           </div>
