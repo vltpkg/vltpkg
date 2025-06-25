@@ -84,21 +84,17 @@ export const InsightsTabContent = () => {
 
   const warningsByGroup = useMemo(() => {
     return Object.entries(depWarnings ?? {}).reduce(
-      (acc, [, { count, severity, ...rest }]) => {
+      (acc, [, { count, severity }]) => {
         if (count === 0) return acc
 
-        const formattedWarning = {
-          count,
-          severity,
-          ...rest,
+        if (!acc[severity]) {
+          acc[severity] = 0
         }
-
-        acc[severity] = []
-        acc[severity].push(formattedWarning)
+        acc[severity] += count
 
         return acc
       },
-      {} as Record<DepWarning['severity'], DepWarning[]>,
+      {} as Record<DepWarning['severity'], number>,
     )
   }, [depWarnings])
 
@@ -288,15 +284,19 @@ export const InsightsTabContent = () => {
 
           <div className="flex flex-wrap gap-3 px-6">
             {Object.entries(warningsByGroup).map(
-              ([severity, warning], idx) => (
+              ([severity, count], idx) => (
                 <Warning
                   onClick={() =>
-                    queryWarningsByGroup(warning.map(w => w.selector))
+                    queryWarningsByGroup(
+                      Object.entries(depWarnings ?? {})
+                        .filter(([, w]) => w.severity === severity)
+                        .map(([, w]) => w.selector),
+                    )
                   }
                   key={`warning-${severity}-${idx}`}
-                  warning={`${warning.length} ${severity} severity`}
+                  warning={`${count} ${severity} severity`}
                   className="rounded-sm px-2 py-1"
-                  severity={warning[0]?.severity}
+                  severity={severity as DepWarning['severity']}
                 />
               ),
             )}

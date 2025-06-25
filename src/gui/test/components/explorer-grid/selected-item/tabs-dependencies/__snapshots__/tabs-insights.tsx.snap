@@ -71,7 +71,7 @@ exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
     </div>
     <div class="flex flex-wrap gap-3 px-6">
       <gui-warning
-        warning="1 medium severity"
+        warning="6 medium severity"
         classname="rounded-sm px-2 py-1"
         severity="medium"
       >
@@ -276,7 +276,7 @@ exports[`InsightsTabContent renders with insights 1`] = `
     </div>
     <div class="flex flex-wrap gap-3 px-6">
       <gui-warning
-        warning="1 medium severity"
+        warning="6 medium severity"
         classname="rounded-sm px-2 py-1"
         severity="medium"
       >
