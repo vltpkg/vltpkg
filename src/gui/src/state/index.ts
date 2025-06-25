@@ -35,6 +35,28 @@ const DEFAULT_QUERY_LABELS: QueryLabel[] = [
 
 const newStamp = () => String(Math.random()).slice(2)
 
+const getInitialQuery = (): string => {
+  if (typeof window === 'undefined') {
+    return DEFAULT_QUERY
+  }
+
+  const currentPath = window.location.pathname
+  if (currentPath.startsWith('/explore/')) {
+    const pathSegments = currentPath.split('/')
+    const compressedQuery = pathSegments[2]
+
+    if (compressedQuery) {
+      try {
+        return decodeCompressedQuery(compressedQuery)
+      } catch (error) {
+        console.error('Failed to decode compressed query:', error)
+      }
+    }
+  }
+
+  return DEFAULT_QUERY
+}
+
 const initialState: State = {
   appData: undefined,
   dashboard: undefined,
@@ -47,7 +69,7 @@ const initialState: State = {
     tools: [],
     vltInstalled: undefined,
   },
-  query: DEFAULT_QUERY,
+  query: getInitialQuery(),
   q: undefined,
   specOptions: undefined,
   stamp: newStamp(),
