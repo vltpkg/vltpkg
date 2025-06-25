@@ -35,6 +35,7 @@ import {
 } from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
 import { Warning } from '@/components/explorer-grid/selected-item/tabs-dependencies/warning.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
+import { toHumanString } from '@/utils/human-string.ts'
 
 import type { DepWarning } from '@/components/explorer-grid/selected-item/context.tsx'
 
@@ -217,6 +218,8 @@ export const InsightsTabContent = () => {
 
   const chartColor = getScoreColor(averageScore ?? 0)
   const textColor = scoreColors[chartColor]
+  const notScannedDeps =
+    !depCount || !scannedDeps ? 0 : depCount - scannedDeps
 
   return (
     <TabsContent value="insights">
@@ -253,8 +256,12 @@ export const InsightsTabContent = () => {
                       <AlertTriangle className="mb-0.5 size-4 text-yellow-500" />
                     </div>
                     <p className="text-xs font-medium text-yellow-500">
-                      {depCount - scannedDeps} Dependencies not
-                      scanned
+                      {toHumanString({
+                        zero: 'All dependencies scanned',
+                        count: notScannedDeps,
+                        one: `${notScannedDeps} dependency not scanned`,
+                        value: `${notScannedDeps} dependencies not scanned`,
+                      })}
                     </p>
                   </>
                 )}
