@@ -186,6 +186,9 @@ export function humanReadableOutput(
         nextItem.name =
           nextItem.node?.confused ?
             `${nextItem.edge?.name} ${red('(confused)')}`
+          : nextItem.edge?.spec.overridden ?
+            /* c8 ignore next */
+            `${nextItem.edge.name}@${nextItem.node?.version || nextItem.edge.spec.bareSpec} ${yellow('(overridden)')}`
           : nextItem.node?.name && nextItem.edge?.name !== nodeName ?
             `${nextItem.edge?.name} (${toName})`
           : `${nextItem.edge?.name}@${nextItem.node?.version || nextItem.edge?.spec.bareSpec}`

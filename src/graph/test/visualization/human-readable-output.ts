@@ -444,3 +444,60 @@ t.test('missing optional', async t => {
     )
   })
 })
+
+t.test('overridden package', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    },
+  })
+  const fooSpec = Spec.parse('foo', '^1.0.0')
+  // Mark the spec as overridden
+  fooSpec.overridden = true
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    fooSpec,
+    {
+      name: 'foo',
+      version: '2.0.0',
+    },
+  )
+  t.ok(foo)
+  t.matchSnapshot(
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      {},
+    ),
+    'should print overridden package',
+  )
+
+  t.test('colors', async t => {
+    t.matchSnapshot(
+      humanReadableOutput(
+        {
+          edges: [...graph.edges],
+          highlightSelection: false,
+          importers: graph.importers,
+          nodes: [...graph.nodes.values()],
+        },
+        { colors: true },
+      ),
+      'should use colors for overridden package',
+    )
+  })
+})
