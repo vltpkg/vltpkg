@@ -1,5 +1,5 @@
 import type React from 'react'
-import type {GridItemData} from '@/components/explorer-grid/types.ts';
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 /**
  * Options for updating a result item.
