@@ -323,7 +323,7 @@ const EmptyState = () => {
           />
         </div>
         <p className="w-2/3 text-pretty text-sm text-muted-foreground">
-          We couldn't find a description for this project
+          We couldn't find a description for this project.
         </p>
       </div>
     </div>

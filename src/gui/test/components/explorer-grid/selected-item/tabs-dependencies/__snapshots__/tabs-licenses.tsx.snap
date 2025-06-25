@@ -33,7 +33,7 @@ exports[`LicensesTabContent renders with an empty state 1`] = `
 <gui-tabs-content value="licenses">
   <gui-empty-state
     icon="gui-scale-icon"
-    message="No license data was found"
+    message="No license data was found."
   >
   </gui-empty-state>
 </gui-tabs-content>

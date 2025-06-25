@@ -247,7 +247,7 @@ export const FundingTabContent = () => {
         </div>
       : <EmptyState
           icon={HeartHandshake}
-          message="No dependencies are looking for funding"
+          message="No dependencies are looking for funding."
         />
       }
     </TabsContent>

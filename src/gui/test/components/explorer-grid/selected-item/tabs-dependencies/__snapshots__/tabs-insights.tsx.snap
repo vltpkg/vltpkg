@@ -250,7 +250,7 @@ exports[`InsightsTabContent renders with an empty state 1`] = `
 <gui-tabs-content value="insights">
   <gui-empty-state
     icon="gui-shield-x-icon"
-    message="No insights were available"
+    message="No insights were available."
   >
   </gui-empty-state>
 </gui-tabs-content>

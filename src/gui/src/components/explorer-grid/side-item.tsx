@@ -191,7 +191,7 @@ const SideItemSpec = ({
         variant="mono"
         classNames={{
           wrapperClassName:
-            'inline-flex min-w-[10ch] max-w-[20ch] break-all h-[1.375rem]',
+            'inline-flex min-w-[10ch] max-w-[20ch] h-[1.375rem]',
           contentClassName: 'truncate pt-0.5',
         }}
         content={

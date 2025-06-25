@@ -84,7 +84,7 @@ export const DependenciesTabContent = () => {
         </>
       : <EmptyState
           icon={Blocks}
-          message="This package has no installed dependencies"
+          message="This package has no installed dependencies."
         />
       }
     </TabsContent>

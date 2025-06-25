@@ -624,9 +624,9 @@ exports[`VersionsTabContent renders an empty state 1`] = `
         >
         </gui-history-icon>
       </div>
-      <div class="flex w-2/3 flex-col items-center justify-center gap-1 break-all text-center">
+      <div class="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
         <p class="w-full text-pretty text-sm text-muted-foreground">
-          There is no versioning information about this package yet
+          There is no versioning information about this package yet.
         </p>
       </div>
     </div>
