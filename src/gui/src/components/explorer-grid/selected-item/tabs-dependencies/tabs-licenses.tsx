@@ -353,7 +353,7 @@ export const LicensesTabContent = () => {
         </div>
       : <EmptyState
           icon={Scale}
-          message="No license data was found"
+          message="No license data was found."
         />
       }
     </TabsContent>

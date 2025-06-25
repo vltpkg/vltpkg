@@ -35,7 +35,7 @@ exports[`FundingTabContent renders with an empty state  1`] = `
 <gui-tabs-content value="funding">
   <gui-empty-state
     icon="gui-heart-handshake-icon"
-    message="No dependencies are looking for funding"
+    message="No dependencies are looking for funding."
   >
   </gui-empty-state>
 </gui-tabs-content>
