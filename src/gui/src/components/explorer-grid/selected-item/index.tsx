@@ -19,6 +19,7 @@ const getParent = (
   const title = edge?.name ? `${edge.name}${edgeVersion}` : ''
   return {
     ...edge,
+    spec: undefined,
     id: node.id,
     name: node.name || '',
     title,
