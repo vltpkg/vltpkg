@@ -108,7 +108,7 @@ export const InsightsTabContent = () => {
     if (!depWarnings || totalDepWarnings === 0) return
     const activeWarnings = selector.map(sel => sel).join(',')
     if (activeWarnings) {
-      updateQuery(`${query} * :is(${activeWarnings})`)
+      updateQuery(`${query} *:is(${activeWarnings})`)
     }
   }
 
