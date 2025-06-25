@@ -4,7 +4,6 @@ import { Query } from '@vltpkg/query'
 import { QueryBar } from '@/components/query-bar/index.tsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
-import type { TransferData, Action, State } from '@/state/types.ts'
 import { load } from '@/state/load-graph.ts'
 import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.tsx'
@@ -12,6 +11,7 @@ import Save from '@/components/explorer-grid/save-query.tsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.tsx'
 import { RootButton } from '@/components/explorer-grid/root-button.tsx'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
+import type { TransferData, Action, State } from '@/state/types.ts'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -34,10 +34,11 @@ const startGraphData = async ({
   updateSpecOptions,
   stamp,
 }: StartGraphData) => {
-  const res = await fetch('./graph.json?random=' + stamp)
+  const res = await fetch('/graph.json?random=' + stamp)
   const data = (await res.json()) as TransferData & {
     hasDashboard: boolean
   }
+
   const { graph, specOptions, securityArchive } = load(data)
   const q = new Query({ graph, specOptions, securityArchive })
 
@@ -65,6 +66,7 @@ export const Explorer = () => {
     state => state.updateSpecOptions,
   )
   const stamp = useGraphStore(state => state.stamp)
+
   // only load graph data when we want to manually update the graph
   // state in the app, to make sure we're controlling it, we use the
   // stamp state as a dependency of `useEffect` to trigger the load.
@@ -120,23 +122,6 @@ const ExplorerContent = () => {
 
       updateEdges(queryResponse.edges)
       updateNodes(queryResponse.nodes)
-
-      // make sure we update the URL with the query string
-      const state = history.state as
-        | undefined
-        | { query: string; route: string }
-      if (
-        !state ||
-        query !== state.query ||
-        state.route !== '/explore'
-      ) {
-        history.pushState(
-          { query, route: '/explore' },
-          '',
-          '/explore?query=' + encodeURIComponent(query),
-        )
-        window.scrollTo(0, 0)
-      }
     }
 
     void updateQueryData().catch(() => {
@@ -178,7 +163,7 @@ const ExplorerContent = () => {
               </div>
             }
           />
-        </div>
+        </div>{' '}
       </section>
       <div className="z-[10] pt-4">
         <ExplorerGrid />
