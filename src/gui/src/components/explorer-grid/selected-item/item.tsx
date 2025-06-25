@@ -4,6 +4,7 @@ import {
   SelectedItemProvider,
   useSelectedItemStore,
 } from '@/components/explorer-grid/selected-item/context.tsx'
+import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   InsightTabButton,
   InsightTabContent,
@@ -49,11 +50,16 @@ const SelectedItemTabs = () => {
     state => state.setActiveTab,
   )
 
+  const handleTabChange = (newTab: string) => {
+    // This will update the URL, and the useEffect will update the state
+    setActiveTab(newTab as Tab)
+  }
+
   return (
     <div className="w-full">
       <Tabs
         uniqueId={selectedItem.id}
-        onValueChange={setActiveTab as (tab: string) => void}
+        onValueChange={handleTabChange}
         value={activeTab}>
         <TabsList variant="ghost" className="w-full gap-2 px-6">
           <OverviewTabButton />
