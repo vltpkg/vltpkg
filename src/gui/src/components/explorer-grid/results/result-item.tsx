@@ -17,21 +17,12 @@ import {
   scoreColors,
 } from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
 import { LICENSE_TYPES } from '@/lib/constants/index.ts'
+import { updateResultItem } from '@/lib/update-result-item.ts'
 import { cn } from '@/lib/utils.ts'
 
-import type { MouseEvent } from 'react'
-import type {
-  GridItemData,
-  GridItemOptions,
-} from '@/components/explorer-grid/types.ts'
+import type { GridItemOptions } from '@/components/explorer-grid/types.ts'
 import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
 import type { Insights } from '@vltpkg/query'
-
-export type ResultItemClickOptions = {
-  item: GridItemData
-  query: string
-  updateQuery: (query: string) => void
-}
 
 const PackageOverallScore = ({
   className,
@@ -64,45 +55,6 @@ const PackageOverallScore = ({
   )
 }
 
-const onResultItemClick =
-  ({ item, query, updateQuery }: ResultItemClickOptions) =>
-  (e: MouseEvent) => {
-    e.preventDefault()
-    if (!item.to) return
-    let newQuery = ''
-    const appendToQuery = (s: string) => {
-      const q = query.trim()
-      return q === s ? q : `${q}${s}`
-    }
-    if (item.stacked) {
-      newQuery = appendToQuery(item.to.name ? `#${item.to.name}` : '')
-    } else {
-      let suffix = ''
-      if (!item.sameItems) {
-        suffix = item.to.name ? `#${item.to.name}` : ''
-      }
-      if (item.to.importer && !item.from) {
-        newQuery = `:project#${item.to.name}`
-      } else if (item.from) {
-        // use version on the parent node if there are multiple nodes in the graph with the same name
-        const useVersion =
-          [...item.from.graph.nodes.values()].filter(
-            n => n.name === item.from?.name,
-          ).length > 1
-        const fromName = `#${item.from.name}`
-        const fromVersion =
-          useVersion && item.from.version ?
-            `:v(${item.from.version})`
-          : ''
-        newQuery = `${fromName}${fromVersion} > ${appendToQuery(suffix)}`
-      } else {
-        newQuery = appendToQuery(suffix)
-      }
-    }
-    updateQuery(newQuery)
-    return undefined
-  }
-
 export const ResultItem = ({ item }: GridItemOptions) => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
@@ -122,7 +74,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
       <Card
         renderAsLink
         className="duration-250 relative cursor-default transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-        onClick={onResultItemClick({ item, query, updateQuery })}>
+        onClick={updateResultItem({ item, query, updateQuery })}>
         <CardHeader className="relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
           <div className="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
             {item.version && (
