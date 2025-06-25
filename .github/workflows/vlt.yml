@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
+    name: Lint (with vlt)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -92,7 +92,7 @@ jobs:
           exit $STATUS
 
   test:
-    name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
+    name: Test (with vlt) - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
     runs-on: ${{ matrix.platform.os }}
     defaults:
       run:
