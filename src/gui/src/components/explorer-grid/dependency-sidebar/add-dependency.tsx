@@ -157,6 +157,7 @@ export const AddDependenciesPopover = () => {
             const value = (e.currentTarget as HTMLInputElement).value
             setPackageName(value)
           }}
+          data-1p-ignore
         />
         <Label htmlFor="package-version" className="ml-1 mt-2">
           Version | Spec
@@ -171,6 +172,7 @@ export const AddDependenciesPopover = () => {
             const value = (e.currentTarget as HTMLInputElement).value
             setPackageVersion(value)
           }}
+          data-1p-ignore
         />
         <Label htmlFor="package-type" className="ml-1 mt-2">
           Type

@@ -81,6 +81,7 @@ exports[`add-dependencies-popover render default 1`] = `
     role="input"
     placeholder="Package name"
     value
+    data-1p-ignore="true"
   >
   </gui-input>
   <gui-label
@@ -95,6 +96,7 @@ exports[`add-dependencies-popover render default 1`] = `
     type="text"
     role="input"
     value="latest"
+    data-1p-ignore="true"
   >
   </gui-input>
   <gui-label
