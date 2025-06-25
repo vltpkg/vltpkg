@@ -76,6 +76,8 @@ test('DuplicatesTabButton renders correctly', () => {
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
       setActiveTab: vi.fn(),
+      activeSubTab: 'duplicates',
+      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -116,6 +118,8 @@ test('DuplicatesTabButton renders with a count', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'duplicates',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -157,6 +161,8 @@ test('DuplicatesTabContent renders with an empty state', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'duplicates',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -198,6 +204,8 @@ test('DuplicatesTabContent renders with duplicated deps', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'duplicates',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,

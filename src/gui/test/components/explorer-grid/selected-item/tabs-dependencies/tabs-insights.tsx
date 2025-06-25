@@ -141,6 +141,8 @@ test('InsightsTabButton renders with insight count', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -182,6 +184,8 @@ test('InsightsTabContent renders with an empty state', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -223,6 +227,8 @@ test('InsightsTabContent renders with insights', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -265,6 +271,8 @@ test('InsightsTabContent renders with a warning for unscanned deps', () => {
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
       setActiveTab: vi.fn(),
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
