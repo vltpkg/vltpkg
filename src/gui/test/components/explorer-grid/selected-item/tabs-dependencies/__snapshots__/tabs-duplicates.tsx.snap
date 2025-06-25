@@ -33,7 +33,7 @@ exports[`DuplicatesTabContent renders with an empty state 1`] = `
 <gui-tabs-content value="duplicates">
   <gui-empty-state
     icon="gui-blocks-icon"
-    message="No duplicated dependencies found"
+    message="No duplicated dependencies found."
   >
   </gui-empty-state>
 </gui-tabs-content>

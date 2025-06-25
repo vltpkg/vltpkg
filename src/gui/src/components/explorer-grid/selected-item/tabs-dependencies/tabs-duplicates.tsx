@@ -98,7 +98,7 @@ export const DuplicatesTabContent = () => {
         </div>
       : <EmptyState
           icon={Blocks}
-          message="No duplicated dependencies found"
+          message="No duplicated dependencies found."
         />
       }
     </TabsContent>

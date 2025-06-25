@@ -364,7 +364,7 @@ export const InsightsTabContent = () => {
         </div>
       : <EmptyState
           icon={ShieldX}
-          message="No insights were available"
+          message="No insights were available."
         />
       }
     </TabsContent>

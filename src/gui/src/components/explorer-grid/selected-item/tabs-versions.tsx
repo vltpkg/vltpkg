@@ -270,7 +270,7 @@ const VersionItem = memo(
             tooltip={{ content: version }}
             classNames={{
               wrapperClassName:
-                'w-fit max-w-none break-all xl:w-fit xl:max-w-[5.5rem]',
+                'w-fit max-w-none xl:w-fit xl:max-w-[5.5rem]',
               contentClassName: 'truncate pt-0.5',
             }}
             content={version}
@@ -388,7 +388,7 @@ const EmptyState = ({ message }: { message: string }) => (
           strokeWidth={1.25}
         />
       </div>
-      <div className="flex w-2/3 flex-col items-center justify-center gap-1 break-all text-center">
+      <div className="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
         <p className="w-full text-pretty text-sm text-muted-foreground">
           {message}
         </p>
@@ -624,7 +624,7 @@ export const VersionsTabContent = () => {
   return (
     <TabsContent value="versions">
       {isEmpty ?
-        <EmptyState message="There is no versioning information about this package yet" />
+        <EmptyState message="There is no versioning information about this package yet." />
       : <section className="flex flex-col px-6 py-4">
           <DownloadGraph />
 
@@ -729,7 +729,7 @@ export const VersionsTabContent = () => {
 
           {!hasSearchResults && searchTerm.trim() ?
             <EmptyState
-              message={`No versions found matching "${searchTerm}"`}
+              message={`No versions found matching "${searchTerm}".`}
             />
           : <div>
               {filteredVersions.length > 0 && (
