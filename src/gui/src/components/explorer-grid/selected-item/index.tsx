@@ -98,7 +98,6 @@ const getDependencyItems = (
       depIndex: count.currIndex++,
       id: edge.to.id,
       title,
-      name: edge.to.name || '',
       version: edge.to.version || '',
       stacked: false,
       size: 1,
@@ -151,7 +150,7 @@ const getUninstalledDependencyItems = (
 
 const getItemQuery = (item: GridItemData) => {
   if (!item.to) return ''
-  const name = item.to.name ? `#${item.to.name}` : ''
+  const name = item.name ? `#${item.name}` : ''
   return name.trim()
 }
 
