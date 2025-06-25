@@ -84,6 +84,8 @@ test('DependenciesTabsButton renders correctly', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -124,6 +126,8 @@ test('DependenciesTabContent renders default', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -164,6 +168,8 @@ test('DependenciesTabContent renders an empty state', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'insights',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,

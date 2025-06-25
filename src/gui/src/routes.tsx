@@ -19,6 +19,10 @@ import { Queries } from '@/app/queries.tsx'
 /** Help pages */
 import { HelpSelectors } from '@/app/help/help-selectors.tsx'
 
+/** Query Helpers */
+import { DEFAULT_QUERY } from '@/state/index.ts'
+import { encodeCompressedQuery } from '@/lib/compress-query.ts'
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -30,16 +34,25 @@ export const routes: RouteObject[] = [
         element: <Dashboard />,
       },
       {
+        path: 'explore',
+        element: (
+          <Navigate
+            to={`${encodeCompressedQuery(DEFAULT_QUERY)}/overview`}
+            replace
+          />
+        ),
+      },
+      {
+        path: 'explore/:query/:tab?/:subTab?',
+        element: <Explorer />,
+      },
+      {
         path: 'create-new-project',
         element: <CreateNewProject />,
       },
       {
         path: 'error',
         element: <ErrorFound />,
-      },
-      {
-        path: 'explore',
-        element: <Explorer />,
       },
       {
         path: 'labels',

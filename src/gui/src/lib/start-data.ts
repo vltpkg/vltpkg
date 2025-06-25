@@ -42,7 +42,7 @@ export const startDashboardData = ({
 }: StartDashboardDataOptions) => {
   async function _startDashboard() {
     const dashboardData = await requestData<State['dashboard']>({
-      url: './dashboard.json',
+      url: '/dashboard.json',
       stamp,
     })
     updateDashboard(dashboardData)
@@ -70,7 +70,7 @@ export const startAppData = ({
 }: StartAppDataOptions) => {
   async function _startAppData() {
     const appData = await requestData<State['appData']>({
-      url: './app-data.json',
+      url: '/app-data.json',
       stamp,
     })
     updateAppData(appData)

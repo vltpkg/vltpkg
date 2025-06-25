@@ -1,4 +1,10 @@
-import { createContext, useContext, useRef } from 'react'
+import {
+  createContext,
+  useContext,
+  useRef,
+  useCallback,
+  useEffect,
+} from 'react'
 import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.ts'
@@ -18,6 +24,7 @@ import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 import type { Manifest, NormalizedFunding } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
+import { generatePath } from 'react-router'
 
 export type Tab =
   | 'overview'
@@ -25,6 +32,12 @@ export type Tab =
   | 'versions'
   | 'manifest'
   | 'dependencies'
+
+export type SubTabDependencies =
+  | 'insights'
+  | 'licenses'
+  | 'funding'
+  | 'duplicates'
 
 export type LicenseWarningType = keyof LicenseInsights
 
@@ -356,6 +369,7 @@ const getDependencyInformation = async (
 type SelectedItemStoreState = DetailsInfo & {
   selectedItem: GridItemData
   activeTab: Tab
+  activeSubTab: SubTabDependencies | undefined
   manifest: Manifest | null
   rawManifest: Manifest | null
   packageScore?: PackageScore
@@ -371,6 +385,9 @@ type SelectedItemStoreState = DetailsInfo & {
 
 type SelectedItemStoreAction = {
   setActiveTab: (tab: SelectedItemStoreState['activeTab']) => void
+  setActiveSubTab: (
+    newSubTab: SelectedItemStoreState['activeSubTab'],
+  ) => void
   setDepLicenses: (
     depLicenses: SelectedItemStoreState['depLicenses'],
   ) => void
@@ -412,6 +429,17 @@ export const SelectedItemProvider = ({
   const graph = useGraphStore(state => state.graph)
   const query = useGraphStore(state => state.query)
 
+  const getCurrentTabsFromUrl = useCallback(() => {
+    const currentPath = window.location.pathname
+    const segments = currentPath.split('/').filter(Boolean)
+    const tab = segments[2] as Tab
+    const subTab = segments[3] as SubTabDependencies
+    return { tab, subTab }
+  }, [])
+
+  const { tab: initialTab, subTab: initialSubTab } =
+    getCurrentTabsFromUrl()
+
   /**
    * We initialize the zustand store as a scoped state within the context:
    *
@@ -422,7 +450,8 @@ export const SelectedItemProvider = ({
   const selectedItemStore = useRef(
     createStore<SelectedItemStore>(set => ({
       selectedItem,
-      activeTab: 'overview',
+      activeTab: initialTab,
+      activeSubTab: initialSubTab,
       manifest: selectedItem.to?.manifest ?? null,
       rawManifest: selectedItem.to?.rawManifest ?? null,
       packageScore: selectedItem.to?.insights.score,
@@ -434,9 +463,80 @@ export const SelectedItemProvider = ({
       depCount: undefined,
       duplicatedDeps: undefined,
       depFunding: undefined,
-      setActiveTab: (
-        activeTab: SelectedItemStoreState['activeTab'],
-      ) => set(() => ({ activeTab })),
+      setActiveTab: (newTab: SelectedItemStoreState['activeTab']) => {
+        set(() => ({ activeTab: newTab }))
+
+        const currentPath = window.location.pathname
+        const segments = currentPath.split('/').filter(Boolean)
+        const encodedQuery: string = segments[1] ?? ''
+
+        try {
+          if (newTab === 'overview') {
+            const targetPathWithTab = generatePath(
+              '/explore/:query/:tab',
+              {
+                query: encodedQuery,
+                tab: newTab,
+              },
+            )
+            window.history.pushState(null, '', targetPathWithTab)
+          } else if (newTab === 'dependencies') {
+            const targetPathWithTab = generatePath(
+              '/explore/:query/:tab/:subTab',
+              {
+                query: encodedQuery,
+                tab: newTab,
+                subTab: 'insights',
+              },
+            )
+            window.history.pushState(null, '', targetPathWithTab)
+          } else {
+            const targetPathWithTab = generatePath(
+              '/explore/:query/:tab',
+              {
+                query: encodedQuery,
+                tab: newTab,
+              },
+            )
+            window.history.pushState(null, '', targetPathWithTab)
+          }
+        } catch (error) {
+          console.error(
+            'Error updating URL for tab navigation:',
+            error,
+          )
+        }
+      },
+      setActiveSubTab: (
+        newSubTab: SelectedItemStoreState['activeSubTab'],
+      ) => {
+        if (!newSubTab) return
+
+        set(() => ({ activeSubTab: newSubTab }))
+
+        setTimeout(() => {
+          const currentPath = window.location.pathname
+          const segments = currentPath.split('/').filter(Boolean)
+          const encodedQuery: string = segments[1] ?? ''
+
+          try {
+            const targetPathWithTab = generatePath(
+              '/explore/:query/:tab/:subTab',
+              {
+                query: encodedQuery,
+                tab: 'dependencies',
+                subTab: newSubTab,
+              },
+            )
+            window.history.pushState(null, '', targetPathWithTab)
+          } catch (error) {
+            console.error(
+              'Error updating URL for sub-tab navigation:',
+              error,
+            )
+          }
+        }, 0)
+      },
       setDepLicenses: (
         depLicenses: SelectedItemStoreState['depLicenses'],
       ) => set(() => ({ depLicenses })),
@@ -460,47 +560,70 @@ export const SelectedItemProvider = ({
     })),
   ).current
 
-  const fetchDetailsAsync = async (
-    store: StoreApi<SelectedItemStore>,
-  ) => {
-    const state = store.getState()
-    const item = state.selectedItem
+  const fetchDetailsAsync = useCallback(
+    async (store: StoreApi<SelectedItemStore>) => {
+      const state = store.getState()
+      const item = state.selectedItem
 
-    if (!item.to?.name) return
+      if (!item.to?.name) return
 
-    const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
-    const manifest = item.to.manifest ?? {}
-    const abortController = new AbortController()
+      const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
+      const manifest = item.to.manifest ?? {}
+      const abortController = new AbortController()
 
-    try {
-      for await (const d of fetchDetails(
-        depIdSpec,
-        abortController.signal,
-        manifest,
-      )) {
-        store.setState(state => ({
-          ...state,
-          ...d,
-        }))
+      try {
+        for await (const d of fetchDetails(
+          depIdSpec,
+          abortController.signal,
+          manifest,
+        )) {
+          store.setState(state => ({
+            ...state,
+            ...d,
+          }))
+        }
+      } finally {
+        abortController.abort()
       }
-    } finally {
-      abortController.abort()
-    }
-  }
-
-  void fetchDetailsAsync(selectedItemStore)
-  void getDependencyInformation(
-    q,
-    graph,
-    query,
-    selectedItemStore.getState().setDepLicenses,
-    selectedItemStore.getState().setScannedDeps,
-    selectedItemStore.getState().setDepsAverageScore,
-    selectedItemStore.getState().setDepWarnings,
-    selectedItemStore.getState().setDepCount,
-    selectedItemStore.getState().setDuplicatedDeps,
-    selectedItemStore.getState().setDepFunding,
+    },
+    [query, specOptions], // eslint-disable-line react-hooks/exhaustive-deps
   )
+
+  useEffect(() => {
+    void fetchDetailsAsync(selectedItemStore)
+  }, [fetchDetailsAsync, selectedItemStore])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const { tab: newActiveTab, subTab: newActiveSubTab } =
+        getCurrentTabsFromUrl()
+
+      selectedItemStore.setState(state => ({
+        ...state,
+        activeTab: newActiveTab,
+        activeSubTab: newActiveSubTab,
+      }))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () =>
+      window.removeEventListener('popstate', handlePopState)
+  }, [selectedItemStore, getCurrentTabsFromUrl])
+
+  useEffect(() => {
+    void getDependencyInformation(
+      q,
+      graph,
+      query,
+      selectedItemStore.getState().setDepLicenses,
+      selectedItemStore.getState().setScannedDeps,
+      selectedItemStore.getState().setDepsAverageScore,
+      selectedItemStore.getState().setDepWarnings,
+      selectedItemStore.getState().setDepCount,
+      selectedItemStore.getState().setDuplicatedDeps,
+      selectedItemStore.getState().setDepFunding,
+    )
+  }, [q, graph, query, selectedItemStore])
 
   return (
     <SelectedItemContext.Provider value={selectedItemStore}>

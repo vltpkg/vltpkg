@@ -89,6 +89,8 @@ test('Item renders with the default structure', () => {
   vi.mocked(useSelectedItemStore).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     activeTab: 'insights',
+    activeSubTab: undefined,
+    setActiveSubTab: vi.fn(),
     setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,
@@ -127,6 +129,8 @@ test('Item renders connection lines', () => {
   vi.mocked(useSelectedItemStore).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     activeTab: 'insights',
+    activeSubTab: undefined,
+    setActiveSubTab: vi.fn(),
     setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,

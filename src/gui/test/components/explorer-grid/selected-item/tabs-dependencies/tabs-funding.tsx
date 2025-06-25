@@ -96,6 +96,8 @@ test('FundingTabButton renders correctly', () => {
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
       setActiveTab: vi.fn(),
+      activeSubTab: 'funding',
+      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -136,6 +138,8 @@ test('FundingTabButton renders with a count', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'funding',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -177,6 +181,8 @@ test('FundingTabContent renders with an empty state ', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'funding',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
@@ -218,6 +224,8 @@ test('FundingTabContent renders with an funding', () => {
     selector({
       selectedItem: SELECTED_ITEM,
       activeTab: 'dependencies',
+      activeSubTab: 'funding',
+      setActiveSubTab: vi.fn(),
       setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,

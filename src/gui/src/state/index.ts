@@ -5,6 +5,10 @@ import type {
   SavedQuery,
   QueryLabel,
 } from './types.ts'
+import {
+  encodeCompressedQuery,
+  decodeCompressedQuery,
+} from '@/lib/compress-query.ts'
 
 export const DEFAULT_QUERY = ':root'
 
@@ -43,10 +47,7 @@ const initialState: State = {
     tools: [],
     vltInstalled: undefined,
   },
-  query:
-    new URL(
-      window.location.href || 'http://localhost',
-    ).searchParams.get('query') ?? DEFAULT_QUERY,
+  query: DEFAULT_QUERY,
   q: undefined,
   specOptions: undefined,
   stamp: newStamp(),
@@ -85,7 +86,23 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ dashboard })),
     updateGraph: (graph: State['graph']) => set(() => ({ graph })),
     updateQ: (q: State['q']) => set(() => ({ q })),
-    updateQuery: (query: State['query']) => set(() => ({ query })),
+    updateQuery: (query: State['query']) => {
+      set(() => ({ query }))
+
+      // Sync URL with compressed query parameter
+      const currentPath = window.location.pathname
+      if (currentPath.startsWith('/explore')) {
+        const compressedQuery = encodeCompressedQuery(query)
+
+        // Always navigate to the default 'overview' tab when query changes
+        const newPath = `/explore/${compressedQuery}/overview`
+
+        // Only update URL if it's different to avoid unnecessary navigation
+        if (currentPath !== newPath) {
+          window.history.pushState(null, '', newPath)
+        }
+      }
+    },
     updateEdges: (edges: State['edges']) => set(() => ({ edges })),
     updateErrorCause: (errorCause: State['errorCause']) =>
       set(() => ({ errorCause })),
@@ -245,16 +262,26 @@ export const useGraphStore = create<Action & State>((set, get) => {
     },
   }
 
-  /** update the `query` state based on the state stored in the history entry */
-  window.addEventListener('popstate', (e: PopStateEvent): void => {
-    if (!e.state) return
-    const { query } = e.state as {
-      query?: string
-    }
-    if (query != null) {
-      store.updateQuery(query)
-    }
-  })
+  if (typeof window !== 'undefined') {
+    window.addEventListener('popstate', () => {
+      const currentPath = window.location.pathname
+      if (currentPath.startsWith('/explore/')) {
+        const pathSegments = currentPath.split('/')
+        const compressedQuery = pathSegments[2]
+
+        if (compressedQuery) {
+          try {
+            const decodedQuery =
+              decodeCompressedQuery(compressedQuery)
+            set(() => ({ query: decodedQuery }))
+          } catch (error) {
+            console.error('Failed to decode compressed query:', error)
+            set(() => ({ query: DEFAULT_QUERY }))
+          }
+        }
+      }
+    })
+  }
 
   return store
 })

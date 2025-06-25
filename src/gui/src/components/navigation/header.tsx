@@ -30,6 +30,8 @@ const Header = () => {
     if (pathname === '/create-new-project') return null
     if (projectInfo.vltInstalled === false && pathname === '/explore')
       return null
+    if (pathname.includes('/explore') && projectInfo.vltInstalled)
+      return 'Explore'
 
     return routeNames.get(pathname) || 'VLT /vōlt/'
   }, [pathname, projectInfo.vltInstalled])

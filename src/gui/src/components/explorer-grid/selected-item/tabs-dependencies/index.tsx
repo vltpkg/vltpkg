@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Tabs,
   TabsList,
@@ -8,6 +7,7 @@ import {
 import { Blocks } from 'lucide-react'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import type { SubTabDependencies } from '@/components/explorer-grid/selected-item/context.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
 import {
@@ -26,8 +26,6 @@ import {
   FundingTabButton,
   FundingTabContent,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-funding.tsx'
-
-type Tabs = 'insights' | 'licenses' | 'funding' | 'duplicates'
 
 export const DependenciesTabsButton = () => {
   const totalDependencies = useSelectedItemStore(
@@ -51,18 +49,27 @@ export const DependenciesTabsButton = () => {
 }
 
 export const DependenciesTabContent = () => {
-  const [activeTab, setActiveTab] = useState<Tabs>('insights')
   const totalDependencies = useSelectedItemStore(
     state => state.depCount,
   )
+
+  // Use the store's activeSubTab which should be synced with URL
+  const activeTab =
+    useSelectedItemStore(state => state.activeSubTab) ?? 'insights'
+  const setActiveSubTab = useSelectedItemStore(
+    state => state.setActiveSubTab,
+  )
+
+  const handleSubTabChange = (newSubTab: string) => {
+    // This will update the URL, and the useEffect will update the state
+    setActiveSubTab(newSubTab as SubTabDependencies)
+  }
 
   return (
     <TabsContent value="dependencies">
       {totalDependencies && totalDependencies > 0 ?
         <>
-          <Tabs
-            onValueChange={setActiveTab as (tab: string) => void}
-            value={activeTab}>
+          <Tabs onValueChange={handleSubTabChange} value={activeTab}>
             <TabsList variant="nestedCard">
               <InsightsTabButton />
               <LicensesTabButton />
