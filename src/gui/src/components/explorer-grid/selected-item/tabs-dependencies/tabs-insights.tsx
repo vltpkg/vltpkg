@@ -223,7 +223,7 @@ export const InsightsTabContent = () => {
 
   return (
     <TabsContent value="insights">
-      {depWarnings && totalDepWarnings > 0 ?
+      {depCount && depCount > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div
             className={cn(
@@ -248,23 +248,21 @@ export const InsightsTabContent = () => {
                 </span>
               </p>
 
-              {hasUnscannedDeps &&
-                depCount !== undefined &&
-                scannedDeps !== undefined && (
-                  <>
-                    <div className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
-                      <AlertTriangle className="mb-0.5 size-4 text-yellow-500" />
-                    </div>
-                    <p className="text-xs font-medium text-yellow-500">
-                      {toHumanString({
-                        zero: 'All dependencies scanned',
-                        count: notScannedDeps,
-                        one: `${notScannedDeps} dependency not scanned`,
-                        value: `${notScannedDeps} dependencies not scanned`,
-                      })}
-                    </p>
-                  </>
-                )}
+              {hasUnscannedDeps && scannedDeps !== undefined && (
+                <>
+                  <div className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
+                    <AlertTriangle className="mb-0.5 size-4 text-yellow-500" />
+                  </div>
+                  <p className="text-xs font-medium text-yellow-500">
+                    {toHumanString({
+                      zero: 'All dependencies scanned',
+                      count: notScannedDeps,
+                      one: `${notScannedDeps} dependency not scanned`,
+                      value: `${notScannedDeps} dependencies not scanned`,
+                    })}
+                  </p>
+                </>
+              )}
             </div>
 
             {averageScore !== undefined && (
@@ -301,66 +299,68 @@ export const InsightsTabContent = () => {
               ),
             )}
           </div>
-          <Table className="border-t-[1px] border-muted">
-            <TableHeader>
-              {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <TableHead
-                      key={header.id}
-                      className={cn(
-                        tableClassNames.cell,
-                        'h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&>button]:first-of-type:pl-0 [&>p]:last-of-type:pl-3',
-                      )}
-                      style={{ width: `${header.getSize()}px` }}>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length ?
-                table.getRowModel().rows.map(row => (
-                  <TableRow
-                    key={row.id}
-                    role="button"
-                    className="cursor-default"
-                    onClick={() =>
-                      queryWarning(row.original.selector)
-                    }
-                    data-state={row.getIsSelected() && 'selected'}>
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell
-                        key={cell.id}
+          {depWarnings && totalDepWarnings > 0 ?
+            <Table className="border-t-[1px] border-muted">
+              <TableHeader>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <TableHead
+                        key={header.id}
                         className={cn(
                           tableClassNames.cell,
-                          'first-of-type:pl-8 last-of-type:pr-8',
+                          'h-fit px-0 py-1 align-middle first-of-type:pl-8 last-of-type:pr-8 [&>button]:first-of-type:pl-0 [&>p]:last-of-type:pl-3',
                         )}
-                        style={{
-                          width: `${cell.column.getSize()}px`,
-                        }}>
+                        style={{ width: `${header.getSize()}px` }}>
                         {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
+                          header.column.columnDef.header,
+                          header.getContext(),
                         )}
-                      </TableCell>
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              : <TableRow>
-                  <TableCell>
-                    <p className="text-sm text-muted-foreground">
-                      No warnings found
-                    </p>
-                  </TableCell>
-                </TableRow>
-              }
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.length ?
+                  table.getRowModel().rows.map(row => (
+                    <TableRow
+                      key={row.id}
+                      role="button"
+                      className="cursor-default"
+                      onClick={() =>
+                        queryWarning(row.original.selector)
+                      }
+                      data-state={row.getIsSelected() && 'selected'}>
+                      {row.getVisibleCells().map(cell => (
+                        <TableCell
+                          key={cell.id}
+                          className={cn(
+                            tableClassNames.cell,
+                            'first-of-type:pl-8 last-of-type:pr-8',
+                          )}
+                          style={{
+                            width: `${cell.column.getSize()}px`,
+                          }}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                : <TableRow>
+                    <TableCell>
+                      <p className="text-sm text-muted-foreground">
+                        No warnings found
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                }
+              </TableBody>
+            </Table>
+          : ''}
         </div>
       : <EmptyState
           icon={ShieldX}
