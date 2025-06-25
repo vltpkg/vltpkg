@@ -47,9 +47,11 @@ exports[`create-query > should render correctly 1`] = `
               >
               </gui-circle-help-icon>
             </gui-tooltip-trigger>
-            <gui-tooltip-content>
-              Set directory to 'Global' to reuse across all projects.
-            </gui-tooltip-content>
+            <gui-tooltip-portal>
+              <gui-tooltip-content>
+                Set directory to 'Global' to reuse across all projects.
+              </gui-tooltip-content>
+            </gui-tooltip-portal>
           </gui-tooltip>
         </gui-tooltip-provider>
         <gui-directory-select directory>
