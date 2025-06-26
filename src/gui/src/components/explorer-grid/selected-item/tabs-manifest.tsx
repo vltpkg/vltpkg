@@ -7,7 +7,7 @@ export const TabsManifestButton = () => {
   return (
     <TabsTrigger
       variant="ghost"
-      value="package.json"
+      value="manifest"
       className="w-fit px-2">
       Manifest
     </TabsTrigger>
@@ -21,7 +21,7 @@ export const TabsManifestContent = () => {
 
   return (
     <TabsContent
-      value="package.json"
+      value="manifest"
       className="h-full rounded-b-lg bg-neutral-100 dark:bg-black">
       {finalManifest ?
         <CodeBlock

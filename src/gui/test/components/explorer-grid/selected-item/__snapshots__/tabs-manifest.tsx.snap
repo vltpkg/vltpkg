@@ -4,7 +4,7 @@ exports[`TabsManifestButton renders default 1`] = `
 
 <gui-tabs-trigger
   variant="ghost"
-  value="package.json"
+  value="manifest"
   classname="w-fit px-2"
 >
   Manifest
@@ -15,7 +15,7 @@ exports[`TabsManifestButton renders default 1`] = `
 exports[`TabsManifestContent renders an empty state 1`] = `
 
 <gui-tabs-content
-  value="package.json"
+  value="manifest"
   classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
 >
   <div class="flex h-64 items-center justify-center px-6 py-4">
@@ -39,7 +39,7 @@ exports[`TabsManifestContent renders an empty state 1`] = `
 exports[`TabsManifestContent renders with a manifest 1`] = `
 
 <gui-tabs-content
-  value="package.json"
+  value="manifest"
   classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
 >
   <gui-code-block

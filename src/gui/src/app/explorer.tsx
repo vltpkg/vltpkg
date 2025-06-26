@@ -11,6 +11,7 @@ import Save from '@/components/explorer-grid/save-query.tsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.tsx'
 import { RootButton } from '@/components/explorer-grid/root-button.tsx'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
+import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import type { TransferData, Action, State } from '@/state/types.ts'
 
 export type ExplorerOptions = {
@@ -66,6 +67,8 @@ export const Explorer = () => {
     state => state.updateSpecOptions,
   )
   const stamp = useGraphStore(state => state.stamp)
+
+  useQueryNavigation()
 
   // only load graph data when we want to manually update the graph
   // state in the app, to make sure we're controlling it, we use the

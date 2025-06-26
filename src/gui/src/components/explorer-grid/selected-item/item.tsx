@@ -1,31 +1,17 @@
+import { Outlet } from 'react-router'
 import { Card } from '@/components/ui/card.tsx'
 import { Tabs, TabsList } from '@/components/ui/tabs.tsx'
 import {
   SelectedItemProvider,
   useSelectedItemStore,
 } from '@/components/explorer-grid/selected-item/context.tsx'
-import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
-import {
-  InsightTabButton,
-  InsightTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
-import {
-  OverviewTabButton,
-  OverviewTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
-import {
-  VersionsTabButton,
-  VersionsTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
-import {
-  TabsManifestButton,
-  TabsManifestContent,
-} from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
-import {
-  DependenciesTabsButton,
-  DependenciesTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
+import { InsightTabButton } from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
+import { OverviewTabButton } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
+import { VersionsTabButton } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
+import { TabsManifestButton } from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
+import { DependenciesTabsButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
+import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 export const Item = ({ item }: { item: GridItemData }) => {
@@ -50,10 +36,8 @@ const SelectedItemTabs = () => {
     state => state.setActiveTab,
   )
 
-  const handleTabChange = (newTab: string) => {
-    // This will update the URL, and the useEffect will update the state
+  const handleTabChange = (newTab: string) =>
     setActiveTab(newTab as Tab)
-  }
 
   return (
     <div className="w-full">
@@ -68,11 +52,7 @@ const SelectedItemTabs = () => {
           <VersionsTabButton />
           <DependenciesTabsButton />
         </TabsList>
-        <OverviewTabContent />
-        <TabsManifestContent />
-        <InsightTabContent />
-        <VersionsTabContent />
-        <DependenciesTabContent />
+        <Outlet />
       </Tabs>
     </div>
   )

@@ -10,6 +10,10 @@ import {
   SELECTED_ITEM_WITH_EDGES,
 } from './__fixtures__/item.ts'
 
+vi.mock('react-router', () => ({
+  Outlet: 'gui-router-outlet',
+}))
+
 vi.mock('@/components/ui/card.tsx', () => ({
   Card: 'gui-card',
 }))
