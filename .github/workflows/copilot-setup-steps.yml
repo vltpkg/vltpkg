@@ -1,0 +1,25 @@
+# Steps run before Copilot runs
+name: "Copilot Setup Steps"
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.14.0'
+          check-latest: true
+      - name: Install Dependencies
+        run: pnpm install
