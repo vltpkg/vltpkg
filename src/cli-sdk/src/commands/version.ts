@@ -4,7 +4,7 @@ import type { Views } from '../view.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { inc, parse as parseVersion } from '@vltpkg/semver'
 import type { IncrementType } from '@vltpkg/semver'
-import { spawn } from '@vltpkg/git'
+import { is as isGit, spawn, isClean } from '@vltpkg/git'
 import { error } from '@vltpkg/error-cause'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -47,26 +47,6 @@ const isValidVersionIncrement = (
     'prepatch',
     'prerelease',
   ].includes(value)
-}
-
-const isInGitRepository = async (cwd: string): Promise<boolean> => {
-  try {
-    await spawn(['rev-parse', '--git-dir'], { cwd })
-    return true
-  } catch {
-    return false
-  }
-}
-
-const hasUncommittedChanges = async (
-  cwd: string,
-): Promise<boolean> => {
-  try {
-    const result = await spawn(['status', '--porcelain'], { cwd })
-    return result.stdout.trim() !== ''
-  } catch {
-    return false
-  }
 }
 
 const versionImpl = async (
@@ -153,10 +133,10 @@ const versionImpl = async (
   }
 
   // Handle git operations if we're in a git repository
-  const inGitRepo = await isInGitRepository(cwd)
+  const inGitRepo = await isGit({ cwd })
   if (inGitRepo && (commit || tag)) {
     // Check for uncommitted changes (excluding package.json since we just modified it)
-    const hasChanges = await hasUncommittedChanges(cwd)
+    const hasChanges = !(await isClean({ cwd }))
     if (hasChanges) {
       try {
         // Check if there are changes other than package.json
@@ -230,31 +210,30 @@ export const usage: CommandUsage = () => {
     command: 'version',
     usage:
       '[<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease]',
-    description: `Bump a package's version`,
-    examples: [
-      'vlt version patch',
-      'vlt version minor',
-      'vlt version major',
-      'vlt version prerelease',
-      'vlt version 1.2.3',
-    ],
-    help: `
-Run in a package directory to bump the version and write the new data back to package.json.
+    description: `Bump a package's version.
 
-The newversion argument should be a valid semver string or a valid increment type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
+    Run in a package directory to bump the version and write the new data back to package.json.
 
-If run in a git repository, it will also create a version commit and tag.
+    The \`<newversion>\` argument should be a valid semver string or a valid increment type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
-version arguments:
-  <newversion>  A valid semver version string
-  major         Increment the major version (1.0.0 -> 2.0.0)
-  minor         Increment the minor version (1.0.0 -> 1.1.0)  
-  patch         Increment the patch version (1.0.0 -> 1.0.1)
-  premajor      Increment to next major prerelease (1.0.0 -> 2.0.0-0)
-  preminor      Increment to next minor prerelease (1.0.0 -> 1.1.0-0)
-  prepatch      Increment to next patch prerelease (1.0.0 -> 1.0.1-0)  
-  prerelease    Increment the prerelease version (1.0.0-0 -> 1.0.0-1)
-`,
+    If run in a git repository, it will also create a version commit and tag.`,
+    examples: {
+      'vlt version patch': {
+        description: 'Increment the patch version',
+      },
+      'vlt version minor': {
+        description: 'Increment the minor version',
+      },
+      'vlt version major': {
+        description: 'Increment the major version',
+      },
+      'vlt version prerelease': {
+        description: 'Increment the prerelease version',
+      },
+      'vlt version 1.2.3': {
+        description: 'Set the version to 1.2.3',
+      },
+    },
   })
 }
 
@@ -276,8 +255,10 @@ export const views = {
   },
 } as const satisfies Views<VersionResult>
 
-export const command: CommandFn<VersionResult> = async args => {
-  const positionals = args.filter(arg => !arg.startsWith('-'))
+export const command: CommandFn<VersionResult> = async conf => {
+  const positionals = conf.positionals.filter(
+    arg => !arg.startsWith('-'),
+  )
 
   if (positionals.length === 0) {
     throw new Error('Version increment argument is required')
