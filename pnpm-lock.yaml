@@ -525,6 +525,9 @@ importers:
       supports-color:
         specifier: ^10.0.0
         version: 10.0.0
+      tar:
+        specifier: 'catalog:'
+        version: 7.4.3
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'

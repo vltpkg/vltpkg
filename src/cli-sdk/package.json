@@ -56,7 +56,8 @@
     "pretty-bytes": "^6.1.1",
     "react": "^18.3.1",
     "react-devtools-core": "^4.28.5",
-    "supports-color": "^10.0.0"
+    "supports-color": "^10.0.0",
+    "tar": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
