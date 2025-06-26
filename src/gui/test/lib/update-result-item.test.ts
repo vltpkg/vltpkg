@@ -10,11 +10,13 @@ const createMockNode = (
   version: string,
   importer = false,
   id?: string,
+  mainImporter = false,
 ): QueryResponseNode =>
   ({
     name,
     version,
     importer,
+    mainImporter,
     id: id || joinDepIDTuple(['registry', '', `${name}@${version}`]),
     graph: {
       nodes: new Map([
@@ -88,10 +90,11 @@ describe('updateResultItem', () => {
       const item = createGridItemData({
         to: undefined,
       })
+      item.name = 'missing-package'
 
       const handler = updateResultItem({
         item,
-        query: 'test query',
+        query: '#test-query',
         updateQuery: mockUpdateQuery,
       })
 
@@ -114,20 +117,23 @@ describe('updateResultItem', () => {
         stacked: true,
         to: createMockNode('stacked-package', '1.0.0'),
       })
+      item.name = 'stacked-package'
 
       const handler = updateResultItem({
         item,
-        query: '',
+        query: '*',
         updateQuery: mockUpdateQuery,
       })
 
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('#stacked-package')
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '*[name="stacked-package"]:v(1.0.0)',
+      )
     })
 
-    it('should handle stacked item without name', () => {
+    it('should handle stacked item with name (using id)', () => {
       const mockUpdateQuery = vi.fn()
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -135,19 +141,22 @@ describe('updateResultItem', () => {
 
       const item = createGridItemData({
         stacked: true,
-        to: createMockNode('', '1.0.0'),
+        to: createMockNode('stacked-package', '1.0.0'),
       })
+      item.name = 'stacked-package'
 
       const handler = updateResultItem({
         item,
-        query: '',
+        query: '#stacked-package',
         updateQuery: mockUpdateQuery,
       })
 
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('')
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#stacked-package[name="stacked-package"]:v(1.0.0)',
+      )
     })
 
     it('should append to existing query for stacked item', () => {
@@ -160,10 +169,12 @@ describe('updateResultItem', () => {
         stacked: true,
         to: createMockNode('stacked-package', '1.0.0'),
       })
+      // simulate an aliased package
+      item.name = 'foo'
 
       const handler = updateResultItem({
         item,
-        query: 'existing query',
+        query: ':root > #foo',
         updateQuery: mockUpdateQuery,
       })
 
@@ -171,7 +182,7 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        'existing query#stacked-package',
+        ':root > #foo[name="stacked-package"]:v(1.0.0)',
       )
     })
 
@@ -185,6 +196,7 @@ describe('updateResultItem', () => {
         stacked: true,
         to: createMockNode('stacked-package', '1.0.0'),
       })
+      item.name = 'stacked-package'
 
       const handler = updateResultItem({
         item,
@@ -195,12 +207,14 @@ describe('updateResultItem', () => {
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('#stacked-package')
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#stacked-package[name="stacked-package"]:v(1.0.0)',
+      )
     })
   })
 
   describe('importer items (project root)', () => {
-    it('should handle importer with name', () => {
+    it('should handle workspaces', () => {
       const mockUpdateQuery = vi.fn()
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -208,8 +222,8 @@ describe('updateResultItem', () => {
 
       const item = createGridItemData({
         to: createMockNode('project-name', '1.0.0', true),
-        from: undefined,
       })
+      item.name = 'project-name'
 
       const handler = updateResultItem({
         item,
@@ -221,20 +235,27 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        ':project#project-name',
+        '#project-name:workspace',
       )
     })
 
-    it('should handle importer without name', () => {
+    it('should handle selecting the root', () => {
       const mockUpdateQuery = vi.fn()
       const mockEvent = {
         preventDefault: vi.fn(),
       } as unknown as MouseEvent
 
       const item = createGridItemData({
-        to: createMockNode('', '1.0.0', true),
+        to: createMockNode(
+          'my-project',
+          '1.0.0',
+          true,
+          undefined,
+          true,
+        ),
         from: undefined,
       })
+      item.name = 'my-project'
 
       const handler = updateResultItem({
         item,
@@ -245,7 +266,7 @@ describe('updateResultItem', () => {
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith(':project#')
+      expect(mockUpdateQuery).toHaveBeenCalledWith(':root')
     })
   })
 
@@ -264,6 +285,7 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = 'child-package'
 
       const handler = updateResultItem({
         item,
@@ -297,6 +319,7 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = 'child-package'
 
       const handler = updateResultItem({
         item,
@@ -331,10 +354,11 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = 'child-package'
 
       const handler = updateResultItem({
         item,
-        query: '',
+        query: ':fs',
         updateQuery: mockUpdateQuery,
       })
 
@@ -342,7 +366,7 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        '#parent-package > #child-package',
+        '#parent-package > :fs#child-package',
       )
     })
 
@@ -360,10 +384,11 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = 'child-package'
 
       const handler = updateResultItem({
         item,
-        query: ':root some-other-query',
+        query: ':root :fs',
         updateQuery: mockUpdateQuery,
       })
 
@@ -371,7 +396,7 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        ':root #parent-package > some-other-query',
+        ':root :fs:is(#parent-package > #child-package)',
       )
     })
 
@@ -393,10 +418,11 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = 'child-package'
 
       const handler = updateResultItem({
         item,
-        query: ':root existing-query final-part',
+        query: ':root :dev :unknown',
         updateQuery: mockUpdateQuery,
       })
 
@@ -404,11 +430,11 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        ':root existing-query #parent-package:v(2.0.0) > final-part',
+        ':root :dev :unknown:is(#parent-package:v(2.0.0) > #child-package)',
       )
     })
 
-    it('should handle sameItems true (no suffix)', () => {
+    it('should handle sameItems true (from single id selector)', () => {
       const mockUpdateQuery = vi.fn()
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -422,10 +448,11 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: true,
       })
+      item.name = 'child-package'
 
       const handler = updateResultItem({
         item,
-        query: '',
+        query: '#foo',
         updateQuery: mockUpdateQuery,
       })
 
@@ -433,7 +460,7 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        '#parent-package > ',
+        '#parent-package > #foo',
       )
     })
   })
@@ -450,44 +477,23 @@ describe('updateResultItem', () => {
         from: undefined,
         sameItems: false,
       })
+      item.name = 'simple-package'
 
       const handler = updateResultItem({
         item,
-        query: '',
+        query: ':fs',
         updateQuery: mockUpdateQuery,
       })
 
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('#simple-package')
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':fs#simple-package',
+      )
     })
 
-    it('should handle simple case without name', () => {
-      const mockUpdateQuery = vi.fn()
-      const mockEvent = {
-        preventDefault: vi.fn(),
-      } as unknown as MouseEvent
-
-      const item = createGridItemData({
-        to: createMockNode('', '1.0.0'),
-        from: undefined,
-        sameItems: false,
-      })
-
-      const handler = updateResultItem({
-        item,
-        query: '',
-        updateQuery: mockUpdateQuery,
-      })
-
-      handler(mockEvent)
-
-      expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('')
-    })
-
-    it('should handle sameItems true (no suffix)', () => {
+    it('should handle sameItems true (from multiple selectors)', () => {
       const mockUpdateQuery = vi.fn()
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -495,20 +501,23 @@ describe('updateResultItem', () => {
 
       const item = createGridItemData({
         to: createMockNode('simple-package', '1.0.0'),
-        from: undefined,
+        from: createMockNode('parent-package', '2.0.0'),
         sameItems: true,
       })
+      item.name = 'simple-package'
 
       const handler = updateResultItem({
         item,
-        query: '',
+        query: '#parent-package > #simple-package:fs',
         updateQuery: mockUpdateQuery,
       })
 
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('')
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#parent-package > #simple-package:fs:v(1.0.0)',
+      )
     })
 
     it('should append to existing query', () => {
@@ -522,10 +531,11 @@ describe('updateResultItem', () => {
         from: undefined,
         sameItems: false,
       })
+      item.name = 'simple-package'
 
       const handler = updateResultItem({
         item,
-        query: 'existing query',
+        query: ':semver(^1.0.0) :dev',
         updateQuery: mockUpdateQuery,
       })
 
@@ -533,32 +543,8 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        'existing query#simple-package',
+        ':semver(^1.0.0) :dev#simple-package',
       )
-    })
-
-    it('should not duplicate query', () => {
-      const mockUpdateQuery = vi.fn()
-      const mockEvent = {
-        preventDefault: vi.fn(),
-      } as unknown as MouseEvent
-
-      const item = createGridItemData({
-        to: createMockNode('simple-package', '1.0.0'),
-        from: undefined,
-        sameItems: false,
-      })
-
-      const handler = updateResultItem({
-        item,
-        query: '#simple-package',
-        updateQuery: mockUpdateQuery,
-      })
-
-      handler(mockEvent)
-
-      expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('#simple-package')
     })
   })
 
@@ -571,13 +557,14 @@ describe('updateResultItem', () => {
 
       const item = createGridItemData({
         to: createMockNode('package', '1.0.0'),
-        from: undefined,
+        from: createMockNode('parent', '2.0.0'),
         sameItems: false,
       })
+      item.name = 'package'
 
       const handler = updateResultItem({
         item,
-        query: '   trimmed query   ',
+        query: '   :root > *   ',
         updateQuery: mockUpdateQuery,
       })
 
@@ -585,32 +572,8 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        'trimmed query#package',
+        ':root > *:is(#parent > #package)',
       )
-    })
-
-    it('should handle empty query with whitespace', () => {
-      const mockUpdateQuery = vi.fn()
-      const mockEvent = {
-        preventDefault: vi.fn(),
-      } as unknown as MouseEvent
-
-      const item = createGridItemData({
-        to: createMockNode('package', '1.0.0'),
-        from: undefined,
-        sameItems: false,
-      })
-
-      const handler = updateResultItem({
-        item,
-        query: '   ',
-        updateQuery: mockUpdateQuery,
-      })
-
-      handler(mockEvent)
-
-      expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('#package')
     })
 
     it('should handle complex :root query with multiple parts', () => {
@@ -627,10 +590,11 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = 'child'
 
       const handler = updateResultItem({
         item,
-        query: ':root part1 part2 part3 final',
+        query: ':root #foo #bar #baz',
         updateQuery: mockUpdateQuery,
       })
 
@@ -638,72 +602,8 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        ':root part1 part2 part3 #parent > final',
+        ':root #foo #bar #baz:is(#parent > #child)',
       )
-    })
-
-    it('should handle from node with no graph', () => {
-      const mockUpdateQuery = vi.fn()
-      const mockEvent = {
-        preventDefault: vi.fn(),
-      } as unknown as MouseEvent
-
-      const fromNode = {
-        name: 'parent',
-        version: '1.0.0',
-        graph: { nodes: new Map() },
-        edgesIn: new Set(),
-        edgesOut: new Map(),
-        insights: {
-          scanned: false,
-        },
-        toJSON: () => ({}) as any,
-      } as QueryResponseNode
-      const toNode = createMockNode('child', '2.0.0')
-
-      const item = createGridItemData({
-        from: fromNode,
-        to: toNode,
-        sameItems: false,
-      })
-
-      const handler = updateResultItem({
-        item,
-        query: '',
-        updateQuery: mockUpdateQuery,
-      })
-
-      handler(mockEvent)
-
-      expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('#parent > #child')
-    })
-
-    it('should handle from node with empty name', () => {
-      const mockUpdateQuery = vi.fn()
-      const mockEvent = {
-        preventDefault: vi.fn(),
-      } as unknown as MouseEvent
-
-      const fromNode = createMockNode('', '1.0.0')
-      const toNode = createMockNode('child', '2.0.0')
-
-      const item = createGridItemData({
-        from: fromNode,
-        to: toNode,
-        sameItems: false,
-      })
-
-      const handler = updateResultItem({
-        item,
-        query: '',
-        updateQuery: mockUpdateQuery,
-      })
-
-      handler(mockEvent)
-
-      expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockUpdateQuery).toHaveBeenCalledWith('# > #child')
     })
 
     it('should handle multiple scenarios combined', () => {
@@ -725,10 +625,11 @@ describe('updateResultItem', () => {
         to: toNode,
         sameItems: false,
       })
+      item.name = '@scoped/child-pkg'
 
       const handler = updateResultItem({
         item,
-        query: ':root existing complex query with spaces',
+        query: ':root :dev #foo > :fs',
         updateQuery: mockUpdateQuery,
       })
 
@@ -736,7 +637,7 @@ describe('updateResultItem', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockUpdateQuery).toHaveBeenCalledWith(
-        ':root existing complex query with #my-parent-pkg:v(3.1.4) > spaces',
+        ':root :dev #foo > :fs:is(#my-parent-pkg:v(3.1.4) > #@scoped/child-pkg)',
       )
     })
   })
@@ -751,6 +652,7 @@ describe('updateResultItem', () => {
       const item = createGridItemData({
         to: createMockNode('package', '1.0.0'),
       })
+      item.name = 'package'
 
       const handler = updateResultItem({
         item,
@@ -760,6 +662,521 @@ describe('updateResultItem', () => {
 
       const result = handler(mockEvent)
       expect(result).toBeUndefined()
+    })
+  })
+
+  describe('additional edge cases and complex scenarios', () => {
+    it('should handle workspace importer as from node', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('workspace-pkg', '1.0.0', true)
+      const toNode = createMockNode('child-package', '2.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'child-package'
+
+      const handler = updateResultItem({
+        item,
+        query: ':dev',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#workspace-pkg:workspace > #child-package',
+      )
+    })
+
+    it('should handle prefix match when query starts with parent name', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('parent-pkg', '1.0.0')
+      const toNode = createMockNode('child-pkg', '2.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'child-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: '#parent-pkg ~ *',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#parent-pkg ~ *#child-pkg:v(2.0.0)',
+      )
+    })
+
+    it('should handle attribute selectors in query', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('test-package', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'test-package'
+
+      const handler = updateResultItem({
+        item,
+        query: '[name^="test"]',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '[name^="test"]#test-package',
+      )
+    })
+
+    it('should handle pseudo-class selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('outdated-pkg', '1.0.0'),
+        from: createMockNode('parent-pkg', '2.0.0'),
+        sameItems: false,
+      })
+      item.name = 'outdated-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':outdated(major)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#parent-pkg > :outdated(major)#outdated-pkg',
+      )
+    })
+
+    it('should handle complex pseudo-selectors with parameters', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('parent', '1.0.0')
+      const toNode = createMockNode('child', '2.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'child'
+
+      const handler = updateResultItem({
+        item,
+        query: ':semver(^1.0.0)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#parent > :semver(^1.0.0)#child',
+      )
+    })
+
+    it('should handle insights selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('vulnerable-pkg', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'vulnerable-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':cve(CVE-2023-1234)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':cve(CVE-2023-1234)#vulnerable-pkg',
+      )
+    })
+
+    it('should handle path selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('workspace-root', '1.0.0')
+      const toNode = createMockNode('local-pkg', '1.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'local-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':path("packages/*")',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#workspace-root > :path("packages/*")#local-pkg',
+      )
+    })
+
+    it('should handle type selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('git-dependency', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'git-dependency'
+
+      const handler = updateResultItem({
+        item,
+        query: ':type(git)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':type(git)#git-dependency',
+      )
+    })
+
+    it('should handle license selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('parent-pkg', '1.0.0')
+      const toNode = createMockNode('unlicensed-pkg', '1.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'unlicensed-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':license(unlicensed)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#parent-pkg > :license(unlicensed)#unlicensed-pkg',
+      )
+    })
+
+    it('should handle score selectors with comparators', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('low-score-pkg', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'low-score-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':score("<=0.5")',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':score("<=0.5")#low-score-pkg',
+      )
+    })
+
+    it('should handle malware selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('parent', '1.0.0')
+      const toNode = createMockNode('suspicious-pkg', '1.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'suspicious-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':malware(critical)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#parent > :malware(critical)#suspicious-pkg',
+      )
+    })
+
+    it('should handle published date selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('old-pkg', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'old-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':published("<=2020-01-01")',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':published("<=2020-01-01")#old-pkg',
+      )
+    })
+
+    it('should handle has() pseudo-class selector', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('react-app', '1.0.0')
+      const toNode = createMockNode('react-component', '17.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'react-component'
+
+      const handler = updateResultItem({
+        item,
+        query: ':has(:attr(peerDependencies, [react]))',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#react-app > :has(:attr(peerDependencies, [react]))#react-component',
+      )
+    })
+
+    it('should handle not() pseudo-class selector', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('normal-pkg', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'normal-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':not(:deprecated)',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':not(:deprecated)#normal-pkg',
+      )
+    })
+
+    it('should handle combined pseudo-element selectors', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('main-pkg', '1.0.0')
+      const toNode = createMockNode('dev-dep', '1.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'dev-dep'
+
+      const handler = updateResultItem({
+        item,
+        query: ':dev :optional',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#main-pkg > :dev :optional#dev-dep',
+      )
+    })
+
+    it('should handle attr() pseudo-class with nested properties', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        to: createMockNode('peer-optional', '1.0.0'),
+        from: undefined,
+        sameItems: false,
+      })
+      item.name = 'peer-optional'
+
+      const handler = updateResultItem({
+        item,
+        query: ':attr(peerDependenciesMeta, foo, [optional=true])',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':attr(peerDependenciesMeta, foo, [optional=true])#peer-optional',
+      )
+    })
+
+    it('should handle complex combinators with sibling selector', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const fromNode = createMockNode('sibling-parent', '1.0.0')
+      const toNode = createMockNode('sibling-pkg', '1.0.0')
+
+      const item = createGridItemData({
+        from: fromNode,
+        to: toNode,
+        sameItems: false,
+      })
+      item.name = 'sibling-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: '#first-sibling ~ *',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        '#sibling-parent > #first-sibling ~ *#sibling-pkg',
+      )
+    })
+
+    it('should handle sameItems with stacked items scenario', () => {
+      const mockUpdateQuery = vi.fn()
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as MouseEvent
+
+      const item = createGridItemData({
+        stacked: true,
+        sameItems: true,
+        to: createMockNode('multi-version-pkg', '2.0.0'),
+      })
+      item.name = 'multi-version-pkg'
+
+      const handler = updateResultItem({
+        item,
+        query: ':dev',
+        updateQuery: mockUpdateQuery,
+      })
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        ':dev[name="multi-version-pkg"]:v(2.0.0)',
+      )
     })
   })
 })
