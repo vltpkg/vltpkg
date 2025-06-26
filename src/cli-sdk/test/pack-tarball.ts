@@ -1,8 +1,6 @@
 import t from 'tap'
 import { resolve } from 'node:path'
-import { mkdir, writeFile, readFile, rm } from 'node:fs/promises'
-import { PackageJson } from '@vltpkg/package-json'
-import { packTarball } from '../../src/commands/pack.ts'
+import { packTarball } from '../src/pack-tarball.ts'
 
 t.test('packTarball', async t => {
   const testDir = t.testdir({
@@ -10,11 +8,18 @@ t.test('packTarball', async t => {
       'package.json': JSON.stringify({
         name: '@test/package',
         version: '1.2.3',
-        description: 'Test package for pack command',
+        description: 'Test package for pack functionality',
         main: 'index.js',
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'test.js': '// test file',
+      '.gitignore': 'node_modules',
+      'node_modules': {
+        'some-dep': {
+          'index.js': '// should be excluded',
+        },
+      },
     },
   })
 
@@ -67,5 +72,28 @@ t.test('packTarball', async t => {
       packTarball(resolve(badDir, 'bad-package')),
       /Package must have a name and version/,
     )
+  })
+
+  t.test('handles scoped package names correctly', async t => {
+    const scopedDir = t.testdir({
+      'scoped-package': {
+        'package.json': JSON.stringify({
+          name: '@myorg/my-package',
+          version: '2.0.0',
+        }),
+      },
+    })
+    
+    const result = await packTarball(resolve(scopedDir, 'scoped-package'))
+    t.equal(result.filename, 'myorg-my-package-2.0.0.tgz')
+  })
+
+  t.test('uses projectRoot option when provided', async t => {
+    const result = await packTarball('test-package', {
+      projectRoot: testDir,
+    })
+    
+    t.equal(result.manifest.name, '@test/package')
+    t.equal(result.manifest.version, '1.2.3')
   })
 })

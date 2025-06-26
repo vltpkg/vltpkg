@@ -1,13 +1,9 @@
 import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
-import type { Manifest } from '@vltpkg/types'
-import { createReadStream } from 'node:fs'
-import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
-import { packTarball } from './pack.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -76,7 +72,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   
   // Pack the tarball
   const { manifest, filename, tarballData } = await packTarball(folder, {
-    projectRoot: conf.options.projectRoot,
+    projectRoot: conf.projectRoot,
   })
   
   if (!manifest.name || !manifest.version) {

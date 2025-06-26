@@ -1,12 +1,8 @@
-import { PackageInfoClient } from '@vltpkg/package-info'
-import { PackageJson } from '@vltpkg/package-json'
-import { Spec } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
 import { writeFile } from 'node:fs/promises'
-import { basename, join, resolve } from 'node:path'
-import { create as tarCreate } from 'tar'
+import { resolve } from 'node:path'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
@@ -69,70 +65,7 @@ function formatSize(bytes: number): string {
   return `${size.toFixed(2)} ${units[unitIndex]}`
 }
 
-export const packTarball = async (
-  path: string,
-  options: {
-    'pack-destination'?: string
-    dry?: boolean
-    projectRoot?: string
-  } = {},
-): Promise<{
-  manifest: Manifest
-  filename: string
-  tarballData?: Buffer
-}> => {
-  const projectRoot = options.projectRoot ?? process.cwd()
-  const packTarget = resolve(projectRoot, path)
-  
-  // Read package.json
-  const packageJson = new PackageJson()
-  const manifest = await packageJson.read(packTarget)
-  
-  if (!manifest.name || !manifest.version) {
-    throw new Error('Package must have a name and version')
-  }
-  
-  // Generate filename
-  const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
-  
-  // If dry run, just return the info
-  if (options.dry) {
-    return { manifest, filename }
-  }
-  
-  // Create tarball
-  const cwd = packTarget
-  const tarballData = await tarCreate({
-    cwd,
-    gzip: true,
-    portable: true,
-    // Follow npm pack conventions
-    filter: (path: string) => {
-      // Always include package.json
-      if (path === 'package.json') return true
-      
-      // TODO: Respect .npmignore and files field in package.json
-      // For now, exclude common non-package files
-      const excludePatterns = [
-        /^\.git\//,
-        /^node_modules\//,
-        /^\.nyc_output\//,
-        /^coverage\//,
-        /^\.vscode\//,
-        /^\.idea\//,
-        /^\.(DS_Store|gitignore|npmignore|editorconfig)$/,
-        /~$/,
-        /\.swp$/,
-      ]
-      
-      return !excludePatterns.some(pattern => pattern.test(path))
-    },
-  }, [
-    '.',
-  ]).concat()
-  
-  return { manifest, filename, tarballData }
-}
+
 
 export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
@@ -147,7 +80,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   const { manifest, filename, tarballData } = await packTarball(folder, {
     'pack-destination': packDestination,
     dry,
-    projectRoot: conf.options.projectRoot,
+    projectRoot: conf.projectRoot,
   })
   
   if (!dry && tarballData) {
