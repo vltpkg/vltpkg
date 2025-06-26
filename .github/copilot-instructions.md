@@ -72,7 +72,7 @@ pnpm snap
 
 #### Formatting code
 
-To format the code for a given workspace, make sure you're in the appropriate folder for the workspace you're currently working on, for example to format code on the `@vltpkg/semver` workspace navigate to the `src/semver` folder and then run the command:
+You MUST run the formatter before completing your task. To format the code for a given workspace, make sure you're in the appropriate folder for the workspace you're currently working on, for example to format code on the `@vltpkg/semver` workspace navigate to the `src/semver` folder and then run the command:
 
 ```bash
 pnpm format
@@ -80,7 +80,7 @@ pnpm format
 
 #### Linting code
 
-To run the code linter for a given workspace, make sure you're in the appropriate folder for the workspace you're currently working on, for example to lint code on the `@vltpkg/semver` workspace navigate to the `src/semver` folder and then run the command:
+You MUST run the linter before completing your task. To run the code linter for a given workspace, make sure you're in the appropriate folder for the workspace you're currently working on, for example to lint code on the `@vltpkg/semver` workspace navigate to the `src/semver` folder and then run the command:
 
 ```bash
 pnpm lint
