@@ -31,6 +31,7 @@ const canonicalCommands = {
   token: 'token',
   uninstall: 'uninstall',
   'exec-cache': 'exec-cache',
+  version: 'version',
   whoami: 'whoami',
 } as const
 

@@ -1,0 +1,27 @@
+---
+title: vlt version
+sidebar:
+  label: version
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt version [<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Bump a package's version.
+
+Run in a package directory to bump the version and write the new data
+back to package.json.
+
+The `<newversion>` argument should be a valid semver string or a valid
+increment type (one of patch, minor, major, prepatch, preminor,
+premajor, prerelease).
+
+If run in a git repository, it will also create a version commit and
+tag.
