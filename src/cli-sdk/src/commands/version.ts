@@ -106,10 +106,13 @@ const version = async (
   }
 
   // Handle git operations if we're in a git repository
-  /* c8 ignore next -- commit and tag are always true for now */
-  if ((commit || tag) && (await isGit({ cwd }))) {
+  if (
+    /* c8 ignore next -- commit and tag are always true for now */
+    (commit || tag) &&
+    (await isGit({ cwd: conf.options.projectRoot }))
+  ) {
     // Check for uncommitted changes (excluding package.json since we just modified it)
-    if (!(await isClean({ cwd }))) {
+    if (!(await isClean({ cwd: conf.options.projectRoot }))) {
       try {
         // Check if there are changes other than package.json
         const gitResult = await spawn(['diff', '--name-only', 'HEAD'])
