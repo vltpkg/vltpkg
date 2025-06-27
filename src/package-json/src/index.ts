@@ -2,9 +2,40 @@ import { error } from '@vltpkg/error-cause'
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { asManifest, longDependencyTypes } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, lstatSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { homedir } from 'node:os'
 import { parse, stringify } from 'polite-json'
+import { walkUp } from 'walk-up-path'
+
+const exists = (path: string): boolean => {
+  try {
+    lstatSync(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Walks up the directory tree from the current working directory
+ * and returns the path to the first `package.json` file found.
+ * Returns undefined if no package.json is found.
+ */
+export const find = (
+  cwd: string = process.cwd(),
+  home: string = homedir(),
+): string | undefined => {
+  for (const dir of walkUp(cwd)) {
+    // don't look in home directory
+    if (dir === home) break
+
+    const packageJsonPath = resolve(dir, 'package.json')
+    if (exists(packageJsonPath)) {
+      return packageJsonPath
+    }
+  }
+}
 
 export class PackageJson {
   /**
