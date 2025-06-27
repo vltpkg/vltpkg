@@ -1377,6 +1377,9 @@ importers:
       polite-json:
         specifier: 'catalog:'
         version: 5.0.0
+      walk-up-path:
+        specifier: 'catalog:'
+        version: 4.0.0
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
