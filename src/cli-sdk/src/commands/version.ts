@@ -6,8 +6,7 @@ import {
 import type { IncrementType } from '@vltpkg/semver'
 import { is as isGit, spawn as spawn_, isClean } from '@vltpkg/git'
 import type { GitOptions } from '@vltpkg/git'
-import { error as error_ } from '@vltpkg/error-cause'
-import type { ErrorCauseOptions } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
 import { asError } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -49,11 +48,6 @@ const version = async (
     tagMessage = 'v%s',
   }: VersionOptions = {},
 ): Promise<VersionResult> => {
-  const error = (
-    message: string,
-    options: Error | ErrorCauseOptions,
-  ) => error_(message, options, version)
-
   const spawn = (args: string[], opts?: GitOptions) =>
     spawn_(args, { cwd, ...opts })
 
