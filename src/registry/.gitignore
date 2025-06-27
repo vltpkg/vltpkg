@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env.production
+/node_modules
+/pnpm-exec-summary.json
+/local-store
+/node_modules
+/.wrangler
+/dist
+.dev.vars
