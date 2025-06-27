@@ -93,8 +93,8 @@ export const command: CommandFn<CommandResult> = async conf => {
   const unpackedSize = tarballData?.length ? Math.floor(tarballData.length * 2.5) : 0
   
   // packTarball validates that name and version exist
-  const name = manifest.name ?? ''
-  const version = manifest.version ?? ''
+  const name = manifest.name!
+  const version = manifest.version!
   
   return {
     id: `${name}@${version}`,

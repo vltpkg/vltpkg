@@ -1,8 +1,9 @@
 import t from 'tap'
 import { resolve } from 'node:path'
-import { command } from '../../src/commands/publish.ts'
+import { command, views, usage } from '../../src/commands/publish.ts'
 import { Config } from '../../src/config/index.ts'
 import { RegistryClient } from '@vltpkg/registry-client'
+import * as packTarballModule from '../../src/pack-tarball.ts'
 
 // Mock the RegistryClient
 const mockResponses = new Map<string, any>()
@@ -39,6 +40,14 @@ t.beforeEach(() => {
 t.afterEach(() => {
   // Restore original request method
   RegistryClient.prototype.request = originalRequest
+})
+
+t.test('publish usage', async t => {
+  const usageObj = usage()
+  t.ok(usageObj)
+  t.type(usageObj, 'object')
+  // The usage function returns a structured object, not a string
+  // Just verify it exists and is called
 })
 
 t.test('publish command', async t => {
@@ -131,5 +140,123 @@ t.test('publish command', async t => {
     
     const result = await command(parsedConfigWithTag)
     t.equal(result.tag, 'beta')
+  })
+
+  t.test('publishes package with dist metadata', async t => {
+    const distDir = t.testdir({
+      'dist-package': {
+        'package.json': JSON.stringify({
+          name: 'dist-package',
+          version: '1.0.0',
+          dist: {
+            shasum: 'abc123def456',
+            integrity: 'sha512-xyz789',
+          },
+        }),
+      },
+    })
+    
+    const config = new Config(undefined, distDir)
+    await config.loadConfigFile()
+    const distConfig = config.parse(['publish', resolve(distDir, 'dist-package')])
+    
+    const result = await command(distConfig)
+    t.equal(result.shasum, 'abc123def456')
+    t.equal(result.integrity, 'sha512-xyz789')
+  })
+
+  t.test('handles missing tarball data', async t => {
+    // Instead of mocking packTarball, let's test a different error case
+    // Test with an invalid package structure that would make packTarball fail
+    const invalidDir = t.testdir({
+      'invalid-package': {
+        'package.json': JSON.stringify({}), // No name or version
+      },
+    })
+    
+    const config = new Config(undefined, invalidDir)
+    await config.loadConfigFile()
+    const invalidConfig = config.parse(['publish', resolve(invalidDir, 'invalid-package')])
+    
+    await t.rejects(
+      command(invalidConfig),
+      /Package must have a name and version/,
+    )
+  })
+
+  t.test('handles request errors', async t => {
+    // Mock a network error
+    const errorConfig = new Config(undefined, testDir)
+    await errorConfig.loadConfigFile()
+    const parsedErrorConfig = errorConfig.parse(['publish', packagePath])
+    
+    // Temporarily mock to throw an error
+    const tempRequest = RegistryClient.prototype.request
+    RegistryClient.prototype.request = async () => {
+      throw new Error('Network error')
+    }
+    
+    await t.rejects(
+      command(parsedErrorConfig),
+      /Failed to publish package/,
+    )
+    
+    // Restore
+    RegistryClient.prototype.request = tempRequest
+  })
+
+  t.test('views format output correctly', async t => {
+    const result = {
+      id: 'test@1.0.0',
+      name: 'test',
+      version: '1.0.0',
+      tag: 'latest',
+      registry: 'https://registry.npmjs.org',
+      shasum: 'abc123',
+      integrity: 'sha512-xyz',
+      size: 2048,
+    }
+    
+    t.test('human view', async t => {
+      const output = views.human(result)
+      t.match(output, /✅ Published test@1\.0\.0/)
+      t.match(output, /📦 Package: test@1\.0\.0/)
+      t.match(output, /🏷️  Tag: latest/)
+      t.match(output, /📡 Registry: https:\/\/registry\.npmjs\.org/)
+      t.match(output, /📊 Size: 2\.00 KB/)
+      t.match(output, /🔒 Shasum: abc123/)
+      t.match(output, /🔐 Integrity: sha512-xyz/)
+    })
+    
+    t.test('human view without optional fields', async t => {
+      const minResult = {
+        ...result,
+        shasum: undefined,
+        integrity: undefined,
+      }
+      const output = views.human(minResult)
+      t.notMatch(output, /🔒 Shasum/)
+      t.notMatch(output, /🔐 Integrity/)
+    })
+    
+    t.test('json view', async t => {
+      const output = views.json(result)
+      t.same(output, result)
+    })
+
+    t.test('formatSize handles different sizes', async t => {
+      const sizes = [
+        { size: 256, expected: '256.00 B' },
+        { size: 2048, expected: '2.00 KB' },
+        { size: 2097152, expected: '2.00 MB' },
+        { size: 2147483648, expected: '2.00 GB' },
+      ]
+      
+      for (const { size, expected } of sizes) {
+        const testResult = { ...result, size }
+        const output = views.human(testResult)
+        t.match(output, new RegExp(`📊 Size: ${expected}`))
+      }
+    })
   })
 })

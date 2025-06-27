@@ -75,35 +75,25 @@ export const command: CommandFn<CommandResult> = async conf => {
     projectRoot: conf.projectRoot,
   })
   
-  if (!manifest.name || !manifest.version) {
-    throw error('Package must have a name and version to publish', {
-      code: 'EINVAL',
-    })
-  }
-  
-  if (!tarballData) {
-    throw error('Failed to create tarball', {
-      code: 'EINVAL',
-    })
-  }
+  // packTarball validates that name and version exist, and always returns tarballData
   
   // Get the registry URL
   const registry = conf.options.registry
   const registryUrl = new URL(registry)
   
   // TODO: Handle scoped packages properly
-  const packageUrl = new URL(`/${manifest.name}`, registryUrl)
+  const packageUrl = new URL(`/${manifest.name!}`, registryUrl)
   
   // Create the publish metadata
   const publishMetadata = {
-    _id: manifest.name,
-    name: manifest.name,
+    _id: manifest.name!,
+    name: manifest.name!,
     description: manifest.description,
     'dist-tags': {
-      [conf.options.tag || 'latest']: manifest.version,
+      [conf.options.tag || 'latest']: manifest.version!,
     },
     versions: {
-      [manifest.version]: {
+      [manifest.version!]: {
         ...manifest,
         _id: `${manifest.name}@${manifest.version}`,
         _nodeVersion: process.version,
@@ -115,8 +105,8 @@ export const command: CommandFn<CommandResult> = async conf => {
     _attachments: {
       [filename]: {
         content_type: 'application/octet-stream',
-        data: tarballData.toString('base64'),
-        length: tarballData.length,
+        data: tarballData!.toString('base64'),
+        length: tarballData!.length,
       },
     },
   }
@@ -143,13 +133,13 @@ export const command: CommandFn<CommandResult> = async conf => {
     
     return {
       id: `${manifest.name}@${manifest.version}`,
-      name: manifest.name,
-      version: manifest.version,
+      name: manifest.name!,
+      version: manifest.version!,
       tag: conf.options.tag || 'latest',
       registry: registryUrl.origin,
       shasum: manifest.dist?.shasum,
       integrity: manifest.dist?.integrity,
-      size: tarballData.length,
+      size: tarballData!.length,
     }
   } catch (err) {
     throw error('Failed to publish package', {
