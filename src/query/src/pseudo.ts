@@ -34,6 +34,7 @@ import { outdated } from './pseudo/outdated.ts'
 import { overridden } from './pseudo/overridden.ts'
 import { path } from './pseudo/path.ts'
 import { peer } from './pseudo/peer.ts'
+import { prerelease } from './pseudo/prerelease.ts'
 import { published } from './pseudo/published.ts'
 import { privateParser } from './pseudo/private.ts'
 import { prod } from './pseudo/prod.ts'
@@ -314,6 +315,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     overridden,
     path,
     peer,
+    prerelease,
     published,
     private: privateParser,
     prod,
