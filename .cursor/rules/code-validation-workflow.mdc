@@ -23,6 +23,37 @@ actions:
     message: |
       Before completing your work, run the following validation steps in sequence:
 
+      ## Prerequisite: Dependency Management
+      
+      **IMPORTANT**: If you have modified any `package.json` files to add, remove, or update dependencies, you **MUST** run dependency installation first:
+
+      ```bash
+      # Navigate to the project root (monorepo root)
+      cd /path/to/vltpkg  # or wherever your project root is
+      
+      # Install/update dependencies for all workspaces
+      pnpm install
+      ```
+
+      **Why this is critical:**
+      - New dependencies won't be available until installed
+      - Tests and linting may fail with "Cannot find module" errors
+      - Type checking will fail for missing dependencies
+      - The workspace dependency graph needs to be updated
+
+      **When to run `pnpm install`:**
+      - ✅ After adding new dependencies to any workspace `package.json`
+      - ✅ After removing dependencies from any workspace `package.json`
+      - ✅ After updating dependency versions
+      - ✅ When switching branches that have different dependencies
+      - ✅ When you see "Cannot find module" errors during development
+
+      **Where to run it:**
+      - Always run `pnpm install` from the **project root** (where the main `package.json` and `pnpm-workspace.yaml` are located)
+      - Do NOT run it from individual workspace directories unless specifically needed
+
+      ---
+
       1. Format code:
          ```bash
          pnpm format
@@ -165,7 +196,16 @@ examples:
       pnpm test -Rtap  # Running tests with coverage in one step
       pnpm snap -Rtap  # Updating snapshots without reviewing changes
 
-      # Good: Complete validation workflow
+      # Bad: Forgetting to install dependencies after modifying package.json
+      # ... modify package.json to add new dependency ...
+      pnpm format  # Will fail with "Cannot find module" errors
+      
+      # Good: Complete validation workflow (after modifying dependencies)
+      # First, install dependencies from project root
+      cd /path/to/project-root
+      pnpm install
+      # Then navigate back to workspace and continue validation
+      cd src/my-workspace
       pnpm format
       pnpm lint
       pnpm test -Rtap --disable-coverage
@@ -201,7 +241,7 @@ examples:
 
 metadata:
   priority: high
-  version: 1.5
+  version: 1.6
   tags:
     - validation
     - workflow
@@ -212,6 +252,8 @@ metadata:
     - linting
     - type-safety
     - test-quality
+    - dependency-management
+    - pnpm-install
   related_rules:
     - linting-error-handler  # For systematic handling of common linting errors
 </rule>
