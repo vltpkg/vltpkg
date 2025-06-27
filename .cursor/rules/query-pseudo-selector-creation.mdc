@@ -1,0 +1,320 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Query Pseudo-Selector Creation Guide
+
+Guide for implementing new pseudo-selectors in the vltpkg Dependency Selector Syntax query language.
+
+<rule>
+name: query_pseudo_selector_creation
+description: Comprehensive guide for creating new pseudo-selectors in the query language
+filters:
+  # Match work within the query workspace
+  - type: path
+    pattern: "^src/query/"
+  # Match pseudo-selector related files
+  - type: file_name
+    pattern: "pseudo.*\\.(ts|js)$"
+  # Match selector implementation requests
+  - type: content
+    pattern: "(?i)(pseudo.?selector|query.?selector|dependency.?selector)"
+
+actions:
+  - type: guide
+    message: |
+      ## Creating New Pseudo-Selectors
+
+      This guide provides a step-by-step process for implementing new pseudo-selectors in the vltpkg query language, based on patterns established by existing selectors like `:overridden`, `:missing`, `:dev`, etc.
+
+      ### Understanding Pseudo-Selectors
+
+      Pseudo-selectors filter the dependency graph based on specific criteria:
+      - **Edge-based selectors** (like `:overridden`, `:dev`) filter based on edge properties
+      - **Node-based selectors** (like `:empty`, `:private`) filter based on node properties  
+      - **Relationship selectors** (like `:missing`) filter based on edge-node relationships
+
+      ### Implementation Steps
+
+      #### 1. Study Existing Patterns
+      
+      **Required Reading:**
+      - `src/query/src/pseudo/` - Review similar selectors for patterns
+      - `src/query/src/pseudo/helpers.ts` - Available helper functions
+      - `src/query/src/types.ts` - Understanding `ParserState` and related types
+      - `@vltpkg/graph` types - Understanding `EdgeLike`, `NodeLike` structures
+
+      **Key Reference Selectors:**
+      - `:missing` (`src/query/src/pseudo/missing.ts`) - Simple edge filtering
+      - `:dev` (`src/query/src/pseudo/dev.ts`) - Edge type filtering with node cleanup
+      - `:overridden` (`src/query/src/pseudo/overridden.ts`) - Edge property filtering
+      - `:private` (`src/query/src/pseudo/private.ts`) - Node property filtering
+
+      #### 2. Create the Selector Implementation
+
+      **File Location:** `src/query/src/pseudo/YOUR_SELECTOR_NAME.ts`
+
+      - ⚠️ IMPORTANT: The decision to use a edge-based filtering or a node-based
+      filtering is going to depend on what values need to be used to perform
+      the checks.
+
+      **Template Structure:**
+      ```typescript
+      import type { ParserState } from '../types.ts'
+      import { removeEdge, removeUnlinkedNodes } from './helpers.ts'
+      // Add other imports as needed
+
+      /**
+       * :your-selector Pseudo-Selector, matches [DESCRIPTION OF WHAT IT MATCHES].
+       * [DETAILED DESCRIPTION OF BEHAVIOR]
+       */
+      export const yourSelector = async (state: ParserState) => {
+        // Filter logic here - iterate over state.partial.edges or state.partial.nodes
+        for (const edge of state.partial.edges) {
+          if (/* YOUR FILTERING CONDITION */) {
+            removeEdge(state, edge)
+          }
+        }
+
+        // OR for node-based filtering:
+        // for (const node of state.partial.nodes) {
+        //   if (/* YOUR FILTERING CONDITION */) {
+        //     removeNode(state, node)
+        //   }
+        // }
+
+        // Clean up unlinked nodes if you're filtering edges
+        removeUnlinkedNodes(state)
+
+        return state
+      }
+      ```
+
+      **Available Helper Functions (`helpers.ts`):**
+      - `removeNode(state, node)` - Removes a node and its incoming edges
+      - `removeEdge(state, edge)` - Removes an edge and its outgoing node
+      - `removeDanglingEdges(state)` - Removes edges with no destination node
+      - `removeUnlinkedNodes(state)` - Removes nodes with no incoming edges
+      - `removeQuotes(value)` - Utility for processing string values
+
+      #### 3. Integrate into Pseudo-Selector Registry
+
+      **File:** `src/query/src/pseudo.ts`
+
+      **Steps:**
+      1. **Add import:** 
+         ```typescript
+         import { yourSelector } from './pseudo/your-selector.ts'
+         ```
+
+      2. **Add to pseudoSelectors Map:**
+         ```typescript
+         const pseudoSelectors = new Map<string, ParserFn>(
+           Object.entries({
+             // ... existing selectors ...
+             yourSelector,
+             // ... rest of selectors ...
+           }),
+         )
+         ```
+
+      3. **Remove any TODO comments** related to your selector
+
+      #### 4. Create Comprehensive Tests
+
+      **File Location:** `src/query/test/pseudo/YOUR_SELECTOR_NAME.ts`
+
+      **Critical Test Guidelines:**
+      - ⚠️ **NEVER violate type contracts** - Study actual type definitions first
+      - ✅ **Use existing test fixtures** when possible (`../fixtures/graph.ts`)
+      - ✅ **Create type-safe test data** that respects the actual object structures
+      - ✅ **Test realistic scenarios** that can actually occur in the codebase
+
+      **Test Template:**
+      ```typescript
+      import t from 'tap'
+      import postcssSelectorParser from 'postcss-selector-parser'
+      import type { ParserState } from '../../src/types.ts'
+      import { yourSelector } from '../../src/pseudo/your-selector.ts'
+      import {
+        getSimpleGraph,
+        // Import other test fixtures as needed
+      } from '../fixtures/graph.ts'
+
+      t.test('your selector description', async t => {
+        const getState = (query: string, graph = getSimpleGraph()) => {
+          const ast = postcssSelectorParser().astSync(query)
+          const current = ast.first.first
+          const state: ParserState = {
+            comment: '',
+            current,
+            initial: {
+              edges: new Set(graph.edges.values()),
+              nodes: new Set(graph.nodes.values()),
+            },
+            partial: {
+              edges: new Set(graph.edges.values()),
+              nodes: new Set(graph.nodes.values()),
+            },
+            collect: {
+              edges: new Set(),
+              nodes: new Set(),
+            },
+            cancellable: async () => {},
+            walk: async i => i,
+            retries: 0,
+            securityArchive: undefined,
+            specOptions: {},
+            signal: new AbortController().signal,
+            scopeIDs: [],
+            specificity: { idCounter: 0, commonCounter: 0 },
+          }
+          return state
+        }
+
+        await t.test('main functionality test', async t => {
+          const res = await yourSelector(getState(':your-selector'))
+          // Add your assertions here
+          t.matchSnapshot({
+            nodes: [...res.partial.nodes].map(n => n.name).sort(),
+            edges: [...res.partial.edges].map(e => e.name).sort(),
+          })
+        })
+
+        // Add more test cases:
+        // - Empty state handling
+        // - Edge cases specific to your selector
+        // - Different graph scenarios
+      })
+      ```
+
+      **Essential Test Scenarios:**
+      - ✅ Main functionality with expected results
+      - ✅ Empty partial state handling
+      - ✅ Edge cases specific to your selector's logic
+      - ✅ Different graph configurations
+      - ✅ Proper node cleanup verification
+
+      #### 5. Follow Code Validation Workflow
+
+      **Required Steps** (from `@code-validation-workflow.mdc`):
+      ```bash
+      # 1. Format code
+      pnpm format
+
+      # 2. Lint code  
+      pnpm lint
+
+      # 3. Run tests (create snapshots first)
+      TAP_SNAPSHOT=1 pnpm test -Rtap --disable-coverage test/pseudo/your-selector.ts
+      pnpm test -Rtap --disable-coverage test/pseudo/your-selector.ts
+
+      # 4. Check coverage
+      pnpm test -Rsilent --coverage-report=text-lcov test/pseudo/your-selector.ts
+
+      # 5. Type check
+      pnpm posttest
+      ```
+
+      ### Common Patterns & Best Practices
+
+      #### Edge-Based Filtering Pattern
+      ```typescript
+      // Filter edges based on edge properties
+      for (const edge of state.partial.edges) {
+        if (!edge.someProperty) {
+          removeEdge(state, edge)
+        }
+      }
+      removeUnlinkedNodes(state) // Clean up orphaned nodes
+      ```
+
+      #### Node-Based Filtering Pattern  
+      ```typescript
+      // Filter nodes based on node properties
+      for (const node of state.partial.nodes) {
+        if (!node.someProperty) {
+          removeNode(state, node)
+        }
+      }
+      removeDanglingEdges(state) // Clean up orphaned edges
+      ```
+
+      #### Type Safety in Tests
+      ```typescript
+      // ❌ NEVER do this - violates type contracts
+      const edge = {
+        spec: undefined as any, // Breaks Edge type contract
+      }
+
+      // ✅ ALWAYS do this - respects type contracts  
+      const spec = Spec.parse('package-name', '^1.0.0', specOptions)
+      const edge = {
+        spec, // Proper Spec object
+        // ... other required properties
+      }
+      ```
+
+      ### Documentation Requirements
+
+      After implementation, consider updating:
+      - `www/docs/src/content/docs/cli/selectors.mdx` - Add documentation for end users
+      - Add examples and use cases for the new selector
+
+examples:
+  - input: |
+      # Creating the :overridden selector (real example)
+      
+      # 1. Implementation
+      src/query/src/pseudo/overridden.ts:
+      ```typescript
+      export const overridden = async (state: ParserState) => {
+        for (const edge of state.partial.edges) {
+          if (!edge.spec.overridden) {
+            removeEdge(state, edge)
+          }
+        }
+        removeUnlinkedNodes(state)
+        return state
+      }
+      ```
+      
+      # 2. Integration
+      src/query/src/pseudo.ts:
+      ```typescript
+      import { overridden } from './pseudo/overridden.ts'
+      // ...
+      const pseudoSelectors = new Map<string, ParserFn>(
+        Object.entries({
+          // ...
+          overridden,
+          // ...
+        }),
+      )
+      ```
+      
+      # 3. Tests (type-safe)
+      src/query/test/pseudo/overridden.ts:
+      ```typescript
+      // ✅ Proper type-safe edge creation
+      const spec = Spec.parse('package', '^1.0.0', specOptions)
+      spec.overridden = true
+      const edge = { spec, /* ... other props */ }
+      ```
+    output: "Successfully implemented new pseudo-selector following established patterns"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - query-language
+    - pseudo-selectors
+    - implementation-guide
+    - type-safety
+    - testing-patterns
+    - graph-filtering
+  related_rules:
+    - code-validation-workflow  # For validation steps
+    - monorepo-structure        # For understanding workspace structure
+</rule>
