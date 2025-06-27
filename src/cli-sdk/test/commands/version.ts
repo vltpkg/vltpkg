@@ -403,7 +403,9 @@ t.test('git operations', async t => {
           message:
             'Git working directory not clean. Please commit or stash your changes first.',
           cause: {
-            found: ['other-file.js'],
+            cause: {
+              found: ['other-file.js'],
+            },
           },
         },
       )

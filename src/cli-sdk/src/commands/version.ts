@@ -112,6 +112,7 @@ const version = async (
   }
 
   // Handle git operations if we're in a git repository
+  /* c8 ignore next -- commit and tag are always true for now */
   if ((commit || tag) && (await isGit({ cwd }))) {
     // Check for uncommitted changes (excluding package.json since we just modified it)
     if (!(await isClean({ cwd }))) {
@@ -160,13 +161,14 @@ const version = async (
 
     if (tag) {
       try {
-        result.tag = `v${newVersion}`
+        const tagName = `v${newVersion}`
         await spawn([
           'tag',
-          result.tag,
+          tagName,
           '-m',
           tagMessage.replace('%s', newVersion),
         ])
+        result.tag = tagName
       } catch (err) {
         throw error('Failed to create git tag', {
           version: newVersion,
