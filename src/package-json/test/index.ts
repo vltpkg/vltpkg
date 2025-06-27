@@ -1,5 +1,5 @@
 import t from 'tap'
-import { PackageJson, find } from '../src/index.ts'
+import { PackageJson } from '../src/index.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -15,6 +15,21 @@ t.test('successfully reads a valid package.json file', async t => {
     pj.read(dir),
     { name: 'my-project', version: '1.0.0' },
     'should be able to read file and return parsed JSON',
+  )
+})
+
+t.test('reads from a package.json path instead of dir', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+  })
+  const pj = new PackageJson()
+  t.match(
+    pj.read(join(dir, 'package.json')),
+    { name: 'my-project', version: '1.0.0' },
+    'should be able to read file and return parsed JSON from its path',
   )
 })
 
@@ -109,6 +124,33 @@ t.test('successfully writes a valid package.json file', async t => {
   const originalMani = pj.read(dir)
   originalMani.version = '1.0.1'
   pj.write(dir, originalMani)
+  const mani = pj.read(dir)
+  t.equal(
+    mani.version,
+    '1.0.1',
+    'version should be updated on new manifest',
+  )
+  t.matchSnapshot(
+    readFileSync(join(dir, 'package.json'), 'utf8'),
+    'manifest should be read with original indent',
+  )
+})
+
+t.test('writes to a package.json filepath', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify(
+      {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      null,
+      8,
+    ),
+  })
+  const pj = new PackageJson()
+  const originalMani = pj.read(dir)
+  originalMani.version = '1.0.1'
+  pj.write(join(dir, 'package.json'), originalMani)
   const mani = pj.read(dir)
   t.equal(
     mani.version,
@@ -291,6 +333,7 @@ t.test('find method', async t => {
   })
 
   const homePath = join(testDir, 'home')
+  const pj = new PackageJson()
 
   await t.test('finds package.json in project root', async t => {
     const projectRoot = join(
@@ -299,7 +342,7 @@ t.test('find method', async t => {
       'projects',
       'my-project',
     )
-    const found = find(projectRoot, homePath)
+    const found = pj.find(projectRoot, homePath)
     t.equal(found, join(projectRoot, 'package.json'))
   })
 
@@ -314,7 +357,7 @@ t.test('find method', async t => {
         'packages',
         'my-workspace-a',
       )
-      const found = find(workspaceA, homePath)
+      const found = pj.find(workspaceA, homePath)
       t.equal(found, join(workspaceA, 'package.json'))
     },
   )
@@ -339,7 +382,7 @@ t.test('find method', async t => {
         'packages',
         'my-workspace-a',
       )
-      const found = find(srcDir, homePath)
+      const found = pj.find(srcDir, homePath)
       t.equal(found, join(workspaceA, 'package.json'))
     },
   )
@@ -348,14 +391,14 @@ t.test('find method', async t => {
     'returns undefined when no package.json found',
     async t => {
       const projectsDir = join(testDir, 'home', 'projects')
-      const found = find(projectsDir, homePath)
+      const found = pj.find(projectsDir, homePath)
       t.equal(found, undefined)
     },
   )
 
   await t.test('stops at home directory', async t => {
     const otherStuff = join(testDir, 'home', 'other-stuff')
-    const found = find(otherStuff, homePath)
+    const found = pj.find(otherStuff, homePath)
     t.equal(found, undefined)
   })
 
@@ -370,7 +413,7 @@ t.test('find method', async t => {
         'packages',
         'my-workspace-b',
       )
-      const found = find(workspaceB, homePath)
+      const found = pj.find(workspaceB, homePath)
       t.equal(found, join(workspaceB, 'package.json'))
     },
   )
@@ -419,7 +462,7 @@ t.test('find method', async t => {
         'deep-project',
       )
 
-      const found = find(deepPath, deepHome)
+      const found = pj.find(deepPath, deepHome)
       t.equal(found, join(projectRoot, 'package.json'))
     },
   )
@@ -438,7 +481,7 @@ t.test('find method', async t => {
       const emptyHome = join(emptyTestDir, 'home')
       const emptyDir = join(emptyTestDir, 'home', 'empty')
 
-      const found = find(emptyDir, emptyHome)
+      const found = pj.find(emptyDir, emptyHome)
       t.equal(found, undefined)
     },
   )
@@ -452,7 +495,7 @@ t.test('find method', async t => {
       'my-project',
       'packages',
     )
-    const found = find(customCwd, homePath)
+    const found = pj.find(customCwd, homePath)
     t.equal(
       found,
       join(testDir, 'home', 'projects', 'my-project', 'package.json'),
@@ -476,7 +519,7 @@ t.test('find method', async t => {
     const nestedDir = join(customTestDir, 'project', 'nested')
     const projectDir = join(customTestDir, 'project')
 
-    const found = find(nestedDir, customHome)
+    const found = pj.find(nestedDir, customHome)
     t.equal(found, join(projectDir, 'package.json'))
   })
 })

@@ -27,6 +27,7 @@ t.test('basic', async t => {
     options: { packageJson: new PackageJson() },
     positionals: ['gett'],
   } as LoadedConfig
+  t.chdir(dir)
   await t.rejects(Command.command(config), {
     cause: {
       code: 'EUSAGE',
@@ -87,6 +88,7 @@ t.test('get', async t => {
     projectRoot: dir,
     options: { packageJson: new PackageJson() },
   }
+  t.chdir(dir)
 
   t.strictSame(
     await Command.command({
@@ -140,6 +142,7 @@ t.test('pick', async t => {
     projectRoot: dir,
     options: { packageJson: new PackageJson() },
   }
+  t.chdir(dir)
 
   t.strictSame(
     await Command.command({
@@ -191,6 +194,66 @@ t.test('pick', async t => {
       version: pkg.version,
     },
   )
+
+  await t.test('get from workspace directory', async t => {
+    const dir = t.testdir({
+      'my-project': {
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+        }),
+        packages: {
+          a: {
+            'package.json': JSON.stringify({
+              name: 'workspace-a',
+              version: '2.0.0',
+            }),
+          },
+        },
+      },
+    })
+    t.chdir(join(dir, 'my-project', 'packages', 'a'))
+
+    t.strictSame(
+      await Command.command({
+        ...config,
+        positionals: ['get', 'name'],
+      } as LoadedConfig),
+      'workspace-a',
+      'should get name from workspace directory',
+    )
+  })
+
+  await t.test(
+    'defaults to projectRoot if no package.json could be found',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+        }),
+      })
+      const config = {
+        projectRoot: dir,
+        options: { packageJson: new PackageJson() },
+        positionals: ['get'],
+      } as LoadedConfig
+
+      // mocks the find method to simulate an environment in which
+      // no package.json was found but we still have a projectRoot
+      config.options.packageJson.find = () => undefined
+
+      t.strictSame(
+        await Command.command({
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...config,
+          positionals: ['get', 'name'],
+        } as LoadedConfig),
+        'my-project',
+        'should default to the project root location',
+      )
+    },
+  )
 })
 
 t.test('set', async t => {
@@ -209,6 +272,7 @@ t.test('set', async t => {
     projectRoot: dir,
     options: { packageJson: new PackageJson() },
   }
+  t.chdir(dir)
 
   await Command.command({
     ...config,
@@ -235,6 +299,42 @@ t.test('set', async t => {
     } as LoadedConfig),
     { cause: { code: 'EUSAGE' } },
   )
+
+  await t.test('set to a workspace directory', async t => {
+    const dir = t.testdir({
+      'my-project': {
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+        }),
+        packages: {
+          a: {
+            'package.json': JSON.stringify({
+              name: 'workspace-a',
+              version: '2.0.0',
+            }),
+          },
+        },
+      },
+    })
+    t.chdir(join(dir, 'my-project', 'packages', 'a'))
+
+    await Command.command({
+      ...config,
+      positionals: ['set', 'foo=bar'],
+    } as LoadedConfig)
+
+    t.strictSame(
+      JSON.parse(
+        readPackageJson(join(dir, 'my-project', 'packages', 'a')),
+      ),
+      {
+        name: 'workspace-a',
+        version: '2.0.0',
+        foo: 'bar',
+      },
+    )
+  })
 })
 
 t.test('delete', async t => {
@@ -256,6 +356,7 @@ t.test('delete', async t => {
     projectRoot: dir,
     options: { packageJson: new PackageJson() },
   }
+  t.chdir(dir)
 
   await Command.command({
     ...config,
@@ -282,6 +383,42 @@ t.test('delete', async t => {
     } as LoadedConfig),
     { cause: { code: 'EUSAGE' } },
   )
+
+  await t.test('delete from a workspace directory', async t => {
+    const dir = t.testdir({
+      'my-project': {
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+        }),
+        packages: {
+          a: {
+            'package.json': JSON.stringify({
+              name: 'workspace-a',
+              version: '2.0.0',
+              foo: 'bar',
+            }),
+          },
+        },
+      },
+    })
+    t.chdir(join(dir, 'my-project', 'packages', 'a'))
+
+    await Command.command({
+      ...config,
+      positionals: ['rm', 'foo'],
+    } as LoadedConfig)
+
+    t.strictSame(
+      JSON.parse(
+        readPackageJson(join(dir, 'my-project', 'packages', 'a')),
+      ),
+      {
+        name: 'workspace-a',
+        version: '2.0.0',
+      },
+    )
+  })
 })
 
 t.test('human output', async t => {

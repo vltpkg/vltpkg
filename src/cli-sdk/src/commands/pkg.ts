@@ -77,7 +77,7 @@ export const command: CommandFn = async conf => {
   }
 
   const pkg = conf.options.packageJson
-  const mani = pkg.read(conf.projectRoot)
+  const mani = pkg.read(pkg.find() ?? conf.projectRoot)
 
   switch (sub) {
     case 'get':
@@ -151,7 +151,8 @@ const set = (
     )
   }, mani)
 
-  pkg.write(conf.projectRoot, res)
+  /* c8 ignore next */
+  pkg.write(pkg.find() ?? conf.projectRoot, res)
 }
 
 const rm = (
@@ -169,5 +170,6 @@ const rm = (
     return acc
   }, mani)
 
-  pkg.write(conf.projectRoot, res)
+  /* c8 ignore next */
+  pkg.write(pkg.find() ?? conf.projectRoot, res)
 }
