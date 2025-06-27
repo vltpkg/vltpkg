@@ -17,10 +17,9 @@ export type PackTarballResult = {
 
 /**
  * Create a tarball from a package directory
- * 
- * @param path - The directory containing the package to pack
- * @param options - Options for packing
- * @returns The manifest, filename, and tarball data (unless dry run)
+ * @param {string} path - The directory containing the package to pack
+ * @param {PackTarballOptions} options - Options for packing
+ * @returns {Promise<PackTarballResult>} The manifest, filename, and tarball data (unless dry run)
  */
 export const packTarball = async (
   path: string,
@@ -32,7 +31,7 @@ export const packTarball = async (
   
   // Read package.json
   const packageJson = new PackageJson()
-  const manifest = await packageJson.read(packTarget)
+  const manifest = packageJson.read(packTarget)
   
   if (!manifest.name || !manifest.version) {
     throw new Error('Package must have a name and version')

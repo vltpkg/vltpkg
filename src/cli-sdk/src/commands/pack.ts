@@ -83,7 +83,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     projectRoot: conf.projectRoot,
   })
   
-  if (!dry && tarballData) {
+  if (tarballData) {
     const destPath = resolve(packDestination, filename)
     await writeFile(destPath, tarballData)
   }
@@ -92,10 +92,14 @@ export const command: CommandFn<CommandResult> = async conf => {
   const size = tarballData?.length ?? 0
   const unpackedSize = tarballData?.length ? Math.floor(tarballData.length * 2.5) : 0
   
+  // packTarball validates that name and version exist
+  const name = manifest.name ?? ''
+  const version = manifest.version ?? ''
+  
   return {
-    id: `${manifest.name}@${manifest.version}`,
-    name: manifest.name!,
-    version: manifest.version!,
+    id: `${name}@${version}`,
+    name,
+    version,
     filename,
     files: [], // TODO: list actual files
     size,

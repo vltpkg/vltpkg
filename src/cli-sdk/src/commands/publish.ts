@@ -88,7 +88,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   }
   
   // Get the registry URL
-  const registry = conf.options.registry as string
+  const registry = conf.options.registry
   const registryUrl = new URL(registry)
   
   // TODO: Handle scoped packages properly
@@ -100,7 +100,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     name: manifest.name,
     description: manifest.description,
     'dist-tags': {
-      [conf.options.tag as string ?? 'latest']: manifest.version,
+      [conf.options.tag || 'latest']: manifest.version,
     },
     versions: {
       [manifest.version]: {
@@ -145,7 +145,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       id: `${manifest.name}@${manifest.version}`,
       name: manifest.name,
       version: manifest.version,
-      tag: conf.options.tag as string ?? 'latest',
+      tag: conf.options.tag || 'latest',
       registry: registryUrl.origin,
       shasum: manifest.dist?.shasum,
       integrity: manifest.dist?.integrity,
