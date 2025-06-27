@@ -58,7 +58,7 @@ const version = async (
     })
   }
 
-  const manifest = conf.options.packageJson.read(cwd)
+  const manifest = conf.options.packageJson.find()
 
   if (!manifest.version) {
     throw error('No version field found in package.json', {
