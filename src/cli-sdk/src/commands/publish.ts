@@ -76,37 +76,42 @@ export const command: CommandFn<CommandResult> = async conf => {
   })
   
   // packTarball validates that name and version exist, and always returns tarballData
+  // The ?? fallbacks are required by TypeScript but are unreachable in practice
+  /* c8 ignore next 3 */
+  const name = manifest.name ?? ''
+  const version = manifest.version ?? ''
+  const tarballBuffer = tarballData ?? Buffer.alloc(0)
   
   // Get the registry URL
   const registry = conf.options.registry
   const registryUrl = new URL(registry)
   
   // TODO: Handle scoped packages properly
-  const packageUrl = new URL(`/${manifest.name!}`, registryUrl)
+  const packageUrl = new URL(`/${name}`, registryUrl)
   
   // Create the publish metadata
   const publishMetadata = {
-    _id: manifest.name!,
-    name: manifest.name!,
+    _id: name,
+    name: name,
     description: manifest.description,
     'dist-tags': {
-      [conf.options.tag || 'latest']: manifest.version!,
+      [conf.options.tag || 'latest']: version,
     },
     versions: {
-      [manifest.version!]: {
+      [version]: {
         ...manifest,
-        _id: `${manifest.name}@${manifest.version}`,
+        _id: `${name}@${version}`,
         _nodeVersion: process.version,
         dist: {
-          tarball: `${registryUrl.origin}/${manifest.name}/-/${filename}`,
+          tarball: `${registryUrl.origin}/${name}/-/${filename}`,
         },
       },
     },
     _attachments: {
       [filename]: {
         content_type: 'application/octet-stream',
-        data: tarballData!.toString('base64'),
-        length: tarballData!.length,
+        data: tarballBuffer.toString('base64'),
+        length: tarballBuffer.length,
       },
     },
   }
@@ -132,14 +137,14 @@ export const command: CommandFn<CommandResult> = async conf => {
     }
     
     return {
-      id: `${manifest.name}@${manifest.version}`,
-      name: manifest.name!,
-      version: manifest.version!,
+      id: `${name}@${version}`,
+      name: name,
+      version: version,
       tag: conf.options.tag || 'latest',
       registry: registryUrl.origin,
       shasum: manifest.dist?.shasum,
       integrity: manifest.dist?.integrity,
-      size: tarballData!.length,
+      size: tarballBuffer.length,
     }
   } catch (err) {
     throw error('Failed to publish package', {

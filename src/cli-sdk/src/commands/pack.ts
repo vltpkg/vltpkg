@@ -18,7 +18,7 @@ export const usage: CommandUsage = () =>
         description: 'Directory to save the tarball in',
         value: '<directory>',
       },
-      dry: {
+      'dry-run': {
         description: 'Show what would be packed without creating a tarball',
       },
     },
@@ -74,8 +74,9 @@ export const command: CommandFn<CommandResult> = async conf => {
   // TODO: Add proper option handling for pack-destination
   const packDestination = '.'
   
-  // TODO: Add proper option handling for dry-run
-  const dry = false
+  // Read dry-run option from config
+  const values = conf.values as Record<string, unknown>
+  const dry = Boolean(values['dry-run'])
   
   const { manifest, filename, tarballData } = await packTarball(folder, {
     'pack-destination': packDestination,
@@ -92,9 +93,11 @@ export const command: CommandFn<CommandResult> = async conf => {
   const size = tarballData?.length ?? 0
   const unpackedSize = tarballData?.length ? Math.floor(tarballData.length * 2.5) : 0
   
-  // packTarball validates that name and version exist
-  const name = manifest.name!
-  const version = manifest.version!
+  // packTarball validates that name and version exist, so these will always be defined
+  // The || '' fallbacks are required by TypeScript but are unreachable in practice
+  /* c8 ignore next 2 */
+  const name = manifest.name || ''
+  const version = manifest.version || ''
   
   return {
     id: `${name}@${version}`,

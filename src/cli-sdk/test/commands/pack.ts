@@ -2,7 +2,6 @@ import t from 'tap'
 import { resolve } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { command, views, usage } from '../../src/commands/pack.ts'
-import type { LoadedConfig } from '../../src/config/index.ts'
 import { Config } from '../../src/config/index.ts'
 
 t.test('pack usage', async t => {
@@ -97,6 +96,83 @@ t.test('pack command', async t => {
     t.notOk(result.shasum, 'should not have shasum')
     t.notOk(result.integrity, 'should not have integrity')
     t.notOk(result.bundled, 'should not have bundled')
+  })
+
+  t.test('tests edge case with zero size', async t => {
+    const zeroSizeDir = t.testdir({
+      'zero-size': {
+        'package.json': JSON.stringify({
+          name: 'zero-size-package',
+          version: '1.0.0',
+        }),
+      },
+    })
+    
+    const config = new Config(undefined, zeroSizeDir)
+    await config.loadConfigFile()
+    const mockConfig = config.parse(['pack', resolve(zeroSizeDir, 'zero-size')])
+    
+    const result = await command(mockConfig)
+    
+    t.equal(result.name, 'zero-size-package')
+    t.equal(result.version, '1.0.0')
+    t.ok(result.size >= 0, 'size should be non-negative')
+    t.ok(result.unpackedSize >= 0, 'unpacked size should be non-negative')
+  })
+
+  t.test('handles optional fields in result', async t => {
+    const result = {
+      id: 'test@1.0.0',
+      name: 'test',
+      version: '1.0.0',
+      filename: 'test-1.0.0.tgz',
+      files: [],
+      size: 0,
+      unpackedSize: 0,
+      entryCount: undefined,
+    }
+    
+    const output = views.human(result)
+    t.match(output, /📦 test@1\.0\.0/)
+    t.match(output, /📊 package size: 0\.00 B/)
+    t.notMatch(output, /📁 total files/)
+  })
+
+  t.test('dry-run mode', async t => {
+    const dryRunDir = t.testdir({
+      'dry-package': {
+        'package.json': JSON.stringify({
+          name: 'dry-run-package',
+          version: '3.0.0',
+          dist: {
+            shasum: 'dry123',
+            integrity: 'sha512-dry',
+          },
+        }),
+        'index.js': 'console.log("dry run test")',
+      },
+    })
+    
+    const config = new Config(undefined, dryRunDir)
+    await config.loadConfigFile()
+    const mockConfig = config.parse(['pack', '--dry-run', resolve(dryRunDir, 'dry-package')])
+    
+    const result = await command(mockConfig)
+    
+    t.equal(result.name, 'dry-run-package')
+    t.equal(result.version, '3.0.0')
+    t.equal(result.filename, 'dry-run-package-3.0.0.tgz')
+    t.equal(result.size, 0, 'size should be 0 in dry-run mode')
+    t.equal(result.unpackedSize, 0, 'unpacked size should be 0 in dry-run mode')
+    t.equal(result.shasum, 'dry123')
+    t.equal(result.integrity, 'sha512-dry')
+    
+    // Verify no tarball was created
+    const fs = await import('node:fs/promises')
+    await t.rejects(
+      fs.access(resolve('.', result.filename)),
+      'tarball file should not exist in dry-run mode'
+    )
   })
 
   t.test('views format output correctly', async t => {

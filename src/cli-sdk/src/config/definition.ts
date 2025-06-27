@@ -602,6 +602,9 @@ export const definition = j
       short: 'h',
       description: 'Print helpful information',
     },
+    'dry-run': {
+      description: 'Run command without making any changes',
+    },
   })
 
 export const getSortedCliOptions = () => {

@@ -3,7 +3,6 @@ import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import { Config } from '../../src/config/index.ts'
 import { RegistryClient } from '@vltpkg/registry-client'
-import * as packTarballModule from '../../src/pack-tarball.ts'
 
 // Mock the RegistryClient
 const mockResponses = new Map<string, any>()
@@ -142,6 +141,40 @@ t.test('publish command', async t => {
     t.equal(result.tag, 'beta')
   })
 
+  t.test('defaults to latest tag when tag is empty', async t => {
+    // Mock the request
+    RegistryClient.prototype.request = async function (_url: string | URL, _options?: any) {
+      return {
+        statusCode: 200,
+        status: 200,
+        headers: {},
+        data: { success: true }
+      } as any
+    }
+    
+    // Create a test directory
+    const emptyTagDir = t.testdir({
+      'empty-tag-package': {
+        'package.json': JSON.stringify({
+          name: '@test/empty-tag',
+          version: '1.0.0',
+        }),
+        'index.js': 'console.log("hello");',
+      },
+    })
+    
+    // Create a config with an empty tag to trigger the || 'latest' branches
+    const configEmptyTag = new Config(undefined, emptyTagDir)
+    await configEmptyTag.loadConfigFile()
+    const parsedConfigEmptyTag = configEmptyTag.parse(['publish', resolve(emptyTagDir, 'empty-tag-package')])
+    
+    // Force the tag to be empty string to trigger the fallback
+    parsedConfigEmptyTag.values.tag = ''
+    
+    const result = await command(parsedConfigEmptyTag)
+    t.equal(result.tag, 'latest', 'should default to latest tag when tag is empty')
+  })
+
   t.test('publishes package with dist metadata', async t => {
     const distDir = t.testdir({
       'dist-package': {
@@ -221,7 +254,7 @@ t.test('publish command', async t => {
       const output = views.human(result)
       t.match(output, /✅ Published test@1\.0\.0/)
       t.match(output, /📦 Package: test@1\.0\.0/)
-      t.match(output, /🏷️  Tag: latest/)
+      t.match(output, /🏷️ {2}Tag: latest/)
       t.match(output, /📡 Registry: https:\/\/registry\.npmjs\.org/)
       t.match(output, /📊 Size: 2\.00 KB/)
       t.match(output, /🔒 Shasum: abc123/)

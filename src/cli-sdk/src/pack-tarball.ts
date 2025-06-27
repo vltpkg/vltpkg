@@ -53,24 +53,30 @@ export const packTarball = async (
     portable: true,
     // Follow npm pack conventions
     filter: (path: string) => {
+      // Normalize path - remove leading './'
+      const normalizedPath = path.replace(/^\.\//, '')
+      
       // Always include package.json
-      if (path === 'package.json') return true
+      if (normalizedPath === 'package.json' || path === 'package.json') return true
       
       // TODO: Respect .npmignore and files field in package.json
       // For now, exclude common non-package files
       const excludePatterns = [
-        /^\.git\//,
-        /^node_modules\//,
-        /^\.nyc_output\//,
-        /^coverage\//,
-        /^\.vscode\//,
-        /^\.idea\//,
-        /^\.(DS_Store|gitignore|npmignore|editorconfig)$/,
+        /^\.?\/?\.git(\/|$)/,
+        /^\.?\/?node_modules(\/|$)/,
+        /^\.?\/?\.nyc_output(\/|$)/,
+        /^\.?\/?coverage(\/|$)/,
+        /^\.?\/?\.vscode(\/|$)/,
+        /^\.?\/?\.idea(\/|$)/,
+        /^\.?\/?\.DS_Store$/,
+        /^\.?\/?\.gitignore$/,
+        /^\.?\/?\.npmignore$/,
+        /^\.?\/?\.editorconfig$/,
         /~$/,
         /\.swp$/,
       ]
       
-      return !excludePatterns.some(pattern => pattern.test(path))
+      return !excludePatterns.some(pattern => pattern.test(normalizedPath))
     },
   }, [
     '.',
