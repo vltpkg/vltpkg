@@ -23,7 +23,8 @@ export const usage: CommandUsage = () =>
         value: '<level>',
       },
       otp: {
-        description: 'One-time password for two-factor authentication',
+        description:
+          'One-time password for two-factor authentication',
         value: '<code>',
       },
     },
@@ -69,26 +70,29 @@ function formatSize(bytes: number): string {
 
 export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
-  
+
   // Pack the tarball
-  const { manifest, filename, tarballData } = await packTarball(folder, {
-    projectRoot: conf.projectRoot,
-  })
-  
+  const { manifest, filename, tarballData } = await packTarball(
+    folder,
+    {
+      projectRoot: conf.projectRoot,
+    },
+  )
+
   // packTarball validates that name and version exist, and always returns tarballData
   // The ?? fallbacks are required by TypeScript but are unreachable in practice
   /* c8 ignore next 3 */
   const name = manifest.name ?? ''
   const version = manifest.version ?? ''
   const tarballBuffer = tarballData ?? Buffer.alloc(0)
-  
+
   // Get the registry URL
   const registry = conf.options.registry
   const registryUrl = new URL(registry)
-  
+
   // TODO: Handle scoped packages properly
   const packageUrl = new URL(`/${name}`, registryUrl)
-  
+
   // Create the publish metadata
   const publishMetadata = {
     _id: name,
@@ -115,10 +119,10 @@ export const command: CommandFn<CommandResult> = async conf => {
       },
     },
   }
-  
+
   // Publish to registry
   const rc = new RegistryClient(conf.options)
-  
+
   try {
     const response = await rc.request(packageUrl, {
       method: 'PUT',
@@ -127,7 +131,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       },
       body: JSON.stringify(publishMetadata),
     })
-    
+
     if (response.statusCode !== 200 && response.statusCode !== 201) {
       throw error('Failed to publish package', {
         code: 'EREQUEST',
@@ -135,7 +139,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         response,
       })
     }
-    
+
     return {
       id: `${name}@${version}`,
       name: name,

@@ -27,60 +27,68 @@ export const packTarball = async (
 ): Promise<PackTarballResult> => {
   const projectRoot = options.projectRoot ?? process.cwd()
   // If path is absolute, use it directly. Otherwise resolve relative to projectRoot
-  const packTarget = resolve(path) === path ? path : resolve(projectRoot, path)
-  
+  const packTarget =
+    resolve(path) === path ? path : resolve(projectRoot, path)
+
   // Read package.json
   const packageJson = new PackageJson()
   const manifest = packageJson.read(packTarget)
-  
+
   if (!manifest.name || !manifest.version) {
     throw new Error('Package must have a name and version')
   }
-  
+
   // Generate filename
   const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
-  
+
   // If dry run, just return the info
   if (options.dry) {
     return { manifest, filename }
   }
-  
+
   // Create tarball
   const cwd = packTarget
-  const tarballData = await tarCreate({
-    cwd,
-    gzip: true,
-    portable: true,
-    // Follow npm pack conventions
-    filter: (path: string) => {
-      // Normalize path - remove leading './'
-      const normalizedPath = path.replace(/^\.\//, '')
-      
-      // Always include package.json
-      if (normalizedPath === 'package.json' || path === 'package.json') return true
-      
-      // TODO: Respect .npmignore and files field in package.json
-      // For now, exclude common non-package files
-      const excludePatterns = [
-        /^\.?\/?\.git(\/|$)/,
-        /^\.?\/?node_modules(\/|$)/,
-        /^\.?\/?\.nyc_output(\/|$)/,
-        /^\.?\/?coverage(\/|$)/,
-        /^\.?\/?\.vscode(\/|$)/,
-        /^\.?\/?\.idea(\/|$)/,
-        /^\.?\/?\.DS_Store$/,
-        /^\.?\/?\.gitignore$/,
-        /^\.?\/?\.npmignore$/,
-        /^\.?\/?\.editorconfig$/,
-        /~$/,
-        /\.swp$/,
-      ]
-      
-      return !excludePatterns.some(pattern => pattern.test(normalizedPath))
+  const tarballData = await tarCreate(
+    {
+      cwd,
+      gzip: true,
+      portable: true,
+      // Follow npm pack conventions
+      filter: (path: string) => {
+        // Normalize path - remove leading './'
+        const normalizedPath = path.replace(/^\.\//, '')
+
+        // Always include package.json
+        if (
+          normalizedPath === 'package.json' ||
+          path === 'package.json'
+        )
+          return true
+
+        // TODO: Respect .npmignore and files field in package.json
+        // For now, exclude common non-package files
+        const excludePatterns = [
+          /^\.?\/?\.git(\/|$)/,
+          /^\.?\/?node_modules(\/|$)/,
+          /^\.?\/?\.nyc_output(\/|$)/,
+          /^\.?\/?coverage(\/|$)/,
+          /^\.?\/?\.vscode(\/|$)/,
+          /^\.?\/?\.idea(\/|$)/,
+          /^\.?\/?\.DS_Store$/,
+          /^\.?\/?\.gitignore$/,
+          /^\.?\/?\.npmignore$/,
+          /^\.?\/?\.editorconfig$/,
+          /~$/,
+          /\.swp$/,
+        ]
+
+        return !excludePatterns.some(pattern =>
+          pattern.test(normalizedPath),
+        )
+      },
     },
-  }, [
-    '.',
-  ]).concat()
-  
+    ['.'],
+  ).concat()
+
   return { manifest, filename, tarballData }
 }

@@ -11,12 +11,15 @@ const originalRequest = RegistryClient.prototype.request
 t.beforeEach(() => {
   // Reset mock responses
   mockResponses.clear()
-  
+
   // Mock the request method
-  RegistryClient.prototype.request = async function(url: any, _options: any) {
+  RegistryClient.prototype.request = async function (
+    url: any,
+    _options: any,
+  ) {
     const urlStr = url.toString()
     const mockResponse = mockResponses.get(urlStr)
-    
+
     if (mockResponse) {
       return {
         statusCode: mockResponse.statusCode || 201,
@@ -25,7 +28,7 @@ t.beforeEach(() => {
         getHeader: () => undefined,
       } as any
     }
-    
+
     // Default to success
     return {
       statusCode: 201,
@@ -64,7 +67,7 @@ t.test('publish command', async t => {
   })
 
   const packagePath = resolve(testDir, 'test-package')
-  
+
   // Create a proper Config instance
   const config = new Config(undefined, testDir)
   await config.loadConfigFile()
@@ -72,7 +75,7 @@ t.test('publish command', async t => {
 
   t.test('publishes package successfully', async t => {
     const result = await command(mockConfig)
-    
+
     t.equal(result.name, '@test/package')
     t.equal(result.version, '1.2.3')
     t.equal(result.tag, 'latest')
@@ -88,11 +91,14 @@ t.test('publish command', async t => {
         }),
       },
     })
-    
+
     const badConfig = new Config(undefined, badDir)
     await badConfig.loadConfigFile()
-    const parsedBadConfig = badConfig.parse(['publish', resolve(badDir, 'bad-package')])
-    
+    const parsedBadConfig = badConfig.parse([
+      'publish',
+      resolve(badDir, 'bad-package'),
+    ])
+
     await t.rejects(
       command(parsedBadConfig),
       /Package must have a name and version/,
@@ -107,11 +113,14 @@ t.test('publish command', async t => {
         }),
       },
     })
-    
+
     const badConfig = new Config(undefined, badDir)
     await badConfig.loadConfigFile()
-    const parsedBadConfig = badConfig.parse(['publish', resolve(badDir, 'bad-package')])
-    
+    const parsedBadConfig = badConfig.parse([
+      'publish',
+      resolve(badDir, 'bad-package'),
+    ])
+
     await t.rejects(
       command(parsedBadConfig),
       /Package must have a name and version/,
@@ -124,34 +133,38 @@ t.test('publish command', async t => {
       statusCode: 403,
       text: 'Forbidden',
     })
-    
-    await t.rejects(
-      command(mockConfig),
-      /Failed to publish package/,
-    )
+
+    await t.rejects(command(mockConfig), /Failed to publish package/)
   })
 
   t.test('uses custom tag when provided', async t => {
     // Create a new config with custom tag
     const configWithTag = new Config(undefined, testDir)
     await configWithTag.loadConfigFile()
-    const parsedConfigWithTag = configWithTag.parse(['publish', '--tag=beta', packagePath])
-    
+    const parsedConfigWithTag = configWithTag.parse([
+      'publish',
+      '--tag=beta',
+      packagePath,
+    ])
+
     const result = await command(parsedConfigWithTag)
     t.equal(result.tag, 'beta')
   })
 
   t.test('defaults to latest tag when tag is empty', async t => {
     // Mock the request
-    RegistryClient.prototype.request = async function (_url: string | URL, _options?: any) {
+    RegistryClient.prototype.request = async function (
+      _url: string | URL,
+      _options?: any,
+    ) {
       return {
         statusCode: 200,
         status: 200,
         headers: {},
-        data: { success: true }
+        data: { success: true },
       } as any
     }
-    
+
     // Create a test directory
     const emptyTagDir = t.testdir({
       'empty-tag-package': {
@@ -162,17 +175,24 @@ t.test('publish command', async t => {
         'index.js': 'console.log("hello");',
       },
     })
-    
+
     // Create a config with an empty tag to trigger the || 'latest' branches
     const configEmptyTag = new Config(undefined, emptyTagDir)
     await configEmptyTag.loadConfigFile()
-    const parsedConfigEmptyTag = configEmptyTag.parse(['publish', resolve(emptyTagDir, 'empty-tag-package')])
-    
+    const parsedConfigEmptyTag = configEmptyTag.parse([
+      'publish',
+      resolve(emptyTagDir, 'empty-tag-package'),
+    ])
+
     // Force the tag to be empty string to trigger the fallback
     parsedConfigEmptyTag.values.tag = ''
-    
+
     const result = await command(parsedConfigEmptyTag)
-    t.equal(result.tag, 'latest', 'should default to latest tag when tag is empty')
+    t.equal(
+      result.tag,
+      'latest',
+      'should default to latest tag when tag is empty',
+    )
   })
 
   t.test('publishes package with dist metadata', async t => {
@@ -188,11 +208,14 @@ t.test('publish command', async t => {
         }),
       },
     })
-    
+
     const config = new Config(undefined, distDir)
     await config.loadConfigFile()
-    const distConfig = config.parse(['publish', resolve(distDir, 'dist-package')])
-    
+    const distConfig = config.parse([
+      'publish',
+      resolve(distDir, 'dist-package'),
+    ])
+
     const result = await command(distConfig)
     t.equal(result.shasum, 'abc123def456')
     t.equal(result.integrity, 'sha512-xyz789')
@@ -206,11 +229,14 @@ t.test('publish command', async t => {
         'package.json': JSON.stringify({}), // No name or version
       },
     })
-    
+
     const config = new Config(undefined, invalidDir)
     await config.loadConfigFile()
-    const invalidConfig = config.parse(['publish', resolve(invalidDir, 'invalid-package')])
-    
+    const invalidConfig = config.parse([
+      'publish',
+      resolve(invalidDir, 'invalid-package'),
+    ])
+
     await t.rejects(
       command(invalidConfig),
       /Package must have a name and version/,
@@ -221,19 +247,22 @@ t.test('publish command', async t => {
     // Mock a network error
     const errorConfig = new Config(undefined, testDir)
     await errorConfig.loadConfigFile()
-    const parsedErrorConfig = errorConfig.parse(['publish', packagePath])
-    
+    const parsedErrorConfig = errorConfig.parse([
+      'publish',
+      packagePath,
+    ])
+
     // Temporarily mock to throw an error
     const tempRequest = RegistryClient.prototype.request
     RegistryClient.prototype.request = async () => {
       throw new Error('Network error')
     }
-    
+
     await t.rejects(
       command(parsedErrorConfig),
       /Failed to publish package/,
     )
-    
+
     // Restore
     RegistryClient.prototype.request = tempRequest
   })
@@ -249,7 +278,7 @@ t.test('publish command', async t => {
       integrity: 'sha512-xyz',
       size: 2048,
     }
-    
+
     t.test('human view', async t => {
       const output = views.human(result)
       t.match(output, /✅ Published test@1\.0\.0/)
@@ -260,7 +289,7 @@ t.test('publish command', async t => {
       t.match(output, /🔒 Shasum: abc123/)
       t.match(output, /🔐 Integrity: sha512-xyz/)
     })
-    
+
     t.test('human view without optional fields', async t => {
       const minResult = {
         ...result,
@@ -271,7 +300,7 @@ t.test('publish command', async t => {
       t.notMatch(output, /🔒 Shasum/)
       t.notMatch(output, /🔐 Integrity/)
     })
-    
+
     t.test('json view', async t => {
       const output = views.json(result)
       t.same(output, result)
@@ -284,7 +313,7 @@ t.test('publish command', async t => {
         { size: 2097152, expected: '2.00 MB' },
         { size: 2147483648, expected: '2.00 GB' },
       ]
-      
+
       for (const { size, expected } of sizes) {
         const testResult = { ...result, size }
         const output = views.human(testResult)

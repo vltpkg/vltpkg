@@ -19,7 +19,8 @@ export const usage: CommandUsage = () =>
         value: '<directory>',
       },
       'dry-run': {
-        description: 'Show what would be packed without creating a tarball',
+        description:
+          'Show what would be packed without creating a tarball',
       },
     },
   })
@@ -65,40 +66,42 @@ function formatSize(bytes: number): string {
   return `${size.toFixed(2)} ${units[unitIndex]}`
 }
 
-
-
 export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
-  
+
   // For now, use current directory as pack destination
   // TODO: Add proper option handling for pack-destination
   const packDestination = '.'
-  
+
   // Read dry-run option from config
   const values = conf.values as Record<string, unknown>
   const dry = Boolean(values['dry-run'])
-  
-  const { manifest, filename, tarballData } = await packTarball(folder, {
-    'pack-destination': packDestination,
-    dry,
-    projectRoot: conf.projectRoot,
-  })
-  
+
+  const { manifest, filename, tarballData } = await packTarball(
+    folder,
+    {
+      'pack-destination': packDestination,
+      dry,
+      projectRoot: conf.projectRoot,
+    },
+  )
+
   if (tarballData) {
     const destPath = resolve(packDestination, filename)
     await writeFile(destPath, tarballData)
   }
-  
+
   // Calculate sizes
   const size = tarballData?.length ?? 0
-  const unpackedSize = tarballData?.length ? Math.floor(tarballData.length * 2.5) : 0
-  
+  const unpackedSize =
+    tarballData?.length ? Math.floor(tarballData.length * 2.5) : 0
+
   // packTarball validates that name and version exist, so these will always be defined
   // The || '' fallbacks are required by TypeScript but are unreachable in practice
   /* c8 ignore next 2 */
   const name = manifest.name || ''
   const version = manifest.version || ''
-  
+
   return {
     id: `${name}@${version}`,
     name,
