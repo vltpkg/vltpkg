@@ -1,86 +1,75 @@
+import {
+  inc,
+  parse as parseVersion,
+  versionIncrements,
+} from '@vltpkg/semver'
+import type { IncrementType } from '@vltpkg/semver'
+import { is as isGit, spawn as spawn_, isClean } from '@vltpkg/git'
+import type { GitOptions } from '@vltpkg/git'
+import { error as error_ } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
-import { PackageJson } from '@vltpkg/package-json'
-import { inc, parse as parseVersion } from '@vltpkg/semver'
-import type { IncrementType } from '@vltpkg/semver'
-import { is as isGit, spawn, isClean } from '@vltpkg/git'
-import { error } from '@vltpkg/error-cause'
-import { resolve } from 'node:path'
-import { existsSync } from 'node:fs'
-
-export type VersionIncrementType =
-  | 'major'
-  | 'minor'
-  | 'patch'
-  | 'premajor'
-  | 'preminor'
-  | 'prepatch'
-  | 'prerelease'
+import type { ParsedConfig } from '../config/index.ts'
 
 export type VersionOptions = {
-  cwd?: string
   prereleaseId?: string
   commit?: boolean
   tag?: boolean
-  gitTagVersion?: boolean
   message?: string
+  tagMessage?: string
 }
 
 export type VersionResult = {
   oldVersion: string
   newVersion: string
-  packageJsonPath: string
-  committed?: boolean
-  tagged?: boolean
+  dir: string
+  committed?: string[]
+  tag?: string
 }
 
 const isValidVersionIncrement = (
   value: string,
-): value is VersionIncrementType => {
-  return [
-    'major',
-    'minor',
-    'patch',
-    'premajor',
-    'preminor',
-    'prepatch',
-    'prerelease',
-  ].includes(value)
-}
+): value is IncrementType =>
+  versionIncrements.includes(value as IncrementType)
 
-const versionImpl = async (
-  increment: string,
-  options: VersionOptions = {},
-): Promise<VersionResult> => {
-  const {
-    cwd = process.cwd(),
-    prereleaseId,
+const version = async (
+  conf: ParsedConfig,
+  increment: string | undefined,
+  cwd: string,
+  {
+    // Hardcode happy path options for now.
+    // TODO: make these config definitions
+    prereleaseId = 'pre',
     commit = true,
     tag = true,
-    gitTagVersion = true,
     message = 'v%s',
-  } = options
+    tagMessage = 'v%s',
+  }: VersionOptions = {},
+): Promise<VersionResult> => {
+  const error = (
+    message: string,
+    options: Error | ErrorCauseOptions,
+  ) => error_(message, options, version)
 
-  const packageJsonPath = resolve(cwd, 'package.json')
+  const spawn = (args: string[], opts?: GitOptions) =>
+    spawn_(args, { cwd, ...opts })
 
-  if (!existsSync(packageJsonPath)) {
-    throw error(
-      'No package.json found',
-      { path: packageJsonPath },
-      versionImpl,
-    )
+  if (!increment) {
+    throw error('Version increment argument is required', {
+      code: 'EUSAGE',
+      validOptions: versionIncrements,
+    })
   }
 
-  const packageJson = new PackageJson()
-  const manifest = packageJson.read(cwd)
+  const manifest = conf.options.packageJson.read(cwd)
 
   if (!manifest.version) {
-    throw error(
-      'No version field found in package.json',
-      { path: packageJsonPath },
-      versionImpl,
-    )
+    throw error('No version field found in package.json', {
+      path: cwd,
+    })
   }
 
   const oldVersion = manifest.version
@@ -89,10 +78,10 @@ const versionImpl = async (
   // Check if increment is a valid semver version string
   const parsedIncrement = parseVersion(increment)
   if (parsedIncrement) {
-    newVersion = increment
+    newVersion = parsedIncrement.toString()
   } else if (isValidVersionIncrement(increment)) {
     // Use semver increment
-    const incrementType = increment as IncrementType
+    const incrementType = increment
     try {
       const result = inc(oldVersion, incrementType, prereleaseId)
       newVersion = result.toString()
@@ -100,7 +89,6 @@ const versionImpl = async (
       throw error(
         `Failed to increment version from ${oldVersion} with ${increment}`,
         { version: oldVersion, wanted: increment, cause: err },
-        versionImpl,
       )
     }
   } else {
@@ -108,63 +96,45 @@ const versionImpl = async (
       `Invalid version increment: ${increment}. Must be a valid semver version or one of: major, minor, patch, premajor, preminor, prepatch, prerelease`,
       {
         found: increment,
-        validOptions: [
-          'major',
-          'minor',
-          'patch',
-          'premajor',
-          'preminor',
-          'prepatch',
-          'prerelease',
-        ],
+        validOptions: versionIncrements,
       },
-      versionImpl,
     )
   }
 
   // Update the manifest
   manifest.version = newVersion
-  packageJson.write(cwd, manifest)
+  conf.options.packageJson.write(cwd, manifest)
 
   const result: VersionResult = {
     oldVersion,
     newVersion,
-    packageJsonPath,
+    dir: cwd,
   }
 
   // Handle git operations if we're in a git repository
-  const inGitRepo = await isGit({ cwd })
-  if (inGitRepo && (commit || tag)) {
+  if ((commit || tag) && (await isGit({ cwd }))) {
     // Check for uncommitted changes (excluding package.json since we just modified it)
-    const hasChanges = !(await isClean({ cwd }))
-    if (hasChanges) {
+    if (!(await isClean({ cwd }))) {
       try {
         // Check if there are changes other than package.json
-        const gitResult = await spawn(
-          ['diff', '--name-only', 'HEAD'],
-          { cwd },
-        )
+        const gitResult = await spawn(['diff', '--name-only', 'HEAD'])
         const changedFiles = gitResult.stdout
           .trim()
           .split('\n')
           .filter(Boolean)
         const nonPackageJsonChanges = changedFiles.filter(
-          (file: string) => !file.endsWith('package.json'),
+          file => file !== 'package.json',
         )
-
         if (nonPackageJsonChanges.length > 0) {
           throw error(
             'Git working directory not clean. Please commit or stash your changes first.',
             { found: nonPackageJsonChanges },
-            versionImpl,
           )
         }
       } catch (err) {
-        // If we can't determine the changed files, be conservative
         throw error(
           'Git working directory not clean. Please commit or stash your changes first.',
-          { cause: err },
-          versionImpl,
+          asError(err),
         )
       }
     }
@@ -172,32 +142,36 @@ const versionImpl = async (
     if (commit) {
       try {
         // Stage package.json
-        await spawn(['add', 'package.json'], { cwd })
-
-        // Commit with the specified message
-        const commitMessage = message.replace('%s', newVersion)
-        await spawn(['commit', '-m', commitMessage], { cwd })
-        result.committed = true
+        const files = ['package.json']
+        await spawn(['add', ...files])
+        await spawn([
+          'commit',
+          '-m',
+          message.replace('%s', newVersion),
+        ])
+        result.committed = files
       } catch (err) {
-        throw error(
-          'Failed to commit version changes',
-          { version: newVersion, cause: err },
-          versionImpl,
-        )
+        throw error('Failed to commit version changes', {
+          version: newVersion,
+          cause: err,
+        })
       }
     }
 
     if (tag) {
       try {
-        const tagName = gitTagVersion ? `v${newVersion}` : newVersion
-        await spawn(['tag', tagName], { cwd })
-        result.tagged = true
+        result.tag = `v${newVersion}`
+        await spawn([
+          'tag',
+          result.tag,
+          '-m',
+          tagMessage.replace('%s', newVersion),
+        ])
       } catch (err) {
-        throw error(
-          'Failed to create git tag',
-          { version: newVersion, cause: err },
-          versionImpl,
-        )
+        throw error('Failed to create git tag', {
+          version: newVersion,
+          cause: err,
+        })
       }
     }
   }
@@ -238,44 +212,20 @@ export const usage: CommandUsage = () => {
 }
 
 export const views = {
-  human: (result: VersionResult, _options, _config) => {
-    const output: string[] = []
-
-    output.push(`v${result.newVersion}`)
-
-    if (result.committed && result.tagged) {
-      output.push(`Created git commit and tag v${result.newVersion}`)
-    } else if (result.committed) {
-      output.push(`Created git commit`)
-    } else if (result.tagged) {
-      output.push(`Created git tag v${result.newVersion}`)
+  json: result => result,
+  human: result => {
+    let output = `v${result.newVersion}`
+    if (result.committed) {
+      output += ` +commit`
     }
-
-    return output.join('\n')
+    if (result.tag) {
+      output += ` +tag`
+    }
+    return output
   },
 } as const satisfies Views<VersionResult>
 
 export const command: CommandFn<VersionResult> = async conf => {
-  const positionals = conf.positionals.filter(
-    arg => !arg.startsWith('-'),
-  )
-
-  if (positionals.length === 0) {
-    throw new Error('Version increment argument is required')
-  }
-
-  const increment = positionals[0]
-  if (!increment) {
-    throw new Error('Version increment argument is required')
-  }
-
-  if (increment === 'from-git') {
-    throw new Error('from-git version increment is not supported')
-  }
-
-  return await versionImpl(increment, {
-    cwd: process.cwd(),
-    commit: true,
-    tag: true,
-  })
+  const { positionals } = conf
+  return version(conf, positionals[0], process.cwd())
 }
