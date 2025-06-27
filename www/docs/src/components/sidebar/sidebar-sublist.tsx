@@ -37,6 +37,23 @@ const labelMap: Record<string, string> = {
   cli: 'Client',
 }
 
+const iconMap: Record<string, () => JSX.Element> = {
+  registry: () => (
+    <img
+      src="/icons/vsr.svg"
+      className="size-5 dark:invert dark:filter"
+      alt="Registry"
+    />
+  ),
+  client: () => (
+    <img
+      src="/icons/client.svg"
+      className="size-5 dark:invert dark:filter"
+      alt="Client"
+    />
+  ),
+}
+
 const Group = ({
   entry,
   children,
@@ -50,25 +67,29 @@ const Group = ({
     <div
       data-name={entry.label.toLowerCase()}
       data-group
-      className={`group relative flex flex-col ${depth === 0 ? 'mb-6' : ''}`}
+      className={`group relative flex flex-col ${depth === 0 ? 'mb-1' : ''}`}
       style={{
         paddingLeft: `${depth * 0.5}rem`,
       }}>
-      {depth === 0 && (
-        <div className="mb-4 mt-6 px-3">
-          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-            {labelMap[entry.label.toLowerCase()]}
-          </p>
-        </div>
-      )}
       <Button
         size="sidebar"
         variant="sidebar"
         className="bg-background [&_svg]:has-[+div[data-state=open]]:rotate-90">
-        <span
-          className={entry.label === 'commands' ? 'capitalize' : ''}>
-          {entry.label}
-        </span>
+        <div className="flex items-center gap-2">
+          {depth === 0 && iconMap[entry.label.toLowerCase()] && (
+            <span className="flex h-[24px] w-[24px] items-center justify-center rounded-sm border-[1px] border-border bg-background p-1.5 transition-all duration-200 group-hover:bg-secondary">
+              {iconMap[entry.label.toLowerCase()]()}
+            </span>
+          )}
+          <span
+            className={
+              entry.label === 'commands' ? 'capitalize' : ''
+            }>
+            {entry.label === 'api' ?
+              'API'
+            : labelMap[entry.label.toLowerCase()] || entry.label}
+          </span>
+        </div>
         <ChevronRight
           className="ml-auto transition-transform"
           size={16}

@@ -19,6 +19,10 @@ tsconfig.tsbuildinfo
 /src/*/node_modules
 /src/*/scripts/fixtures/
 /src/*/vltpkg-*.tgz
+/src/*/local-store
+/src/*/.wrangler
+/src/*/.dev.vars
+/src/*/*.log
 
 /infra/*/.tap
 /infra/*/.tshy-build

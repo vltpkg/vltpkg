@@ -1,0 +1,56 @@
+{
+  "name": "vsr",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-09-23",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vsr-local-database",
+      "database_id": "local",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "vsr-local-bucket"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "queue": "cache-refresh-queue",
+        "binding": "CACHE_REFRESH_QUEUE"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "cache-refresh-queue",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3
+      }
+    ]
+  },
+  "assets": {
+    "directory": "./dist/assets/",
+    "binding": "ASSETS"
+  },
+  "dev": {
+    "local_protocol": "http",
+    "port": 1337
+  },
+  "placement": {
+    "mode": "smart"
+  },
+  "vars": {
+    "SENTRY": {
+      "dsn": "https://909b085eb764c00250ad312660c2fdf1@o4506397716054016.ingest.us.sentry.io/4509492612300800"
+    }
+  }
+}

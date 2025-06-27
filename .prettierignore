@@ -17,6 +17,7 @@
 /src/*/scripts/fixtures
 /src/*/tap-snapshots
 /src/*/test/fixtures/**/*.json
+/src/*/src/assets/public/dist
 
 /infra/*/.*/
 /infra/*/dist
