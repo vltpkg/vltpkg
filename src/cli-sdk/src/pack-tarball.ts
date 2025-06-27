@@ -66,6 +66,13 @@ export const packTarball = async (
           /^\.?\/?\.nyc_output(\/|$)/,
           /^\.?\/?coverage(\/|$)/,
           /^\.?\/?\.DS_Store$/,
+          /^\.?\/?\.npmrc$/,
+          /^\.?\/?package-lock\.json$/,
+          /^\.?\/?yarn\.lock$/,
+          /^\.?\/?pnpm-lock\.yaml$/,
+          /^\.?\/?bun\.lockb$/,
+          /^\.?\/?bun\.lock$/,
+          /^\.?\/?vlt-lock\.json$/,
           /~$/,
           /\.swp$/,
         ]
@@ -86,7 +93,6 @@ export const packTarball = async (
           /^HISTORY(\..*)?$/i,
           /^LICENSE(\..*)?$/i,
           /^LICENCE(\..*)?$/i,
-          /^NOTICE(\..*)?$/i,
         ]
 
         if (
