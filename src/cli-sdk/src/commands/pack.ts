@@ -40,7 +40,7 @@ type CommandResult = {
 }
 
 export const views = {
-  human: (r: CommandResult) => {
+  human: r => {
     const lines = [
       `📦 ${r.name}@${r.version}`,
       `📄 ${r.filename}`,
@@ -52,7 +52,7 @@ export const views = {
     if (r.entryCount) lines.push(`📁 total files: ${r.entryCount}`)
     return lines.join('\n')
   },
-  json: (r: CommandResult) => r,
+  json: r => r,
 } as const satisfies Views<CommandResult>
 
 function formatSize(bytes: number): string {
@@ -69,8 +69,6 @@ function formatSize(bytes: number): string {
 export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
 
-  // For now, use current directory as pack destination
-  // TODO: Add proper option handling for pack-destination
   const packDestination = '.'
 
   // Read dry-run option from config

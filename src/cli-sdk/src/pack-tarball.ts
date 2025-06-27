@@ -54,7 +54,6 @@ export const packTarball = async (
       cwd,
       gzip: true,
       portable: true,
-      // Follow npm pack conventions
       filter: (path: string) => {
         // Normalize path - remove leading './'
         const normalizedPath = path.replace(/^\.\//, '')

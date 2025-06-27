@@ -1,9 +1,16 @@
 import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
+import type { CacheEntry } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
+import * as ssri from 'ssri'
+import assert from 'node:assert'
+import { asError } from '@vltpkg/types'
+import npmFetch from 'npm-registry-fetch'
+import npa from 'npm-package-arg'
+import { getToken } from '../../../registry-client/src/auth.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -46,7 +53,7 @@ export const views = {
     const lines = [
       `✅ Published ${r.name}@${r.version}`,
       `📦 Package: ${r.id}`,
-      `🏷️  Tag: ${r.tag}`,
+      `🏷️ Tag: ${r.tag}`,
       `📡 Registry: ${r.registry}`,
       `📊 Size: ${formatSize(r.size)}`,
     ]
@@ -71,7 +78,7 @@ function formatSize(bytes: number): string {
 export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
 
-  // Pack the tarball
+  // Pack tarball using our internal function
   const { manifest, filename, tarballData } = await packTarball(
     folder,
     {
@@ -79,81 +86,104 @@ export const command: CommandFn<CommandResult> = async conf => {
     },
   )
 
-  // packTarball validates that name and version exist, and always returns tarballData
-  // The ?? fallbacks are required by TypeScript but are unreachable in practice
-  /* c8 ignore next 3 */
-  const name = manifest.name ?? ''
-  const version = manifest.version ?? ''
-  const tarballBuffer = tarballData ?? Buffer.alloc(0)
+  assert(
+    manifest.name && manifest.version,
+    error('Package must have a name and version'),
+  )
+  assert(tarballData, error('Failed to create tarball'))
 
-  // Get the registry URL
-  const registry = conf.options.registry
-  const registryUrl = new URL(registry)
+  // Generate integrity hash
+  const integrity = ssri.fromData(tarballData, {
+    algorithms: [...new Set(['sha1', 'sha512'])],
+  })
 
-  // TODO: Handle scoped packages properly
-  const packageUrl = new URL(`/${name}`, registryUrl)
+  const name = manifest.name
+  const version = manifest.version
+  const tag = 'latest'
 
-  // Create the publish metadata
-  const publishMetadata = {
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  const integrity512 = integrity.sha512?.[0]?.toString()
+  // @ts-expect-error
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const shasum = integrity.sha1?.[0]?.hexDigest() as string
+
+  const publishManifest = {
     _id: name,
-    name: name,
-    description: manifest.description,
+    name,
     'dist-tags': {
-      [conf.options.tag || 'latest']: version,
+      [tag]: version,
     },
+    access: 'public',
     versions: {
       [version]: {
         ...manifest,
         _id: `${name}@${version}`,
-        _nodeVersion: process.version,
         dist: {
-          tarball: `${registryUrl.origin}/${name}/-/${filename}`,
+          integrity: integrity512,
+          shasum,
+          tarball: `${conf.options.registry}/${name}/-/${filename}`,
         },
       },
     },
     _attachments: {
-      [filename]: {
+      '0': {
         content_type: 'application/octet-stream',
-        data: tarballBuffer.toString('base64'),
-        length: tarballBuffer.length,
+        data: tarballData.toString('base64'),
+        length: tarballData.length,
       },
     },
   }
 
-  // Publish to registry
+  // Publish via PUT using our registry client
   const rc = new RegistryClient(conf.options)
+  const registry = conf.options.registry
+  const registryUrl = new URL(registry)
 
-  try {
-    const response = await rc.request(packageUrl, {
-      method: 'PUT',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(publishMetadata),
-    })
+  const token = await getToken(
+    registryUrl.origin,
+    conf.options.identity,
+  )
 
-    if (response.statusCode !== 200 && response.statusCode !== 201) {
-      throw error('Failed to publish package', {
-        code: 'EREQUEST',
-        status: response.statusCode,
-        response,
-      })
-    }
+  console.log(token)
+  console.log(npa(name).escapedName)
 
-    return {
-      id: `${name}@${version}`,
-      name: name,
-      version: version,
-      tag: conf.options.tag || 'latest',
-      registry: registryUrl.origin,
-      shasum: manifest.dist?.shasum,
-      integrity: manifest.dist?.integrity,
-      size: tarballBuffer.length,
-    }
-  } catch (err) {
-    throw error('Failed to publish package', {
-      code: 'EREQUEST',
-      cause: err,
-    })
+  await npmFetch(npa(name).escapedName, {
+    access: 'public',
+    '//registry.npmjs.org/:_authToken': token,
+    method: 'PUT',
+    body: publishManifest,
+    ignoreBody: true,
+  })
+
+  // let response: CacheEntry
+  // try {
+  //   response = await rc.request(new URL(name, registryUrl), {
+  //     method: 'PUT',
+  //     headers: {
+  //       'content-type': 'application/json',
+  //     },
+  //     body: JSON.stringify(publishManifest),
+  //   })
+  // } catch (err) {
+  //   throw error('Failed to publish package', {
+  //     cause: asError(err),
+  //   })
+  // }
+
+  // if (response.statusCode !== 200 && response.statusCode !== 201) {
+  //   throw error('Failed to publish package', {
+  //     response,
+  //   })
+  // }
+
+  return {
+    id: `${name}@${version}`,
+    name: name,
+    version: version,
+    tag,
+    registry: registryUrl.origin,
+    integrity: integrity512,
+    shasum,
+    size: tarballData.length,
   }
 }
