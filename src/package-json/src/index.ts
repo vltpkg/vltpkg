@@ -17,26 +17,6 @@ const exists = (path: string): boolean => {
   }
 }
 
-/**
- * Walks up the directory tree from the current working directory
- * and returns the path to the first `package.json` file found.
- * Returns undefined if no package.json is found.
- */
-export const find = (
-  cwd: string = process.cwd(),
-  home: string = homedir(),
-): string | undefined => {
-  for (const dir of walkUp(cwd)) {
-    // don't look in home directory
-    if (dir === home) break
-
-    const packageJsonPath = resolve(dir, 'package.json')
-    if (exists(packageJsonPath)) {
-      return packageJsonPath
-    }
-  }
-}
-
 export class PackageJson {
   /**
    * cache of `package.json` loads
@@ -63,7 +43,10 @@ export class PackageJson {
       return cachedPackageJson
     }
 
-    const filename = resolve(dir, 'package.json')
+    const filename =
+      dir.endsWith('package.json') ?
+        resolve(dir)
+      : resolve(dir, 'package.json')
 
     const fail = (err: ErrorCauseOptions) =>
       error('Could not read package.json file', err, this.read)
@@ -91,7 +74,10 @@ export class PackageJson {
   }
 
   write(dir: string, manifest: Manifest, indent?: number): void {
-    const filename = resolve(dir, 'package.json')
+    const filename =
+      dir.endsWith('package.json') ?
+        resolve(dir)
+      : resolve(dir, 'package.json')
     this.fix(manifest)
 
     try {
@@ -140,6 +126,26 @@ export class PackageJson {
             a.localeCompare(b, 'en'),
           ),
         )
+      }
+    }
+  }
+
+  /**
+   * Walks up the directory tree from the current working directory
+   * and returns the path to the first `package.json` file found.
+   * Returns undefined if no package.json is found.
+   */
+  find(
+    cwd: string = process.cwd(),
+    home: string = homedir(),
+  ): string | undefined {
+    for (const dir of walkUp(cwd)) {
+      // don't look in home directory
+      if (dir === home) break
+
+      const packageJsonPath = resolve(dir, 'package.json')
+      if (exists(packageJsonPath)) {
+        return packageJsonPath
       }
     }
   }

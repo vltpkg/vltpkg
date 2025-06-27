@@ -43,3 +43,11 @@ exports[`test/index.ts > TAP > successfully writes a valid package.json file > m
 }
 
 `
+
+exports[`test/index.ts > TAP > writes to a package.json filepath > manifest should be read with original indent 1`] = `
+{
+        "name": "my-project",
+        "version": "1.0.1"
+}
+
+`
