@@ -1,5 +1,5 @@
 import t from 'tap'
-import { PackageJson } from '../src/index.ts'
+import { PackageJson, find } from '../src/index.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -253,4 +253,230 @@ t.test('should sort dependencies by name when saving', async t => {
     readFileSync(join(dir, 'package.json'), 'utf8'),
     'saved manifest dependencies should be sorted by name',
   )
+})
+
+t.test('find method', async t => {
+  // Create a deep nested fixture structure that simulates a realistic file system
+  const testDir = t.testdir({
+    home: {
+      projects: {
+        'my-project': {
+          'package.json': JSON.stringify({
+            name: 'my-project',
+            version: '1.0.0',
+          }),
+          packages: {
+            'my-workspace-a': {
+              'package.json': JSON.stringify({
+                name: 'my-workspace-a',
+                version: '1.0.0',
+              }),
+              src: {
+                'index.js': 'console.log("workspace a")',
+              },
+            },
+            'my-workspace-b': {
+              'package.json': JSON.stringify({
+                name: 'my-workspace-b',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+      'other-stuff': {
+        'file.txt': 'content',
+      },
+    },
+  })
+
+  const homePath = join(testDir, 'home')
+
+  await t.test('finds package.json in project root', async t => {
+    const projectRoot = join(
+      testDir,
+      'home',
+      'projects',
+      'my-project',
+    )
+    const found = find(projectRoot, homePath)
+    t.equal(found, join(projectRoot, 'package.json'))
+  })
+
+  await t.test(
+    'finds package.json in workspace directory',
+    async t => {
+      const workspaceA = join(
+        testDir,
+        'home',
+        'projects',
+        'my-project',
+        'packages',
+        'my-workspace-a',
+      )
+      const found = find(workspaceA, homePath)
+      t.equal(found, join(workspaceA, 'package.json'))
+    },
+  )
+
+  await t.test(
+    'finds nearest package.json from nested src directory',
+    async t => {
+      const srcDir = join(
+        testDir,
+        'home',
+        'projects',
+        'my-project',
+        'packages',
+        'my-workspace-a',
+        'src',
+      )
+      const workspaceA = join(
+        testDir,
+        'home',
+        'projects',
+        'my-project',
+        'packages',
+        'my-workspace-a',
+      )
+      const found = find(srcDir, homePath)
+      t.equal(found, join(workspaceA, 'package.json'))
+    },
+  )
+
+  await t.test(
+    'returns undefined when no package.json found',
+    async t => {
+      const projectsDir = join(testDir, 'home', 'projects')
+      const found = find(projectsDir, homePath)
+      t.equal(found, undefined)
+    },
+  )
+
+  await t.test('stops at home directory', async t => {
+    const otherStuff = join(testDir, 'home', 'other-stuff')
+    const found = find(otherStuff, homePath)
+    t.equal(found, undefined)
+  })
+
+  await t.test(
+    'prefers closer package.json over distant one',
+    async t => {
+      const workspaceB = join(
+        testDir,
+        'home',
+        'projects',
+        'my-project',
+        'packages',
+        'my-workspace-b',
+      )
+      const found = find(workspaceB, homePath)
+      t.equal(found, join(workspaceB, 'package.json'))
+    },
+  )
+
+  await t.test(
+    'walks up multiple levels to find package.json',
+    async t => {
+      // Create a deep structure without package.json until we reach the workspace
+      const deepTestDir = t.testdir({
+        home: {
+          projects: {
+            'deep-project': {
+              'package.json': JSON.stringify({
+                name: 'deep-project',
+                version: '1.0.0',
+              }),
+              src: {
+                components: {
+                  ui: {
+                    buttons: {
+                      'button.js': 'export const Button = () => {}',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      const deepHome = join(deepTestDir, 'home')
+      const deepPath = join(
+        deepTestDir,
+        'home',
+        'projects',
+        'deep-project',
+        'src',
+        'components',
+        'ui',
+        'buttons',
+      )
+      const projectRoot = join(
+        deepTestDir,
+        'home',
+        'projects',
+        'deep-project',
+      )
+
+      const found = find(deepPath, deepHome)
+      t.equal(found, join(projectRoot, 'package.json'))
+    },
+  )
+
+  await t.test(
+    'handles empty directories without package.json',
+    async t => {
+      const emptyTestDir = t.testdir({
+        home: {
+          empty: {
+            'file.txt': 'just a file',
+          },
+        },
+      })
+
+      const emptyHome = join(emptyTestDir, 'home')
+      const emptyDir = join(emptyTestDir, 'home', 'empty')
+
+      const found = find(emptyDir, emptyHome)
+      t.equal(found, undefined)
+    },
+  )
+
+  await t.test('uses custom cwd parameter correctly', async t => {
+    // Test with different cwd values using the main fixture
+    const customCwd = join(
+      testDir,
+      'home',
+      'projects',
+      'my-project',
+      'packages',
+    )
+    const found = find(customCwd, homePath)
+    t.equal(
+      found,
+      join(testDir, 'home', 'projects', 'my-project', 'package.json'),
+    )
+  })
+
+  t.test('respects custom home parameter', async t => {
+    const customTestDir = t.testdir({
+      'custom-home': {
+        'package.json': JSON.stringify({ name: 'should-not-find' }),
+      },
+      project: {
+        'package.json': JSON.stringify({ name: 'should-find' }),
+        nested: {
+          'file.txt': 'content',
+        },
+      },
+    })
+
+    const customHome = join(customTestDir, 'custom-home')
+    const nestedDir = join(customTestDir, 'project', 'nested')
+    const projectDir = join(customTestDir, 'project')
+
+    const found = find(nestedDir, customHome)
+    t.equal(found, join(projectDir, 'package.json'))
+  })
 })
