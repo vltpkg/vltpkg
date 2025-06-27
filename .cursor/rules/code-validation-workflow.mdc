@@ -108,6 +108,50 @@ actions:
          - Run `pnpm posttest` again to verify fixes
          - Ensure all type definitions are correct and complete
 
+      ## Test Quality Guidelines
+
+      When writing tests, follow these guidelines to ensure high-quality, maintainable tests:
+
+      ### Respect Type Contracts
+      **CRITICAL**: Always respect the existing type structure when creating test scenarios:
+      
+      - **Never use `as any` to bypass type checking in tests** unless absolutely necessary for testing error conditions
+      - **Study the actual type definitions** before creating mock objects or test data
+      - **Use proper type-safe test fixtures** that match the real type contracts
+      - **Avoid creating impossible scenarios** that violate the type system
+      
+      **Example of what NOT to do:**
+      ```typescript
+      // ❌ BAD: Violates type contract - Edge.spec is required and non-nullable
+      const edge = {
+        spec: undefined as any, // This breaks the type contract
+        // ... other properties
+      }
+      ```
+      
+      **Example of what TO do:**
+      ```typescript
+      // ✅ GOOD: Respects type contract - creates proper Spec object
+      const spec = Spec.parse('package-name', '^1.0.0', specOptions)
+      const edge = {
+        spec, // Proper Spec object that matches the type contract
+        // ... other properties
+      }
+      ```
+
+      ### Test Realistic Scenarios
+      - **Test edge cases that can actually happen** in the real codebase
+      - **Use existing test fixtures** when possible rather than creating new ones
+      - **Consult similar tests** in the same module for patterns and approaches
+      - **Reference actual implementation code** to understand what scenarios are possible
+
+      ### Type-Safe Test Creation Process
+      1. **Read the type definitions** of the classes/interfaces you're testing
+      2. **Examine existing test files** in the same directory for patterns
+      3. **Use helper functions** from test fixtures when available
+      4. **Validate your test compiles** without type assertions (`as any`)
+      5. **Run type checking** to ensure your tests don't introduce type violations
+
       Important notes:
       - Always run these commands in sequence
       - Do not proceed to the next step if the current step fails
@@ -127,6 +171,19 @@ examples:
       pnpm test -Rtap --disable-coverage
       pnpm test -Rsilent --coverage-report=text-lcov
       pnpm posttest
+      
+      # Bad: Creating tests that violate type contracts
+      const edge = {
+        spec: undefined as any, // Violates Edge type contract
+        // ...
+      }
+      
+      # Good: Creating type-safe tests
+      const spec = Spec.parse('package-name', '^1.0.0', specOptions)
+      const edge = {
+        spec, // Respects Edge type contract
+        // ...
+      }
 
       # Good: Iterative development workflow
       pnpm test -Rtap --disable-coverage test/index.ts
@@ -144,7 +201,7 @@ examples:
 
 metadata:
   priority: high
-  version: 1.4
+  version: 1.5
   tags:
     - validation
     - workflow
@@ -153,6 +210,8 @@ metadata:
     - snapshots
     - formatting
     - linting
+    - type-safety
+    - test-quality
   related_rules:
     - linting-error-handler  # For systematic handling of common linting errors
 </rule>
