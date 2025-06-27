@@ -31,6 +31,7 @@ import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
 import { optional } from './pseudo/optional.ts'
 import { outdated } from './pseudo/outdated.ts'
+import { overridden } from './pseudo/overridden.ts'
 import { path } from './pseudo/path.ts'
 import { peer } from './pseudo/peer.ts'
 import { published } from './pseudo/published.ts'
@@ -310,10 +311,10 @@ const pseudoSelectors = new Map<string, ParserFn>(
     obfuscated,
     optional,
     outdated,
+    overridden,
     path,
     peer,
     published,
-    // TODO: overridden
     private: privateParser,
     prod,
     project,
