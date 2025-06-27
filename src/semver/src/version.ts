@@ -44,17 +44,23 @@ const invalidVersion = (
 }
 
 /**
+ * Values of valid increment types.
+ */
+export const versionIncrements = [
+  'major',
+  'minor',
+  'patch',
+  'pre',
+  'premajor',
+  'preminor',
+  'prepatch',
+  'prerelease',
+] as const
+
+/**
  * Types of incrementing supported by {@link Version#inc}
  */
-export type IncrementType =
-  | 'major'
-  | 'minor'
-  | 'patch'
-  | 'pre'
-  | 'premajor'
-  | 'preminor'
-  | 'prepatch'
-  | 'prerelease'
+export type IncrementType = (typeof versionIncrements)[number]
 
 /**
  * A parsed object representation of a SemVer version string

@@ -25,6 +25,7 @@
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/dot-prop": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/git": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",

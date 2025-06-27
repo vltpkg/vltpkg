@@ -429,6 +429,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/git':
+        specifier: workspace:*
+        version: link:../git
       '@vltpkg/graph':
         specifier: workspace:*
         version: link:../graph

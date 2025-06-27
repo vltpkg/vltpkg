@@ -90,7 +90,7 @@ export type ErrorCauseOptions = {
    * Array of valid options when something is not a valid option.
    * (For use in `did you mean X?` output.)
    */
-  validOptions?: unknown[]
+  validOptions?: unknown[] | readonly unknown[]
 
   /**
    * message indicating what bit of work this might be a part of, what feature
