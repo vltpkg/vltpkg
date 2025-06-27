@@ -2,6 +2,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import { create as tarCreate } from 'tar'
+import { minimatch } from 'minimatch'
 
 export type PackTarballOptions = {
   'pack-destination'?: string
@@ -58,31 +59,72 @@ export const packTarball = async (
         // Normalize path - remove leading './'
         const normalizedPath = path.replace(/^\.\//, '')
 
-        // Always include package.json
-        if (
-          normalizedPath === 'package.json' ||
-          path === 'package.json'
-        )
-          return true
-
-        // TODO: Respect .npmignore and files field in package.json
-        // For now, exclude common non-package files
-        const excludePatterns = [
+        // Always exclude certain files/directories
+        const alwaysExcludePatterns = [
           /^\.?\/?\.git(\/|$)/,
           /^\.?\/?node_modules(\/|$)/,
           /^\.?\/?\.nyc_output(\/|$)/,
           /^\.?\/?coverage(\/|$)/,
-          /^\.?\/?\.vscode(\/|$)/,
-          /^\.?\/?\.idea(\/|$)/,
           /^\.?\/?\.DS_Store$/,
-          /^\.?\/?\.gitignore$/,
-          /^\.?\/?\.npmignore$/,
-          /^\.?\/?\.editorconfig$/,
           /~$/,
           /\.swp$/,
         ]
 
-        return !excludePatterns.some(pattern =>
+        if (
+          alwaysExcludePatterns.some(pattern =>
+            pattern.test(normalizedPath),
+          )
+        ) {
+          return false
+        }
+
+        // Always include certain files (npm conventions)
+        const alwaysIncludePatterns = [
+          /^package\.json$/,
+          /^README(\..*)?$/i,
+          /^CHANGELOG(\..*)?$/i,
+          /^HISTORY(\..*)?$/i,
+          /^LICENSE(\..*)?$/i,
+          /^LICENCE(\..*)?$/i,
+          /^NOTICE(\..*)?$/i,
+        ]
+
+        if (
+          alwaysIncludePatterns.some(pattern =>
+            pattern.test(normalizedPath),
+          )
+        ) {
+          return true
+        }
+
+        // If files field is specified in package.json, use it for inclusion
+        const manifestWithFiles = manifest as Manifest & {
+          files?: string[]
+        }
+        if (
+          manifestWithFiles.files &&
+          Array.isArray(manifestWithFiles.files) &&
+          manifestWithFiles.files.length > 0
+        ) {
+          return manifestWithFiles.files.some((pattern: string) => {
+            // Convert pattern to work with minimatch
+            const globPattern = pattern.replace(/\/$/, '/**') // Handle directory patterns
+            return minimatch(normalizedPath, globPattern, {
+              dot: true,
+            })
+          })
+        }
+
+        // Default behavior when no files field - exclude common development files
+        const defaultExcludePatterns = [
+          /^\.?\/?\.vscode(\/|$)/,
+          /^\.?\/?\.idea(\/|$)/,
+          /^\.?\/?\.gitignore$/,
+          /^\.?\/?\.npmignore$/,
+          /^\.?\/?\.editorconfig$/,
+        ]
+
+        return !defaultExcludePatterns.some(pattern =>
           pattern.test(normalizedPath),
         )
       },
