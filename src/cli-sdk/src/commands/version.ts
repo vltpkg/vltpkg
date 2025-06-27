@@ -67,12 +67,11 @@ const version = async (
     }),
   )
 
-  const manifestDir = dirname(manifestPath)
-
   const spawn = (args: string[], opts?: GitOptions) =>
     spawn_(args, { cwd: manifestDir, ...opts })
 
-  const manifest = conf.options.packageJson.read(manifestPath)
+  const manifestDir = dirname(manifestPath)
+  const manifest = conf.options.packageJson.read(manifestDir)
 
   assert(
     manifest.version,
