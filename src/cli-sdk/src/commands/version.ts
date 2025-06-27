@@ -12,6 +12,8 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import type { ParsedConfig } from '../config/index.ts'
+import { dirname } from 'node:path'
+import assert from 'node:assert'
 
 export type VersionOptions = {
   prereleaseId?: string
@@ -48,23 +50,36 @@ const version = async (
     tagMessage = 'v%s',
   }: VersionOptions = {},
 ): Promise<VersionResult> => {
-  const spawn = (args: string[], opts?: GitOptions) =>
-    spawn_(args, { cwd, ...opts })
-
-  if (!increment) {
-    throw error('Version increment argument is required', {
+  assert(
+    increment,
+    error('Version increment argument is required', {
       code: 'EUSAGE',
       validOptions: versionIncrements,
-    })
-  }
+    }),
+  )
 
-  const manifest = conf.options.packageJson.find()
-
-  if (!manifest.version) {
-    throw error('No version field found in package.json', {
+  const manifestPath = conf.options.packageJson.find(cwd)
+  assert(
+    manifestPath,
+    error('No package.json found', {
+      code: 'ENOENT',
       path: cwd,
-    })
-  }
+    }),
+  )
+
+  const manifestDir = dirname(manifestPath)
+
+  const spawn = (args: string[], opts?: GitOptions) =>
+    spawn_(args, { cwd: manifestDir, ...opts })
+
+  const manifest = conf.options.packageJson.read(manifestPath)
+
+  assert(
+    manifest.version,
+    error('No version field found in package.json', {
+      path: manifestPath,
+    }),
+  )
 
   const oldVersion = manifest.version
   let newVersion: string
@@ -97,12 +112,12 @@ const version = async (
 
   // Update the manifest
   manifest.version = newVersion
-  conf.options.packageJson.write(cwd, manifest)
+  conf.options.packageJson.write(manifestDir, manifest)
 
   const result: VersionResult = {
     oldVersion,
     newVersion,
-    dir: cwd,
+    dir: manifestDir,
   }
 
   // Handle git operations if we're in a git repository
@@ -123,12 +138,13 @@ const version = async (
         const nonPackageJsonChanges = changedFiles.filter(
           file => file !== 'package.json',
         )
-        if (nonPackageJsonChanges.length > 0) {
-          throw error(
+        assert(
+          nonPackageJsonChanges.length === 0,
+          error(
             'Git working directory not clean. Please commit or stash your changes first.',
             { found: nonPackageJsonChanges },
-          )
-        }
+          ),
+        )
       } catch (err) {
         throw error(
           'Git working directory not clean. Please commit or stash your changes first.',
@@ -190,23 +206,6 @@ export const usage: CommandUsage = () => {
     The \`<newversion>\` argument should be a valid semver string or a valid increment type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
     If run in a git repository, it will also create a version commit and tag.`,
-    examples: {
-      'vlt version patch': {
-        description: 'Increment the patch version',
-      },
-      'vlt version minor': {
-        description: 'Increment the minor version',
-      },
-      'vlt version major': {
-        description: 'Increment the major version',
-      },
-      'vlt version prerelease': {
-        description: 'Increment the prerelease version',
-      },
-      'vlt version 1.2.3': {
-        description: 'Set the version to 1.2.3',
-      },
-    },
   })
 }
 

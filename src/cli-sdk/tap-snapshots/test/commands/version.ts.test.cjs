@@ -20,26 +20,4 @@ type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
 If run in a git repository, it will also create a version commit and tag.
 
-  Examples
-
-    Increment the patch version
-
-    ​vlt version vlt version patch
-
-    Increment the minor version
-
-    ​vlt version vlt version minor
-
-    Increment the major version
-
-    ​vlt version vlt version major
-
-    Increment the prerelease version
-
-    ​vlt version vlt version prerelease
-
-    Set the version to 1.2.3
-
-    ​vlt version vlt version 1.2.3
-
 `

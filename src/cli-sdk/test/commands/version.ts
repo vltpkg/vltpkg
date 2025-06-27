@@ -49,7 +49,8 @@ class MockConfig {
     this.values = values
     this.packageJsonContent = packageJsonContent
     this.values.packageJson = {
-      find: (_cwd: string) => ({ ...this.packageJsonContent }),
+      read: (_cwd: string) => ({ ...this.packageJsonContent }),
+      find: (cwd: string) => cwd + '/package.json',
       write: (cwd: string, data: any) => {
         this.writtenManifests.push({ cwd, data })
       },
