@@ -102,6 +102,18 @@ file·.
 
 `
 
+exports[`test/visualization/human-readable-output.ts > TAP > overridden aliased package > colors > should use colors for overridden aliased package 1`] = `
+[0mmy-project
+└── a@2.0.0 (npm:@myscope/foo@2.0.0) [33m(overridden)[39m
+[0m
+`
+
+exports[`test/visualization/human-readable-output.ts > TAP > overridden aliased package > should print overridden aliased package with toName 1`] = `
+my-project
+└── a@2.0.0 (npm:@myscope/foo@2.0.0) (overridden)
+
+`
+
 exports[`test/visualization/human-readable-output.ts > TAP > overridden package > colors > should use colors for overridden package 1`] = `
 [0mmy-project
 └── foo@2.0.0 [33m(overridden)[39m

@@ -501,3 +501,60 @@ t.test('overridden package', async t => {
     )
   })
 })
+
+t.test('overridden aliased package', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        a: 'npm:@myscope/foo@^1.0.0',
+      },
+    },
+  })
+  const aliasedSpec = Spec.parse('a', 'npm:@myscope/foo@^1.0.0')
+  // Mark the spec as overridden
+  aliasedSpec.overridden = true
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    aliasedSpec,
+    {
+      name: '@myscope/foo',
+      version: '2.0.0',
+    },
+  )
+  t.ok(foo)
+  t.matchSnapshot(
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      {},
+    ),
+    'should print overridden aliased package with toName',
+  )
+
+  t.test('colors', async t => {
+    t.matchSnapshot(
+      humanReadableOutput(
+        {
+          edges: [...graph.edges],
+          highlightSelection: false,
+          importers: graph.importers,
+          nodes: [...graph.nodes.values()],
+        },
+        { colors: true },
+      ),
+      'should use colors for overridden aliased package',
+    )
+  })
+})
