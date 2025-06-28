@@ -5,15 +5,15 @@ import type { HonoContext } from '../../types.ts'
  * Handles static asset serving
  */
 export const handleStaticAssets = serveStatic({
-  root: './src/assets/public'
-} as any)
+  root: './src/assets/public',
+} as Parameters<typeof serveStatic>[0])
 
 /**
  * Handles favicon requests
  */
 export const handleFavicon = serveStatic({
-  path: './src/assets/public/images/favicon/favicon.ico'
-} as any)
+  path: './src/assets/public/images/favicon/favicon.ico',
+} as Parameters<typeof serveStatic>[0])
 
 /**
  * Handles robots.txt requests
@@ -41,13 +41,13 @@ export function handleManifest(c: HonoContext) {
       {
         src: '/public/images/favicon/web-app-manifest-192x192.png',
         sizes: '192x192',
-        type: 'image/png'
+        type: 'image/png',
       },
       {
         src: '/public/images/favicon/web-app-manifest-512x512.png',
         sizes: '512x512',
-        type: 'image/png'
-      }
-    ]
+        type: 'image/png',
+      },
+    ],
   })
 }

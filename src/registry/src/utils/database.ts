@@ -1,44 +1,53 @@
 import { createDatabaseOperations } from '../db/client.ts'
 import type { D1Database } from '@cloudflare/workers-types'
-import type { DatabaseOperations } from '../../types.ts'
+import type { DatabaseOperations, HonoContext } from '../../types.ts'
 
 /**
  * Creates database operations instance from D1 database
- * @param d1 - The D1 database instance
- * @returns Database operations interface
+ * @param {D1Database} d1 - The D1 database instance
+ * @returns {DatabaseOperations} Database operations interface
  */
-export function createDB(d1: D1Database) {
+export function createDB(d1: D1Database): DatabaseOperations {
   return createDatabaseOperations(d1)
 }
 
 /**
  * Type guard to check if database is available
- * @param db - The database instance to check
- * @returns True if database is available and functional
+ * @param {unknown} db - The database instance to check
+ * @returns {boolean} True if database is available and functional
  */
-export function isDatabaseAvailable(db: any): db is DatabaseOperations {
-  return db && typeof db.getPackage === 'function'
+export function isDatabaseAvailable(
+  db: unknown,
+): db is DatabaseOperations {
+  return (
+    typeof db === 'object' &&
+    db !== null &&
+    'getPackage' in db &&
+    typeof (db as DatabaseOperations).getPackage === 'function'
+  )
 }
 
 // Cache the database operations to avoid recreating on every request
-let cachedDbOperations: any = null
+let cachedDbOperations: DatabaseOperations | null = null
 
 /**
  * Middleware to mount database operations on the context
- * @param c - The Hono context
- * @param next - The next middleware function
+ * @param {HonoContext} c - The Hono context
+ * @param {() => Promise<void>} next - The next middleware function
  */
-export async function mountDatabase(c: any, next: any) {
+export async function mountDatabase(
+  c: HonoContext,
+  next: () => Promise<void>,
+): Promise<void> {
   if (!c.env.DB) {
     throw new Error('Database not found in environment')
   }
 
   // Reuse existing database operations if available
-  if (!cachedDbOperations) {
-    console.log('[DB] Creating new database operations instance')
-    cachedDbOperations = createDatabaseOperations(c.env.DB)
-  }
+  cachedDbOperations ??= createDatabaseOperations(
+    c.env.DB as D1Database,
+  ) as DatabaseOperations
 
-  c.db = cachedDbOperations as any
+  c.db = cachedDbOperations
   await next()
 }

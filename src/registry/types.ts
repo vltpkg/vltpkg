@@ -108,9 +108,14 @@ export interface PackageManifest {
   cpu?: string[]
   keywords?: string[]
   author?: string | { name: string; email?: string; url?: string }
-  contributors?: Array<string | { name: string; email?: string; url?: string }>
+  contributors?: (
+    | string
+    | { name: string; email?: string; url?: string }
+  )[]
   license?: string
-  repository?: string | { type: string; url: string; directory?: string }
+  repository?:
+    | string
+    | { type: string; url: string; directory?: string }
   bugs?: string | { url: string; email?: string }
   homepage?: string
   files?: string[]
@@ -193,8 +198,8 @@ export interface CacheOptions {
 
 export interface CacheResult<T> {
   data?: T
-  package?: T  // For package cache results
-  version?: T  // For version cache results
+  package?: T // For package cache results
+  version?: T // For version cache results
   fromCache: boolean
   stale?: boolean
 }
@@ -231,26 +236,61 @@ export interface RequestContext {
 export interface DatabaseOperations {
   // Package operations
   getPackage(name: string): Promise<ParsedPackage | null>
-  upsertPackage(name: string, tags: Record<string, string>, lastUpdated?: string): Promise<any>
-  upsertCachedPackage(name: string, tags: Record<string, string>, upstream: string, lastUpdated?: string): Promise<any>
+  upsertPackage(
+    name: string,
+    tags: Record<string, string>,
+    lastUpdated?: string,
+  ): Promise<any>
+  upsertCachedPackage(
+    name: string,
+    tags: Record<string, string>,
+    upstream: string,
+    lastUpdated?: string,
+  ): Promise<any>
   getCachedPackage(name: string): Promise<ParsedPackage | null>
-  isPackageCacheValid(name: string, ttlMinutes?: number): Promise<boolean>
+  isPackageCacheValid(
+    name: string,
+    ttlMinutes?: number,
+  ): Promise<boolean>
 
   // Token operations
   getToken(token: string): Promise<ParsedToken | null>
-  validateTokenAccess(authToken: string, targetUuid: string): Promise<boolean>
-  upsertToken(token: string, uuid: string, scope: TokenScope[], authToken?: string): Promise<any>
+  validateTokenAccess(
+    authToken: string,
+    targetUuid: string,
+  ): Promise<boolean>
+  upsertToken(
+    token: string,
+    uuid: string,
+    scope: TokenScope[],
+    authToken?: string,
+  ): Promise<any>
   deleteToken(token: string, authToken?: string): Promise<any>
 
   // Version operations
   getVersion(spec: string): Promise<ParsedVersion | null>
-  upsertVersion(spec: string, manifest: PackageManifest, publishedAt: string): Promise<any>
-  upsertCachedVersion(spec: string, manifest: PackageManifest, upstream: string, publishedAt: string): Promise<any>
+  upsertVersion(
+    spec: string,
+    manifest: PackageManifest,
+    publishedAt: string,
+  ): Promise<any>
+  upsertCachedVersion(
+    spec: string,
+    manifest: PackageManifest,
+    upstream: string,
+    publishedAt: string,
+  ): Promise<any>
   getCachedVersion(spec: string): Promise<ParsedVersion | null>
-  isVersionCacheValid(spec: string, ttlMinutes?: number): Promise<boolean>
+  isVersionCacheValid(
+    spec: string,
+    ttlMinutes?: number,
+  ): Promise<boolean>
 
   // Search operations
-  searchPackages(query: string, scope?: string): Promise<any[]>
+  searchPackages(
+    query: string,
+    scope?: string,
+  ): Promise<SearchResult[]>
   getVersionsByPackage(packageName: string): Promise<ParsedVersion[]>
 }
 
@@ -298,7 +338,14 @@ export interface AccessResponse {
 // Utility Types
 // =============================================================================
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
+export type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS'
 
 export interface ValidationResult {
   valid: boolean
@@ -395,7 +442,7 @@ export interface SearchResult {
 }
 
 export interface SearchResponse {
-  objects: Array<{
+  objects: {
     package: {
       name: string
       scope: string
@@ -422,7 +469,7 @@ export interface SearchResponse {
       }
     }
     searchScore: number
-  }>
+  }[]
   total: number
   time: string
 }

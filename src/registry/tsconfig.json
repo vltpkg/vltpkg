@@ -23,17 +23,8 @@
     "isolatedModules": true,
     "types": ["@cloudflare/workers-types"]
   },
-  "include": [
-    "src/**/*",
-    "types.ts",
-    "config.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".wrangler",
-    "test/**/*"
-  ],
+  "include": ["src/**/*", "types.ts", "config.ts"],
+  "exclude": ["node_modules", "dist", ".wrangler", "test/**/*"],
   "ts-node": {
     "esm": true,
     "transpileOnly": true,

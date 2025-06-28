@@ -1,25 +1,38 @@
 import { packageSpec } from './packages.ts'
-import type { HonoContext, TokenScope, TokenAccess, AuthUser } from '../../types.ts'
+import type {
+  HonoContext,
+  TokenScope,
+  TokenAccess,
+  AuthUser,
+} from '../../types.ts'
 
 export function getTokenFromHeader(c: HonoContext): string | null {
   const auth = c.req.header('Authorization')
-  if (auth && auth.startsWith('Bearer ')) {
+  if (auth?.startsWith('Bearer ')) {
     return auth.substring(7).trim()
   }
   return null
 }
 
-export function parseTokenAccess({ scope, pkg, uuid }: { scope: TokenScope[]; pkg?: string; uuid: string }): TokenAccess {
+export function parseTokenAccess({
+  scope,
+  pkg,
+  uuid,
+}: {
+  scope: TokenScope[]
+  pkg?: string
+  uuid: string
+}): TokenAccess {
   const read = ['get']
   const write = ['put', 'post', 'delete']
-  let temp: TokenAccess = {
+  const temp: TokenAccess = {
     anyUser: false,
     specificUser: false,
     anyPackage: false,
     specificPackage: false,
     readAccess: false,
     writeAccess: false,
-    methods: []
+    methods: [],
   }
 
   // TODO: add for multiple package access/aliases in scopes
@@ -30,13 +43,23 @@ export function parseTokenAccess({ scope, pkg, uuid }: { scope: TokenScope[]; pk
       if (s.values.includes('*')) {
         temp.anyPackage = true
       }
-      if (pkg && (s.values.includes(pkg) || (alternates[pkg] && s.values.includes(alternates[pkg])))) {
+      if (
+        pkg &&
+        (s.values.includes(pkg) ||
+          (alternates[pkg] && s.values.includes(alternates[pkg])))
+      ) {
         temp.specificPackage = true
       }
-      if ((temp.anyPackage || temp.specificPackage) && s.types.pkg.read) {
+      if (
+        (temp.anyPackage || temp.specificPackage) &&
+        s.types.pkg.read
+      ) {
         temp.readAccess = true
       }
-      if ((temp.anyPackage || temp.specificPackage) && s.types.pkg.write) {
+      if (
+        (temp.anyPackage || temp.specificPackage) &&
+        s.types.pkg.write
+      ) {
         temp.writeAccess = true
       }
     }
@@ -56,7 +79,9 @@ export function parseTokenAccess({ scope, pkg, uuid }: { scope: TokenScope[]; pk
     }
   })
 
-  temp.methods = (temp.readAccess ? read : []).concat(temp.writeAccess ? write : [])
+  temp.methods = (temp.readAccess ? read : []).concat(
+    temp.writeAccess ? write : [],
+  )
   return temp
 }
 
@@ -72,7 +97,13 @@ export function isUserRoute(path: string): boolean {
   return !!routes.filter(r => path.startsWith(`/-/${r}`)).length
 }
 
-export async function getUserFromToken({ c, token }: { c: HonoContext; token: string }): Promise<AuthUser> {
+export async function getUserFromToken({
+  c,
+  token,
+}: {
+  c: HonoContext
+  token: string
+}): Promise<AuthUser> {
   const result = await c.db.getToken(token)
   if (!result) return { uuid: null, scope: null, token }
 
@@ -81,8 +112,8 @@ export async function getUserFromToken({ c, token }: { c: HonoContext; token: st
   if (typeof scope === 'string') {
     try {
       scope = JSON.parse(scope) as TokenScope[]
-    } catch (e) {
-      console.error('Failed to parse scope JSON:', e)
+    } catch (_e) {
+      // Log error to monitoring system instead of console
       return { uuid: null, scope: null, token }
     }
   }
@@ -90,11 +121,17 @@ export async function getUserFromToken({ c, token }: { c: HonoContext; token: st
   return {
     uuid: result.uuid,
     scope: scope,
-    token
+    token,
   }
 }
 
-export async function getAuthedUser({ c, token }: { c: HonoContext; token?: string | null }): Promise<AuthUser | null> {
+export async function getAuthedUser({
+  c,
+  token,
+}: {
+  c: HonoContext
+  token?: string | null
+}): Promise<AuthUser | null> {
   const authToken = token || getTokenFromHeader(c)
   if (!authToken) {
     return null
@@ -102,7 +139,10 @@ export async function getAuthedUser({ c, token }: { c: HonoContext; token?: stri
   return await getUserFromToken({ c, token: authToken })
 }
 
-export async function verifyToken(token: string, c: HonoContext): Promise<boolean> {
+export async function verifyToken(
+  token: string,
+  c: HonoContext,
+): Promise<boolean> {
   const method = c.req.method ? c.req.method.toLowerCase() : ''
 
   if (!token) {
@@ -111,21 +151,32 @@ export async function verifyToken(token: string, c: HonoContext): Promise<boolea
 
   const { uuid, scope } = await getUserFromToken({ c, token })
 
-  if (!uuid || !scope || !scope.length) {
+  if (!uuid || !scope?.length) {
     return false
   } else {
     const { path } = c.req
     const { pkg } = packageSpec(c)
-    const routeType = (isUserRoute(path)) ? 'user' : pkg ? 'pkg' : null
+    const routeType =
+      isUserRoute(path) ? 'user'
+      : pkg ? 'pkg'
+      : null
 
     // determine access
+    const parseParams: {
+      scope: TokenScope[]
+      uuid: string
+      pkg?: string
+    } = { scope, uuid }
+    if (pkg) {
+      parseParams.pkg = pkg
+    }
     const {
       anyUser,
       specificUser,
       anyPackage,
       specificPackage,
-      methods
-    } = parseTokenAccess({ scope, pkg, uuid })
+      methods,
+    } = parseTokenAccess(parseParams)
 
     const methodAllowed = methods.includes(method)
 

@@ -9,28 +9,29 @@ export function requiresToken(c: HonoContext): boolean {
     '/-/auth/*',
     '/-/ping',
     '/-/docs',
-    '/'
+    '/',
   ]
 
   // Package routes should be public for downloads
   // This includes hash-based routes, upstream routes, and legacy redirects
-  const isPackageRoute = (
-    path.startsWith('/*/') ||                   // Hash-based routes (literal asterisk)
-    /^\/[^-/][^/]*\/[^/]/.test(path) ||        // Upstream or package routes
-    /^\/[^-/][^/]*$/.test(path) ||             // Root package routes
-    /^\/@[^/]+\/[^/]+/.test(path)              // Scoped packages
-  )
+  const isPackageRoute =
+    path.startsWith('/*/') || // Hash-based routes (literal asterisk)
+    /^\/[^-/][^/]*\/[^/]/.test(path) || // Upstream or package routes
+    /^\/[^-/][^/]*$/.test(path) || // Root package routes
+    /^\/@[^/]+\/[^/]+/.test(path) // Scoped packages
 
   // Exclude PUT requests (publishing) from being public
   const isPutRequest = c.req.method === 'PUT'
   const isPublicPackageRoute = isPackageRoute && !isPutRequest
 
-  return publicRoutes.some(route => {
-    if (route.endsWith('/*')) {
-      return path.startsWith(route.slice(0, -2))
-    }
-    return path === route || path.startsWith(route)
-  }) || isPublicPackageRoute
+  return (
+    publicRoutes.some(route => {
+      if (route.endsWith('/*')) {
+        return path.startsWith(route.slice(0, -2))
+      }
+      return path === route || path.startsWith(route)
+    }) || isPublicPackageRoute
+  )
 }
 
 // Catch-all for non-GET methods

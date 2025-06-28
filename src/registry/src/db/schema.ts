@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 // Define the packages table
 export const packages = sqliteTable('packages', {
@@ -8,14 +8,14 @@ export const packages = sqliteTable('packages', {
   origin: text('origin').notNull().default('local'), // 'local' or 'upstream'
   upstream: text('upstream'), // Name of upstream registry (null for local packages)
   cachedAt: text('cached_at'), // When this package was cached from upstream
-});
+})
 
 // Define the tokens table
 export const tokens = sqliteTable('tokens', {
   token: text('token').primaryKey(),
   uuid: text('uuid').notNull(),
   scope: text('scope').$type<string>(), // JSON stored as string
-});
+})
 
 // Define the versions table
 export const versions = sqliteTable('versions', {
@@ -25,17 +25,19 @@ export const versions = sqliteTable('versions', {
   origin: text('origin').notNull().default('local'), // 'local' or 'upstream'
   upstream: text('upstream'), // Name of upstream registry (null for local packages)
   cachedAt: text('cached_at'), // When this version was cached from upstream
-});
+})
 
 // Default admin token
 export const defaultAdminToken = {
   token: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   uuid: 'admin',
-  scope: JSON.stringify([{
-    values: ['*'],
-    types: {
-      pkg: { read: true, write: true },
-      user: { read: true, write: true },
+  scope: JSON.stringify([
+    {
+      values: ['*'],
+      types: {
+        pkg: { read: true, write: true },
+        user: { read: true, write: true },
+      },
     },
-  }]),
-} as const;
+  ]),
+} as const

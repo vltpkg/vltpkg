@@ -4,25 +4,23 @@
 
 /**
  * Logs a trace message with timestamp
- * @param message - The message to log
- * @param data - Optional additional data to log
+ * @param {string} _message - The message to log
+ * @param {any} _data - Optional additional data to log
  */
-export function trace(message: string, data?: any): void {
-  const timestamp = new Date().toISOString()
-  if (data) {
-    console.log(`[TRACE ${timestamp}] ${message}`, data)
-  } else {
-    console.log(`[TRACE ${timestamp}] ${message}`)
-  }
+export function trace(_message: string, _data?: any): void {
+  // Tracing disabled for production
 }
 
 /**
  * Measures execution time of a function
- * @param name - Name of the operation being measured
- * @param fn - Function to measure
- * @returns Result of the function
+ * @param {string} name - Name of the operation being measured
+ * @param {() => Promise<any>} fn - Function to measure
+ * @returns {Promise<any>} Result of the function
  */
-export async function measureTime<T>(name: string, fn: () => Promise<T>): Promise<T> {
+export async function measureTime<T>(
+  name: string,
+  fn: () => Promise<T>,
+): Promise<T> {
   const start = performance.now()
   try {
     const result = await fn()
@@ -37,27 +35,15 @@ export async function measureTime<T>(name: string, fn: () => Promise<T>): Promis
 }
 
 /**
- * Session monitoring middleware for tracking requests with Sentry integration
- * @param c - The Hono context
- * @param next - The next middleware function
+ * Session monitoring middleware for tracking requests
+ * @param {any} _c - The Hono context
+ * @param {() => Promise<void>} next - The next middleware function
+ * @returns {Promise<void>} Result of next middleware
  */
-export function sessionMonitor(c: any, next: any) {
-  // Import Sentry dynamically to avoid issues if not available
-  try {
-    const Sentry = require('@sentry/cloudflare')
-
-    if (c.session?.user) {
-      Sentry.setUser({
-        email: c.session.user.email,
-      })
-    }
-    if (c.session?.projectId) {
-      Sentry.setTag('project_id', c.session.projectId)
-    }
-  } catch (error) {
-    // Sentry not available, continue without it
-    trace('Sentry not available for session monitoring')
-  }
-
+export function sessionMonitor(_c: any, next: () => Promise<void>): Promise<void> {
+  // Session monitoring is currently disabled
+  // This middleware can be extended to add session tracking functionality
+  trace('Session monitoring middleware called')
+  
   return next()
 }

@@ -17,11 +17,11 @@ const server = createServer({
   projectRoot: cwd,
   packageJson: new PackageJson(),
   securityArchive: new SecurityArchive(),
-  port: 3000
+  port: 3000,
 })
 
 await server.start({
-  port: 3000
+  port: 3000,
 })
 
 console.log(`Listening on ${server.address()}`)

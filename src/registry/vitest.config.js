@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config'
 
 /**
  * Consolidated Vitest configuration
@@ -14,7 +14,7 @@ import { defineConfig } from 'vitest/config';
  */
 
 // Get the test mode from environment variable
-const testMode = process.env.VITEST_MODE;
+const testMode = process.env.VITEST_MODE
 
 // Base configuration shared across all modes
 const baseConfig = {
@@ -22,7 +22,7 @@ const baseConfig = {
   environment: 'node',
   testTimeout: testMode ? 10000 : 30000, // Default 30s for full test suite, 10s for specific tests
   watchExclude: ['node_modules', 'dist', '.git'],
-};
+}
 
 // Define test configurations for each mode
 const testConfigs = {
@@ -37,7 +37,7 @@ const testConfigs = {
       '**/test/caching-simple.test.js',
       '**/test/waituntil-task-queue.test.js',
       '**/test/background-concepts.test.js',
-      '**/test/waituntil.test.js'
+      '**/test/waituntil.test.js',
     ],
     include: ['test/**/*.test.js'],
     hookTimeout: 30000,
@@ -49,7 +49,7 @@ const testConfigs = {
     ...baseConfig,
     include: [
       'test/waituntil-demo.test.js',
-      'test/cloudflare-waituntil.test.js'
+      'test/cloudflare-waituntil.test.js',
     ],
   },
   // Config for improved tests
@@ -58,7 +58,7 @@ const testConfigs = {
     include: [
       'test/waituntil-correct.test.js',
       'test/hono-context.test.js',
-      'test/route-with-waituntil.test.js'
+      'test/route-with-waituntil.test.js',
     ],
   },
   // Config for slim tests
@@ -82,14 +82,14 @@ const testConfigs = {
     ...baseConfig,
     include: [
       'test/packument-consistency.test.js',
-      'test/packument-version-range.test.js'
+      'test/packument-version-range.test.js',
     ],
   },
-};
+}
 
 // Select the appropriate config based on the mode
-const selectedConfig = testConfigs[testMode] || testConfigs.default;
+const selectedConfig = testConfigs[testMode] || testConfigs.default
 
 export default defineConfig({
   test: selectedConfig,
-});
+})

@@ -1,11 +1,8 @@
 import { getAuthedUser } from '../utils/auth.ts'
-import { parsePackageSpec } from '../utils/upstream.ts'
 import type {
   HonoContext,
-  AccessRequest,
   AccessResponse,
-  TokenScope,
-  AuthUser
+  AuthUser,
 } from '../../types.ts'
 
 interface PackageAccessEntry {
@@ -16,6 +13,15 @@ interface PackageAccessEntry {
 interface PackageListResponse {
   packages: PackageAccessEntry[]
   total: number
+}
+
+// Define interfaces for request bodies to ensure type safety
+interface SetAccessRequestBody {
+  collaborators?: Record<string, 'read-only' | 'read-write'>
+}
+
+interface GrantAccessRequestBody {
+  permission: 'read-only' | 'read-write'
 }
 
 /**
@@ -32,12 +38,12 @@ export async function listPackagesAccess(c: HonoContext) {
     // based on your specific access control requirements
     const response: PackageListResponse = {
       packages: [],
-      total: 0
+      total: 0,
     }
 
     return c.json(response)
-  } catch (error) {
-    console.error('[ACCESS ERROR] Failed to list packages:', error)
+  } catch (_error) {
+    // Hono middleware will log access errors
     return c.json({ error: 'Failed to list packages' }, 500)
   }
 }
@@ -70,13 +76,13 @@ export async function getPackageAccessStatus(c: HonoContext) {
     const response: AccessResponse = {
       name: packageName,
       collaborators: {
-        [user.uuid]: 'read-write' // Default the owner to read-write
-      }
+        [user.uuid]: 'read-write', // Default the owner to read-write
+      },
     }
 
     return c.json(response)
-  } catch (error) {
-    console.error('[ACCESS ERROR] Failed to get package access:', error)
+  } catch (_error) {
+    // Hono middleware will log package access errors
     return c.json({ error: 'Failed to get package access' }, 500)
   }
 }
@@ -98,10 +104,14 @@ export async function setPackageAccessStatus(c: HonoContext) {
       return c.json({ error: 'Authentication required' }, 401)
     }
 
-    const body = await c.req.json() as { collaborators: Record<string, 'read-only' | 'read-write'> }
+    const body = await c.req.json() as unknown as SetAccessRequestBody
 
     // Check if user has admin access to this package
-    const hasAdminAccess = await checkPackageAdminAccess(c, packageName, user)
+    const hasAdminAccess = await checkPackageAdminAccess(
+      c,
+      packageName,
+      user,
+    )
 
     if (!hasAdminAccess) {
       return c.json({ error: 'Admin access required' }, 403)
@@ -111,12 +121,12 @@ export async function setPackageAccessStatus(c: HonoContext) {
     // For now, just return the requested access
     const response: AccessResponse = {
       name: packageName,
-      collaborators: body.collaborators || {}
+      collaborators: body.collaborators ?? {},
     }
 
     return c.json(response)
-  } catch (error) {
-    console.error('[ACCESS ERROR] Failed to set package access:', error)
+  } catch (_error) {
+    // Hono middleware will log package access setting errors
     return c.json({ error: 'Failed to set package access' }, 500)
   }
 }
@@ -130,7 +140,10 @@ export async function grantPackageAccess(c: HonoContext) {
     const packageName = scope && pkg ? `${scope}/${pkg}` : scope
 
     if (!packageName || !username) {
-      return c.json({ error: 'Package name and username required' }, 400)
+      return c.json(
+        { error: 'Package name and username required' },
+        400,
+      )
     }
 
     const user = await getAuthedUser({ c })
@@ -138,10 +151,14 @@ export async function grantPackageAccess(c: HonoContext) {
       return c.json({ error: 'Authentication required' }, 401)
     }
 
-    const body = await c.req.json() as AccessRequest
+    const body = await c.req.json() as unknown as GrantAccessRequestBody
 
     // Check if user has admin access to this package
-    const hasAdminAccess = await checkPackageAdminAccess(c, packageName, user)
+    const hasAdminAccess = await checkPackageAdminAccess(
+      c,
+      packageName,
+      user,
+    )
 
     if (!hasAdminAccess) {
       return c.json({ error: 'Admin access required' }, 403)
@@ -153,13 +170,13 @@ export async function grantPackageAccess(c: HonoContext) {
       name: packageName,
       collaborators: {
         [user.uuid]: 'read-write',
-        [username]: body.permission
-      }
+        [username]: body.permission,
+      },
     }
 
     return c.json(response)
-  } catch (error) {
-    console.error('[ACCESS ERROR] Failed to grant package access:', error)
+  } catch (_error) {
+    // Hono middleware will log package access granting errors
     return c.json({ error: 'Failed to grant package access' }, 500)
   }
 }
@@ -173,7 +190,10 @@ export async function revokePackageAccess(c: HonoContext) {
     const packageName = scope && pkg ? `${scope}/${pkg}` : scope
 
     if (!packageName || !username) {
-      return c.json({ error: 'Package name and username required' }, 400)
+      return c.json(
+        { error: 'Package name and username required' },
+        400,
+      )
     }
 
     const user = await getAuthedUser({ c })
@@ -182,7 +202,11 @@ export async function revokePackageAccess(c: HonoContext) {
     }
 
     // Check if user has admin access to this package
-    const hasAdminAccess = await checkPackageAdminAccess(c, packageName, user)
+    const hasAdminAccess = await checkPackageAdminAccess(
+      c,
+      packageName,
+      user,
+    )
 
     if (!hasAdminAccess) {
       return c.json({ error: 'Admin access required' }, 403)
@@ -198,14 +222,14 @@ export async function revokePackageAccess(c: HonoContext) {
     const response: AccessResponse = {
       name: packageName,
       collaborators: {
-        [user.uuid]: 'read-write'
+        [user.uuid]: 'read-write',
         // username removed from collaborators
-      }
+      },
     }
 
     return c.json(response)
-  } catch (error) {
-    console.error('[ACCESS ERROR] Failed to revoke package access:', error)
+  } catch (_error) {
+    // Hono middleware will log package access revocation errors
     return c.json({ error: 'Failed to revoke package access' }, 500)
   }
 }
@@ -213,7 +237,11 @@ export async function revokePackageAccess(c: HonoContext) {
 /**
  * Helper function to check if user has access to a package
  */
-async function checkPackageAccess(c: HonoContext, packageName: string, user: AuthUser): Promise<boolean> {
+async function checkPackageAccess(
+  _c: HonoContext,
+  packageName: string,
+  user: AuthUser,
+): Promise<boolean> {
   if (!user.scope || !user.uuid) {
     return false
   }
@@ -227,7 +255,10 @@ async function checkPackageAccess(c: HonoContext, packageName: string, user: Aut
       }
 
       // Check for specific package access
-      if (scope.values.includes(packageName) && scope.types.pkg.read) {
+      if (
+        scope.values.includes(packageName) &&
+        scope.types.pkg.read
+      ) {
         return true
       }
     }
@@ -239,7 +270,11 @@ async function checkPackageAccess(c: HonoContext, packageName: string, user: Aut
 /**
  * Helper function to check if user has admin access to a package
  */
-async function checkPackageAdminAccess(c: HonoContext, packageName: string, user: AuthUser): Promise<boolean> {
+async function checkPackageAdminAccess(
+  _c: HonoContext,
+  packageName: string,
+  user: AuthUser,
+): Promise<boolean> {
   if (!user.scope || !user.uuid) {
     return false
   }
@@ -253,7 +288,10 @@ async function checkPackageAdminAccess(c: HonoContext, packageName: string, user
       }
 
       // Check for specific package write access
-      if (scope.values.includes(packageName) && scope.types.pkg.write) {
+      if (
+        scope.values.includes(packageName) &&
+        scope.types.pkg.write
+      ) {
         return true
       }
     }

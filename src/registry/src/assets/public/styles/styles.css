@@ -87,24 +87,24 @@
 }
 
 .introduction-section:before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: url("/public/images/bg.png");
+  background: url('/public/images/bg.png');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  opacity: .3;
-  mask-image: linear-gradient( 135deg ,transparent 60%, black 100%)
+  opacity: 0.3;
+  mask-image: linear-gradient(135deg, transparent 60%, black 100%);
 }
 
 .dark-mode .introduction-section:before {
   filter: invert(1);
-  opacity: .4;
+  opacity: 0.4;
 }
 
 .introduction-section .section-columns {
@@ -166,31 +166,31 @@
   transform: scale(1.25) !important;
 }
 
-.introduction-description table a[alt="vlt"] {
-  background-image: url("/public/images/clients/logo-vlt.png") !important;
+.introduction-description table a[alt='vlt'] {
+  background-image: url('/public/images/clients/logo-vlt.png') !important;
 }
 
-.introduction-description table a[alt="npm"] {
-  background-image: url("/public/images/clients/logo-npm.png") !important;
+.introduction-description table a[alt='npm'] {
+  background-image: url('/public/images/clients/logo-npm.png') !important;
 }
 
-.introduction-description table a[alt="yarn"] {
-  background-image: url("/public/images/clients/logo-yarn.png") !important;
+.introduction-description table a[alt='yarn'] {
+  background-image: url('/public/images/clients/logo-yarn.png') !important;
 }
 
-.introduction-description table a[alt="pnpm"] {
-  background-image: url("/public/images/clients/logo-pnpm.png") !important;
+.introduction-description table a[alt='pnpm'] {
+  background-image: url('/public/images/clients/logo-pnpm.png') !important;
 }
 
-.introduction-description table a[alt="deno"] {
-  background-image: url("/public/images/clients/logo-deno.png") !important;
+.introduction-description table a[alt='deno'] {
+  background-image: url('/public/images/clients/logo-deno.png') !important;
 }
 
-.introduction-description table a[alt="bun"] {
-  background-image: url("/public/images/clients/logo-bun.png") !important;
+.introduction-description table a[alt='bun'] {
+  background-image: url('/public/images/clients/logo-bun.png') !important;
 }
 
-.scalar-app .markdown [alt=license] summary:after {
+.scalar-app .markdown [alt='license'] summary:after {
   top: 2px;
 }
 
@@ -198,22 +198,33 @@
   font-size: 11px;
 }
 
-[alt=features],
-[alt=resources],
-[alt=trademark-disclaimer],
-[alt=license],
-[alt=license] summary {
+[alt='features'],
+[alt='resources'],
+[alt='trademark-disclaimer'],
+[alt='license'],
+[alt='license'] summary {
   font-size: 12px !important;
   line-height: 180% !important;
 }
 
-[alt=license] {
+[alt='license'] {
   padding: 5px 20px !important;
   font-family: courier !important;
 }
 
-[alt=license] summary {
+[alt='license'] summary {
   padding: 0 0 0 20px !important;
   margin: 0 0 0 -20px !important;
-  font-family: Inter, -apple-system, "system-ui", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
+  font-family:
+    Inter,
+    -apple-system,
+    'system-ui',
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Open Sans',
+    'Helvetica Neue',
+    sans-serif !important;
 }

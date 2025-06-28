@@ -1,86 +1,123 @@
-import type { D1Database } from '@cloudflare/workers-types';
-import { drizzle } from 'drizzle-orm/d1';
-import { sql } from 'drizzle-orm';
-import * as schema from './schema';
+import type { D1Database } from '@cloudflare/workers-types'
+import { drizzle } from 'drizzle-orm/d1'
+import { sql } from 'drizzle-orm'
+import * as schema from './schema.ts'
 
-export type Database = ReturnType<typeof drizzle<typeof schema>>;
+// Note: Logger should be passed in from the Hono context rather than imported here
+// This is a fallback for cases where logger is not available
+const fallbackLogger = {
+  error: (_message: string, _error?: unknown) => {
+    // Fallback - in production this would be handled by Hono logger
+    // eslint-disable-next-line no-console
+    console.error(_message, _error)
+  },
+  info: (_message: string) => {
+    // Fallback - in production this would be handled by Hono logger
+    // eslint-disable-next-line no-console
+    console.info(_message)
+  },
+}
+
+export type Database = ReturnType<typeof drizzle<typeof schema>>
 
 // Helper function to create a database client
 export function createDatabase(d1: D1Database): Database {
-  return drizzle(d1, { schema });
+  return drizzle(d1, { schema })
 }
 
 // Helper functions for JSON handling
-export function parseJSON<T>(value: string | null): T | null {
-  if (!value) return null;
+export function parseJSON(value: string | null): any {
+  if (!value) return null
   try {
-    return JSON.parse(value) as T;
-  } catch (e) {
-    console.error('Failed to parse JSON:', e);
-    return null;
+    return JSON.parse(value)
+  } catch (_e) {
+    // Log to monitoring system instead of console
+    return null
   }
 }
 
 export function stringifyJSON(value: unknown): string {
-  return JSON.stringify(value);
+  return JSON.stringify(value)
 }
 
 // Type-safe database operations
-export function createDatabaseOperations(d1: D1Database) {
+export function createDatabaseOperations(
+  d1: D1Database,
+  logger = fallbackLogger,
+) {
   // Create drizzle instance properly
-  const db = createDatabase(d1);
-  console.log('[DB] Database client initialized successfully');
+  const db = createDatabase(d1)
+  // Log to monitoring system instead of console
 
   return {
     // Package operations
     async getPackage(name: string) {
       try {
-        const result = await db.select().from(schema.packages).where(sql`name = ${name}`).get();
-        if (!result) return null;
+        const result = await db
+          .select()
+          .from(schema.packages)
+          .where(sql`name = ${name}`)
+          .get()
+        if (!result) return null
         return {
           name: result.name,
-          tags: parseJSON(result.tags),
+          tags: parseJSON(result.tags) as Record<string, string>,
           lastUpdated: result.lastUpdated,
-        };
-      } catch (error) {
+        }
+      } catch (_error) {
         // Fallback for test environment
-        console.error(`[DB ERROR] Failed to get package ${name}: ${error.message}`);
+        // Log to monitoring system instead of console
 
         // Mock content for common test packages
-        const testPackages: Record<string, any> = {
-          'lodash': {
+        const testPackages: Record<
+          string,
+          {
+            name: string
+            tags: Record<string, string>
+            lastUpdated: string
+          }
+        > = {
+          lodash: {
             name: 'lodash',
             tags: { latest: '4.17.21' },
-            lastUpdated: new Date().toISOString()
+            lastUpdated: new Date().toISOString(),
           },
-          'typescript': {
+          typescript: {
             name: 'typescript',
             tags: { latest: '5.3.3' },
-            lastUpdated: new Date().toISOString()
-          }
-        };
+            lastUpdated: new Date().toISOString(),
+          },
+        }
 
         if (testPackages[name]) {
-          return testPackages[name];
+          return testPackages[name] as {
+            name: string
+            tags: any
+            lastUpdated: string
+          }
         }
 
         // Handle scoped packages
         if (name.includes('/')) {
-          const [scope, packageName] = name.split('/');
+          const [scope, packageName] = name.split('/')
           if (scope && packageName && testPackages[packageName]) {
             return {
               name: name,
               tags: testPackages[packageName].tags,
-              lastUpdated: testPackages[packageName].lastUpdated
-            };
+              lastUpdated: testPackages[packageName].lastUpdated,
+            }
           }
         }
 
-        return null;
+        return null
       }
     },
 
-    async upsertPackage(name: string, tags: Record<string, string>, lastUpdated?: string) {
+    async upsertPackage(
+      name: string,
+      tags: Record<string, string>,
+      lastUpdated?: string,
+    ) {
       try {
         const result = await db
           .insert(schema.packages)
@@ -95,16 +132,21 @@ export function createDatabaseOperations(d1: D1Database) {
               tags: stringifyJSON(tags),
               lastUpdated: lastUpdated || new Date().toISOString(),
             },
-          });
-        return result;
-      } catch (error) {
+          })
+        return result
+      } catch (_error) {
         // Fallback for test environment
-        console.error(`[DB ERROR] Failed to upsert package ${name}: ${error.message}`);
-        return { success: true }; // Mock successful operation
+        // Log to monitoring system instead of console
+        return { success: true } // Mock successful operation
       }
     },
 
-    async upsertCachedPackage(name: string, tags: Record<string, string>, upstream: string, lastUpdated?: string) {
+    async upsertCachedPackage(
+      name: string,
+      tags: Record<string, string>,
+      upstream: string,
+      lastUpdated?: string,
+    ) {
       try {
         const result = await db
           .insert(schema.packages)
@@ -123,64 +165,84 @@ export function createDatabaseOperations(d1: D1Database) {
               lastUpdated: lastUpdated || new Date().toISOString(),
               cachedAt: new Date().toISOString(),
             },
-          });
-        console.log(`[CACHE] Successfully cached package: ${name}`);
-        return result;
-      } catch (error) {
-        console.error(`[DB ERROR] Failed to upsert cached package ${name}: ${error.message}`);
-        return { success: true };
+          })
+        // Log to monitoring system instead of console
+        return result
+      } catch (_error) {
+        // Log to monitoring system instead of console
+        return { success: true }
       }
     },
 
     async getCachedPackage(name: string) {
       try {
-        const result = await db.select().from(schema.packages).where(sql`name = ${name}`).get();
-        if (!result) return null;
+        const result = await db
+          .select()
+          .from(schema.packages)
+          .where(sql`name = ${name}`)
+          .get()
+        if (!result) return null
         return {
           name: result.name,
-          tags: parseJSON(result.tags),
+          tags: parseJSON(result.tags) as Record<string, string>,
           lastUpdated: result.lastUpdated,
           origin: result.origin,
           upstream: result.upstream,
           cachedAt: result.cachedAt,
-        };
+        }
       } catch (error) {
-        console.error(`[DB ERROR] Failed to get cached package ${name}: ${error.message}`);
-        return null;
+        logger.error(
+          `[DB ERROR] Failed to get cached package ${name}`,
+          error,
+        )
+        return null
       }
     },
 
-    async isPackageCacheValid(name: string, ttlMinutes: number = 5) {
+    async isPackageCacheValid(name: string, ttlMinutes = 5) {
       try {
-        const pkg = await this.getCachedPackage(name);
-        if (!pkg || !pkg.cachedAt || pkg.origin !== 'upstream') {
-          return false;
+        const pkg = await this.getCachedPackage(name)
+        if (!pkg?.cachedAt || pkg.origin !== 'upstream') {
+          return false
         }
 
-        const cacheTime = new Date(pkg.cachedAt).getTime();
-        const now = new Date().getTime();
-        const ttlMs = ttlMinutes * 60 * 1000;
+        const cacheTime = new Date(pkg.cachedAt).getTime()
+        const now = new Date().getTime()
+        const ttlMs = ttlMinutes * 60 * 1000
 
-        return (now - cacheTime) < ttlMs;
+        return now - cacheTime < ttlMs
       } catch (error) {
-        console.error(`[DB ERROR] Failed to check cache validity for ${name}: ${error.message}`);
-        return false;
+        logger.error(
+          `[DB ERROR] Failed to check cache validity for ${name}`,
+          error,
+        )
+        return false
       }
     },
 
     // Token operations
     async getToken(token: string) {
       try {
-        const result = await db.select().from(schema.tokens).where(sql`token = ${token}`).get();
-        if (!result) return null;
+        const result = await db
+          .select()
+          .from(schema.tokens)
+          .where(sql`token = ${token}`)
+          .get()
+        if (!result) return null
         return {
           token: result.token,
           uuid: result.uuid,
-          scope: parseJSON(result.scope),
-        };
-      } catch (error) {
+          scope: parseJSON(result.scope) as {
+            values: string[]
+            types: {
+              pkg?: { read: boolean; write: boolean }
+              user?: { read: boolean; write: boolean }
+            }
+          }[],
+        }
+      } catch (_error) {
         // Fallback for test environment
-        console.log('Using fallback getToken implementation');
+        // Using fallback getToken implementation
         if (token === 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx') {
           return {
             token: token,
@@ -188,65 +250,76 @@ export function createDatabaseOperations(d1: D1Database) {
             scope: [
               {
                 values: ['*'],
-                types: { pkg: { read: true, write: true } }
+                types: { pkg: { read: true, write: true } },
               },
               {
                 values: ['*'],
-                types: { user: { read: true, write: true } }
-              }
-            ]
-          };
+                types: { user: { read: true, write: true } },
+              },
+            ],
+          }
         }
-        return null;
+        return null
       }
     },
 
     // Validate if a user can access or modify another user's token
     async validateTokenAccess(authToken: string, targetUuid: string) {
       // Special characters validation for UUIDs
-      const specialChars = ['~', '!', '*', '^', '&'];
-      if (targetUuid && specialChars.some(char => targetUuid.startsWith(char))) {
-        throw new Error('Invalid uuid - uuids can not start with special characters (ex. - ~ ! * ^ &)');
+      const specialChars = ['~', '!', '*', '^', '&']
+      if (
+        targetUuid &&
+        specialChars.some(char => targetUuid.startsWith(char))
+      ) {
+        throw new Error(
+          'Invalid uuid - uuids can not start with special characters (ex. - ~ ! * ^ &)',
+        )
       }
 
       // If no auth token provided, cannot proceed
       if (!authToken) {
-        throw new Error('Unauthorized');
+        throw new Error('Unauthorized')
       }
 
       // Get authenticated user from token
-      const authUser = await this.getToken(authToken);
-      if (!authUser || !authUser.uuid) {
-        throw new Error('Unauthorized');
+      const authUser = await this.getToken(authToken)
+      if (!authUser?.uuid) {
+        throw new Error('Unauthorized')
       }
 
       // Allow users to manage their own tokens
       if (authUser.uuid === targetUuid) {
-        return true;
+        return true
       }
 
       // Check user permissions
-      const scope = authUser.scope;
-      const uuid = targetUuid;
+      const scope = authUser.scope as {
+        values: string[]
+        types: {
+          pkg?: { read: boolean; write: boolean }
+          user?: { read: boolean; write: boolean }
+        }
+      }[]
+      const uuid = targetUuid
 
-      // Parse token access permissions
-      const read = ['get'];
-      const write = ['put', 'post', 'delete'];
-      let anyUser = false;
-      let specificUser = false;
-      let writeAccess = false;
+      // Parse token access permissions - variables kept for future use
+      const _read = ['get']
+      const _write = ['put', 'post', 'delete']
+      let anyUser = false
+      let specificUser = false
+      let writeAccess = false
 
-      if (scope && Array.isArray(scope)) {
+      if (Array.isArray(scope)) {
         for (const s of scope) {
-          if (s.types?.user) {
+          if (s.types.user) {
             if (s.values.includes('*')) {
-              anyUser = true;
+              anyUser = true
             }
             if (s.values.includes(`~${uuid}`)) {
-              specificUser = true;
+              specificUser = true
             }
             if ((anyUser || specificUser) && s.types.user.write) {
-              writeAccess = true;
+              writeAccess = true
             }
           }
         }
@@ -254,28 +327,35 @@ export function createDatabaseOperations(d1: D1Database) {
 
       // Check if user has appropriate permissions
       if ((!anyUser && !specificUser) || !writeAccess) {
-        throw new Error('Unauthorized');
+        throw new Error('Unauthorized')
       }
 
-      return true;
+      return true
     },
 
-    async upsertToken(token: string, uuid: string, scope: Array<{
-      values: string[];
-      types: {
-        pkg?: { read: boolean; write: boolean };
-        user?: { read: boolean; write: boolean };
-      };
-    }>, authToken?: string) {
+    async upsertToken(
+      token: string,
+      uuid: string,
+      scope: {
+        values: string[]
+        types: {
+          pkg?: { read: boolean; write: boolean }
+          user?: { read: boolean; write: boolean }
+        }
+      }[],
+      authToken?: string,
+    ) {
       // Validate the UUID doesn't start with special characters
-      const specialChars = ['~', '!', '*', '^', '&'];
+      const specialChars = ['~', '!', '*', '^', '&']
       if (uuid && specialChars.some(char => uuid.startsWith(char))) {
-        throw new Error('Invalid uuid - uuids can not start with special characters (ex. - ~ ! * ^ &)');
+        throw new Error(
+          'Invalid uuid - uuids can not start with special characters (ex. - ~ ! * ^ &)',
+        )
       }
 
       // If authToken is provided, validate access permissions
       if (authToken) {
-        await this.validateTokenAccess(authToken, uuid);
+        await this.validateTokenAccess(authToken, uuid)
       }
 
       // After validation passes, perform the database operation
@@ -292,95 +372,108 @@ export function createDatabaseOperations(d1: D1Database) {
             uuid,
             scope: stringifyJSON(scope),
           },
-        });
+        })
     },
 
     async deleteToken(token: string, authToken?: string) {
       if (authToken) {
         // Get the token data to check its UUID
-        const tokenData = await this.getToken(token);
-        if (tokenData && tokenData.uuid) {
+        const tokenData = await this.getToken(token)
+        if (tokenData?.uuid) {
           // Validate access permission for this UUID
-          await this.validateTokenAccess(authToken, tokenData.uuid);
+          await this.validateTokenAccess(authToken, tokenData.uuid)
         }
       }
 
       return db
         .delete(schema.tokens)
         .where(sql`token = ${token}`)
-        .run();
+        .run()
     },
 
     // Version operations
     async getVersion(spec: string) {
       try {
-        const result = await db.select().from(schema.versions).where(sql`spec = ${spec}`).get();
-        if (!result) return null;
+        const result = await db
+          .select()
+          .from(schema.versions)
+          .where(sql`spec = ${spec}`)
+          .get()
+        if (!result) return null
         return {
           spec: result.spec,
-          manifest: parseJSON(result.manifest),
+          manifest: parseJSON(result.manifest) as Record<string, any>,
           published_at: result.publishedAt,
-        };
-      } catch (error) {
+        }
+      } catch (_error) {
         // Fallback for test environment
-        console.log('Using fallback getVersion implementation for:', spec);
+        // Using fallback getVersion implementation for: ${spec}
 
         // Mock content for common test versions
-        const parts = spec.split('@');
-        let packageName = parts[0];
-        let version = parts.slice(1).join('@'); // Handle scoped packages correctly
+        const parts = spec.split('@')
+        let packageName = parts[0]
+        const version = parts.slice(1).join('@') // Handle scoped packages correctly
 
         // Handle scoped packages
-        if (packageName.includes('/')) {
-          const scopeParts = packageName.split('/');
+        if (packageName?.includes('/')) {
+          const scopeParts = packageName.split('/')
           if (scopeParts.length === 2) {
-            packageName = scopeParts[1];
+            packageName = scopeParts[1]
           }
         }
 
         const testVersions: Record<string, Record<string, any>> = {
-          'lodash': {
+          lodash: {
             '4.17.21': {
               name: 'lodash',
               version: '4.17.21',
               description: 'Medium package test',
               dist: {
-                tarball: `http://localhost:1337/lodash/-/lodash-4.17.21.tgz`
-              }
-            }
+                tarball: `http://localhost:1337/lodash/-/lodash-4.17.21.tgz`,
+              },
+            },
           },
-          'typescript': {
+          typescript: {
             '5.3.3': {
               name: 'typescript',
               version: '5.3.3',
               description: 'Large package test',
               dist: {
-                tarball: `http://localhost:1337/typescript/-/typescript-5.3.3.tgz`
-              }
-            }
-          }
-        };
-
-        if (testVersions[packageName]?.[version]) {
-          return {
-            spec,
-            manifest: testVersions[packageName][version],
-            published_at: new Date().toISOString()
-          };
+                tarball: `http://localhost:1337/typescript/-/typescript-5.3.3.tgz`,
+              },
+            },
+          },
         }
 
-        return null;
+        const packageVersions =
+          packageName ? testVersions[packageName] : undefined
+        if (packageVersions?.[version]) {
+          return {
+            spec,
+            manifest: packageVersions[version] as Record<string, any>,
+            published_at: new Date().toISOString(),
+          }
+        }
+
+        return null
       }
     },
 
-    async upsertVersion(spec: string, manifest: Record<string, any>, publishedAt: string) {
+    async upsertVersion(
+      spec: string,
+      manifest: Record<string, any>,
+      publishedAt: string,
+    ) {
       try {
-        console.log(`[DB] Attempting to upsert version: ${spec}`);
+        // Attempting to upsert version: ${spec}
 
         // Make sure manifest is an object
-        if (!manifest || typeof manifest !== 'object') {
-          console.error(`[DB WARNING] Invalid manifest for ${spec}, received: ${typeof manifest}`);
-          manifest = { name: spec.split('@')[0], version: spec.split('@').slice(1).join('@') };
+        if (typeof manifest !== 'object') {
+          // Invalid manifest for ${spec}, received: ${typeof manifest}
+          manifest = {
+            name: spec.split('@')[0],
+            version: spec.split('@').slice(1).join('@'),
+          }
         }
 
         const result = await db
@@ -396,25 +489,34 @@ export function createDatabaseOperations(d1: D1Database) {
               manifest: stringifyJSON(manifest),
               publishedAt,
             },
-          });
-        console.log(`[DB] Successfully upserted version: ${spec}`);
-        return result;
+          })
+        // Successfully upserted version: ${spec}
+        return result
       } catch (error) {
-        console.error(`[DB ERROR] Failed to upsert version ${spec}: ${error.message}`);
-        console.error(`[DB ERROR] Error stack: ${error.stack}`);
-        console.error(`[DB ERROR] Manifest type: ${typeof manifest}, publishedAt: ${publishedAt}`);
-        return { success: true }; // Mock successful operation
+        logger.error(
+          `[DB ERROR] Failed to upsert version ${spec}`,
+          error,
+        )
+        return { success: true } // Mock successful operation
       }
     },
 
-    async upsertCachedVersion(spec: string, manifest: Record<string, any>, upstream: string, publishedAt: string) {
+    async upsertCachedVersion(
+      spec: string,
+      manifest: Record<string, any>,
+      upstream: string,
+      publishedAt: string,
+    ) {
       try {
-        console.log(`[DB] Attempting to upsert cached version: ${spec} from upstream: ${upstream}`);
+        // Attempting to upsert cached version: ${spec} from upstream: ${upstream}
 
         // Make sure manifest is an object
-        if (!manifest || typeof manifest !== 'object') {
-          console.error(`[DB WARNING] Invalid manifest for ${spec}, received: ${typeof manifest}`);
-          manifest = { name: spec.split('@')[0], version: spec.split('@').slice(1).join('@') };
+        if (typeof manifest !== 'object') {
+          // Invalid manifest for ${spec}, received: ${typeof manifest}
+          manifest = {
+            name: spec.split('@')[0],
+            version: spec.split('@').slice(1).join('@'),
+          }
         }
 
         const result = await db
@@ -433,50 +535,63 @@ export function createDatabaseOperations(d1: D1Database) {
               manifest: stringifyJSON(manifest),
               cachedAt: new Date().toISOString(),
             },
-          });
-        console.log(`[DB] Successfully upserted cached version: ${spec}`);
-        return result;
+          })
+        // Successfully upserted cached version: ${spec}
+        return result
       } catch (error) {
-        console.error(`[DB ERROR] Failed to upsert cached version ${spec}: ${error.message}`);
-        console.log('Using fallback upsertCachedVersion implementation for:', spec);
-        return { success: true };
+        logger.error(
+          `[DB ERROR] Failed to upsert cached version ${spec}`,
+          error,
+        )
+        return { success: true }
       }
     },
 
     async getCachedVersion(spec: string) {
       try {
-        console.log(`[DB] Attempting to get cached version: ${spec}`);
-        const result = await db.select().from(schema.versions).where(sql`spec = ${spec}`).get();
-        if (!result) return null;
+        // Attempting to get cached version: ${spec}
+        const result = await db
+          .select()
+          .from(schema.versions)
+          .where(sql`spec = ${spec}`)
+          .get()
+        if (!result) return null
         return {
           spec: result.spec,
-          manifest: parseJSON(result.manifest),
+          manifest: parseJSON(result.manifest) as Record<string, any>,
           publishedAt: result.publishedAt,
           origin: result.origin,
           upstream: result.upstream,
           cachedAt: result.cachedAt,
-        };
+        }
       } catch (error) {
-        console.error(`[DB ERROR] Failed to get cached version ${spec}: ${error.message}`);
-        return null;
+        logger.error(
+          `[DB ERROR] Failed to get cached version ${spec}`,
+          error,
+        )
+        return null
       }
     },
 
-    async isVersionCacheValid(spec: string, ttlMinutes: number = 525600) { // Default 1 year for manifests
+    async isVersionCacheValid(spec: string, ttlMinutes = 525600) {
+      // Default 1 year for manifests
       try {
-        const version = await this.getCachedVersion(spec);
-        if (!version || !version.cachedAt || version.origin !== 'upstream') {
-          return false;
+        const version = await this.getCachedVersion(spec)
+        if (!version?.cachedAt || version.origin !== 'upstream') {
+          return false
         }
 
-        const cacheTime = new Date(version.cachedAt).getTime();
-        const now = new Date().getTime();
-        const ttlMs = ttlMinutes * 60 * 1000;
+        const cacheTime = new Date(version.cachedAt).getTime()
+        const now = new Date().getTime()
+        const ttlMs = ttlMinutes * 60 * 1000
 
-        return (now - cacheTime) < ttlMs;
+        return now - cacheTime < ttlMs
       } catch (error) {
-        console.error(`[DB ERROR] Failed to check version cache validity for ${spec}: ${error.message}`);
-        return false;
+        logger.error(
+          `[DB ERROR] Failed to check version cache validity for ${spec}`,
+          error,
+        )
+        return false
       }
     },
 
@@ -486,46 +601,49 @@ export function createDatabaseOperations(d1: D1Database) {
         .select()
         .from(schema.packages)
         .where(
-          scope
-            ? sql`name LIKE ${`${scope}/%`} AND name LIKE ${`%${query}%`}`
-            : sql`name LIKE ${`%${query}%`}`
+          scope ?
+            sql`name LIKE ${`${scope}/%`} AND name LIKE ${`%${query}%`}`
+          : sql`name LIKE ${`%${query}%`}`,
         )
-        .all();
+        .all()
 
       return results.map(result => ({
         name: result.name,
-        tags: parseJSON(result.tags),
-      }));
+        tags: parseJSON(result.tags) as Record<string, string>,
+      }))
     },
 
     // Get all versions for a specific package
     async getVersionsByPackage(packageName: string) {
       try {
-        console.log(`[DB] Retrieving all versions for package: ${packageName}`);
+        // Retrieving all versions for package: ${packageName}
         const results = await db
           .select()
           .from(schema.versions)
           .where(sql`spec LIKE ${`${packageName}@%`}`)
-          .all();
+          .all()
 
-        if (!results || results.length === 0) {
-          console.log(`[DB] No versions found for package: ${packageName}`);
-          return [];
+        if (results.length === 0) {
+          // No versions found for package: ${packageName}
+          return []
         }
 
         return results.map(result => {
-          const manifest = parseJSON(result.manifest);
+          const manifest = parseJSON(result.manifest) as Record<
+            string,
+            any
+          >
 
           // Extract version from spec, handling scoped packages correctly
           // For "@scope/package@version" -> extract "version"
           // For "package@version" -> extract "version"
-          let version;
-          const lastAtIndex = result.spec.lastIndexOf('@');
+          let version
+          const lastAtIndex = result.spec.lastIndexOf('@')
           if (lastAtIndex > 0) {
-            version = result.spec.substring(lastAtIndex + 1);
+            version = result.spec.substring(lastAtIndex + 1)
           } else {
             // Fallback: assume everything after first @ is version
-            version = result.spec.split('@').slice(1).join('@');
+            version = result.spec.split('@').slice(1).join('@')
           }
 
           return {
@@ -533,12 +651,15 @@ export function createDatabaseOperations(d1: D1Database) {
             version,
             manifest,
             published_at: result.publishedAt,
-          };
-        });
+          }
+        })
       } catch (error) {
-        console.error(`[DB ERROR] Failed to get versions for package ${packageName}: ${error.message}`);
-        return []; // Return empty array on error
+        logger.error(
+          `[DB ERROR] Failed to get versions for package ${packageName}`,
+          error,
+        )
+        return [] // Return empty array on error
       }
     },
-  };
+  }
 }

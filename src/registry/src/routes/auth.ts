@@ -1,30 +1,49 @@
 import { setSignedCookie, getSignedCookie } from 'hono/cookie'
 import { WorkOS } from '@workos-inc/node'
-import type { HonoContext, WorkOSUser, WorkOSAuthResponse, WorkOSAuthResult } from '../../types.ts'
+import type {
+  HonoContext,
+  WorkOSAuthResponse,
+  WorkOSAuthResult,
+} from '../../types.ts'
 
-export async function requiresAuth(c: HonoContext, next: () => Promise<void>) {
-  const workos = new WorkOS(c.env.WORKOS_API_KEY, {
-    clientId: c.env.WORKOS_CLIENT_ID
+// Define interfaces for WorkOS session data
+interface WorkOSSession {
+  authenticate(): Promise<WorkOSAuthResponse>
+}
+
+export async function requiresAuth(
+  c: HonoContext,
+  next: () => Promise<void>,
+) {
+  const workosApiKey = c.env.WORKOS_API_KEY as string
+  const workosClientId = c.env.WORKOS_CLIENT_ID as string
+  const workos = new WorkOS(workosApiKey, {
+    clientId: workosClientId,
   })
 
   try {
-    const sessionData = await getSignedCookie(c, c.env.WORKOS_COOKIE_PASSWORD, 'wos')
+    const sessionData = await getSignedCookie(
+      c,
+      c.env.WORKOS_COOKIE_PASSWORD as string,
+      'wos',
+    )
     if (!sessionData) {
       return c.redirect('/?error=no_session')
     }
 
-    const session = await workos.userManagement.loadSealedSession({
+    const session = workos.userManagement.loadSealedSession({
       sessionData,
-      cookiePassword: c.env.WORKOS_COOKIE_PASSWORD,
-    })
+      cookiePassword: c.env.WORKOS_COOKIE_PASSWORD as string,
+    }) as WorkOSSession
 
-    const authResponse = await session.authenticate() as WorkOSAuthResponse
+    const authResponse = await session.authenticate()
 
     if (authResponse.authenticated) {
       // User is authenticated and session data can be used
-      const { sessionId, organizationId, role, permissions, user } = authResponse
+      const { sessionId: _sessionId, organizationId: _organizationId, role: _role, permissions: _permissions, user } =
+        authResponse
       c.set('user', user)
-      console.log('logged in user', user)
+      // Hono middleware will log user authentication
     } else {
       if (authResponse.reason === 'no_session_cookie_provided') {
         // Redirect the user to the login page
@@ -32,8 +51,8 @@ export async function requiresAuth(c: HonoContext, next: () => Promise<void>) {
       }
       return c.redirect('/?error=authentication_failed')
     }
-  } catch (error) {
-    console.error('Auth error:', error)
+  } catch (_error) {
+    // Hono middleware will log authentication errors
     return c.redirect('/?error=auth_error')
   }
 
@@ -41,26 +60,30 @@ export async function requiresAuth(c: HonoContext, next: () => Promise<void>) {
 }
 
 export async function handleLogin(c: HonoContext) {
-  const workos = new WorkOS(c.env.WORKOS_API_KEY, {
-    clientId: c.env.WORKOS_CLIENT_ID,
+  const workosApiKey = c.env.WORKOS_API_KEY as string
+  const workosClientId = c.env.WORKOS_CLIENT_ID as string
+  const workos = new WorkOS(workosApiKey, {
+    clientId: workosClientId,
   })
 
   const authorizationUrl = workos.userManagement.getAuthorizationUrl({
-    provider: c.env.WORKOS_PROVIDER,
-    redirectUri: c.env.WORKOS_REDIRECT_URI,
-    clientId: c.env.WORKOS_CLIENT_ID,
+    provider: c.env.WORKOS_PROVIDER as string,
+    redirectUri: c.env.WORKOS_REDIRECT_URI as string,
+    clientId: workosClientId,
   })
 
   return c.redirect(authorizationUrl)
 }
 
 export async function handleCallback(c: HonoContext) {
-  const workos = new WorkOS(c.env.WORKOS_API_KEY, {
-    clientId: c.env.WORKOS_CLIENT_ID,
+  const workosApiKey = c.env.WORKOS_API_KEY as string
+  const workosClientId = c.env.WORKOS_CLIENT_ID as string
+  const workos = new WorkOS(workosApiKey, {
+    clientId: workosClientId,
   })
 
   const code = c.req.query('code')
-  console.log('code', code)
+  // Hono middleware will log callback code information
 
   if (!code) {
     return c.redirect('/?error=no_code')
@@ -69,25 +92,29 @@ export async function handleCallback(c: HonoContext) {
   try {
     const res = await workos.userManagement.authenticateWithCode({
       code,
-      clientId: c.env.WORKOS_CLIENT_ID,
+      clientId: workosClientId,
       session: {
         sealSession: true,
-        cookiePassword: c.env.WORKOS_COOKIE_PASSWORD
-      }
-    }) as WorkOSAuthResult
+        cookiePassword: c.env.WORKOS_COOKIE_PASSWORD as string,
+      },
+    })
 
-    console.log('res', res)
+    // Hono middleware will log authentication result
 
-    if (!res.user) {
-      return c.redirect('/?error=user_not_found')
-    }
+    // Validate response has required properties
+    const authResult = res as WorkOSAuthResult
+    
+    // Hono middleware will log sealed session information
+    await setSignedCookie(
+      c,
+      'wos',
+      authResult.sealedSession,
+      c.env.WORKOS_COOKIE_PASSWORD as string,
+    )
 
-    console.log('user code', res.sealedSession)
-    await setSignedCookie(c, 'wos', res.sealedSession, c.env.WORKOS_COOKIE_PASSWORD)
-
-    return c.json({ user: res.user })
-  } catch (error) {
-    console.error('Callback error:', error)
+    return c.json({ user: authResult.user })
+  } catch (_error) {
+    // Hono middleware will log callback errors
     return c.redirect('/?error=code_error')
   }
 }

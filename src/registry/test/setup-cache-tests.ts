@@ -1,0 +1,229 @@
+import { vi, afterAll } from 'vitest'
+
+// Setup mock global objects for testing
+// This runs before the tests to provide necessary mocks
+
+// Mock global web standard objects that are available in Cloudflare Workers
+// but not in Node.js test environment
+
+// Mock Request class if not available
+if (typeof Request === 'undefined') {
+  ;(global as any).Request = class MockRequest {
+    url: string
+    method: string
+    headers: Headers
+    body: any
+
+    constructor(input: string, init?: RequestInit) {
+      this.url = input
+      this.method = (init?.method || 'GET').toUpperCase()
+      this.headers = new Headers(init?.headers)
+      this.body = init?.body
+    }
+
+    async json(): Promise<any> {
+      if (typeof this.body === 'string') {
+        return JSON.parse(this.body)
+      } else if (this.body && typeof this.body.json === 'function') {
+        return this.body.json()
+      }
+      return undefined
+    }
+
+    async text(): Promise<string> {
+      if (typeof this.body === 'string') {
+        return this.body
+      } else if (this.body && typeof this.body.text === 'function') {
+        return this.body.text()
+      }
+      return ''
+    }
+
+    async arrayBuffer(): Promise<ArrayBuffer> {
+      return new ArrayBuffer(0)
+    }
+
+    async formData(): Promise<FormData> {
+      return new FormData()
+    }
+
+    async blob(): Promise<Blob> {
+      return new Blob()
+    }
+
+    get path(): string {
+      try {
+        return new URL(this.url).pathname
+      } catch {
+        return this.url
+      }
+    }
+  }
+}
+
+// Mock Response class if not available
+if (typeof Response === 'undefined') {
+  ;(global as any).Response = class MockResponse {
+    body: any
+    status: number
+    statusText: string
+    headers: Headers
+    ok: boolean
+    type: string
+    redirected: boolean
+    url: string
+    private _bodyUsed: boolean
+
+    constructor(body?: any, init?: ResponseInit) {
+      this.body = body
+      this.status = init?.status || 200
+      this.statusText = init?.statusText || ''
+      this.headers = new Headers(init?.headers)
+      this.ok = this.status >= 200 && this.status < 300
+      this.type = 'default'
+      this.redirected = false
+      this.url = ''
+      this._bodyUsed = false
+    }
+
+    get bodyUsed(): boolean {
+      return this._bodyUsed
+    }
+
+    async arrayBuffer(): Promise<ArrayBuffer> {
+      this._bodyUsed = true
+      if (this.body instanceof ArrayBuffer) return this.body
+      if (typeof this.body === 'string') {
+        const encoder = new TextEncoder()
+        return encoder.encode(this.body).buffer
+      }
+      return new ArrayBuffer(0)
+    }
+
+    async text(): Promise<string> {
+      this._bodyUsed = true
+      if (typeof this.body === 'string') return this.body
+      if (this.body && typeof this.body.text === 'function')
+        return this.body.text()
+      if (this.body && typeof this.body === 'object')
+        return JSON.stringify(this.body)
+      return ''
+    }
+
+    async json(): Promise<any> {
+      this._bodyUsed = true
+      if (typeof this.body === 'string') return JSON.parse(this.body)
+      if (this.body && typeof this.body.json === 'function')
+        return this.body.json()
+      if (this.body && typeof this.body === 'object') return this.body
+      return {}
+    }
+
+    clone(): MockResponse {
+      return new MockResponse(this.body, {
+        status: this.status,
+        statusText: this.statusText,
+        headers: new Headers(this.headers),
+      })
+    }
+  }
+}
+
+// Mock Headers class if not available
+if (typeof Headers === 'undefined') {
+  ;(global as any).Headers = class MockHeaders {
+    private _headers: Map<string, string>
+
+    constructor(init?: HeadersInit) {
+      this._headers = new Map()
+      if (init) {
+        if (init instanceof Headers) {
+          init.forEach((value, key) => {
+            this.append(key, value)
+          })
+        } else if (Array.isArray(init)) {
+          init.forEach(([key, value]) => {
+            this.append(key, value)
+          })
+        } else if (typeof init === 'object') {
+          Object.entries(init).forEach(([key, value]) => {
+            this.append(key, value)
+          })
+        }
+      }
+    }
+
+    append(name: string, value: string): void {
+      name = name.toLowerCase()
+      if (this._headers.has(name)) {
+        this._headers.set(
+          name,
+          `${this._headers.get(name)}, ${value}`,
+        )
+      } else {
+        this._headers.set(name, value)
+      }
+    }
+
+    delete(name: string): void {
+      this._headers.delete(name.toLowerCase())
+    }
+
+    get(name: string): string | null {
+      return this._headers.get(name.toLowerCase()) || null
+    }
+
+    has(name: string): boolean {
+      return this._headers.has(name.toLowerCase())
+    }
+
+    set(name: string, value: string): void {
+      this._headers.set(name.toLowerCase(), value)
+    }
+
+    forEach(
+      callback: (value: string, key: string, parent: Headers) => void,
+    ): void {
+      this._headers.forEach((value, key) => {
+        callback(value, key, this as any)
+      })
+    }
+  }
+}
+
+// Mock TransformStream if not available
+if (typeof TransformStream === 'undefined') {
+  ;(global as any).TransformStream = class MockTransformStream {
+    readable: any
+    writable: any
+
+    constructor() {
+      this.readable = {
+        getReader: () => ({
+          read: async () => ({ done: true, value: undefined }),
+          cancel: async () => {},
+        }),
+      }
+      this.writable = {
+        getWriter: () => ({
+          write: async () => {},
+          close: async () => {},
+          abort: async () => {},
+        }),
+      }
+    }
+  }
+}
+
+// Mock console to avoid noise in tests
+const originalConsole = { ...console }
+console.debug = vi.fn()
+console.log = vi.fn()
+console.info = vi.fn()
+// Keep error and warn for debugging
+
+// Clean up all mocks after tests are done
+afterAll(() => {
+  vi.restoreAllMocks()
+  Object.assign(console, originalConsole)
+})

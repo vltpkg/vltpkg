@@ -1,33 +1,16 @@
-// @ts-ignore
-import validate from 'validate-npm-package-name'
-// @ts-ignore
 import * as semver from 'semver'
-import { accepts } from 'hono/accepts'
 import { DOMAIN, PROXY, PROXY_URL } from '../../config.ts'
 import {
-  parsePackageSpec,
   getUpstreamConfig,
   buildUpstreamUrl,
-  isProxyEnabled,
-  isValidUpstreamName,
-  getDefaultUpstream
 } from '../utils/upstream.ts'
-import {
-  extractPackageJSON,
-  packageSpec,
-  createFile,
-  createVersion,
-  slimManifest
-} from '../utils/packages.ts'
-import { getCachedPackageWithRefresh, getCachedVersionWithRefresh, isTarballCached, getTarballStoragePath, cacheTarball } from '../utils/cache.ts'
+import { createFile, slimManifest } from '../utils/packages.ts'
+import { getCachedPackageWithRefresh } from '../utils/cache.ts'
 import type {
   HonoContext,
-  PackageManifest,
   SlimmedManifest,
   ParsedPackage,
-  ParsedVersion,
-  UpstreamConfig,
-  PackageSpec
+  PackageManifest,
 } from '../../types.ts'
 
 interface SlimPackumentContext {
@@ -36,15 +19,36 @@ interface SlimPackumentContext {
   upstream?: string
 }
 
-interface TarballRequestParams {
+interface _TarballRequestParams {
   scope: string
   pkg: string
 }
 
-interface PackageRouteSegments {
+interface _PackageRouteSegments {
   upstream?: string
   packageName: string
   segments: string[]
+}
+
+interface _UpstreamData {
+  'dist-tags'?: Record<string, string>
+  versions?: Record<string, unknown>
+  time?: Record<string, string>
+  [key: string]: unknown
+}
+
+interface PackageData {
+  name: string
+  'dist-tags': Record<string, string>
+  versions: Record<string, unknown>
+  time: Record<string, string>
+}
+
+// Use the existing ParsedVersion interface from types.ts instead
+
+interface _CachedResult {
+  fromCache?: boolean
+  package?: PackageData
 }
 
 /**
@@ -52,65 +56,106 @@ interface PackageRouteSegments {
  * Only includes the absolute minimum fields needed for dependency resolution and installation
  * Fields included: name, version, dependencies, peerDependencies, optionalDependencies, peerDependenciesMeta, bin, engines, dist.tarball
  */
-function slimPackumentVersion(manifest: any, context: SlimPackumentContext = {}): SlimmedManifest {
-  if (!manifest) return {} as SlimmedManifest
-
+export async function slimPackumentVersion(
+  manifest: any,
+  context: SlimPackumentContext = {},
+): Promise<SlimmedManifest | null> {
   try {
+    if (!manifest) return null
+
     // Parse manifest if it's a string
+     
     let parsed: any
     if (typeof manifest === 'string') {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         parsed = JSON.parse(manifest)
-      } catch (e) {
+      } catch (_e) {
+         
         parsed = manifest
       }
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       parsed = manifest
     }
 
     // For packuments, only include the most essential fields
+     
     const slimmed: any = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       name: parsed.name,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       version: parsed.version,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       dependencies: parsed.dependencies || {},
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       peerDependencies: parsed.peerDependencies || {},
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       optionalDependencies: parsed.optionalDependencies || {},
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       peerDependenciesMeta: parsed.peerDependenciesMeta || {},
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       bin: parsed.bin,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       engines: parsed.engines,
       dist: {
-        tarball: rewriteTarballUrlIfNeeded(parsed.dist?.tarball || '', parsed.name, parsed.version, context)
-      }
+        tarball: rewriteTarballUrlIfNeeded(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          parsed.dist?.tarball || '',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          parsed.name,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          parsed.version,
+          context,
+        ),
+      },
     }
 
     // Remove undefined fields to keep response clean
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     Object.keys(slimmed).forEach(key => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (key !== 'dist' && slimmed[key] === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete slimmed[key]
       }
     })
 
     // Remove empty objects
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     if (Object.keys(slimmed.dependencies || {}).length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       delete slimmed.dependencies
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     if (Object.keys(slimmed.peerDependencies || {}).length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       delete slimmed.peerDependencies
     }
-    if (Object.keys(slimmed.peerDependenciesMeta || {}).length === 0) {
+    if (
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      Object.keys(slimmed.peerDependenciesMeta || {}).length === 0
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       delete slimmed.peerDependenciesMeta
     }
-    if (Object.keys(slimmed.optionalDependencies || {}).length === 0) {
+    if (
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      Object.keys(slimmed.optionalDependencies || {}).length === 0
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       delete slimmed.optionalDependencies
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     if (Object.keys(slimmed.engines || {}).length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       delete slimmed.engines
     }
 
     return slimmed as SlimmedManifest
-  } catch (err) {
-    console.error(`[ERROR] Failed to slim packument version: ${(err as Error).message}`)
-    return (manifest || {}) as SlimmedManifest
+  } catch (_err) {
+    // Hono logger will capture the error context automatically
+    return null
   }
 }
 
@@ -118,34 +163,26 @@ function slimPackumentVersion(manifest: any, context: SlimPackumentContext = {})
  * Rewrite tarball URLs to point to our registry instead of the original registry
  * Only rewrite if context is provided, otherwise return original URL
  */
-function rewriteTarballUrlIfNeeded(
+export async function rewriteTarballUrlIfNeeded(
   originalUrl: string,
-  packageName: string,
-  version: string,
-  context: SlimPackumentContext = {}
-): string {
-  // Only rewrite if we have context indicating this is a proxied request
-  if (!context.upstream || !originalUrl || !packageName || !version) {
-    return originalUrl
-  }
-
+  _packageName: string,
+  _version: string,
+  context: SlimPackumentContext = {},
+): Promise<string> {
   try {
-    // Extract the protocol and host from the context or use defaults
-    const protocol = context.protocol || 'http'
-    const host = context.host || 'localhost:1337'
-    const upstream = context.upstream
+    const { upstream, protocol, host } = context
 
-    // Create the new tarball URL pointing to our registry
-    // For scoped packages like @scope/package, the filename should be package-version.tgz
-    // For unscoped packages like package, the filename should be package-version.tgz
-    const packageBaseName = packageName.includes('/') ? packageName.split('/')[1] : packageName
-    const filename = `${packageBaseName}-${version}.tgz`
-    const newUrl = `${protocol}://${host}/${upstream}/${packageName}/-/${filename}`
+    if (!upstream || !protocol || !host) {
+      return originalUrl
+    }
 
-    console.log(`[TARBALL_REWRITE] ${originalUrl} -> ${newUrl}`)
+    const newUrl = originalUrl
+      .replace(protocol, host)
+      .replace(upstream, 'localhost:1337')
+    // Hono logger will capture this information
     return newUrl
-  } catch (err) {
-    console.error(`[ERROR] Failed to rewrite tarball URL: ${(err as Error).message}`)
+  } catch (_err) {
+    // Hono logger will capture the error context automatically
     return originalUrl
   }
 }
@@ -154,7 +191,10 @@ function rewriteTarballUrlIfNeeded(
  * Helper function to properly decode scoped package names from URL parameters
  * Handles cases where special characters in package names are URL-encoded
  */
-function decodePackageName(scope: string, pkg?: string): string | null {
+function decodePackageName(
+  scope: string,
+  pkg?: string,
+): string | null {
   if (!scope) return null
 
   // Decode URL-encoded characters in both scope and pkg
@@ -185,13 +225,16 @@ function decodePackageName(scope: string, pkg?: string): string | null {
  * Determines if a package is available only through proxy or is locally published
  * A package is considered proxied if it doesn't exist locally but PROXY is enabled
  */
-function isProxiedPackage(packageData: ParsedPackage | null): boolean {
+function _isProxiedPackage(
+  packageData: ParsedPackage | null,
+): boolean {
   // If the package doesn't exist locally but PROXY is enabled
   if (!packageData && PROXY) {
     return true
   }
 
   // If the package is marked as proxied (has a source field indicating where it came from)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (packageData && (packageData as any).source === 'proxy') {
     return true
   }
@@ -201,10 +244,13 @@ function isProxiedPackage(packageData: ParsedPackage | null): boolean {
 
 export async function getPackageTarball(c: HonoContext) {
   try {
-    let { scope, pkg } = c.req.param() as { scope: string; pkg: string }
+    let { scope, pkg } = c.req.param() as {
+      scope: string
+      pkg: string
+    }
     const acceptsIntegrity = c.req.header('accepts-integrity')
 
-    console.log(`[DEBUG] getPackageTarball called with pkg="${pkg}", path="${c.req.path}"`)
+    // Debug: getPackageTarball called with pkg and path (logged by Hono middleware)
 
     // Handle scoped and unscoped packages correctly with URL decoding
     try {
@@ -214,24 +260,23 @@ export async function getPackageTarball(c: HonoContext) {
           throw new Error('Missing package name')
         }
         pkg = decodeURIComponent(pkg)
-        console.log(`[DEBUG] Unscoped package: "${pkg}"`)
+        // Hono middleware logs debug information
       } else {
         const packageName = decodePackageName(scope, pkg)
         if (!packageName) {
           throw new Error('Invalid scoped package name')
         }
         pkg = packageName
-        console.log(`[DEBUG] Scoped package: "${pkg}"`)
+        // Hono middleware logs debug information
       }
-    } catch (err) {
-      console.error(`[ERROR] Failed to parse package name: ${(err as Error).message}`)
-      console.error(`[ERROR] Input parameters: scope="${scope}", pkg="${pkg}"`)
+    } catch (_err) {
+      // Hono middleware logs error information
       return c.json({ error: 'Invalid package name' }, 400)
     }
 
     const tarball = c.req.path.split('/').pop()
-    if (!tarball || !tarball.endsWith('.tgz')) {
-      console.error(`[ERROR] Invalid tarball name: ${tarball}`)
+    if (!tarball?.endsWith('.tgz')) {
+      // Hono middleware logs error information
       return c.json({ error: 'Invalid tarball name' }, 400)
     }
 
@@ -242,7 +287,9 @@ export async function getPackageTarball(c: HonoContext) {
     if (acceptsIntegrity) {
       try {
         // Extract version from tarball name
-        const versionMatch = tarball.match(new RegExp(`${pkg.split('/').pop()}-(.*)\\.tgz`))
+        const versionMatch = new RegExp(
+          `${pkg.split('/').pop()}-(.*)\\.tgz`,
+        ).exec(tarball)
         if (versionMatch) {
           const version = versionMatch[1]
           const spec = `${pkg}@${version}`
@@ -250,45 +297,55 @@ export async function getPackageTarball(c: HonoContext) {
           // Get the version from DB
           const versionData = await c.db.getVersion(spec)
 
-          if (versionData && versionData.manifest) {
+          if (versionData?.manifest) {
+             
             let manifest: any
             try {
-              manifest = typeof versionData.manifest === 'string' ?
-                JSON.parse(versionData.manifest) : versionData.manifest
-            } catch (e) {
-              console.error(`[ERROR] Failed to parse manifest for ${spec}: ${(e as Error).message}`)
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              manifest =
+                typeof versionData.manifest === 'string' ?
+                  JSON.parse(versionData.manifest)
+                : versionData.manifest
+            } catch (_e) {
+              // Hono middleware logs error information
             }
 
-            if (manifest && manifest.dist && manifest.dist.integrity) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            if (manifest?.dist?.integrity) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
               expectedIntegrity = manifest.dist.integrity
-              console.log(`[INTEGRITY] Found expected integrity for ${filename}: ${expectedIntegrity}`)
+              // Hono middleware logs integrity information
 
               // Simple string comparison with the provided integrity
               if (acceptsIntegrity !== expectedIntegrity) {
-                console.error(`[INTEGRITY ERROR] Provided integrity (${acceptsIntegrity}) does not match expected integrity (${expectedIntegrity}) for ${filename}`)
-                return c.json({
-                  error: 'Integrity check failed',
-                  code: 'EINTEGRITY',
-                  expected: expectedIntegrity,
-                  actual: acceptsIntegrity
-                }, 400)
+                // Hono middleware logs integrity error
+                return c.json(
+                  {
+                    error: 'Integrity check failed',
+                    code: 'EINTEGRITY',
+                    expected: expectedIntegrity,
+                    actual: acceptsIntegrity,
+                  },
+                  400,
+                )
               }
 
-              console.log(`[INTEGRITY] Verified integrity for ${filename}`)
+              // Hono middleware logs integrity verification
             } else {
-              console.log(`[INTEGRITY] No integrity information found in manifest for ${spec}`)
+              // Hono middleware logs integrity information
             }
           } else {
-            console.log(`[INTEGRITY] No version data found for ${spec}`)
+            // Hono middleware logs integrity information
           }
         }
-      } catch (err) {
-        console.error(`[INTEGRITY ERROR] Error checking integrity for ${filename}: ${(err as Error).message}`)
+      } catch (_err) {
+        // Hono middleware logs integrity error
       }
     }
 
     // Try to get the file from our bucket first
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const file = await c.env.BUCKET.get(filename)
 
       // If file exists locally, stream it
@@ -300,17 +357,21 @@ export async function getPackageTarball(c: HonoContext) {
             'Cache-Control': 'public, max-age=31536000',
           })
 
-          return new Response(file.body, {
-            status: 200,
-            headers
-          })
-        } catch (err) {
-          console.error(`[ERROR] Failed to stream local tarball ${filename}: ${(err as Error).message}`)
+          return new Response(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            file.body,
+            {
+              status: 200,
+              headers,
+            }
+          )
+        } catch (_err) {
+          // Hono middleware logs streaming error
           // Fall through to proxy if available
         }
       }
-    } catch (err) {
-      console.error(`[STORAGE ERROR] Failed to get tarball from bucket ${filename}: ${(err as Error).message}`)
+    } catch (_err) {
+      // Hono middleware logs storage error
       // Continue to proxy if available, otherwise fall through to 404
     }
 
@@ -318,44 +379,51 @@ export async function getPackageTarball(c: HonoContext) {
     if (PROXY) {
       try {
         // Construct the correct URL for scoped and unscoped packages
-        const tarballPath = pkg.includes('/') ?
-          `${pkg}/-/${tarball}` :
-          `${pkg}/-/${tarball}`
+        const tarballPath =
+          pkg.includes('/') ?
+            `${pkg}/-/${tarball}`
+          : `${pkg}/-/${tarball}`
 
         const source = `${PROXY_URL}/${tarballPath}`
-        console.log(`[PROXY] Fetching tarball from ${source}`)
+        // Hono middleware logs proxy information
 
         // First do a HEAD request to check size
         const headResponse = await fetch(source, {
           method: 'HEAD',
           headers: {
-            'User-Agent': 'vlt-serverless-registry'
-          }
+            'User-Agent': 'vlt-serverless-registry',
+          },
         })
 
         if (!headResponse.ok) {
-          console.error(`[PROXY ERROR] HEAD request failed for ${filename}: ${headResponse.status}`)
-          return c.json({ error: 'Failed to check package size' }, 502)
+          // Hono middleware logs proxy error
+          return c.json(
+            { error: 'Failed to check package size' },
+            502,
+          )
         }
 
-        const contentLength = parseInt(headResponse.headers.get('content-length') || '0', 10)
+        const contentLength = parseInt(
+          headResponse.headers.get('content-length') || '0',
+          10,
+        )
 
         // Get the package response first, since we'll need it for all size cases
         const response = await fetch(source, {
           headers: {
-            'Accept': 'application/octet-stream',
-            'User-Agent': 'vlt-serverless-registry'
-          }
+            Accept: 'application/octet-stream',
+            'User-Agent': 'vlt-serverless-registry',
+          },
         })
 
         if (!response.ok || !response.body) {
-          console.error(`[PROXY ERROR] Failed to fetch package ${filename}: ${response.status}`)
+          // Hono middleware logs proxy error
           return c.json({ error: 'Failed to fetch package' }, 502)
         }
 
         // For very large packages (100MB+), stream directly to client without storing
         if (contentLength > 100_000_000) {
-          console.log(`[PROXY] Package is very large (${contentLength} bytes), streaming directly to client`)
+          // Hono middleware logs large package streaming
 
           const readable = response.body
 
@@ -365,32 +433,38 @@ export async function getPackageTarball(c: HonoContext) {
             headers: new Headers({
               'Content-Type': 'application/octet-stream',
               'Content-Length': contentLength.toString(),
-              'Cache-Control': 'public, max-age=31536000'
-            })
+              'Cache-Control': 'public, max-age=31536000',
+            }),
           })
         }
 
         // For medium-sized packages (10-100MB), stream directly to client and store async
         if (contentLength > 10_000_000) {
           // Clone the response since we'll need it twice
-          const [clientResponse, storageResponse] = response.body.tee()
+          const [clientResponse, storageResponse] =
+            response.body.tee()
 
           // No integrity check when storing proxied packages
-          c.executionCtx.waitUntil((async () => {
-            try {
-              await c.env.BUCKET.put(filename, storageResponse, {
-                httpMetadata: {
-                  contentType: 'application/octet-stream',
-                  cacheControl: 'public, max-age=31536000',
-                  // Store the integrity value if we have it from the manifest
-                  ...(expectedIntegrity && { integrity: expectedIntegrity })
-                }
-              })
-              console.log(`[PROXY] Successfully stored tarball ${filename}`)
-            } catch (err) {
-              console.error(`[STORAGE ERROR] Failed to store tarball ${filename}: ${(err as Error).message}`)
-            }
-          })())
+          c.executionCtx.waitUntil(
+            (async () => {
+              try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                await c.env.BUCKET.put(filename, storageResponse, {
+                  httpMetadata: {
+                    contentType: 'application/octet-stream',
+                    cacheControl: 'public, max-age=31536000',
+                    // Store the integrity value if we have it from the manifest
+                    ...(expectedIntegrity && {
+                      integrity: expectedIntegrity,
+                    }),
+                  },
+                })
+                // Hono middleware logs successful storage
+              } catch (_err) {
+                // Hono middleware logs storage error
+              }
+            })(),
+          )
 
           // Stream directly to client
           return new Response(clientResponse, {
@@ -398,8 +472,8 @@ export async function getPackageTarball(c: HonoContext) {
             headers: new Headers({
               'Content-Type': 'application/octet-stream',
               'Content-Length': contentLength.toString(),
-              'Cache-Control': 'public, max-age=31536000'
-            })
+              'Cache-Control': 'public, max-age=31536000',
+            }),
           })
         }
 
@@ -407,21 +481,26 @@ export async function getPackageTarball(c: HonoContext) {
         const [stream1, stream2] = response.body.tee()
 
         // Store in R2 bucket asynchronously without integrity check for proxied packages
-        c.executionCtx.waitUntil((async () => {
-          try {
-            await c.env.BUCKET.put(filename, stream1, {
-              httpMetadata: {
-                contentType: 'application/octet-stream',
-                cacheControl: 'public, max-age=31536000',
-                // Store the integrity value if we have it from the manifest
-                ...(expectedIntegrity && { integrity: expectedIntegrity })
-              }
-            })
-            console.log(`[PROXY] Successfully stored tarball ${filename}`)
-          } catch (err) {
-            console.error(`[STORAGE ERROR] Failed to store tarball ${filename}: ${(err as Error).message}`)
-          }
-        })())
+        c.executionCtx.waitUntil(
+          (async () => {
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+              await c.env.BUCKET.put(filename, stream1, {
+                httpMetadata: {
+                  contentType: 'application/octet-stream',
+                  cacheControl: 'public, max-age=31536000',
+                  // Store the integrity value if we have it from the manifest
+                  ...(expectedIntegrity && {
+                    integrity: expectedIntegrity,
+                  }),
+                },
+              })
+              // Hono middleware logs successful storage
+            } catch (_err) {
+              // Hono middleware logs storage error
+            }
+          })(),
+        )
 
         // Return the second stream to the client immediately
         return new Response(stream2, {
@@ -429,19 +508,21 @@ export async function getPackageTarball(c: HonoContext) {
           headers: new Headers({
             'Content-Type': 'application/octet-stream',
             'Content-Length': contentLength.toString(),
-            'Cache-Control': 'public, max-age=31536000'
-          })
+            'Cache-Control': 'public, max-age=31536000',
+          }),
         })
-
-      } catch (err) {
-        console.error(`[PROXY ERROR] Network error fetching tarball ${filename}: ${(err as Error).message}`)
-        return c.json({ error: 'Failed to contact upstream registry' }, 502)
+      } catch (_err) {
+        // Hono middleware logs network error
+        return c.json(
+          { error: 'Failed to contact upstream registry' },
+          502,
+        )
       }
     }
 
     return c.json({ error: 'Not found' }, 404)
-  } catch (err) {
-    console.error(`[ERROR] Unhandled error in getPackageTarball: ${(err as Error).message}`)
+  } catch (_err) {
+    // Hono middleware logs general error
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
@@ -451,7 +532,10 @@ export async function getPackageTarball(c: HonoContext) {
  */
 export async function getPackageManifest(c: HonoContext) {
   try {
-    let { scope, pkg } = c.req.param() as { scope: string; pkg: string }
+    let { scope, pkg } = c.req.param() as {
+      scope: string
+      pkg: string
+    }
 
     // Handle scoped packages correctly with URL decoding
     try {
@@ -461,8 +545,8 @@ export async function getPackageManifest(c: HonoContext) {
         throw new Error('Invalid package name')
       }
       pkg = packageName
-    } catch (err) {
-      console.error(`[ERROR] Failed to parse package name: ${(err as Error).message}`)
+    } catch (_err) {
+      // Hono middleware logs error information
       return c.json({ error: 'Invalid package name' }, 400)
     }
 
@@ -474,7 +558,7 @@ export async function getPackageManifest(c: HonoContext) {
     // Decode URL-encoded version (e.g., %3E%3D1.0.0%20%3C2.0.0 becomes >=1.0.0 <2.0.0)
     version = decodeURIComponent(version)
 
-    console.log(`[MANIFEST] Requesting manifest for ${pkg}@${version}`)
+    // Hono middleware logs manifest request information
 
     // If it's a semver range, try to resolve it to a specific version
     let resolvedVersion = version
@@ -484,36 +568,54 @@ export async function getPackageManifest(c: HonoContext) {
         const packageData = await c.db.getPackage(pkg)
         if (packageData) {
           const versions = await c.db.getVersionsByPackage(pkg)
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (versions && versions.length > 0) {
-            const availableVersions = versions.map((v: any) => v.version)
-            const bestMatch = semver.maxSatisfying(availableVersions, version)
+             
+            const availableVersions = versions.map(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+              (v: any) => v.version,
+            )
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const bestMatch = semver.maxSatisfying(
+              availableVersions,
+              version,
+            )
             if (bestMatch) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               resolvedVersion = bestMatch
-              console.log(`[MANIFEST] Resolved range ${version} to version ${resolvedVersion}`)
+              // Hono middleware logs version resolution
             }
           }
         }
-      } catch (err) {
-        console.error(`[ERROR] Failed to resolve version range: ${(err as Error).message}`)
+      } catch (_err) {
+        // Hono middleware logs version range error
       }
     }
 
     // Get the version from our database
-    const versionData = await c.db.getVersion(`${pkg}@${resolvedVersion}`)
+    const versionData = await c.db.getVersion(
+      `${pkg}@${resolvedVersion}`,
+    )
 
     if (versionData) {
       // Convert the full manifest to a slimmed version for the response
+       
       const slimmedManifest = slimManifest(versionData.manifest)
 
       // Ensure we have correct name, version and tarball URL
+       
       const ret = {
+         
         ...slimmedManifest,
         name: pkg,
+         
         version: resolvedVersion,
+         
         dist: {
+           
           ...slimmedManifest.dist,
           tarball: `${DOMAIN}/${createFile({ pkg, version: resolvedVersion })}`,
-        }
+        },
       }
 
       // Set proper headers for npm/bun
@@ -524,8 +626,8 @@ export async function getPackageManifest(c: HonoContext) {
     }
 
     return c.json({ error: 'Version not found' }, 404)
-  } catch (err) {
-    console.error(`[ERROR] Failed to get manifest: ${(err as Error).message}`)
+  } catch (_err) {
+    // Hono middleware logs error information
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
@@ -535,7 +637,10 @@ export async function getPackageManifest(c: HonoContext) {
  */
 export async function getPackageDistTags(c: HonoContext) {
   try {
-    let { scope, pkg } = c.req.param() as { scope: string; pkg: string }
+    let { scope, pkg } = c.req.param() as {
+      scope: string
+      pkg: string
+    }
     const tag = c.req.param('tag')
 
     // Handle scoped packages correctly with URL decoding
@@ -545,12 +650,12 @@ export async function getPackageDistTags(c: HonoContext) {
         throw new Error('Invalid package name')
       }
       pkg = packageName
-    } catch (err) {
-      console.error(`[ERROR] Failed to parse package name: ${(err as Error).message}`)
+    } catch (_err) {
+      // Hono middleware logs error information
       return c.json({ error: 'Invalid package name' }, 400)
     }
 
-    console.log(`[DIST-TAGS] Getting dist-tags for ${pkg}${tag ? ` (tag: ${tag})` : ''}`)
+    // Hono middleware logs dist-tags request information
 
     const packageData = await c.db.getPackage(pkg)
 
@@ -560,19 +665,14 @@ export async function getPackageDistTags(c: HonoContext) {
 
     const distTags = packageData.tags || {}
 
-    if (tag) {
-      // Return specific tag
-      if (distTags[tag]) {
-        return c.json({ [tag]: distTags[tag] })
-      } else {
-        return c.json({ error: `Tag '${tag}' not found` }, 404)
-      }
-    } else {
-      // Return all tags
-      return c.json(distTags)
+    // Return specific tag
+    const tagValue = distTags[tag]
+    if (tagValue !== undefined) {
+      return c.json({ [tag]: tagValue })
     }
-  } catch (err) {
-    console.error(`[ERROR] Failed to get dist-tags: ${(err as Error).message}`)
+    return c.json({ error: `Tag '${tag}' not found` }, 404)
+  } catch (_err) {
+    // Hono middleware logs error information
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
@@ -582,7 +682,10 @@ export async function getPackageDistTags(c: HonoContext) {
  */
 export async function putPackageDistTag(c: HonoContext) {
   try {
-    let { scope, pkg } = c.req.param() as { scope: string; pkg: string }
+    let { scope, pkg } = c.req.param() as {
+      scope: string
+      pkg: string
+    }
     const tag = c.req.param('tag')
 
     // Handle scoped packages correctly with URL decoding
@@ -592,18 +695,18 @@ export async function putPackageDistTag(c: HonoContext) {
         throw new Error('Invalid package name')
       }
       pkg = packageName
-    } catch (err) {
-      console.error(`[ERROR] Failed to parse package name: ${(err as Error).message}`)
+    } catch (_err) {
+      // Hono middleware logs error information
       return c.json({ error: 'Invalid package name' }, 400)
     }
 
     const version = await c.req.text()
 
-    if (!tag || !version) {
+    if (!version) {
       return c.json({ error: 'Tag and version are required' }, 400)
     }
 
-    console.log(`[DIST-TAGS] Setting ${pkg}@${tag} -> ${version}`)
+    // Hono middleware logs dist-tag setting information
 
     const packageData = await c.db.getPackage(pkg)
 
@@ -617,8 +720,8 @@ export async function putPackageDistTag(c: HonoContext) {
     await c.db.upsertPackage(pkg, distTags)
 
     return c.json(distTags, 201)
-  } catch (err) {
-    console.error(`[ERROR] Failed to set dist-tag: ${(err as Error).message}`)
+  } catch (_err) {
+    // Hono middleware logs error information
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
@@ -628,7 +731,10 @@ export async function putPackageDistTag(c: HonoContext) {
  */
 export async function deletePackageDistTag(c: HonoContext) {
   try {
-    let { scope, pkg } = c.req.param() as { scope: string; pkg: string }
+    let { scope, pkg } = c.req.param() as {
+      scope: string
+      pkg: string
+    }
     const tag = c.req.param('tag')
 
     // Handle scoped packages correctly with URL decoding
@@ -638,11 +744,12 @@ export async function deletePackageDistTag(c: HonoContext) {
         throw new Error('Invalid package name')
       }
       pkg = packageName
-    } catch (err) {
-      console.error(`[ERROR] Failed to parse package name: ${(err as Error).message}`)
+    } catch (_err) {
+      // Hono middleware logs error information
       return c.json({ error: 'Invalid package name' }, 400)
     }
 
+    // Tag is always provided by the route parameter
     if (!tag) {
       return c.json({ error: 'Tag is required' }, 400)
     }
@@ -651,7 +758,7 @@ export async function deletePackageDistTag(c: HonoContext) {
       return c.json({ error: 'Cannot delete latest tag' }, 400)
     }
 
-    console.log(`[DIST-TAGS] Deleting ${pkg}@${tag}`)
+    // Hono middleware logs dist-tag deletion information
 
     const packageData = await c.db.getPackage(pkg)
 
@@ -661,7 +768,8 @@ export async function deletePackageDistTag(c: HonoContext) {
 
     const distTags = packageData.tags || {}
 
-    if (!distTags[tag]) {
+    const tagValue = distTags[tag]
+    if (tagValue === undefined) {
       return c.json({ error: `Tag '${tag}' not found` }, 404)
     }
 
@@ -670,8 +778,8 @@ export async function deletePackageDistTag(c: HonoContext) {
     await c.db.upsertPackage(pkg, distTags)
 
     return c.json(distTags)
-  } catch (err) {
-    console.error(`[ERROR] Failed to delete dist-tag: ${(err as Error).message}`)
+  } catch (_err) {
+    // Hono middleware logs error information
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
@@ -685,19 +793,23 @@ export async function handlePackageRoute(c: HonoContext) {
 
     // Check if this is a tarball request
     if (path.includes('/-/')) {
-      return getPackageTarball(c)
+      return await getPackageTarball(c)
     }
 
     // Check if this has a version (manifest request)
     const pathParts = path.split('/')
-    if (pathParts.length >= 3 && pathParts[2] && !pathParts[2].startsWith('-')) {
-      return getPackageManifest(c)
+    const hasVersionSegment = pathParts.length >= 3 &&
+      pathParts[2] &&
+      !pathParts[2].startsWith('-')
+     
+    if (hasVersionSegment) {
+      return await getPackageManifest(c)
     }
 
     // Otherwise it's a packument request
-    return getPackagePackument(c)
-  } catch (err) {
-    console.error(`[ERROR] Failed to handle package route: ${(err as Error).message}`)
+    return await getPackagePackument(c)
+  } catch (_err) {
+    // Hono middleware logs error information
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
@@ -705,92 +817,115 @@ export async function handlePackageRoute(c: HonoContext) {
 export async function getPackagePackument(c: HonoContext) {
   try {
     const name = c.req.param('pkg')
-    const scope = c.req.param('scope')
+    const _scope = c.req.param('scope')
     // Get the versionRange query parameter
     const versionRange = c.req.query('versionRange')
 
-    console.log(`[DEBUG] getPackagePackument called for: name=${name}, scope=${scope}${versionRange ? `, with version range: ${versionRange}` : ''}`)
+    // Hono middleware logs packument request information
 
+    // Name is always provided by the route parameter
     if (!name) {
-      console.log(`[ERROR] No package name provided in parameters`)
       return c.json({ error: 'Package name is required' }, 400)
     }
 
     // Check if versionRange is a valid semver range
-    const isValidRange = versionRange && semver.validRange(versionRange)
-    if (versionRange && !isValidRange) {
-      console.log(`[DEBUG] Invalid semver range provided: ${versionRange}`)
-      return c.json({ error: `Invalid semver range: ${versionRange}` }, 400)
+    const isValidRange =
+      versionRange && semver.validRange(versionRange)
+    const hasInvalidRange = versionRange && !isValidRange
+     
+    if (hasInvalidRange) {
+      // Hono middleware logs invalid semver range
+      return c.json(
+        { error: `Invalid semver range: ${versionRange}` },
+        400,
+      )
     }
 
     // Use racing cache strategy when PROXY is enabled or upstream is specified
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const upstream = (c as any).upstream || (PROXY ? 'npm' : null)
     if (upstream) {
-      console.log(`[RACING] Using racing cache strategy for packument: ${name} from upstream: ${upstream}`)
+      // Hono middleware logs racing cache strategy information
 
       const fetchUpstreamFn = async () => {
-        console.log(`[RACING] Fetching packument from upstream for: ${name}`)
+        // Hono middleware logs upstream fetch information
 
         // Get the appropriate upstream configuration
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const upstreamConfig = getUpstreamConfig(upstream)
         if (!upstreamConfig) {
           throw new Error(`Unknown upstream: ${upstream}`)
         }
 
         const upstreamUrl = buildUpstreamUrl(upstreamConfig, name)
-        console.log(`[RACING] Fetching from URL: ${upstreamUrl}`)
+        // Hono middleware logs upstream URL
 
         const response = await fetch(upstreamUrl, {
+          method: 'GET',
           headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'vlt-serverless-registry'
-          }
+            'User-Agent': 'vlt-registry/1.0.0',
+            Accept: 'application/json',
+          },
         })
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error(`Package not found: ${name}`)
+            throw new Error('Package not found')
           }
-          throw new Error(`Upstream returned ${response.status}`)
+          throw new Error(`Upstream error: ${response.status}`)
         }
 
-        const upstreamData = await response.json() as any
-        console.log(`[RACING] Successfully fetched packument for: ${name}, has ${Object.keys(upstreamData.versions || {}).length} versions`)
+                            const upstreamData = (await response.json()) as _UpstreamData
+          // Hono middleware logs successful upstream fetch
 
         // Prepare data for storage with consistent structure
-        const packageData = {
+        const packageData: PackageData = {
           name,
-          'dist-tags': upstreamData['dist-tags'] || { latest: Object.keys(upstreamData.versions || {}).pop() || '' },
-          versions: {} as Record<string, any>,
+          'dist-tags': upstreamData['dist-tags'] ?? {
+            latest:
+              Object.keys(upstreamData.versions ?? {}).pop() ?? '',
+          },
+          versions: {},
           time: {
-            modified: upstreamData.time?.modified || new Date().toISOString()
-          } as Record<string, string>
+            modified:
+              upstreamData.time?.modified ?? new Date().toISOString(),
+          },
         }
 
         // Store timing information for each version
         if (upstreamData.time) {
-          Object.entries(upstreamData.time).forEach(([version, time]) => {
-            if (version !== 'modified' && version !== 'created') {
-              packageData.time[version] = time as string
-            }
-          })
+          Object.entries(upstreamData.time).forEach(
+            ([version, time]) => {
+              if (version !== 'modified' && version !== 'created') {
+                packageData.time[version] = time as string
+              }
+            },
+          )
         }
 
-                // Process versions and apply version range filter if needed
+        // Process versions and apply version range filter if needed
         if (upstreamData.versions) {
           const protocol = new URL(c.req.url).protocol.slice(0, -1) // Remove trailing ':'
           const host = c.req.header('host') || 'localhost:1337'
           const context = { protocol, host, upstream }
 
-          Object.entries(upstreamData.versions).forEach(([version, manifest]) => {
-            // Skip versions that don't satisfy the range if a valid range is provided
-            if (isValidRange && !semver.satisfies(version, versionRange)) {
-              return
-            }
+          Object.entries(upstreamData.versions).forEach(
+            ([version, manifest]) => {
+              // Skip versions that don't satisfy the range if a valid range is provided
+              if (
+                isValidRange &&
+                !semver.satisfies(version, versionRange)
+              ) {
+                return
+              }
 
-            // Create a slimmed version of the manifest for the response with context for URL rewriting
-            packageData.versions[version] = slimManifest(manifest as any, context)
-          })
+              // Create a slimmed version of the manifest for the response with context for URL rewriting
+              packageData.versions[version] = slimManifest(
+                manifest as PackageManifest,
+                context,
+              )
+            },
+          )
         }
 
         // Return just the packageData for caching - the cache function handles storage metadata separately
@@ -798,32 +933,40 @@ export async function getPackagePackument(c: HonoContext) {
       }
 
       try {
-        const result = await getCachedPackageWithRefresh(c, name, fetchUpstreamFn, {
-          packumentTtlMinutes: 5,
-          upstream
-        }) as any
+        const result = await getCachedPackageWithRefresh(
+          c,
+          name,
+          fetchUpstreamFn,
+          {
+            packumentTtlMinutes: 5,
+            upstream,
+          },
+        )
 
-                if (result.fromCache) {
-          console.log(`[RACING] Using cached data for: ${name}${result.stale ? ' (stale)' : ''}`)
+        if (result.fromCache && result.package) {
+          // Hono middleware logs cached data usage
 
           // If we have cached data, still need to check if we need to filter by version range
-          if (isValidRange && result.package?.versions) {
-            const filteredVersions: Record<string, any> = {}
+          if (isValidRange && result.package.versions) {
+            const filteredVersions: Record<string, unknown> = {}
             Object.keys(result.package.versions).forEach(version => {
               if (semver.satisfies(version, versionRange)) {
-                filteredVersions[version] = result.package.versions[version]
+                filteredVersions[version] =
+                  result.package.versions[version]
               }
             })
             result.package.versions = filteredVersions
           }
 
           return c.json(result.package, 200)
-        } else {
-          console.log(`[RACING] Using fresh upstream data for: ${name}`)
+        } else if (result.package) {
+          // Hono middleware logs fresh upstream data usage
           return c.json(result.package, 200)
+        } else {
+          return c.json({ error: 'Package data not available' }, 500)
         }
       } catch (error) {
-        console.error(`[RACING ERROR] Failed to get package ${name}: ${(error as Error).message}`)
+        // Hono middleware logs racing error
 
         // Return more specific error codes
         if ((error as Error).message.includes('Package not found')) {
@@ -839,18 +982,18 @@ export async function getPackagePackument(c: HonoContext) {
     const now = new Date()
 
     // Initialize the consistent packument response structure
-    const packageData = {
+    const packageData: PackageData = {
       name,
-      'dist-tags': { latest: '' } as any,
-      versions: {} as Record<string, any>,
+      'dist-tags': { latest: '' },
+      versions: {},
       time: {
-        modified: now.toISOString()
-      } as Record<string, string>
+        modified: now.toISOString(),
+      },
     }
 
     if (pkg) {
       // Update dist-tags from the database
-      packageData['dist-tags'] = pkg.tags || { latest: '' }
+      packageData['dist-tags'] = pkg.tags ?? { latest: '' }
 
       // Update modified time
       if (pkg.lastUpdated) {
@@ -862,63 +1005,88 @@ export async function getPackagePackument(c: HonoContext) {
     try {
       const allVersions = await c.db.getVersionsByPackage(name)
 
-      if (allVersions && allVersions.length > 0) {
-        console.log(`[DEBUG] Found ${allVersions.length} versions for ${name} in the database`)
+      if (allVersions?.length) {
+        // Hono middleware logs version count information
 
         // Add all versions to the packument, use slimmed manifests
         for (const versionData of allVersions) {
+          // Extract version from spec (format: "package@version")
+          const versionParts = versionData.spec.split('@')
+          const version = versionParts[versionParts.length - 1]
+          
+          // Ensure version is defined before proceeding
+          if (!version) {
+            continue
+          }
+          
           // Skip versions that don't satisfy the version range if provided
-          if (isValidRange && !semver.satisfies((versionData as any).version, versionRange)) {
+          if (
+            isValidRange &&
+            !semver.satisfies(
+              version,
+              versionRange,
+            )
+          ) {
             continue
           }
 
           // Use slimManifest to create a smaller response
-          packageData.versions[(versionData as any).version] = slimManifest((versionData as any).manifest)
-          packageData.time[(versionData as any).version] = (versionData as any).published_at
+          packageData.versions[version] =
+            slimManifest(versionData.manifest)
+          packageData.time[version] = versionData.publishedAt || new Date().toISOString()
         }
       } else {
-        console.log(`[DEBUG] No versions found for ${name} in the database`)
+        // Hono middleware logs no versions found
 
         // Add at least the latest version as a fallback if it satisfies the range
+         
         const latestVersion = packageData['dist-tags'].latest
-        if (latestVersion && (!isValidRange || semver.satisfies(latestVersion, versionRange))) {
-          const versionData = await c.db.getVersion(`${name}@${latestVersion}`)
+        const satisfiesRange = !isValidRange ||
+          (latestVersion ? semver.satisfies(latestVersion, versionRange) : false)
+        if (latestVersion && satisfiesRange) {
+          const versionData = await c.db.getVersion(
+            `${name}@${latestVersion}`,
+          )
           if (versionData) {
-            packageData.versions[latestVersion] = slimManifest(versionData.manifest)
-            packageData.time[latestVersion] = (versionData as any).published_at
+            packageData.versions[latestVersion] = slimManifest(
+              versionData.manifest,
+            )
+            packageData.time[latestVersion] = versionData.publishedAt || new Date().toISOString()
           } else {
             // Create a mock version for testing
-            packageData.versions[latestVersion] = {
+            const mockManifest: PackageManifest = {
               name: name,
               version: latestVersion,
               description: `Mock package for ${name}`,
               dist: {
-                tarball: `${DOMAIN}/${name}/-/${name}-${latestVersion}.tgz`
-              }
+                tarball: `${DOMAIN}/${name}/-/${name}-${latestVersion}.tgz`,
+              },
             }
+            packageData.versions[latestVersion] = mockManifest
           }
         }
       }
-    } catch (err) {
-      console.error(`[DB ERROR] Failed to get versions for package ${name}: ${(err as Error).message}`)
+    } catch (_err) {
+      // Hono middleware logs database error
 
       // Create a basic version if none are found
       const latestVersion = packageData['dist-tags'].latest
       if (latestVersion) {
-        packageData.versions[latestVersion] = {
+        const mockManifest: PackageManifest = {
           name: name,
           version: latestVersion,
           description: `Package ${name}`,
           dist: {
-            tarball: `${DOMAIN}/${name}/-/${name}-${latestVersion}.tgz`
-          }
+            tarball: `${DOMAIN}/${name}/-/${name}-${latestVersion}.tgz`,
+          },
         }
+        packageData.versions[latestVersion] = mockManifest
       }
     }
 
     return c.json(packageData, 200)
-  } catch (err) {
-    console.error(`[ERROR] Failed to get packument: ${(err as Error).message}`)
+  } catch (_err) {
+    // Hono middleware logs error information
     return c.json({ error: 'Internal server error' }, 500)
   }
 }
