@@ -83,6 +83,7 @@ const run = async () => {
   }
 
   if (
+    vlt.command !== 'init' &&
     (vlt.get('workspace') || vlt.get('workspace-group')) &&
     ![...(monorepo?.values() ?? [])].length
   ) {

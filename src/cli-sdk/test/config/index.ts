@@ -392,22 +392,30 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   })
   t.equal(
     readFileSync(dir + '/vlt.json', 'utf8'),
-    JSON.stringify({
-      config: {
-        registries: { example: 'https://example.com' },
+    JSON.stringify(
+      {
+        config: {
+          registries: { example: 'https://example.com' },
+        },
       },
-    }),
+      null,
+      2,
+    ) + '\n',
   )
   await c.writeConfigFile('project', {
     registries: ['example=https://another.example.com'],
   })
   t.equal(
     readFileSync(dir + '/vlt.json', 'utf8'),
-    JSON.stringify({
-      config: {
-        registries: { example: 'https://another.example.com' },
+    JSON.stringify(
+      {
+        config: {
+          registries: { example: 'https://another.example.com' },
+        },
       },
-    }),
+      null,
+      2,
+    ) + '\n',
   )
 
   await c.writeConfigFile('project', {
@@ -430,25 +438,29 @@ t.test('kv string[] stored as Record<string, string>', async t => {
 
   t.equal(
     readFileSync(dir + '/vlt.json', 'utf8'),
-    JSON.stringify({
-      config: {
-        registries: {
-          example: 'https://another.example.com',
-          bar: 'https://registry.bar',
-        },
-        command: {
-          install: {
-            registries: {
-              example: 'https://install.example.com',
-              foo: 'https://registry.foo',
-            },
-            'git-hosts': {
-              github: 'git+https://github.com/$1/$2',
+    JSON.stringify(
+      {
+        config: {
+          registries: {
+            example: 'https://another.example.com',
+            bar: 'https://registry.bar',
+          },
+          command: {
+            install: {
+              registries: {
+                example: 'https://install.example.com',
+                foo: 'https://registry.foo',
+              },
+              'git-hosts': {
+                github: 'git+https://github.com/$1/$2',
+              },
             },
           },
         },
       },
-    }),
+      null,
+      2,
+    ) + '\n',
   )
 
   clearEnv()
@@ -561,14 +573,22 @@ t.test('delete config values from file', async t => {
     await conf.deleteConfigKeys('project', ['cache', 'registry'])
     t.equal(
       readFileSync(f, 'utf8'),
-      JSON.stringify({
-        config: {
-          color: true,
+      JSON.stringify(
+        {
+          config: {
+            color: true,
+          },
         },
-      }),
+        null,
+        2,
+      ) + '\n',
     )
     await conf.deleteConfigKeys('project', ['color'])
-    t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
+    t.equal(
+      readFileSync(f, 'utf8'),
+      JSON.stringify({ config: {} }, null, 2) + '\n',
+      'deleted color config',
+    )
   })
 
   t.test('delete record field', async t => {
@@ -601,7 +621,11 @@ t.test('delete config values from file', async t => {
       'registries.npm',
       'registries.acme',
     ])
-    t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
+    t.equal(
+      readFileSync(f, 'utf8'),
+      JSON.stringify({ config: {} }, null, 2) + '\n',
+      'deleted named registries',
+    )
   })
 
   t.test('delete record field as array', async t => {
@@ -658,7 +682,11 @@ t.test('delete config values from file', async t => {
       'registries.npm',
       'registries.acme',
     ])
-    t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
+    t.equal(
+      readFileSync(f, 'utf8'),
+      JSON.stringify({ config: {} }, null, 2) + '\n',
+      'deleted all registries',
+    )
   })
 })
 
@@ -681,11 +709,15 @@ t.test('edit config file', async t => {
     t.equal(readFileSync(f, 'utf8'), '{\n  "config": {}\n}\n')
     writeFileSync(
       f,
-      JSON.stringify({
-        config: {
-          registry: 'my happy regas try',
+      JSON.stringify(
+        {
+          config: {
+            registry: 'my happy regas try',
+          },
         },
-      }),
+        null,
+        2,
+      ) + '\n',
     )
   })
   t.equal(editCalled, true)
@@ -696,11 +728,15 @@ t.test('edit config file', async t => {
       editCalled = true
       t.equal(
         readFileSync(f, 'utf8'),
-        JSON.stringify({
-          config: {
-            registry: 'my happy regas try',
+        JSON.stringify(
+          {
+            config: {
+              registry: 'my happy regas try',
+            },
           },
-        }),
+          null,
+          2,
+        ) + '\n',
       )
       writeFileSync(f, '{"config":{"color":true}}')
       throw new Error()
@@ -709,11 +745,15 @@ t.test('edit config file', async t => {
   t.equal(editCalled, true)
   t.equal(
     readFileSync(f, 'utf8'),
-    JSON.stringify({
-      config: {
-        registry: 'my happy regas try',
+    JSON.stringify(
+      {
+        config: {
+          registry: 'my happy regas try',
+        },
       },
-    }),
+      null,
+      2,
+    ) + '\n',
     'edit threw, file reverted',
   )
 

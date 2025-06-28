@@ -27,3 +27,22 @@ vlt init
 Create a new package.json file in the current directory.
 
 `
+
+exports[`test/commands/init.ts > TAP > test command with workspace > should add workspace to vlt.json 1`] = `
+{
+  "workspaces": {
+    "packages": [
+      "packages/a"
+    ]
+  }
+}
+
+`
+
+exports[`test/commands/init.ts > TAP > test command with workspace > should output human readable message 1`] = `
+Wrote manifest to packages/a:
+
+Modify/add properties using \`vlt pkg\`. For example:
+
+  vlt pkg set "description=My new project"
+`
