@@ -252,11 +252,6 @@ Object {
     "hint": "p",
     "type": "string",
   },
-  "query": Object {
-    "description": "Set to filter the results of an operation by a query.",
-    "short": "q",
-    "type": "string",
-  },
   "recursive": Object {
     "description": String(
       Run an operation across multiple workspaces.
@@ -313,6 +308,11 @@ Object {
     "description": "Save installed packages into dependencies specifically. This is useful if a package already exists in devDependencies or optionalDependencies, but you want to move it to be a non-optional production dependency.",
     "short": "P",
     "type": "boolean",
+  },
+  "scope": Object {
+    "description": "Set to filter the scope of an operation using a DSS Query.",
+    "short": "s",
+    "type": "string",
   },
   "scope-registries": Object {
     "description": String(
@@ -441,7 +441,6 @@ Array [
   "--node-version=<version>",
   "--os=<os>",
   "--package=<p>",
-  "--query=<query>",
   "--recursive",
   "--registries=<name=url>",
   "--registry=<url>",
@@ -449,6 +448,7 @@ Array [
   "--save-optional",
   "--save-peer",
   "--save-prod",
+  "--scope=<scope>",
   "--scope-registries=<@scope=url>",
   "--script-shell=<program>",
   "--stale-while-revalidate-factor=<n>",
@@ -488,7 +488,6 @@ Array [
   "node-version",
   "os",
   "package",
-  "query",
   "recursive",
   "registries",
   "registry",
@@ -496,6 +495,7 @@ Array [
   "save-optional",
   "save-peer",
   "save-prod",
+  "scope",
   "scope-registries",
   "script-shell",
   "stale-while-revalidate-factor",

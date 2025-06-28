@@ -413,9 +413,10 @@ export const definition = j
   })
 
   .opt({
-    query: {
-      short: 'q',
-      description: `Set to filter the results of an operation by a query.`,
+    scope: {
+      short: 's',
+      description:
+        'Set to filter the scope of an operation using a DSS Query.',
     },
   })
 
