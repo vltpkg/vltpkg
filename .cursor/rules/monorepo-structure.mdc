@@ -1,5 +1,5 @@
 ---
-description:
+description: 
 globs: 
 alwaysApply: true
 ---
@@ -46,6 +46,7 @@ actions:
       - `src/cache` (`@vltpkg/cache`) - Cache system
       - `src/cache-unzip` (`@vltpkg/cache-unzip`) - Cache entry optimization
       - `src/graph` (`@vltpkg/graph`) - Main data structure managing package installs
+        - 📋 **See `@graph/modifiers.mdc`** for understanding Graph modifiers
       - `src/types` (`@vltpkg/types`) - Common TypeScript types
       - `src/dep-id` (`@vltpkg/dep-id`) - Unique Graph node identifiers
       - `src/spec` (`@vltpkg/spec`) - Package specifier parsing
@@ -55,6 +56,7 @@ actions:
       - `src/dss-parser` (`@vltpkg/dss-parser`) - Dependency Selector Syntax parser
       - `src/dss-breadcrumb` (`@vltpkg/dss-breadcrumb`) - Interactive DSS query matching
       - `src/query` (`@vltpkg/query`) - Query language implementation
+        - 📋 **See `@query-pseudo-selector-creation.mdc`** for implementing new pseudo-selectors
 
       **Package Management Infrastructure:**
       - `src/package-info` (`@vltpkg/package-info`) - Package information retrieval
@@ -65,6 +67,7 @@ actions:
 
       **CLI Commands:**
       - `src/cli-sdk` (`@vltpkg/cli-sdk`) - Core CLI framework and entry point
+        - 📋 **See `@cli-sdk-workspace.mdc`** for CLI architecture and development patterns
       - `src/init` (`@vltpkg/init`) - `vlt init` command logic
       - `src/vlx` (`@vltpkg/vlx`) - `vlt exec` command logic
       - `src/run` (`@vltpkg/run`) - Command execution utilities
@@ -93,6 +96,7 @@ actions:
 
       **Frontend:**
       - `src/gui` - React/Zustand frontend for Graph visualization (dist files in nested `dist/` folder)
+        - 📋 **See `@gui-validation-workflow.mdc`** for GUI-specific testing and validation
       - `src/server` (`@vltpkg/server`) - Backend server for GUI APIs
 
       ### Infrastructure (`infra/*`)
@@ -154,6 +158,10 @@ metadata:
     - navigation
     - packages
   related_rules:
-    - code-validation-workflow  # For all testing, formatting, linting, coverage operations
-    - cursor-rules-location     # For proper rule file placement
+    - code-validation-workflow     # For all testing, formatting, linting, coverage operations
+    - cursor-rules-location        # For proper rule file placement
+    - cli-sdk-workspace           # CLI SDK workspace architecture and patterns
+    - gui-validation-workflow     # GUI workspace specific validation workflow
+    - query-pseudo-selector-creation  # Guide for implementing new query pseudo-selectors
+    - graph/modifiers             # Understanding Graph modifiers
 </rule>
