@@ -501,6 +501,9 @@ importers:
       lz-string:
         specifier: 'catalog:'
         version: 1.5.0
+      minimatch:
+        specifier: 'catalog:'
+        version: 10.0.1
       package-json-from-dist:
         specifier: 'catalog:'
         version: 1.0.1

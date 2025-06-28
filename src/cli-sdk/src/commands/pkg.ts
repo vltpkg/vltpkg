@@ -12,15 +12,11 @@ import type { Views } from '../view.ts'
 import { views as initViews } from './init.ts'
 
 export const views = {
-  human: (results, options, config) => {
+  human: (results, _options, config) => {
     // `vlt pkg init` is an alias for `vlt init`
     // use the same output handling
     if (config.positionals[0] === 'init') {
-      return initViews.human(
-        results as InitFileResults,
-        options,
-        config,
-      )
+      return initViews.human(results as InitFileResults)
     }
     return results && typeof results === 'object' ?
         Object.fromEntries(
