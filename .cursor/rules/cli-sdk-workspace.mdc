@@ -1,0 +1,202 @@
+---
+description: 
+globs: src/cli-sdk/*
+alwaysApply: false
+---
+# CLI SDK Workspace Guide
+
+Development guide for the @vltpkg/cli-sdk workspace architecture and patterns.
+
+<rule>
+name: cli_sdk_workspace_guide
+description: Guide for efficiently working within the @vltpkg/cli-sdk workspace
+filters:
+  # Match any work within the cli-sdk workspace
+  - type: path
+    pattern: "^src/cli-sdk/"
+  # Match CLI-related development tasks
+  - type: content
+    pattern: "cli|command|config|option|flag"
+
+actions:
+  - type: architecture_guide
+    message: |
+      ## @vltpkg/cli-sdk Workspace Architecture
+
+      The CLI SDK workspace is the core of vlt's command-line interface. Understanding its architecture is crucial for efficient development.
+
+      ### Core Architecture Files
+
+      **Configuration System:**
+      - `src/cli-sdk/src/config/definition.ts` - **CENTRAL FILE**: All CLI options, flags, and top-level commands are defined here
+      - `src/cli-sdk/src/config/index.ts` - Config parsing logic, option resolution, and configuration management
+      - `src/cli-sdk/src/config/usage.ts` - Usage text generation and help formatting
+      - `src/cli-sdk/src/config/merge.ts` - Configuration merging utilities
+      - `src/cli-sdk/src/index.ts` - Entry point
+
+      **Command Implementation:**
+      - `src/cli-sdk/src/commands/` - Individual command implementations (exec.ts, cache.ts, run.ts, etc.)
+      - `src/cli-sdk/src/exec-command.ts` - Shared execution logic for run/exec commands
+      - `src/cli-sdk/src/view.ts` - Output formatting and view management
+      - `src/cli-sdk/src/output.ts` - Console output utilities
+
+  - type: development_patterns
+    message: |
+      ## Key Development Patterns
+
+      ### 1. Adding New CLI Options/Flags
+      **Always start with `definition.ts`:**
+      ```typescript
+      // In src/cli-sdk/src/config/definition.ts
+      .opt({
+        'your-option': {
+          hint: 'value',
+          short: 'y',
+          description: 'Description of your option',
+          default: 'default-value',
+        },
+      })
+      ```
+
+      **Then access in commands:**
+      ```typescript
+      // In command implementations
+      const yourOption = conf.values['your-option']
+      ```
+
+      ### 2. Command Structure Pattern
+      Every command follows this pattern:
+      ```typescript
+      // Command usage definition
+      const usageDef = {
+        command: 'command-name',
+        usage: '<args> [flags]',
+        description: 'Command description',
+        subcommands: { /* if applicable */ },
+        examples: { /* usage examples */ },
+      } as const satisfies CommandUsageDefinition
+
+      // Usage function
+      export const usage: CommandUsage = () => commandUsage(usageDef)
+
+      // Views for different output formats
+      export const views: Views<ReturnType> = {
+        human: ViewClass,
+        json: result => result,
+      }
+
+      // Main command function
+      export const command: CommandFn<ReturnType> = async conf => {
+        // Implementation
+      }
+      ```
+
+      ### 3. Config System Flow
+      1. **Definition** → `definition.ts` defines options with jackspeak
+      2. **Parsing** → `index.ts` loads config files and parses CLI args
+      3. **Access** → Commands use `conf.get('option-name')` to access values
+      4. **Types** → TypeScript ensures type safety throughout
+
+      ### 4. Testing Patterns
+      - Tests use `t.mockImport` for clean mocking
+      - Config objects are created with proper typing
+      - Commands are tested with `LoadedConfig` mock objects
+      - Snapshots are used for usage text and complex outputs
+
+  - type: common_tasks
+    message: |
+      ## Common Development Tasks
+
+      ### Adding a New Command
+      1. **Add to `definition.ts`:**
+         ```typescript
+         const canonicalCommands = {
+           // ...existing commands
+           'your-command': 'your-command',
+         }
+         ```
+
+      2. **Create command file:**
+         ```
+         src/cli-sdk/src/commands/your-command.ts
+         ```
+
+      3. **Follow the command structure pattern** (see above)
+
+      4. **Add tests:**
+         ```
+         src/cli-sdk/test/commands/your-command.ts
+         ```
+
+      ### Modifying CLI Options
+      1. **Update `definition.ts`** - Change option definition
+      2. **Update usage** - If command-specific, update in command files
+      3. **Update implementation** - Change how the option is used
+      4. **Update tests** - Ensure tests use new option names/values
+
+      ### Config System Integration
+      - **Config precedence:** CLI args → project vlt.json → user vlt.json → defaults
+      - **Command-specific config:** Use nested `command.{commandName}` in vlt.json
+      - **Type safety:** All config options are strongly typed through jackspeak
+
+      ### Working with Workspace Operations
+      - **Scope filtering:** Use `conf.get('scope')` for DSS query filtering
+      - **Workspace selection:** Use `conf.get('workspace')` and `conf.get('workspace-group')`
+      - **Monorepo handling:** `conf.options.monorepo` provides workspace management
+
+  - type: troubleshooting
+    message: |
+      ## Common Issues & Solutions
+
+      ### Option Not Available
+      - **Check `definition.ts`** - Option must be defined there first
+      - **Check typing** - Ensure TypeScript types are correctly inferred
+      - **Check config loading** - Verify config files are being loaded properly
+
+      ### Command Not Working
+      - **Check command mapping** - Verify command is in `canonicalCommands`
+      - **Check aliases** - Commands may have aliases defined
+      - **Check parsing** - Ensure positional args are handled correctly
+
+      ### Type Errors
+      - **Config types** - Use `LoadedConfig` type for fully parsed config
+      - **Option types** - Options are strongly typed from jackspeak definition
+      - **Command types** - Follow `CommandFn<ReturnType>` pattern
+
+      ### Testing Issues
+      - **Mock imports** - Use `t.mockImport` for clean test isolation
+      - **Config mocking** - Create proper `LoadedConfig` objects for tests
+      - **Async handling** - Most command functions are async
+
+examples:
+  - input: |
+      # Adding a new CLI option
+      1. Edit src/cli-sdk/src/config/definition.ts
+      2. Add to appropriate section (.opt, .flag, .optList)
+      3. Use conf.get('option-name') in commands
+      4. Update tests with new option usage
+    output: "Properly added new CLI option following architecture"
+
+  - input: |
+      # Working with existing commands
+      1. Check src/cli-sdk/src/commands/ for implementation
+      2. Review usage definitions for command structure
+      3. Follow existing patterns for consistency
+      4. Update tests to match changes
+    output: "Efficiently navigated command architecture"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - cli-sdk
+    - configuration
+    - commands
+    - architecture
+    - development-patterns
+  related_files:
+    - src/cli-sdk/src/config/definition.ts  # Central CLI definitions
+    - src/cli-sdk/src/config/index.ts       # Config parsing logic
+    - src/cli-sdk/src/commands/             # Command implementations
+    - src/cli-sdk/src/exec-command.ts       # Shared execution patterns
+</rule>
