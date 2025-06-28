@@ -16,10 +16,23 @@ The `vlt` client supports workspaces defined by glob patterns, and you
 can also define named groups to perform vlt operations on a specific
 subset of your workspaces.
 
-## Defining Workspaces
+## Getting Started
 
-To use monorepo features, create a `vlt.json` file in the root of your
-project with a `workspaces` field.
+It's possible to use the `vlt init` command to create new workspaces
+by using the `--workspace` (or `-w` for short) option, e.g:
+
+```bash
+$ vlt init -w packages/a
+```
+
+This will ensure the folder is created and a `package.json` file is
+added to it, along with adding the required configuration to the
+`vlt.json` file if needed.
+
+### Manually defining Workspaces
+
+If you want to set up new workspaces, it's also possible to use the
+`vlt.json` file in the root of your project with a `workspaces` field.
 
 At its most explicit, the `workspaces` field can be an object with
 `group` names as the keys, and either a single string or an array of

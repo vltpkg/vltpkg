@@ -219,9 +219,23 @@ export const save = (
       },
     )
   }
+
+  // defines a default indentation and newline in case
+  // a user config file has not yet been read before
+  const extraStringifyOptions: {
+    [kIndent]?: number | string
+    [kNewline]?: string
+  } = stringifyOptions[path] ?? {}
+  if (!extraStringifyOptions[kIndent]) {
+    extraStringifyOptions[kIndent] = 2
+  }
+  if (!extraStringifyOptions[kNewline]) {
+    extraStringifyOptions[kNewline] = '\n'
+  }
+
   writeFileSync(
     path,
-    jsonStringify({ ...data, ...stringifyOptions[path] }),
+    jsonStringify({ ...data, ...extraStringifyOptions }),
   )
   delete lstatCache[path]
   mtimes[which] = cachedLstat(path)?.mtime.getTime()
