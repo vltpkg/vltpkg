@@ -32,6 +32,7 @@ export type Tab =
   | 'versions'
   | 'manifest'
   | 'dependencies'
+  | 'contributors'
 
 export type SubTabDependencies =
   | 'insights'

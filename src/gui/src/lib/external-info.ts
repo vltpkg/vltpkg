@@ -1,11 +1,12 @@
-import type { Repository, Manifest, Packument } from '@vltpkg/types'
 import { compare, gt, prerelease } from '@vltpkg/semver'
-import { isRecord } from '@/utils/typeguards.ts'
-import type { Spec } from '@vltpkg/spec/browser'
 import {
   getRepoOrigin,
   getRepositoryApiUrl,
 } from '@/utils/get-repo-url.ts'
+import { isRecord } from '@/utils/typeguards.ts'
+
+import type { Repository, Manifest, Packument } from '@vltpkg/types'
+import type { Spec } from '@vltpkg/spec/browser'
 
 export type Semver = `${number}.${number}.${number}`
 
@@ -129,6 +130,41 @@ export const readRepository = (
   if (repository.url) {
     return repository.url
   }
+}
+
+const getAllContributors = async (
+  packu: Packument,
+): Promise<Contributor[]> => {
+  const raw = [
+    ...(packu.contributors ?? []),
+    ...(packu.maintainers ?? []),
+  ]
+
+  const uniqueMap = new Map<string, AuthorInfo>()
+
+  for (const person of raw) {
+    // Parse both string and object contributors using readAuthor
+    const parsedPerson =
+      isRecord(person) ? readAuthor(person) : readAuthor(person)
+    if (!parsedPerson) continue
+
+    const key = parsedPerson.email?.toLowerCase() || parsedPerson.name
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, parsedPerson)
+    }
+  }
+
+  const deduped = Array.from(uniqueMap.values())
+
+  const contributors = await Promise.all(
+    deduped.map(async person => ({
+      name: person.name.trim(),
+      email: person.email?.trim(),
+      avatar: await retrieveAvatar(person.email || ''),
+    })),
+  )
+
+  return contributors
 }
 
 export const retrieveAvatar = async (
@@ -270,34 +306,6 @@ export async function* fetchDetails(
         }
       })
       .catch(() => ({}))
-
-  const fetchContributors = async (): Promise<DetailsInfo> => {
-    if (!manifest?.contributors) return {}
-
-    const contributors = await Promise.all(
-      manifest.contributors.map(async contributor => {
-        if (isRecord(contributor)) {
-          const avatar = await retrieveAvatar(contributor.email || '')
-          return {
-            name: contributor.name,
-            email: contributor.email,
-            avatar,
-          }
-        } else {
-          const emailMatch = EMAIL_PATTERN.exec(contributor)
-          const nameMatch = NAME_PATTERN.exec(contributor)
-          const avatar = await retrieveAvatar(emailMatch?.[1] || '')
-          return {
-            name: nameMatch?.[0] || '',
-            email: emailMatch?.[1] || '',
-            avatar,
-          }
-        }
-      }),
-    )
-
-    return { contributors }
-  }
 
   // favicon requests have a guard against duplicate requests
   // since we retry once we fetch the manifest from the registry
@@ -455,6 +463,7 @@ export async function* fetchDetails(
             })
 
           const resolvedVersions = await Promise.all(versions)
+          const contributors = await getAllContributors(packu)
 
           return {
             versions: resolvedVersions,
@@ -467,6 +476,7 @@ export async function* fetchDetails(
                     !prerelease(v.version)?.length,
                 )
               : undefined,
+            contributors,
           }
         })
         .catch(() => ({})),
@@ -479,8 +489,6 @@ export async function* fetchDetails(
     trackPromise(fetchDownloadsLastYear())
   }
 
-  // retrieve contributors from the manifest
-  trackPromise(fetchContributors())
   const repo =
     manifest?.repository && readRepository(manifest.repository)
   const repoDetails = repo && getRepoOrigin(repo)

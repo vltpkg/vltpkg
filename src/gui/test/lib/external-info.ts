@@ -181,6 +181,37 @@ global.fetch = vi.fn(async url => ({
           ],
         }
       }
+      case 'https://registry.npmjs.org/with-contributors': {
+        return {
+          contributors: [
+            {
+              name: 'Contributor One',
+              email: 'contrib1@example.com',
+            },
+            'Contributor Two <contrib2@example.com>',
+          ],
+          maintainers: [
+            {
+              name: 'Maintainer One',
+              email: 'maintainer1@example.com',
+            },
+          ],
+          versions: {
+            '1.0.0': {
+              version: '1.0.0',
+              dist: {
+                unpackedSize: 1000,
+                integrity: 'sha512-abc123',
+                tarball:
+                  'https://registry.npmjs.org/with-contributors/-/with-contributors-1.0.0.tgz',
+              },
+            },
+          },
+          time: {
+            '1.0.0': '2023-01-01T00:00:00.000Z',
+          },
+        }
+      }
       case 'https://api.github.com/repos/ruyadorno/github-repo-info': {
         return {
           stargazers_count: 100,
@@ -832,12 +863,35 @@ test('fetchDetails with contributors in manifest', async () => {
           'https://gravatar.com/avatar/685a2d1e5dcef38b6871bf250e6cf260de7db9676cdfafcf96c8c3a4a3200b30?d=retro',
       },
       {
-        name: 'Contributor Two ',
+        name: 'Contributor Two',
         email: 'contrib2@example.com',
         avatar:
           'https://gravatar.com/avatar/296b6a91e056b396b44a3035b407e2433bfa8e78a94ecb30635af80576f58810?d=retro',
       },
+      {
+        name: 'Maintainer One',
+        email: 'maintainer1@example.com',
+        avatar:
+          'https://gravatar.com/avatar/68f6513ddf97af08f075c943e768b6df7922ee537b3ee1f21589e81b59162a44?d=retro',
+      },
     ],
+    versions: [
+      {
+        version: '1.0.0',
+        publishedDate: '2023-01-01T00:00:00.000Z',
+        unpackedSize: 1000,
+        integrity: 'sha512-abc123',
+        tarball:
+          'https://registry.npmjs.org/with-contributors/-/with-contributors-1.0.0.tgz',
+        gitHead: undefined,
+        publishedAuthor: {
+          name: undefined,
+          email: undefined,
+          avatar: undefined,
+        },
+      },
+    ],
+    greaterVersions: [],
   })
 })
 
