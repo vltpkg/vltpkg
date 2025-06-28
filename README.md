@@ -35,6 +35,12 @@ pnpm vlt # OR ./node_modules/.bin/vlt
 See the [contributing guide](./CONTRIBUTING.md) for more information
 on how to build and develop the various workspaces.
 
+### Contributors
+
+<a href="https://github.com/vltpkg/vltpkg/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=vltpkg/vltpkg" />
+</a>
+
 ### Licenses
 
 Below you can find a complete table of each workspace available in
