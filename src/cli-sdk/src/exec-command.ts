@@ -124,8 +124,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   async run(): Promise<ExecResult> {
     const { conf } = this
 
-    const queryString = conf.get('query')
-    // query takes precedence over workspaces or groups
+    const queryString = conf.get('scope')
+    // scope takes precedence over workspaces or groups
     if (queryString) {
       const graph = actual.load({
         ...conf.options,

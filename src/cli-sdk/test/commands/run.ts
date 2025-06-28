@@ -165,9 +165,9 @@ t.test('run script across several workspaces', async t => {
     await runTest(t, { args: ['-w', 'src/a', '-w', 'src/b'] })
   })
 
-  t.test('with query', async t => {
+  t.test('with scope', async t => {
     await runTest(t, {
-      args: ['--query', ':workspace#a, :workspace#b'],
+      args: ['--scope', ':workspace#a, :workspace#b'],
     })
   })
 })
@@ -220,8 +220,8 @@ t.test('run script across no workspaces', async t => {
     await runTest(t, { args: ['-w', 'src/c'] })
   })
 
-  t.test('with query', async t => {
-    await runTest(t, { args: ['--query', ':workspace#c'] })
+  t.test('with scope', async t => {
+    await runTest(t, { args: ['--scope', ':workspace#c'] })
   })
 })
 
