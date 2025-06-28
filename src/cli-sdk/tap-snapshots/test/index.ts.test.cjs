@@ -59,7 +59,6 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --node-version=<version>
     --os=<os>
     --package=<p>
-    --query=<query>
     --recursive
     --registries=<name=url>
     --registry=<url>
@@ -67,6 +66,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --save-optional
     --save-peer
     --save-prod
+    --scope=<scope>
     --scope-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
@@ -109,7 +109,6 @@ Unknown config option: asdf
     node-version
     os
     package
-    query
     recursive
     registries
     registry
@@ -117,6 +116,7 @@ Unknown config option: asdf
     save-optional
     save-peer
     save-prod
+    scope
     scope-registries
     script-shell
     stale-while-revalidate-factor
