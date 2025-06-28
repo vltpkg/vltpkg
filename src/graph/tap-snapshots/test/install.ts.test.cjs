@@ -20,3 +20,21 @@ actual.load
 reify
 
 `
+
+exports[`test/install.ts > TAP > install with no package.json file in cwd > should create a graph with the new dependency 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(abbrev@2.0.0) -prod-> to: Node {
+        id: '··abbrev@2.0.0',
+        location: './node_modules/.vlt/··abbrev@2.0.0/node_modules/abbrev',
+        resolved: 'https://registry.npmjs.org/abbrev/-/abbrev-2.0.0.tgz',
+        integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+      }
+    ]
+  }
+]
+`
