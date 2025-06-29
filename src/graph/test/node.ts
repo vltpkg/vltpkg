@@ -4,7 +4,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
-import { Node } from '../src/node.ts'
+import { asNode, isNode, Node } from '../src/node.ts'
 import type { GraphLike } from '../src/types.ts'
 import { PathScurry } from 'path-scurry'
 
@@ -505,4 +505,55 @@ t.test('rawManifest getter and setter', t => {
   t.strictSame(node.toString(), 'npm:foo@1.0.0')
 
   t.end()
+})
+
+t.test('isNode', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const mani = {
+    name: 'test',
+    version: '1.0.0',
+  }
+  const spec = Spec.parse('foo', '^1.0.0')
+  const node = new Node(opts, undefined, mani, spec)
+  t.ok(isNode(node), 'should be ok if object is a valid node')
+  node[Symbol.toStringTag] === 'something else'
+  t.ok(
+    isNode(node),
+    "should not be ok if the object string tag won't match",
+  )
+  t.notOk(
+    isNode({}),
+    'should not be ok if object does not have a valid obj',
+  )
+  t.notOk(
+    isNode(undefined),
+    "should not be ok if it's an undefined value",
+  )
+})
+
+t.test('asNode', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const mani = {
+    name: 'test',
+    version: '1.0.0',
+  }
+  const spec = Spec.parse('foo', '^1.0.0')
+  const node = new Node(opts, undefined, mani, spec)
+  t.ok(
+    asNode(node),
+    'should return typed object if a valid dependency shaped obj is found',
+  )
+  t.throws(
+    () => asNode({}),
+    /Expected a node/,
+    'should throw if object is not a node',
+  )
 })
