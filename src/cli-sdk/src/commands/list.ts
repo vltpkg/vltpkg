@@ -6,6 +6,7 @@ import type {
 } from '@vltpkg/graph'
 import {
   actual,
+  asNode,
   humanReadableOutput,
   jsonOutput,
   mermaidOutput,
@@ -117,23 +118,51 @@ export const command: CommandFn<ListResult> = async conf => {
   const importers = new Set<Node>()
   const scopeIDs: DepID[] = []
 
-  if (monorepo) {
-    for (const workspace of monorepo.filter(conf.values)) {
-      const w: Node | undefined = graph.nodes.get(workspace.id)
-      if (w) {
-        importers.add(w)
-        selectImporters.push(`[name="${w.name}"]`)
-        selectImporters.push(`[name="${w.name}"] > *`)
-        scopeIDs.push(workspace.id)
+  // handle --scope option to add scope nodes as importers
+  const scopeQueryString = conf.get('scope')
+  let scopeNodes
+  if (scopeQueryString) {
+    // run scope query to get all matching nodes
+    const scopeQuery = new Query({
+      graph,
+      specOptions: conf.options,
+      securityArchive,
+    })
+    const { nodes } = await scopeQuery.search(scopeQueryString, {
+      signal: new AbortController().signal,
+    })
+    scopeNodes = nodes
+  }
+
+  if (scopeQueryString && scopeNodes) {
+    // Add all scope nodes to importers Set (treat them as top-level items)
+    for (const queryNode of scopeNodes) {
+      importers.add(asNode(queryNode))
+    }
+  } else {
+    // if in a workspace environment, select only the specified
+    // workspaces as top-level items
+    if (monorepo) {
+      for (const workspace of monorepo.filter(conf.values)) {
+        const w: Node | undefined = graph.nodes.get(workspace.id)
+        if (w) {
+          importers.add(w)
+          selectImporters.push(`[name="${w.name}"]`)
+          selectImporters.push(`[name="${w.name}"] > *`)
+          scopeIDs.push(workspace.id)
+        }
+      }
+    }
+    // if no top-level item was set then by default
+    // we just set all importers as top-level items
+    if (importers.size === 0) {
+      for (const importer of graph.importers) {
+        importers.add(importer)
       }
     }
   }
-  if (importers.size === 0) {
-    for (const importer of graph.importers) {
-      importers.add(importer)
-    }
-  }
 
+  // build a default query string to use in the target search
   const selectImportersQueryString = selectImporters.join(', ')
   const defaultQueryString =
     (
@@ -143,6 +172,7 @@ export const command: CommandFn<ListResult> = async conf => {
       selectImportersQueryString
     : projectQueryString
 
+  // retrieve the selected nodes and edges
   const { edges, nodes } = await query.search(
     queryString || defaultQueryString,
     {

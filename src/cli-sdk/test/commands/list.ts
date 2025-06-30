@@ -8,6 +8,8 @@ import { PathScurry } from 'path-scurry'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import { join } from 'path'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -139,6 +141,7 @@ const runCommand = async (
     options,
     positionals,
     values,
+    get: (key: string) => (values as any)[key],
   } as LoadedConfig
   const res = await cmd.command(config)
   const output = cmd.views[values.view](
@@ -215,7 +218,8 @@ t.test('list', async t => {
     Command.command({
       positionals: ['*:malware'],
       options,
-    } as LoadedConfig),
+      get: () => undefined,
+    } as unknown as LoadedConfig),
     /Failed to parse :malware selector/,
     'should fail to run with no security archive',
   )
@@ -318,6 +322,28 @@ t.test('list', async t => {
       ),
       'should use specified workspace as scope selector',
     )
+
+    t.matchSnapshot(
+      await runCommand(
+        {
+          values: { view: 'human', scope: ':workspace#a' },
+          options,
+        },
+        C,
+      ),
+      'should add scope nodes as importers',
+    )
+
+    t.matchSnapshot(
+      await runCommand(
+        {
+          values: { view: 'json', scope: ':workspace' },
+          options,
+        },
+        C,
+      ),
+      'should add all scope nodes as importers',
+    )
   })
 
   t.test('view=gui', async t => {
@@ -372,6 +398,223 @@ t.test('list', async t => {
         C,
       ),
       'should use colors when set in human readable format',
+    )
+  })
+
+  await t.test('default query string selection logic', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'workspace-a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'workspace-b',
+            version: '1.0.0',
+          }),
+        },
+      },
+      node_modules: {
+        a: t.fixture('symlink', '../packages/a'),
+        b: t.fixture('symlink', '../packages/a'),
+      },
+    })
+    t.chdir(dir)
+    unload()
+
+    const monorepo = Monorepo.load(dir)
+    const graph = Graph.actual.load({
+      monorepo,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(),
+      projectRoot: dir,
+      ...specOptions,
+    })
+
+    const Command = await mockList(t, { graph })
+    const result = await runCommand(
+      {
+        positionals: [], // No positionals to test default query logic
+        values: {
+          view: 'human',
+          scope: '#a', // Should trigger the default selection logic
+        },
+        options,
+      },
+      Command,
+    )
+
+    t.matchSnapshot(
+      result,
+      'should select the correct workspace based on default query logic',
+    )
+  })
+
+  await t.test('scope with workspaces', async t => {
+    // Create a more realistic test with actual graph nodes
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'workspace-a',
+            version: '1.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const monorepo = Monorepo.load(dir)
+    const graph = Graph.actual.load({
+      monorepo,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(),
+      projectRoot: dir,
+      ...specOptions,
+    })
+
+    const Command = await mockList(t, { graph })
+
+    const result = await runCommand(
+      {
+        positionals: ['*'],
+        values: {
+          scope: ':workspace',
+          view: 'human',
+        },
+        options,
+      },
+      Command,
+    )
+
+    t.matchSnapshot(
+      result,
+      'should handle scope with workspaces correctly',
+    )
+  })
+
+  await t.test('scope with a transitive dependency', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'workspace-a',
+            version: '1.0.0',
+            dependencies: {
+              foo: '^1.0.0',
+            },
+          }),
+        },
+      },
+      node_modules: {
+        '.vlt': {
+          [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
+            node_modules: {
+              foo: {
+                'package.json': JSON.stringify({
+                  name: 'foo',
+                  version: '1.0.0',
+                  dependencies: {
+                    bar: '^1.0.0',
+                  },
+                }),
+              },
+              bar: t.fixture(
+                'symlink',
+                join(
+                  '../../',
+                  joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+                  'node_modules/bar',
+                ),
+              ),
+            },
+          },
+          [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: {
+            node_modules: {
+              bar: {
+                'package.json': JSON.stringify({
+                  name: 'bar',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+        },
+        foo: t.fixture(
+          'symlink',
+          join(
+            '.vlt',
+            joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+            'node_modules',
+            'foo',
+          ),
+        ),
+        bar: t.fixture(
+          'symlink',
+          join(
+            '.vlt',
+            joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+            'node_modules',
+            'bar',
+          ),
+        ),
+      },
+    })
+    t.chdir(dir)
+
+    const monorepo = Monorepo.load(dir)
+    const graph = Graph.actual.load({
+      monorepo,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(),
+      projectRoot: dir,
+      ...specOptions,
+    })
+
+    const Command = await mockList(t, { graph })
+
+    const result = await runCommand(
+      {
+        positionals: ['*'],
+        values: {
+          scope: '#foo',
+          view: 'human',
+        },
+        options,
+      },
+      Command,
+    )
+
+    t.matchSnapshot(
+      result,
+      'should handle scope with a transitive dependency',
     )
   })
 })

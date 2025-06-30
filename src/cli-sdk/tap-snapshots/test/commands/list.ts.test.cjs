@@ -15,6 +15,22 @@ exports[`test/commands/list.ts > TAP > list > colors > should use colors when se
 [0m
 `
 
+exports[`test/commands/list.ts > TAP > list > default query string selection logic > should select the correct workspace based on default query logic 1`] = `
+a
+
+`
+
+exports[`test/commands/list.ts > TAP > list > scope with a transitive dependency > should handle scope with a transitive dependency 1`] = `
+foo
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/list.ts > TAP > list > scope with workspaces > should handle scope with workspaces correctly 1`] = `
+workspace-a
+
+`
+
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
 Usage:
   vlt ls
@@ -343,6 +359,82 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
     "overridden": false
   }
 ]
+`
+
+exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope nodes as importers 1`] = `
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "my-project",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  },
+  {
+    "name": "b",
+    "to": {
+      "id": "workspace·packages§b",
+      "name": "b",
+      "version": "1.0.0",
+      "location": "./packages/b",
+      "importer": true,
+      "manifest": {
+        "name": "b",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  },
+  {
+    "name": "a",
+    "to": {
+      "id": "workspace·packages§a",
+      "name": "a",
+      "version": "1.0.0",
+      "location": "./packages/a",
+      "importer": true,
+      "manifest": {
+        "name": "a",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  }
+]
+`
+
+exports[`test/commands/list.ts > TAP > list > workspaces > should add scope nodes as importers 1`] = `
+a
+
 `
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list single workspace 1`] = `
