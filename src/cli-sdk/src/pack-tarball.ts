@@ -1,13 +1,11 @@
 import { PackageJson } from '@vltpkg/package-json'
 import type { Manifest } from '@vltpkg/types'
-import { resolve } from 'node:path'
+import { resolve, isAbsolute } from 'node:path'
 import { create as tarCreate } from 'tar'
 import { minimatch } from 'minimatch'
 
 export type PackTarballOptions = {
-  'pack-destination'?: string
   dry?: boolean
-  projectRoot?: string
 }
 
 export type PackTarballResult = {
@@ -26,10 +24,9 @@ export const packTarball = async (
   path: string,
   options: PackTarballOptions = {},
 ): Promise<PackTarballResult> => {
-  const projectRoot = options.projectRoot ?? process.cwd()
   // If path is absolute, use it directly. Otherwise resolve relative to projectRoot
   const packTarget =
-    resolve(path) === path ? path : resolve(projectRoot, path)
+    isAbsolute(path) ? path : resolve(process.cwd(), path)
 
   // Read package.json
   const packageJson = new PackageJson()

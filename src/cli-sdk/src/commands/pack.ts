@@ -12,12 +12,8 @@ export const usage: CommandUsage = () =>
     description: `Create a tarball from a package in the current directory or specified folder.
     
     The tarball will be saved to the current directory with the name
-    <name>-<version>.tgz, unless a different destination is specified.`,
+    <name>-<version>.tgz.`,
     options: {
-      'pack-destination': {
-        description: 'Directory to save the tarball in',
-        value: '<directory>',
-      },
       'dry-run': {
         description:
           'Show what would be packed without creating a tarball',
@@ -71,17 +67,11 @@ export const command: CommandFn<CommandResult> = async conf => {
 
   const packDestination = '.'
 
-  // Read dry-run option from config
-  const values = conf.values as Record<string, unknown>
-  const dry = Boolean(values['dry-run'])
+  const dry = conf.options['dry-run'] ?? false
 
   const { manifest, filename, tarballData } = await packTarball(
     folder,
-    {
-      'pack-destination': packDestination,
-      dry,
-      projectRoot: conf.projectRoot,
-    },
+    { dry },
   )
 
   if (tarballData) {

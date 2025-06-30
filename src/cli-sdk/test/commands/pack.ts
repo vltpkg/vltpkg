@@ -34,6 +34,10 @@ t.test('pack command', async t => {
   const packagePath = resolve(testDir, 'test-package')
 
   t.test('packs package successfully', async t => {
+    // Create a test output directory for the tarball
+    const outputDir = t.testdir({})
+    t.chdir(outputDir)
+
     // Create a proper Config instance
     const config = new Config(undefined, testDir)
     await config.loadConfigFile()
@@ -50,76 +54,124 @@ t.test('pack command', async t => {
     t.equal(result.integrity, 'sha512-xyz789')
     t.same(result.bundled, ['some-dep'])
 
-    // Check that the file was written
-    const tarballPath = resolve('.', result.filename)
+    // Check that the file was written to the test directory
+    const tarballPath = resolve(outputDir, result.filename)
     const tarballData = await readFile(tarballPath).catch(() => null)
-    t.ok(tarballData, 'tarball should be written to disk')
+    t.ok(tarballData, 'tarball should be written to test directory')
   })
 
   t.test(
     'packs from current directory when no folder specified',
     async t => {
-      const currentDir = t.testdir({
-        'package.json': JSON.stringify({
-          name: 'current-package',
-          version: '2.0.0',
-        }),
-        'index.js': 'console.log("test")',
+      const testBaseDir = t.testdir({
+        source: {
+          'current-package': {
+            'package.json': JSON.stringify({
+              name: 'current-package',
+              version: '2.0.0',
+            }),
+            'index.js': 'console.log("test")',
+          },
+        },
+        output: {},
       })
 
-      const config = new Config(undefined, currentDir)
+      // Get absolute paths before changing directory
+      const packagePath = resolve(
+        testBaseDir,
+        'source',
+        'current-package',
+      )
+      const outputDir = resolve(testBaseDir, 'output')
+
+      t.chdir(outputDir)
+
+      const config = new Config(
+        undefined,
+        resolve(testBaseDir, 'source'),
+      )
       await config.loadConfigFile()
-      // Pass the test directory explicitly
-      const mockConfig = config.parse(['pack', currentDir])
+      // Pass the absolute path to the test directory
+      const mockConfig = config.parse(['pack', packagePath])
 
       const result = await command(mockConfig)
 
       t.equal(result.name, 'current-package')
       t.equal(result.version, '2.0.0')
       t.equal(result.filename, 'current-package-2.0.0.tgz')
+
+      // Verify tarball was written to test directory
+      const tarballPath = resolve(outputDir, result.filename)
+      const tarballData = await readFile(tarballPath).catch(
+        () => null,
+      )
+      t.ok(tarballData, 'tarball should be written to test directory')
     },
   )
 
   t.test('handles package without dist metadata', async t => {
-    const noDist = t.testdir({
-      'no-dist': {
-        'package.json': JSON.stringify({
-          name: 'no-dist-package',
-          version: '1.0.0',
-        }),
+    const testBaseDir = t.testdir({
+      source: {
+        'no-dist': {
+          'package.json': JSON.stringify({
+            name: 'no-dist-package',
+            version: '1.0.0',
+          }),
+        },
       },
+      output: {},
     })
 
-    const config = new Config(undefined, noDist)
+    // Get absolute paths before changing directory
+    const packagePath = resolve(testBaseDir, 'source', 'no-dist')
+    const outputDir = resolve(testBaseDir, 'output')
+
+    t.chdir(outputDir)
+
+    const config = new Config(
+      undefined,
+      resolve(testBaseDir, 'source'),
+    )
     await config.loadConfigFile()
-    const mockConfig = config.parse([
-      'pack',
-      resolve(noDist, 'no-dist'),
-    ])
+    const mockConfig = config.parse(['pack', packagePath])
 
     const result = await command(mockConfig)
 
     t.notOk(result.shasum, 'should not have shasum')
     t.notOk(result.integrity, 'should not have integrity')
     t.notOk(result.bundled, 'should not have bundled')
+
+    // Verify tarball was written to test directory
+    const tarballPath = resolve(outputDir, result.filename)
+    const tarballData = await readFile(tarballPath).catch(() => null)
+    t.ok(tarballData, 'tarball should be written to test directory')
   })
 
   t.test('tests edge case with zero size', async t => {
-    const zeroSizeDir = t.testdir({
-      'zero-size': {
-        'package.json': JSON.stringify({
-          name: 'zero-size-package',
-          version: '1.0.0',
-        }),
+    const testBaseDir = t.testdir({
+      source: {
+        'zero-size': {
+          'package.json': JSON.stringify({
+            name: 'zero-size-package',
+            version: '1.0.0',
+          }),
+        },
       },
+      output: {},
     })
 
-    const config = new Config(undefined, zeroSizeDir)
+    // Get absolute paths before changing directory
+    const packagePath = resolve(testBaseDir, 'source', 'zero-size')
+    const outputDir = resolve(testBaseDir, 'output')
+
+    t.chdir(outputDir)
+
+    const config = new Config(
+      undefined,
+      resolve(testBaseDir, 'source'),
+    )
     await config.loadConfigFile()
-    const mockConfig = config.parse([
-      'pack',
-      resolve(zeroSizeDir, 'zero-size'),
-    ])
+    const mockConfig = config.parse(['pack', packagePath])
 
     const result = await command(mockConfig)
 
@@ -130,6 +182,11 @@ t.test('pack command', async t => {
       result.unpackedSize >= 0,
       'unpacked size should be non-negative',
     )
+
+    // Verify tarball was written to test directory
+    const tarballPath = resolve(outputDir, result.filename)
+    const tarballData = await readFile(tarballPath).catch(() => null)
+    t.ok(tarballData, 'tarball should be written to test directory')
   })
 
   t.test('handles optional fields in result', async t => {
@@ -151,7 +208,7 @@ t.test('pack command', async t => {
   })
 
   t.test('dry-run mode', async t => {
-    const dryRunDir = t.testdir({
+    const testBaseDir = t.testdir({
       'dry-package': {
         'package.json': JSON.stringify({
           name: 'dry-run-package',
@@ -165,12 +222,19 @@ t.test('pack command', async t => {
       },
     })
 
-    const config = new Config(undefined, dryRunDir)
+    // Get absolute path before changing directory
+    const packagePath = resolve(testBaseDir, 'dry-package')
+
+    // Create a separate output directory for potential tarball
+    const outputDir = t.testdir({})
+    t.chdir(outputDir)
+
+    const config = new Config(undefined, testBaseDir)
     await config.loadConfigFile()
     const mockConfig = config.parse([
       'pack',
       '--dry-run',
-      resolve(dryRunDir, 'dry-package'),
+      packagePath,
     ])
 
     const result = await command(mockConfig)
@@ -187,10 +251,10 @@ t.test('pack command', async t => {
     t.equal(result.shasum, 'dry123')
     t.equal(result.integrity, 'sha512-dry')
 
-    // Verify no tarball was created
+    // Verify no tarball was created in the test directory
     const fs = await import('node:fs/promises')
     await t.rejects(
-      fs.access(resolve('.', result.filename)),
+      fs.access(resolve(outputDir, result.filename)),
       'tarball file should not exist in dry-run mode',
     )
   })

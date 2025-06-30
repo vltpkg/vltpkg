@@ -75,13 +75,12 @@ function formatSize(bytes: number): string {
 
 export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
+  const dry = conf.options['dry-run'] ?? false
 
   // Pack tarball using our internal function
   const { manifest, tarballData, filename } = await packTarball(
     folder,
-    {
-      projectRoot: conf.projectRoot,
-    },
+    { dry },
   )
 
   assert(
@@ -149,25 +148,27 @@ export const command: CommandFn<CommandResult> = async conf => {
     registryUrl,
   )
 
-  let response: CacheEntry
-  try {
-    response = await rc.request(publishUrl, {
-      method: 'PUT',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(publishMetadata),
-    })
-  } catch (err) {
-    throw error('Failed to publish package', {
-      cause: asError(err),
-    })
-  }
+  if (!dry) {
+    let response: CacheEntry
+    try {
+      response = await rc.request(publishUrl, {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(publishMetadata),
+      })
+    } catch (err) {
+      throw error('Failed to publish package', {
+        cause: asError(err),
+      })
+    }
 
-  if (response.statusCode !== 200 && response.statusCode !== 201) {
-    throw error('Failed to publish package', {
-      response,
-    })
+    if (response.statusCode !== 200 && response.statusCode !== 201) {
+      throw error('Failed to publish package', {
+        response,
+      })
+    }
   }
 
   return {
