@@ -15,6 +15,11 @@ exports[`test/commands/query.ts > TAP > query > colors > should use colors when 
 [0m
 `
 
+exports[`test/commands/query.ts > TAP > query > default query string selection logic > should select the correct workspace based on default query logic 1`] = `
+a
+
+`
+
 exports[`test/commands/query.ts > TAP > query > expect-results option > should return items when expect-results check passes 1`] = `
 my-project
 ├── foo@1.0.0
@@ -22,6 +27,17 @@ my-project
 │ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0
 └── missing@^1.0.0 (missing)
+
+`
+
+exports[`test/commands/query.ts > TAP > query > scope with a transitive dependency > should handle scope with a transitive dependency 1`] = `
+foo
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > scope with workspaces > should handle scope with workspaces correctly 1`] = `
+workspace-a
 
 `
 
@@ -244,6 +260,82 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "overridden": false
   }
 ]
+`
+
+exports[`test/commands/query.ts > TAP > query > workspaces > should add all scope nodes as importers 1`] = `
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "my-project",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  },
+  {
+    "name": "b",
+    "to": {
+      "id": "workspace·packages§b",
+      "name": "b",
+      "version": "1.0.0",
+      "location": "./packages/b",
+      "importer": true,
+      "manifest": {
+        "name": "b",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  },
+  {
+    "name": "a",
+    "to": {
+      "id": "workspace·packages§a",
+      "name": "a",
+      "version": "1.0.0",
+      "location": "./packages/a",
+      "importer": true,
+      "manifest": {
+        "name": "a",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  }
+]
+`
+
+exports[`test/commands/query.ts > TAP > query > workspaces > should add scope nodes as importers 1`] = `
+a
+
 `
 
 exports[`test/commands/query.ts > TAP > query > workspaces > should list single workspace 1`] = `

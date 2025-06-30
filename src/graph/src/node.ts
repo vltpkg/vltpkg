@@ -389,3 +389,20 @@ export class Node implements NodeLike {
     return stringifyNode(this)
   }
 }
+
+export const isNode = (value: unknown): value is Node => {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    'id' in value &&
+    'manifest' in value &&
+    (value as Node)[Symbol.toStringTag] === '@vltpkg/graph.Node'
+  )
+}
+
+export const asNode = (value: unknown): Node => {
+  if (!isNode(value)) {
+    throw typeError('Expected a node', { found: value })
+  }
+  return value
+}
