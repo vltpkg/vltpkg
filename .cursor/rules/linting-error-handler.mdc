@@ -103,6 +103,87 @@ actions:
          import type { Type1 } from 'module'
          ```
 
+      #### C. Type Guard Functions for Array Filtering (`@typescript-eslint/prefer-nullish-coalescing`, non-null assertions)
+      **Pattern**: Filtering arrays with optional properties and needing proper type narrowing without non-null assertions
+      
+      **Problem**: When filtering arrays to remove undefined/null values, TypeScript doesn't automatically narrow the type, leading to:
+      - Using non-null assertions (`!`) which will cause a @typescript-eslint/no-non-null-assertion error
+      - Type errors when chaining array methods
+      
+      **Solution**: Use type guard functions (type predicates) for proper type narrowing:
+      
+      1. **Create reusable type guard functions**:
+         ```typescript
+         // ✅ Generic type guard for filtering undefined values
+         const isNotUndefined = <T>(value: T | undefined): value is T => value !== undefined
+         
+         // ✅ Generic type guard for filtering both null and undefined
+         const isDefined = <T>(value?: T): value is T => 
+           value !== null && value !== undefined
+         ```
+
+      2. **Apply in array filtering chains**:
+         ```typescript
+         // ❌ Before (using non-null assertions - unsafe and causes linting errors)
+         const scopePaths = nodes
+           .filter(n => n.location !== undefined)
+           .map(n => n.location!) // Non-null assertion warning!
+         
+         // ✅ After (using type guard - safe and type-correct)
+         const scopePaths = nodes
+           .filter((n): n is NodeWithLocation => n.location !== undefined)
+           .map(n => n.location) // TypeScript knows n.location is string, not string | undefined
+         ```
+
+      3. **Advanced patterns with custom type guards**:
+         ```typescript
+         // ✅ Custom type guard for specific conditions
+         type NodeWithLocation = {
+           location: string
+         } & Node
+         
+         const hasLocation = (node: Node): node is NodeWithLocation => 
+           node.location !== undefined
+         
+         // Usage
+         const locatedNodes = allNodes
+           .filter(hasLocation)
+           .map(node => node.location) // TypeScript knows location is defined
+         ```
+
+      4. **Inline type predicates for simple cases**:
+         ```typescript
+         // ✅ Inline type predicate
+         const validIds = items
+           .filter((item): item is ItemWithId => item.id !== undefined)
+           .map(item => item.id)
+         
+         // ✅ For property existence checks
+         const activeItems = items
+           .filter((item): item is ActiveItem => item.active === true)
+           .forEach(item => item.doSomething())
+         ```
+
+      **Why Type Guards Are Better Than Non-Null Assertions:**
+      - **Type Safety**: Compiler verifies the type narrowing logic
+      - **Linting Compliance**: No warnings about non-null assertions
+      - **Readability**: Explicit about what condition is being checked
+      - **Reusability**: Type guard functions can be reused across the codebase
+      - **Runtime Safety**: Actually checks the condition, doesn't just silence TypeScript
+
+      **Common Patterns:**
+      ```typescript
+      // ✅ Filter and map with location property
+      const paths = nodes
+        .filter((n): n is { location: string } => typeof n.location === 'string')
+        .map(n => n.location)
+      
+      // ✅ Filter and process with multiple properties
+      const workspaceNodes = nodes
+        .filter((n): n is WorkspaceNode => n.importer && n.location !== undefined)
+        .forEach(n => processWorkspace(n.location, n.importer))
+      ```
+
       ## 2. Quick Fix Workflow
 
       ### Step-by-Step Process:
