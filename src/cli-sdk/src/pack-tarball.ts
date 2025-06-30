@@ -58,6 +58,11 @@ export const packTarball = async (
         // Normalize path - remove leading './'
         const normalizedPath = path.replace(/^\.\//, '')
 
+        // Always include root directory
+        if (path === '.' || normalizedPath === '') {
+          return true
+        }
+
         // Always exclude certain files/directories
         const alwaysExcludePatterns = [
           /^\.?\/?\.git(\/|$)/,
@@ -84,7 +89,7 @@ export const packTarball = async (
           return false
         }
 
-        // Always include certain files (npm conventions)
+        // Always include certain files
         const alwaysIncludePatterns = [
           /^package\.json$/,
           /^README(\..*)?$/i,
@@ -108,15 +113,38 @@ export const packTarball = async (
         }
         if (
           manifestWithFiles.files &&
-          Array.isArray(manifestWithFiles.files) &&
-          manifestWithFiles.files.length > 0
+          Array.isArray(manifestWithFiles.files)
         ) {
+          // Empty files array means exclude everything except always-included files
+          if (manifestWithFiles.files.length === 0) {
+            return false
+          }
           return manifestWithFiles.files.some((pattern: string) => {
-            // Convert pattern to work with minimatch
-            const globPattern = pattern.replace(/\/$/, '/**') // Handle directory patterns
-            return minimatch(normalizedPath, globPattern, {
-              dot: true,
-            })
+            // Handle different pattern types
+            if (pattern.endsWith('/')) {
+              // Directory pattern: match the directory itself and its contents
+              const dirName = pattern.slice(0, -1)
+              const globPattern = pattern.replace(/\/$/, '/**')
+              const matchesDir = normalizedPath === dirName
+              const matchesContents = minimatch(
+                normalizedPath,
+                globPattern,
+                {
+                  dot: true,
+                },
+              )
+              return matchesDir || matchesContents
+            } else {
+              // File pattern: check direct match and if this path is a parent directory
+              const directMatch = minimatch(normalizedPath, pattern, {
+                dot: true,
+              })
+              // Check if this path is a directory that could contain the pattern
+              const isParentDir =
+                pattern.includes('/') &&
+                pattern.startsWith(normalizedPath + '/')
+              return directMatch || isParentDir
+            }
           })
         }
 

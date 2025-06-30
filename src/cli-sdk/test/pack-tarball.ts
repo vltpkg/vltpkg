@@ -241,4 +241,240 @@ t.test('packTarball', async t => {
     t.notOk(filesInTarball.includes('backup~'), 'backup~ excluded')
     t.notOk(filesInTarball.includes('file.swp'), 'file.swp excluded')
   })
+
+  t.test('respects files field in package.json', async t => {
+    const filesDir = t.testdir({
+      'files-test': {
+        'package.json': JSON.stringify({
+          name: 'files-test',
+          version: '1.0.0',
+          files: ['src/', 'lib/**/*.js', 'bin/cli.js', 'README.md'],
+        }),
+        src: {
+          'index.js': 'console.log("src file")',
+          'utils.js': 'console.log("utils")',
+        },
+        lib: {
+          'main.js': 'console.log("lib main")',
+          'helper.js': 'console.log("lib helper")',
+          types: {
+            'index.d.ts': 'export interface Test {}',
+          },
+        },
+        bin: {
+          'cli.js': '#!/usr/bin/env node\nconsole.log("cli")',
+        },
+        test: {
+          'index.test.js': 'console.log("test file")',
+        },
+        'README.md': '# Files Test Package',
+        'CHANGELOG.md': '# Changelog',
+        docs: {
+          'guide.md': '# Guide',
+        },
+      },
+    })
+
+    const result = await packTarball(resolve(filesDir, 'files-test'))
+    t.ok(result.tarballData, 'should create tarball')
+
+    // List files to verify inclusions/exclusions
+    const { list } = await import('tar')
+    const filesInTarball: string[] = []
+    const stream = await import('node:stream')
+    const bufferStream = new stream.PassThrough()
+    bufferStream.end(result.tarballData!)
+
+    await new Promise<void>((resolve, reject) => {
+      bufferStream
+        .pipe(
+          list({
+            onentry: entry => {
+              filesInTarball.push(entry.path.replace(/^[^/]+\//, ''))
+            },
+          }),
+        )
+        .on('end', resolve)
+        .on('error', reject)
+    })
+
+    // Should include files specified in files field
+    t.ok(
+      filesInTarball.includes('package.json'),
+      'package.json always included',
+    )
+    t.ok(
+      filesInTarball.includes('src/index.js'),
+      'src/ directory included',
+    )
+    t.ok(
+      filesInTarball.includes('src/utils.js'),
+      'src/ directory included',
+    )
+    t.ok(
+      filesInTarball.includes('lib/main.js'),
+      'lib/**/*.js pattern matched',
+    )
+    t.ok(
+      filesInTarball.includes('lib/helper.js'),
+      'lib/**/*.js pattern matched',
+    )
+    t.ok(
+      filesInTarball.includes('bin/cli.js'),
+      'specific file included',
+    )
+    t.ok(
+      filesInTarball.includes('README.md'),
+      'README.md specified in files',
+    )
+
+    // Should exclude files not in files field
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('test/')),
+      'test/ excluded',
+    )
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('docs/')),
+      'docs/ excluded',
+    )
+    t.notOk(
+      filesInTarball.includes('lib/types/index.d.ts'),
+      '.d.ts not matching *.js pattern',
+    )
+
+    // Should include always-included files even if not in files field
+    t.ok(
+      filesInTarball.includes('CHANGELOG.md'),
+      'CHANGELOG always included',
+    )
+  })
+
+  t.test('handles empty files field', async t => {
+    const emptyFilesDir = t.testdir({
+      'empty-files': {
+        'package.json': JSON.stringify({
+          name: 'empty-files',
+          version: '1.0.0',
+          files: [],
+        }),
+        src: {
+          'index.js': 'console.log("src file")',
+        },
+        'README.md': '# Empty Files Test',
+        LICENSE: 'MIT',
+      },
+    })
+
+    const result = await packTarball(
+      resolve(emptyFilesDir, 'empty-files'),
+    )
+    t.ok(result.tarballData, 'should create tarball')
+
+    // List files to verify behavior with empty files field
+    const { list } = await import('tar')
+    const filesInTarball: string[] = []
+    const stream = await import('node:stream')
+    const bufferStream = new stream.PassThrough()
+    bufferStream.end(result.tarballData!)
+
+    await new Promise<void>((resolve, reject) => {
+      bufferStream
+        .pipe(
+          list({
+            onentry: entry => {
+              filesInTarball.push(entry.path.replace(/^[^/]+\//, ''))
+            },
+          }),
+        )
+        .on('end', resolve)
+        .on('error', reject)
+    })
+
+    // Should still include always-included files
+    t.ok(
+      filesInTarball.includes('package.json'),
+      'package.json always included',
+    )
+    t.ok(
+      filesInTarball.includes('README.md'),
+      'README.md always included',
+    )
+    t.ok(
+      filesInTarball.includes('LICENSE'),
+      'LICENSE always included',
+    )
+
+    // Should exclude other files when files field is empty array
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('src/')),
+      'src/ excluded with empty files',
+    )
+  })
+
+  t.test('handles files field with directory patterns', async t => {
+    const dirPatternDir = t.testdir({
+      'dir-pattern': {
+        'package.json': JSON.stringify({
+          name: 'dir-pattern',
+          version: '1.0.0',
+          files: ['dist/', 'types/'],
+        }),
+        dist: {
+          'index.js': 'console.log("dist file")',
+          'utils.js': 'console.log("dist utils")',
+        },
+        types: {
+          'index.d.ts': 'export interface Test {}',
+        },
+        src: {
+          'index.ts': 'console.log("source file")',
+        },
+      },
+    })
+
+    const result = await packTarball(
+      resolve(dirPatternDir, 'dir-pattern'),
+    )
+    t.ok(result.tarballData, 'should create tarball')
+
+    // List files to verify directory pattern handling
+    const { list } = await import('tar')
+    const filesInTarball: string[] = []
+    const stream = await import('node:stream')
+    const bufferStream = new stream.PassThrough()
+    bufferStream.end(result.tarballData!)
+
+    await new Promise<void>((resolve, reject) => {
+      bufferStream
+        .pipe(
+          list({
+            onentry: entry => {
+              filesInTarball.push(entry.path.replace(/^[^/]+\//, ''))
+            },
+          }),
+        )
+        .on('end', resolve)
+        .on('error', reject)
+    })
+
+    // Should include files from specified directories
+    t.ok(
+      filesInTarball.includes('dist/index.js'),
+      'dist/ directory included',
+    )
+    t.ok(
+      filesInTarball.includes('dist/utils.js'),
+      'dist/ directory included',
+    )
+    t.ok(
+      filesInTarball.includes('types/index.d.ts'),
+      'types/ directory included',
+    )
+
+    // Should exclude directories not specified
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('src/')),
+      'src/ excluded',
+    )
+  })
 })
