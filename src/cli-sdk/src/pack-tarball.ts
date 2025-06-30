@@ -47,7 +47,6 @@ export const packTarball = async (
     return { manifest, filename }
   }
 
-  // Create tarball like npm pack does - all files go into a 'package/' directory
   const cwd = packTarget
   const tarballData = await tarCreate(
     {

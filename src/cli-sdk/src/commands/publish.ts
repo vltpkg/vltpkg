@@ -76,23 +76,25 @@ export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
 
   // Pack tarball using our internal function
-  const { manifest, tarballData } = await packTarball(folder, {
-    projectRoot: conf.projectRoot,
-  })
+  const { manifest, tarballData, filename } = await packTarball(
+    folder,
+    {
+      projectRoot: conf.projectRoot,
+    },
+  )
 
   assert(
     manifest.name && manifest.version,
     error('Package must have a name and version'),
   )
   assert(tarballData, error('Failed to create tarball'))
+  assert(
+    !manifest.private,
+    error('Package has been marked as private'),
+  )
 
-  // Check if package is private
-  if (manifest.private) {
-    throw error(
-      `This package has been marked as private\nRemove the 'private' field from the package.json to publish it.`,
-    )
-  }
-
+  const { name, version } = manifest
+  const tag = conf.options.tag || 'latest'
   const registry = conf.options.registry
   const registryUrl = new URL(registry)
 
@@ -101,34 +103,14 @@ export const command: CommandFn<CommandResult> = async conf => {
     algorithms: [...new Set(['sha1', 'sha512'])],
   })
 
-  const name = manifest.name
-  const version = manifest.version
-  const tag = conf.options.tag || 'latest'
-
-  // Build tarball URL like npm does
-  const tarballName = `${name}-${version}.tgz`
-  const tarballURI = `${name}/-/${tarballName}`
-
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   const integrity512 = integrity.sha512?.[0]?.toString()
-  // @ts-expect-error
+  // @ts-expect-error -- this is a valid call
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const shasum = integrity.sha1?.[0]?.hexDigest() as string
+  const shasum = integrity.sha1?.[0]?.hexDigest() as
+    | string
+    | undefined
 
-  // Patch manifest like npm does
-  const patchedManifest = {
-    ...manifest,
-    _id: `${name}@${version}`,
-    _nodeVersion: process.versions.node,
-    dist: {
-      ...manifest.dist,
-      integrity: integrity512,
-      shasum,
-      tarball: new URL(tarballURI, registryUrl).href,
-    },
-  }
-
-  // Build metadata structure exactly like npm
   const publishMetadata = {
     _id: name,
     name,
@@ -137,11 +119,21 @@ export const command: CommandFn<CommandResult> = async conf => {
       [tag]: version,
     },
     versions: {
-      [version]: patchedManifest,
+      [version]: {
+        ...manifest,
+        _id: `${name}@${version}`,
+        _nodeVersion: process.versions.node,
+        dist: {
+          ...manifest.dist,
+          integrity: integrity512,
+          shasum,
+          tarball: new URL(`${name}/-/${filename}`, registryUrl).href,
+        },
+      },
     },
     access: null,
     _attachments: {
-      [tarballName]: {
+      [filename]: {
         content_type: 'application/octet-stream',
         data: tarballData.toString('base64'),
         length: tarballData.length,
@@ -149,13 +141,11 @@ export const command: CommandFn<CommandResult> = async conf => {
     },
   }
 
-  // Use the package name for the URL (scoped packages should work automatically)
-  const escapedName =
-    name.startsWith('@') ? name.replace('/', '%2F') : name
-  const publishUrl = new URL(escapedName, registryUrl)
-
-  // Publish using our registry client with proper headers
   const rc = new RegistryClient(conf.options)
+  const publishUrl = new URL(
+    name.startsWith('@') ? name.replace('/', '%2F') : name,
+    registryUrl,
+  )
 
   let response: CacheEntry
   try {
@@ -163,8 +153,6 @@ export const command: CommandFn<CommandResult> = async conf => {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',
-        'npm-auth-type': 'web',
-        'npm-command': 'publish',
       },
       body: JSON.stringify(publishMetadata),
     })
