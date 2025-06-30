@@ -34,7 +34,7 @@ export const usage: CommandUsage = () =>
     },
   })
 
-type CommandResult = {
+export type CommandResult = {
   id: string
   name: string
   version: string
@@ -43,6 +43,7 @@ type CommandResult = {
   shasum?: string
   integrity?: string
   size: number
+  access: string
 }
 
 export const views = {
@@ -95,6 +96,7 @@ export const command: CommandFn<CommandResult> = async conf => {
 
   const { name, version } = manifest
   const tag = conf.options.tag || 'latest'
+  const access = conf.options.access
   const registry = conf.options.registry
   const registryUrl = new URL(registry)
 
@@ -131,7 +133,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         },
       },
     },
-    access: null,
+    access,
     _attachments: {
       [filename]: {
         content_type: 'application/octet-stream',
@@ -173,6 +175,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     name,
     version,
     tag,
+    access,
     registry: registryUrl.origin,
     integrity: integrity512,
     shasum,

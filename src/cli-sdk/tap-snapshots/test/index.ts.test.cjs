@@ -34,6 +34,7 @@ Invalid Option Flag
 Unknown option '--unknown'. To specify a positional argument starting with a '-', place it at the end of the command after '--', as in '-- --unknown'
   Found: --unknown
   Valid Options:
+    --access=<access>
     --arch=<arch>
     --bail
     --before=<date>
@@ -41,6 +42,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --color
     --config=<user | project>
     --dashboard-root=<path>
+    --dry-run
     --editor=<program>
     --expect-results=<value>
     --fallback-command=<command>
@@ -84,6 +86,7 @@ Problem in Config File {CWD}/.tap/fixtures/test-index.ts-unknown-config-in-file/
 Unknown config option: asdf
   Found: "asdf"
   Valid Options:
+    access
     arch
     bail
     before
@@ -91,6 +94,7 @@ Unknown config option: asdf
     color
     config
     dashboard-root
+    dry-run
     editor
     expect-results
     fallback-command

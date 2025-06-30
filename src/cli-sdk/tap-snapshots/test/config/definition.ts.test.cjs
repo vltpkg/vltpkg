@@ -48,6 +48,14 @@ Object {
 
 exports[`test/config/definition.ts > TAP > definition 1`] = `
 Object {
+  "access": Object {
+    "description": "Set the access level of the package",
+    "type": "string",
+    "validOptions": Array [
+      "public",
+      "restricted",
+    ],
+  },
   "arch": Object {
     "description": "CPU architecture to use as the selector when choosing packages based on their \`cpu\` value.",
     "type": "string",
@@ -86,6 +94,10 @@ Object {
     "hint": "path",
     "multiple": true,
     "type": "string",
+  },
+  "dry-run": Object {
+    "description": "Run command without making any changes",
+    "type": "boolean",
   },
   "editor": Object {
     "description": String(
@@ -420,6 +432,7 @@ Object {
 
 exports[`test/config/definition.ts > TAP > getSortedCliDefinitions > sorted CLI definitions 1`] = `
 Array [
+  "--access=<access>",
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
@@ -427,6 +440,7 @@ Array [
   "--color",
   "--config=<user | project>",
   "--dashboard-root=<path>",
+  "--dry-run",
   "--editor=<program>",
   "--expect-results=<value>",
   "--fallback-command=<command>",
@@ -467,6 +481,7 @@ Array [
 
 exports[`test/config/definition.ts > TAP > getSortedKeys > sorted keys 1`] = `
 Array [
+  "access",
   "arch",
   "bail",
   "before",
@@ -474,6 +489,7 @@ Array [
   "color",
   "config",
   "dashboard-root",
+  "dry-run",
   "editor",
   "expect-results",
   "fallback-command",

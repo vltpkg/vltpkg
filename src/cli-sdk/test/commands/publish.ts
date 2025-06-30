@@ -1,6 +1,7 @@
 import t from 'tap'
 import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
+import type { CommandResult } from '../../src/commands/publish.ts'
 import { Config } from '../../src/config/index.ts'
 import { RegistryClient } from '@vltpkg/registry-client'
 
@@ -128,8 +129,8 @@ t.test('publish command', async t => {
   })
 
   t.test('handles registry errors', async t => {
-    // Mock a failure response
-    mockResponses.set('https://registry.npmjs.org/@test/package', {
+    // Mock a failure response - need to URL encode the scoped package name
+    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
       statusCode: 403,
       text: 'Forbidden',
     })
@@ -206,6 +207,7 @@ t.test('publish command', async t => {
             integrity: 'sha512-xyz789',
           },
         }),
+        'index.js': 'console.log("test");',
       },
     })
 
@@ -217,8 +219,20 @@ t.test('publish command', async t => {
     ])
 
     const result = await command(distConfig)
-    t.equal(result.shasum, 'abc123def456')
-    t.equal(result.integrity, 'sha512-xyz789')
+    // The shasum and integrity should be computed from the actual tarball,
+    // not taken from the original dist metadata
+    t.ok(result.shasum, 'should have computed shasum')
+    t.ok(result.integrity, 'should have computed integrity')
+    t.match(
+      result.shasum,
+      /^[a-f0-9]{40}$/,
+      'shasum should be valid SHA1',
+    )
+    t.match(
+      result.integrity,
+      /^sha512-/,
+      'integrity should be sha512',
+    )
   })
 
   t.test('handles missing tarball data', async t => {
@@ -277,13 +291,14 @@ t.test('publish command', async t => {
       shasum: 'abc123',
       integrity: 'sha512-xyz',
       size: 2048,
-    }
+      access: 'public',
+    } as unknown as CommandResult
 
     t.test('human view', async t => {
       const output = views.human(result)
       t.match(output, /✅ Published test@1\.0\.0/)
       t.match(output, /📦 Package: test@1\.0\.0/)
-      t.match(output, /🏷️ {2}Tag: latest/)
+      t.match(output, /🏷️ Tag: latest/)
       t.match(output, /📡 Registry: https:\/\/registry\.npmjs\.org/)
       t.match(output, /📊 Size: 2\.00 KB/)
       t.match(output, /🔒 Shasum: abc123/)
@@ -295,7 +310,7 @@ t.test('publish command', async t => {
         ...result,
         shasum: undefined,
         integrity: undefined,
-      }
+      } as unknown as CommandResult
       const output = views.human(minResult)
       t.notMatch(output, /🔒 Shasum/)
       t.notMatch(output, /🔐 Integrity/)

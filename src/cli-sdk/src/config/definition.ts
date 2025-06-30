@@ -590,6 +590,20 @@ export const definition = j
   })
 
   .flag({
+    'dry-run': {
+      description: 'Run command without making any changes',
+    },
+  })
+
+  .opt({
+    access: {
+      description: 'Set the access level of the package',
+      validOptions: ['public', 'restricted'] as const,
+      default: 'public',
+    },
+  })
+
+  .flag({
     yes: {
       short: 'y',
       description: `Automatically accept any confirmation prompts`,
@@ -601,9 +615,6 @@ export const definition = j
     help: {
       short: 'h',
       description: 'Print helpful information',
-    },
-    'dry-run': {
-      description: 'Run command without making any changes',
     },
   })
 
