@@ -209,27 +209,32 @@ t.test('pack command', async t => {
 
   t.test('dry-run mode', async t => {
     const testBaseDir = t.testdir({
-      'dry-package': {
-        'package.json': JSON.stringify({
-          name: 'dry-run-package',
-          version: '3.0.0',
-          dist: {
-            shasum: 'dry123',
-            integrity: 'sha512-dry',
-          },
-        }),
-        'index.js': 'console.log("dry run test")',
+      source: {
+        'dry-package': {
+          'package.json': JSON.stringify({
+            name: 'dry-run-package',
+            version: '3.0.0',
+            dist: {
+              shasum: 'dry123',
+              integrity: 'sha512-dry',
+            },
+          }),
+          'index.js': 'console.log("dry run test")',
+        },
       },
+      output: {},
     })
 
-    // Get absolute path before changing directory
-    const packagePath = resolve(testBaseDir, 'dry-package')
+    // Get absolute paths before changing directory
+    const packagePath = resolve(testBaseDir, 'source', 'dry-package')
+    const outputDir = resolve(testBaseDir, 'output')
 
-    // Create a separate output directory for potential tarball
-    const outputDir = t.testdir({})
     t.chdir(outputDir)
 
-    const config = new Config(undefined, testBaseDir)
+    const config = new Config(
+      undefined,
+      resolve(testBaseDir, 'source'),
+    )
     await config.loadConfigFile()
     const mockConfig = config.parse([
       'pack',
