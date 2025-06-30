@@ -8,9 +8,6 @@ import type { Views } from '../view.ts'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
 import { asError } from '@vltpkg/types'
-import npmFetch from 'npm-registry-fetch'
-import npa from 'npm-package-arg'
-import { getToken } from '../../../registry-client/src/auth.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -49,7 +46,7 @@ type CommandResult = {
 }
 
 export const views = {
-  human: (r: CommandResult) => {
+  human: r => {
     const lines = [
       `✅ Published ${r.name}@${r.version}`,
       `📦 Package: ${r.id}`,
@@ -61,7 +58,7 @@ export const views = {
     if (r.integrity) lines.push(`🔐 Integrity: ${r.integrity}`)
     return lines.join('\n')
   },
-  json: (r: CommandResult) => r,
+  json: r => r,
 } as const satisfies Views<CommandResult>
 
 function formatSize(bytes: number): string {
@@ -79,18 +76,25 @@ export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
 
   // Pack tarball using our internal function
-  const { manifest, filename, tarballData } = await packTarball(
-    folder,
-    {
-      projectRoot: conf.projectRoot,
-    },
-  )
+  const { manifest, tarballData } = await packTarball(folder, {
+    projectRoot: conf.projectRoot,
+  })
 
   assert(
     manifest.name && manifest.version,
     error('Package must have a name and version'),
   )
   assert(tarballData, error('Failed to create tarball'))
+
+  // Check if package is private
+  if (manifest.private) {
+    throw error(
+      `This package has been marked as private\nRemove the 'private' field from the package.json to publish it.`,
+    )
+  }
+
+  const registry = conf.options.registry
+  const registryUrl = new URL(registry)
 
   // Generate integrity hash
   const integrity = ssri.fromData(tarballData, {
@@ -99,7 +103,11 @@ export const command: CommandFn<CommandResult> = async conf => {
 
   const name = manifest.name
   const version = manifest.version
-  const tag = 'latest'
+  const tag = conf.options.tag || 'latest'
+
+  // Build tarball URL like npm does
+  const tarballName = `${name}-${version}.tgz`
+  const tarballURI = `${name}/-/${tarballName}`
 
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   const integrity512 = integrity.sha512?.[0]?.toString()
@@ -107,26 +115,33 @@ export const command: CommandFn<CommandResult> = async conf => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const shasum = integrity.sha1?.[0]?.hexDigest() as string
 
-  const publishManifest = {
+  // Patch manifest like npm does
+  const patchedManifest = {
+    ...manifest,
+    _id: `${name}@${version}`,
+    _nodeVersion: process.versions.node,
+    dist: {
+      ...manifest.dist,
+      integrity: integrity512,
+      shasum,
+      tarball: new URL(tarballURI, registryUrl).href,
+    },
+  }
+
+  // Build metadata structure exactly like npm
+  const publishMetadata = {
     _id: name,
     name,
+    description: manifest.description || '',
     'dist-tags': {
       [tag]: version,
     },
-    access: 'public',
     versions: {
-      [version]: {
-        ...manifest,
-        _id: `${name}@${version}`,
-        dist: {
-          integrity: integrity512,
-          shasum,
-          tarball: `${conf.options.registry}/${name}/-/${filename}`,
-        },
-      },
+      [version]: patchedManifest,
     },
+    access: null,
     _attachments: {
-      '0': {
+      [tarballName]: {
         content_type: 'application/octet-stream',
         data: tarballData.toString('base64'),
         length: tarballData.length,
@@ -134,52 +149,41 @@ export const command: CommandFn<CommandResult> = async conf => {
     },
   }
 
-  // Publish via PUT using our registry client
+  // Use the package name for the URL (scoped packages should work automatically)
+  const escapedName =
+    name.startsWith('@') ? name.replace('/', '%2F') : name
+  const publishUrl = new URL(escapedName, registryUrl)
+
+  // Publish using our registry client with proper headers
   const rc = new RegistryClient(conf.options)
-  const registry = conf.options.registry
-  const registryUrl = new URL(registry)
 
-  const token = await getToken(
-    registryUrl.origin,
-    conf.options.identity,
-  )
+  let response: CacheEntry
+  try {
+    response = await rc.request(publishUrl, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        'npm-auth-type': 'web',
+        'npm-command': 'publish',
+      },
+      body: JSON.stringify(publishMetadata),
+    })
+  } catch (err) {
+    throw error('Failed to publish package', {
+      cause: asError(err),
+    })
+  }
 
-  console.log(token)
-  console.log(npa(name).escapedName)
-
-  await npmFetch(npa(name).escapedName, {
-    access: 'public',
-    '//registry.npmjs.org/:_authToken': token,
-    method: 'PUT',
-    body: publishManifest,
-    ignoreBody: true,
-  })
-
-  // let response: CacheEntry
-  // try {
-  //   response = await rc.request(new URL(name, registryUrl), {
-  //     method: 'PUT',
-  //     headers: {
-  //       'content-type': 'application/json',
-  //     },
-  //     body: JSON.stringify(publishManifest),
-  //   })
-  // } catch (err) {
-  //   throw error('Failed to publish package', {
-  //     cause: asError(err),
-  //   })
-  // }
-
-  // if (response.statusCode !== 200 && response.statusCode !== 201) {
-  //   throw error('Failed to publish package', {
-  //     response,
-  //   })
-  // }
+  if (response.statusCode !== 200 && response.statusCode !== 201) {
+    throw error('Failed to publish package', {
+      response,
+    })
+  }
 
   return {
     id: `${name}@${version}`,
-    name: name,
-    version: version,
+    name,
+    version,
     tag,
     registry: registryUrl.origin,
     integrity: integrity512,

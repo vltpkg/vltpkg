@@ -47,13 +47,14 @@ export const packTarball = async (
     return { manifest, filename }
   }
 
-  // Create tarball
+  // Create tarball like npm pack does - all files go into a 'package/' directory
   const cwd = packTarget
   const tarballData = await tarCreate(
     {
       cwd,
       gzip: true,
       portable: true,
+      prefix: 'package/',
       filter: (path: string) => {
         // Normalize path - remove leading './'
         const normalizedPath = path.replace(/^\.\//, '')
