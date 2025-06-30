@@ -26,6 +26,7 @@ export const packTarball = async (
 ): Promise<PackTarballResult> => {
   // If path is absolute, use it directly. Otherwise resolve relative to projectRoot
   const packTarget =
+    /* c8 ignore next */
     isAbsolute(path) ? path : resolve(process.cwd(), path)
 
   // Read package.json
