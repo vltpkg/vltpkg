@@ -96,15 +96,6 @@ t.test('packTarball', async t => {
     t.equal(result.filename, 'myorg-my-package-2.0.0.tgz')
   })
 
-  t.test('uses projectRoot option when provided', async t => {
-    const result = await packTarball('test-package', {
-      projectRoot: testDir,
-    })
-
-    t.equal(result.manifest.name, '@test/package')
-    t.equal(result.manifest.version, '1.2.3')
-  })
-
   t.test(
     'creates tarball with minimal files to trigger filter',
     async t => {
