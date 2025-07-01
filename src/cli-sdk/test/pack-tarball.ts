@@ -431,34 +431,29 @@ t.test('packTarball', async t => {
 
   t.test('generates consistent hashes', async t => {
     // Create identical content twice and verify hashes match
-    const testDir1 = t.testdir({
+    const testdir = {
       'package.json': JSON.stringify({
         name: 'hash-test',
         version: '1.0.0',
       }),
       'index.js': 'console.log("consistent content");',
+    }
+
+    const dir = t.testdir({
+      testDir1: { ...testdir },
+      testDir2: { ...testdir },
     })
 
-    const testDir2 = t.testdir({
-      'package.json': JSON.stringify({
-        name: 'hash-test',
-        version: '1.0.0',
-      }),
-      'index.js': 'console.log("consistent content");',
-    })
-
-    const manifest1Content = await readFile(
-      resolve(testDir1, 'package.json'),
-      'utf8',
+    const testDir1 = resolve(dir, 'testDir1')
+    const manifest1 = JSON.parse(
+      await readFile(resolve(testDir1, 'package.json'), 'utf8'),
     )
-    const manifest1 = JSON.parse(manifest1Content)
-    const manifest2Content = await readFile(
-      resolve(testDir2, 'package.json'),
-      'utf8',
-    )
-    const manifest2 = JSON.parse(manifest2Content)
-
     const result1 = await packTarball(manifest1, testDir1)
+
+    const testDir2 = resolve(dir, 'testDir2')
+    const manifest2 = JSON.parse(
+      await readFile(resolve(testDir2, 'package.json'), 'utf8'),
+    )
     const result2 = await packTarball(manifest2, testDir2)
 
     t.equal(

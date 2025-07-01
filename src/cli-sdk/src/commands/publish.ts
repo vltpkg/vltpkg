@@ -27,11 +27,6 @@ export const usage: CommandUsage = () =>
         description: 'Set access level (public or restricted)',
         value: '<level>',
       },
-      otp: {
-        description:
-          'One-time password for two-factor authentication',
-        value: '<code>',
-      },
     },
   })
 
@@ -91,10 +86,12 @@ export const command: CommandFn<CommandResult> = async conf => {
     shasum,
   } = await packTarball(manifest, manifestDir)
 
-  const tag = conf.options.tag || 'latest'
-  const access = conf.options.access
-  const registry = conf.options.registry
-  const dry = conf.options['dry-run'] ?? false
+  const {
+    tag = 'latest',
+    access,
+    registry,
+    'dry-run': dry = false,
+  } = conf.options
   const registryUrl = new URL(registry)
 
   const publishMetadata = {

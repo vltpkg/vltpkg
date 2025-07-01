@@ -18,10 +18,7 @@ t.beforeEach(() => {
   mockResponses.clear()
 
   // Mock the request method
-  RegistryClient.prototype.request = async function (
-    url: any,
-    _options: any,
-  ) {
+  RegistryClient.prototype.request = async function (url: any) {
     const urlStr = url.toString()
     const mockResponse = mockResponses.get(urlStr)
 
