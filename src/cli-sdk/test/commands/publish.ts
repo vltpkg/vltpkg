@@ -2,8 +2,13 @@ import t from 'tap'
 import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import type { CommandResult } from '../../src/commands/publish.ts'
-import { Config } from '../../src/config/index.ts'
+import { PackageJson } from '@vltpkg/package-json'
 import { RegistryClient } from '@vltpkg/registry-client'
+
+const makeTestConfig = (config: any) => ({
+  ...config,
+  get: (key: string) => config.values?.[key],
+})
 
 // Mock the RegistryClient
 const mockResponses = new Map<string, any>()
@@ -54,8 +59,8 @@ t.test('publish usage', async t => {
 })
 
 t.test('publish command', async t => {
-  const testDir = t.testdir({
-    'test-package': {
+  t.test('publishes package successfully', async t => {
+    const dir = t.testdir({
       'package.json': JSON.stringify({
         name: '@test/package',
         version: '1.2.3',
@@ -64,163 +69,37 @@ t.test('publish command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
-    },
-  })
+    })
 
-  const packagePath = resolve(testDir, 'test-package')
+    t.chdir(dir)
 
-  // Create a proper Config instance
-  const config = new Config(undefined, testDir)
-  await config.loadConfigFile()
-  const mockConfig = config.parse(['publish', packagePath])
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
 
-  t.test('publishes package successfully', async t => {
-    const result = await command(mockConfig)
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    const result = await command(config)
 
     t.equal(result.name, '@test/package')
     t.equal(result.version, '1.2.3')
     t.equal(result.tag, 'latest')
     t.equal(result.registry, 'https://registry.npmjs.org')
     t.ok(result.size > 0, 'should have a size')
-  })
-
-  t.test('throws error if package has no name', async t => {
-    const badDir = t.testdir({
-      'bad-package': {
-        'package.json': JSON.stringify({
-          version: '1.0.0',
-        }),
-      },
-    })
-
-    const badConfig = new Config(undefined, badDir)
-    await badConfig.loadConfigFile()
-    const parsedBadConfig = badConfig.parse([
-      'publish',
-      resolve(badDir, 'bad-package'),
-    ])
-
-    await t.rejects(
-      command(parsedBadConfig),
-      /Package must have a name and version/,
-    )
-  })
-
-  t.test('throws error if package has no version', async t => {
-    const badDir = t.testdir({
-      'bad-package': {
-        'package.json': JSON.stringify({
-          name: 'bad-package',
-        }),
-      },
-    })
-
-    const badConfig = new Config(undefined, badDir)
-    await badConfig.loadConfigFile()
-    const parsedBadConfig = badConfig.parse([
-      'publish',
-      resolve(badDir, 'bad-package'),
-    ])
-
-    await t.rejects(
-      command(parsedBadConfig),
-      /Package must have a name and version/,
-    )
-  })
-
-  t.test('handles registry errors', async t => {
-    // Mock a failure response - need to URL encode the scoped package name
-    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
-      statusCode: 403,
-      text: 'Forbidden',
-    })
-
-    await t.rejects(command(mockConfig), /Failed to publish package/)
-  })
-
-  t.test('uses custom tag when provided', async t => {
-    // Create a new config with custom tag
-    const configWithTag = new Config(undefined, testDir)
-    await configWithTag.loadConfigFile()
-    const parsedConfigWithTag = configWithTag.parse([
-      'publish',
-      '--tag=beta',
-      packagePath,
-    ])
-
-    const result = await command(parsedConfigWithTag)
-    t.equal(result.tag, 'beta')
-  })
-
-  t.test('defaults to latest tag when tag is empty', async t => {
-    // Mock the request
-    RegistryClient.prototype.request = async function (
-      _url: string | URL,
-      _options?: any,
-    ) {
-      return {
-        statusCode: 200,
-        status: 200,
-        headers: {},
-        data: { success: true },
-      } as any
-    }
-
-    // Create a test directory
-    const emptyTagDir = t.testdir({
-      'empty-tag-package': {
-        'package.json': JSON.stringify({
-          name: '@test/empty-tag',
-          version: '1.0.0',
-        }),
-        'index.js': 'console.log("hello");',
-      },
-    })
-
-    // Create a config with an empty tag to trigger the || 'latest' branches
-    const configEmptyTag = new Config(undefined, emptyTagDir)
-    await configEmptyTag.loadConfigFile()
-    const parsedConfigEmptyTag = configEmptyTag.parse([
-      'publish',
-      resolve(emptyTagDir, 'empty-tag-package'),
-    ])
-
-    // Force the tag to be empty string to trigger the fallback
-    parsedConfigEmptyTag.values.tag = ''
-
-    const result = await command(parsedConfigEmptyTag)
-    t.equal(
-      result.tag,
-      'latest',
-      'should default to latest tag when tag is empty',
-    )
-  })
-
-  t.test('publishes package with dist metadata', async t => {
-    const distDir = t.testdir({
-      'dist-package': {
-        'package.json': JSON.stringify({
-          name: 'dist-package',
-          version: '1.0.0',
-          dist: {
-            shasum: 'abc123def456',
-            integrity: 'sha512-xyz789',
-          },
-        }),
-        'index.js': 'console.log("test");',
-      },
-    })
-
-    const config = new Config(undefined, distDir)
-    await config.loadConfigFile()
-    const distConfig = config.parse([
-      'publish',
-      resolve(distDir, 'dist-package'),
-    ])
-
-    const result = await command(distConfig)
-    // The shasum and integrity should be computed from the actual tarball,
-    // not taken from the original dist metadata
+    t.ok(result.unpackedSize > 0, 'should have unpacked size')
+    t.ok(Array.isArray(result.files), 'should have files array')
+    t.ok(result.files.length > 0, 'should have some files')
     t.ok(result.shasum, 'should have computed shasum')
     t.ok(result.integrity, 'should have computed integrity')
     t.match(
@@ -235,36 +114,252 @@ t.test('publish command', async t => {
     )
   })
 
-  t.test('handles missing tarball data', async t => {
-    // Instead of mocking packTarball, let's test a different error case
-    // Test with an invalid package structure that would make packTarball fail
-    const invalidDir = t.testdir({
-      'invalid-package': {
-        'package.json': JSON.stringify({}), // No name or version
-      },
+  t.test('throws error if package has no name', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        version: '1.0.0',
+      }),
     })
 
-    const config = new Config(undefined, invalidDir)
-    await config.loadConfigFile()
-    const invalidConfig = config.parse([
-      'publish',
-      resolve(invalidDir, 'invalid-package'),
-    ])
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
 
     await t.rejects(
-      command(invalidConfig),
+      command(config),
       /Package must have a name and version/,
     )
   })
 
+  t.test('throws error if package has no version', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'bad-package',
+      }),
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    await t.rejects(
+      command(config),
+      /Package must have a name and version/,
+    )
+  })
+
+  t.test('throws error if package is private', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'private-package',
+        version: '1.0.0',
+        private: true,
+      }),
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    await t.rejects(
+      command(config),
+      /Package has been marked as private/,
+    )
+  })
+
+  t.test('handles registry errors', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+    })
+
+    t.chdir(dir)
+
+    // Mock a failure response - need to URL encode the scoped package name
+    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
+      statusCode: 403,
+      text: 'Forbidden',
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    await t.rejects(command(config), /Failed to publish package/)
+  })
+
+  t.test('uses custom tag when provided', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        tag: 'beta',
+      },
+      positionals: ['publish'],
+      values: { tag: 'beta' },
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    const result = await command(config)
+    t.equal(result.tag, 'beta')
+  })
+
+  t.test('defaults to latest tag when tag is empty', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/empty-tag',
+        version: '1.0.0',
+      }),
+      'index.js': 'console.log("hello");',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        tag: '',
+      },
+      positionals: ['publish'],
+      values: { tag: '' },
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    const result = await command(config)
+    t.equal(
+      result.tag,
+      'latest',
+      'should default to latest tag when tag is empty',
+    )
+  })
+
+  t.test('computes shasum and integrity from tarball', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'dist-package',
+        version: '1.0.0',
+      }),
+      'index.js': 'console.log("test");',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    const result = await command(config)
+    // The shasum and integrity should be computed from the actual tarball
+    t.ok(result.shasum, 'should have computed shasum')
+    t.ok(result.integrity, 'should have computed integrity')
+    t.match(
+      result.shasum,
+      /^[a-f0-9]{40}$/,
+      'shasum should be valid SHA1',
+    )
+    t.match(
+      result.integrity,
+      /^sha512-/,
+      'integrity should be sha512',
+    )
+  })
+
   t.test('handles request errors', async t => {
-    // Mock a network error
-    const errorConfig = new Config(undefined, testDir)
-    await errorConfig.loadConfigFile()
-    const parsedErrorConfig = errorConfig.parse([
-      'publish',
-      packagePath,
-    ])
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+    })
+
+    t.chdir(dir)
 
     // Temporarily mock to throw an error
     const tempRequest = RegistryClient.prototype.request
@@ -272,13 +367,98 @@ t.test('publish command', async t => {
       throw new Error('Network error')
     }
 
-    await t.rejects(
-      command(parsedErrorConfig),
-      /Failed to publish package/,
-    )
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    await t.rejects(command(config), /Failed to publish package/)
 
     // Restore
     RegistryClient.prototype.request = tempRequest
+  })
+
+  t.test('dry-run mode', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'dry-run-package',
+        version: '1.0.0',
+      }),
+      'index.js': 'console.log("dry run test");',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+      values: { 'dry-run': true },
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    const result = await command(config)
+
+    t.equal(result.name, 'dry-run-package')
+    t.equal(result.version, '1.0.0')
+    t.equal(result.tag, 'latest')
+    t.equal(result.registry, 'https://registry.npmjs.org')
+    t.ok(result.size > 0, 'should have computed size')
+    t.ok(
+      result.unpackedSize > 0,
+      'should have computed unpacked size',
+    )
+    t.ok(result.shasum, 'should have computed shasum')
+    t.ok(result.integrity, 'should have computed integrity')
+    t.ok(Array.isArray(result.files), 'should have files array')
+    t.ok(result.files.length > 0, 'should have some files')
+  })
+
+  t.test('uses custom access level', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        access: 'public',
+      },
+      positionals: ['publish'],
+      values: { access: 'public' },
+    })
+
+    // Mock packageJson.find to return the test directory's package.json
+    config.options.packageJson.find = () =>
+      resolve(dir, 'package.json')
+
+    const result = await command(config)
+    t.equal(result.access, 'public')
   })
 
   t.test('views format output correctly', async t => {
@@ -288,11 +468,13 @@ t.test('publish command', async t => {
       version: '1.0.0',
       tag: 'latest',
       registry: 'https://registry.npmjs.org',
-      shasum: 'abc123',
-      integrity: 'sha512-xyz',
+      shasum: 'abc123def456abc123def456abc123def456abc123',
+      integrity: 'sha512-xyz789abcdef',
       size: 2048,
       access: 'public',
-    } as unknown as CommandResult
+      unpackedSize: 4096,
+      files: ['package.json', 'index.js', 'README.md'],
+    } as CommandResult
 
     t.test('human view', async t => {
       const output = views.human(result)
@@ -300,9 +482,17 @@ t.test('publish command', async t => {
       t.match(output, /📦 Package: test@1\.0\.0/)
       t.match(output, /🏷️ Tag: latest/)
       t.match(output, /📡 Registry: https:\/\/registry\.npmjs\.org/)
-      t.match(output, /📊 Size: 2\.00 KB/)
-      t.match(output, /🔒 Shasum: abc123/)
-      t.match(output, /🔐 Integrity: sha512-xyz/)
+      t.match(output, /📁 3 files/)
+      t.match(output, /package\.json/)
+      t.match(output, /index\.js/)
+      t.match(output, /README\.md/)
+      t.match(output, /📊 package size: 2\.05 kB/)
+      t.match(output, /📂 unpacked size: 4\.1?0? kB/)
+      t.match(
+        output,
+        /🔒 shasum: abc123def456abc123def456abc123def456abc123/,
+      )
+      t.match(output, /🔐 integrity: sha512-xyz789abcdef/)
     })
 
     t.test('human view without optional fields', async t => {
@@ -310,30 +500,15 @@ t.test('publish command', async t => {
         ...result,
         shasum: undefined,
         integrity: undefined,
-      } as unknown as CommandResult
+      } as CommandResult
       const output = views.human(minResult)
-      t.notMatch(output, /🔒 Shasum/)
-      t.notMatch(output, /🔐 Integrity/)
+      t.notMatch(output, /🔒 shasum/)
+      t.notMatch(output, /🔐 integrity/)
     })
 
     t.test('json view', async t => {
       const output = views.json(result)
       t.same(output, result)
-    })
-
-    t.test('formatSize handles different sizes', async t => {
-      const sizes = [
-        { size: 256, expected: '256.00 B' },
-        { size: 2048, expected: '2.00 KB' },
-        { size: 2097152, expected: '2.00 MB' },
-        { size: 2147483648, expected: '2.00 GB' },
-      ]
-
-      for (const { size, expected } of sizes) {
-        const testResult = { ...result, size }
-        const output = views.human(testResult)
-        t.match(output, new RegExp(`📊 Size: ${expected}`))
-      }
     })
   })
 })

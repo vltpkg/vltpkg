@@ -1,5 +1,5 @@
 import type { Manifest } from '@vltpkg/types'
-import { create as tarCreate } from 'tar'
+import { create as tarCreate, list as tarList } from 'tar'
 import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
@@ -33,23 +33,12 @@ export const packTarball = async (
 
   const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
 
-  let unpackedSize = 0
-  const files: string[] = []
-
   const tarballData = await tarCreate(
     {
       cwd: dir,
       gzip: true,
       portable: true,
       prefix: 'package/',
-      onentry: entry => {
-        // Only count files, not directories
-        if (entry.type === 'File') {
-          unpackedSize += entry.size || 0
-          // Remove the package/ prefix for cleaner file listing
-          files.push(entry.path.replace(/^[^/]+\//, ''))
-        }
-      },
       filter: (path: string) => {
         // Normalize path - remove leading './'
         const normalizedPath = path.replace(/^\.\//, '')
@@ -160,6 +149,34 @@ export const packTarball = async (
     },
     ['.'],
   ).concat()
+
+  // Extract file list and sizes from the created tarball
+  // since onentry callback doesn't work with .concat()
+  let unpackedSize = 0
+  const files: string[] = []
+
+  await new Promise<void>((resolve, reject) => {
+    const stream = tarList({
+      onentry: entry => {
+        if (entry.type === 'File') {
+          unpackedSize += entry.size || 0
+          // Remove the package/ prefix for cleaner file listing
+          const cleanPath = entry.path.replace(/^[^/]+\//, '')
+          if (cleanPath) {
+            // Skip empty paths
+            files.push(cleanPath)
+          }
+        }
+      },
+    })
+
+    stream.on('end', () => resolve())
+    stream.on('error', reject)
+
+    // Write the buffer to the stream
+    stream.write(tarballData)
+    stream.end()
+  })
 
   // Generate integrity hash
   const integrityMap = ssri.fromData(tarballData, {
