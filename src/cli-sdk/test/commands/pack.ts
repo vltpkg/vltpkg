@@ -76,6 +76,7 @@ t.test('pack command', async t => {
         version: '2.0.0',
       }),
       'index.js': 'console.log("test")',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -85,14 +86,6 @@ t.test('pack command', async t => {
       options: { packageJson: new PackageJson() },
       positionals: ['pack'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
@@ -116,6 +109,7 @@ t.test('pack command', async t => {
         version: '1.0.0',
       }),
       'index.js': 'console.log("test");',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -125,14 +119,6 @@ t.test('pack command', async t => {
       options: { packageJson: new PackageJson() },
       positionals: ['pack'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
@@ -164,6 +150,7 @@ t.test('pack command', async t => {
         name: 'minimal-package',
         version: '1.0.0',
       }),
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -173,14 +160,6 @@ t.test('pack command', async t => {
       options: { packageJson: new PackageJson() },
       positionals: ['pack'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
@@ -208,6 +187,7 @@ t.test('pack command', async t => {
         version: '3.0.0',
       }),
       'index.js': 'console.log("dry run test")',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -221,14 +201,6 @@ t.test('pack command', async t => {
       positionals: ['pack'],
       values: { 'dry-run': true },
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
