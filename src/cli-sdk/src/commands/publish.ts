@@ -8,6 +8,7 @@ import type { Views } from '../view.ts'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
 import { asError } from '@vltpkg/types'
+import { dirname, resolve } from 'node:path'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -77,9 +78,26 @@ export const command: CommandFn<CommandResult> = async conf => {
   const [folder = '.'] = conf.positionals
   const dry = conf.options['dry-run'] ?? false
 
+  // Determine the package directory using packagejson.find instead of process.cwd()
+  let packageDir: string
+  if (folder === '.') {
+    // Use packagejson.find to locate the manifest directory
+    const manifestPath = conf.options.packageJson.find()
+    assert(
+      manifestPath,
+      error('No package.json found', {
+        code: 'ENOENT',
+      }),
+    )
+    packageDir = dirname(manifestPath)
+  } else {
+    // For explicit folder arguments, resolve relative to current directory
+    packageDir = resolve(folder)
+  }
+
   // Pack tarball using our internal function
   const { manifest, tarballData, filename } = await packTarball(
-    folder,
+    packageDir,
     { dry },
   )
 
