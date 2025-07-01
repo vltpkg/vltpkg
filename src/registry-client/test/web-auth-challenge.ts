@@ -1,15 +1,22 @@
 import t from 'tap'
-import { isWebAuthChallenge } from '../src/web-auth-challenge.ts'
+import { getWebAuthChallenge } from '../src/web-auth-challenge.ts'
 
-t.equal(
-  isWebAuthChallenge({ doneUrl: 'asdf', loginUrl: 'asdf' }),
-  true,
+t.strictSame(
+  getWebAuthChallenge({ doneUrl: 'asdf', loginUrl: 'asdf' }),
+  { doneUrl: 'asdf', authUrl: 'asdf' },
 )
-t.equal(isWebAuthChallenge({ doneUrl: '', loginUrl: '' }), false)
-t.equal(isWebAuthChallenge({ doneUrl: {}, loginUrl: {} }), false)
-t.equal(isWebAuthChallenge({ doneUrl: 'asdf' }), false)
-t.equal(isWebAuthChallenge({ loginUrl: 'asdf' }), false)
-t.equal(isWebAuthChallenge({}), false)
-t.equal(isWebAuthChallenge(null), false)
-t.equal(isWebAuthChallenge(false), false)
-t.equal(isWebAuthChallenge(true), false)
+t.strictSame(
+  getWebAuthChallenge({ doneUrl: 'asdf', authUrl: 'asdf' }),
+  { doneUrl: 'asdf', authUrl: 'asdf' },
+)
+t.equal(getWebAuthChallenge({ doneUrl: '', loginUrl: '' }), undefined)
+t.equal(getWebAuthChallenge({ doneUrl: '', authUrl: '' }), undefined)
+t.equal(getWebAuthChallenge({ doneUrl: {}, loginUrl: {} }), undefined)
+t.equal(getWebAuthChallenge({ doneUrl: {}, authUrl: {} }), undefined)
+t.equal(getWebAuthChallenge({ doneUrl: 'asdf' }), undefined)
+t.equal(getWebAuthChallenge({ loginUrl: 'asdf' }), undefined)
+t.equal(getWebAuthChallenge({ authUrl: 'asdf' }), undefined)
+t.equal(getWebAuthChallenge({}), undefined)
+t.equal(getWebAuthChallenge(null), undefined)
+t.equal(getWebAuthChallenge(false), undefined)
+t.equal(getWebAuthChallenge(true), undefined)
