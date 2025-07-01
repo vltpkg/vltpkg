@@ -27,6 +27,10 @@ export const usage: CommandUsage = () =>
         description: 'Set access level (public or restricted)',
         value: '<level>',
       },
+      otp: {
+        description: `Provide an OTP to use when publishing a package.`,
+        value: '<otp>',
+      },
     },
   })
 
@@ -91,6 +95,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     access,
     registry,
     'dry-run': dry = false,
+    otp,
   } = conf.options
   const registryUrl = new URL(registry)
 
@@ -133,13 +138,13 @@ export const command: CommandFn<CommandResult> = async conf => {
   if (!dry) {
     let response: CacheEntry
     try {
-      // TODO: support other forms of OTP besides VLT_OTP env var
       response = await rc.request(publishUrl, {
         method: 'PUT',
         headers: {
           'content-type': 'application/json',
         },
         body: JSON.stringify(publishMetadata),
+        otp, // TODO: support interactive OTP input
       })
     } catch (err) {
       throw error('Failed to publish package', {

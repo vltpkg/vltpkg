@@ -594,12 +594,16 @@ export const definition = j
       description: 'Run command without making any changes',
     },
   })
-
   .opt({
     access: {
       description: 'Set the access level of the package',
       validOptions: ['public', 'restricted'] as const,
       default: 'public',
+    },
+  })
+  .opt({
+    otp: {
+      description: `Provide an OTP to use when publishing a package.`,
     },
   })
 

@@ -263,6 +263,10 @@ Object {
     "description": "The operating system to use as the selector when choosing packages based on their \`os\` value.",
     "type": "string",
   },
+  "otp": Object {
+    "description": "Provide an OTP to use when publishing a package.",
+    "type": "string",
+  },
   "package": Object {
     "description": "When running \`vlt exec\`, this allows you to explicitly set the package to search for bins. If not provided, then vlt will interpret the first argument as the package, and attempt to run the default executable.",
     "hint": "p",
@@ -458,6 +462,7 @@ Array [
   "--no-color",
   "--node-version=<version>",
   "--os=<os>",
+  "--otp=<otp>",
   "--package=<p>",
   "--recursive",
   "--registries=<name=url>",
@@ -507,6 +512,7 @@ Array [
   "no-color",
   "node-version",
   "os",
+  "otp",
   "package",
   "recursive",
   "registries",

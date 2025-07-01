@@ -60,6 +60,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --no-color
     --node-version=<version>
     --os=<os>
+    --otp=<otp>
     --package=<p>
     --recursive
     --registries=<name=url>
@@ -112,6 +113,7 @@ Unknown config option: asdf
     no-color
     node-version
     os
+    otp
     package
     recursive
     registries

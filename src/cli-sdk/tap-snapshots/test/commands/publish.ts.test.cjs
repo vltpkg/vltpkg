@@ -25,4 +25,9 @@ and then upload it to the configured registry.
 
       ​--access=<level>
 
+    otp
+      Provide an OTP to use when publishing a package.
+
+      ​--otp=<otp>
+
 `
