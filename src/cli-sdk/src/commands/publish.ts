@@ -133,6 +133,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   if (!dry) {
     let response: CacheEntry
     try {
+      // TODO: support other forms of OTP besides VLT_OTP env var
       response = await rc.request(publishUrl, {
         method: 'PUT',
         headers: {
