@@ -250,10 +250,29 @@ export class RegistryClient {
     seek?: (obj: T) => boolean,
   ): Promise<T[]> {
     const resp = await this.request(url, options)
-    const { objects, urls } = resp.json() as {
-      objects: T[]
-      urls: { next?: string }
+    
+    let parsedResponse: { objects: T[]; urls: { next?: string } }
+    try {
+      parsedResponse = resp.json() as {
+        objects: T[]
+        urls: { next?: string }
+      }
+    } catch {
+      // If JSON parsing fails (e.g., empty response, malformed JSON),
+      // return empty array to indicate no objects found
+      return []
     }
+
+    // Handle cases where the response doesn't have the expected structure
+    if (!parsedResponse || typeof parsedResponse !== 'object') {
+      return []
+    }
+
+    const { objects = [], urls = {} } = parsedResponse
+    if (!Array.isArray(objects)) {
+      return []
+    }
+
     // if we have more, and haven't found our target, fetch more
     return urls.next && !(seek && objects.some(seek)) ?
         objects.concat(await this.scroll<T>(urls.next, options, seek))

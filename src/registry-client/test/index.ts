@@ -701,3 +701,37 @@ t.test('staleWhileRevalidate', async t => {
   )
   await cache.promise()
 })
+
+t.test('client.logout() with empty tokens response', async t => {
+  dropConnection = false
+  
+  const rc = t.context.rc as RegistryClient
+  
+  // Set up a token that would exist in keychain
+  getKC('').set(registryURL, 'Bearer some-token-that-exists')
+  
+  // Mock the request method to return empty response for tokens endpoint
+  const originalRequest = rc.request.bind(rc)
+  rc.request = async (url: string | URL, options: any = {}) => {
+    const urlStr = typeof url === 'string' ? url : url.toString()
+    if (urlStr.includes('/-/npm/v1/tokens')) {
+      // Create a mock CacheEntry that throws when json() is called
+      const mockEntry = {
+        statusCode: 200,
+        json: () => {
+          throw new SyntaxError('Unexpected end of JSON input')
+        },
+        getHeader: () => undefined,
+        valid: true
+      }
+      return mockEntry as any
+    }
+    return originalRequest(url, options)
+  }
+  
+  // This should not throw an error, even with malformed JSON response
+  await t.resolves(rc.logout(registryURL))
+  
+  // Token should still be deleted from keychain
+  t.equal(await getKC('').get(registryURL), undefined)
+})
