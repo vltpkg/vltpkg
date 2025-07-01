@@ -295,7 +295,7 @@ export const definition = j
       default: cacheDir,
     },
     tag: {
-      description: `Default \`dist-tag\` to install`,
+      description: `Default \`dist-tag\` to install or publish`,
       default: 'latest',
     },
     before: {

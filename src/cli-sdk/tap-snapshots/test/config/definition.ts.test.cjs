@@ -371,7 +371,7 @@ Object {
     "type": "number",
   },
   "tag": Object {
-    "description": "Default \`dist-tag\` to install",
+    "description": "Default \`dist-tag\` to install or publish",
     "type": "string",
   },
   "version": Object {
