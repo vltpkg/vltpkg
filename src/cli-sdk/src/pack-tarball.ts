@@ -159,7 +159,7 @@ export const packTarball = async (
     const stream = tarList({
       onentry: entry => {
         if (entry.type === 'File') {
-          unpackedSize += entry.size || 0
+          unpackedSize += entry.size
           // Remove the package/ prefix for cleaner file listing
           const cleanPath = entry.path.replace(/^[^/]+\//, '')
           if (cleanPath) {

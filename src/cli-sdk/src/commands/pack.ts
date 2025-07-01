@@ -10,7 +10,7 @@ import prettyBytes from 'pretty-bytes'
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'pack',
-    usage: ['[<folder>]'],
+    usage: '',
     description: `Create a tarball from a package in the current directory or specified folder.
     
     The tarball will be saved to the current directory with the name

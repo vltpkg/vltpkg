@@ -13,7 +13,7 @@ import prettyBytes from 'pretty-bytes'
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'publish',
-    usage: ['[<folder>]'],
+    usage: '',
     description: `Create a tarball from a package and publish it to the configured registry.
     
     This command will pack the package in the current directory or specified folder,
