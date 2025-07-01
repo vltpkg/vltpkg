@@ -1,5 +1,4 @@
 import t from 'tap'
-import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import type { CommandResult } from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
@@ -69,6 +68,7 @@ t.test('publish command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -81,14 +81,6 @@ t.test('publish command', async t => {
       },
       positionals: ['publish'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
@@ -119,6 +111,7 @@ t.test('publish command', async t => {
       'package.json': JSON.stringify({
         version: '1.0.0',
       }),
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -131,14 +124,6 @@ t.test('publish command', async t => {
       },
       positionals: ['publish'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     await t.rejects(
       command(config),
@@ -151,6 +136,7 @@ t.test('publish command', async t => {
       'package.json': JSON.stringify({
         name: 'bad-package',
       }),
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -163,10 +149,6 @@ t.test('publish command', async t => {
       },
       positionals: ['publish'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     await t.rejects(
       command(config),
@@ -181,6 +163,7 @@ t.test('publish command', async t => {
         version: '1.0.0',
         private: true,
       }),
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -193,10 +176,6 @@ t.test('publish command', async t => {
       },
       positionals: ['publish'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     await t.rejects(
       command(config),
@@ -214,6 +193,7 @@ t.test('publish command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -233,10 +213,6 @@ t.test('publish command', async t => {
       positionals: ['publish'],
     })
 
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
     await t.rejects(command(config), /Failed to publish package/)
   })
 
@@ -250,6 +226,7 @@ t.test('publish command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -265,10 +242,6 @@ t.test('publish command', async t => {
       values: { tag: 'beta' },
     })
 
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
     const result = await command(config)
     t.equal(result.tag, 'beta')
   })
@@ -280,6 +253,7 @@ t.test('publish command', async t => {
         version: '1.0.0',
       }),
       'index.js': 'console.log("hello");',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -294,10 +268,6 @@ t.test('publish command', async t => {
       positionals: ['publish'],
       values: { tag: '' },
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
     t.equal(
@@ -314,6 +284,7 @@ t.test('publish command', async t => {
         version: '1.0.0',
       }),
       'index.js': 'console.log("test");',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -326,10 +297,6 @@ t.test('publish command', async t => {
       },
       positionals: ['publish'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
     // The shasum and integrity should be computed from the actual tarball
@@ -357,6 +324,7 @@ t.test('publish command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -376,10 +344,6 @@ t.test('publish command', async t => {
       positionals: ['publish'],
     })
 
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
     await t.rejects(command(config), /Failed to publish package/)
 
     // Restore
@@ -393,6 +357,7 @@ t.test('publish command', async t => {
         version: '1.0.0',
       }),
       'index.js': 'console.log("dry run test");',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -406,10 +371,6 @@ t.test('publish command', async t => {
       positionals: ['publish'],
       values: { 'dry-run': true },
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
@@ -438,6 +399,7 @@ t.test('publish command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'vlt.json': '{}',
     })
 
     t.chdir(dir)
@@ -452,10 +414,6 @@ t.test('publish command', async t => {
       positionals: ['publish'],
       values: { access: 'public' },
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
     t.equal(result.access, 'public')
