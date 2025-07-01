@@ -5,9 +5,10 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
-import * as ssri from 'ssri'
 import assert from 'node:assert'
 import { asError } from '@vltpkg/types'
+import { dirname } from 'node:path'
+import prettyBytes from 'pretty-bytes'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -44,6 +45,8 @@ export type CommandResult = {
   integrity?: string
   size: number
   access: string
+  unpackedSize: number
+  files: string[]
 }
 
 export const views = {
@@ -53,64 +56,46 @@ export const views = {
       `📦 Package: ${r.id}`,
       `🏷️ Tag: ${r.tag}`,
       `📡 Registry: ${r.registry}`,
-      `📊 Size: ${formatSize(r.size)}`,
+      `📁 ${r.files.length} files`,
+      ...r.files.map(f => `  - ${f}`),
+      `📊 package size: ${prettyBytes(r.size)}`,
+      `📂 unpacked size: ${prettyBytes(r.unpackedSize)}`,
     ]
-    if (r.shasum) lines.push(`🔒 Shasum: ${r.shasum}`)
-    if (r.integrity) lines.push(`🔐 Integrity: ${r.integrity}`)
+    if (r.shasum) lines.push(`🔒 shasum: ${r.shasum}`)
+    if (r.integrity) lines.push(`🔐 integrity: ${r.integrity}`)
+
     return lines.join('\n')
   },
   json: r => r,
 } as const satisfies Views<CommandResult>
 
-function formatSize(bytes: number): string {
-  const units = ['B', 'KB', 'MB', 'GB']
-  let size = bytes
-  let unitIndex = 0
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024
-    unitIndex++
-  }
-  return `${size.toFixed(2)} ${units[unitIndex]}`
-}
-
 export const command: CommandFn<CommandResult> = async conf => {
-  const [folder = '.'] = conf.positionals
-  const dry = conf.options['dry-run'] ?? false
+  const manifestPath = conf.options.packageJson.find()
+  assert(manifestPath, 'No package.json found')
+  const manifestDir = dirname(manifestPath)
+  const manifest = conf.options.packageJson.read(manifestDir)
 
-  // Pack tarball using our internal function
-  const { manifest, tarballData, filename } = await packTarball(
-    folder,
-    { dry },
-  )
-
-  assert(
-    manifest.name && manifest.version,
-    error('Package must have a name and version'),
-  )
-  assert(tarballData, error('Failed to create tarball'))
   assert(
     !manifest.private,
     error('Package has been marked as private'),
   )
 
-  const { name, version } = manifest
+  const {
+    name,
+    version,
+    filename,
+    tarballData,
+    unpackedSize,
+    files,
+    integrity,
+    shasum,
+  } = await packTarball(manifest, manifestDir)
+
   const tag = conf.options.tag || 'latest'
   const access = conf.options.access
   const registry = conf.options.registry
+  const dry = conf.options['dry-run'] ?? false
   const registryUrl = new URL(registry)
-
-  // Generate integrity hash
-  const integrity = ssri.fromData(tarballData, {
-    algorithms: [...new Set(['sha1', 'sha512'])],
-  })
-
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  const integrity512 = integrity.sha512?.[0]?.toString()
-  // @ts-expect-error -- this is a valid call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const shasum = integrity.sha1?.[0]?.hexDigest() as
-    | string
-    | undefined
 
   const publishMetadata = {
     _id: name,
@@ -126,7 +111,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         _nodeVersion: process.versions.node,
         dist: {
           ...manifest.dist,
-          integrity: integrity512,
+          integrity,
           shasum,
           tarball: new URL(`${name}/-/${filename}`, registryUrl).href,
         },
@@ -178,8 +163,10 @@ export const command: CommandFn<CommandResult> = async conf => {
     tag,
     access,
     registry: registryUrl.origin,
-    integrity: integrity512,
+    integrity,
     shasum,
     size: tarballData.length,
+    unpackedSize,
+    files,
   }
 }

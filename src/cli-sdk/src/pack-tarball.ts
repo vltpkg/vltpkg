@@ -1,57 +1,55 @@
-import { PackageJson } from '@vltpkg/package-json'
 import type { Manifest } from '@vltpkg/types'
-import { resolve, isAbsolute } from 'node:path'
 import { create as tarCreate } from 'tar'
 import { minimatch } from 'minimatch'
-
-export type PackTarballOptions = {
-  dry?: boolean
-}
+import { error } from '@vltpkg/error-cause'
+import * as ssri from 'ssri'
+import assert from 'node:assert'
 
 export type PackTarballResult = {
-  manifest: Manifest
+  name: string
+  version: string
   filename: string
-  tarballData?: Buffer
+  tarballData: Buffer
+  unpackedSize: number
+  files: string[]
+  integrity?: string
+  shasum?: string
 }
 
 /**
  * Create a tarball from a package directory
- * @param {string} path - The directory containing the package to pack
- * @param {PackTarballOptions} options - Options for packing
+ * @param {Manifest} manifest - The manifest of the package to pack
+ * @param {string} dir - The directory containing the package to pack
  * @returns {Promise<PackTarballResult>} The manifest, filename, and tarball data (unless dry run)
  */
 export const packTarball = async (
-  path: string,
-  options: PackTarballOptions = {},
+  manifest: Manifest,
+  dir: string,
 ): Promise<PackTarballResult> => {
-  // If path is absolute, use it directly. Otherwise resolve relative to projectRoot
-  const packTarget =
-    /* c8 ignore next */
-    isAbsolute(path) ? path : resolve(process.cwd(), path)
+  assert(
+    manifest.name && manifest.version,
+    error('Package must have a name and version'),
+  )
 
-  // Read package.json
-  const packageJson = new PackageJson()
-  const manifest = packageJson.read(packTarget)
-
-  if (!manifest.name || !manifest.version) {
-    throw new Error('Package must have a name and version')
-  }
-
-  // Generate filename
   const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
 
-  // If dry run, just return the info
-  if (options.dry) {
-    return { manifest, filename }
-  }
+  let unpackedSize = 0
+  const files: string[] = []
 
-  const cwd = packTarget
   const tarballData = await tarCreate(
     {
-      cwd,
+      cwd: dir,
       gzip: true,
       portable: true,
       prefix: 'package/',
+      onentry: entry => {
+        // Only count files, not directories
+        if (entry.type === 'File') {
+          unpackedSize += entry.size || 0
+          // Remove the package/ prefix for cleaner file listing
+          files.push(entry.path.replace(/^[^/]+\//, ''))
+        }
+      },
       filter: (path: string) => {
         // Normalize path - remove leading './'
         const normalizedPath = path.replace(/^\.\//, '')
@@ -163,5 +161,27 @@ export const packTarball = async (
     ['.'],
   ).concat()
 
-  return { manifest, filename, tarballData }
+  // Generate integrity hash
+  const integrityMap = ssri.fromData(tarballData, {
+    algorithms: [...new Set(['sha1', 'sha512'])],
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  const integrity = integrityMap.sha512?.[0]?.toString()
+  // @ts-expect-error -- types from DT are missing hexDigest
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const shasum = integrityMap.sha1?.[0]?.hexDigest() as
+    | string
+    | undefined
+
+  return {
+    name: manifest.name,
+    version: manifest.version,
+    filename,
+    tarballData,
+    unpackedSize,
+    files,
+    integrity,
+    shasum,
+  }
 }
