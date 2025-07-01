@@ -28,24 +28,15 @@ t.test('pack command', async t => {
       }),
       'index.js': '// test file\nconsole.log("hello");',
       'README.md': '# Test Package',
+      'vlt.json': '{}',
     })
-
-    const outputDir = t.testdir({})
-    t.chdir(outputDir)
+    t.chdir(dir)
 
     const config = makeTestConfig({
       projectRoot: dir,
       options: { packageJson: new PackageJson() },
       positionals: ['pack'],
     })
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
-
-    // Mock packageJson.find to return the test directory's package.json
-    config.options.packageJson.find = () =>
-      resolve(dir, 'package.json')
 
     const result = await command(config)
 
@@ -70,7 +61,7 @@ t.test('pack command', async t => {
     t.ok(result.files.length >= 0, 'should have files array')
 
     // Check that the file was written to the current directory (outputDir)
-    const tarballPath = resolve(outputDir, result.filename)
+    const tarballPath = resolve(dir, result.filename)
     const tarballData = await readFile(tarballPath).catch(() => null)
     t.ok(
       tarballData,
