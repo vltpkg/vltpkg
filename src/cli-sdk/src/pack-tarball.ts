@@ -105,9 +105,7 @@ export const packTarball = async (
             return false
           }
           return manifestWithFiles.files.some((pattern: string) => {
-            // Handle different pattern types
             if (pattern.endsWith('/')) {
-              // Directory pattern: match the directory itself and its contents
               const dirName = pattern.slice(0, -1)
               const globPattern = pattern.replace(/\/$/, '/**')
               const matchesDir = normalizedPath === dirName
@@ -119,17 +117,17 @@ export const packTarball = async (
                 },
               )
               return matchesDir || matchesContents
-            } else {
-              // File pattern: check direct match and if this path is a parent directory
-              const directMatch = minimatch(normalizedPath, pattern, {
-                dot: true,
-              })
-              // Check if this path is a directory that could contain the pattern
-              const isParentDir =
-                pattern.includes('/') &&
-                pattern.startsWith(normalizedPath + '/')
-              return directMatch || isParentDir
             }
+
+            // File pattern: check direct match and if this path is a parent directory
+            const directMatch = minimatch(normalizedPath, pattern, {
+              dot: true,
+            })
+            // Check if this path is a directory that could contain the pattern
+            const isParentDir =
+              pattern.includes('/') &&
+              pattern.startsWith(normalizedPath + '/')
+            return directMatch || isParentDir
           })
         }
 
@@ -150,11 +148,8 @@ export const packTarball = async (
     ['.'],
   ).concat()
 
-  // Extract file list and sizes from the created tarball
-  // since onentry callback doesn't work with .concat()
   let unpackedSize = 0
   const files: string[] = []
-
   await new Promise<void>((resolve, reject) => {
     const stream = tarList({
       onentry: entry => {
@@ -169,16 +164,13 @@ export const packTarball = async (
         }
       },
     })
-
-    stream.on('end', () => resolve())
-    stream.on('error', reject)
-
-    // Write the buffer to the stream
-    stream.write(tarballData)
+    stream
+      .on('end', () => resolve())
+      .on('error', reject)
+      .write(tarballData)
     stream.end()
   })
 
-  // Generate integrity hash
   const integrityMap = ssri.fromData(tarballData, {
     algorithms: [...new Set(['sha1', 'sha512'])],
   })

@@ -3,58 +3,78 @@ import { command, views, usage } from '../../src/commands/publish.ts'
 import type { CommandResult } from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { RegistryClient } from '@vltpkg/registry-client'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
-const makeTestConfig = (config: any) => ({
-  ...config,
-  get: (key: string) => config.values?.[key],
-})
+interface MockResponse {
+  statusCode?: number
+  text?: string
+  json?: Record<string, unknown>
+}
 
-// Mock the RegistryClient
-const mockResponses = new Map<string, any>()
+interface MockCacheEntry {
+  statusCode: number
+  text: () => string
+  json: () => Record<string, unknown>
+  getHeader: (name: string) => Buffer | string | undefined
+}
+
+interface TestConfig {
+  projectRoot?: string
+  options: {
+    packageJson: PackageJson
+    registry: string
+    tag?: string
+    access?: string
+  }
+  positionals: string[]
+  values?: Record<string, unknown>
+  get?: (key: string) => unknown
+}
+
+const makeTestConfig = (config: TestConfig): LoadedConfig =>
+  ({
+    ...config,
+    get: (key: string) => config.values?.[key],
+  }) as LoadedConfig
+
+const mockResponses = new Map<string, MockResponse>()
 const originalRequest = RegistryClient.prototype.request
 
 t.beforeEach(() => {
-  // Reset mock responses
   mockResponses.clear()
-
-  // Mock the request method
-  RegistryClient.prototype.request = async function (url: any) {
+  RegistryClient.prototype.request = async function (
+    url: URL | string,
+  ) {
     const urlStr = url.toString()
     const mockResponse = mockResponses.get(urlStr)
 
     if (mockResponse) {
       return {
-        statusCode: mockResponse.statusCode || 201,
-        text: () => mockResponse.text || '',
-        json: () => mockResponse.json || {},
+        statusCode: mockResponse.statusCode ?? 201,
+        text: () => mockResponse.text ?? '',
+        json: () => mockResponse.json ?? {},
         getHeader: () => undefined,
-      } as any
+      } as MockCacheEntry
     }
 
-    // Default to success
     return {
       statusCode: 201,
       text: () => '{"ok":true}',
       json: () => ({ ok: true }),
       getHeader: () => undefined,
-    } as any
-  }
+    } as MockCacheEntry
+  } as typeof originalRequest
 })
 
 t.afterEach(() => {
-  // Restore original request method
   RegistryClient.prototype.request = originalRequest
 })
 
-t.test('publish usage', async t => {
-  const usageObj = usage()
-  t.ok(usageObj)
-  t.type(usageObj, 'object')
-  // The usage function returns a structured object, not a string
-  // Just verify it exists and is called
+t.test('usage', async t => {
+  t.matchSnapshot(usage().usage())
 })
 
-t.test('publish command', async t => {
+t.test('command', async t => {
   t.test('publishes package successfully', async t => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -260,10 +280,8 @@ t.test('publish command', async t => {
       options: {
         packageJson: new PackageJson(),
         registry: 'https://registry.npmjs.org',
-        tag: '',
       },
       positionals: ['publish'],
-      values: { tag: '' },
     })
 
     const result = await command(config)
@@ -326,8 +344,10 @@ t.test('publish command', async t => {
 
     t.chdir(dir)
 
-    // Temporarily mock to throw an error
     const tempRequest = RegistryClient.prototype.request
+    t.teardown(() => {
+      RegistryClient.prototype.request = tempRequest
+    })
     RegistryClient.prototype.request = async () => {
       throw new Error('Network error')
     }
@@ -342,9 +362,6 @@ t.test('publish command', async t => {
     })
 
     await t.rejects(command(config), /Failed to publish package/)
-
-    // Restore
-    RegistryClient.prototype.request = tempRequest
   })
 
   t.test('dry-run mode', async t => {

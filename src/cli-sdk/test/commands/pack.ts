@@ -1,6 +1,6 @@
 import t from 'tap'
 import { resolve } from 'node:path'
-import { readFile } from 'node:fs/promises'
+import { readFile, access } from 'node:fs/promises'
 import { command, views, usage } from '../../src/commands/pack.ts'
 import { PackageJson } from '@vltpkg/package-json'
 
@@ -9,15 +9,11 @@ const makeTestConfig = (config: any) => ({
   get: (key: string) => config.values?.[key],
 })
 
-t.test('pack usage', async t => {
-  const usageObj = usage()
-  t.ok(usageObj)
-  t.type(usageObj, 'object')
-  // The usage function returns a structured object, not a string
-  // Just verify it exists and is called
+t.test('usage', async t => {
+  t.matchSnapshot(usage().usage())
 })
 
-t.test('pack command', async t => {
+t.test('command', async t => {
   t.test('packs package successfully', async t => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -60,7 +56,6 @@ t.test('pack command', async t => {
     t.ok(Array.isArray(result.files), 'should have files array')
     t.ok(result.files.length >= 0, 'should have files array')
 
-    // Check that the file was written to the current directory (outputDir)
     const tarballPath = resolve(dir, result.filename)
     const tarballData = await readFile(tarballPath).catch(() => null)
     t.ok(
@@ -93,7 +88,6 @@ t.test('pack command', async t => {
     t.equal(result.version, '2.0.0')
     t.equal(result.filename, 'current-package-2.0.0.tgz')
 
-    // Verify tarball was written to current directory
     const tarballPath = resolve(dir, result.filename)
     const tarballData = await readFile(tarballPath).catch(() => null)
     t.ok(
@@ -135,7 +129,6 @@ t.test('pack command', async t => {
       'integrity should be sha512',
     )
 
-    // Verify tarball was written to current directory
     const tarballPath = resolve(dir, result.filename)
     const tarballData = await readFile(tarballPath).catch(() => null)
     t.ok(
@@ -171,7 +164,6 @@ t.test('pack command', async t => {
       'unpacked size should be non-negative',
     )
 
-    // Verify tarball was written to current directory
     const tarballPath = resolve(dir, result.filename)
     const tarballData = await readFile(tarballPath).catch(() => null)
     t.ok(
@@ -216,10 +208,8 @@ t.test('pack command', async t => {
     t.ok(result.shasum, 'shasum should be computed')
     t.ok(result.integrity, 'integrity should be computed')
 
-    // Verify no tarball was created in the directory
-    const fs = await import('node:fs/promises')
     await t.rejects(
-      fs.access(resolve(dir, result.filename)),
+      access(resolve(dir, result.filename)),
       'tarball file should not exist in dry-run mode',
     )
   })
