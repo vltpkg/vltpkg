@@ -12,6 +12,8 @@ import { Graph } from '../../src/graph.ts'
 import { appendNodes } from '../../src/ideal/append-nodes.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { Node } from '../../src/node.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
+import { reload } from '@vltpkg/vlt-json'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -561,6 +563,19 @@ t.test('appendNodes with query modifier', async t => {
 t.test(
   'appendNodes with complete and incomplete modifiers',
   async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          '#foo': 'npm:bar@^2.0.0',
+          '#missing': '1', // breadcrumb to a missing edge
+        },
+      }),
+    })
+
     // Create package manifests
     const fooManifest = {
       name: 'foo',
@@ -574,17 +589,18 @@ t.test(
 
     const packageInfo = {
       async manifest(spec: Spec) {
-        if (spec.name === 'foo') return fooManifest
-        if (spec.name === 'bar') return barManifest
+        const f = spec.final
+        if (f.name === 'foo') return fooManifest
+        if (f.name === 'bar') return barManifest
         return null
       },
     } as PackageInfoClient
 
     // Create a minimal graph
     const graph = new Graph({
-      projectRoot: t.testdirName,
+      projectRoot: dir,
       ...configData,
-      mainManifest: { name: 'test', version: '1.0.0' },
+      mainManifest: { name: 'my-project', version: '1.0.0' },
     })
 
     // Create a dependency
@@ -593,40 +609,15 @@ t.test(
       type: 'prod',
     })
 
-    // Create a breadcrumb-like objects for testing
-    const breadcrumbItem = { name: 'foo', specificity: 1 }
+    // vlt.json config file load
+    t.chdir(dir)
+    reload('modifiers', 'project')
+    const modifiers = GraphModifier.load(configData)
 
-    const completeModifierRefs = new Map([
-      [
-        'foo',
-        {
-          modifier: {
-            type: 'edge' as const,
-            query: '#foo',
-            spec: Spec.parse('bar', '^2.0.0'), // swap with npm:bar@^2.0.0
-            breadcrumb: {
-              first: breadcrumbItem,
-              last: breadcrumbItem,
-              single: true,
-              items: [breadcrumbItem],
-              clear: () => {},
-              clone: function () {
-                return this
-              },
-              comment: '',
-            },
-            value: '^2.0.0',
-            refs: new Set(),
-          },
-          interactiveBreadcrumb: {
-            current: breadcrumbItem,
-            next: () => true,
-            done: true,
-          },
-          originalFrom: graph.mainImporter,
-        },
-      ],
-    ])
+    const completeModifierRefs = modifiers.tryDependencies(
+      graph.mainImporter,
+      [fooDep],
+    )
 
     // Call appendNodes with the modifier
     await appendNodes(
@@ -638,97 +629,99 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set(),
-      {
-        updateActiveEntry: () => {},
-        tryDependencies: () => new Map(),
-      } as any,
-      completeModifierRefs as any,
+      modifiers,
+      completeModifierRefs,
     )
 
-    // Verify bar was added due to the edge modifier
-    const barNode = [...(graph.nodesByName.get('bar') ?? [])].find(
-      node => node.manifest?.name === 'bar',
-    )
-    t.ok(
-      barNode,
-      'bar node should be added due to the complete modifier',
-    )
-
-    // Reset the graph for the next test
-    const newGraph = new Graph({
-      projectRoot: t.testdirName,
-      ...configData,
-      mainManifest: { name: 'test', version: '1.0.0' },
-    })
-
-    // check for a non-matching breadcrumb
-    const incompleteModifierRefs = new Map([
-      [
-        'different',
-        {
-          modifier: {
-            type: 'edge' as const,
-            query: '#different',
-            spec: Spec.parse('bar', '^2.0.0'),
-            breadcrumb: {
-              first: breadcrumbItem,
-              last: { name: 'different', specificity: 1 }, // Different from current
-              single: false,
-              items: [breadcrumbItem],
-              clear: () => {},
-              clone: function () {
-                return this
-              },
-              comment: '',
-            },
-            value: '^2.0.0',
-            refs: new Set(),
-          },
-          interactiveBreadcrumb: {
-            current: breadcrumbItem,
-            next: () => true,
-            done: false,
-          },
-          originalFrom: newGraph.mainImporter,
-        },
-      ],
-    ])
-
-    // Call appendNodes with the incomplete modifier
-    await appendNodes(
-      new Map([['foo', fooDep]]),
-      packageInfo,
-      newGraph,
-      newGraph.mainImporter,
-      [fooDep],
-      new PathScurry(t.testdirName),
-      configData,
-      new Set(),
-      {
-        updateActiveEntry: () => {},
-        tryDependencies: () => new Map(),
-      } as any,
-      incompleteModifierRefs as any,
-    )
-
-    // Verify foo was added, not bar (as the modifier is incomplete)
-    const fooNode = [...(newGraph.nodesByName.get('foo') ?? [])].find(
-      node => node.manifest?.name === 'foo',
-    )
-    t.ok(
-      fooNode,
-      'foo node should be added when modifier is incomplete',
-    )
-    const barNodeInNewGraph = [
-      ...(newGraph.nodesByName.get('bar') ?? []),
-    ]
+    // Verify bar was added from the edge modifier
+    const [barNode] = graph.nodesByName.get('bar')!
     t.equal(
-      barNodeInNewGraph.length,
-      0,
-      'bar node should not be added when modifier is incomplete',
+      barNode?.manifest?.name,
+      'bar',
+      'bar node should be added from the edge modifier',
     )
+
+    const fooNode = graph.nodesByName.get('foo')
+    t.notOk(
+      fooNode,
+      'should not have a node for foo since it was modified with bar',
+    )
+
+    const missingNode = graph.nodesByName.get('missing')
+    t.notOk(missingNode, 'should not have a node for missing edge')
   },
 )
+
+t.test('spec edge removal', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: {
+        '#foo': '-',
+      },
+    }),
+  })
+
+  // Create package manifests
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+  }
+
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const f = spec.final
+      if (f.name === 'foo') return fooManifest
+      return null
+    },
+  } as PackageInfoClient
+
+  // Create a minimal graph
+  const graph = new Graph({
+    projectRoot: dir,
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+
+  // Create a dependency
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', '^1.0.0'),
+    type: 'prod',
+  })
+
+  // vlt.json config file load
+  t.chdir(dir)
+  reload('modifiers', 'project')
+  const modifiers = GraphModifier.load(configData)
+
+  const completeModifierRefs = modifiers.tryDependencies(
+    graph.mainImporter,
+    [fooDep],
+  )
+
+  // Call appendNodes with the modifier
+  await appendNodes(
+    new Map([['foo', fooDep]]),
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [fooDep],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+    modifiers,
+    completeModifierRefs,
+  )
+
+  const fooNode = graph.nodesByName.get('foo')
+  t.notOk(
+    fooNode,
+    'should not have a node for foo since it was removed',
+  )
+})
 
 // Add a test for the error handling when a node can't be placed
 t.test(
