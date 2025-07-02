@@ -1,4 +1,5 @@
 import type { QueryResponseEdge } from '@vltpkg/query'
+import type { ModifierBreadcrumb } from '@vltpkg/dss-breadcrumb'
 
 /**
  * A looser representation of an edge, it contains optional properties that
@@ -56,6 +57,11 @@ export type GridItemData = EdgeLoose & {
    * A list of labels to be displayed in the Card UI.
    */
   labels?: string[]
+  /**
+   * A list of breadcrumbs leading up to the selected item to be displayed
+   * if available.
+   */
+  breadcrumbs?: ModifierBreadcrumb
 }
 
 /**

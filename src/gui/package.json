@@ -25,6 +25,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tanstack/react-table": "^8.21.3",
     "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/dss-breadcrumb": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/query": "workspace:*",
     "@vltpkg/security-archive": "workspace:*",

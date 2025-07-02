@@ -1060,6 +1060,9 @@ importers:
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
+      '@vltpkg/dss-breadcrumb':
+        specifier: workspace:*
+        version: link:../dss-breadcrumb
       '@vltpkg/graph':
         specifier: workspace:*
         version: link:../graph
