@@ -56,9 +56,9 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-manifest.tsx',
+  '@/components/explorer-grid/selected-item/tabs-json.tsx',
   () => ({
-    TabsManifestButton: 'gui-manifest-tab-button',
+    TabsJsonButton: 'gui-json-tab-button',
     TabsManifestContent: 'gui-manifest-tab-content',
   }),
 )

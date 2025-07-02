@@ -5,9 +5,9 @@ import { useGraphStore as useStore } from '@/state/index.ts'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
-  TabsManifestButton,
-  TabsManifestContent,
-} from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
+  TabsJsonButton,
+  TabsJsonContent,
+} from '@/components/explorer-grid/selected-item/tabs-json.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
@@ -80,7 +80,7 @@ test('TabsManifestButton renders default', () => {
     manifest: {},
     rawManifest: null,
     insights: undefined,
-    activeTab: 'manifest' as const,
+    activeTab: 'json' as const,
     activeSubTab: undefined,
     setActiveSubTab: vi.fn(),
     setActiveTab: vi.fn(),
@@ -105,7 +105,7 @@ test('TabsManifestButton renders default', () => {
   )
 
   const Container = () => {
-    return <TabsManifestButton />
+    return <TabsJsonButton />
   }
 
   const { container } = render(<Container />)
@@ -119,7 +119,7 @@ test('TabsManifestContent renders an empty state', () => {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     insights: undefined,
-    activeTab: 'manifest' as const,
+    activeTab: 'json' as const,
     activeSubTab: undefined,
     setActiveSubTab: vi.fn(),
     setActiveTab: vi.fn(),
@@ -144,7 +144,7 @@ test('TabsManifestContent renders an empty state', () => {
   )
 
   const Container = () => {
-    return <TabsManifestContent />
+    return <TabsJsonContent />
   }
 
   const { container } = render(<Container />)
@@ -156,7 +156,7 @@ test('TabsManifestContent renders with a manifest', () => {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     insights: undefined,
-    activeTab: 'manifest' as const,
+    activeTab: 'json' as const,
     activeSubTab: undefined,
     setActiveSubTab: vi.fn(),
     manifest: MOCK_MANIFEST,
@@ -183,7 +183,7 @@ test('TabsManifestContent renders with a manifest', () => {
   )
 
   const Container = () => {
-    return <TabsManifestContent />
+    return <TabsJsonContent />
   }
 
   const { container } = render(<Container />)
