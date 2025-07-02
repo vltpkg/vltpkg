@@ -3,25 +3,25 @@ import { CodeBlock } from '@/components/ui/shiki.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { FileJson } from 'lucide-react'
 
-export const TabsManifestButton = () => {
+export const TabsJsonButton = () => {
   return (
     <TabsTrigger
       variant="ghost"
-      value="manifest"
+      value="json"
       className="w-fit px-2">
-      Manifest
+      JSON
     </TabsTrigger>
   )
 }
 
-export const TabsManifestContent = () => {
+export const TabsJsonContent = () => {
   const rawManifest = useSelectedItemStore(state => state.rawManifest)
   const manifest = useSelectedItemStore(state => state.manifest)
   const finalManifest = rawManifest ?? manifest
 
   return (
     <TabsContent
-      value="manifest"
+      value="json"
       className="h-full rounded-b-lg bg-neutral-100 dark:bg-black">
       {finalManifest ?
         <CodeBlock
@@ -38,7 +38,7 @@ export const TabsManifestContent = () => {
               />
             </div>
             <p className="w-2/3 text-pretty text-sm text-muted-foreground">
-              We couldn't find a manifest for this project
+              We couldn't find a json object for this project
             </p>
           </div>
         </div>
