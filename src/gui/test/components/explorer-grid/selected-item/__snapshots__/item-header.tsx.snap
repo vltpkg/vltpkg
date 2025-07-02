@@ -186,7 +186,7 @@ exports[`ItemHeader renders with a version information 1`] = `
               John Doe
             </span>
             <span class="ml-2">
-              abc123 • 2 years ago
+              abc123 • 3 years ago
             </span>
           </gui-tooltip-trigger>
           <gui-tooltip-content align="start">
