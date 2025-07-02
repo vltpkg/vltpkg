@@ -1,48 +1,44 @@
 import { TabsContent, TabsTrigger } from '@/components/ui/tabs.tsx'
 import { CodeBlock } from '@/components/ui/shiki.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import { FileJson } from 'lucide-react'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import type { JSONOutputItem } from '@vltpkg/graph'
 
 export const TabsJsonButton = () => {
   return (
-    <TabsTrigger
-      variant="ghost"
-      value="json"
-      className="w-fit px-2">
+    <TabsTrigger variant="ghost" value="json" className="w-fit px-2">
       JSON
     </TabsTrigger>
   )
 }
 
+const getJsonContent = (item: GridItemData): JSONOutputItem[] => {
+  return [
+    {
+      name: item.name || '',
+      fromID: item.from?.id,
+      spec: item.spec ? String(item.spec) : undefined,
+      type: item.type,
+      to: item.to,
+      overridden: item.spec?.overridden || false,
+    },
+  ]
+}
+
 export const TabsJsonContent = () => {
-  const rawManifest = useSelectedItemStore(state => state.rawManifest)
-  const manifest = useSelectedItemStore(state => state.manifest)
-  const finalManifest = rawManifest ?? manifest
+  const itemJson = useSelectedItemStore(state => state.selectedItem)
+
+  const jsonOutput = getJsonContent(itemJson)
 
   return (
     <TabsContent
       value="json"
       className="h-full rounded-b-lg bg-neutral-100 dark:bg-black">
-      {finalManifest ?
-        <CodeBlock
-          className="px-6 py-4"
-          code={JSON.stringify(finalManifest, null, 2)}
-          lang="json"
-        />
-      : <div className="flex h-64 items-center justify-center px-6 py-4">
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-              <FileJson
-                className="absolute z-[3] size-14 text-neutral-500"
-                strokeWidth={1.25}
-              />
-            </div>
-            <p className="w-2/3 text-pretty text-sm text-muted-foreground">
-              We couldn't find a json object for this project
-            </p>
-          </div>
-        </div>
-      }
+      <CodeBlock
+        className="px-6 py-4"
+        code={JSON.stringify(jsonOutput, null, 2)}
+        lang="json"
+      />
     </TabsContent>
   )
 }

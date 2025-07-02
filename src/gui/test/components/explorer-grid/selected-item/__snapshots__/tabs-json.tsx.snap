@@ -12,31 +12,7 @@ exports[`TabsManifestButton renders default 1`] = `
 
 `;
 
-exports[`TabsManifestContent renders an empty state 1`] = `
-
-<gui-tabs-content
-  value="json"
-  classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
->
-  <div class="flex h-64 items-center justify-center px-6 py-4">
-    <div class="flex flex-col items-center justify-center gap-3 text-center">
-      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-        <gui-file-json-icon
-          classname="absolute z-[3] size-14 text-neutral-500"
-          strokewidth="1.25"
-        >
-        </gui-file-json-icon>
-      </div>
-      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
-        We couldn't find a json object for this project
-      </p>
-    </div>
-  </div>
-</gui-tabs-content>
-
-`;
-
-exports[`TabsManifestContent renders with a manifest 1`] = `
+exports[`TabsManifestContent renders with a json object 1`] = `
 
 <gui-tabs-content
   value="json"
@@ -44,20 +20,13 @@ exports[`TabsManifestContent renders with a manifest 1`] = `
 >
   <gui-code-block
     classname="px-6 py-4"
-    code="{
-  &quot;name&quot;: &quot;acme-package&quot;,
-  &quot;version&quot;: &quot;1.0.0&quot;,
-  &quot;author&quot;: &quot;John Doe&quot;,
-  &quot;private&quot;: true,
-  &quot;dependencies&quot;: {
-    &quot;@acme/1&quot;: &quot;1.0.0&quot;,
-    &quot;@acme/2&quot;: &quot;2.0.0&quot;
-  },
-  &quot;devDependencies&quot;: {
-    &quot;@acme/3&quot;: &quot;3.0.0&quot;,
-    &quot;@acme/4&quot;: &quot;4.0.0&quot;
+    code="[
+  {
+    &quot;name&quot;: &quot;item&quot;,
+    &quot;spec&quot;: &quot;item@^1.0.0&quot;,
+    &quot;overridden&quot;: false
   }
-}"
+]"
     lang="json"
   >
   </gui-code-block>
