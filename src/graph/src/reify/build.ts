@@ -4,7 +4,7 @@
 
 import type { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
-import { statSync } from 'node:fs'
+import { statSync, existsSync } from 'node:fs'
 import { chmod } from 'node:fs/promises'
 import { graphRun } from 'graph-run'
 import type { PathScurry } from 'path-scurry'
@@ -119,6 +119,11 @@ const visit = async (
 // that create files group-writable result in 0o775 instead of 0o755
 let execMode = 0
 const makeExecutable = async (path: string) => {
+  // If the file doesn't exist, skip making it executable
+  if (!existsSync(path)) {
+    return
+  }
+
   if (!execMode) {
     execMode = (statSync(path).mode & 0o777) | 0o111
   }
