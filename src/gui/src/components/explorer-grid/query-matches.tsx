@@ -55,8 +55,8 @@ const LabelTags = ({
   return (
     <Popover>
       <PopoverTrigger className="flex items-center justify-center">
-        <Tooltip>
-          <TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
             <TooltipTrigger
               asChild
               className="flex items-center justify-center">
@@ -78,8 +78,8 @@ const LabelTags = ({
               </div>
             </TooltipTrigger>
             <TooltipContent>Labels</TooltipContent>
-          </TooltipProvider>
-        </Tooltip>
+          </Tooltip>
+        </TooltipProvider>
       </PopoverTrigger>
       <PopoverContent>
         <p className="mb-2 font-semibold">Labels</p>

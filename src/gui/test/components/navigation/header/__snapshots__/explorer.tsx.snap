@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ExplorerHeader renders correctly 1`] = `
+
+<div class="flex w-2/3 gap-3">
+  <gui-root-button>
+  </gui-root-button>
+  <gui-query-bar
+    tabindex="0"
+    startcontent="[object Object]"
+    classname="rounded-full"
+    endcontent="[object Object]"
+  >
+  </gui-query-bar>
+</div>
+
+`;

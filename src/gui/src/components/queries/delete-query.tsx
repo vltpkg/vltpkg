@@ -56,8 +56,8 @@ const DeleteQuery = ({
     <Dialog
       open={deleteDialogOpen}
       onOpenChange={setDeleteDialogOpen}>
-      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
-        <TooltipProvider>
+      <TooltipProvider>
+        <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
           <DialogTrigger asChild>
             {type === 'icon' ?
               <Button
@@ -74,8 +74,8 @@ const DeleteQuery = ({
           <TooltipContent>
             Delete {selectedQueries.length <= 1 ? 'Query' : 'Queries'}
           </TooltipContent>
-        </TooltipProvider>
-      </Tooltip>
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-medium">

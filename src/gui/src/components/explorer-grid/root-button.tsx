@@ -25,8 +25,7 @@ const RootButton = () => {
             disabled={query === DEFAULT_QUERY}
             onClick={onClick}
             size="icon"
-            variant="ghost"
-            className="rounded-md">
+            className="rounded-full border-[1px] border-muted bg-card text-muted-foreground hover:bg-card/50 dark:bg-card dark:hover:bg-card/50">
             <House />
           </Button>
         </TooltipTrigger>
