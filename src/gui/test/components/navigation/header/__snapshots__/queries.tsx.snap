@@ -1,0 +1,47 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`QueriesHeader renders correctly 1`] = `
+
+<div class="flex justify-between gap-2">
+  <div class="flex gap-2">
+    <gui-filter-search
+      placeholder="Filter Queries"
+      items
+    >
+    </gui-filter-search>
+    <gui-sort-toggle
+      filtereditems
+      sortkey="name"
+    >
+    </gui-sort-toggle>
+    <div class="flex items-center">
+      <div class="flex items-center">
+        <gui-delete-query
+          deletedialogopen="false"
+          selectedqueries
+          type="icon"
+        >
+        </gui-delete-query>
+      </div>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <gui-button
+      aschild="true"
+      variant="outline"
+    >
+      <gui-nav-link to="/labels">
+        <gui-tag-icon>
+        </gui-tag-icon>
+        <span>
+          Labels
+        </span>
+        <gui-badge variant="secondary">
+          3
+        </gui-badge>
+      </gui-nav-link>
+    </gui-button>
+  </div>
+</div>
+
+`;
