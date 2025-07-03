@@ -19,7 +19,7 @@ import { Queries } from '@/app/queries.tsx'
 
 /** Explorer Tabs */
 import { OverviewTabContent } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
-import { TabsManifestContent } from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
+import { TabsJsonContent } from '@/components/explorer-grid/selected-item/tabs-json.tsx'
 import { InsightTabContent } from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
 import { DependenciesTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { VersionsTabContent } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
@@ -46,8 +46,8 @@ const TabRouter = () => {
   switch (tab) {
     case 'overview':
       return <OverviewTabContent />
-    case 'manifest':
-      return <TabsManifestContent />
+    case 'json':
+      return <TabsJsonContent />
     case 'versions':
       return <VersionsTabContent />
     case 'insights':

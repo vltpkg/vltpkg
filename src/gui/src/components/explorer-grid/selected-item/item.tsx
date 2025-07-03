@@ -8,7 +8,7 @@ import {
 import { InsightTabButton } from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
 import { OverviewTabButton } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import { VersionsTabButton } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
-import { TabsManifestButton } from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
+import { TabsJsonButton } from '@/components/explorer-grid/selected-item/tabs-json.tsx'
 import { DependenciesTabsButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -47,7 +47,7 @@ const SelectedItemTabs = () => {
         value={activeTab}>
         <TabsList variant="ghost" className="w-full gap-2 px-6">
           <OverviewTabButton />
-          <TabsManifestButton />
+          <TabsJsonButton />
           <InsightTabButton />
           <VersionsTabButton />
           <DependenciesTabsButton />
