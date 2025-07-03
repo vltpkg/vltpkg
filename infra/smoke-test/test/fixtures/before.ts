@@ -8,7 +8,7 @@ for (const variant of allVariants) {
     case 'Node':
       neededArtifacts.add('Node')
       break
-    case 'Bundle': 
+    case 'Bundle':
       neededArtifacts.add('Bundle')
       break
     case 'Compile':

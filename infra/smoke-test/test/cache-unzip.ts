@@ -17,7 +17,7 @@ t.test(
         await setTimeout(1000)
 
         const cacheDir = join(dirs.cache, 'vlt/registry-client')
-        
+
         // Check if cache directory exists before trying to read it
         let cacheDirContents: Dirent[] = []
         try {
@@ -31,7 +31,7 @@ t.test(
           }
           throw err
         }
-        
+
         const { keys, entries, tmp } = cacheDirContents.reduce<{
           keys: Dirent[]
           entries: Dirent[]
