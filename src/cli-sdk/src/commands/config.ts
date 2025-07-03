@@ -186,9 +186,9 @@ const edit = async (conf: LoadedConfig) => {
 const set = async (conf: LoadedConfig) => {
   const pairs = conf.positionals.slice(1)
   if (!pairs.length) {
-    throw error('At least one key=value pair is required', {
-      code: 'EUSAGE',
-    })
+    // Create an empty config file
+    await conf.addConfigToFile(conf.get('config'), {})
+    return
   }
   let parsed: ConfigFileData | null = null
   try {
