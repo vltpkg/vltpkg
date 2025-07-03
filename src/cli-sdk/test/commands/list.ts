@@ -189,29 +189,26 @@ t.test('list', async t => {
 
   t.matchSnapshot(
     await runCommand({
-      positionals: ['*'],
       values: { view: 'human' },
       options,
     }),
-    'should list all pkgs in human readable format',
+    'should list pkgs in human readable format',
   )
 
   t.matchSnapshot(
     await runCommand({
-      positionals: ['*'],
       values: { view: 'json' },
       options,
     }),
-    'should list all pkgs in json format',
+    'should list pkgs in json format',
   )
 
   t.matchSnapshot(
     await runCommand({
-      positionals: ['*'],
       values: { view: 'mermaid' },
       options,
     }),
-    'should list all pkgs in mermaid format',
+    'should list pkgs in mermaid format',
   )
 
   await t.rejects(
@@ -220,8 +217,49 @@ t.test('list', async t => {
       options,
       get: () => undefined,
     } as unknown as LoadedConfig),
-    /Failed to parse :malware selector/,
-    'should fail to run with no security archive',
+    /Direct queries are not supported as positional arguments/,
+    'should reject query syntax in positionals',
+  )
+
+  // Test rejecting direct queries in positionals
+  await t.rejects(
+    Command.command({
+      positionals: ['#foo'],
+      options,
+      get: () => undefined,
+    } as unknown as LoadedConfig),
+    /Direct queries are not supported as positional arguments/,
+    'should reject query starting with #',
+  )
+
+  await t.rejects(
+    Command.command({
+      positionals: ['*'],
+      options,
+      get: () => undefined,
+    } as unknown as LoadedConfig),
+    /Direct queries are not supported as positional arguments/,
+    'should reject query starting with *',
+  )
+
+  await t.rejects(
+    Command.command({
+      positionals: [':scope'],
+      options,
+      get: () => undefined,
+    } as unknown as LoadedConfig),
+    /Direct queries are not supported as positional arguments/,
+    'should reject query starting with :',
+  )
+
+  await t.rejects(
+    Command.command({
+      positionals: ['[name="foo"]'],
+      options,
+      get: () => undefined,
+    } as unknown as LoadedConfig),
+    /Direct queries are not supported as positional arguments/,
+    'should reject attribute selector queries',
   )
 
   t.matchSnapshot(
@@ -314,8 +352,10 @@ t.test('list', async t => {
     t.matchSnapshot(
       await runCommand(
         {
-          positionals: [':scope'],
-          values: { view: 'human', workspace: ['a'] },
+          values: {
+            view: 'human',
+            workspace: ['a'],
+          },
           options,
         },
         C,
@@ -388,7 +428,6 @@ t.test('list', async t => {
     t.matchSnapshot(
       await runCommand(
         {
-          positionals: ['*'],
           values: {
             color: true,
             view: 'human',
@@ -496,7 +535,6 @@ t.test('list', async t => {
 
     const result = await runCommand(
       {
-        positionals: ['*'],
         values: {
           scope: ':workspace',
           view: 'human',
@@ -602,7 +640,6 @@ t.test('list', async t => {
 
     const result = await runCommand(
       {
-        positionals: ['*'],
         values: {
           scope: '#foo',
           view: 'human',
@@ -615,6 +652,45 @@ t.test('list', async t => {
     t.matchSnapshot(
       result,
       'should handle scope with a transitive dependency',
+    )
+  })
+
+  // Test that package names still work correctly
+  await t.test('package names as positionals', async t => {
+    t.matchSnapshot(
+      await runCommand({
+        positionals: ['foo'],
+        values: { view: 'human' },
+        options,
+      }),
+      'should accept simple package name',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: ['@scoped/package'],
+        values: { view: 'human' },
+        options,
+      }),
+      'should accept scoped package name',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: ['package-with-dashes'],
+        values: { view: 'human' },
+        options,
+      }),
+      'should accept package name with dashes',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: ['123numeric'],
+        values: { view: 'human' },
+        options,
+      }),
+      'should accept package name starting with numbers',
     )
   })
 })
