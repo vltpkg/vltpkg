@@ -25,7 +25,9 @@ Object {
   "login": "login",
   "logout": "logout",
   "ls": "list",
+  "pack": "pack",
   "pkg": "pkg",
+  "publish": "publish",
   "query": "query",
   "r": "run",
   "rm": "uninstall",
@@ -46,6 +48,14 @@ Object {
 
 exports[`test/config/definition.ts > TAP > definition 1`] = `
 Object {
+  "access": Object {
+    "description": "Set the access level of the package",
+    "type": "string",
+    "validOptions": Array [
+      "public",
+      "restricted",
+    ],
+  },
   "arch": Object {
     "description": "CPU architecture to use as the selector when choosing packages based on their \`cpu\` value.",
     "type": "string",
@@ -84,6 +94,10 @@ Object {
     "hint": "path",
     "multiple": true,
     "type": "string",
+  },
+  "dry-run": Object {
+    "description": "Run command without making any changes",
+    "type": "boolean",
   },
   "editor": Object {
     "description": String(
@@ -133,7 +147,9 @@ Object {
       "logout",
       "list",
       "ls",
+      "pack",
       "pkg",
+      "publish",
       "query",
       "run-exec",
       "run",
@@ -247,6 +263,10 @@ Object {
     "description": "The operating system to use as the selector when choosing packages based on their \`os\` value.",
     "type": "string",
   },
+  "otp": Object {
+    "description": "Provide an OTP to use when publishing a package.",
+    "type": "string",
+  },
   "package": Object {
     "description": "When running \`vlt exec\`, this allows you to explicitly set the package to search for bins. If not provided, then vlt will interpret the first argument as the package, and attempt to run the default executable.",
     "hint": "p",
@@ -355,7 +375,7 @@ Object {
     "type": "number",
   },
   "tag": Object {
-    "description": "Default \`dist-tag\` to install",
+    "description": "Default \`dist-tag\` to install or publish",
     "type": "string",
   },
   "version": Object {
@@ -416,6 +436,7 @@ Object {
 
 exports[`test/config/definition.ts > TAP > getSortedCliDefinitions > sorted CLI definitions 1`] = `
 Array [
+  "--access=<access>",
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
@@ -423,6 +444,7 @@ Array [
   "--color",
   "--config=<user | project>",
   "--dashboard-root=<path>",
+  "--dry-run",
   "--editor=<program>",
   "--expect-results=<value>",
   "--fallback-command=<command>",
@@ -440,6 +462,7 @@ Array [
   "--no-color",
   "--node-version=<version>",
   "--os=<os>",
+  "--otp=<otp>",
   "--package=<p>",
   "--recursive",
   "--registries=<name=url>",
@@ -463,6 +486,7 @@ Array [
 
 exports[`test/config/definition.ts > TAP > getSortedKeys > sorted keys 1`] = `
 Array [
+  "access",
   "arch",
   "bail",
   "before",
@@ -470,6 +494,7 @@ Array [
   "color",
   "config",
   "dashboard-root",
+  "dry-run",
   "editor",
   "expect-results",
   "fallback-command",
@@ -487,6 +512,7 @@ Array [
   "no-color",
   "node-version",
   "os",
+  "otp",
   "package",
   "recursive",
   "registries",

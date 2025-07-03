@@ -24,7 +24,9 @@ const canonicalCommands = {
   logout: 'logout',
   list: 'list',
   ls: 'ls',
+  pack: 'pack',
   pkg: 'pkg',
+  publish: 'publish',
   query: 'query',
   'run-exec': 'run-exec',
   run: 'run',
@@ -293,7 +295,7 @@ export const definition = j
       default: cacheDir,
     },
     tag: {
-      description: `Default \`dist-tag\` to install`,
+      description: `Default \`dist-tag\` to install or publish`,
       default: 'latest',
     },
     before: {
@@ -584,6 +586,24 @@ export const definition = j
                     Strings starting with \`>\`, \`<\`, \`>=\` or \`<=\`
                     followed by a number can be used to check if the result
                     is greater than or less than a specific number.`,
+    },
+  })
+
+  .flag({
+    'dry-run': {
+      description: 'Run command without making any changes',
+    },
+  })
+  .opt({
+    access: {
+      description: 'Set the access level of the package',
+      validOptions: ['public', 'restricted'] as const,
+      default: 'public',
+    },
+  })
+  .opt({
+    otp: {
+      description: `Provide an OTP to use when publishing a package.`,
     },
   })
 
