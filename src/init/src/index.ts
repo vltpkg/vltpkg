@@ -52,25 +52,31 @@ export const init = async ({
 }: InitOptions = {}): Promise<InitFileResults> => {
   const packageJson = new PackageJson()
   const path = resolve(cwd, 'package.json')
+  let existingData: Manifest | undefined
+
   try {
-    packageJson.read(cwd)
-    // will only return here in case the package.json file does not exist
+    existingData = packageJson.read(cwd)
     logger('package.json already exists')
-    return {}
   } catch (err) {
     if (asError(err).message !== 'Could not read package.json file') {
       throw err
     }
-
-    const name = basename(cwd)
-    const data = template({
-      name,
-      author:
-        author ??
-        getAuthorFromGitUser(await getUser().catch(() => undefined)),
-    })
-    const indent = 2
-    packageJson.write(cwd, data, indent)
-    return { manifest: { path, data } }
+    // No existing package.json, will create new one
   }
+
+  const name = basename(cwd)
+  const templateData = template({
+    name,
+    author:
+      author ??
+      getAuthorFromGitUser(await getUser().catch(() => undefined)),
+  })
+
+  // Merge template with existing data, preserving existing properties
+  const data: Manifest =
+    existingData ? { ...templateData, ...existingData } : templateData
+
+  const indent = 2
+  packageJson.write(cwd, data, indent)
+  return { manifest: { path, data } }
 }
