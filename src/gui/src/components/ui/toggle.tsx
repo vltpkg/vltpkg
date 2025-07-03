@@ -1,12 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils.ts'
 import type { LucideProps, LucideIcon } from 'lucide-react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip.tsx'
 
 export interface Option {
   icon: (props: LucideProps) => React.ReactElement<LucideIcon>
@@ -15,18 +10,41 @@ export interface Option {
   callBack: (o?: any) => void
 }
 
-interface ToggleProps {
-  options: [Option, Option]
+export interface ToggleClassNames {
+  wrapperClassName?: string
+  toggleClassName?: string
+  optionClassName?: string
+  sliderClassName?: string
 }
 
-export const Toggle = ({ options }: ToggleProps) => {
+interface ToggleProps {
+  options: [Option, Option]
+  value?: string
+  classNames?: ToggleClassNames
+}
+
+export const Toggle = ({
+  options,
+  value,
+  classNames,
+}: ToggleProps) => {
   const [activeOption, setActiveOption] = useState<string>(
-    options[0].key,
+    value ?? options[0].key,
   )
+
+  const {
+    wrapperClassName,
+    toggleClassName,
+    optionClassName,
+    sliderClassName,
+  } = classNames ?? {}
+
+  // Use the value prop if provided, otherwise use internal state
+  const currentActiveOption = value ?? activeOption
 
   const optionClickHandler = (key: string) => {
     const newOption =
-      activeOption === key ?
+      currentActiveOption === key ?
         key === options[0].key ?
           options[1].key
         : options[0].key
@@ -37,37 +55,46 @@ export const Toggle = ({ options }: ToggleProps) => {
     )
     if (!selectedOption) return
 
-    setActiveOption(newOption)
-    selectedOption.callBack()
+    if (newOption !== currentActiveOption) {
+      if (value === undefined) {
+        setActiveOption(newOption)
+      }
+      selectedOption.callBack()
+    }
   }
 
   return (
-    <div className="flex w-fit">
-      <div className="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5">
+    <div className={cn('flex w-fit', wrapperClassName)}>
+      <div
+        className={cn(
+          'relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5',
+          toggleClassName,
+        )}>
         {/* the toggle slider */}
         <motion.div
-          className="absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted"
+          className={cn(
+            'absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted',
+            sliderClassName,
+          )}
           animate={{
-            left: activeOption === options[0].key ? 4 : 36,
+            left: currentActiveOption === options[0].key ? 4 : 36,
           }}
         />
 
         {options.map((option, idx) => (
-          <TooltipProvider key={idx}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  onClick={() => optionClickHandler(option.key)}
-                  className="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm">
-                  <option.icon
-                    size={20}
-                    className="text-muted-foreground"
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{option.toolTipContent}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div
+            key={idx}
+            onClick={() => optionClickHandler(option.key)}
+            className={cn(
+              'z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm',
+              optionClassName,
+            )}
+            title={option.toolTipContent}>
+            <option.icon
+              size={20}
+              className="text-muted-foreground"
+            />
+          </div>
         ))}
       </div>
     </div>

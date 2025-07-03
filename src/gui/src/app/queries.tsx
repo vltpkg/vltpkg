@@ -1,36 +1,20 @@
-import { useNavigate, NavLink } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
+import { useEffect } from 'react'
 import { useGraphStore } from '@/state/index.ts'
-import type { SavedQuery } from '@/state/types.ts'
 import { SavedQueryItem } from '@/components/queries/saved-item.tsx'
-import { FilterSearch } from '@/components/ui/filter-search.tsx'
-import { DeleteQuery } from '@/components/queries/delete-query.tsx'
-import {
-  sortAlphabeticallyAscending,
-  SortToggle,
-} from '@/components/sort-toggle.tsx'
-import { Button } from '@/components/ui/button.tsx'
-import { Plus, Tag } from 'lucide-react'
-import { Badge } from '@/components/ui/badge.tsx'
+import { sortAlphabeticallyAscending } from '@/components/sort-toggle.tsx'
 import { Checkbox } from '@/components/ui/checkbox.tsx'
 import { QueriesEmptyState } from '@/components/queries/queries-empty-state.tsx'
 import { CreateQuery } from '@/components/queries/create-query.tsx'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { startDashboardData } from '@/lib/start-data.ts'
+import { useQueriesStore } from '@/state/queries.ts'
+
+import type { SavedQuery } from '@/state/types.ts'
 
 const Queries = () => {
   const navigate = useNavigate()
   const savedQueries = useGraphStore(state => state.savedQueries)
-  const [filteredQueries, setFilteredQueries] = useState<
-    SavedQuery[]
-  >(savedQueries ?? [])
-  const [deleteDialogOpen, setDeleteDialogOpen] =
-    useState<boolean>(false)
-  const [selectedQueries, setSelectedQueries] = useState<
-    SavedQuery[]
-  >([])
-  const savedLabels = useGraphStore(state => state.savedQueryLabels)
-  const [isCreating, setIsCreating] = useState<boolean>(false)
   const dashboard = useGraphStore(state => state.dashboard)
   const updateDashboard = useGraphStore(
     state => state.updateDashboard,
@@ -39,16 +23,30 @@ const Queries = () => {
     state => state.updateErrorCause,
   )
   const stamp = useGraphStore(state => state.stamp)
+  const filteredQueries = useQueriesStore(
+    state => state.filteredQueries,
+  )
+  const setFilteredQueries = useQueriesStore(
+    state => state.setFilteredQueries,
+  )
+  const isCreating = useQueriesStore(state => state.isCreating)
+  const setIsCreating = useQueriesStore(state => state.setIsCreating)
+  const selectedQueries = useQueriesStore(
+    state => state.selectedQueries,
+  )
+  const setSelectedQueries = useQueriesStore(
+    state => state.setSelectedQueries,
+  )
 
   const handleSelectQuery = (selectedQuery: SavedQuery) => {
-    setSelectedQueries(prev => {
-      const isSelected = prev.some(
-        query => query.id === selectedQuery.id,
-      )
-      return isSelected ?
-          prev.filter(query => query.id !== selectedQuery.id)
-        : [...prev, selectedQuery]
-    })
+    const isSelected = selectedQueries.some(
+      query => query.id === selectedQuery.id,
+    )
+    const newSelectedQueries =
+      isSelected ?
+        selectedQueries.filter(query => query.id !== selectedQuery.id)
+      : [...selectedQueries, selectedQuery]
+    setSelectedQueries(newSelectedQueries)
   }
 
   const handleSelectAll = () => {
@@ -76,55 +74,11 @@ const Queries = () => {
         setFilteredQueries,
       )
     }
-  }, [savedQueries])
+  }, [savedQueries, setFilteredQueries])
 
   return (
-    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px] px-8">
+    <section className="flex h-full w-full flex-col px-8">
       <div className="flex w-full max-w-8xl flex-col">
-        <div className="mb-4 flex justify-between pt-1">
-          <div className="flex gap-2">
-            <FilterSearch
-              placeholder="Filter Queries"
-              items={savedQueries}
-              setFilteredItems={setFilteredQueries}
-            />
-            <SortToggle
-              filteredItems={filteredQueries}
-              setFilteredItems={setFilteredQueries}
-              sortKey="name"
-            />
-            <div className="flex items-center">
-              <div className="flex items-center">
-                <DeleteQuery
-                  deleteDialogOpen={deleteDialogOpen}
-                  setDeleteDialogOpen={setDeleteDialogOpen}
-                  selectedQueries={selectedQueries}
-                  type="icon"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {savedQueries?.length !== 0 && (
-              <Button
-                disabled={isCreating}
-                onClick={() => setIsCreating(true)}>
-                <span>New Query</span>
-                <Plus />
-              </Button>
-            )}
-            <Button asChild variant="outline">
-              <NavLink to="/labels">
-                <Tag />
-                <span>Labels</span>
-                <Badge variant="secondary">
-                  {savedLabels?.length}
-                </Badge>
-              </NavLink>
-            </Button>
-          </div>
-        </div>
-
         <LayoutGroup>
           <AnimatePresence mode="popLayout" initial={false}>
             {isCreating && (

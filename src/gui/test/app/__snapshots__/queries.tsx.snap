@@ -2,49 +2,8 @@
 
 exports[`queries view > queries render default 1`] = `
 
-<section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px] px-8">
+<section class="flex h-full w-full flex-col px-8">
   <div class="flex w-full max-w-8xl flex-col">
-    <div class="mb-4 flex justify-between pt-1">
-      <div class="flex gap-2">
-        <gui-filter-search
-          placeholder="Filter Queries"
-          items
-        >
-        </gui-filter-search>
-        <gui-sort-toggle
-          filtereditems
-          sortkey="name"
-        >
-        </gui-sort-toggle>
-        <div class="flex items-center">
-          <div class="flex items-center">
-            <gui-delete-query
-              deletedialogopen="false"
-              selectedqueries
-              type="icon"
-            >
-            </gui-delete-query>
-          </div>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <gui-button
-          aschild="true"
-          variant="outline"
-        >
-          <gui-nav-link to="/labels">
-            <gui-tag-icon>
-            </gui-tag-icon>
-            <span>
-              Labels
-            </span>
-            <gui-badge variant="secondary">
-              3
-            </gui-badge>
-          </gui-nav-link>
-        </gui-button>
-      </div>
-    </div>
     <div class="mt-6">
       <div class="mt-3 flex h-full flex-col gap-3">
       </div>
