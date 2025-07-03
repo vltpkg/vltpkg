@@ -51,10 +51,10 @@ const DeleteLabel = ({
         <Dialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}>
-          <Tooltip
-            open={isTooltipOpen}
-            onOpenChange={setIsTooltipOpen}>
-            <TooltipProvider>
+          <TooltipProvider>
+            <Tooltip
+              open={isTooltipOpen}
+              onOpenChange={setIsTooltipOpen}>
               <DialogTrigger asChild>
                 <Button
                   onMouseEnter={() => setIsTooltipOpen(true)}
@@ -70,8 +70,8 @@ const DeleteLabel = ({
                 Delete{' '}
                 {selectedLabels.length <= 1 ? 'Label' : 'Labels'}
               </TooltipContent>
-            </TooltipProvider>
-          </Tooltip>
+            </Tooltip>
+          </TooltipProvider>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-medium">
