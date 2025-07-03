@@ -8,7 +8,7 @@ vi.mock('react-router', () => ({
   Outlet: 'gui-router-outlet',
 }))
 
-vi.mock('@/components/navigation/header.tsx', () => ({
+vi.mock('@/components/navigation/header/index.tsx', () => ({
   Header: 'gui-nav-header',
 }))
 vi.mock('@/components/navigation/sidebar/index.tsx', () => ({
