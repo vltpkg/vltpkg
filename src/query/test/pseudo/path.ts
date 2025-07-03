@@ -165,7 +165,202 @@ t.test('createPathMatcher function', async t => {
 
 t.test(':path selector', async t => {
   // Import the real module for the path selector tests
-  const { path } = await import('../../src/pseudo/path.ts')
+  const { path, normalizePath, createPathMatcher } = await import(
+    '../../src/pseudo/path.ts'
+  )
+
+  await t.test('normalizePath function', async t => {
+    await t.test('trims whitespace', async t => {
+      t.equal(
+        normalizePath('  packages/a  '),
+        'packages/a',
+        'should trim leading and trailing whitespace',
+      )
+      t.equal(
+        normalizePath('\tpackages/b\n'),
+        'packages/b',
+        'should trim tabs and newlines',
+      )
+      t.equal(
+        normalizePath(' ./packages/c '),
+        'packages/c',
+        'should trim whitespace and remove ./ prefix',
+      )
+    })
+
+    await t.test('removes leading ./ prefix', async t => {
+      t.equal(
+        normalizePath('./packages/a'),
+        'packages/a',
+        'should remove ./ prefix',
+      )
+      t.equal(
+        normalizePath('./x'),
+        'x',
+        'should remove ./ prefix from simple paths',
+      )
+      t.equal(
+        normalizePath('./packages/nested/deep'),
+        'packages/nested/deep',
+        'should remove ./ prefix from nested paths',
+      )
+    })
+
+    await t.test('handles root path normalization', async t => {
+      t.equal(
+        normalizePath('.'),
+        '',
+        'should normalize . to empty string',
+      )
+      t.equal(
+        normalizePath(' . '),
+        '',
+        'should normalize trimmed . to empty string',
+      )
+    })
+
+    await t.test('preserves other dot patterns', async t => {
+      t.equal(
+        normalizePath('.config'),
+        '.config',
+        'should preserve .config paths',
+      )
+      t.equal(
+        normalizePath('.github/workflows'),
+        '.github/workflows',
+        'should preserve .github paths',
+      )
+      t.equal(
+        normalizePath('packages/.hidden'),
+        'packages/.hidden',
+        'should preserve hidden files in subdirectories',
+      )
+    })
+
+    await t.test('handles edge cases', async t => {
+      t.equal(normalizePath(''), '', 'should handle empty string')
+      t.equal(
+        normalizePath('   '),
+        '',
+        'should handle whitespace-only string',
+      )
+      t.equal(
+        normalizePath('packages/a'),
+        'packages/a',
+        'should leave already normalized paths unchanged',
+      )
+    })
+  })
+
+  await t.test('createPathMatcher with normalization', async t => {
+    await t.test(
+      'pattern and path normalization matching',
+      async t => {
+        const matcher1 = createPathMatcher('packages/a')
+        t.ok(
+          matcher1('./packages/a'),
+          'location ./packages/a should match packages/a pattern',
+        )
+
+        const matcher2 = createPathMatcher('packages/*')
+        t.ok(
+          matcher2('./packages/a'),
+          'location ./packages/a should match packages/* pattern',
+        )
+
+        const matcher3 = createPathMatcher('./packages/a  ')
+        t.ok(
+          matcher3('packages/a'),
+          'location packages/a should match ./packages/a (with trailing spaces) pattern',
+        )
+
+        const matcher4 = createPathMatcher(' packages/* ')
+        t.ok(
+          matcher4('./packages/b'),
+          'location ./packages/b should match trimmed packages/* pattern',
+        )
+      },
+    )
+
+    await t.test('glob patterns with normalization', async t => {
+      const matcher1 = createPathMatcher('./packages/**')
+      t.ok(
+        matcher1('packages/a/nested'),
+        'should match nested paths after normalization',
+      )
+
+      const matcher2 = createPathMatcher('  **/a/*  ')
+      t.ok(
+        matcher2('./some/path/a/file'),
+        'should match double glob patterns after normalization',
+      )
+    })
+  })
+
+  await t.test('path normalization integration tests', async t => {
+    // Create a custom graph with nodes that have ./ prefixed locations
+    const createNormalizedTestGraph = () => {
+      const graph = getPathBasedGraph()
+
+      // Modify some node locations to have ./ prefixes for testing
+      const nodes = Array.from(graph.nodes.values())
+      const nodeA = nodes.find(n => n.name === 'a')
+      const nodeX = nodes.find(n => n.name === 'x')
+
+      if (nodeA) {
+        nodeA.location = './packages/a' // Add ./ prefix
+      }
+      if (nodeX) {
+        nodeX.location = './x' // Add ./ prefix
+      }
+
+      return graph
+    }
+
+    await t.test(
+      'matches ./prefixed locations with normalized patterns',
+      async t => {
+        const graph = createNormalizedTestGraph()
+        const res = await path(getState(':path("packages/a")', graph))
+        t.strictSame(
+          [...res.partial.nodes].map(n => n.name),
+          ['a'],
+          'location ./packages/a should match packages/a pattern',
+        )
+      },
+    )
+
+    await t.test(
+      'matches ./prefixed locations with glob patterns',
+      async t => {
+        const graph = createNormalizedTestGraph()
+        const res = await path(getState(':path("packages/*")', graph))
+        const nodeNames = [...res.partial.nodes]
+          .map(n => n.name)
+          .sort()
+        t.ok(
+          nodeNames.includes('a'),
+          'location ./packages/a should match packages/* pattern',
+        )
+        t.ok(
+          nodeNames.includes('b'),
+          'location packages/b should also match packages/* pattern',
+        )
+      },
+    )
+
+    await t.test(
+      'matches regular locations with ./prefixed patterns',
+      async t => {
+        const res = await path(getState(':path("./packages/a  ")'))
+        t.strictSame(
+          [...res.partial.nodes].map(n => n.name),
+          ['a'],
+          'location packages/a should match ./packages/a (with trailing spaces) pattern',
+        )
+      },
+    )
+  })
 
   await t.test('matches all workspace and file nodes', async t => {
     const res = await path(getState(':path("*")'))

@@ -16,20 +16,44 @@ import {
 import type { ParserState } from '../types.ts'
 
 /**
+ * Normalizes a path by trimming whitespace and removing leading './' or '.' prefix.
+ * This ensures consistent path comparison regardless of how paths are specified.
+ */
+export function normalizePath(path: string): string {
+  const trimmed = path.trim()
+
+  // Handle root path case - normalize '.' to empty string for consistency
+  if (trimmed === '.') {
+    return ''
+  }
+
+  // Remove leading './' prefix
+  if (trimmed.startsWith('./')) {
+    return trimmed.slice(2)
+  }
+
+  return trimmed
+}
+
+/**
  * Creates a path matcher function that tests if
  * a given path matches a glob pattern.
  */
 export function createPathMatcher(pattern: string, loose = false) {
-  const isRoot = pattern === '.'
+  const normalizedPattern = normalizePath(pattern)
+  const isRoot = normalizedPattern === '' || pattern.trim() === '.'
+
   return (path: string) => {
+    const normalizedPath = normalizePath(path)
+
     if (isRoot) {
-      return path === '.' || path === ''
+      return normalizedPath === '' || normalizedPath === '.'
     }
     try {
-      return minimatch(path, pattern, {
+      return minimatch(normalizedPath, normalizedPattern, {
         dot: true,
         nocase: false,
-        matchBase: pattern === '*',
+        matchBase: normalizedPattern === '*',
       })
     } catch (err) {
       // In loose mode, return false for invalid patterns
