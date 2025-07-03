@@ -2,6 +2,9 @@ import { Results } from '@/components/explorer-grid/results/index.tsx'
 import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import { Spec } from '@vltpkg/spec/browser'
+import { stringifyNode } from '@vltpkg/graph/browser'
+import { getBreadcrumbs } from '@/components/navigation/crumb-nav.tsx'
+
 import type {
   QueryResponseEdge,
   QueryResponseNode,
@@ -10,8 +13,8 @@ import type {
   EdgeLoose,
   GridItemData,
 } from '@/components/explorer-grid/types.ts'
+import type { State } from '@/state/types.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import { stringifyNode } from '@vltpkg/graph/browser'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -20,6 +23,7 @@ export type ExplorerOptions = {
 const getItemsData = (
   edges: QueryResponseEdge[],
   nodes: QueryResponseNode[],
+  query: State['query'],
 ) => {
   const items: GridItemData[] = []
   const seenEdges = new Map<DepID, Set<EdgeLoose>>()
@@ -127,6 +131,7 @@ const getItemsData = (
   if (item && items.length === 1) {
     item.title = item.to?.name || 'Missing package'
     item.version = item.to?.version ? `v${item.to.version}` : ''
+    item.breadcrumbs = getBreadcrumbs(query)
   }
 
   return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
@@ -135,7 +140,8 @@ const getItemsData = (
 export const ExplorerGrid = () => {
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
-  const items = getItemsData(edges, nodes)
+  const query = useGraphStore(state => state.query)
+  const items = getItemsData(edges, nodes, query)
   return (
     <div className="h-full w-full grow px-8 pb-8">
       {items.length === 1 && items[0] ?

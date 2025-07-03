@@ -3,7 +3,6 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   specOptions,
@@ -13,6 +12,7 @@ import {
   SELECTED_ITEM_DEFAULT_GIT_HOST,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 
@@ -88,6 +88,10 @@ vi.mock('@/components/ui/data-badge.tsx', () => ({
 
 vi.mock('@/components/ui/progress-circle.tsx', () => ({
   ProgressCircle: 'gui-progress-circle',
+}))
+
+vi.mock('@/components/navigation/crumb-nav.tsx', () => ({
+  CrumbNav: 'gui-crumb-nav',
 }))
 
 expect.addSnapshotSerializer({

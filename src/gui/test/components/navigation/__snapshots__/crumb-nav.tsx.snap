@@ -1,0 +1,529 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :root
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #a
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #b
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #c
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #d
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicked 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :root
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #a
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #b
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #c
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #d
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #e
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #f
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #g
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #h
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #i
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders breadcrumb with semver selector 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #express
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :project
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #express
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #lodash
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #underscore
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders multiple breadcrumb items with separators 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :root
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #express
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #lodash
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders single breadcrumb item 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #express
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 items 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :root
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button
+    class="inline-flex items-center justify-center rounded px-1 py-0.5 text-muted-foreground opacity-75 transition-opacity hover:opacity-100 hover:bg-muted/50"
+    aria-label="Show hidden breadcrumbs"
+  >
+    <gui-ellipsis-icon size="14">
+    </gui-ellipsis-icon>
+  </button>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #g
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #h
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #i
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders with custom className 1`] = `
+
+<nav class="flex flex-row items-center gap-1 custom-nav-class">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #express
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #lodash
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :workspace
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #utils
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
+
+exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
+
+<nav class="flex flex-row items-center gap-1">
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="pseudo"
+    >
+      :root
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button
+    class="inline-flex items-center justify-center rounded px-1 py-0.5 text-muted-foreground opacity-75 transition-opacity hover:opacity-100 hover:bg-muted/50"
+    aria-label="Show hidden breadcrumbs"
+  >
+    <gui-ellipsis-icon size="14">
+    </gui-ellipsis-icon>
+  </button>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #g
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      variant="id"
+    >
+      #h
+    </gui-query-token>
+  </button>
+  <gui-chevron-right-icon
+    size="14"
+    strokewidth="2"
+    classname="text-muted-foreground opacity-75"
+  >
+  </gui-chevron-right-icon>
+  <button class="inline-flex">
+    <gui-query-token
+      classname="px-1.5"
+      variant="id"
+    >
+      #i
+    </gui-query-token>
+  </button>
+</nav>
+
+`;
