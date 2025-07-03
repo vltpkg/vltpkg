@@ -185,7 +185,7 @@ const spawnCommand = async (
 
       // Get the directory containing the node binary to ensure it's always available
       const nodeBinDir = dirname(realpathSync(whichSync('node')))
-      
+
       const spawnEnv = {
         ...variant.env,
         ...env,
@@ -201,7 +201,8 @@ const spawnCommand = async (
         XDG_STATE_HOME: dirs.state,
         XDG_RUNTIME_DIR: dirs.runtime,
         // PATH includes what the variant needs plus node binary directory
-        PATH: variant.PATH ? `${variant.PATH}:${nodeBinDir}` : nodeBinDir,
+        PATH:
+          variant.PATH ? `${variant.PATH}:${nodeBinDir}` : nodeBinDir,
       }
 
       if (tty) {
