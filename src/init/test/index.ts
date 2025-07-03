@@ -40,14 +40,94 @@ t.test('init', async t => {
 t.test('init existing', async t => {
   const dir = t.testdir({
     'my-project': {
-      'package.json': JSON.stringify({ name: 'my-project' }),
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '2.0.0',
+        description: 'existing description',
+        private: true,
+      }),
     },
   })
   const logs: unknown[][] = []
   const logger = (...a: unknown[]) => logs.push(a)
 
-  await init({ cwd: resolve(dir, 'my-project'), logger })
+  const result = await init({
+    cwd: resolve(dir, 'my-project'),
+    logger,
+  })
   t.strictSame(logs, [['package.json already exists']])
+
+  // Should return the merged manifest
+  t.ok(result.manifest, 'should return manifest info')
+
+  // Should preserve existing properties
+  t.equal(
+    result.manifest?.data.name,
+    'my-project',
+    'should preserve existing name',
+  )
+  t.equal(
+    result.manifest?.data.version,
+    '2.0.0',
+    'should preserve existing version',
+  )
+  t.equal(
+    result.manifest?.data.description,
+    'existing description',
+    'should preserve existing description',
+  )
+  t.equal(
+    result.manifest?.data.private,
+    true,
+    'should preserve existing private flag',
+  )
+
+  // Should add missing template properties
+  t.equal(
+    result.manifest?.data.main,
+    'index.js',
+    'should add missing main',
+  )
+  t.equal(
+    result.manifest?.data.author,
+    'User <foo@bar.ca>',
+    'should add missing author',
+  )
+
+  // Verify the file was actually updated
+  const fileContent = JSON.parse(
+    readFileSync(resolve(dir, 'my-project', 'package.json'), 'utf8'),
+  )
+  t.equal(
+    fileContent.name,
+    'my-project',
+    'file should preserve existing name',
+  )
+  t.equal(
+    fileContent.version,
+    '2.0.0',
+    'file should preserve existing version',
+  )
+  t.equal(
+    fileContent.description,
+    'existing description',
+    'file should preserve existing description',
+  )
+  t.equal(
+    fileContent.private,
+    true,
+    'file should preserve existing private flag',
+  )
+  t.equal(
+    fileContent.main,
+    'index.js',
+    'file should add missing main',
+  )
+  t.equal(
+    fileContent.author,
+    'User <foo@bar.ca>',
+    'file should add missing author',
+  )
 })
 
 t.test('unknown error reading package.json file', async t => {
@@ -132,5 +212,64 @@ t.test('init with author info', async t => {
   t.matchSnapshot(
     readFileSync(resolve(dir, 'my-project', 'package.json'), 'utf8'),
     'should init a new package.json file with author info',
+  )
+})
+
+t.test('init existing partial package.json', async t => {
+  const dir = t.testdir({
+    'my-project': {
+      'package.json': JSON.stringify({
+        name: 'existing-name',
+        scripts: { test: 'echo test' },
+        dependencies: { lodash: '^4.0.0' },
+      }),
+    },
+  })
+  const logs: unknown[][] = []
+  const logger = (...a: unknown[]) => logs.push(a)
+
+  const result = await init({
+    cwd: resolve(dir, 'my-project'),
+    logger,
+  })
+  t.strictSame(logs, [['package.json already exists']])
+
+  // Should preserve all existing properties
+  t.equal(
+    result.manifest?.data.name,
+    'existing-name',
+    'should preserve existing name',
+  )
+  t.same(
+    result.manifest?.data.scripts,
+    { test: 'echo test' },
+    'should preserve existing scripts',
+  )
+  t.same(
+    result.manifest?.data.dependencies,
+    { lodash: '^4.0.0' },
+    'should preserve existing dependencies',
+  )
+
+  // Should add missing properties from template
+  t.equal(
+    result.manifest?.data.version,
+    '1.0.0',
+    'should add missing version from template',
+  )
+  t.equal(
+    result.manifest?.data.description,
+    '',
+    'should add missing description from template',
+  )
+  t.equal(
+    result.manifest?.data.main,
+    'index.js',
+    'should add missing main from template',
+  )
+  t.equal(
+    result.manifest?.data.author,
+    'User <foo@bar.ca>',
+    'should add missing author from template',
   )
 })
