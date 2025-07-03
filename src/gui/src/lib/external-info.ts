@@ -284,7 +284,9 @@ export async function* fetchDetails(
             avatar,
           }
         } else {
-          const emailMatch = EMAIL_PATTERN.exec(contributor.email || '')
+          const emailMatch = EMAIL_PATTERN.exec(
+            contributor.email || '',
+          )
           const nameMatch = NAME_PATTERN.exec(contributor.name || '')
           const avatar = await retrieveAvatar(emailMatch?.[1] || '')
           return {
