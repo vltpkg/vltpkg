@@ -142,9 +142,12 @@ export const command: CommandFn<CommandResult> = async conf => {
         method: 'PUT',
         headers: {
           'content-type': 'application/json',
+          // These control what type of OTP auth flow is used
+          'npm-auth-type': 'web',
+          'npm-command': 'publish',
         },
         body: JSON.stringify(publishMetadata),
-        otp, // TODO: support interactive OTP input
+        otp,
       })
     } catch (err) {
       throw error('Failed to publish package', {

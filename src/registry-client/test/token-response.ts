@@ -1,12 +1,12 @@
 import t from 'tap'
-import { isTokenResponse } from '../src/token-response.ts'
+import { getTokenResponse } from '../src/token-response.ts'
 
-t.equal(isTokenResponse({ token: 'hello' }), true)
+t.strictSame(getTokenResponse({ token: 'hello' }), { token: 'hello' })
 
-t.equal(isTokenResponse({ token: '' }), false)
-t.equal(isTokenResponse('nope'), false)
-t.equal(isTokenResponse({}), false)
-t.equal(isTokenResponse(1234), false)
-t.equal(isTokenResponse(null), false)
-t.equal(isTokenResponse(false), false)
-t.equal(isTokenResponse(true), false)
+t.equal(getTokenResponse({ token: '' }), undefined)
+t.equal(getTokenResponse('nope'), undefined)
+t.equal(getTokenResponse({}), undefined)
+t.equal(getTokenResponse(1234), undefined)
+t.equal(getTokenResponse(null), undefined)
+t.equal(getTokenResponse(false), undefined)
+t.equal(getTokenResponse(true), undefined)
