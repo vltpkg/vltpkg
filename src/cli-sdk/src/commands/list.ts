@@ -16,6 +16,7 @@ import LZString from 'lz-string'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import type { DepID } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
@@ -26,15 +27,12 @@ export const usage: CommandUsage = () =>
     command: 'ls',
     usage: [
       '',
-      '[query | specs] [--view=human | json | mermaid | gui]',
+      '[package-names...] [--view=human | json | mermaid | gui]',
     ],
-    description: `List installed dependencies matching given package names or resulting
-      packages from matching a given Dependency Selector Syntax query if one
-      is provided.
+    description: `List installed dependencies matching given package names.
 
-      The vlt Dependency Selector Syntax is a CSS-like query language that
-      allows you to filter installed dependencies using a variety of metadata
-      in the form of CSS-like attributes, pseudo selectors & combinators.
+      Package names provided as positional arguments will be used to filter
+      the results to show only dependencies with those names.
 
       Defaults to listing direct dependencies of a project and any configured
       workspace.`,
@@ -43,19 +41,8 @@ export const usage: CommandUsage = () =>
         description:
           'List direct dependencies of the current project / workspace',
       },
-      '"*"': {
-        description:
-          'List all dependencies for the current project / workspace',
-      },
       'foo bar baz': {
         description: `List all dependencies named 'foo', 'bar', or 'baz'`,
-      },
-      [`'[name="@scoped/package"] > *'`]: {
-        description:
-          'Lists direct dependencies of a specific package',
-      },
-      [`'*:workspace > *:peer'`]: {
-        description: 'List all peer dependencies of all workspaces',
       },
     },
     options: {
@@ -97,8 +84,21 @@ export const command: CommandFn<ListResult> = async conf => {
     loadManifests: true,
   })
 
+  // Validate positional arguments - only allow package names, not direct queries
+  for (const arg of conf.positionals) {
+    if (!/^[@\w-]/.test(arg)) {
+      throw error(
+        `Direct queries are not supported as positional arguments. Use package names only.`,
+        {
+          code: 'EUSAGE',
+          cause: `Argument '${arg}' appears to be a query syntax. Only package names are allowed as positional arguments.`,
+        },
+      )
+    }
+  }
+
   const queryString = conf.positionals
-    .map(k => (/^[@\w-]/.test(k) ? `#${k.replace(/\//, '\\/')}` : k))
+    .map(k => `#${k.replace(/\//, '\\/')}`)
     .join(', ')
   const securityArchive =
     Query.hasSecuritySelectors(queryString) ?
