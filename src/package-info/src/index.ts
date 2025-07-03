@@ -17,6 +17,7 @@ import {
   asPackument,
   isIntegrity,
   normalizeManifest,
+  normalizeFunding,
 } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -438,8 +439,15 @@ export class PackageInfoClient {
           }
         }
 
-        // Normalize funding information to standard format while preserving the original
-        return normalizeManifest(mani)
+        // Contributors are already normalized when it comes from packument,
+        // but we still need to normalize funding
+        return {
+          ...mani,
+          funding:
+            mani.funding ?
+              normalizeFunding(mani.funding)
+            : mani.funding,
+        }
       }
 
       case 'git': {
@@ -591,7 +599,20 @@ export class PackageInfoClient {
             },
           )
         }
-        return response.json() as Packument
+        const packument = response.json() as Packument
+        // Normalize all manifests in the packument
+        const normalizedVersions = Object.fromEntries(
+          Object.entries(packument.versions).map(
+            ([version, manifest]) => [
+              version,
+              normalizeManifest(manifest),
+            ],
+          ),
+        )
+        return {
+          ...packument,
+          versions: normalizedVersions,
+        }
       }
     }
   }

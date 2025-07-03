@@ -2,6 +2,7 @@ import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import type { Manifest } from '@vltpkg/types'
+import { normalizeManifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
@@ -241,7 +242,20 @@ t.test('create git repo', { bail: true }, async () => {
 })
 
 t.test('packument', async t => {
-  t.strictSame(await packument('abbrev', options), pakuAbbrev)
+  const result = await packument('abbrev', options)
+  // Normalize the expected fixture data to match our new behavior
+  const expectedPakuAbbrev = {
+    ...pakuAbbrev,
+    versions: Object.fromEntries(
+      Object.entries(pakuAbbrev.versions).map(
+        ([version, manifest]) => [
+          version,
+          normalizeManifest(manifest as Manifest),
+        ],
+      ),
+    ),
+  }
+  t.strictSame(result, expectedPakuAbbrev)
 
   t.matchSnapshot(
     await packument(
@@ -416,7 +430,7 @@ t.test('packument', async t => {
 t.test('manifest', async t => {
   t.strictSame(
     await manifest('abbrev@2', options),
-    pakuAbbrev.versions['2.0.0'],
+    normalizeManifest(pakuAbbrev.versions['2.0.0'] as Manifest),
   )
 
   t.matchSnapshot(
