@@ -2,7 +2,7 @@
 
 exports[`help selectors view > help selectors render default 1`] = `
 
-<section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px]">
+<section class="flex h-full w-full flex-col">
   <div class="flex max-w-8xl flex-col pt-8">
     <div class="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
       <gui-react-markdown components="[object Object]">
