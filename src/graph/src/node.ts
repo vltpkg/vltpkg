@@ -13,6 +13,7 @@ import type {
   Manifest,
   DependencyTypeShort,
 } from '@vltpkg/types'
+import { normalizeManifest } from '@vltpkg/types'
 import { Edge } from './edge.ts'
 import type { GraphLike, NodeLike } from './types.ts'
 import { stringifyNode } from './stringify-node.ts'
@@ -242,7 +243,7 @@ export class Node implements NodeLike {
       this.id = getId(spec, manifest)
     }
     this.graph = options.graph
-    this.manifest = manifest
+    this.manifest = manifest ? normalizeManifest(manifest) : manifest
 
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version

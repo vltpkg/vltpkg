@@ -137,6 +137,86 @@ export const normalizeFunding = (
   return sources
 }
 
+/* Parse a string or object into a normalized contributor */
+export const parsePerson = (
+  author: unknown,
+  writeAccess?: boolean,
+  isPublisher?: boolean,
+): NormalizedContributor | undefined => {
+  if (typeof author === 'string') {
+    const NAME_PATTERN = /^([^(<]+)/
+    const EMAIL_PATTERN = /<([^<>]+)>/
+    const name = NAME_PATTERN.exec(author)?.[0].trim() || ''
+    const email = EMAIL_PATTERN.exec(author)?.[1] || ''
+    if (!name && !email) return undefined
+    return {
+      name: name || undefined,
+      email: email || undefined,
+      writeAccess: writeAccess ?? false,
+      isPublisher: isPublisher ?? false,
+    }
+  } else if (isObject(author)) {
+    const name =
+      typeof author.name === 'string' ? author.name : undefined
+    const email =
+      typeof author.email === 'string' ? author.email
+      : typeof author.mail === 'string' ? author.mail
+      : undefined
+
+    if (!name && !email) return undefined
+
+    return {
+      name,
+      email,
+      writeAccess: writeAccess ?? false,
+      isPublisher: isPublisher ?? false,
+    }
+  }
+  return undefined
+}
+
+/* Normalized Contributor values */
+export type NormalizedContributor = {
+  email?: string
+  name?: string
+  writeAccess?: boolean
+  isPublisher?: boolean
+}
+
+/* Normalize Contributors values */
+export const normalizeContributors = (
+  contributors: unknown,
+  maintainers: unknown,
+): NormalizedContributor[] | undefined => {
+  if (!contributors && !maintainers) {
+    return undefined
+  }
+
+  const result: NormalizedContributor[] = []
+
+  // Parse regular contributors (if any)
+  if (contributors) {
+    const contributorsArray: unknown[] =
+      Array.isArray(contributors) ? contributors : [contributors]
+    const parsedContributors = contributorsArray
+      .map(person => parsePerson(person))
+      .filter((c): c is NormalizedContributor => c !== undefined)
+    result.push(...parsedContributors)
+  }
+
+  // Parse maintainers with special flags
+  if (maintainers) {
+    const maintainersArray: unknown[] =
+      Array.isArray(maintainers) ? maintainers : [maintainers]
+    const parsedMaintainers = maintainersArray
+      .map(person => parsePerson(person, true, true))
+      .filter((c): c is NormalizedContributor => c !== undefined)
+    result.push(...parsedMaintainers)
+  }
+
+  return result
+}
+
 export type Person =
   | string
   | {
@@ -227,7 +307,7 @@ export type Manifest = {
   /** the author of a package */
   author?: Person
   /** contributors to the package */
-  contributors?: Person[]
+  contributors?: NormalizedContributor[]
   /** the license of the package */
   license?: string
 }
@@ -455,13 +535,48 @@ export const asManifest = (
  * Returns a {@link Manifest} with normalized data.
  */
 export const normalizeManifest = (manifest: Manifest): Manifest => {
-  if (manifest.funding === undefined) {
+  // Check if we have a manifest with maintainers field (from raw data)
+  const manifestWithMaintainers = manifest as Manifest & {
+    maintainers?: unknown
+  }
+
+  if (
+    manifest.funding === undefined &&
+    manifest.contributors === undefined &&
+    !manifestWithMaintainers.maintainers
+  ) {
     return manifest
   }
 
   const normalizedFunding = normalizeFunding(manifest.funding)
+  const normalizedContributors = normalizeContributors(
+    manifest.contributors,
+    manifestWithMaintainers.maintainers,
+  )
 
-  return { ...manifest, funding: normalizedFunding as Funding }
+  // Create result with normalized data
+  const result: Manifest = {
+    ...manifest,
+    funding: normalizedFunding as Funding,
+    contributors: normalizedContributors,
+  }
+
+  // Remove maintainers field if it exists in the raw manifest
+  if (
+    'maintainers' in manifestWithMaintainers &&
+    manifestWithMaintainers.maintainers
+  ) {
+    // Return a new manifest without the maintainers field
+    const resultWithoutMaintainers: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(result)) {
+      if (key !== 'maintainers') {
+        resultWithoutMaintainers[key] = value
+      }
+    }
+    return resultWithoutMaintainers as Manifest
+  }
+
+  return result
 }
 
 export const asManifestRegistry = (
@@ -475,7 +590,7 @@ export const asManifestRegistry = (
       from ?? asManifestRegistry,
     )
   }
-  return m
+  return normalizeManifest(m) as ManifestRegistry
 }
 
 export const assertManifest: (
