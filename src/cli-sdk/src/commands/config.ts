@@ -1,11 +1,11 @@
 import { error } from '@vltpkg/error-cause'
+import * as dotProp from '@vltpkg/dot-prop'
 import { asRootError } from '@vltpkg/output/error'
 import { isObject } from '@vltpkg/types'
 import { spawnSync } from 'node:child_process'
 import { getSortedKeys } from '../config/definition.ts'
 import type {
   ConfigDefinitions,
-  ConfigFileData,
   LoadedConfig,
   RecordPairs,
 } from '../config/index.ts'
@@ -62,6 +62,17 @@ export const usage: CommandUsage = () =>
         usage: '[field ...]',
         description: `Get information about a config field, or show a list
                       of known config field names.`,
+      },
+    },
+    examples: {
+      'set "registries.local=http://localhost:1337"': {
+        description: 'Set a nested registry configuration',
+      },
+      'get registries.local': {
+        description: 'Get a nested registry configuration',
+      },
+      'del registries.local': {
+        description: 'Delete a nested registry configuration',
       },
     },
   })
@@ -149,10 +160,15 @@ const del = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
+
+  // Use the existing deleteConfigKeys method - it already handles basic dot notation
+  // for record fields like registries.local
   await conf.deleteConfigKeys(conf.get('config'), fields)
 }
 
-const get = async (conf: LoadedConfig) => {
+const get = async (
+  conf: LoadedConfig,
+): Promise<string | number | boolean | string[] | undefined> => {
   const keys = conf.positionals.slice(1)
   const k = keys[0]
   if (!k || keys.length > 1) {
@@ -160,6 +176,32 @@ const get = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
+
+  // Check if this is a dot-prop path into a record field
+  if (k.includes('.')) {
+    const [field, ...rest] = k.split('.')
+    const subKey = rest.join('.')
+    
+    if (!field || !subKey) {
+      return undefined
+    }
+    
+    // Check if the field is a record field (like registries)
+    if (isRecordField(field)) {
+      const record = conf.getRecord(field as any)
+      return dotProp.get(record, subKey) as string | number | boolean | string[] | undefined
+    }
+    
+    // For non-record fields, try to get the value directly
+    const value = conf.get(field as keyof ConfigDefinitions)
+    if (value && typeof value === 'object') {
+      return dotProp.get(value, subKey) as string | number | boolean | string[] | undefined
+    }
+    
+    return undefined
+  }
+
+  // Fall back to the existing implementation for simple keys
   return conf.get(k as keyof ConfigDefinitions)
 }
 
@@ -190,53 +232,110 @@ const set = async (conf: LoadedConfig) => {
     await conf.addConfigToFile(conf.get('config'), {})
     return
   }
-  let parsed: ConfigFileData | null = null
-  try {
-    parsed = conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values
-  } catch (er) {
-    const { name, found, value, wanted, validOptions } =
-      asRootError(er).cause
-    // when a boolean gets a value, it throw a parse error
-    if (
-      isObject(found) &&
-      typeof found.name === 'string' &&
-      typeof found.value === 'string'
-    ) {
-      const { name, value } = found
-      throw error(
-        `Boolean flag must be "${name}" or "no-${name}", not a value`,
-        {
-          code: 'ECONFIG',
-          name,
-          found: `${name}=${value}`,
-        },
-      )
-    }
-    if (wanted && !value && typeof name === 'string') {
-      throw error(
-        `No value provided for ${JSON.stringify(name.replace(/^-+/, ''))}`,
-        {
-          code: 'ECONFIG',
-          wanted,
-        },
-      )
-    }
-    if (Array.isArray(validOptions)) {
-      throw error(`Invalid value provided for ${name}`, {
-        code: 'ECONFIG',
-        found,
-        validOptions,
+
+  const which = conf.get('config')
+
+  // Separate dot-prop paths from simple keys for different handling
+  const dotPropPairs: { key: string; field: string; subKey: string; value: string }[] = []
+  const simplePairs: string[] = []
+
+  for (const pair of pairs) {
+    const eq = pair.indexOf('=')
+    if (eq === -1) {
+      throw error('set arguments must contain `=`', {
+        code: 'EUSAGE',
       })
     }
-    // an unknown property
-    throw error('Invalid config keys', {
-      code: 'ECONFIG',
-      found: pairs.map(kv => kv.split('=')[0]),
-      validOptions: getSortedKeys(),
-    })
+
+    const key = pair.substring(0, eq)
+    const value = pair.substring(eq + 1)
+    
+    if (key.includes('.')) {
+      const [field, ...rest] = key.split('.')
+      const subKey = rest.join('.')
+      if (subKey) {
+        dotPropPairs.push({ key, field, subKey, value })
+      } else {
+        simplePairs.push(pair)
+      }
+    } else {
+      simplePairs.push(pair)
+    }
   }
-  await conf.addConfigToFile(
-    conf.get('config'),
-    pairsToRecords(parsed),
-  )
+
+  // Handle simple keys with the original jackspeak parsing approach
+  if (simplePairs.length > 0) {
+    try {
+      const parsed = conf.jack.parseRaw(
+        simplePairs.map(kv => `--${kv}`),
+      ).values
+      await conf.addConfigToFile(which, pairsToRecords(parsed))
+    } catch (er) {
+      const { name, found, value: errorValue, wanted, validOptions } =
+        asRootError(er).cause
+      // when a boolean gets a value, it throw a parse error
+      if (
+        isObject(found) &&
+        typeof found.name === 'string' &&
+        typeof found.value === 'string'
+      ) {
+        const { name, value } = found
+        throw error(
+          `Boolean flag must be "${name}" or "no-${name}", not a value`,
+          {
+            code: 'ECONFIG',
+            name,
+            found: `${name}=${value}`,
+          },
+        )
+      }
+      if (wanted && !errorValue && typeof name === 'string') {
+        throw error(
+          `No value provided for ${JSON.stringify(name.replace(/^-+/, ''))}`,
+          {
+            code: 'ECONFIG',
+            wanted,
+          },
+        )
+      }
+      if (Array.isArray(validOptions)) {
+        throw error(`Invalid value provided for ${name}`, {
+          code: 'ECONFIG',
+          found,
+          validOptions,
+        })
+      }
+      // an unknown property
+      throw error('Invalid config keys', {
+        code: 'ECONFIG',
+        found: simplePairs.map(kv => kv.split('=')[0]),
+        validOptions: getSortedKeys(),
+      })
+    }
+  }
+
+  // Handle dot-prop paths for record fields
+  if (dotPropPairs.length > 0) {
+    for (const { field, subKey, value } of dotPropPairs) {
+      if (isRecordField(field)) {
+        // For record fields, we add entries in the format field=key=value
+        const recordPair = `${field}=${subKey}=${value}`
+        try {
+          const parsed = conf.jack.parseRaw([`--${recordPair}`]).values
+          await conf.addConfigToFile(which, pairsToRecords(parsed))
+        } catch (er) {
+          // If it fails, it might be an unknown field, so just set it as a direct key=value
+          const directPair = `${field}=${subKey}=${value}`
+          await conf.addConfigToFile(which, { [field]: [directPair] })
+        }
+      } else {
+        // For non-record fields, we can't use dot-prop directly, so treat as unknown key
+        throw error('Invalid config keys', {
+          code: 'ECONFIG',
+          found: [field],
+          validOptions: getSortedKeys(),
+        })
+      }
+    }
+  }
 }

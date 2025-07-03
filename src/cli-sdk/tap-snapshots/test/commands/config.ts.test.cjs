@@ -54,4 +54,18 @@ Work with vlt configuration
 
       ​vlt config help [field ...]
 
+  Examples
+
+    Set a nested registry configuration
+
+    ​vlt config set "registries.local=http://localhost:1337"
+
+    Get a nested registry configuration
+
+    ​vlt config get registries.local
+
+    Delete a nested registry configuration
+
+    ​vlt config del registries.local
+
 `
