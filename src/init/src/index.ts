@@ -61,7 +61,6 @@ export const init = async ({
     if (asError(err).message !== 'Could not read package.json file') {
       throw err
     }
-    // No existing package.json, will create new one
   }
 
   const name = basename(cwd)
