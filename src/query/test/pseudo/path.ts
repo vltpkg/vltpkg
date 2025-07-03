@@ -3,6 +3,8 @@ import { parse } from '@vltpkg/dss-parser'
 import {
   getPathBasedGraph,
   getSimpleGraph,
+  newGraph,
+  newNode,
 } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
 import type { SpecOptions } from '@vltpkg/spec/browser'
@@ -123,6 +125,28 @@ t.test('createPathMatcher function', async t => {
       matcher('other/c'),
       false,
       'should not match non-matching paths',
+    )
+  })
+
+  await t.test('normalizes paths before matching', async t => {
+    const matcher = createPathMatcher('packages/a')
+    t.equal(
+      matcher('./packages/a'),
+      true,
+      'should normalize and match "./packages/a"',
+    )
+    t.equal(matcher('packages/a'), true, 'should match "packages/a"')
+
+    const matcher2 = createPathMatcher('./packages/b')
+    t.equal(
+      matcher2('packages/b'),
+      true,
+      'should normalize pattern "./packages/b" to match "packages/b"',
+    )
+    t.equal(
+      matcher2('./packages/b'),
+      true,
+      'should match "./packages/b"',
     )
   })
 
@@ -491,4 +515,131 @@ t.test(':path selector', async t => {
       'node with non-matching path should be removed',
     )
   })
+
+  await t.test(
+    'path normalization - should match "./packages/a" with "packages/a"',
+    async t => {
+      // Create a custom graph with mixed path formats
+      const graph = newGraph('path-normalization-test')
+      const addNode = newNode(graph)
+
+      // Create a workspace node with './packages/a' location
+      const nodeA = addNode('a')
+      nodeA.id = joinDepIDTuple(['workspace', './packages/a'])
+      nodeA.location = './packages/a'
+      nodeA.importer = true
+      graph.nodes.set(nodeA.id, nodeA)
+      graph.importers.add(nodeA)
+
+      // Create a workspace node with 'packages/b' location
+      const nodeB = addNode('b')
+      nodeB.id = joinDepIDTuple(['workspace', 'packages/b'])
+      nodeB.location = 'packages/b'
+      nodeB.importer = true
+      graph.nodes.set(nodeB.id, nodeB)
+      graph.importers.add(nodeB)
+
+      // Test 1: node with './packages/a' location should match ':path("packages/a")'
+      const res1 = await path(getState(':path("packages/a")', graph))
+      const matchedNodes1 = [...res1.partial.nodes].map(n => n.name)
+      t.ok(
+        matchedNodes1.includes('a'),
+        'node with "./packages/a" location should match "packages/a" pattern',
+      )
+
+      // Test 2: node with 'packages/b' location should match ':path("./packages/b")'
+      const res2 = await path(
+        getState(':path("./packages/b")', graph),
+      )
+      const matchedNodes2 = [...res2.partial.nodes].map(n => n.name)
+      t.ok(
+        matchedNodes2.includes('b'),
+        'node with "packages/b" location should match "./packages/b" pattern',
+      )
+    },
+  )
+
+  await t.test(
+    'path normalization - comprehensive edge cases',
+    async t => {
+      // Create a custom graph with various path formats
+      const graph = newGraph('path-normalization-comprehensive')
+      const addNode = newNode(graph)
+
+      // Create nodes with various path formats
+      const nodeA = addNode('a')
+      nodeA.id = joinDepIDTuple(['workspace', './packages/a'])
+      nodeA.location = './packages/a'
+      nodeA.importer = true
+      graph.nodes.set(nodeA.id, nodeA)
+      graph.importers.add(nodeA)
+
+      const nodeB = addNode('b')
+      nodeB.id = joinDepIDTuple(['workspace', 'packages/b'])
+      nodeB.location = 'packages/b'
+      nodeB.importer = true
+      graph.nodes.set(nodeB.id, nodeB)
+      graph.importers.add(nodeB)
+
+      const nodeC = addNode('c')
+      nodeC.id = joinDepIDTuple(['file', './src/c'])
+      nodeC.location = './src/c'
+      graph.nodes.set(nodeC.id, nodeC)
+
+      const nodeD = addNode('d')
+      nodeD.id = joinDepIDTuple(['file', 'src/d'])
+      nodeD.location = 'src/d'
+      graph.nodes.set(nodeD.id, nodeD)
+
+      // Test glob patterns with normalization
+      const res1 = await path(getState(':path("packages/*")', graph))
+      const matchedNodes1 = [...res1.partial.nodes]
+        .map(n => n.name)
+        .sort()
+      t.same(
+        matchedNodes1,
+        ['a', 'b'],
+        'glob pattern should match both "./packages/a" and "packages/b"',
+      )
+
+      const res2 = await path(
+        getState(':path("./packages/*")', graph),
+      )
+      const matchedNodes2 = [...res2.partial.nodes]
+        .map(n => n.name)
+        .sort()
+      t.same(
+        matchedNodes2,
+        ['a', 'b'],
+        'glob pattern with "./" should match both "./packages/a" and "packages/b"',
+      )
+
+      const res3 = await path(getState(':path("src/*")', graph))
+      const matchedNodes3 = [...res3.partial.nodes]
+        .map(n => n.name)
+        .sort()
+      t.same(
+        matchedNodes3,
+        ['c', 'd'],
+        'glob pattern should match both "./src/c" and "src/d"',
+      )
+
+      // Test double glob patterns
+      const res4 = await path(getState(':path("**/a")', graph))
+      const matchedNodes4 = [...res4.partial.nodes].map(n => n.name)
+      t.same(
+        matchedNodes4,
+        ['a'],
+        'double glob should match "./packages/a"',
+      )
+
+      const res5 = await path(getState(':path("./**/d")', graph))
+      const matchedNodes5 = [...res5.partial.nodes].map(n => n.name)
+      t.same(
+        matchedNodes5,
+        ['d'],
+        'double glob with "./" should match "src/d"',
+      )
+    },
+  )
 })
