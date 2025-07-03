@@ -1,0 +1,66 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders Header for route / 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-6 bg-sidebar py-3 pl-5 pr-2">
+  <gui-vlt-icon size="24">
+  </gui-vlt-icon>
+  <div class="flex w-full">
+    <gui-dashboard-header>
+    </gui-dashboard-header>
+  </div>
+</div>
+
+`;
+
+exports[`renders Header for route /explore 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-6 bg-sidebar py-3 pl-5 pr-2">
+  <gui-vlt-icon size="24">
+  </gui-vlt-icon>
+  <div class="flex w-full">
+    <gui-explorer-header>
+    </gui-explorer-header>
+  </div>
+</div>
+
+`;
+
+exports[`renders Header for route /help 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-6 bg-sidebar py-3 pl-5 pr-2">
+  <gui-vlt-icon size="24">
+  </gui-vlt-icon>
+  <div class="flex w-full">
+    <gui-help-header>
+    </gui-help-header>
+  </div>
+</div>
+
+`;
+
+exports[`renders Header for route /labels 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-6 bg-sidebar py-3 pl-5 pr-2">
+  <gui-vlt-icon size="24">
+  </gui-vlt-icon>
+  <div class="flex w-full">
+    <gui-labels-header>
+    </gui-labels-header>
+  </div>
+</div>
+
+`;
+
+exports[`renders Header for route /queries 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-6 bg-sidebar py-3 pl-5 pr-2">
+  <gui-vlt-icon size="24">
+  </gui-vlt-icon>
+  <div class="flex w-full">
+    <gui-queries-header>
+    </gui-queries-header>
+  </div>
+</div>
+
+`;
