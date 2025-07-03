@@ -30,7 +30,7 @@ export const otplease = async (
 
   if (wwwAuth.has('otp')) {
     // do a web auth opener to get otp token
-    const challenge = await response.body.json()
+    const challenge = await response.body.json().catch(() => null)
     if (isWebAuthChallenge(challenge)) {
       return {
         ...options,

@@ -294,7 +294,14 @@ export class RegistryClient {
       const { key } = record
       await this.request(
         new URL(`-/npm/v1/tokens/token/${key}`, registry),
-        { useCache: false, method: 'DELETE' },
+        {
+          useCache: false,
+          method: 'DELETE',
+          headers: {
+            'npm-auth-type': 'web',
+            'npm-command': 'logout',
+          },
+        },
       )
     }
 
