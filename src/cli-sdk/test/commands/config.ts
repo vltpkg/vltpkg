@@ -184,11 +184,18 @@ t.test('edit', async t => {
 })
 
 t.test('set', async t => {
-  t.test('nothing to set', async t => {
-    await t.rejects(run(t, ['set'], {}), {
-      message: 'At least one key=value pair is required',
-    })
+  t.test('nothing to set - creates empty config file', async t => {
+    const { conf } = await run(t, ['set'], { config: 'project' })
+    t.strictSame(conf.addedConfig, ['project', {}])
   })
+
+  t.test(
+    'nothing to set - creates empty user config file',
+    async t => {
+      const { conf } = await run(t, ['set'], { config: 'user' })
+      t.strictSame(conf.addedConfig, ['user', {}])
+    },
+  )
   for (const which of ['user', 'project']) {
     t.test(which, async t => {
       const { conf } = await run(
