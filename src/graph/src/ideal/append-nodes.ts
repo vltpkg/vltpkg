@@ -103,6 +103,9 @@ export const appendNodes = async (
         'spec' in activeModifier.modifier
       ) {
         spec = activeModifier.modifier.spec
+        if (spec.bareSpec === '-') {
+          return
+        }
       }
 
       const existingNode = graph.findResolution(
