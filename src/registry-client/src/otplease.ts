@@ -4,10 +4,12 @@ import type {
   RegistryClient,
   RegistryClientRequestOptions,
 } from './index.ts'
-import { isWebAuthChallenge } from './web-auth-challenge.ts'
-
+import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { urlOpen } from '@vltpkg/url-open'
 import { createInterface } from 'node:readline/promises'
+
+// eslint-disable-next-line no-console
+const log = (msg: string) => console.error(msg)
 
 const otpChallengeNotice =
   /^Open ([^ ]+) to use your security key for authentication or enter OTP from your authenticator app/i
@@ -30,32 +32,32 @@ export const otplease = async (
 
   if (wwwAuth.has('otp')) {
     // do a web auth opener to get otp token
-    const challenge = await response.body.json()
-    if (isWebAuthChallenge(challenge)) {
+    const challenge = getWebAuthChallenge(await response.body.json())
+    if (challenge) {
       return {
         ...options,
         otp: (await client.webAuthOpener(challenge)).token,
       }
-    } else {
-      const { 'npm-notice': npmNotice } = response.headers
-      if (npmNotice) {
-        const n = String(npmNotice)
-        const match = otpChallengeNotice.exec(n) as
-          | null
-          | [string, string]
-        if (match) {
-          void urlOpen(match[1])
-          const otp = await createInterface({
-            input: process.stdin,
-            output: process.stdout,
-          }).question(n)
-          return { ...options, otp }
-        }
-      }
-      throw error('Unrecognized OTP authentication challenge', {
-        response,
-      })
     }
+
+    const { 'npm-notice': npmNotice } = response.headers
+    if (npmNotice) {
+      const notice = String(npmNotice)
+      const match = otpChallengeNotice.exec(notice)
+      if (match?.[1]) {
+        await urlOpen(match[1])
+        log(notice)
+        const otp = await createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        }).question('OTP: ')
+        return { ...options, otp }
+      }
+    }
+
+    throw error('Unrecognized OTP authentication challenge', {
+      response,
+    })
   }
 
   if (wwwAuth.size) {

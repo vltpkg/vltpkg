@@ -1,14 +1,23 @@
 export type WebAuthChallenge = {
   doneUrl: string
-  loginUrl: string
+  authUrl: string
 }
 
-export const isWebAuthChallenge = (
+export const getWebAuthChallenge = (
   o: unknown,
-): o is WebAuthChallenge =>
-  !!o &&
-  typeof o === 'object' &&
-  !!(o as WebAuthChallenge).doneUrl &&
-  !!(o as WebAuthChallenge).loginUrl &&
-  typeof (o as WebAuthChallenge).doneUrl === 'string' &&
-  typeof (o as WebAuthChallenge).loginUrl === 'string'
+): WebAuthChallenge | undefined => {
+  if (
+    !!o &&
+    typeof o === 'object' &&
+    'doneUrl' in o &&
+    typeof o.doneUrl === 'string' &&
+    o.doneUrl
+  ) {
+    // Publishes use authUrl, but login uses loginUrl
+    const authUrl =
+      'authUrl' in o && typeof o.authUrl === 'string' ? o.authUrl
+      : 'loginUrl' in o && typeof o.loginUrl === 'string' ? o.loginUrl
+      : undefined
+    return authUrl ? { doneUrl: o.doneUrl, authUrl } : undefined
+  }
+}

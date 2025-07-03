@@ -3,6 +3,10 @@ import type { Dispatcher } from 'undici'
 import type { RegistryClient } from '../src/index.ts'
 import type { WebAuthChallenge } from '../src/web-auth-challenge.ts'
 
+const logs: string[] = []
+const log = (msg: string) => logs.push(msg)
+t.intercept(console, 'error', { value: log })
+
 const urlsOpened: string[] = []
 const mockUrlOpen = async (url: string) => {
   urlsOpened.push(url)
@@ -13,6 +17,7 @@ const doneUrlsOpened: string[] = []
 t.beforeEach(() => {
   doneUrlsOpened.length = 0
   urlsOpened.length = 0
+  logs.length = 0
 })
 
 class MockInterface {
@@ -22,8 +27,8 @@ class MockInterface {
 }
 
 const mockClient = {
-  async webAuthOpener({ doneUrl, loginUrl }: WebAuthChallenge) {
-    urlsOpened.push(loginUrl)
+  async webAuthOpener({ doneUrl, authUrl }: WebAuthChallenge) {
+    urlsOpened.push(authUrl)
     doneUrlsOpened.push(doneUrl)
     return { token: 'token' }
   },
@@ -112,8 +117,11 @@ t.test('npm-notice prompting for OTP', async t => {
   } as unknown as Dispatcher.ResponseData)
   t.strictSame(doneUrlsOpened, [])
   t.strictSame(urlsOpened, ['{login-url}'])
+  t.strictSame(logs, [
+    'Open {login-url} to use your security key for authentication or enter OTP from your authenticator app',
+  ])
   t.strictSame(result, {
-    otp: 'Open {login-url} to use your security key for authentication or enter OTP from your authenticator app',
+    otp: 'OTP: ',
   })
 })
 

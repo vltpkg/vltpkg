@@ -2,8 +2,15 @@ export type TokenResponse = {
   token: string
 }
 
-export const isTokenResponse = (b: unknown): b is TokenResponse =>
-  !!b &&
-  typeof b === 'object' &&
-  typeof (b as TokenResponse).token === 'string' &&
-  !!(b as TokenResponse).token
+export const getTokenResponse = (
+  b: unknown,
+): TokenResponse | undefined =>
+  (
+    !!b &&
+    typeof b === 'object' &&
+    'token' in b &&
+    typeof b.token === 'string' &&
+    b.token
+  ) ?
+    { token: b.token }
+  : undefined

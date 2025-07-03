@@ -30,9 +30,9 @@ import { otplease } from './otplease.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 import type { TokenResponse } from './token-response.ts'
-import { isTokenResponse } from './token-response.ts'
+import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
-import { isWebAuthChallenge } from './web-auth-challenge.ts'
+import { getWebAuthChallenge } from './web-auth-challenge.ts'
 export {
   CacheEntry,
   deleteToken,
@@ -310,8 +310,8 @@ export class RegistryClient {
   async login(registry: string) {
     // - make POST to '/-/v1/login'
     // - include a body of {} and npm-auth-type:web
-    // - get a {doneUrl, loginUrl}
-    // - open the loginUrl
+    // - get a {doneUrl, authUrl}
+    // - open the authUrl
     // - hang on the doneUrl until done
     //
     // if that fails: fall back to couchdb login
@@ -327,8 +327,8 @@ export class RegistryClient {
     })
 
     if (response.statusCode === 200) {
-      const challenge = response.json()
-      if (isWebAuthChallenge(challenge)) {
+      const challenge = getWebAuthChallenge(response.json())
+      if (challenge) {
         const result = await this.webAuthOpener(challenge)
         await setToken(
           registry,
@@ -345,10 +345,10 @@ export class RegistryClient {
   /* c8 ignore stop */
 
   /**
-   * Given a {@link WebAuthChallenge}, open the `loginUrl` in a browser and
+   * Given a {@link WebAuthChallenge}, open the `authUrl` in a browser and
    * hang on the `doneUrl` until it returns a {@link TokenResponse} object.
    */
-  async webAuthOpener({ doneUrl, loginUrl }: WebAuthChallenge) {
+  async webAuthOpener({ doneUrl, authUrl }: WebAuthChallenge) {
     const ac = new AbortController()
     const { signal } = ac
     /* c8 ignore start - race condition */
@@ -357,7 +357,7 @@ export class RegistryClient {
         ac.abort()
         return result
       }),
-      urlOpen(loginUrl, { signal }).catch((er: unknown) => {
+      urlOpen(authUrl, { signal }).catch((er: unknown) => {
         if (asError(er).name === 'AbortError') return
         ac.abort()
         throw er
@@ -385,8 +385,8 @@ export class RegistryClient {
       return await this.#checkLogin(url, options)
     }
     if (response.statusCode === 200) {
-      const body = response.json()
-      if (isTokenResponse(body)) return body
+      const token = getTokenResponse(response.json())
+      if (token) return token
     }
     throw error('Invalid response from web login endpoint', {
       response,
