@@ -811,7 +811,10 @@ test('fetchDetails with contributors in manifest', async () => {
         name: 'Contributor One',
         email: 'contrib1@example.com',
       },
-      'Contributor Two <contrib2@example.com>',
+      {
+        name: 'Contributor Two',
+        email: 'contrib2@example.com',
+      },
     ],
   }
   const spec = Spec.parse('with-contributors', '1.0.0')
