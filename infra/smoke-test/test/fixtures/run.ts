@@ -1,7 +1,7 @@
 import t from 'tap'
 import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
-import { join, dirname } from 'node:path'
+import { join } from 'node:path'
 import assert from 'node:assert'
 import { stripVTControlCharacters } from 'node:util'
 import { realpathSync } from 'node:fs'
@@ -183,9 +183,6 @@ const spawnCommand = async (
         output: '',
       }
 
-      // Get the directory containing the node binary to ensure it's always available
-      const nodeBinDir = dirname(realpathSync(whichSync('node')))
-
       const spawnEnv = {
         ...variant.env,
         ...env,
@@ -200,9 +197,8 @@ const spawnCommand = async (
         XDG_DATA_HOME: dirs.data,
         XDG_STATE_HOME: dirs.state,
         XDG_RUNTIME_DIR: dirs.runtime,
-        // PATH includes what the variant needs plus node binary directory
-        PATH:
-          variant.PATH ? `${variant.PATH}:${nodeBinDir}` : nodeBinDir,
+        // PATH is only set to what the variant needs
+        PATH: variant.PATH ?? '',
       }
 
       if (tty) {
