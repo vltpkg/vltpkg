@@ -23,7 +23,7 @@ import type { DependencyTypeShort } from '@vltpkg/types'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
-  onSelect?: () => undefined
+  onSelect?: (e: React.MouseEvent) => void
   onUninstall?: (item: GridItemData) => void
   isWorkspace?: boolean
 }

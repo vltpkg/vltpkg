@@ -13,7 +13,7 @@ exports[`OverviewSidebar renders with a parent 1`] = `
   Parent
 </gui-grid-header>
 <gui-side-item
-  parent="false"
+  parent="true"
   item="[object Object]"
   highlight="false"
 >
@@ -27,7 +27,7 @@ exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
   Parent
 </gui-grid-header>
 <gui-side-item
-  parent="false"
+  parent="true"
   item="[object Object]"
   highlight="false"
 >
@@ -58,7 +58,7 @@ exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] =
   Parent
 </gui-grid-header>
 <gui-side-item
-  parent="false"
+  parent="true"
   item="[object Object]"
   highlight="false"
 >
