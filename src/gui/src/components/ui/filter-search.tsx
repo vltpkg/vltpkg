@@ -21,6 +21,7 @@ const FilterSearch = <T,>({
   const [filterText, setFilterText] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
   const isInitialMount = useRef(true)
+  const lastFilteredItemsRef = useRef<T[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
 
   /**
@@ -34,7 +35,15 @@ const FilterSearch = <T,>({
 
     if (!filterText.trim()) {
       params.forEach((_, key) => params.delete(key))
-      setFilteredItems(items ?? [])
+      // Only call setFilteredItems if items have actually changed
+      const newItems = items ?? []
+      if (
+        JSON.stringify(newItems) !==
+        JSON.stringify(lastFilteredItemsRef.current)
+      ) {
+        setFilteredItems(newItems)
+        lastFilteredItemsRef.current = newItems
+      }
     }
 
     if (filterText.trim() !== '') {
@@ -63,8 +72,8 @@ const FilterSearch = <T,>({
     filterText,
     items,
     searchParams,
-    setFilteredItems,
     setSearchParams,
+    setFilteredItems,
   ])
 
   /**
@@ -130,7 +139,14 @@ const FilterSearch = <T,>({
 
   // Update the parent component with filtered items
   useEffect(() => {
-    setFilteredItems(filteredItems)
+    // Only call setFilteredItems if the filtered items have actually changed
+    if (
+      JSON.stringify(filteredItems) !==
+      JSON.stringify(lastFilteredItemsRef.current)
+    ) {
+      setFilteredItems(filteredItems)
+      lastFilteredItemsRef.current = filteredItems
+    }
   }, [filteredItems, setFilteredItems])
 
   /**
