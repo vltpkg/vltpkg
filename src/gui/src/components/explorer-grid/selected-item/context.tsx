@@ -30,7 +30,7 @@ export type Tab =
   | 'overview'
   | 'insights'
   | 'versions'
-  | 'manifest'
+  | 'json'
   | 'dependencies'
 
 export type SubTabDependencies =
