@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/dss-breadcrumb",
   "description": "The Dependency Selector Syntax (DSS) breadcrumb utilities",
-  "version": "0.0.0-16",
+  "version": "0.0.0-17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
