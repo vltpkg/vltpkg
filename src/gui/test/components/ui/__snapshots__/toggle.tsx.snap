@@ -3,12 +3,12 @@
 exports[`toggle > should render correctly 1`] = `
 
 <div class="flex w-fit">
-  <div class="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5">
+  <div class="relative flex h-[2.5rem] w-full items-center rounded-md border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5">
     <div class="absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted">
     </div>
     <div
       class="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm"
-      data-state="closed"
+      title="mock-option-smile"
     >
       <gui-smile-icon
         size="20"
@@ -18,7 +18,7 @@ exports[`toggle > should render correctly 1`] = `
     </div>
     <div
       class="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm"
-      data-state="closed"
+      title="mock-option-frown"
     >
       <gui-frown-icon
         size="20"

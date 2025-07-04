@@ -3,7 +3,6 @@ import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { DashboardViewToggle } from '@/components/dashboard-grid/dashboard-view-toggle.tsx'
-import type { View } from '@/components/dashboard-grid/dashboard-view-toggle.tsx'
 
 vi.mock('@/components/ui/toggle.tsx', () => ({
   Toggle: 'gui-toggle',
@@ -25,7 +24,7 @@ afterEach(() => {
 
 describe('dashboard-view-toggle', () => {
   it('should render correctly', () => {
-    const mockCurrentView: View = 'table'
+    const mockCurrentView = 'table'
     const mockSetCurrentView = vi.fn()
 
     const Container = () => {

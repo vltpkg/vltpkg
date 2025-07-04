@@ -12,9 +12,6 @@ vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarFooter: 'gui-sidebar-footer',
 }))
 
-vi.mock('@/components/navigation/sidebar/sidebar-header.tsx', () => ({
-  SidebarHeader: 'gui-sidebar-header',
-}))
 vi.mock(
   '@/components/navigation/sidebar/sidebar-theme-switcher.tsx',
   () => ({

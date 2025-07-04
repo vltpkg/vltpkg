@@ -4,18 +4,21 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
-import type { Table, VisibilityState } from '@tanstack/react-table'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
 
+import type {
+  DashboardState,
+  DashboardAction,
+} from '@/state/dashboard.ts'
+import type { Table } from '@tanstack/react-table'
+
 interface TableViewDropdownProps<TData> {
   table: Table<TData> | undefined
   className?: string
-  columnVisibility: VisibilityState
-  setColumnVisibility: React.Dispatch<
-    React.SetStateAction<VisibilityState>
-  >
+  columnVisibility: DashboardState['columnVisibility']
+  setColumnVisibility: DashboardAction['setColumnVisibility']
 }
 
 export const TableViewDropdown = <TData extends object>({
@@ -47,10 +50,10 @@ export const TableViewDropdown = <TData extends object>({
                   columnVisibility[column.id] ?? column.getIsVisible()
                 }
                 onCheckedChange={val => {
-                  setColumnVisibility(prev => ({
-                    ...prev,
+                  setColumnVisibility({
+                    ...columnVisibility,
                     [column.id]: val,
-                  }))
+                  })
                 }}>
                 {column.id}
               </DropdownMenuCheckboxItem>

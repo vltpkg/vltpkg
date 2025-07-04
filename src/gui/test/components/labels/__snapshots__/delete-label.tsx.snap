@@ -5,12 +5,12 @@ exports[`delete-label > should render correctly 1`] = `
 <div class="flex items-center">
   <div class="flex items-center">
     <gui-dialog open="false">
-      <gui-tooltip open="false">
-        <gui-tooltip-provider>
+      <gui-tooltip-provider>
+        <gui-tooltip open="false">
           <gui-dialog-trigger aschild="true">
             <gui-button
               disabled="false"
-              classname="rounded-sm border border-[1px] border-muted-foreground/25"
+              classname="rounded-sm border-[1px] border-muted-foreground/25"
               size="icon"
               variant="ghost"
             >
@@ -21,8 +21,8 @@ exports[`delete-label > should render correctly 1`] = `
           <gui-tooltip-content>
             Delete Labels
           </gui-tooltip-content>
-        </gui-tooltip-provider>
-      </gui-tooltip>
+        </gui-tooltip>
+      </gui-tooltip-provider>
       <gui-dialog-content>
         <gui-dialog-header>
           <gui-dialog-title classname="font-medium">

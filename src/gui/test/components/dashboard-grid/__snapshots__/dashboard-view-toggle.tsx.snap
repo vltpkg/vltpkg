@@ -2,7 +2,10 @@
 
 exports[`dashboard-view-toggle > should render correctly 1`] = `
 
-<gui-toggle options="[object Object],[object Object]">
+<gui-toggle
+  options="[object Object],[object Object]"
+  value="table"
+>
 </gui-toggle>
 
 `;

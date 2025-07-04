@@ -3,7 +3,7 @@
 exports[`ExplorerGrid render default 1`] = `
 
 <div>
-  <div class="h-full w-full grow px-8 pb-8">
+  <div class="px-8 py-4">
     <gui-empty-results-state>
     </gui-empty-results-state>
   </div>
@@ -14,7 +14,7 @@ exports[`ExplorerGrid render default 1`] = `
 exports[`ExplorerGrid renders workspace with edges in 1`] = `
 
 <div>
-  <div class="h-full w-full grow px-8 pb-8">
+  <div class="px-8 py-4">
     <gui-selected-item item="[object Object]">
     </gui-selected-item>
   </div>
@@ -25,7 +25,7 @@ exports[`ExplorerGrid renders workspace with edges in 1`] = `
 exports[`ExplorerGrid with results 1`] = `
 
 <div>
-  <div class="h-full w-full grow px-8 pb-8">
+  <div class="px-8 py-4">
     <div class="mt-8 grid w-full max-w-8xl gap-4">
       <div class="flex items-center gap-3">
         <gui-grid-header classname="h-fit">
@@ -50,7 +50,7 @@ exports[`ExplorerGrid with results 1`] = `
 exports[`ExplorerGrid with stack 1`] = `
 
 <div>
-  <div class="h-full w-full grow px-8 pb-8">
+  <div class="px-8 py-4">
     <div class="mt-8 grid w-full max-w-8xl gap-4">
       <div class="flex items-center gap-3">
         <gui-grid-header classname="h-fit">

@@ -14,7 +14,7 @@ vi.mock('react-router', async () => {
   }
 })
 
-vi.mock('@/components/navigation/header.tsx', () => ({
+vi.mock('@/components/navigation/header/index.tsx', () => ({
   Header: 'gui-header',
 }))
 vi.mock('@/components/navigation/footer.tsx', () => ({

@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DashboardHeader renders correctly 1`] = `
+
+<div class="grid w-full max-w-8xl grid-cols-6 gap-2 md:flex">
+  <gui-filter-search
+    placeholder="Filter Projects"
+    items
+    classname="col-span-3 w-full"
+  >
+  </gui-filter-search>
+  <div class="col-span-2 flex gap-2">
+    <gui-dashboard-view-toggle
+      currentview="grid"
+      classnames="[object Object]"
+    >
+    </gui-dashboard-view-toggle>
+    <div style="opacity: 1;">
+      <gui-sort-dropdown
+        items
+        classname="w-[100px] rounded-xl md:w-[120px]"
+        sortkey="name"
+      >
+      </gui-sort-dropdown>
+    </div>
+    <gui-button
+      aschild="true"
+      classname="ml-auto rounded-xl"
+    >
+      <gui-nav-link to="/create-new-project">
+        <gui-plus-icon size="24">
+        </gui-plus-icon>
+        <span class="hidden md:flex">
+          Create New Project
+        </span>
+      </gui-nav-link>
+    </gui-button>
+  </div>
+</div>
+
+`;

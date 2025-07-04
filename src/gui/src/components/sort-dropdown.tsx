@@ -10,19 +10,23 @@ import {
   sortAlphabeticallyAscending,
   sortAlphabeticallyDescending,
 } from '@/components/sort-toggle.tsx'
-import type { SortingOption } from '@/components/sort-toggle.tsx'
 import { useState } from 'react'
+import { cn } from '@/lib/utils.ts'
+
+import type { SortingOption } from '@/components/sort-toggle.tsx'
 
 interface SortDropdownProps<T> {
   items: T[]
   setFilteredItems: React.Dispatch<React.SetStateAction<T[]>>
   sortKey: keyof T
+  className?: string
 }
 
 export const SortDropdown = <T extends object>({
   items,
   setFilteredItems,
   sortKey,
+  className,
 }: SortDropdownProps<T>) => {
   const [checkedOption, setCheckedOption] =
     useState<SortingOption>('ascending')
@@ -38,7 +42,9 @@ export const SortDropdown = <T extends object>({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className="w-[120px]">
+      <DropdownMenuTrigger
+        asChild
+        className={cn('w-[120px]', className)}>
         <Button variant="outline" className="text-sm font-normal">
           Sort by
           <ChevronDown size={16} />

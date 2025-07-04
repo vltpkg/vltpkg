@@ -14,10 +14,12 @@ import {
   TooltipProvider,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import type { SavedQuery } from '@/state/types.ts'
 import { Trash } from 'lucide-react'
 import { useToast } from '@/components/hooks/use-toast.ts'
 import { useGraphStore } from '@/state/index.ts'
+import { cn } from '@/lib/utils.ts'
+
+import type { SavedQuery } from '@/state/types.ts'
 
 interface DeleteQueryProps {
   deleteDialogOpen: boolean
@@ -26,6 +28,7 @@ interface DeleteQueryProps {
   type: 'button' | 'icon'
   onClose?: () => void
   text?: string
+  className?: string
 }
 
 const DeleteQuery = ({
@@ -35,6 +38,7 @@ const DeleteQuery = ({
   type,
   onClose,
   text = 'Delete',
+  className,
 }: DeleteQueryProps) => {
   const { toast } = useToast()
   const [isTooltipOpen, setIsTooltipOpen] = useState<boolean>(false)
@@ -56,15 +60,18 @@ const DeleteQuery = ({
     <Dialog
       open={deleteDialogOpen}
       onOpenChange={setDeleteDialogOpen}>
-      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
-        <TooltipProvider>
+      <TooltipProvider>
+        <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
           <DialogTrigger asChild>
             {type === 'icon' ?
               <Button
                 onMouseEnter={() => setIsTooltipOpen(true)}
                 onMouseLeave={() => setIsTooltipOpen(false)}
                 disabled={selectedQueries.length <= 0}
-                className="rounded-sm border border-[1px] border-muted-foreground/25"
+                className={cn(
+                  'rounded-sm border border-[1px] border-muted-foreground/25',
+                  className,
+                )}
                 size="icon"
                 variant="ghost">
                 <Trash />
@@ -74,8 +81,8 @@ const DeleteQuery = ({
           <TooltipContent>
             Delete {selectedQueries.length <= 1 ? 'Query' : 'Queries'}
           </TooltipContent>
-        </TooltipProvider>
-      </Tooltip>
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-medium">

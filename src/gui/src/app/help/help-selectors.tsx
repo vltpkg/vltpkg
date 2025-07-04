@@ -30,7 +30,7 @@ export type SelectorInTable = Omit<Selector, 'category'> & {
 
 export const HelpSelectors = () => {
   return (
-    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px]">
+    <section className="flex h-full w-full flex-col">
       <div className="flex max-w-8xl flex-col pt-8">
         <div className="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
           <Markdown components={markdownComponents}>
