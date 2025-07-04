@@ -242,6 +242,8 @@ export type Packument = {
   modified?: string
   time?: Record<string, string>
   readme?: string
+  contributors?: Person[]
+  maintainers?: Person[]
 }
 
 export type RefType = 'branch' | 'head' | 'other' | 'pull' | 'tag'

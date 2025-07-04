@@ -43,6 +43,8 @@ exports[`OverviewTabContent renders default 1`] = `
         </p>
       </div>
     </div>
+    <gui-contributor-list>
+    </gui-contributor-list>
   </div>
 </gui-tabs-content>
 
@@ -79,55 +81,8 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
         </p>
       </div>
     </div>
-    <div class="flex cursor-default flex-col gap-2 px-6 pb-4">
-      <h4 class="text-sm font-medium capitalize text-muted-foreground">
-        Contributors
-      </h4>
-      <div class="flex flex-wrap gap-x-8 gap-y-5">
-        <div class="flex cursor-default gap-2">
-          <gui-avatar classname="size-9">
-            <gui-avatar-image
-              classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
-              src="https://acme.com/johndoe"
-            >
-            </gui-avatar-image>
-            <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
-              <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
-              </div>
-            </gui-avatar-fallback>
-          </gui-avatar>
-          <div class="flex flex-col justify-center text-sm text-foreground">
-            <p class="font-medium text-neutral-900 dark:text-neutral-200">
-              John Doe
-            </p>
-            <p class="text-xs text-muted-foreground">
-              johndoe@acme.com
-            </p>
-          </div>
-        </div>
-        <div class="flex cursor-default gap-2">
-          <gui-avatar classname="size-9">
-            <gui-avatar-image
-              classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
-              src="https://acme.com/janedoo"
-            >
-            </gui-avatar-image>
-            <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
-              <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
-              </div>
-            </gui-avatar-fallback>
-          </gui-avatar>
-          <div class="flex flex-col justify-center text-sm text-foreground">
-            <p class="font-medium text-neutral-900 dark:text-neutral-200">
-              Jane Doo
-            </p>
-            <p class="text-xs text-muted-foreground">
-              janedoo@acme.com
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <gui-contributor-list>
+    </gui-contributor-list>
   </div>
   <aside class="order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4">
     <div class="flex flex-col gap-2">
@@ -276,6 +231,8 @@ This is a custom description
         </gui-markdown>
       </div>
     </div>
+    <gui-contributor-list>
+    </gui-contributor-list>
     <div class="flex grow flex-col justify-end gap-2 px-6 pb-4">
       <h4 class="text-sm font-medium capitalize text-muted-foreground">
         keywords

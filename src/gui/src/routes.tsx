@@ -23,6 +23,7 @@ import { TabsJsonContent } from '@/components/explorer-grid/selected-item/tabs-j
 import { InsightTabContent } from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
 import { DependenciesTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { VersionsTabContent } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
+import { ContributorTabContent } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
 
 /** Dependencies SubTabs */
 import { InsightsTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-insights.tsx'
@@ -39,7 +40,7 @@ import { encodeCompressedQuery } from '@/lib/compress-query.ts'
 import type {
   Tab,
   SubTabDependencies,
-} from './components/explorer-grid/selected-item/context'
+} from '@/components/explorer-grid/selected-item/context.tsx'
 
 const TabRouter = () => {
   const { tab } = useParams<{ tab: Tab }>()
@@ -54,6 +55,8 @@ const TabRouter = () => {
       return <InsightTabContent />
     case 'dependencies':
       return <DependenciesTabContent />
+    case 'contributors':
+      return <ContributorTabContent />
     default:
       return <Navigate to="overview" replace />
   }
