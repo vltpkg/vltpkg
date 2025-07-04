@@ -113,6 +113,7 @@ const mockList = async (
           async start() {
             return {
               ok: false,
+              get: () => undefined,
             }
           },
         },
