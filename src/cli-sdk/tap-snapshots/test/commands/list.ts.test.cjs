@@ -5,6 +5,89 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/commands/list.ts > TAP > list > --target option > should accept attribute selector 1`] = `
+my-project
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should accept combinator selectors 1`] = `
+my-project
+├── @foo/bazz@1.0.0
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should accept ID selector 1`] = `
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should accept pseudo-element selectors 1`] = `
+my-project
+├── @foo/bazz@1.0.0
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should accept wildcard selector 1`] = `
+my-project
+├── @foo/bazz@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── @foo/bazz@1.0.0
+└── missing@^1.0.0 (missing)
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should handle complex query string 1`] = `
+my-project
+├── @foo/bazz@1.0.0
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should use --target over positional arguments 1`] = `
+my-project
+├── @foo/bazz@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── @foo/bazz@1.0.0
+└── missing@^1.0.0 (missing)
+
+`
+
+exports[`test/commands/list.ts > TAP > list > --target option > should work with json output 1`] = `
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "my-project",
+        "version": "1.0.0",
+        "dependencies": {
+          "@foo/bazz": "^1.0.0",
+          "bar": "^1.0.0",
+          "missing": "^1.0.0"
+        }
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  }
+]
+`
+
 exports[`test/commands/list.ts > TAP > list > colors > should use colors when set in human readable format 1`] = `
 [0mmy-project
 ├── @foo/bazz@1.0.0
@@ -47,11 +130,15 @@ exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
 Usage:
   vlt ls
   vlt ls [package-names...] [--view=human | json | mermaid | gui]
+  vlt ls [--target=<query>] [--view=human | json | mermaid | gui]
 
-List installed dependencies matching given package names.
+List installed dependencies matching given package names or query selectors.
 
 Package names provided as positional arguments will be used to filter the
 results to show only dependencies with those names.
+
+The --target option accepts DSS query selectors to filter packages using complex
+criteria.
 
 Defaults to listing direct dependencies of a project and any configured
 workspace.
@@ -66,12 +153,25 @@ workspace.
 
     ​vlt ls foo bar baz
 
+    List all dependencies using a query selector
+
+    ​vlt ls --target="*"
+
+    List all peer dependencies of all workspaces
+
+    ​vlt ls --target=":workspace > *:peer"
+
   Options
 
     view
       Output format. Defaults to human-readable or json if no tty.
 
       ​--view=[human | json | mermaid | gui]
+
+    target
+      Query selector to filter packages using DSS syntax.
+
+      ​--target=<query>
 
 `
 

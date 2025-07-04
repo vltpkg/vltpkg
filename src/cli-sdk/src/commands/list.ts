@@ -28,11 +28,15 @@ export const usage: CommandUsage = () =>
     usage: [
       '',
       '[package-names...] [--view=human | json | mermaid | gui]',
+      '[--target=<query>] [--view=human | json | mermaid | gui]',
     ],
-    description: `List installed dependencies matching given package names.
+    description: `List installed dependencies matching given package names or query selectors.
 
       Package names provided as positional arguments will be used to filter
       the results to show only dependencies with those names.
+
+      The --target option accepts DSS query selectors to filter packages
+      using complex criteria.
 
       Defaults to listing direct dependencies of a project and any configured
       workspace.`,
@@ -44,12 +48,23 @@ export const usage: CommandUsage = () =>
       'foo bar baz': {
         description: `List all dependencies named 'foo', 'bar', or 'baz'`,
       },
+      '--target="*"': {
+        description: 'List all dependencies using a query selector',
+      },
+      '--target=":workspace > *:peer"': {
+        description: 'List all peer dependencies of all workspaces',
+      },
     },
     options: {
       view: {
         value: '[human | json | mermaid | gui]',
         description:
           'Output format. Defaults to human-readable or json if no tty.',
+      },
+      target: {
+        value: '<query>',
+        description:
+          'Query selector to filter packages using DSS syntax.',
       },
     },
   })
@@ -97,10 +112,12 @@ export const command: CommandFn<ListResult> = async conf => {
     }
   }
 
-  const queryString = conf.positionals
+  const positionalQueryString = conf.positionals
     .map(k => `#${k.replace(/\//, '\\/')}`)
     .join(', ')
-  /* c8 ignore start - TODO: may be removed when --target is added */
+  const targetQueryString = conf.get('target')
+  const queryString = targetQueryString || positionalQueryString
+
   const securityArchive =
     Query.hasSecuritySelectors(queryString) ?
       await SecurityArchive.start({
@@ -108,7 +125,6 @@ export const command: CommandFn<ListResult> = async conf => {
         specOptions: conf.options,
       })
     : undefined
-  /* c8 ignore stop */
   const query = new Query({
     graph,
     specOptions: conf.options,
@@ -188,6 +204,8 @@ export const command: CommandFn<ListResult> = async conf => {
     edges,
     nodes,
     queryString: queryString || defaultQueryString,
-    highlightSelection: !!queryString,
+    highlightSelection: !!(
+      targetQueryString || positionalQueryString
+    ),
   }
 }
