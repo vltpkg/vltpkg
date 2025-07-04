@@ -31,12 +31,23 @@ export const usage: CommandUsage = () =>
       '',
       '<query> --view=<human | json | mermaid | gui>',
       '<query> --expect-results=<comparison string>',
+      '--target=<query> --view=<human | json | mermaid | gui>',
     ],
     description: `List installed dependencies matching the provided query.
 
-       The vlt Dependency Selector Syntax is a CSS-like query language that
-       allows you to filter installed dependencies using a variety of metadata
-       in the form of CSS-like attributes, pseudo selectors & combinators.`,
+      The vlt Dependency Selector Syntax is a CSS-like query language that
+      allows you to filter installed dependencies using a variety of metadata
+      in the form of CSS-like attributes, pseudo selectors & combinators.
+
+      The --scope and --target options accepts DSS query selectors to filter
+      packages. Using --scope, you can specify which packages to treat as the
+      top-level items in the output graph. The --target option can be used as
+      an alternative to positional arguments, it allows you to filter what
+      dependencies to include in the output. Using both options allows you to
+      render subgraphs of the dependency graph.
+
+      Defaults to listing all dependencies of the project root and workspaces.`,
+
     examples: {
       [`'#foo'`]: {
         description: 'Query dependencies declared as "foo"',
@@ -55,12 +66,33 @@ export const usage: CommandUsage = () =>
       [`'*:license(copyleft) --expect-results=0'`]: {
         description: 'Errors if a copyleft licensed package is found',
       },
+      '--scope=":root > #dependency-name"': {
+        description:
+          'Defines a direct dependency as the output top-level scope',
+      },
+      [`'--target="*"'`]: {
+        description: 'Query all dependencies using the target option',
+      },
+      [`'--target=":workspace > *:peer"'`]: {
+        description:
+          'Query all peer dependencies of workspaces using target option',
+      },
     },
     options: {
       'expect-results': {
         value: '[number | string]',
         description:
           'Sets an expected number of resulting items. Errors if the number of resulting items does not match the set value. Accepts a specific numeric value or a string value starting with either ">", "<", ">=" or "<=" followed by a numeric value to be compared.',
+      },
+      scope: {
+        value: '<query>',
+        description:
+          'Query selector to select top-level packages using the DSS query language syntax.',
+      },
+      target: {
+        value: '<query>',
+        description:
+          'Query selector to filter packages using DSS syntax.',
       },
       view: {
         value: '[human | json | mermaid | gui]',
@@ -120,7 +152,9 @@ export const command: CommandFn<QueryResult> = async conf => {
   })
 
   const defaultQueryString = '*'
-  const queryString = conf.positionals[0]
+  const positionalQueryString = conf.positionals[0]
+  const targetQueryString = conf.get('target')
+  const queryString = targetQueryString || positionalQueryString
   const securityArchive = await SecurityArchive.start({
     graph,
     specOptions: conf.options,
@@ -196,7 +230,9 @@ export const command: CommandFn<QueryResult> = async conf => {
     importers,
     edges,
     nodes,
-    highlightSelection: !!queryString,
+    highlightSelection: !!(
+      targetQueryString || positionalQueryString
+    ),
     queryString: queryString || defaultQueryString,
   }
 }

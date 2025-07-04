@@ -378,6 +378,11 @@ Object {
     "description": "Default \`dist-tag\` to install or publish",
     "type": "string",
   },
+  "target": Object {
+    "description": "Set to select packages using a DSS Query selector.",
+    "short": "t",
+    "type": "string",
+  },
   "version": Object {
     "description": "Print the version",
     "short": "v",
@@ -476,6 +481,7 @@ Array [
   "--script-shell=<program>",
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
+  "--target=<target>",
   "--version",
   "--view=<output>",
   "--workspace=<ws>",
@@ -526,6 +532,7 @@ Array [
   "script-shell",
   "stale-while-revalidate-factor",
   "tag",
+  "target",
   "version",
   "view",
   "workspace",
