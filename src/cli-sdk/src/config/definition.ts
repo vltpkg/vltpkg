@@ -32,6 +32,7 @@ const canonicalCommands = {
   run: 'run',
   token: 'token',
   uninstall: 'uninstall',
+  use: 'use',
   'exec-cache': 'exec-cache',
   version: 'version',
   whoami: 'whoami',
@@ -611,6 +612,9 @@ export const definition = j
     yes: {
       short: 'y',
       description: `Automatically accept any confirmation prompts`,
+    },
+    publish: {
+      description: `Update publishConfig.engines instead of engines when using 'use' command`,
     },
     version: {
       short: 'v',
