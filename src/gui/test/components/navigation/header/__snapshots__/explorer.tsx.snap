@@ -2,13 +2,13 @@
 
 exports[`ExplorerHeader renders correctly 1`] = `
 
-<div class="flex w-2/3 gap-3">
-  <gui-root-button>
+<div class="flex w-full gap-3">
+  <gui-root-button classname="rounded-xl">
   </gui-root-button>
   <gui-query-bar
     tabindex="0"
     startcontent="[object Object]"
-    classname="rounded-full"
+    classname="grow rounded-xl"
     endcontent="[object Object]"
   >
   </gui-query-bar>

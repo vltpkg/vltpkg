@@ -31,17 +31,23 @@ export const QueriesHeader = () => {
   )
 
   return (
-    <div className="flex justify-between gap-2">
-      <div className="flex gap-2">
+    <div className="flex w-full justify-between gap-2">
+      <div className="flex w-full items-center gap-2">
         <FilterSearch
           placeholder="Filter Queries"
           items={savedQueries}
+          className="grow"
           setFilteredItems={setFilteredQueries}
         />
         <SortToggle
           filteredItems={filteredQueries}
           setFilteredItems={setFilteredQueries}
           sortKey="name"
+          classNames={{
+            toggleClassName: 'rounded-xl',
+            sliderClassName: 'rounded-[9px]',
+            optionClassName: 'rounded-lg',
+          }}
         />
         <div className="flex items-center">
           <div className="flex items-center">
@@ -49,6 +55,7 @@ export const QueriesHeader = () => {
               deleteDialogOpen={deleteDialogOpen}
               setDeleteDialogOpen={setDeleteDialogOpen}
               selectedQueries={selectedQueries}
+              className="rounded-xl"
               type="icon"
             />
           </div>
@@ -58,12 +65,13 @@ export const QueriesHeader = () => {
         {savedQueries?.length !== 0 && (
           <Button
             disabled={isCreating}
-            onClick={() => setIsCreating(true)}>
-            <span>New Query</span>
+            onClick={() => setIsCreating(true)}
+            className="rounded-xl">
+            <span className="hidden md:flex">New Query</span>
             <Plus />
           </Button>
         )}
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="rounded-xl">
           <NavLink to="/labels">
             <Tag />
             <span>Labels</span>

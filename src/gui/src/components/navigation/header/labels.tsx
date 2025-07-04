@@ -23,30 +23,38 @@ export const LabelsHeader = () => {
   const filteredLabels = useLabelsStore(state => state.filteredLabels)
 
   return (
-    <div className="flex justify-between gap-2">
-      <div className="flex gap-2">
+    <div className="flex w-full justify-between gap-2">
+      <div className="flex w-full gap-2">
         <FilterSearch
           placeholder="Filter Labels"
           items={savedLabels}
           setFilteredItems={setFilteredLabels}
+          className="grow"
         />
         <SortToggle
           filteredItems={filteredLabels}
           setFilteredItems={setFilteredLabels}
           sortKey="name"
+          classNames={{
+            toggleClassName: 'rounded-xl',
+            sliderClassName: 'rounded-[9px]',
+            optionClassName: 'rounded-lg',
+          }}
         />
         <DeleteLabel
           deleteDialogOpen={deleteDialogOpen}
           setDeleteDialogOpen={setDeleteDialogOpen}
           selectedLabels={selectedLabels}
+          className="rounded-xl"
         />
       </div>
       <div>
         {savedLabels?.length !== 0 && (
           <Button
             disabled={isCreating}
-            onClick={() => setIsCreating(true)}>
-            <span>New Label</span>
+            onClick={() => setIsCreating(true)}
+            className="rounded-xl">
+            <span className="hidden md:flex">New Label</span>
             <Plus />
           </Button>
         )}

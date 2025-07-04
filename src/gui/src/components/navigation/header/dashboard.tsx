@@ -37,7 +37,7 @@ export const DashboardHeader = () => {
   )
 
   return (
-    <div className="grid w-full max-w-8xl grid-cols-3 gap-2 md:flex">
+    <div className="grid w-full max-w-8xl grid-cols-6 gap-2 md:flex">
       {currentView === 'table' ?
         <TableFilterSearch
           filterValue={tableFilterValue}
@@ -51,10 +51,15 @@ export const DashboardHeader = () => {
           className="col-span-3 w-full"
         />
       }
-      <div className="col-span-3 flex gap-2">
+      <div className="col-span-2 flex gap-2">
         <DashboardViewToggle
           currentView={currentView}
           setCurrentView={setCurrentView}
+          classNames={{
+            toggleClassName: 'rounded-xl',
+            sliderClassName: 'rounded-[9px]',
+            optionClassName: 'rounded-lg',
+          }}
         />
         {currentView === 'table' ?
           <motion.div
@@ -66,7 +71,7 @@ export const DashboardHeader = () => {
               columnVisibility={columnVisibility}
               setColumnVisibility={setColumnVisibility}
               table={table}
-              className="w-[120px]"
+              className="w-[100px] rounded-xl md:w-[120px]"
             />
           </motion.div>
         : <motion.div
@@ -76,6 +81,7 @@ export const DashboardHeader = () => {
             animate={{ opacity: 1 }}>
             <SortDropdown
               items={filteredProjects}
+              className="w-[100px] rounded-xl md:w-[120px]"
               setFilteredItems={value => {
                 const newValue =
                   typeof value === 'function' ?
@@ -87,10 +93,10 @@ export const DashboardHeader = () => {
             />
           </motion.div>
         }
-        <Button asChild className="ml-auto">
+        <Button asChild className="ml-auto rounded-xl">
           <NavLink to="/create-new-project">
             <Plus size={24} />
-            Create New Project
+            <span className="hidden md:flex">Create New Project</span>
           </NavLink>
         </Button>
       </div>

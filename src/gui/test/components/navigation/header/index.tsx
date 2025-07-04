@@ -14,6 +14,8 @@ vi.mock('react-router', () => ({
 
 vi.mock('@/components/icons/index.ts', () => ({
   Vlt: 'gui-vlt-icon',
+  VltClient: 'gui-vlt-client-icon',
+  Vsr: 'gui-vsr-icon',
 }))
 
 vi.mock('@/components/navigation/header/explorer.tsx', () => ({
@@ -34,6 +36,10 @@ vi.mock('@/components/navigation/header/labels.tsx', () => ({
 
 vi.mock('@/components/navigation/header/help.tsx', () => ({
   HelpHeader: 'gui-help-header',
+}))
+
+vi.mock('@/components/navigation/linear-menu/index.tsx', () => ({
+  LinearMenu: 'gui-linear-menu',
 }))
 
 expect.addSnapshotSerializer({
