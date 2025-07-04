@@ -14,21 +14,25 @@ import {
   TooltipProvider,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import type { QueryLabel } from '@/state/types.ts'
 import { Trash } from 'lucide-react'
 import { useToast } from '@/components/hooks/use-toast.ts'
 import { useGraphStore } from '@/state/index.ts'
+import { cn } from '@/lib/utils.ts'
+
+import type { QueryLabel } from '@/state/types.ts'
 
 interface DeleteLabelProps {
   deleteDialogOpen: boolean
   setDeleteDialogOpen: (o: boolean) => void
   selectedLabels: QueryLabel[]
+  className?: string
 }
 
 const DeleteLabel = ({
   deleteDialogOpen,
   setDeleteDialogOpen,
   selectedLabels,
+  className,
 }: DeleteLabelProps) => {
   const { toast } = useToast()
   const [isTooltipOpen, setIsTooltipOpen] = useState<boolean>(false)
@@ -60,7 +64,10 @@ const DeleteLabel = ({
                   onMouseEnter={() => setIsTooltipOpen(true)}
                   onMouseLeave={() => setIsTooltipOpen(false)}
                   disabled={selectedLabels.length <= 0}
-                  className="rounded-sm border border-[1px] border-muted-foreground/25"
+                  className={cn(
+                    'rounded-sm border border-[1px] border-muted-foreground/25',
+                    className,
+                  )}
                   size="icon"
                   variant="ghost">
                   <Trash />

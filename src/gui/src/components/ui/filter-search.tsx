@@ -1,9 +1,11 @@
-import type { SavedQuery } from '@/state/types.ts'
 import { useSearchParams } from 'react-router'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input.tsx'
 import { Kbd } from '@/components/ui/kbd.tsx'
 import { Command, Search } from 'lucide-react'
+import { cn } from '@/lib/utils.ts'
+
+import type { SavedQuery } from '@/state/types.ts'
 
 interface FilterSearchProps<T> {
   items: T[] | undefined
@@ -16,7 +18,7 @@ const FilterSearch = <T,>({
   items,
   setFilteredItems,
   placeholder,
-  className = '',
+  className,
 }: FilterSearchProps<T>) => {
   const [filterText, setFilterText] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -179,7 +181,7 @@ const FilterSearch = <T,>({
 
   return (
     <div
-      className={`relative flex w-[384px] items-center ${className}`}>
+      className={cn('relative flex w-full items-center', className)}>
       <Search
         size={18}
         className="absolute left-0 ml-3 text-neutral-500"
@@ -187,7 +189,7 @@ const FilterSearch = <T,>({
       <Input
         type="text"
         ref={inputRef}
-        className="bg-white pl-9 pr-20 dark:bg-muted-foreground/5"
+        className="rounded-xl bg-white pl-9 pr-20 dark:bg-muted-foreground/5"
         role="search"
         placeholder={placeholder}
         value={filterText}

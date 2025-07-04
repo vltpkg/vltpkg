@@ -1,6 +1,10 @@
 import { Toggle } from '@/components/ui/toggle.tsx'
-import type { Option } from '@/components/ui/toggle.tsx'
 import { ArrowDownAz, ArrowDownZa } from 'lucide-react'
+
+import type {
+  Option,
+  ToggleClassNames,
+} from '@/components/ui/toggle.tsx'
 
 export type SortingOption = 'ascending' | 'descending'
 
@@ -8,6 +12,7 @@ interface SortToggleProps<T> {
   filteredItems: T[]
   setFilteredItems: (i: T[]) => void
   sortKey: keyof T
+  classNames?: ToggleClassNames
 }
 
 interface SortOption extends Option {
@@ -40,6 +45,7 @@ export const SortToggle = <T extends object>({
   filteredItems,
   setFilteredItems,
   sortKey,
+  classNames,
 }: SortToggleProps<T>) => {
   const options: [SortOption, SortOption] = [
     {
@@ -66,5 +72,5 @@ export const SortToggle = <T extends object>({
     },
   ]
 
-  return <Toggle options={options} />
+  return <Toggle classNames={classNames} options={options} />
 }

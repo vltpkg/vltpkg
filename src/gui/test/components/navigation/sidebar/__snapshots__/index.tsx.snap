@@ -23,7 +23,7 @@ exports[`AppSidebar renders with the correct structure 1`] = `
       </gui-sidebar-toggle>
     </gui-sidebar-menu>
   </gui-sidebar-footer>
-  <gui-sidebar-rail classname="right-0">
+  <gui-sidebar-rail>
   </gui-sidebar-rail>
 </gui-sidebar>
 

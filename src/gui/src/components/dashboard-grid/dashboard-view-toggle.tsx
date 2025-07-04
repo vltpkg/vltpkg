@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import { Toggle } from '@/components/ui/toggle.tsx'
 import { LayoutGrid, Sheet } from 'lucide-react'
 
-import type { Option } from '@/components/ui/toggle.tsx'
+import type {
+  Option,
+  ToggleClassNames,
+} from '@/components/ui/toggle.tsx'
 import type {
   DashboardState,
   DashboardAction,
@@ -11,6 +14,7 @@ import type {
 interface DashboardViewToggleProps {
   currentView: DashboardState['currentView']
   setCurrentView: DashboardAction['updateCurrentView']
+  classNames?: ToggleClassNames
 }
 
 interface DashboardToggle extends Option {
@@ -20,6 +24,7 @@ interface DashboardToggle extends Option {
 export const DashboardViewToggle = ({
   currentView,
   setCurrentView,
+  classNames,
 }: DashboardViewToggleProps) => {
   const options: [DashboardToggle, DashboardToggle] = useMemo(
     () => [
@@ -39,5 +44,11 @@ export const DashboardViewToggle = ({
     [setCurrentView],
   )
 
-  return <Toggle options={options} value={currentView} />
+  return (
+    <Toggle
+      classNames={classNames}
+      options={options}
+      value={currentView}
+    />
+  )
 }

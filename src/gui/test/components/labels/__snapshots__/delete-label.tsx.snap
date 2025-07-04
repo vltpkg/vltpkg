@@ -10,7 +10,7 @@ exports[`delete-label > should render correctly 1`] = `
           <gui-dialog-trigger aschild="true">
             <gui-button
               disabled="false"
-              classname="rounded-sm border border-[1px] border-muted-foreground/25"
+              classname="rounded-sm border-[1px] border-muted-foreground/25"
               size="icon"
               variant="ghost"
             >

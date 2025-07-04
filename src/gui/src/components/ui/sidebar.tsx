@@ -163,7 +163,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              'group/sidebar-wrapper flex max-h-[calc(100svh-64px)] min-h-[calc(100svh-64px)] w-full has-[[data-variant=inset]]:bg-sidebar',
+              'group/sidebar-wrapper flex max-h-[calc(100svh-4px-64px)] min-h-[calc(100svh-4px-64px)] w-full has-[[data-variant=inset]]:bg-sidebar',
               className,
             )}
             ref={ref}
@@ -296,7 +296,7 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] group-data-[side=left]:-right-4 group-data-[side=right]:left-0 hover:after:bg-sidebar-border sm:flex',
+        'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] group-data-[side=left]:-right-4 group-data-[side=right]:left-0 group-data-[state=expanded]:-right-2.5 hover:after:bg-sidebar-border sm:flex',
         '[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize',
         '[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize',
         'group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar',
@@ -319,7 +319,7 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         'relative flex w-full flex-col overflow-hidden overflow-scroll border border-[1px] bg-background',
-        'md:peer-data-[state=collapsed]:right-1.5 md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl',
+        'md:peer-data-[state=collapsed]:right-1.5 md:peer-data-[state=expanded]:right-1.5 md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl',
         className,
       )}
       {...props}

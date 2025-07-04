@@ -53,7 +53,7 @@ export const AppSidebar = () => {
           <SidebarToggle />
         </SidebarMenu>
       </SidebarFooter>
-      <SidebarRail className="right-0" />
+      <SidebarRail />
     </Sidebar>
   )
 }

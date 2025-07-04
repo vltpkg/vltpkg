@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils.ts'
 import type { LucideProps, LucideIcon } from 'lucide-react'
 
 export interface Option {
@@ -9,15 +10,34 @@ export interface Option {
   callBack: (o?: any) => void
 }
 
+export interface ToggleClassNames {
+  wrapperClassName?: string
+  toggleClassName?: string
+  optionClassName?: string
+  sliderClassName?: string
+}
+
 interface ToggleProps {
   options: [Option, Option]
   value?: string
+  classNames?: ToggleClassNames
 }
 
-export const Toggle = ({ options, value }: ToggleProps) => {
+export const Toggle = ({
+  options,
+  value,
+  classNames,
+}: ToggleProps) => {
   const [activeOption, setActiveOption] = useState<string>(
     value ?? options[0].key,
   )
+
+  const {
+    wrapperClassName,
+    toggleClassName,
+    optionClassName,
+    sliderClassName,
+  } = classNames ?? {}
 
   // Use the value prop if provided, otherwise use internal state
   const currentActiveOption = value ?? activeOption
@@ -44,11 +64,18 @@ export const Toggle = ({ options, value }: ToggleProps) => {
   }
 
   return (
-    <div className="flex w-fit">
-      <div className="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5">
+    <div className={cn('flex w-fit', wrapperClassName)}>
+      <div
+        className={cn(
+          'relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5',
+          toggleClassName,
+        )}>
         {/* the toggle slider */}
         <motion.div
-          className="absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted"
+          className={cn(
+            'absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted',
+            sliderClassName,
+          )}
           animate={{
             left: currentActiveOption === options[0].key ? 4 : 36,
           }}
@@ -58,7 +85,10 @@ export const Toggle = ({ options, value }: ToggleProps) => {
           <div
             key={idx}
             onClick={() => optionClickHandler(option.key)}
-            className="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm"
+            className={cn(
+              'z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm',
+              optionClassName,
+            )}
             title={option.toolTipContent}>
             <option.icon
               size={20}
