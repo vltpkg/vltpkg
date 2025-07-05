@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`dashboard-item renders correctly 1`] = `
+
+<div
+  role="link"
+  class="group/card duration-250 group relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] bg-card transition-colors hover:border-muted hover:bg-card-accent"
+>
+  <div class="flex justify-end px-3 py-3">
+    <gui-tooltip-provider delayduration="150">
+      <gui-tooltip>
+        <gui-tooltip-trigger classname="cursor-default text-xxs text-muted-foreground">
+          November 1st, 2024
+        </gui-tooltip-trigger>
+        <gui-tooltip-content
+          side="top"
+          align="start"
+        >
+          <p class>
+            November 1st, 2024
+          </p>
+        </gui-tooltip-content>
+      </gui-tooltip>
+    </gui-tooltip-provider>
+  </div>
+  <div class="flex min-h-14 items-center px-3">
+    <gui-card-title classname="text-md font-medium">
+      project-foo
+    </gui-card-title>
+  </div>
+  <div class="duration-250 flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors group-hover/card:border-muted">
+    <gui-tooltip-provider delayduration="150">
+      <gui-tooltip>
+        <gui-tooltip-trigger classname="grow cursor-default truncate text-left text-xs text-muted-foreground">
+          ~/project-foo
+        </gui-tooltip-trigger>
+        <gui-tooltip-content
+          side="top"
+          align="start"
+        >
+          ~/project-foo
+        </gui-tooltip-content>
+      </gui-tooltip>
+    </gui-tooltip-provider>
+    <div class="flex gap-1">
+      <gui-package-manager-vlt-icon classname="text-muted-foreground fill-muted-foreground transition-colors duration-250 size-6">
+      </gui-package-manager-vlt-icon>
+      <gui-runtime-node-icon classname="text-muted-foreground fill-muted-foreground transition-colors duration-250 size-6">
+      </gui-runtime-node-icon>
+    </div>
+  </div>
+</div>
+
+`;

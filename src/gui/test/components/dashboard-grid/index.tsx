@@ -42,23 +42,43 @@ vi.mock('@/utils/dashboard-tools.tsx', () => ({
   }),
 }))
 
-vi.mock('@/components/ui/card.tsx', () => ({
-  CardTitle: 'gui-card-title',
+vi.mock('@/components/ui/button.tsx', () => ({
+  Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/tooltip.tsx', () => ({
-  Tooltip: 'gui-tooltip',
-  TooltipContent: 'gui-tooltip-content',
-  TooltipProvider: 'gui-tooltip-provider',
-  TooltipTrigger: 'gui-tooltip-trigger',
+vi.mock('@/components/ui/filter-search.tsx', () => ({
+  FilterSearch: 'gui-filter-search',
+}))
+
+vi.mock('@/components/data-table/table-filter-search.tsx', () => ({
+  TableFilterSearch: 'gui-dashboard-table-filter-search',
+}))
+
+vi.mock('@/components/data-table/table-view-dropdown.tsx', () => ({
+  TableViewDropdown: 'gui-dashboard-table-view-dropdown',
 }))
 
 vi.mock('@/components/dashboard-grid/dasboard-table.tsx', () => ({
   DashboardTable: 'gui-dashboard-table',
 }))
 
-vi.mock('date-fns', () => ({
-  format: () => 'November 1st, 2024 | 06:01 PM',
+vi.mock('@/components/sort-dropdown.tsx', () => ({
+  SortDropdown: 'gui-sort-dropdown',
+}))
+
+vi.mock(
+  '@/components/dashboard-grid/dashboard-view-toggle.tsx',
+  () => ({
+    DashboardViewToggle: 'gui-dashboard-view-toggle',
+  }),
+)
+
+vi.mock('lucide-react', () => ({
+  Plus: 'gui-plus-icon',
+}))
+
+vi.mock('@/components/dashboard-grid/dashboard-item.tsx', () => ({
+  DashboardItem: 'gui-dashboard-item',
 }))
 
 expect.addSnapshotSerializer({
