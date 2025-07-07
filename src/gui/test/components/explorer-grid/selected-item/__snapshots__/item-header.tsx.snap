@@ -206,7 +206,7 @@ exports[`ItemHeader renders with a version information 1`] = `
     </gui-data-badge>
   </div>
   <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
-    <gui-scroll-area classname="relative overflow-hidden border-b-[1px] border-muted py-3 w-full">
+    <gui-scroll-area classname="relative overflow-hidden py-3 border-b-[1px] border-muted w-full">
       <div class="pointer-events-none absolute right-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-l from-card">
       </div>
       <div class="pointer-events-none absolute left-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-r from-card">

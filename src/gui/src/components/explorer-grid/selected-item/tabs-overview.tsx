@@ -17,6 +17,7 @@ import { toHumanNumber } from '@/utils/human-number.ts'
 import { Github } from '@/components/icons/index.ts'
 import { getRepositoryUrl } from '@/utils/get-repo-url.ts'
 import { ContributorList } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
+import { cn } from '@/lib/utils.ts'
 
 export const OverviewTabButton = () => {
   return (
@@ -33,7 +34,33 @@ const getSiteName = (url: string): string | undefined => {
   return new URL(url).hostname.replace(/^www\./, '').split('.')[0]
 }
 
-const TabContentAside = () => {
+interface AsideEmptyStateProps {
+  className?: string
+}
+
+export const AsideEmptyState = ({
+  className,
+}: AsideEmptyStateProps) => {
+  return (
+    <aside
+      className={cn(
+        'flex h-72 w-full flex-col items-center justify-center rounded-xl border-[1px] border-muted bg-white px-6 py-4 dark:bg-neutral-900',
+        className,
+      )}>
+      <p className="w-2/3 text-pretty text-center text-sm text-muted-foreground">
+        We couldn't create an overview for this project.
+      </p>
+    </aside>
+  )
+}
+
+interface TabContentAsideProps {
+  className?: string
+}
+
+export const TabContentAside = ({
+  className,
+}: TabContentAsideProps) => {
   const manifest = useSelectedItemStore(state => state.manifest)
   const stargazers = useSelectedItemStore(
     state => state.stargazersCount,
@@ -44,6 +71,7 @@ const TabContentAside = () => {
   const openPR = useSelectedItemStore(
     state => state.openPullRequestCount,
   )
+  const focused = useSelectedItemStore(state => state.focused)
 
   const asideEmpty =
     !stargazers &&
@@ -54,10 +82,16 @@ const TabContentAside = () => {
     !manifest?.bugs &&
     !manifest?.funding
 
-  if (asideEmpty) return null
+  if (asideEmpty && !focused) return null
+
+  if (asideEmpty && focused) return <AsideEmptyState />
 
   return (
-    <aside className="order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4">
+    <aside
+      className={cn(
+        'order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4',
+        className,
+      )}>
       <div className="flex flex-col gap-2">
         <h4 className="text-sm font-medium capitalize text-muted-foreground">
           about
@@ -194,6 +228,7 @@ const TabContentAside = () => {
 
 export const OverviewTabContent = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
+  const focused = useSelectedItemStore(state => state.focused)
 
   const keywords =
     manifest?.keywords ?
@@ -240,7 +275,7 @@ export const OverviewTabContent = () => {
           </div>
         )}
       </div>
-      <TabContentAside />
+      {!focused && <TabContentAside />}
     </TabsContent>
   )
 }

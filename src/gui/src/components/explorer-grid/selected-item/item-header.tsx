@@ -125,12 +125,19 @@ const SpecOrigin = ({
   return ''
 }
 
-export const ItemHeader = () => {
+interface ItemHeaderProps {
+  className?: string
+}
+
+export const ItemHeader = ({ className }: ItemHeaderProps) => {
   return (
     <motion.div
       animate={{ opacity: 1 }}
       initial={{ opacity: 0 }}
-      className="flex flex-col divide-y-[1px] divide-muted pb-3">
+      className={cn(
+        'flex flex-col divide-y-[1px] divide-muted pb-3',
+        className,
+      )}>
       <div className="flex w-full flex-col">
         <ItemBreadcrumbs />
         <div className="flex w-full justify-between">
@@ -192,6 +199,7 @@ const PackageDownloadCount = () => {
 const PackageMetadata = ({ className }: { className?: string }) => {
   const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
+  const focused = useSelectedItemStore(state => state.focused)
   const currentVersion = versions?.find(
     version => version.version === manifest?.version,
   )
@@ -214,7 +222,8 @@ const PackageMetadata = ({ className }: { className?: string }) => {
   return (
     <ScrollArea
       className={cn(
-        'relative w-full overflow-hidden border-b-[1px] border-muted py-3',
+        'relative w-full overflow-hidden py-3',
+        !focused && 'border-b-[1px] border-muted',
         className,
       )}>
       <div className="pointer-events-none absolute right-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-l from-card" />
