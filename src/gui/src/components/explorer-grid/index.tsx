@@ -59,13 +59,13 @@ const getItemsData = (
 
   for (const edge of allEdges) {
     if (sameItems && !edge.from && allEdges.length > 1) continue
-    const _id = edge.to?.id
+    const id_ = edge.to?.id
     const titleVersion =
       edge.spec?.bareSpec ? `@${edge.spec.bareSpec}` : ''
     const title =
       edge.from ? `${edge.name}${titleVersion}` : edge.name
     // will not stack missing packages
-    if (!_id) {
+    if (!id_) {
       items.push({
         ...edge,
         id: `${edge.from?.id}${title}`,
@@ -79,7 +79,7 @@ const getItemsData = (
       continue
     }
     // retrieve the target node base depID
-    const id = baseDepID(_id)
+    const id = baseDepID(id_)
     // items resolving to the same package will be stacked
     const item = seenItems.get(id)
     if (item && stackable) {
