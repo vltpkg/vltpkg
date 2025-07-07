@@ -6,11 +6,15 @@ import { Badge } from '@/components/ui/badge.tsx'
 
 export const Results = ({ items }: { items: GridItemData[] }) => {
   if (!items.length) {
-    return <EmptyResultsState />
+    return (
+      <div className="px-8 py-4">
+        <EmptyResultsState />
+      </div>
+    )
   }
 
   return (
-    <div className="mt-8 grid w-full max-w-8xl gap-4">
+    <div className="mt-8 grid w-full max-w-8xl gap-4 px-8 py-4">
       <div className="flex items-center gap-3">
         <GridHeader className="h-fit">Results</GridHeader>
         <Badge variant="default">{items.length}</Badge>
