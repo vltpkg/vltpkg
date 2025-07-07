@@ -138,8 +138,7 @@ export const CrumbNav = ({
   const visibleBreadcrumbs = getVisibleBreadcrumbs()
 
   return (
-    <nav
-      className={cn('flex flex-row items-center gap-1', className)}>
+    <nav className={cn('flex items-center gap-1', className)}>
       {visibleBreadcrumbs.map(
         ({ part, originalIndex }, displayIndex) => (
           <React.Fragment key={`part-${originalIndex}`}>

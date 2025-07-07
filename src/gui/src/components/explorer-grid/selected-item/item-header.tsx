@@ -51,6 +51,7 @@ import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { LICENSE_TYPES } from '@/lib/constants/index.ts'
 import { CrumbNav } from '@/components/navigation/crumb-nav.tsx'
+import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -128,20 +129,41 @@ const SpecOrigin = ({
   return ''
 }
 
-export const ItemHeader = () => {
+interface ItemHeaderProps extends React.PropsWithChildren {
+  className?: string
+}
+
+export const ItemHeader = ({
+  className,
+  children,
+}: ItemHeaderProps) => {
+  const breadcrumbs = useSelectedItemStore(
+    state => state.selectedItem.breadcrumbs,
+  )
+
   return (
     <motion.div
       animate={{ opacity: 1 }}
       initial={{ opacity: 0 }}
-      className="flex flex-col divide-y-[1px] divide-muted pb-3">
+      className={cn(
+        'flex flex-col divide-y-[1px] divide-muted pb-3',
+        className,
+      )}>
       <div className="flex w-full flex-col">
-        <ItemBreadcrumbs />
-        <div className="flex w-full justify-between">
-          <PackageImageSpec className="pb-3 pl-6 pt-4" />
-          <PackageOverallScore className="pb-3 pr-6 pt-4" />
+        <div
+          className={cn(
+            'flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden',
+            breadcrumbs ? 'justify-between' : 'justify-end',
+          )}>
+          <ItemBreadcrumbs />
+          {children}
+        </div>
+        <div className="flex w-full justify-between py-4">
+          <PackageImageSpec className="pl-6" />
+          <PackageOverallScore className="pr-6" />
         </div>
       </div>
-      <div className="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+      <div className="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
         <Publisher />
         <PackageDownloadCount />
       </div>
@@ -156,14 +178,26 @@ const ItemBreadcrumbs = () => {
   const breadcrumbs = useSelectedItemStore(
     state => state.selectedItem.breadcrumbs,
   )
+  const { focused } = useFocusState()
 
   if (!breadcrumbs) return null
 
   return (
-    <ScrollArea className="relative w-full overflow-hidden overflow-x-scroll border-b-[1px] border-muted pb-2 pt-2 empty:hidden">
-      <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-[100] h-full w-6 rounded-r-lg bg-gradient-to-l from-card" />
-      <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-[100] h-full w-6 rounded-l-lg bg-gradient-to-r from-card" />
-
+    <ScrollArea
+      viewportClassName="flex items-center"
+      className="relative flex w-full items-center overflow-hidden overflow-x-scroll">
+      <div
+        className={cn(
+          'pointer-events-none absolute bottom-0 right-0 top-0 z-[100] h-full w-6 rounded-r-xl bg-gradient-to-l',
+          focused ? 'from-background' : 'from-card',
+        )}
+      />
+      <div
+        className={cn(
+          'pointer-events-none absolute bottom-0 left-0 top-0 z-[100] h-full w-6 rounded-l-xl bg-gradient-to-r',
+          focused ? 'from-background' : 'from-card',
+        )}
+      />
       <CrumbNav className="px-6" breadcrumbs={breadcrumbs} />
       <ScrollBar className="z-[102]" orientation="horizontal" />
     </ScrollArea>
@@ -195,6 +229,7 @@ const PackageDownloadCount = () => {
 const PackageMetadata = ({ className }: { className?: string }) => {
   const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
+  const { focused } = useFocusState()
   const currentVersion = versions?.find(
     version => version.version === manifest?.version,
   )
@@ -217,11 +252,22 @@ const PackageMetadata = ({ className }: { className?: string }) => {
   return (
     <ScrollArea
       className={cn(
-        'relative w-full overflow-hidden border-b-[1px] border-muted py-3',
+        'relative w-full overflow-hidden py-3',
+        !focused && 'border-b-[1px] border-muted',
         className,
       )}>
-      <div className="pointer-events-none absolute right-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-l from-card" />
-      <div className="pointer-events-none absolute left-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-r from-card" />
+      <div
+        className={cn(
+          'pointer-events-none absolute right-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-l',
+          focused ? 'from-background' : 'from-card',
+        )}
+      />
+      <div
+        className={cn(
+          'pointer-events-none absolute left-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-r',
+          focused ? 'from-background' : 'from-card',
+        )}
+      />
 
       <div className="flex w-max gap-2 overflow-x-hidden px-6">
         {manifest.private && (
@@ -330,7 +376,7 @@ const PackageOverallScore = ({
         </ProgressCircle>
         <div className="flex flex-col">
           <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-300">
-            Package Score
+            Package score
           </p>
           <p className="font-mono text-xs font-medium tabular-nums text-neutral-400">
             {averageScore}/100
@@ -348,13 +394,13 @@ const PackageImage = () => {
   )
 
   return (
-    <Avatar className="aspect-square size-[3.875rem]">
+    <Avatar className="aspect-square size-16">
       <AvatarImage
-        className="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+        className="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
         src={favicon?.src}
         alt={favicon?.alt ?? 'Package Icon'}
       />
-      <AvatarFallback className="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+      <AvatarFallback className="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
         {selectedItem.to?.mainImporter ?
           <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
             <Home
@@ -457,7 +503,7 @@ const Publisher = ({ className }: { className?: string }) => {
       )}>
       <Avatar>
         <AvatarImage
-          className="size-5 rounded-sm outline outline-[1px] outline-border"
+          className="size-5 rounded-sm border-[1px] border-border"
           src={publisherAvatar?.src}
           alt={publisherAvatar?.alt ?? 'Publisher Avatar'}
         />
