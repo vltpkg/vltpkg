@@ -55,6 +55,7 @@ type MaybeGraphLike = Pick<
   | 'importers'
   | 'edges'
   | 'nodes'
+  | 'nodesByName'
   | 'projectRoot'
   | 'addEdge'
   | 'addNode'
@@ -74,6 +75,7 @@ export const load = (transfered: TransferData): LoadResponse => {
     importers: new Set<NodeLike>(),
     edges: new Set<EdgeLike>(),
     nodes: new Map<DepID, NodeLike>(),
+    nodesByName: new Map<string, Set<NodeLike>>(),
     projectRoot: mainImporter?.projectRoot || '',
     addEdge(
       type: DependencyTypeShort,
@@ -157,6 +159,12 @@ export const load = (transfered: TransferData): LoadResponse => {
         },
       }
       this.nodes.set(node.id, node)
+      if (node.name) {
+        const allNodesWithThisName =
+          this.nodesByName.get(node.name) ?? new Set()
+        allNodesWithThisName.add(node)
+        this.nodesByName.set(node.name, allNodesWithThisName)
+      }
       return node
     },
   }

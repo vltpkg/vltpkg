@@ -5,16 +5,31 @@ import { cn } from '@/lib/utils.ts'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
+/**
+ * Options for the onDependentClick handler.
+ */
+export type OnDependentClickOptions = {
+  /**
+   * The item data to update.
+   */
+  item: GridItemData
+  /**
+   * Whether this is a parent item.
+   */
+  isParent: boolean
+}
+
 type OverviewSidebarProps = {
   dependencies: GridItemData[]
   parentItem: GridItemData | undefined
   workspaces: GridItemData[]
   dependents: GridItemData[]
-  onWorkspaceClick: (item: GridItemData) => () => undefined
+  onWorkspaceClick: (
+    opts: OnDependentClickOptions,
+  ) => (e: React.MouseEvent | MouseEvent) => void
   onDependentClick: (
-    item: GridItemData,
-    isParent?: boolean,
-  ) => () => undefined
+    opts: OnDependentClickOptions,
+  ) => (e: React.MouseEvent | MouseEvent) => void
 }
 
 export const OverviewSidebar = ({
@@ -28,6 +43,7 @@ export const OverviewSidebar = ({
   return (
     <>
       <OverviewSection
+        isParent
         header="Parent"
         items={parentItem}
         onClick={onDependentClick}
@@ -88,7 +104,7 @@ const OverviewSection = ({
               item={item}
               isWorkspace={isWorkspace}
               dependencies={false}
-              onSelect={onClick(item)}
+              onSelect={onClick({ item, isParent: false })}
             />
           ))}
         </div>
@@ -96,7 +112,7 @@ const OverviewSection = ({
           parent={isParent}
           item={items}
           highlight={highlight}
-          onSelect={onClick(items, isParent)}
+          onSelect={onClick({ item: items, isParent })}
         />
       }
     </>
