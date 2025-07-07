@@ -17,6 +17,7 @@ export type GraphLike = {
   mainImporter: NodeLike
   projectRoot: string
   nodes: Map<DepID, NodeLike>
+  nodesByName: Map<string, Set<NodeLike>>
   edges: Set<EdgeLike>
   addEdge: (
     type: DependencyTypeShort,
