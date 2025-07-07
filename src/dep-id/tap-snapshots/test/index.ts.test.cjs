@@ -251,6 +251,7 @@ Array [
     undefined,
   ],
   "··x@1.2.3·%3Aroot%20%3E%20%23extra",
+  "··x@1.2.3",
 ]
 `
 
@@ -280,6 +281,7 @@ Array [
     undefined,
   ],
   "··x@1.2.3·%3Aroot%20%3E%20%23extra",
+  "··x@1.2.3",
 ]
 `
 
@@ -309,6 +311,7 @@ Array [
     undefined,
   ],
   "·a·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·a·manifest-name@1.2.3",
 ]
 `
 
@@ -338,6 +341,7 @@ Array [
     undefined,
   ],
   "·b·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·b·manifest-name@1.2.3",
 ]
 `
 
@@ -367,6 +371,7 @@ Array [
     undefined,
   ],
   "git·git%2Bssh%3A§§host.com§x.git··%3Aroot%20%3E%20%23extra",
+  "git·git%2Bssh%3A§§host.com§x.git·",
 ]
 `
 
@@ -396,6 +401,7 @@ Array [
     undefined,
   ],
   "git·git%2Bssh%3A§§host.com§x.git·branch·%3Aroot%20%3E%20%23extra",
+  "git·git%2Bssh%3A§§host.com§x.git·branch",
 ]
 `
 
@@ -425,6 +431,7 @@ Array [
     undefined,
   ],
   "git·git%2Bssh%3A§§host.com§x.git·semver%3A1·%3Aroot%20%3E%20%23extra",
+  "git·git%2Bssh%3A§§host.com§x.git·semver%3A1",
 ]
 `
 
@@ -454,6 +461,7 @@ Array [
     undefined,
   ],
   "git·github%3Aa§b··%3Aroot%20%3E%20%23extra",
+  "git·github%3Aa§b·",
 ]
 `
 
@@ -483,6 +491,7 @@ Array [
     undefined,
   ],
   "git·github%3Aa§b·branch·%3Aroot%20%3E%20%23extra",
+  "git·github%3Aa§b·branch",
 ]
 `
 
@@ -512,6 +521,7 @@ Array [
     undefined,
   ],
   "git·github%3Aa§b·semver%3A1·%3Aroot%20%3E%20%23extra",
+  "git·github%3Aa§b·semver%3A1",
 ]
 `
 
@@ -540,6 +550,7 @@ Array [
     undefined,
   ],
   "remote·https%3A§§x.com§x.tgz·%3Aroot%20%3E%20%23extra",
+  "remote·https%3A§§x.com§x.tgz",
 ]
 `
 
@@ -569,6 +580,7 @@ Array [
     undefined,
   ],
   "·a·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·a·manifest-name@1.2.3",
 ]
 `
 
@@ -598,6 +610,7 @@ Array [
     undefined,
   ],
   "·b·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·b·manifest-name@1.2.3",
 ]
 `
 
@@ -627,6 +640,7 @@ Array [
     undefined,
   ],
   "·https%3A§§c.example.com§·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·https%3A§§c.example.com§·manifest-name@1.2.3",
 ]
 `
 
@@ -656,6 +670,7 @@ Array [
     undefined,
   ],
   "··y@1.2.3·%3Aroot%20%3E%20%23extra",
+  "··y@1.2.3",
 ]
 `
 
@@ -713,6 +728,7 @@ Array [
     undefined,
   ],
   "·npm·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·npm·manifest-name@1.2.3",
 ]
 `
 
@@ -742,6 +758,7 @@ Array [
     undefined,
   ],
   "·npm·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·npm·manifest-name@1.2.3",
 ]
 `
 
@@ -771,6 +788,7 @@ Array [
     undefined,
   ],
   "git·github%3Aa§b·branch·%3Aroot%20%3E%20%23extra",
+  "git·github%3Aa§b·branch",
 ]
 `
 
@@ -800,6 +818,7 @@ Array [
     undefined,
   ],
   "··manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "··manifest-name@1.2.3",
 ]
 `
 
@@ -829,6 +848,7 @@ Array [
     undefined,
   ],
   "··manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "··manifest-name@1.2.3",
 ]
 `
 
@@ -858,5 +878,6 @@ Array [
     undefined,
   ],
   "·https%3A§§x.com§·manifest-name@1.2.3·%3Aroot%20%3E%20%23extra",
+  "·https%3A§§x.com§·manifest-name@1.2.3",
 ]
 `
