@@ -318,6 +318,12 @@ export const definition = j
                     their \`engines.node\` value.`,
       default: process.version,
     },
+    'dev-node-version': {
+      hint: 'version',
+      description: `Node version to use when choosing packages based on
+                    their \`devEngines.node\` value.`,
+      default: process.version,
+    },
   })
 
   .flag({

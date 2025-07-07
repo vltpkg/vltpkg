@@ -95,6 +95,11 @@ Object {
     "multiple": true,
     "type": "string",
   },
+  "dev-node-version": Object {
+    "description": "Node version to use when choosing packages based on their \`devEngines.node\` value.",
+    "hint": "version",
+    "type": "string",
+  },
   "dry-run": Object {
     "description": "Run command without making any changes",
     "type": "boolean",
@@ -444,6 +449,7 @@ Array [
   "--color",
   "--config=<user | project>",
   "--dashboard-root=<path>",
+  "--dev-node-version=<version>",
   "--dry-run",
   "--editor=<program>",
   "--expect-results=<value>",
@@ -494,6 +500,7 @@ Array [
   "color",
   "config",
   "dashboard-root",
+  "dev-node-version",
   "dry-run",
   "editor",
   "expect-results",

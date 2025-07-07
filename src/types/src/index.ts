@@ -186,6 +186,8 @@ export type Manifest = {
   scripts?: Record<string, string>
   /** supported run-time platforms this package can run on */
   engines?: Record<string, string>
+  /** supported development platforms this package can run on */
+  devEngines?: Record<string, string>
   /** supported operating systems this package can run on */
   os?: string[] | string
   /** supported CPU architectures this package can run on */

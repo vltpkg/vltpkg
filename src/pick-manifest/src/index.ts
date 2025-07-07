@@ -21,6 +21,7 @@ export type PickManifestOptions = {
   tag?: string
   before?: Date | number | string
   'node-version'?: string
+  'dev-node-version'?: string
   os?: string
   arch?: string
 }
@@ -84,11 +85,19 @@ export const platformCheck = (
   nodeVersion: Version | string,
   wantOs?: string,
   wantArch?: string,
+  devNodeVersion?: Version | string,
 ): boolean => {
-  const { engines, os, cpu } = mani
+  const { engines, devEngines, os, cpu } = mani
   if (engines) {
     const { node } = engines
     if (node && !satisfies(nodeVersion, node, true)) {
+      return false
+    }
+  }
+  if (devEngines) {
+    const { node } = devEngines
+    const checkVersion = devNodeVersion || nodeVersion
+    if (node && !satisfies(checkVersion, node, true)) {
       return false
     }
   }
@@ -104,6 +113,7 @@ const versionOk = (
   os: string,
   arch: string,
   before?: number,
+  devNodeVersion?: Version,
 ) => {
   const mani = packument.versions[version]
   /* c8 ignore next */
@@ -111,7 +121,7 @@ const versionOk = (
   const { time } = packument
   return (
     isBefore(version, before, time) &&
-    platformCheck(mani, nodeVersion, os, arch)
+    platformCheck(mani, nodeVersion, os, arch, devNodeVersion)
   )
 }
 
@@ -131,11 +141,13 @@ export function pickManifest<T extends Packumentish>(
     tag = 'latest',
     before,
     'node-version': nodeVersion,
+    'dev-node-version': devNodeVersion,
     os = process.platform,
     arch = process.arch,
   } = opts
   const nv =
     !nodeVersion ? parsedNodeVersion : Version.parse(nodeVersion)
+  const devNv = !devNodeVersion ? nv : Version.parse(devNodeVersion)
 
   // cast since 'time' might not be present on minified packuments
   const {
@@ -175,7 +187,10 @@ export function pickManifest<T extends Packumentish>(
     // we use that.  Otherwise, we get the highest precedence version
     // prior to the dist-tag.
     const mani = versions[ver]
-    if (mani && versionOk(packument, ver, nv, os, arch, time)) {
+    if (
+      mani &&
+      versionOk(packument, ver, nv, os, arch, time, devNv)
+    ) {
       return mani as PickManifestish<T>
     } else {
       range = new Range(`<=${ver}`)
@@ -193,7 +208,7 @@ export function pickManifest<T extends Packumentish>(
   if (
     defaultVer &&
     (range.isAny || defTagVersion?.satisfies(range)) &&
-    versionOk(packument, defaultVer, nv, os, arch, time)
+    versionOk(packument, defaultVer, nv, os, arch, time, devNv)
   ) {
     return versions[defaultVer] as PickManifestish<T>
   }
@@ -222,7 +237,7 @@ export function pickManifest<T extends Packumentish>(
     const mc = {
       version,
       deprecated: !!mani.deprecated,
-      platform: platformCheck(mani, nv, os, arch),
+      platform: platformCheck(mani, nv, os, arch, devNv),
       prerelease: !!version.prerelease?.length,
       mani,
     }

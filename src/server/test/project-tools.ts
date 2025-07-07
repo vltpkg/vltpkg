@@ -48,4 +48,27 @@ t.test('inferTools', async t => {
     new Set(inferTools({}, scurry.cwd.resolve('jsOnly'), scurry)),
     new Set(['js']),
   )
+
+  // Test devEngines support
+  const manifestWithDevEngines: Manifest = {
+    name: 'dev-project',
+    version: '1.0.0',
+    devEngines: { node: '>=18', bun: '*' },
+  }
+  t.strictSame(
+    new Set(inferTools(manifestWithDevEngines, scurry.cwd, scurry)),
+    new Set(['node', 'bun']),
+  )
+
+  // Test both engines and devEngines
+  const manifestWithBoth: Manifest = {
+    name: 'both-project',
+    version: '1.0.0',
+    engines: { node: '>=16' },
+    devEngines: { bun: '*' },
+  }
+  t.strictSame(
+    new Set(inferTools(manifestWithBoth, scurry.cwd, scurry)),
+    new Set(['node', 'bun']),
+  )
 })

@@ -56,7 +56,10 @@ export const inferTools = (
   for (const knownName of knownTools.keys()) {
     if (
       Object.hasOwn(manifest, knownName) ||
-      (manifest.engines && Object.hasOwn(manifest.engines, knownName))
+      (manifest.engines &&
+        Object.hasOwn(manifest.engines, knownName)) ||
+      (manifest.devEngines &&
+        Object.hasOwn(manifest.devEngines, knownName))
     ) {
       tools.push(asProjectTools(knownName))
     }

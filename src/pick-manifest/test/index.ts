@@ -832,3 +832,218 @@ t.test('handles complex Spec objects with subspecs correctly', t => {
 
   t.end()
 })
+
+t.test('devEngines support', t => {
+  const metadata = {
+    versions: {
+      '1.0.0': {
+        version: '1.0.0',
+        devEngines: { node: '>=16' },
+      },
+      '1.0.1': {
+        version: '1.0.1',
+        devEngines: { node: '>=18' },
+      },
+      '1.0.2': {
+        version: '1.0.2',
+        devEngines: { node: '>=20' },
+      },
+    },
+  } as unknown as Packument
+
+  t.test('should pick manifest when devEngines is satisfied', t => {
+    const manifest = pickManifest(metadata, '^1.0.0', {
+      'dev-node-version': '18.0.0',
+    })
+    t.equal(
+      manifest?.version,
+      '1.0.1',
+      'picked version with compatible devEngines',
+    )
+    t.end()
+  })
+
+  t.test(
+    'should pick best available when devEngines is not satisfied',
+    t => {
+      const manifest = pickManifest(metadata, '^1.0.0', {
+        'node-version': '14.0.0',
+        'dev-node-version': '14.0.0',
+      })
+      t.equal(
+        manifest?.version,
+        '1.0.2',
+        'picked best available version despite incompatible devEngines',
+      )
+      t.end()
+    },
+  )
+
+  t.test(
+    'should prefer versions that satisfy devEngines requirement',
+    t => {
+      const extendedMetadata = {
+        'dist-tags': {
+          latest: '1.0.2', // latest has high devEngines requirement
+        },
+        versions: {
+          '1.0.0': {
+            version: '1.0.0',
+            devEngines: { node: '>=16' },
+          },
+          '1.0.1': {
+            version: '1.0.1',
+            devEngines: { node: '>=18' },
+          },
+          '1.0.2': {
+            version: '1.0.2',
+            devEngines: { node: '>=20' },
+          },
+        },
+      } as unknown as Packument
+
+      // Should pick 1.0.0 as it satisfies devEngines for node 16
+      t.equal(
+        pickManifest(extendedMetadata, '^1.0.0', {
+          'dev-node-version': '16.0.0',
+        })?.version,
+        '1.0.0',
+        'prefer version that satisfies devEngines over latest',
+      )
+
+      // Should pick 1.0.1 as it satisfies devEngines for node 18
+      t.equal(
+        pickManifest(extendedMetadata, '^1.0.0', {
+          'dev-node-version': '18.0.0',
+        })?.version,
+        '1.0.1',
+        'prefer version that satisfies devEngines',
+      )
+
+      t.end()
+    },
+  )
+
+  t.test('should check both engines and devEngines', t => {
+    const mixedMetadata = {
+      versions: {
+        '1.0.0': {
+          version: '1.0.0',
+          engines: { node: '>=14' },
+          devEngines: { node: '>=20' },
+        },
+      },
+    } as unknown as Packument
+
+    const manifest = pickManifest(mixedMetadata, '^1.0.0', {
+      'node-version': '14.0.0',
+      'dev-node-version': '20.0.0',
+    })
+    t.equal(
+      manifest?.version,
+      '1.0.0',
+      'picked version compatible with both engines and devEngines',
+    )
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('platformCheck with devEngines', t => {
+  t.test('should pass when devEngines is satisfied', t => {
+    const mani = {
+      devEngines: { node: '>=16' },
+    }
+    const result = platformCheck(
+      mani,
+      '18.0.0',
+      undefined,
+      undefined,
+      '18.0.0',
+    )
+    t.equal(
+      result,
+      true,
+      'platformCheck passed with compatible devEngines',
+    )
+    t.end()
+  })
+
+  t.test('should fail when devEngines is not satisfied', t => {
+    const mani = {
+      devEngines: { node: '>=18' },
+    }
+    const result = platformCheck(
+      mani,
+      '18.0.0',
+      undefined,
+      undefined,
+      '16.0.0',
+    )
+    t.equal(
+      result,
+      false,
+      'platformCheck failed with incompatible devEngines',
+    )
+    t.end()
+  })
+
+  t.test(
+    'should fall back to nodeVersion when devNodeVersion is not provided',
+    t => {
+      const mani = {
+        devEngines: { node: '>=18' },
+      }
+      const result = platformCheck(mani, '18.0.0')
+      t.equal(
+        result,
+        true,
+        'platformCheck used nodeVersion for devEngines check',
+      )
+      t.end()
+    },
+  )
+
+  t.test('should check both engines and devEngines', t => {
+    const mani = {
+      engines: { node: '>=14' },
+      devEngines: { node: '>=18' },
+    }
+    const result = platformCheck(
+      mani,
+      '14.0.0',
+      undefined,
+      undefined,
+      '18.0.0',
+    )
+    t.equal(
+      result,
+      true,
+      'platformCheck passed with both engines satisfied',
+    )
+    t.end()
+  })
+
+  t.test('should fail when engines is not satisfied', t => {
+    const mani = {
+      engines: { node: '>=16' },
+      devEngines: { node: '>=14' },
+    }
+    const result = platformCheck(
+      mani,
+      '14.0.0',
+      undefined,
+      undefined,
+      '18.0.0',
+    )
+    t.equal(
+      result,
+      false,
+      'platformCheck failed when engines not satisfied',
+    )
+    t.end()
+  })
+
+  t.end()
+})

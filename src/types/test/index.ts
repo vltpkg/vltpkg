@@ -243,6 +243,9 @@ t.test('type checks', t => {
   m = { name: 'x', version: '1.0.0', license: 'MIT' }
   //@ts-expect-error
   m = { name: 'x', version: '1.0.0', license: 123 }
+  m = { name: 'x', version: '1.0.0', devEngines: { node: '>=16' } }
+  //@ts-expect-error
+  m = { name: 'x', version: '1.0.0', devEngines: { node: 123 } }
 
   //@ts-expect-error
   let rm: ManifestRegistry = {}

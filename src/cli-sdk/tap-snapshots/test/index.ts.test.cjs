@@ -42,6 +42,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --color
     --config=<user | project>
     --dashboard-root=<path>
+    --dev-node-version=<version>
     --dry-run
     --editor=<program>
     --expect-results=<value>
@@ -95,6 +96,7 @@ Unknown config option: asdf
     color
     config
     dashboard-root
+    dev-node-version
     dry-run
     editor
     expect-results
