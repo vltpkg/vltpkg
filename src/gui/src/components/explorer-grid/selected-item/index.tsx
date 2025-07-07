@@ -1,3 +1,4 @@
+import { baseDepID } from '@vltpkg/dep-id/browser'
 import { longDependencyTypes, shorten } from '@vltpkg/graph/browser'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.ts'
@@ -9,6 +10,7 @@ import { updateDependentsItem } from '@/lib/update-dependents-item.ts'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { QueryResponseNode } from '@vltpkg/query'
+import type { DepID } from '@vltpkg/dep-id/browser'
 
 const getParent = (
   edge?: GridItemData,
@@ -57,19 +59,22 @@ const getWorkspaceItems = (item?: GridItemData): GridItemData[] => {
   return items
 }
 
-const getDependentItems = (
+export const getDependentItems = (
   node?: QueryResponseNode,
   parent?: QueryResponseNode,
 ) => {
+  const seenIds = new Set<DepID>()
   const items: GridItemData[] = []
   if (!node) return items
   for (const edge of Array.from(node.edgesIn)) {
-    if (edge.from === parent) continue
+    const id = baseDepID(edge.from.id)
+    if (edge.from === parent || seenIds.has(id)) continue
+    seenIds.add(id)
     const title = `${edge.name}@${edge.spec.bareSpec}`
 
     items.push({
       ...edge,
-      id: edge.from.id,
+      id,
       title,
       version: edge.from.version || '',
       name: edge.from.name || '',
