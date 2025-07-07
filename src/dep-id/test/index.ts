@@ -12,6 +12,7 @@ import {
   isPackageNameConfused,
   joinDepIDTuple,
   splitDepID,
+  baseDepID,
 } from '../src/index.ts'
 import type { DepID } from '../src/index.ts'
 
@@ -51,7 +52,8 @@ t.test('valid specs', t => {
       const tuple = getTuple(spec, mani)
       const id = getId(spec, mani)
       const idWithExtra = getId(spec, mani, ':root > #extra')
-      t.matchSnapshot([id, tuple, idWithExtra])
+      const base = baseDepID(idWithExtra)
+      t.matchSnapshot([id, tuple, idWithExtra, base])
       t.equal(joinDepIDTuple(tuple), id)
       t.strictSame(splitDepID(id), tuple)
       const h = hydrate(id, 'x', { registries })
