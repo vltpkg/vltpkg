@@ -22,6 +22,9 @@ export const DependencyEmptyState = () => {
   const dependencies = useDependencySidebarStore(
     state => state.dependencies,
   )
+  const importerId = useDependencySidebarStore(
+    state => state.importerId,
+  )
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>
@@ -58,33 +61,40 @@ export const DependencyEmptyState = () => {
             <h3 className="text-base font-medium tracking-tight text-foreground">
               No dependencies
             </h3>
-            <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
-              Your project's dependencies will appear here, install
-              one to see it appear
-            </p>
-            <Popover
-              open={dependencyPopoverOpen}
-              onOpenChange={setDependencyPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  onClick={toggleAddDepPopover}
-                  className="mt-2 h-8 w-fit border-[1px] border-muted">
-                  Install a dependency
-                  <motion.span
-                    animate={{
-                      rotate: dependencyPopoverOpen ? 45 : 0,
-                    }}>
-                    <Plus />
-                  </motion.span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="center"
-                side="top"
-                className="right-0 top-0 w-96 p-0">
-                <AddDependenciesPopover />
-              </PopoverContent>
-            </Popover>
+            {importerId ?
+              <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+                Your project's dependencies will appear here, install
+                one to see it appear
+              </p>
+            : <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+                This package has no installed dependencies
+              </p>
+            }
+            {importerId && (
+              <Popover
+                open={dependencyPopoverOpen}
+                onOpenChange={setDependencyPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    onClick={toggleAddDepPopover}
+                    className="mt-2 h-8 w-fit border-[1px] border-muted">
+                    Install a dependency
+                    <motion.span
+                      animate={{
+                        rotate: dependencyPopoverOpen ? 45 : 0,
+                      }}>
+                      <Plus />
+                    </motion.span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="center"
+                  side="top"
+                  className="right-0 top-0 w-96 p-0">
+                  <AddDependenciesPopover />
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         </motion.div>
       )}
