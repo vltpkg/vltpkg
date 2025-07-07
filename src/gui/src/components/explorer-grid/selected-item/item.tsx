@@ -14,20 +14,25 @@ import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
-export const Item = ({ item }: { item: GridItemData }) => {
+interface ItemProps {
+  item: GridItemData
+  focused?: boolean
+}
+
+export const Item = ({ item, focused = false }: ItemProps) => {
   return (
-    <SelectedItemProvider selectedItem={item}>
-      <div className="relative">
+    <SelectedItemProvider selectedItem={item} focused={focused}>
+      <section className="relative">
         <Card className="relative border-muted">
           <ItemHeader />
           <SelectedItemTabs />
         </Card>
-      </div>
+      </section>
     </SelectedItemProvider>
   )
 }
 
-const SelectedItemTabs = () => {
+export const SelectedItemTabs = () => {
   const selectedItem = useSelectedItemStore(
     state => state.selectedItem,
   )

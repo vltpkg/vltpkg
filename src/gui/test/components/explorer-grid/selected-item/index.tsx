@@ -9,7 +9,8 @@ import {
 } from '@/components/explorer-grid/selected-item/index.tsx'
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 import { Spec } from '@vltpkg/spec/browser'
-import type { GridItemData } from '@/components/explorer-grid/types'
+import { SELECTED_ITEM } from './__fixtures__/item.ts'
+
 import type { QueryResponseNode } from '@vltpkg/query'
 
 vi.mock('@/components/explorer-grid/selected-item/item.tsx', () => ({
@@ -34,6 +35,30 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/index.tsx',
+  () => ({
+    FocusedView: 'gui-focused-view',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx',
+  () => ({
+    FocusButton: 'gui-focused-button',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
+  () => ({
+    useFocusState: () => ({
+      focused: false,
+      setFocused: vi.fn(),
+    }),
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -50,19 +75,8 @@ afterEach(() => {
 })
 
 test('SelectedItem renders default', () => {
-  const mockItem = {
-    id: '1',
-    labels: ['prod'],
-    name: 'item',
-    title: 'item',
-    version: '1.0.0',
-    sameItems: false,
-    stacked: false,
-    size: 1,
-  } satisfies GridItemData
-
   const Container = () => {
-    return <SelectedItem item={mockItem} />
+    return <SelectedItem item={SELECTED_ITEM} />
   }
 
   const { container } = render(<Container />)
