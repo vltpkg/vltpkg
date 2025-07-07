@@ -140,6 +140,21 @@ export const splitDepID = (id: string): DepIDTuple => {
 }
 
 /**
+ * Retrieves the base {@link DepID} for a given depID,
+ * ignoring any extra information that may be present.
+ */
+export const baseDepID = (id: string): DepID => {
+  const [type, first, second] = splitDepID(id)
+  switch (type) {
+    case 'git':
+    case 'registry':
+      return joinDepIDTuple([type, first, second])
+    default:
+      return joinDepIDTuple([type, first])
+  }
+}
+
+/**
  * Turn a {@link DepID} into a {@link Spec} object
  */
 export const hydrate = (
