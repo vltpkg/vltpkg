@@ -1,3 +1,4 @@
+import { baseDepID } from '@vltpkg/dep-id/browser'
 import { Results } from '@/components/explorer-grid/results/index.tsx'
 import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
@@ -48,20 +49,23 @@ const getItemsData = (
   }
 
   const ids = new Set<string | undefined>(
-    allEdges.map(edge => edge.to?.id),
+    allEdges.map(edge =>
+      edge.to?.id ? baseDepID(edge.to.id) : undefined,
+    ),
   )
+  ids.delete(undefined)
   const stackable = ids.size > 1
   const sameItems = ids.size === 1
 
   for (const edge of allEdges) {
     if (sameItems && !edge.from && allEdges.length > 1) continue
-    const id = edge.to?.id
+    const id_ = edge.to?.id
     const titleVersion =
       edge.spec?.bareSpec ? `@${edge.spec.bareSpec}` : ''
     const title =
       edge.from ? `${edge.name}${titleVersion}` : edge.name
     // will not stack missing packages
-    if (!id) {
+    if (!id_) {
       items.push({
         ...edge,
         id: `${edge.from?.id}${title}`,
@@ -74,6 +78,8 @@ const getItemsData = (
       })
       continue
     }
+    // retrieve the target node base depID
+    const id = baseDepID(id_)
     // items resolving to the same package will be stacked
     const item = seenItems.get(id)
     if (item && stackable) {

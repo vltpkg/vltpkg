@@ -25,3 +25,84 @@ exports[`SelectedItem renders default 1`] = `
 </div>
 
 `;
+
+exports[`getDependentItems 1`] = `
+
+[
+  {
+    name: 'dependent',
+    type: 'prod',
+    spec: @vltpkg/spec.Spec dependent@^1.0.0,
+    from: {
+      id: '··dependent@1.0.0',
+      name: 'dependent',
+      version: '1.0.0',
+      edgesIn: Set(0) {}
+    },
+    id: '··dependent@1.0.0',
+    title: 'dependent@^1.0.0',
+    version: '1.0.0',
+    stacked: false,
+    size: 0,
+    labels: undefined
+  },
+  {
+    name: 'foo',
+    type: 'dev',
+    spec: @vltpkg/spec.Spec foo@^1.0.0,
+    from: {
+      id: '··foo@1.0.0',
+      name: 'foo',
+      version: '1.0.0',
+      edgesIn: Set(2) {
+        {
+          name: 'foo',
+          type: 'dev',
+          spec: @vltpkg/spec.Spec foo@^1.0.0,
+          from: {
+            id: 'file·.',
+            name: 'root',
+            version: '1.0.0',
+            edgesIn: Set(0) {}
+          }
+        },
+        {
+          name: 'foo',
+          type: 'dev',
+          spec: @vltpkg/spec.Spec foo@^1.0.0,
+          from: {
+            id: 'workspace·a',
+            name: 'a',
+            version: '1.0.0',
+            edgesIn: Set(0) {}
+          }
+        }
+      }
+    },
+    id: '··foo@1.0.0',
+    title: 'foo@^1.0.0',
+    version: '1.0.0',
+    stacked: true,
+    size: 2,
+    labels: undefined
+  },
+  {
+    name: 'bar',
+    type: 'prod',
+    spec: @vltpkg/spec.Spec bar@^1.0.0,
+    from: {
+      id: '··bar@1.0.0',
+      name: 'bar',
+      version: '1.0.0',
+      edgesIn: Set(0) {}
+    },
+    id: '··bar@1.0.0',
+    title: 'bar@^1.0.0',
+    version: '1.0.0',
+    stacked: false,
+    size: 0,
+    labels: undefined
+  }
+]
+
+`;
