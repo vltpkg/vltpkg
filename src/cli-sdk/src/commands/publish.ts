@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { CacheEntry } from '@vltpkg/registry-client'
+import { run } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { packTarball } from '../pack-tarball.ts'
@@ -80,6 +81,44 @@ export const command: CommandFn<CommandResult> = async conf => {
   )
 
   const {
+    tag = 'latest',
+    access,
+    registry,
+    'dry-run': dry = false,
+    otp,
+  } = conf.options
+  const registryUrl = new URL(registry)
+
+  const runOptions = {
+    cwd: manifestDir,
+    projectRoot: conf.projectRoot,
+    packageJson: conf.options.packageJson,
+    manifest,
+    ignoreMissing: true,
+    ignorePrePost: true,
+  }
+
+  await run({
+    ...runOptions,
+    arg0: 'prepublishOnly',
+  })
+
+  await run({
+    ...runOptions,
+    arg0: 'prepublish',
+  })
+
+  await run({
+    ...runOptions,
+    arg0: 'prepack',
+  })
+
+  await run({
+    ...runOptions,
+    arg0: 'prepare',
+  })
+
+  const {
     name,
     version,
     filename,
@@ -90,14 +129,15 @@ export const command: CommandFn<CommandResult> = async conf => {
     shasum,
   } = await packTarball(manifest, manifestDir)
 
-  const {
-    tag = 'latest',
-    access,
-    registry,
-    'dry-run': dry = false,
-    otp,
-  } = conf.options
-  const registryUrl = new URL(registry)
+  await run({
+    ...runOptions,
+    arg0: 'postpack',
+  })
+
+  await run({
+    ...runOptions,
+    arg0: 'publish',
+  })
 
   const publishMetadata = {
     _id: name,
@@ -161,6 +201,11 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     }
   }
+
+  await run({
+    ...runOptions,
+    arg0: 'postpublish',
+  })
 
   return {
     id: `${name}@${version}`,
