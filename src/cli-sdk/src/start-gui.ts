@@ -1,21 +1,28 @@
-import type { VltServerListening } from '@vltpkg/server'
+import { resolve } from 'node:path'
+import LZString from 'lz-string'
 import { createServer } from '@vltpkg/server'
 import { urlOpen } from '@vltpkg/url-open'
+import { stdout } from './output.ts'
 import type { PathScurry } from 'path-scurry'
 import type { LoadedConfig } from './config/index.ts'
-import { stdout } from './output.ts'
-import { resolve } from 'node:path'
+import type { VltServerListening } from '@vltpkg/server'
 
 export const getDefaultStartingRoute = async (options: {
+  queryString?: string
   startingRoute?: string
   projectRoot: string
   scurry: PathScurry
 }) => {
-  const { startingRoute, projectRoot, scurry } = options
+  const {
+    queryString = ':root',
+    startingRoute,
+    projectRoot,
+    scurry,
+  } = options
   if (startingRoute) return startingRoute
   const stat = await scurry.lstat(`${projectRoot}/package.json`)
   return stat?.isFile() && !stat.isSymbolicLink() ?
-      `/explore?query=${encodeURIComponent(':root')}`
+      `/explore/${LZString.compressToEncodedURIComponent(queryString)}/overview`
     : '/'
 }
 
@@ -48,6 +55,7 @@ export const startGUI = async (
   void urlOpen(
     server.address(
       await getDefaultStartingRoute({
+        queryString: conf.values.target,
         startingRoute,
         projectRoot,
         scurry,
