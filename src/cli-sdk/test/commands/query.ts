@@ -113,6 +113,7 @@ const mockQuery = async (
           async start() {
             return {
               ok: false,
+              get: () => undefined,
             }
           },
         },
@@ -194,17 +195,6 @@ t.test('query', async t => {
       options,
     }),
     'should list mermaid in json format',
-  )
-
-  await t.rejects(
-    Command.command({
-      positionals: ['*:malware'],
-      values: { view: 'human' },
-      options,
-      get: () => undefined,
-    } as unknown as LoadedConfig),
-    /Failed to parse :malware selector/,
-    'should fail to run with no security archive',
   )
 
   await t.test('expect-results option', async t => {

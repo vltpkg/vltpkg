@@ -100,15 +100,10 @@ export const command: CommandFn<ListResult> = async conf => {
   const queryString = conf.positionals
     .map(k => `#${k.replace(/\//, '\\/')}`)
     .join(', ')
-  /* c8 ignore start - TODO: may be removed when --target is added */
-  const securityArchive =
-    Query.hasSecuritySelectors(queryString) ?
-      await SecurityArchive.start({
-        graph,
-        specOptions: conf.options,
-      })
-    : undefined
-  /* c8 ignore stop */
+  const securityArchive = await SecurityArchive.start({
+    graph,
+    specOptions: conf.options,
+  })
   const query = new Query({
     graph,
     specOptions: conf.options,
