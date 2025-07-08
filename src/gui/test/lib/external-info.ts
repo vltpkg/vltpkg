@@ -811,7 +811,10 @@ test('fetchDetails with contributors in manifest', async () => {
         name: 'Contributor One',
         email: 'contrib1@example.com',
       },
-      'Contributor Two <contrib2@example.com>',
+      {
+        name: 'Contributor Two',
+        email: 'contrib2@example.com',
+      },
     ],
   }
   const spec = Spec.parse('with-contributors', '1.0.0')
@@ -832,7 +835,7 @@ test('fetchDetails with contributors in manifest', async () => {
           'https://gravatar.com/avatar/685a2d1e5dcef38b6871bf250e6cf260de7db9676cdfafcf96c8c3a4a3200b30?d=retro',
       },
       {
-        name: 'Contributor Two ',
+        name: 'Contributor Two',
         email: 'contrib2@example.com',
         avatar:
           'https://gravatar.com/avatar/296b6a91e056b396b44a3035b407e2433bfa8e78a94ecb30635af80576f58810?d=retro',
