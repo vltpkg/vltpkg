@@ -39,8 +39,10 @@ import {
   isRecordStringString,
   isRecordStringT,
   longDependencyTypes,
+  normalizeContributors,
   normalizeFunding,
   normalizeManifest,
+  parsePerson,
 } from '../src/index.ts'
 
 import t from 'tap'
@@ -579,6 +581,330 @@ t.test('normalizeManifest', t => {
     t.same(result.name, manifest.name)
     t.same(result.description, manifest.description)
     t.same(result.dependencies, manifest.dependencies)
+    t.end()
+  })
+
+  t.test('normalizes contributors', t => {
+    const rawManifest = {
+      name: 'test',
+      version: '1.0.0',
+      contributors: [
+        'John Doe <john@example.com>',
+        { name: 'Jane Smith', email: 'jane@example.com' },
+      ],
+    }
+
+    // Test that normalizeContributors works directly
+    const normalizedContributors = normalizeContributors(
+      rawManifest.contributors,
+      undefined,
+    )
+    t.same(normalizedContributors, [
+      {
+        name: 'John Doe',
+        email: 'john@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+      {
+        name: 'Jane Smith',
+        email: 'jane@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+    ])
+
+    // Test that manifest normalization works with pre-normalized contributors
+    const manifestWithNormalizedContributors = {
+      ...rawManifest,
+      contributors: normalizedContributors,
+    }
+    const result = normalizeManifest(
+      manifestWithNormalizedContributors,
+    )
+    t.same(result.contributors, normalizedContributors)
+    t.end()
+  })
+
+  t.test(
+    'normalizes contributors and removes maintainers field',
+    t => {
+      const rawManifest = {
+        name: 'test',
+        version: '1.0.0',
+        contributors: ['John Doe <john@example.com>'],
+        maintainers: ['Bob Wilson <bob@example.com>'],
+      } as any // Need to cast because maintainers isn't officially part of Manifest
+
+      const result = normalizeManifest(rawManifest)
+
+      // Should merge maintainers into contributors
+      t.same(result.contributors, [
+        {
+          name: 'John Doe',
+          email: 'john@example.com',
+          writeAccess: false,
+          isPublisher: false,
+        },
+        {
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          writeAccess: true,
+          isPublisher: true,
+        },
+      ])
+
+      // Should remove maintainers field
+      t.notOk(
+        'maintainers' in result,
+        'maintainers field should be removed',
+      )
+      t.end()
+    },
+  )
+
+  t.test('handles maintainers-only manifest', t => {
+    const rawManifest = {
+      name: 'test',
+      version: '1.0.0',
+      maintainers: [
+        'Bob Wilson <bob@example.com>',
+        { name: 'Alice Brown', email: 'alice@example.com' },
+      ],
+    } as any // Need to cast because maintainers isn't officially part of Manifest
+
+    const result = normalizeManifest(rawManifest)
+
+    // Should create contributors from maintainers with special flags
+    t.same(result.contributors, [
+      {
+        name: 'Bob Wilson',
+        email: 'bob@example.com',
+        writeAccess: true,
+        isPublisher: true,
+      },
+      {
+        name: 'Alice Brown',
+        email: 'alice@example.com',
+        writeAccess: true,
+        isPublisher: true,
+      },
+    ])
+
+    // Should remove maintainers field
+    t.notOk(
+      'maintainers' in result,
+      'maintainers field should be removed',
+    )
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('parsePerson', t => {
+  t.test('parses string format', t => {
+    const result = parsePerson('John Doe <john@example.com>')
+    t.same(result, {
+      name: 'John Doe',
+      email: 'john@example.com',
+      writeAccess: false,
+      isPublisher: false,
+    })
+    t.end()
+  })
+
+  t.test('parses string with name only', t => {
+    const result = parsePerson('John Doe')
+    t.same(result, {
+      name: 'John Doe',
+      email: undefined,
+      writeAccess: false,
+      isPublisher: false,
+    })
+    t.end()
+  })
+
+  t.test('parses string with email only', t => {
+    const result = parsePerson('<john@example.com>')
+    t.same(result, {
+      name: undefined,
+      email: 'john@example.com',
+      writeAccess: false,
+      isPublisher: false,
+    })
+    t.end()
+  })
+
+  t.test('parses object format', t => {
+    const result = parsePerson({
+      name: 'John Doe',
+      email: 'john@example.com',
+    })
+    t.same(result, {
+      name: 'John Doe',
+      email: 'john@example.com',
+      writeAccess: false,
+      isPublisher: false,
+    })
+    t.end()
+  })
+
+  t.test('parses object with legacy mail field', t => {
+    const result = parsePerson({
+      name: 'John Doe',
+      mail: 'john@example.com',
+    })
+    t.same(result, {
+      name: 'John Doe',
+      email: 'john@example.com',
+      writeAccess: false,
+      isPublisher: false,
+    })
+    t.end()
+  })
+
+  t.test('handles writeAccess and isPublisher flags', t => {
+    const result = parsePerson(
+      'John Doe <john@example.com>',
+      true,
+      true,
+    )
+    t.same(result, {
+      name: 'John Doe',
+      email: 'john@example.com',
+      writeAccess: true,
+      isPublisher: true,
+    })
+    t.end()
+  })
+
+  t.test('returns undefined for empty inputs', t => {
+    t.equal(parsePerson(''), undefined)
+    t.equal(parsePerson({}), undefined)
+    t.equal(parsePerson({ name: '' }), undefined)
+    t.equal(parsePerson(null), undefined)
+    t.equal(parsePerson(undefined), undefined)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('normalizeContributors', t => {
+  t.test('returns undefined for falsy input', t => {
+    t.equal(normalizeContributors(undefined, undefined), undefined)
+    t.equal(normalizeContributors(null, undefined), undefined)
+    t.equal(normalizeContributors('', undefined), undefined)
+    t.end()
+  })
+
+  t.test('normalizes single contributor string', t => {
+    const result = normalizeContributors(
+      'John Doe <john@example.com>',
+      undefined,
+    )
+    t.same(result, [
+      {
+        name: 'John Doe',
+        email: 'john@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+    ])
+    t.end()
+  })
+
+  t.test('normalizes array of contributors', t => {
+    const contributors = [
+      'John Doe <john@example.com>',
+      { name: 'Jane Smith', email: 'jane@example.com' },
+    ]
+    const result = normalizeContributors(contributors, undefined)
+    t.same(result, [
+      {
+        name: 'John Doe',
+        email: 'john@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+      {
+        name: 'Jane Smith',
+        email: 'jane@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+    ])
+    t.end()
+  })
+
+  t.test(
+    'merges maintainers with writeAccess and isPublisher flags',
+    t => {
+      const contributors = ['John Doe <john@example.com>']
+      const maintainers = ['Bob Wilson <bob@example.com>']
+      const result = normalizeContributors(contributors, maintainers)
+      t.same(result, [
+        {
+          name: 'John Doe',
+          email: 'john@example.com',
+          writeAccess: false,
+          isPublisher: false,
+        },
+        {
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          writeAccess: true,
+          isPublisher: true,
+        },
+      ])
+      t.end()
+    },
+  )
+
+  t.test('handles single maintainer', t => {
+    const contributors = ['John Doe <john@example.com>']
+    const maintainers = 'Bob Wilson <bob@example.com>'
+    const result = normalizeContributors(contributors, maintainers)
+    t.same(result, [
+      {
+        name: 'John Doe',
+        email: 'john@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+      {
+        name: 'Bob Wilson',
+        email: 'bob@example.com',
+        writeAccess: true,
+        isPublisher: true,
+      },
+    ])
+    t.end()
+  })
+
+  t.test('filters out invalid entries', t => {
+    const contributors = [
+      'John Doe <john@example.com>',
+      '',
+      { name: '' },
+      'Valid Person <valid@example.com>',
+    ]
+    const result = normalizeContributors(contributors, undefined)
+    t.same(result, [
+      {
+        name: 'John Doe',
+        email: 'john@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+      {
+        name: 'Valid Person',
+        email: 'valid@example.com',
+        writeAccess: false,
+        isPublisher: false,
+      },
+    ])
     t.end()
   })
 

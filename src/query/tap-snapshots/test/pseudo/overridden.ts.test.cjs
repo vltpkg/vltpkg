@@ -12,13 +12,6 @@ Object {
 }
 `
 
-exports[`test/pseudo/overridden.ts > TAP > selects edges with overridden specs > handles edges with missing spec > must match snapshot 1`] = `
-Object {
-  "edges": Array [],
-  "nodes": Array [],
-}
-`
-
 exports[`test/pseudo/overridden.ts > TAP > selects edges with overridden specs > handles edges with spec.overridden false > must match snapshot 1`] = `
 Object {
   "edges": Array [],

@@ -53,7 +53,6 @@ export const Artifacts = createArtifacts({
 export const Variants = createVariants({
   artifacts: Artifacts,
   node: realpathSync(whichSync('node')),
-  deno: realpathSync(whichSync('deno')),
 })
 
 export type FixtureDir = Parameters<typeof t.fixture<'dir'>>[1]
@@ -335,14 +334,8 @@ export const runVariant = async (
 export const source: Command = (...args) =>
   runVariant(Variants.Node, ...args)
 
-export const denoSource: Command = (...args) =>
-  runVariant(Variants.Deno, ...args)
-
 export const bundle: Command = (...args) =>
   runVariant(Variants.Bundle, ...args)
-
-export const denoBundle: Command = (...args) =>
-  runVariant(Variants.DenoBundle, ...args)
 
 export const compile: Command = (...args) =>
   runVariant(Variants.Compile, ...args)
