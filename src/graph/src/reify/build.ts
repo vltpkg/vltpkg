@@ -109,7 +109,10 @@ const visit = async (
     const path = scurry.resolve(
       `${node.resolvedLocation(scurry)}/${bin}`,
     )
-    chmods.push(makeExecutable(path))
+    // only try to make executable if the file exists
+    if (existsSync(path)) {
+      chmods.push(makeExecutable(path))
+    }
   }
   await Promise.all(chmods)
 }
@@ -119,11 +122,6 @@ const visit = async (
 // that create files group-writable result in 0o775 instead of 0o755
 let execMode = 0
 const makeExecutable = async (path: string) => {
-  // If the file doesn't exist, skip making it executable
-  if (!existsSync(path)) {
-    return
-  }
-
   if (!execMode) {
     execMode = (statSync(path).mode & 0o777) | 0o111
   }
