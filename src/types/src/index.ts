@@ -175,7 +175,9 @@ export const parsePerson = (
   return undefined
 }
 
-/* Normalized Contributor values */
+/**
+ * Represents a normalized contributor object.
+ */
 export type NormalizedContributor = {
   email?: string
   name?: string
@@ -183,10 +185,12 @@ export type NormalizedContributor = {
   isPublisher?: boolean
 }
 
-/* Normalize Contributors values */
+/**
+ * Normalize contributors and maintainers from various formats
+ */
 export const normalizeContributors = (
   contributors: unknown,
-  maintainers: unknown,
+  maintainers?: unknown,
 ): NormalizedContributor[] | undefined => {
   if (!contributors && !maintainers) {
     return undefined
@@ -313,7 +317,9 @@ export type Manifest = {
 }
 
 export type ManifestRegistry = Manifest &
-  Required<Pick<Manifest, 'name' | 'version' | 'dist'>>
+  Required<Pick<Manifest, 'name' | 'version' | 'dist'>> & {
+    maintainers?: unknown
+  }
 
 export type Packument = {
   name: string
@@ -534,16 +540,15 @@ export const asManifest = (
 /**
  * Returns a {@link Manifest} with normalized data.
  */
-export const normalizeManifest = (manifest: Manifest): Manifest => {
-  // Check if we have a manifest with maintainers field (from raw data)
-  const manifestWithMaintainers = manifest as Manifest & {
-    maintainers?: unknown
-  }
-
+export const normalizeManifest = (
+  manifest: Manifest | ManifestRegistry,
+): Manifest => {
+  // checks for properties with specific normalization helper methods,
+  // if there's nothing to normalize then we just return the original manifest
   if (
     manifest.funding === undefined &&
     manifest.contributors === undefined &&
-    !manifestWithMaintainers.maintainers
+    !('maintainers' in manifest)
   ) {
     return manifest
   }
@@ -551,7 +556,7 @@ export const normalizeManifest = (manifest: Manifest): Manifest => {
   const normalizedFunding = normalizeFunding(manifest.funding)
   const normalizedContributors = normalizeContributors(
     manifest.contributors,
-    manifestWithMaintainers.maintainers,
+    (manifest as ManifestRegistry).maintainers,
   )
 
   // Create result with normalized data
@@ -562,17 +567,11 @@ export const normalizeManifest = (manifest: Manifest): Manifest => {
   }
 
   // Remove maintainers field if it exists in the raw manifest
-  if (
-    'maintainers' in manifestWithMaintainers &&
-    manifestWithMaintainers.maintainers
-  ) {
+  if ('maintainers' in manifest && manifest.maintainers) {
     // Return a new manifest without the maintainers field
-    const resultWithoutMaintainers: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(result)) {
-      if (key !== 'maintainers') {
-        resultWithoutMaintainers[key] = value
-      }
-    }
+    const resultWithoutMaintainers: Record<string, unknown> =
+      structuredClone(result)
+    delete resultWithoutMaintainers.maintainers
     return resultWithoutMaintainers as Manifest
   }
 

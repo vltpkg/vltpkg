@@ -243,7 +243,7 @@ export class Node implements NodeLike {
       this.id = getId(spec, manifest)
     }
     this.graph = options.graph
-    this.manifest = manifest ? normalizeManifest(manifest) : manifest
+    this.manifest = manifest && normalizeManifest(manifest)
 
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version

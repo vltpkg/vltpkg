@@ -13,12 +13,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
-import {
-  asPackument,
-  isIntegrity,
-  normalizeManifest,
-  normalizeFunding,
-} from '@vltpkg/types'
+import { asPackument, isIntegrity } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'node:crypto'
@@ -439,15 +434,7 @@ export class PackageInfoClient {
           }
         }
 
-        // Contributors are already normalized when it comes from packument,
-        // but we still need to normalize funding
-        return {
-          ...mani,
-          funding:
-            mani.funding ?
-              normalizeFunding(mani.funding)
-            : mani.funding,
-        }
+        return mani
       }
 
       case 'git': {
@@ -599,20 +586,7 @@ export class PackageInfoClient {
             },
           )
         }
-        const packument = response.json() as Packument
-        // Normalize all manifests in the packument
-        const normalizedVersions = Object.fromEntries(
-          Object.entries(packument.versions).map(
-            ([version, manifest]) => [
-              version,
-              normalizeManifest(manifest),
-            ],
-          ),
-        )
-        return {
-          ...packument,
-          versions: normalizedVersions,
-        }
+        return response.json() as Packument
       }
     }
   }

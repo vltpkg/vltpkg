@@ -2,7 +2,6 @@ import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import type { Manifest } from '@vltpkg/types'
-import { normalizeManifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
@@ -242,20 +241,7 @@ t.test('create git repo', { bail: true }, async () => {
 })
 
 t.test('packument', async t => {
-  const result = await packument('abbrev', options)
-  // Normalize the expected fixture data to match our new behavior
-  const expectedPakuAbbrev = {
-    ...pakuAbbrev,
-    versions: Object.fromEntries(
-      Object.entries(pakuAbbrev.versions).map(
-        ([version, manifest]) => [
-          version,
-          normalizeManifest(manifest as Manifest),
-        ],
-      ),
-    ),
-  }
-  t.strictSame(result, expectedPakuAbbrev)
+  t.strictSame(await packument('abbrev', options), pakuAbbrev)
 
   t.matchSnapshot(
     await packument(
@@ -430,7 +416,7 @@ t.test('packument', async t => {
 t.test('manifest', async t => {
   t.strictSame(
     await manifest('abbrev@2', options),
-    normalizeManifest(pakuAbbrev.versions['2.0.0'] as Manifest),
+    pakuAbbrev.versions['2.0.0'],
   )
 
   t.matchSnapshot(
@@ -1054,90 +1040,4 @@ t.test('path git selector', async t => {
     found[Symbol.for('indent')] = pkg[Symbol.for('indent')]
     t.strictSame(found, pkg)
   })
-})
-
-t.test('funding normalization', async t => {
-  const mockManifest = {
-    name: 'test-package',
-    version: '1.0.0',
-    funding: 'https://github.com/sponsors/user', // String funding
-    dist: {
-      tarball:
-        'https://registry.npmjs.org/test-package/-/test-package-1.0.0.tgz',
-      integrity:
-        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const,
-    },
-  }
-
-  const { PackageInfoClient } = await t.mockImport<
-    typeof import('../src/index.ts')
-  >('../src/index.ts', {
-    '@vltpkg/pick-manifest': {
-      pickManifest: () => mockManifest,
-    },
-  })
-
-  const client = new PackageInfoClient(options)
-  // Mock the packument method to return a packument with our test manifest
-  client.packument = async () => ({
-    name: 'test-package',
-    'dist-tags': { latest: '1.0.0' },
-    versions: { '1.0.0': mockManifest },
-  })
-
-  const manifest = await client.manifest('test-package@1.0.0')
-
-  t.same(
-    manifest.funding,
-    [{ url: 'https://github.com/sponsors/user', type: 'github' }],
-    'string funding should be normalized to array format',
-  )
-
-  t.end()
-})
-
-t.test('funding normalization with array', async t => {
-  const mockManifest = {
-    name: 'test-package',
-    version: '1.0.0',
-    funding: [
-      'https://github.com/sponsors/user',
-      { url: 'https://patreon.com/user' },
-    ],
-    dist: {
-      tarball:
-        'https://registry.npmjs.org/test-package/-/test-package-1.0.0.tgz',
-      integrity:
-        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const,
-    },
-  }
-
-  const { PackageInfoClient } = await t.mockImport<
-    typeof import('../src/index.ts')
-  >('../src/index.ts', {
-    '@vltpkg/pick-manifest': {
-      pickManifest: () => mockManifest,
-    },
-  })
-
-  const client = new PackageInfoClient(options)
-  // Mock the packument method to return a packument with our test manifest
-  client.packument = async () => ({
-    name: 'test-package',
-    'dist-tags': { latest: '1.0.0' },
-    versions: { '1.0.0': mockManifest },
-  })
-
-  const manifest = await client.manifest('test-package@1.0.0')
-
-  t.same(
-    manifest.funding,
-    [
-      { url: 'https://github.com/sponsors/user', type: 'github' },
-      { url: 'https://patreon.com/user', type: 'patreon' },
-    ],
-    'mixed array funding should be normalized to object format',
-  )
-
-  t.end()
 })
