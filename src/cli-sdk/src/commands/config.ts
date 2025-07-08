@@ -4,11 +4,6 @@ import { asRootError } from '@vltpkg/output/error'
 import { isObject } from '@vltpkg/types'
 import { spawnSync } from 'node:child_process'
 import { getSortedKeys } from '../config/definition.ts'
-import type {
-  ConfigDefinitions,
-  LoadedConfig,
-  RecordPairs,
-} from '../config/index.ts'
 import {
   definition,
   isRecordField,
@@ -16,6 +11,11 @@ import {
   recordsToPairs,
 } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
+import type {
+  ConfigDefinitions,
+  LoadedConfig,
+  RecordPairs,
+} from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
@@ -187,7 +187,9 @@ const get = async (conf: LoadedConfig) => {
   }
 
   // otherwise just get the value directly from the config getter
-  return conf.get(k as keyof ConfigDefinitions)
+  return isRecordField(k) ?
+      conf.getRecord(k)
+    : conf.get(k as keyof ConfigDefinitions)
 }
 
 const edit = async (conf: LoadedConfig) => {

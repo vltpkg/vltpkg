@@ -186,7 +186,10 @@ t.test('get', async t => {
     const { result } = await run(t, ['get', 'registries'], {
       registries,
     })
-    t.strictSame(result, registries)
+    t.strictSame(result, {
+      npm: 'https://registry.npmjs.org/',
+      vlt: 'https://registry.vlt.sh/',
+    })
   })
 
   t.test('dot-prop path for registry', async t => {
@@ -214,6 +217,14 @@ t.test('get', async t => {
       mockOptions,
     )
     t.strictSame(result, undefined)
+  })
+
+  t.test('non dot-prop value', async t => {
+    const mockOptions = {
+      registry: 'https://registry.npmjs.org/',
+    }
+    const { result } = await run(t, ['get', 'registry'], mockOptions)
+    t.strictSame(result, 'https://registry.npmjs.org/')
   })
 
   t.test('invalid dot-prop get value', async t => {
