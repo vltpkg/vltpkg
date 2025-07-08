@@ -16,14 +16,13 @@ import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 interface ItemProps {
   item: GridItemData
-  focused?: boolean
 }
 
-export const Item = ({ item, focused = false }: ItemProps) => {
+export const Item = ({ item }: ItemProps) => {
   return (
-    <SelectedItemProvider selectedItem={item} focused={focused}>
+    <SelectedItemProvider selectedItem={item}>
       <section className="relative">
-        <Card className="relative border-muted">
+        <Card className="relative rounded-xl border-muted shadow-none">
           <ItemHeader />
           <SelectedItemTabs />
         </Card>
