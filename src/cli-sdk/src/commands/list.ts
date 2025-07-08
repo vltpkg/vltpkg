@@ -28,11 +28,18 @@ export const usage: CommandUsage = () =>
     usage: [
       '',
       '[package-names...] [--view=human | json | mermaid | gui]',
+      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid | gui]',
     ],
-    description: `List installed dependencies matching given package names.
+    description: `List installed dependencies matching given package names or query selectors.
 
       Package names provided as positional arguments will be used to filter
       the results to show only dependencies with those names.
+
+      The --scope and --target options accepts DSS query selectors to filter
+      packages. Using --scope, you can specify which packages to treat as the
+      top-level items in the output graph. The --target option allows you to
+      filter what dependencies to include in the output. Using both options
+      allows you to render subgraphs of the dependency graph.
 
       Defaults to listing direct dependencies of a project and any configured
       workspace.`,
@@ -44,8 +51,28 @@ export const usage: CommandUsage = () =>
       'foo bar baz': {
         description: `List all dependencies named 'foo', 'bar', or 'baz'`,
       },
+      '--scope=":root > #dependency-name"': {
+        description:
+          'Defines a direct dependency as the output top-level scope',
+      },
+      '--target="*"': {
+        description: 'List all dependencies using a query selector',
+      },
+      '--target=":workspace > *:peer"': {
+        description: 'List all peer dependencies of all workspaces',
+      },
     },
     options: {
+      scope: {
+        value: '<query>',
+        description:
+          'Query selector to select top-level packages using the DSS query language syntax.',
+      },
+      target: {
+        value: '<query>',
+        description:
+          'Query selector to filter packages using the DSS query language syntax.',
+      },
       view: {
         value: '[human | json | mermaid | gui]',
         description:
@@ -97,9 +124,12 @@ export const command: CommandFn<ListResult> = async conf => {
     }
   }
 
-  const queryString = conf.positionals
+  const positionalQueryString = conf.positionals
     .map(k => `#${k.replace(/\//, '\\/')}`)
     .join(', ')
+  const targetQueryString = conf.get('target')
+  const queryString = targetQueryString || positionalQueryString
+
   const securityArchive = await SecurityArchive.start({
     graph,
     specOptions: conf.options,
@@ -183,6 +213,8 @@ export const command: CommandFn<ListResult> = async conf => {
     edges,
     nodes,
     queryString: queryString || defaultQueryString,
-    highlightSelection: !!queryString,
+    highlightSelection: !!(
+      targetQueryString || positionalQueryString
+    ),
   }
 }
