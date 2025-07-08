@@ -5,22 +5,14 @@ import { compile } from './compile.ts'
 import { BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
 
-export const VARIANTS = [
-  'Node',
-  'Deno',
-  'Bundle',
-  'DenoBundle',
-  'Compile',
-] as const
+export const VARIANTS = ['Node', 'Bundle', 'Compile'] as const
 
 // Changing this will change which variant is published as `vlt` on npm.
 export const PUBLISHED_VARIANT: 'Bundle' | 'Compile' = 'Bundle'
 
 export const VARIANT_VALUES = {
   Node: 'Node',
-  Deno: 'Deno',
   Bundle: 'Bundle',
-  DenoBundle: 'DenoBundle',
   Compile: 'Compile',
 } as const satisfies Record<Variant, Variant>
 
@@ -106,7 +98,6 @@ export const Variants: Partial<
 export const createVariants = ({
   artifacts,
   node = 'node',
-  deno = 'deno',
 }: {
   artifacts: Record<ArtifactKey, Artifact>
   node?: string
@@ -118,26 +109,10 @@ export const createVariants = ({
       args: bin => [node, artifacts.Node.bin(bin)],
       ...Variants.Node,
     },
-    Deno: {
-      artifact: artifacts.Node,
-      args: bin => [
-        deno,
-        '-A',
-        '--unstable-node-globals',
-        '--unstable-bare-node-builtins',
-        artifacts.Node.bin(bin),
-      ],
-      ...Variants.Deno,
-    },
     Bundle: {
       artifact: artifacts.Bundle,
       args: bin => [node, artifacts.Bundle.bin(bin)],
       ...Variants.Bundle,
-    },
-    DenoBundle: {
-      artifact: artifacts.Bundle,
-      args: bin => [deno, '-A', artifacts.Bundle.bin(bin)],
-      ...Variants.DenoBundle,
     },
     Compile: {
       artifact: artifacts.Compile,

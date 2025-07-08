@@ -137,6 +137,90 @@ export const normalizeFunding = (
   return sources
 }
 
+/* Parse a string or object into a normalized contributor */
+export const parsePerson = (
+  author: unknown,
+  writeAccess?: boolean,
+  isPublisher?: boolean,
+): NormalizedContributor | undefined => {
+  if (typeof author === 'string') {
+    const NAME_PATTERN = /^([^(<]+)/
+    const EMAIL_PATTERN = /<([^<>]+)>/
+    const name = NAME_PATTERN.exec(author)?.[0].trim() || ''
+    const email = EMAIL_PATTERN.exec(author)?.[1] || ''
+    if (!name && !email) return undefined
+    return {
+      name: name || undefined,
+      email: email || undefined,
+      writeAccess: writeAccess ?? false,
+      isPublisher: isPublisher ?? false,
+    }
+  } else if (isObject(author)) {
+    const name =
+      typeof author.name === 'string' ? author.name : undefined
+    const email =
+      typeof author.email === 'string' ? author.email
+      : typeof author.mail === 'string' ? author.mail
+      : undefined
+
+    if (!name && !email) return undefined
+
+    return {
+      name,
+      email,
+      writeAccess: writeAccess ?? false,
+      isPublisher: isPublisher ?? false,
+    }
+  }
+  return undefined
+}
+
+/**
+ * Represents a normalized contributor object.
+ */
+export type NormalizedContributor = {
+  email?: string
+  name?: string
+  writeAccess?: boolean
+  isPublisher?: boolean
+}
+
+/**
+ * Normalize contributors and maintainers from various formats
+ */
+export const normalizeContributors = (
+  contributors: unknown,
+  maintainers?: unknown,
+): NormalizedContributor[] | undefined => {
+  if (!contributors && !maintainers) {
+    return undefined
+  }
+
+  const result: NormalizedContributor[] = []
+
+  // Parse regular contributors (if any)
+  if (contributors) {
+    const contributorsArray: unknown[] =
+      Array.isArray(contributors) ? contributors : [contributors]
+    const parsedContributors = contributorsArray
+      .map(person => parsePerson(person))
+      .filter((c): c is NormalizedContributor => c !== undefined)
+    result.push(...parsedContributors)
+  }
+
+  // Parse maintainers with special flags
+  if (maintainers) {
+    const maintainersArray: unknown[] =
+      Array.isArray(maintainers) ? maintainers : [maintainers]
+    const parsedMaintainers = maintainersArray
+      .map(person => parsePerson(person, true, true))
+      .filter((c): c is NormalizedContributor => c !== undefined)
+    result.push(...parsedMaintainers)
+  }
+
+  return result
+}
+
 export type Person =
   | string
   | {
@@ -227,13 +311,15 @@ export type Manifest = {
   /** the author of a package */
   author?: Person
   /** contributors to the package */
-  contributors?: Person[]
+  contributors?: NormalizedContributor[]
   /** the license of the package */
   license?: string
 }
 
 export type ManifestRegistry = Manifest &
-  Required<Pick<Manifest, 'name' | 'version' | 'dist'>>
+  Required<Pick<Manifest, 'name' | 'version' | 'dist'>> & {
+    maintainers?: unknown
+  }
 
 export type Packument = {
   name: string
@@ -454,14 +540,42 @@ export const asManifest = (
 /**
  * Returns a {@link Manifest} with normalized data.
  */
-export const normalizeManifest = (manifest: Manifest): Manifest => {
-  if (manifest.funding === undefined) {
+export const normalizeManifest = (
+  manifest: Manifest | ManifestRegistry,
+): Manifest => {
+  // checks for properties with specific normalization helper methods,
+  // if there's nothing to normalize then we just return the original manifest
+  if (
+    manifest.funding === undefined &&
+    manifest.contributors === undefined &&
+    !('maintainers' in manifest)
+  ) {
     return manifest
   }
 
   const normalizedFunding = normalizeFunding(manifest.funding)
+  const normalizedContributors = normalizeContributors(
+    manifest.contributors,
+    (manifest as ManifestRegistry).maintainers,
+  )
 
-  return { ...manifest, funding: normalizedFunding as Funding }
+  // Create result with normalized data
+  const result: Manifest = {
+    ...manifest,
+    funding: normalizedFunding as Funding,
+    contributors: normalizedContributors,
+  }
+
+  // Remove maintainers field if it exists in the raw manifest
+  if ('maintainers' in manifest && manifest.maintainers) {
+    // Return a new manifest without the maintainers field
+    const resultWithoutMaintainers: Record<string, unknown> =
+      structuredClone(result)
+    delete resultWithoutMaintainers.maintainers
+    return resultWithoutMaintainers as Manifest
+  }
+
+  return result
 }
 
 export const asManifestRegistry = (
@@ -475,7 +589,7 @@ export const asManifestRegistry = (
       from ?? asManifestRegistry,
     )
   }
-  return m
+  return normalizeManifest(m) as ManifestRegistry
 }
 
 export const assertManifest: (

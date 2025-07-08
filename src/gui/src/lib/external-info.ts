@@ -1,11 +1,12 @@
-import type { Repository, Manifest, Packument } from '@vltpkg/types'
+import { normalizeManifest } from '@vltpkg/types'
 import { compare, gt, prerelease } from '@vltpkg/semver'
 import { isRecord } from '@/utils/typeguards.ts'
-import type { Spec } from '@vltpkg/spec/browser'
 import {
   getRepoOrigin,
   getRepositoryApiUrl,
 } from '@/utils/get-repo-url.ts'
+import type { Spec } from '@vltpkg/spec/browser'
+import type { Repository, Manifest, Packument } from '@vltpkg/types'
 
 export type Semver = `${number}.${number}.${number}`
 
@@ -284,8 +285,10 @@ export async function* fetchDetails(
             avatar,
           }
         } else {
-          const emailMatch = EMAIL_PATTERN.exec(contributor)
-          const nameMatch = NAME_PATTERN.exec(contributor)
+          const emailMatch = EMAIL_PATTERN.exec(
+            contributor.email || '',
+          )
+          const nameMatch = NAME_PATTERN.exec(contributor.name || '')
           const avatar = await retrieveAvatar(emailMatch?.[1] || '')
           return {
             name: nameMatch?.[0] || '',
@@ -362,6 +365,7 @@ export async function* fetchDetails(
       fetch(String(url), { signal })
         .then(res => res.json())
         .then((mani: Manifest & { _npmUser?: AuthorInfo }) => {
+          mani = normalizeManifest(mani)
           // retries favicon retrieval in case it wasn't found before
           if (!githubAPI && mani.repository) {
             const repo = readRepository(mani.repository)
@@ -418,6 +422,7 @@ export async function* fetchDetails(
           const versions = Object.entries(packu.versions)
             .sort((a, b) => compare(b[0], a[0]))
             .map(async ([version, mani]) => {
+              mani = normalizeManifest(mani)
               const email = (
                 mani as Manifest & {
                   _npmUser?: {
