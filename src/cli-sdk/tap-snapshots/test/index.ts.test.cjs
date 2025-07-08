@@ -74,6 +74,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
+    --target=<target>
     --version
     --view=<output>
     --workspace=<ws>
@@ -127,6 +128,7 @@ Unknown config option: asdf
     script-shell
     stale-while-revalidate-factor
     tag
+    target
     version
     view
     workspace

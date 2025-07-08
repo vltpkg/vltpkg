@@ -420,6 +420,11 @@ export const definition = j
       description:
         'Set to filter the scope of an operation using a DSS Query.',
     },
+    target: {
+      short: 't',
+      description:
+        'Set to select packages using a DSS Query selector.',
+    },
   })
 
   .flag({

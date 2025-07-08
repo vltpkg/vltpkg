@@ -134,6 +134,7 @@ const runCommand = async (
     positionals?: string[]
     values: Partial<LoadedConfig['values']> & {
       view: Exclude<LoadedConfig['values']['view'], 'inspect'>
+      target?: string
     }
   },
   cmd = Command,
@@ -695,6 +696,83 @@ t.test('query', async t => {
     t.matchSnapshot(
       result,
       'should handle scope with a transitive dependency',
+    )
+  })
+
+  // Test --target option functionality
+  await t.test('--target option', async t => {
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'human', target: '*' },
+        options,
+      }),
+      'should accept wildcard selector',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'human', target: '#foo' },
+        options,
+      }),
+      'should accept ID selector',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'human', target: '[name="foo"]' },
+        options,
+      }),
+      'should accept attribute selector',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'human', target: ':project > *' },
+        options,
+      }),
+      'should accept combinator selectors',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'human', target: ':root > :prod' },
+        options,
+      }),
+      'should accept pseudo-element selectors',
+    )
+
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'json', target: ':project' },
+        options,
+      }),
+      'should work with json output',
+    )
+
+    // Test that --target takes precedence over positional arguments
+    t.matchSnapshot(
+      await runCommand({
+        positionals: ['#bar'],
+        values: { view: 'human', target: '*' },
+        options,
+      }),
+      'should use --target over positional arguments',
+    )
+
+    // Test complex queries
+    t.matchSnapshot(
+      await runCommand({
+        positionals: [],
+        values: { view: 'human', target: ':project, :project > *' },
+        options,
+      }),
+      'should handle complex query string',
     )
   })
 })

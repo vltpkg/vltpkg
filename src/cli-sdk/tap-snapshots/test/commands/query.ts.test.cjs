@@ -5,6 +5,97 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/commands/query.ts > TAP > query > --target option > should accept attribute selector 1`] = `
+my-project
+├── foo@1.0.0
+└─┬ bar@1.0.0
+  └─┬ baz (custom:baz@1.0.0)
+    └── foo@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should accept combinator selectors 1`] = `
+my-project
+├── foo@1.0.0
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should accept ID selector 1`] = `
+my-project
+├── foo@1.0.0
+└─┬ bar@1.0.0
+  └─┬ baz (custom:baz@1.0.0)
+    └── foo@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should accept pseudo-element selectors 1`] = `
+my-project
+├── foo@1.0.0
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should accept wildcard selector 1`] = `
+my-project
+├── foo@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── foo@1.0.0
+└── missing@^1.0.0 (missing)
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should handle complex query string 1`] = `
+my-project
+├── foo@1.0.0
+└── bar@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should use --target over positional arguments 1`] = `
+my-project
+├── foo@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── foo@1.0.0
+└── missing@^1.0.0 (missing)
+
+`
+
+exports[`test/commands/query.ts > TAP > query > --target option > should work with json output 1`] = `
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "my-project",
+        "version": "1.0.0",
+        "dependencies": {
+          "foo": "^1.0.0",
+          "bar": "^1.0.0",
+          "missing": "^1.0.0"
+        }
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false,
+      "insights": {
+        "scanned": false
+      }
+    },
+    "overridden": false
+  }
+]
+`
+
 exports[`test/commands/query.ts > TAP > query > colors > should use colors when set in human readable format 1`] = `
 [0mmy-project
 ├── foo@1.0.0
@@ -46,12 +137,22 @@ Usage:
   vlt query
   vlt query <query> --view=<human | json | mermaid | gui>
   vlt query <query> --expect-results=<comparison string>
+  vlt query --target=<query> --view=<human | json | mermaid | gui>
 
 List installed dependencies matching the provided query.
 
 The vlt Dependency Selector Syntax is a CSS-like query language that allows you
 to filter installed dependencies using a variety of metadata in the form of
 CSS-like attributes, pseudo selectors & combinators.
+
+The --scope and --target options accepts DSS query selectors to filter packages.
+Using --scope, you can specify which packages to treat as the top-level items in
+the output graph. The --target option can be used as an alternative to
+positional arguments, it allows you to filter what dependencies to include in
+the output. Using both options allows you to render subgraphs of the dependency
+graph.
+
+Defaults to listing all dependencies of the project root and workspaces.
 
   Examples
 
@@ -75,6 +176,18 @@ CSS-like attributes, pseudo selectors & combinators.
 
     ​vlt query '*:license(copyleft) --expect-results=0'
 
+    Defines a direct dependency as the output top-level scope
+
+    ​vlt query --scope=":root > #dependency-name"
+
+    Query all dependencies using the target option
+
+    ​vlt query '--target="*"'
+
+    Query all peer dependencies of workspaces using target option
+
+    ​vlt query '--target=":workspace > *:peer"'
+
   Options
 
     expect-results
@@ -84,6 +197,17 @@ CSS-like attributes, pseudo selectors & combinators.
       followed by a numeric value to be compared.
 
       ​--expect-results=[number | string]
+
+    scope
+      Query selector to select top-level packages using the DSS query language
+      syntax.
+
+      ​--scope=<query>
+
+    target
+      Query selector to filter packages using DSS syntax.
+
+      ​--target=<query>
 
     view
       Output format. Defaults to human-readable or json if no tty.
