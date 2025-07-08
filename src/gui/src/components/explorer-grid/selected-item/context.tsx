@@ -382,7 +382,6 @@ type SelectedItemStoreState = DetailsInfo & {
   depWarnings: DepWarning[] | undefined
   duplicatedDeps: DuplicatedDeps | undefined
   depFunding: DepFunding | undefined
-  focused?: boolean
 }
 
 type SelectedItemStoreAction = {
@@ -420,13 +419,11 @@ const SelectedItemContext = createContext<
 
 type SelectedItemProviderProps = PropsWithChildren & {
   selectedItem: GridItemData
-  focused?: SelectedItemStoreState['focused']
 }
 
 export const SelectedItemProvider = ({
   children,
   selectedItem,
-  focused = false,
 }: SelectedItemProviderProps) => {
   const specOptions = useGraphStore(state => state.specOptions)
   const q = useGraphStore(state => state.q)
@@ -468,7 +465,6 @@ export const SelectedItemProvider = ({
       depCount: undefined,
       duplicatedDeps: undefined,
       depFunding: undefined,
-      focused,
       setActiveTab: (newTab: SelectedItemStoreState['activeTab']) => {
         set(state => ({ ...state, activeTab: newTab }))
         void navigate(newTab)

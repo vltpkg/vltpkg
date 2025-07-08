@@ -13,6 +13,16 @@ vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
+  () => ({
+    useFocusState: () => ({
+      focused: true,
+      setFocused: vi.fn(),
+    }),
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -29,16 +39,8 @@ afterEach(() => {
 })
 
 test('FocusButton renders default', () => {
-  const mockFocused = false
-  const mockSetFocused = vi.fn()
-
   const Container = () => {
-    return (
-      <FocusButton
-        focused={mockFocused}
-        setFocused={mockSetFocused}
-      />
-    )
+    return <FocusButton />
   }
 
   const { container } = render(<Container />)

@@ -7,10 +7,10 @@ exports[`FocusButton renders default 1`] = `
   variant="default"
 >
   <span>
-    Focus
+    Unfocus
   </span>
-  <gui-fullscreen-icon>
-  </gui-fullscreen-icon>
+  <gui-minimize-icon>
+  </gui-minimize-icon>
 </gui-button>
 
 `;

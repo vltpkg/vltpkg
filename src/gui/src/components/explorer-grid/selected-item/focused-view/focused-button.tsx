@@ -1,18 +1,15 @@
 import { Fullscreen, Minimize } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
+import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 import { cn } from '@/lib/utils.ts'
 
 interface FocusButtonProps {
-  focused: boolean
-  setFocused: (focused: FocusButtonProps['focused']) => void
   className?: string
 }
 
-export const FocusButton = ({
-  focused,
-  setFocused,
-  className,
-}: FocusButtonProps) => {
+export const FocusButton = ({ className }: FocusButtonProps) => {
+  const { focused, setFocused } = useFocusState()
+
   const toggleFocus = () => setFocused(!focused)
 
   return (
