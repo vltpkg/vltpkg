@@ -19,14 +19,11 @@ exports[`SelectedItem renders default 1`] = `
       <gui-grid-header>
         Selected
       </gui-grid-header>
-      <gui-focused-button focused="false">
+      <gui-focused-button>
       </gui-focused-button>
     </div>
     <div class="flex flex-col gap-6">
-      <gui-selected-item
-        item="[object Object]"
-        focused="false"
-      >
+      <gui-selected-item item="[object Object]">
       </gui-selected-item>
     </div>
   </div>

@@ -10,8 +10,6 @@ import type { DepID } from '@vltpkg/dep-id'
 
 interface FocusedViewProps {
   item: GridItemData
-  focused: boolean
-  setFocused: (focused: FocusedViewProps['focused']) => void
   dependencies: GridItemData[]
   onDependencyClick: (dependency: GridItemData) => () => undefined
   uninstalledDependencies: GridItemData[]
@@ -20,15 +18,13 @@ interface FocusedViewProps {
 
 export const FocusedView = ({
   item,
-  focused,
-  setFocused,
   dependencies,
   onDependencyClick,
   uninstalledDependencies,
   importerId,
 }: FocusedViewProps) => {
   return (
-    <SelectedItemProvider selectedItem={item} focused={focused}>
+    <SelectedItemProvider selectedItem={item}>
       <motion.section
         initial={{
           opacity: 0,
@@ -44,12 +40,9 @@ export const FocusedView = ({
         }}
         transition={{ ease: 'easeInOut', duration: 0.25 }}
         className="relative pb-4">
-        <ItemHeader />
-        <FocusButton
-          className="absolute right-1.5 top-1 z-[100]"
-          focused={focused}
-          setFocused={setFocused}
-        />
+        <ItemHeader className="pb-0">
+          <FocusButton />
+        </ItemHeader>
         <div className="mx-6 grid grid-cols-12">
           <div className="col-span-full h-fit rounded-xl border-[1px] border-muted bg-white pt-2 dark:bg-neutral-900 lg:col-span-9">
             <SelectedItemTabs />

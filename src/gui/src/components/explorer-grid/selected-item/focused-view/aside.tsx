@@ -1,6 +1,7 @@
 import { useParams } from 'react-router'
 import { TabContentAside } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import type {
   SubTabDependencies,
@@ -8,6 +9,7 @@ import type {
 } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { DepID } from '@vltpkg/dep-id'
+import type { MotionProps } from 'framer-motion'
 
 interface FocusedAsideProps {
   dependencies: GridItemData[]
@@ -22,6 +24,13 @@ const tabAsideSet = new Set<Tab>([
   'versions',
   'manifest',
 ])
+
+const motionVariants: MotionProps = {
+  initial: { opacity: 0, filter: 'blur(2px)', y: 2 },
+  animate: { opacity: 1, filter: 'blur(0px)', y: 0 },
+  exit: { opacity: 0, filter: 'blur(2px)', y: -2 },
+  transition: { ease: 'easeInOut', duration: 0.25 },
+}
 
 export const FocusedAside = ({
   dependencies,
@@ -40,18 +49,24 @@ export const FocusedAside = ({
 
   return (
     <div className="col-span-full lg:col-span-3 lg:pl-4 lg:pr-0">
-      {tabAsideSet.has(activeTab) ?
-        <TabContentAside className="h-fit border-l-[1.6px] border-muted py-0" />
-      : activeTab === 'dependencies' ?
-        <aside className="w-full lg:-mt-[3rem]">
-          <DependencySideBar
-            dependencies={dependencies}
-            uninstalledDependencies={uninstalledDependencies}
-            onDependencyClick={onDependencyClick}
-            importerId={importerId}
-          />
-        </aside>
-      : <TabContentAside className="py-0" />}
+      <AnimatePresence>
+        {tabAsideSet.has(activeTab) ?
+          <motion.div {...motionVariants}>
+            <TabContentAside className="h-fit border-l-[1.6px] border-muted py-0" />
+          </motion.div>
+        : activeTab === 'dependencies' ?
+          <motion.aside
+            {...motionVariants}
+            className="w-full lg:-mt-[3rem]">
+            <DependencySideBar
+              dependencies={dependencies}
+              uninstalledDependencies={uninstalledDependencies}
+              onDependencyClick={onDependencyClick}
+              importerId={importerId}
+            />
+          </motion.aside>
+        : <TabContentAside className="py-0" />}
+      </AnimatePresence>
     </div>
   )
 }

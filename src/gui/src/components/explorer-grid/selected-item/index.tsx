@@ -179,7 +179,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
     count,
     item.to,
   )
-  const { focused, setFocused } = useFocusState()
+  const { focused } = useFocusState()
 
   const workspaceClick =
     ({ item }: { item: GridItemData }) =>
@@ -215,8 +215,6 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
         {focused ?
           <FocusedView
             item={item}
-            focused={focused}
-            setFocused={setFocused}
             dependencies={dependencies}
             onDependencyClick={dependencyClick}
             uninstalledDependencies={uninstalledDependencies}
@@ -255,15 +253,11 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
             <div className="col-span-4">
               <div className="flex items-center justify-between">
                 <GridHeader>Selected</GridHeader>
-                <FocusButton
-                  focused={focused}
-                  setFocused={setFocused}
-                />
+                <FocusButton />
               </div>
               <div className="flex flex-col gap-6">
                 <Item
                   item={item}
-                  focused={focused}
                   // This is necessary to force a re-render of the selected item
                   key={`${item.id}-${item.name}-${stamp}`}
                 />

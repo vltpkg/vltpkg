@@ -69,15 +69,11 @@ test('FocusedView renders default', () => {
   const mockDependencies: GridItemData[] = []
   const mockUninstalledDependencies: GridItemData[] = []
   const mockOnDependencyClick = vi.fn(() => () => undefined)
-  const mockFocused = true
-  const mockSetFocused = vi.fn()
 
   const Container = () => {
     return (
       <FocusedView
         item={mockItem}
-        focused={mockFocused}
-        setFocused={mockSetFocused}
         dependencies={mockDependencies}
         onDependencyClick={mockOnDependencyClick}
         uninstalledDependencies={mockUninstalledDependencies}

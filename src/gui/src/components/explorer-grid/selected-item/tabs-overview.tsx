@@ -18,6 +18,7 @@ import { Github } from '@/components/icons/index.ts'
 import { getRepositoryUrl } from '@/utils/get-repo-url.ts'
 import { ContributorList } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
 import { cn } from '@/lib/utils.ts'
+import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 
 export const OverviewTabButton = () => {
   return (
@@ -71,7 +72,7 @@ export const TabContentAside = ({
   const openPR = useSelectedItemStore(
     state => state.openPullRequestCount,
   )
-  const focused = useSelectedItemStore(state => state.focused)
+  const { focused } = useFocusState()
 
   const asideEmpty =
     !stargazers &&
@@ -228,7 +229,7 @@ export const TabContentAside = ({
 
 export const OverviewTabContent = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
-  const focused = useSelectedItemStore(state => state.focused)
+  const { focused } = useFocusState()
 
   const keywords =
     manifest?.keywords ?
