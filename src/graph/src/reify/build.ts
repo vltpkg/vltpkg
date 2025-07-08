@@ -4,7 +4,7 @@
 
 import type { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
-import { statSync } from 'node:fs'
+import { statSync, existsSync } from 'node:fs'
 import { chmod } from 'node:fs/promises'
 import { graphRun } from 'graph-run'
 import type { PathScurry } from 'path-scurry'
@@ -109,7 +109,10 @@ const visit = async (
     const path = scurry.resolve(
       `${node.resolvedLocation(scurry)}/${bin}`,
     )
-    chmods.push(makeExecutable(path))
+    // only try to make executable if the file exists
+    if (existsSync(path)) {
+      chmods.push(makeExecutable(path))
+    }
   }
   await Promise.all(chmods)
 }
