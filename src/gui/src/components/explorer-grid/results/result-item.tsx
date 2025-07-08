@@ -1,6 +1,5 @@
 import { stringifyNode } from '@vltpkg/graph/browser'
 import { useGraphStore } from '@/state/index.ts'
-import { Badge } from '@/components/ui/badge.tsx'
 import { Card, CardHeader } from '@/components/ui/card.tsx'
 import {
   Tooltip,
@@ -8,7 +7,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
-import { labelClassNamesMap } from '@/components/explorer-grid/label-helper.ts'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { Scale, EyeOff } from 'lucide-react'
 import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
@@ -18,7 +16,7 @@ import {
 } from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
 import { LICENSE_TYPES } from '@/lib/constants/index.ts'
 import { updateResultItem } from '@/lib/update-result-item.ts'
-import { cn } from '@/lib/utils.ts'
+import { RelationBadge } from '@/components/ui/relation-badge.tsx'
 
 import type { GridItemOptions } from '@/components/explorer-grid/types.ts'
 import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
@@ -140,13 +138,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
           <div className="absolute -bottom-3.5 right-2.5 flex gap-2">
             {item.labels?.map(i => (
               <div key={i}>
-                <Badge
-                  className={cn(
-                    labelClassNamesMap.get(i),
-                    'h-[18px] rounded-full text-xxs font-normal text-inherit',
-                  )}>
-                  {i}
-                </Badge>
+                <RelationBadge relation={i}>{i}</RelationBadge>
               </div>
             ))}
           </div>
