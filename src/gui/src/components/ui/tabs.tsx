@@ -60,7 +60,7 @@ const tabsListVariants = cva('inline-flex ', {
       outline: 'border-b-[1px] border-muted w-full',
       ghost: 'pb-1 bg-transparent border-b-[2px] border-muted w-full',
       nestedCard:
-        'flex gap-4 rounded-none bg-background w-full border-b-[1px] border-muted py-2 px-6',
+        'flex gap-4 rounded-none bg-background w-full border-b-[2px] border-muted py-2 px-6',
     },
   },
   defaultVariants: {
