@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react'
-import { severityStyles } from '@/components/explorer-grid/selected-item/tabs-dependencies/helpers.ts'
+import { alertStyles } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { cn } from '@/lib/utils.ts'
 import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
 import type { LucideIcon } from 'lucide-react'
@@ -27,15 +27,15 @@ export const Warning = ({
       {...(onClick ? { onClick } : undefined)}
       className={cn(
         'duration-250 flex cursor-default items-center justify-between rounded-md border-[1px] bg-transparent px-3 py-2 transition-colors',
-        severityStyles[severity].background,
-        severityStyles[severity].border,
+        alertStyles[severity].background,
+        alertStyles[severity].border,
         className,
       )}>
       {!hideIcon && (
         <span
           className={cn(
             'mb-0.5 mr-1.5 flex items-center justify-center',
-            severityStyles[severity].text,
+            alertStyles[severity].text,
           )}>
           <Icon size={16} />
         </span>
@@ -43,7 +43,7 @@ export const Warning = ({
       <p
         className={cn(
           'inline-flex items-baseline gap-1.5 text-sm font-medium',
-          severityStyles[severity].text,
+          alertStyles[severity].text,
         )}>
         {count !== undefined && (
           <span className="font-mono tabular-nums">{count}</span>

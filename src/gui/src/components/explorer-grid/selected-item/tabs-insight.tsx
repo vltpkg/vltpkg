@@ -2,12 +2,7 @@ import { Link } from 'react-router'
 import { useState } from 'react'
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import {
-  InsightBadge,
-  getAlertColor,
-} from '@/components/explorer-grid/selected-item/insight-badge.tsx'
-import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
-import type { PackageAlert } from '@vltpkg/security-archive'
+import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
 import {
   getScoreColor,
@@ -23,9 +18,12 @@ import {
   RadialBarChart,
 } from 'recharts'
 import { ChartContainer } from '@/components/ui/chart.tsx'
-import type { ChartConfig } from '@/components/ui/chart.tsx'
 import { cn } from '@/lib/utils.ts'
 import { toHumanNumber } from '@/utils/human-number.ts'
+
+import type { ChartConfig } from '@/components/ui/chart.tsx'
+import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
+import type { PackageAlert } from '@vltpkg/security-archive'
 
 export const InsightTabButton = () => {
   const insights = useSelectedItemStore(state => state.insights)
@@ -205,9 +203,7 @@ const InsightItem = ({
   return (
     <div className="duration-250 grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-colors hover:bg-muted">
       <div className="col-span-3 flex w-full items-start">
-        <InsightBadge
-          color={getAlertColor(severity)}
-          tooltipContent={severity}>
+        <InsightBadge color={severity} tooltipContent={severity}>
           {selector}
         </InsightBadge>
       </div>

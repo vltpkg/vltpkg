@@ -1,12 +1,10 @@
-import type { Column, ColumnDef } from '@tanstack/react-table'
-import type { SelectorInTable } from '@/app/help/help-selectors.tsx'
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
-import {
-  getAlertColor,
-  InsightBadge,
-} from '@/components/explorer-grid/selected-item/insight-badge.tsx'
+import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { InlineCode } from '@/components/ui/inline-code.tsx'
+
+import type { Column, ColumnDef } from '@tanstack/react-table'
+import type { SelectorInTable } from '@/app/help/help-selectors.tsx'
 
 const SortingHeader = ({
   column,
@@ -45,7 +43,7 @@ export const selectorColumns: ColumnDef<SelectorInTable>[] = [
         <InsightBadge
           className="self-start"
           tooltipContent={`${severity} severity`}
-          color={getAlertColor(severity)}>
+          color={severity}>
           {selector}
         </InsightBadge>
       )
