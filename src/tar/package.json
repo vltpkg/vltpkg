@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/tar",
   "description": "An extremely limited and very fast tar extractor",
-  "version": "0.0.0-16",
+  "version": "0.0.0-17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",

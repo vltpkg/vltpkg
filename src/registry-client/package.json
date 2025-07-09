@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/registry-client",
   "description": "Fetch package artifacts and metadata from registries",
-  "version": "0.0.0-16",
+  "version": "0.0.0-17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
