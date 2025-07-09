@@ -64,6 +64,23 @@ t.test('graph data for vlt project', async t => {
             }),
           },
         },
+        '.vlt-lock.json': JSON.stringify({
+          options: {},
+          nodes: {
+            [abbrevDepID]: [
+              0,
+              'abbrev',
+              null,
+              null,
+              `./node_modules/.vlt/${abbrevDepID}`,
+              { name: 'abbrev', version: '1.2.3' },
+            ],
+          },
+          edges: {
+            [`${rootDepID} abbrev`]: `prod * ${abbrevDepID}`,
+            [`${abbrevDepID} abbrev`]: `prod * ${abbrevDepID}`,
+          },
+        }),
       },
     },
   })
