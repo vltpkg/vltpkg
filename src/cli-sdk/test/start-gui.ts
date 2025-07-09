@@ -16,29 +16,60 @@ t.test('getDefaultStartingRoute', async t => {
     },
   })
   const scurry = new PathScurry(dir)
+
+  // Test with default queryString (:root)
   t.equal(
     await getDefaultStartingRoute({
       scurry,
       projectRoot: resolve(dir, 'project'),
     }),
-    `/explore?query=${encodeURIComponent(':root')}`,
+    `/explore/FwJw9mAuQ/overview`,
   )
+
+  // Test with custom queryString
   t.equal(
     await getDefaultStartingRoute({
+      queryString: '#lodash',
+      scurry,
+      projectRoot: resolve(dir, 'project'),
+    }),
+    '/explore/MQGw9gJghgzgFkA/overview',
+  )
+
+  // Test with complex queryString (DSS query)
+  t.equal(
+    await getDefaultStartingRoute({
+      queryString: ':prod :scope(react)',
+      scurry,
+      projectRoot: resolve(dir, 'project'),
+    }),
+    '/explore/FwBwTg9gJgBMDOBjCICmAKMqCGiAuAlEA/overview',
+  )
+
+  // Test with symbolic link (should return root regardless of queryString)
+  t.equal(
+    await getDefaultStartingRoute({
+      queryString: '#custom-target',
       scurry,
       projectRoot: resolve(dir, 'linky'),
     }),
     `/`,
   )
+
+  // Test with no package.json (should return root regardless of queryString)
   t.equal(
     await getDefaultStartingRoute({
+      queryString: '#custom-target',
       scurry,
       projectRoot: dir,
     }),
     `/`,
   )
+
+  // Test with startingRoute (should override queryString)
   t.equal(
     await getDefaultStartingRoute({
+      queryString: '#custom-target',
       startingRoute: '/asdf',
       scurry,
       projectRoot: dir,
@@ -57,6 +88,9 @@ t.test('startGUI()', async t => {
     options: {
       scurry,
       projectRoot,
+    },
+    values: {
+      target: ':root',
     },
   } as unknown as LoadedConfig
 
@@ -112,4 +146,214 @@ t.test('startGUI()', async t => {
   server.emit('needConfigUpdate', '/some/new/dir')
   t.equal(optionsResetted, '/some/new/dir')
   t.equal(optionsUpdated, conf.options)
+})
+
+t.test('startGUI() with --target option', async t => {
+  t.test('with custom target and package.json', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({ name: 'test-project' }),
+    })
+    const scurry = new PathScurry(projectRoot)
+    const conf = {
+      resetOptions: () => {},
+      options: {
+        scurry,
+        projectRoot,
+      },
+      values: {
+        target: '#lodash',
+      },
+    } as unknown as LoadedConfig
+
+    const mockServer = Object.assign(
+      new EventEmitter<{
+        needConfigUpdate: [string]
+      }>(),
+      {
+        updateOptions: () => {},
+        start: () => {},
+        address: (route = '') => `server-address${route}`,
+      },
+    ) as unknown as VltServerListening
+
+    let urlOpened = false
+    let openedUrl: string | undefined = undefined
+    const { startGUI } = await t.mockImport<
+      typeof import('../src/start-gui.ts')
+    >('../src/start-gui.ts', {
+      '../src/output.ts': {
+        stdout: () => {},
+      },
+      '@vltpkg/server': {
+        createServer: () => mockServer,
+      },
+      '@vltpkg/url-open': {
+        urlOpen: (url: string) => {
+          urlOpened = true
+          openedUrl = url
+        },
+      },
+    })
+
+    await startGUI(conf)
+    t.equal(urlOpened, true)
+    t.equal(
+      openedUrl,
+      'server-address/explore/MQGw9gJghgzgFkA/overview',
+    )
+  })
+
+  t.test('with custom target and no package.json', async t => {
+    const projectRoot = t.testdir({})
+    const scurry = new PathScurry(projectRoot)
+    const conf = {
+      resetOptions: () => {},
+      options: {
+        scurry,
+        projectRoot,
+      },
+      values: {
+        target: '#lodash',
+      },
+    } as unknown as LoadedConfig
+
+    const mockServer = Object.assign(
+      new EventEmitter<{
+        needConfigUpdate: [string]
+      }>(),
+      {
+        updateOptions: () => {},
+        start: () => {},
+        address: (route = '') => `server-address${route}`,
+      },
+    ) as unknown as VltServerListening
+
+    let urlOpened = false
+    let openedUrl: string | undefined = undefined
+    const { startGUI } = await t.mockImport<
+      typeof import('../src/start-gui.ts')
+    >('../src/start-gui.ts', {
+      '../src/output.ts': {
+        stdout: () => {},
+      },
+      '@vltpkg/server': {
+        createServer: () => mockServer,
+      },
+      '@vltpkg/url-open': {
+        urlOpen: (url: string) => {
+          urlOpened = true
+          openedUrl = url
+        },
+      },
+    })
+
+    await startGUI(conf)
+    t.equal(urlOpened, true)
+    t.equal(openedUrl, 'server-address/')
+  })
+
+  t.test('with complex DSS query target', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({ name: 'test-project' }),
+    })
+    const scurry = new PathScurry(projectRoot)
+    const conf = {
+      resetOptions: () => {},
+      options: {
+        scurry,
+        projectRoot,
+      },
+      values: {
+        target: ':prod :scope(react)',
+      },
+    } as unknown as LoadedConfig
+
+    const mockServer = Object.assign(
+      new EventEmitter<{
+        needConfigUpdate: [string]
+      }>(),
+      {
+        updateOptions: () => {},
+        start: () => {},
+        address: (route = '') => `server-address${route}`,
+      },
+    ) as unknown as VltServerListening
+
+    let urlOpened = false
+    let openedUrl: string | undefined = undefined
+    const { startGUI } = await t.mockImport<
+      typeof import('../src/start-gui.ts')
+    >('../src/start-gui.ts', {
+      '../src/output.ts': {
+        stdout: () => {},
+      },
+      '@vltpkg/server': {
+        createServer: () => mockServer,
+      },
+      '@vltpkg/url-open': {
+        urlOpen: (url: string) => {
+          urlOpened = true
+          openedUrl = url
+        },
+      },
+    })
+
+    await startGUI(conf)
+    t.equal(urlOpened, true)
+    t.equal(
+      openedUrl,
+      'server-address/explore/FwBwTg9gJgBMDOBjCICmAKMqCGiAuAlEA/overview',
+    )
+  })
+
+  t.test('with startingRoute parameter overrides target', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({ name: 'test-project' }),
+    })
+    const scurry = new PathScurry(projectRoot)
+    const conf = {
+      resetOptions: () => {},
+      options: {
+        scurry,
+        projectRoot,
+      },
+      values: {
+        target: '#lodash',
+      },
+    } as unknown as LoadedConfig
+
+    const mockServer = Object.assign(
+      new EventEmitter<{
+        needConfigUpdate: [string]
+      }>(),
+      {
+        updateOptions: () => {},
+        start: () => {},
+        address: (route = '') => `server-address${route}`,
+      },
+    ) as unknown as VltServerListening
+
+    let urlOpened = false
+    let openedUrl: string | undefined = undefined
+    const { startGUI } = await t.mockImport<
+      typeof import('../src/start-gui.ts')
+    >('../src/start-gui.ts', {
+      '../src/output.ts': {
+        stdout: () => {},
+      },
+      '@vltpkg/server': {
+        createServer: () => mockServer,
+      },
+      '@vltpkg/url-open': {
+        urlOpen: (url: string) => {
+          urlOpened = true
+          openedUrl = url
+        },
+      },
+    })
+
+    await startGUI(conf, '/custom-route')
+    t.equal(urlOpened, true)
+    t.equal(openedUrl, 'server-address/custom-route')
+  })
 })
