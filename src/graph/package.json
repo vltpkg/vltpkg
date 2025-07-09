@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/graph",
   "description": "A library that helps understanding & expressing what happens on an install",
-  "version": "0.0.0-16",
+  "version": "0.0.0-17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",

@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/vlt-json",
   "description": "utility for finding, reading, and updating the vlt.json file",
-  "version": "0.0.0-16",
+  "version": "0.0.0-17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
