@@ -30,7 +30,7 @@ afterEach(() => {
 test('InsightBadge renders default', () => {
   const Container = () => {
     return (
-      <InsightBadge variant="default" color="red">
+      <InsightBadge variant="default" color="medium">
         :mock-selector
       </InsightBadge>
     )
@@ -42,7 +42,7 @@ test('InsightBadge renders default', () => {
 
 test('InsightBadge renders as a marker', () => {
   const Container = () => {
-    return <InsightBadge variant="marker" color="red" />
+    return <InsightBadge variant="marker" color="high" />
   }
 
   const { container } = render(<Container />)

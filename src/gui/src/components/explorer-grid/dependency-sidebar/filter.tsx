@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
 import { Input } from '@/components/ui/input.tsx'
-import { Badge } from '@/components/ui/badge.tsx'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -29,14 +28,13 @@ import {
   TooltipContent,
   TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
-import { labelClassNamesMap } from '@/components/explorer-grid/label-helper.ts'
 import { useDependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 import { cn } from '@/lib/utils.ts'
 import { Kbd } from '@/components/ui/kbd.tsx'
-import { dependencyFilters } from './filter-config.ts'
+import { dependencyFilters } from '@/components/explorer-grid/dependency-sidebar/filter-config.ts'
+import { RelationBadge } from '@/components/ui/relation-badge.tsx'
 
-import type { DependencyTypeShort } from '@vltpkg/types'
-import type { Filter } from './filter-config.ts'
+import type { Filter } from '@/components/explorer-grid/dependency-sidebar/filter-config.ts'
 
 export const useDependencyFilters = () => {
   const filters = useDependencySidebarStore(state => state.filters)
@@ -204,11 +202,9 @@ const SearchFilterList = () => {
               key={`search-filter-${filter.name}-${idx}`}
               className="gap-2"
               onClick={() => toggleFilter(filter.name)}>
-              <div
-                className={cn(
-                  'size-2 rounded-full',
-                  labelClassNamesMap.get(filter.name),
-                )}
+              <RelationBadge
+                variant="marker"
+                relation={filter.name}
               />
               {filter.name}
               {filters.includes(filter.name) && (
@@ -296,11 +292,9 @@ const DependencyFilters = () => {
                 className="gap-2"
                 onClick={() => toggleFilter(filter.name)}
                 tabIndex={idx + 1}>
-                <div
-                  className={cn(
-                    'size-2 rounded-full',
-                    labelClassNamesMap.get(filter.name),
-                  )}
+                <RelationBadge
+                  variant="marker"
+                  relation={filter.name}
                 />
                 {filter.name}
                 {filters.includes(filter.name) && (
@@ -324,13 +318,6 @@ export const FilterList = () => {
       return `Search: ${filter.replace('search:', '')}`
     }
     return filter
-  }
-
-  const getFilterClassName = (filter: Filter) => {
-    if (filter.startsWith('search:')) {
-      return 'bg-blue-500/25 border-[1px] dark:border-blue-500 border-blue-600 text-blue-600 hover:bg-blue-500/40 dark:text-blue-400 dark:hover:bg-blue-500/40'
-    }
-    return labelClassNamesMap.get(filter as DependencyTypeShort)
   }
 
   return (
@@ -394,15 +381,21 @@ export const FilterList = () => {
                   originY: '0px',
                 }}
                 className="flex h-fit w-fit items-center justify-center">
-                <Badge
+                <RelationBadge
                   variant="default"
-                  className={cn(
-                    'cursor-default',
-                    getFilterClassName(filter),
-                  )}
+                  relation={filter !== 'search:' ? filter : undefined}
+                  {...(filter.startsWith('search:') ?
+                    {
+                      classNames: {
+                        wrapper:
+                          'bg-blue-500/25 border-[1px] dark:border-blue-500 border-blue-600 hover:bg-blue-500/40 dark:hover:bg-blue-500/40',
+                        text: 'text-blue-600 dark:text-blue-400',
+                      },
+                    }
+                  : {})}
                   onClick={() => removeFilter(filter)}>
                   {getFilterLabel(filter)}
-                </Badge>
+                </RelationBadge>
               </motion.div>
             ))}
           </AnimatePresence>

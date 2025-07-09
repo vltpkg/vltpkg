@@ -26,7 +26,7 @@ import {
   tableClassNames,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
 import { Warning } from '@/components/explorer-grid/selected-item/tabs-dependencies/warning.tsx'
-import { severityStyles } from '@/components/explorer-grid/selected-item/tabs-dependencies/helpers.ts'
+import { alertStyles } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import type { LicenseWarningType } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
@@ -193,9 +193,9 @@ export const LicensesTabContent = () => {
             <div
               className={cn(
                 'inline-flex items-center justify-center rounded-full border-[1px] px-3 py-0.5 text-sm',
-                severityStyles[severity].background,
-                severityStyles[severity].border,
-                severityStyles[severity].text,
+                alertStyles[severity].background,
+                alertStyles[severity].border,
+                alertStyles[severity].text,
               )}>
               {severity}
             </div>

@@ -6,27 +6,31 @@ import { useGraphStore as useStore } from '@/state/index.ts'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import { SideItem } from '@/components/explorer-grid/side-item.tsx'
 
-vi.mock('@/components/ui/badge.tsx', () => ({
-  Badge: 'gui-badge',
+vi.mock('lucide-react', async () => ({
+  Ellipsis: 'gui-ellipsis',
+  PackageMinus: 'gui-package-minus',
 }))
+
 vi.mock('@/components/ui/card.tsx', () => ({
   Card: 'gui-card',
   CardDescription: 'gui-card-description',
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
 }))
+
+vi.mock('@/components/ui/data-badge.tsx', () => ({
+  DataBadge: 'gui-data-badge',
+}))
+
 vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
   DropdownMenu: 'gui-dropdown-menu',
   DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
   DropdownMenuContent: 'gui-dropdown-menu-content',
   DropdownMenuItem: 'gui-dropdown-menu-item',
 }))
-vi.mock('@/components/ui/data-badge.tsx', () => ({
-  DataBadge: 'gui-data-badge',
-}))
-vi.mock('lucide-react', async () => ({
-  Ellipsis: 'gui-ellipsis',
-  PackageMinus: 'gui-package-minus',
+
+vi.mock('@/components/ui/relation-badge.tsx', () => ({
+  RelationBadge: 'gui-relation-badge',
 }))
 
 expect.addSnapshotSerializer({

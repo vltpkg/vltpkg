@@ -59,15 +59,9 @@ vi.mock(
 
 vi.mock(
   '@/components/explorer-grid/selected-item/insight-badge.tsx',
-  async () => {
-    const actual = await import(
-      '@/components/explorer-grid/selected-item/insight-badge.tsx'
-    )
-    return {
-      ...actual,
-      InsightBadge: 'gui-insight-badge',
-    }
-  },
+  () => ({
+    InsightBadge: 'gui-insight-badge',
+  }),
 )
 
 vi.mock(

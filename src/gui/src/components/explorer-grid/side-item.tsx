@@ -2,7 +2,6 @@ import { forwardRef } from 'react'
 import { PackageMinus } from 'lucide-react'
 import { Card, CardHeader } from '@/components/ui/card.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
-import { labelClassNamesMap } from './label-helper.ts'
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -16,10 +15,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { cn } from '@/lib/utils.ts'
-import { Badge } from '@/components/ui/badge.tsx'
+import { RelationBadge } from '@/components/ui/relation-badge.tsx'
+
 import type { MouseEvent } from 'react'
 import type { GridItemData, GridItemOptions } from './types.ts'
-import type { DependencyTypeShort } from '@vltpkg/types'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
@@ -163,14 +162,9 @@ const SideItemBadges = ({
   return (
     <div className="absolute -bottom-3 right-2.5">
       {labels.map((label, idx) => (
-        <Badge
-          key={`${label}-${idx}`}
-          className={cn(
-            labelClassNamesMap.get(label as DependencyTypeShort),
-            'h-[18px] rounded-full text-xxs font-normal',
-          )}>
+        <RelationBadge key={`${label}-${idx}`} relation={label}>
           {label}
-        </Badge>
+        </RelationBadge>
       ))}
     </div>
   )
