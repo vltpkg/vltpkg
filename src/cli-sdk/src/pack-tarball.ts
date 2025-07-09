@@ -4,8 +4,6 @@ import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
-import { readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 
@@ -27,118 +25,124 @@ export type PackTarballResult = {
  * @returns {Manifest} The manifest with replaced specs
  */
 const replaceWorkspaceAndCatalogSpecs = (
-  manifest: Manifest,
+  manifest_: Manifest,
   config: LoadedConfig,
 ): Manifest => {
-  // Create a deep copy of the manifest to avoid modifying the original
-  const processedManifest = JSON.parse(
-    JSON.stringify(manifest),
-  ) as Manifest
+  try {
+    // Create a deep copy of the manifest to avoid modifying the original
+    const manifest = JSON.parse(JSON.stringify(manifest_)) as Manifest
 
-  // Get workspace and catalog configuration from config
-  const { monorepo, catalog = {}, catalogs = {} } = config.options
+    // Get workspace and catalog configuration from config
+    const { monorepo, catalog = {}, catalogs = {} } = config.options
 
-  // Process dependency types
-  const depTypes = [
-    'dependencies',
-    'devDependencies',
-    'optionalDependencies',
-    'peerDependencies',
-  ] as const
+    // Process dependency types
+    const depTypes = [
+      'dependencies',
+      'devDependencies',
+      'optionalDependencies',
+      'peerDependencies',
+    ] as const
 
-  for (const depType of depTypes) {
-    const deps = processedManifest[depType]
-    if (!deps || typeof deps !== 'object') continue
+    for (const depType of depTypes) {
+      const deps = manifest[depType]
+      if (!deps || typeof deps !== 'object') continue
 
-    const depsObj = deps as Record<string, unknown>
-    for (const [depName, depSpec] of Object.entries(depsObj)) {
-      if (typeof depSpec !== 'string') continue
+      const depsObj = deps as Record<string, unknown>
+      for (const [depName, depSpec] of Object.entries(depsObj)) {
+        if (typeof depSpec !== 'string') continue
 
-      try {
-        // Handle workspace: specs
-        if (depSpec.startsWith('workspace:')) {
-          if (!monorepo) {
-            throw error(
-              `No workspace configuration found for ${depName}`,
-              { found: depName },
-            )
-          }
-
-          const spec = Spec.parse(`${depName}@${depSpec}`)
-          if (spec.type === 'workspace') {
-            // Find the workspace package
-            const workspaceName = spec.workspace || depName
-            const workspace = monorepo.get(workspaceName)
-            if (!workspace) {
-              throw error(`Workspace '${workspaceName}' not found`, {
-                found: workspaceName,
-                validOptions: Array.from(monorepo.keys()),
-              })
-            }
-
-            // Replace with actual version
-            const actualVersion = workspace.manifest.version
-            if (!actualVersion) {
-              throw error(
-                `No version found for workspace '${workspaceName}'`,
-                {
-                  found: workspaceName,
-                  wanted: 'package version',
-                },
-              )
-            }
-
-            depsObj[depName] = actualVersion
-          }
-        }
-        // Handle catalog: specs
-        else if (depSpec.startsWith('catalog:')) {
-          const spec = Spec.parse(`${depName}@${depSpec}`, {
-            catalog,
-            catalogs,
-          })
-          if (spec.type === 'catalog') {
-            // Get the resolved version from catalog
-            const catalogName = spec.catalog || ''
-            const targetCatalog =
-              catalogName ? catalogs[catalogName] : catalog
-
-            if (!targetCatalog) {
-              throw error(`Catalog '${catalogName}' not found`, {
-                found: catalogName,
-                validOptions: Object.keys(catalogs),
-              })
-            }
-
-            const actualVersion = targetCatalog[depName]
-            if (!actualVersion) {
-              throw error(
-                `Package '${depName}' not found in catalog '${catalogName || 'default'}'`,
+        try {
+          // Handle workspace: specs
+          if (depSpec.startsWith('workspace:')) {
+            assert(
+              monorepo,
+              error(
+                `No workspace configuration found for ${depName}`,
                 {
                   found: depName,
-                  validOptions: Object.keys(targetCatalog),
                 },
-              )
-            }
+              ),
+            )
 
-            depsObj[depName] = actualVersion
+            const spec = Spec.parse(`${depName}@${depSpec}`)
+            if (spec.type === 'workspace') {
+              const workspaceName = spec.workspace || depName
+              const workspace = monorepo.get(workspaceName)
+              assert(
+                workspace,
+                error(`Workspace '${workspaceName}' not found`, {
+                  found: workspaceName,
+                  validOptions: Array.from(monorepo.keys()),
+                }),
+              )
+
+              const actualVersion = workspace.manifest.version
+              assert(
+                actualVersion,
+                error(
+                  `No version found for workspace '${workspaceName}'`,
+                  {
+                    found: workspaceName,
+                    wanted: 'package version',
+                  },
+                ),
+              )
+
+              depsObj[depName] = actualVersion
+            }
+          } else if (depSpec.startsWith('catalog:')) {
+            const spec = Spec.parse(`${depName}@${depSpec}`, {
+              catalog,
+              catalogs,
+            })
+            if (spec.type === 'catalog') {
+              const catalogName = spec.catalog || ''
+              const targetCatalog =
+                catalogName ? catalogs[catalogName] : catalog
+              assert(
+                targetCatalog,
+                error(`Catalog '${catalogName}' not found`, {
+                  found: catalogName,
+                  validOptions: Object.keys(catalogs),
+                }),
+              )
+
+              const actualVersion = targetCatalog[depName]
+              assert(
+                actualVersion,
+                error(
+                  `Package '${depName}' not found in catalog '${catalogName || 'default'}'`,
+                  {
+                    found: depName,
+                    validOptions: Object.keys(targetCatalog),
+                  },
+                ),
+              )
+
+              depsObj[depName] = actualVersion
+            }
           }
+        } catch (err) {
+          throw error(
+            `Failed to resolve spec for ${depName}@${depSpec} in ${depType}`,
+            {
+              cause: err,
+              spec: depSpec,
+              found: depName,
+            },
+          )
         }
-      } catch (err) {
-        // Re-throw with context about which dependency failed
-        throw error(
-          `Failed to resolve spec for ${depName}@${depSpec} in ${depType}`,
-          {
-            cause: err,
-            spec: depSpec,
-            found: depName,
-          },
-        )
       }
     }
-  }
 
-  return processedManifest
+    return manifest
+  } catch (err) {
+    throw error('Failed to resolve workspace or catalog specs', {
+      cause: err,
+      name: manifest_.name,
+      version: manifest_.version,
+    })
+  }
 }
 
 /**
@@ -151,45 +155,22 @@ const replaceWorkspaceAndCatalogSpecs = (
 export const packTarball = async (
   manifest: Manifest,
   dir: string,
-  config?: LoadedConfig,
+  config: LoadedConfig,
 ): Promise<PackTarballResult> => {
   assert(
     manifest.name && manifest.version,
     error('Package must have a name and version'),
   )
 
-  const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
-
-  // Replace workspace: and catalog: specs with actual versions
-  let processedManifest = manifest
-  if (config) {
-    try {
-      processedManifest = replaceWorkspaceAndCatalogSpecs(
-        manifest,
-        config,
-      )
-    } catch (err) {
-      throw error('Failed to resolve workspace and catalog specs', {
-        cause: err,
-        name: manifest.name,
-        version: manifest.version,
-      })
-    }
-  }
-
-  // Create a temporary backup of the original package.json
-  const originalPackageJsonPath = resolve(dir, 'package.json')
-  const originalPackageJsonContent = readFileSync(
-    originalPackageJsonPath,
-    'utf8',
+  const processedManifest = replaceWorkspaceAndCatalogSpecs(
+    manifest,
+    config,
   )
 
+  const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
+
   try {
-    // Write the processed manifest to the actual package.json temporarily
-    writeFileSync(
-      originalPackageJsonPath,
-      JSON.stringify(processedManifest, null, 2),
-    )
+    config.options.packageJson.write(dir, processedManifest)
 
     const tarballData = await tarCreate(
       {
@@ -357,6 +338,6 @@ export const packTarball = async (
     }
   } finally {
     // Restore the original package.json
-    writeFileSync(originalPackageJsonPath, originalPackageJsonContent)
+    config.options.packageJson.write(dir, manifest)
   }
 }

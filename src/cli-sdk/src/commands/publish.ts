@@ -88,7 +88,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     files,
     integrity,
     shasum,
-  } = await packTarball(manifest, manifestDir)
+  } = await packTarball(manifest, manifestDir, conf)
 
   const {
     tag = 'latest',
