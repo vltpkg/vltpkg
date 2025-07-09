@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import assert from 'node:assert'
+import { run } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { packTarball } from '../pack-tarball.ts'
@@ -58,6 +59,26 @@ export const command: CommandFn<CommandResult> = async conf => {
   const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)
 
+  const isDryRun = conf.options['dry-run']
+  const runOptions = {
+    cwd: manifestDir,
+    projectRoot: conf.projectRoot,
+    packageJson: conf.options.packageJson,
+    manifest,
+    ignoreMissing: true,
+    ignorePrePost: true,
+  }
+
+  await run({
+    ...runOptions,
+    arg0: 'prepack',
+  })
+
+  await run({
+    ...runOptions,
+    arg0: 'prepare',
+  })
+
   const {
     name,
     version,
@@ -69,9 +90,14 @@ export const command: CommandFn<CommandResult> = async conf => {
     shasum,
   } = await packTarball(manifest, manifestDir)
 
-  if (!conf.options['dry-run']) {
+  if (!isDryRun) {
     await writeFile(join(manifestDir, filename), tarballData)
   }
+
+  await run({
+    ...runOptions,
+    arg0: 'postpack',
+  })
 
   return {
     id: `${name}@${version}`,
