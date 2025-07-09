@@ -4,9 +4,9 @@ import type { HonoContext } from '../../types.ts'
 /**
  * Handles static asset serving
  */
-export const handleStaticAssets = serveStatic({
-  root: './src/assets/public',
-} as Parameters<typeof serveStatic>[0])
+export const handleStaticAssets = async (c: HonoContext) => {
+  return await c.env.ASSETS.fetch(c.req.raw)
+}
 
 /**
  * Handles favicon requests

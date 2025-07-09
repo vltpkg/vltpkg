@@ -24,7 +24,6 @@ export async function searchPackages(c: HonoContext) {
           keywords: pkg.keywords ?? [],
           date: pkg.lastUpdated ?? new Date().toISOString(),
           links: {
-            npm: `https://www.npmjs.com/package/${pkg.name}`,
             homepage: pkg.homepage,
             repository: pkg.repository,
             bugs: pkg.bugs,

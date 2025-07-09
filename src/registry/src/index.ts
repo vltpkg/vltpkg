@@ -47,6 +47,12 @@ import {
   getDefaultUpstream,
 } from './utils/upstream.ts'
 import { createDatabaseOperations } from './db/client.ts'
+import { 
+  handleStaticAssets, 
+  handleFavicon, 
+  handleRobots, 
+  handleManifest 
+} from './routes/static.ts'
 import type { Environment, HonoContext } from '../types.ts'
 import type { Context } from 'hono'
 import type { D1Database } from '@cloudflare/workers-types'
@@ -88,10 +94,7 @@ app.get('/', async c => c.html(await getApp()))
 // API Documentation
 // ---------------------------------------------------------
 
-app.get(
-  '/docs',
-  apiReference(API_DOCS as unknown as Record<string, unknown>),
-)
+app.get('/docs', apiReference(API_DOCS as unknown as Record<string, unknown>))
 
 // ---------------------------------------------------------
 // Health Check
@@ -180,25 +183,49 @@ app.post('/-/package/:pkg/access', setPackageAccessStatus)
 
 app.get('/-/package/:scope%2f:pkg/access', getPackageAccessStatus)
 app.post('/-/package/:scope%2f:pkg/access', setPackageAccessStatus)
+
 app.get('/-/package/list', listPackagesAccess)
 
 app.put('/-/package/:pkg/collaborators/:username', grantPackageAccess)
-app.delete(
-  '/-/package/:pkg/collaborators/:username',
-  revokePackageAccess,
-)
-app.put(
-  '/-/package/:scope%2f:pkg/collaborators/:username',
-  grantPackageAccess,
-)
-app.delete(
-  '/-/package/:scope%2f:pkg/collaborators/:username',
-  revokePackageAccess,
-)
-// Handle audit (POST /-/npm/v1/security/audits/quick)
-app.post('/-/npm/v1/security/audits/quick', async (c: Context) => {
-  return c.json({ error: 'Not found' }, 404)
+app.delete('/-/package/:pkg/collaborators/:username', revokePackageAccess)
+
+app.put('/-/package/:scope%2f:pkg/collaborators/:username', grantPackageAccess)
+app.delete('/-/package/:scope%2f:pkg/collaborators/:username', revokePackageAccess)
+
+// ---------------------------------------------------------
+// Handle Audit Requests
+// ---------------------------------------------------------
+
+app.post('/-/npm/audit', async (c: Context) => {
+  return c.json({ error: 'Not yet implemented' }, 404)
 })
+
+// ---------------------------------------------------------
+// Redirect Legacy NPM Routing Warts
+// (maximizes backwards compatibility)
+// ---------------------------------------------------------
+
+app.get('/-/v1/search', (c: Context) => c.redirect('/-/search', 308))
+app.get('/-/npm/v1/user', (c: Context) => c.redirect('/-/user', 308))
+app.get('/-/npm/v1/tokens', (c: Context) => c.redirect('/-/tokens', 308))
+app.post('/-/npm/v1/tokens', (c: Context) => c.redirect('/-/tokens', 308))
+app.put('/-/npm/v1/tokens', (c: Context) => c.redirect('/-/tokens', 308))
+app.delete('/-/npm/v1/tokens/token/:token', (c: Context) => {
+  return c.redirect(`/-/tokens/${c.req.param('token')}`, 308)
+})
+app.post('/-/npm/v1/security/audits/quick', async (c: Context) => {
+  return c.redirect('/-/npm/audit', 308)
+})
+
+// ---------------------------------------------------------
+// Handle Static Assets
+// ---------------------------------------------------------
+
+app.get('/public/*', handleStaticAssets)
+app.get('/favicon.ico', handleFavicon)
+app.get('/robots.txt', handleRobots)
+app.get('/manifest.json', handleManifest)
+app.get('/*', handleStaticAssets)
 
 // ---------------------------------------------------------
 // Package Routes (Catch-all for packages)
@@ -206,11 +233,6 @@ app.post('/-/npm/v1/security/audits/quick', async (c: Context) => {
 
 app.get('/*', async (c: Context<{ Bindings: Environment }>) => {
   const path = c.req.path
-
-  // Check for static asset extensions that should return 404
-  if (/\.(png|css|js|ico|txt|json)$/.exec(path)) {
-    return c.json({ error: 'Not found' }, 404)
-  }
 
   // Check if this is a hash-based route (starts with /*)
   if (path.startsWith('/*/')) {
