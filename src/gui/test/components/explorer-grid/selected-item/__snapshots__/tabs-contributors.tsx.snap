@@ -187,25 +187,37 @@ exports[`ContributorList renders with more than 6 contributors 1`] = `
 exports[`ContributorTabContent renders with contributors 1`] = `
 
 <gui-tabs-content value="contributors">
-  <section class="flex flex-col gap-4 px-6 py-4">
-    <gui-tooltip-provider>
-      <gui-tooltip delayduration="150">
-        <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
-          4 contributors
-          <span>
-            <gui-circle-help-icon size="16">
-            </gui-circle-help-icon>
-          </span>
-        </gui-tooltip-trigger>
-        <gui-tooltip-portal>
-          <gui-tooltip-content>
-            Contributors are aggregated from metadata on this artifact
-          </gui-tooltip-content>
-        </gui-tooltip-portal>
-      </gui-tooltip>
-    </gui-tooltip-provider>
-    <div class="flex flex-col gap-4">
-      <div class="flex cursor-default gap-2">
+  <section class="flex flex-col gap-4 py-4">
+    <div class="flex items-center gap-3 px-6">
+      <gui-button classname="inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] border-muted bg-transparent px-3 py-1 text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900">
+        <gui-arrow-left-icon>
+        </gui-arrow-left-icon>
+        <span>
+          Back
+        </span>
+      </gui-button>
+      <gui-tooltip-provider>
+        <gui-tooltip delayduration="150">
+          <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+            4 contributors
+            <span>
+              <gui-circle-help-icon size="16">
+              </gui-circle-help-icon>
+            </span>
+          </gui-tooltip-trigger>
+          <gui-tooltip-portal>
+            <gui-tooltip-content>
+              Contributors are aggregated from metadata on this artifact
+            </gui-tooltip-content>
+          </gui-tooltip-portal>
+        </gui-tooltip>
+      </gui-tooltip-provider>
+    </div>
+    <div class="flex flex-col gap-2">
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
         <gui-avatar classname="size-9">
           <gui-avatar-image
             classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
@@ -226,7 +238,10 @@ exports[`ContributorTabContent renders with contributors 1`] = `
           </p>
         </div>
       </div>
-      <div class="flex cursor-default gap-2">
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
         <gui-avatar classname="size-9">
           <gui-avatar-image
             classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
@@ -247,7 +262,10 @@ exports[`ContributorTabContent renders with contributors 1`] = `
           </p>
         </div>
       </div>
-      <div class="flex cursor-default gap-2">
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
         <gui-avatar classname="size-9">
           <gui-avatar-image
             classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
@@ -268,7 +286,10 @@ exports[`ContributorTabContent renders with contributors 1`] = `
           </p>
         </div>
       </div>
-      <div class="flex cursor-default gap-2">
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
         <gui-avatar classname="size-9">
           <gui-avatar-image
             classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"

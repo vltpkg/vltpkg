@@ -39,6 +39,7 @@ vi.mock('@/components/ui/button.tsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
+  ArrowLeft: 'gui-arrow-left-icon',
   ArrowRight: 'gui-arrow-right-icon',
   UsersRound: 'gui-users-round-icon',
   CircleHelp: 'gui-circle-help-icon',

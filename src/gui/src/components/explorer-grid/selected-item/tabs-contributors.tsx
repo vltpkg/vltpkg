@@ -1,7 +1,12 @@
 import { TabsContent } from '@/components/ui/tabs.tsx'
 import { Link, useParams } from 'react-router'
 import { Button } from '@/components/ui/button.tsx'
-import { ArrowRight, UsersRound, CircleHelp } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  UsersRound,
+  CircleHelp,
+} from 'lucide-react'
 import {
   Avatar,
   AvatarImage,
@@ -17,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
+import { useGraphStore } from '@/state/index.ts'
 
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { Contributor } from '@/lib/external-info.ts'
@@ -85,8 +91,16 @@ const Contributor = ({
   contributor: Contributor
   size?: ContributorAvatarProps['size']
 }) => {
+  const updateQuery = useGraphStore(state => state.updateQuery)
+
+  const handleQueryContributor = (email: Contributor['email']) =>
+    updateQuery(`:attr(contributors, [email=${email}])`)
+
   return (
-    <div className="flex cursor-default gap-2">
+    <div
+      role="button"
+      onClick={() => handleQueryContributor(email)}
+      className="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
       <ContributorAvatar size={size} avatar={avatar} />
       <div className="flex flex-col justify-center text-sm text-foreground">
         <p className="font-medium text-neutral-900 dark:text-neutral-200">
@@ -149,6 +163,11 @@ export const ContributorTabContent = () => {
   const contributors = useSelectedItemStore(
     state => state.contributors,
   )
+  const setActiveTab = useSelectedItemStore(
+    state => state.setActiveTab,
+  )
+
+  const handleBackToOverview = () => setActiveTab('overview')
 
   if (!contributors || contributors.length <= 0)
     return (
@@ -160,11 +179,21 @@ export const ContributorTabContent = () => {
 
   return (
     <TabsContent value="contributors">
-      <section className="flex flex-col gap-4 px-6 py-4">
-        <ContributorHelp
-          triggerContent={`${contributors.length} contributors`}
-        />
-        <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-4 py-4">
+        <div className="flex items-center gap-3 px-6">
+          <Button
+            onClick={() => handleBackToOverview()}
+            className="inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] border-muted bg-transparent px-3 py-1 text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900">
+            <ArrowLeft />
+            <span>Back</span>
+          </Button>
+
+          <ContributorHelp
+            triggerContent={`${contributors.length} contributors`}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
           {contributors.map((contributor, idx) => (
             <Contributor
               size="rg"
