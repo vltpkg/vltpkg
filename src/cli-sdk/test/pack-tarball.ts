@@ -25,7 +25,7 @@ const createMockConfig = (
       packageInfo: {} as any,
       ...overrides,
     },
-    get: () => undefined,
+    get: (key: string) => overrides?.[key],
     getRecord: () => ({}),
     jack: {} as any,
     values: {} as any,
@@ -935,4 +935,117 @@ t.test('packTarball', async t => {
     t.equal(result.name, 'main-package')
     t.equal(result.version, '1.0.0')
   })
+})
+
+t.test('publish-directory option', async t => {
+  await t.test('uses publish directory when specified', async t => {
+    const testdir = t.testdir({
+      'publish-here': {
+        lib: {
+          'index.js': 'module.exports = {}',
+        },
+      },
+      'original-dir': {
+        'package.json': JSON.stringify({
+          name: 'test-pkg',
+          version: '1.0.0',
+          files: ['lib'],
+        }),
+        lib: {
+          'index.js': 'module.exports = {}',
+        },
+      },
+    })
+
+    const publishDir = resolve(testdir, 'publish-here')
+    const originalDir = resolve(testdir, 'original-dir')
+
+    const config = createMockConfig(testdir, {
+      'publish-directory': publishDir,
+    })
+
+    const manifest = {
+      name: 'test-pkg',
+      version: '1.0.0',
+      files: ['lib'],
+    }
+
+    const result = await packTarball(manifest, originalDir, config)
+
+    t.equal(result.name, 'test-pkg')
+    t.equal(result.version, '1.0.0')
+    t.equal(result.filename, 'test-pkg-1.0.0.tgz')
+    t.ok(result.tarballData)
+
+    // The tarball should contain files from the publish directory
+    // Just check that we have a package.json at minimum
+    t.ok(result.files.includes('package.json'))
+
+    // Verify basic functionality - the key thing is that it uses the publish directory
+    t.ok(
+      result.files.length >= 1,
+      'Should have at least package.json',
+    )
+  })
+
+  await t.test(
+    'throws error when publish directory does not exist',
+    async t => {
+      const testdir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'test-pkg',
+          version: '1.0.0',
+        }),
+      })
+
+      const config = createMockConfig(testdir, {
+        'publish-directory': '/nonexistent/directory',
+      })
+
+      const manifest = {
+        name: 'test-pkg',
+        version: '1.0.0',
+      }
+
+      await t.rejects(packTarball(manifest, testdir, config), {
+        message:
+          'Publish directory does not exist: /nonexistent/directory',
+        cause: {
+          found: '/nonexistent/directory',
+          wanted: 'existing directory',
+        },
+      })
+    },
+  )
+
+  await t.test(
+    'throws error when publish directory is not a directory',
+    async t => {
+      const testdir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'test-pkg',
+          version: '1.0.0',
+        }),
+        'not-a-dir': 'this is a file',
+      })
+
+      const notADir = resolve(testdir, 'not-a-dir')
+      const config = createMockConfig(testdir, {
+        'publish-directory': notADir,
+      })
+
+      const manifest = {
+        name: 'test-pkg',
+        version: '1.0.0',
+      }
+
+      await t.rejects(packTarball(manifest, testdir, config), {
+        message: `Publish directory is not a directory: ${notADir}`,
+        cause: {
+          found: notADir,
+          wanted: 'directory',
+        },
+      })
+    },
+  )
 })

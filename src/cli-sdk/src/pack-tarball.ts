@@ -4,6 +4,7 @@ import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
+import { existsSync, statSync } from 'node:fs'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 
@@ -152,6 +153,36 @@ export const packTarball = async (
     error('Package must have a name and version'),
   )
 
+  // Check if publishDirectory is configured
+  const publishDirectory = config.get('publish-directory')
+  let packDir = dir
+
+  if (publishDirectory) {
+    // Validate that the publish directory exists and is a directory
+    if (!existsSync(publishDirectory)) {
+      throw error(
+        `Publish directory does not exist: ${publishDirectory}`,
+        {
+          found: publishDirectory,
+          wanted: 'existing directory',
+        },
+      )
+    }
+
+    const stats = statSync(publishDirectory)
+    if (!stats.isDirectory()) {
+      throw error(
+        `Publish directory is not a directory: ${publishDirectory}`,
+        {
+          found: publishDirectory,
+          wanted: 'directory',
+        },
+      )
+    }
+
+    packDir = publishDirectory
+  }
+
   const processedManifest = replaceWorkspaceAndCatalogSpecs(
     manifest,
     config,
@@ -160,11 +191,11 @@ export const packTarball = async (
   const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
 
   try {
-    config.options.packageJson.write(dir, processedManifest)
+    config.options.packageJson.write(packDir, processedManifest)
 
     const tarballData = await tarCreate(
       {
-        cwd: dir,
+        cwd: packDir,
         gzip: true,
         portable: true,
         prefix: 'package/',
@@ -327,7 +358,7 @@ export const packTarball = async (
       shasum,
     }
   } finally {
-    // Restore the original package.json
-    config.options.packageJson.write(dir, manifest)
+    // Restore the original package.json to the pack directory
+    config.options.packageJson.write(packDir, manifest)
   }
 }
