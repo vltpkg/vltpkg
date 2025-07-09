@@ -29,7 +29,7 @@ const replaceWorkspaceAndCatalogSpecs = (
   config: LoadedConfig,
 ): Manifest => {
   // Create a deep copy of the manifest to avoid modifying the original
-  const manifest = structuredClone(manifest_) as Manifest
+  const manifest = structuredClone(manifest_)
 
   // Get workspace and catalog configuration from config
   const { monorepo, catalog = {}, catalogs = {} } = config.options
