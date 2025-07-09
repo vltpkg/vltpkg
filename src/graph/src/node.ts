@@ -4,6 +4,7 @@ import {
   getId,
   hydrateTuple,
   splitDepID,
+  baseDepID,
 } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
@@ -183,7 +184,8 @@ export class Node implements NodeLike {
     if (this.#location) {
       return this.#location
     }
-    this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.name}`
+    const storeId = baseDepID(this.id)
+    this.#location = `./node_modules/.vlt/${storeId}/node_modules/${this.name}`
     // if using the default location, it is in the store
     this.inVltStore = () => true
     return this.#location
@@ -261,8 +263,9 @@ export class Node implements NodeLike {
     // technically this just means it's in *a* vlt store, but we can safely
     // assume that a user won't construct a path like this by accident,
     // and there's only ever one store in any given project.
+    const storeId = baseDepID(this.id)
     const inStore = this.location.endsWith(
-      `.vlt/${this.id}/node_modules/${this.name}`,
+      `.vlt/${storeId}/node_modules/${this.name}`,
     )
     this.inVltStore = () => inStore
     return inStore
@@ -296,7 +299,8 @@ export class Node implements NodeLike {
     // file | remote | workspace type of ids all points to a URI that
     // can be used as the `resolved` value, so we split the dep id
     // for these cases.
-    const tuple = splitDepID(this.id)
+    const storeId = baseDepID(this.id)
+    const tuple = splitDepID(storeId)
     const [type, resolved] = tuple
     switch (type) {
       case 'registry':

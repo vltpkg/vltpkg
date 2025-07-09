@@ -1,4 +1,4 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, baseDepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
@@ -199,3 +199,88 @@ t.strictSame(extracted, [
     ),
   ],
 ])
+
+t.test('baseDepID deduplication in reify operations', async t => {
+  const testRemoved: string[] = []
+  const testExtracted: [Spec, string][] = []
+  
+  const testRemover = {
+    rm: async (path: string) => testRemoved.push(path),
+  } as unknown as RollbackRemove
+
+  const testPackageInfo = {
+    extract: async (spec: Spec, target: string) => {
+      testExtracted.push([spec, target])
+    },
+  } as unknown as PackageInfoClient
+
+  // Create two nodes with the same base ID but different extra information
+  const baseId = joinDepIDTuple(['registry', '', 'shared@1.0.0'])
+  const idWithExtra = joinDepIDTuple(['registry', '', 'shared@1.0.0', 'peer-resolution-extra'])
+
+  const node1 = node({
+    id: baseId,
+    inVltStore: inVltStoreTrue,
+    location:
+      './node_modules/.vlt/' +
+      baseDepID(baseId) +
+      '/node_modules/shared',
+    name: 'shared',
+    manifest: { name: 'shared', version: '1.0.0' },
+    isOptional: isOptionalFalse,
+  })
+
+  const node2 = node({
+    id: idWithExtra,
+    inVltStore: inVltStoreTrue,
+    location:
+      './node_modules/.vlt/' +
+      baseDepID(idWithExtra) +
+      '/node_modules/shared',
+    name: 'shared',
+    manifest: { name: 'shared', version: '1.0.0' },
+    isOptional: isOptionalFalse,
+  })
+
+  const testScurry = new PathScurry(t.testdirName)
+
+  // Both nodes should have the same resolved location (using baseDepID)
+  t.equal(
+    node1.resolvedLocation(testScurry),
+    node2.resolvedLocation(testScurry),
+    'nodes with same base ID should have same resolved location'
+  )
+
+  const testDiff = {
+    to: {
+      removeNode: () => {},
+    },
+    nodes: {
+      delete: new Set<any>([]),
+      add: new Set([node1, node2]),
+    },
+  } as unknown as Diff
+
+  await Promise.all(
+    addNodes(testDiff, testScurry, testRemover, {}, testPackageInfo).map(x =>
+      x(),
+    ),
+  )
+
+  // Both nodes should result in the same path being removed (deduplicated)
+  t.ok(testRemoved.length > 0, 'should have removed paths')
+  
+  // Both nodes should result in the same extraction target (deduplicated)
+  t.ok(testExtracted.length > 0, 'should have extracted to targets')
+  
+  // The paths should be the same for both nodes since they use baseDepID
+  const expectedPath = resolve(
+    t.testdirName,
+    'node_modules/.vlt/' +
+      baseDepID(baseId) +
+      '/node_modules/shared',
+  )
+  
+  t.ok(testRemoved.includes(expectedPath), 'should remove the baseDepID path')
+  t.ok(testExtracted.some(([, target]) => target === expectedPath), 'should extract to the baseDepID path')
+})

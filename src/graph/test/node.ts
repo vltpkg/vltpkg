@@ -557,3 +557,53 @@ t.test('asNode', async t => {
     'should throw if object is not a node',
   )
 })
+
+t.test('baseDepID deduplication in store operations', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  
+  // Create two nodes with the same base ID but different extra information
+  const baseId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const idWithExtra = joinDepIDTuple(['registry', '', 'foo@1.0.0', 'peer-resolution-extra'])
+  
+  const node1 = new Node(opts, baseId, { name: 'foo', version: '1.0.0' })
+  const node2 = new Node(opts, idWithExtra, { name: 'foo', version: '1.0.0' })
+  
+  // Both nodes should have the same location (using baseDepID)
+  t.equal(
+    node1.location,
+    node2.location,
+    'nodes with same base ID should have same location'
+  )
+  
+  // Both should report being in the vlt store
+  t.equal(node1.inVltStore(), true)
+  t.equal(node2.inVltStore(), true)
+  
+  // Both should have the same resolved location
+  const scurry = new PathScurry(opts.projectRoot)
+  t.equal(
+    node1.resolvedLocation(scurry),
+    node2.resolvedLocation(scurry),
+    'nodes with same base ID should have same resolved location'
+  )
+  
+  // The ID should remain different
+  t.ok(node1.id !== node2.id, 'the original IDs should remain different')
+  
+  // Test setResolved behavior
+  node1.setResolved()
+  node2.setResolved()
+  
+  // Both should have the same resolved value since they use the same base ID
+  t.equal(
+    node1.resolved,
+    node2.resolved,
+    'nodes with same base ID should have same resolved value'
+  )
+  
+  t.end()
+})

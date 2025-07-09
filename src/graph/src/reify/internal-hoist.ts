@@ -1,5 +1,5 @@
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
-import { splitDepID } from '@vltpkg/dep-id'
+import { splitDepID, baseDepID } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Version } from '@vltpkg/semver'
 import { mkdir, symlink } from 'node:fs/promises'
@@ -97,7 +97,7 @@ export const internalHoist = async (
   const links = new Map<string, DepID>()
   for (const [name, nodes] of graph.nodesByName) {
     const pickNode = pickNodeToHoist(nodes)
-    if (pickNode) links.set(name, pickNode.id)
+    if (pickNode) links.set(name, baseDepID(pickNode.id))
   }
 
   // now we have a list of everything to hoist

@@ -1,3 +1,4 @@
+import { baseDepID } from '@vltpkg/dep-id'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'
@@ -15,7 +16,7 @@ export const rollback = async (
   const backRoller = new RollbackRemove()
   for (const node of diff.nodes.add) {
     if (!node.inVltStore()) continue
-    const path = scurry.resolve(store, node.id)
+    const path = scurry.resolve(store, baseDepID(node.id))
     /* c8 ignore next */
     promises.push(backRoller.rm(path).catch(() => {}))
   }
