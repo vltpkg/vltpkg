@@ -4,7 +4,12 @@ import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
 import { loadPackageJson } from 'package-json-from-dist'
-import { asDepID, splitDepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  asDepID,
+  splitDepID,
+  joinDepIDTuple,
+  baseDepID,
+} from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
@@ -185,7 +190,7 @@ export class SecurityArchive
   #loadItemsFromDatabase(db: DatabaseSync, graph: GraphLike): void {
     const depIDs: string[] = []
     for (const node of graph.nodes.values()) {
-      depIDs.push(`'${node.id}'`)
+      depIDs.push(`'${baseDepID(node.id)}'`)
     }
     // retrieves from the db packages using their dep-id reference
     // and only include entries that have a valid TTL value
@@ -199,7 +204,7 @@ export class SecurityArchive
     this.#expired.clear()
     for (const entry of dbRead.all() as DBReadEntry[]) {
       const { depID, now, report, start, ttl } = entry
-      const id = asDepID(depID)
+      const id = baseDepID(asDepID(depID))
       try {
         this.set(id, asPackageReportData(JSON.parse(report)), {
           ttl,
@@ -230,7 +235,20 @@ export class SecurityArchive
   ): Promise<void> {
     const expiredQueue = new Set<Record<'purl', string>>()
     for (const depID of this.#expired) {
-      const node = graph.nodes.get(depID)
+      // Try to find the node by normalized DepID first
+      let node = graph.nodes.get(depID)
+
+      // If not found, try to find a node with the same base DepID
+      if (!node) {
+        for (const [nodeId, nodeValue] of graph.nodes) {
+          const nodeBaseDepID = baseDepID(nodeId)
+          if (nodeBaseDepID === depID) {
+            node = nodeValue
+            break
+          }
+        }
+      }
+
       /* c8 ignore next */
       if (!node) continue
       const purl = `pkg:npm/${node.name}@${node.version}`
@@ -256,13 +274,14 @@ export class SecurityArchive
     const queue = new Set<Record<'purl', string>>()
     const nodes = graph.nodes.values()
     for (const node of nodes) {
+      const normalizedId = baseDepID(node.id)
       // only queue up valid public registry
       // references that are missing from the archive
       // also skips any pkg marked as expired
       if (
         usesTargetRegistry(node.id, specOptions) &&
-        !this.has(node.id) &&
-        !this.#expired.has(node.id)
+        !this.has(normalizedId) &&
+        !this.#expired.has(normalizedId)
       ) {
         const purl = `pkg:npm/${node.name}@${node.version}`
         queue.add({ purl })
@@ -324,10 +343,31 @@ export class SecurityArchive
         'npm',
         `${scope}${data.name}@${data.version}`,
       ])
-      const node =
+
+      // Try to find the node by exact DepID match first
+      let node =
         graph.nodes.get(depID) ?? graph.nodes.get(aliasedDepID)
+
+      // If exact match fails, try to find a node with the same base DepID
+      if (!node) {
+        const baseDepIDValue = baseDepID(depID)
+        const baseAliasedDepID = baseDepID(aliasedDepID)
+
+        for (const [nodeId, nodeValue] of graph.nodes) {
+          const nodeBaseDepID = baseDepID(nodeId)
+          if (
+            nodeBaseDepID === baseDepIDValue ||
+            nodeBaseDepID === baseAliasedDepID
+          ) {
+            node = nodeValue
+            break
+          }
+        }
+      }
+
       if (node) {
-        fetchedDepIDs.add(node.id)
+        const normalizedId = baseDepID(node.id)
+        fetchedDepIDs.add(normalizedId)
         // Calculate average score from all score components
         const scoreComponents = [
           data.score.license,
@@ -348,7 +388,7 @@ export class SecurityArchive
           overall: newAverageScore,
         }
         this.set(
-          node.id,
+          normalizedId,
           asPackageReportData({
             ...data,
             score: scoreWithNewAverage,
@@ -399,7 +439,8 @@ export class SecurityArchive
   #validateReportData(graph: GraphLike, specOptions: SpecOptions) {
     for (const node of graph.nodes.values()) {
       if (usesTargetRegistry(node.id, specOptions)) {
-        if (!this.has(node.id)) {
+        const normalizedId = baseDepID(node.id)
+        if (!this.has(normalizedId)) {
           this.ok = false
           return
         }
