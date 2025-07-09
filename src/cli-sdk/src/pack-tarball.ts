@@ -66,7 +66,14 @@ const replaceWorkspaceAndCatalogSpecs = (
             }),
           )
 
-          const workspaceName = spec.workspace || depName
+          const workspaceName = spec.workspace
+          assert(
+            workspaceName,
+            error(`No workspace name found for ${depName}`, {
+              found: depName,
+            }),
+          )
+
           const workspace = monorepo.get(workspaceName)
           assert(
             workspace,
@@ -121,15 +128,6 @@ const replaceWorkspaceAndCatalogSpecs = (
 
           break
         }
-
-        /* c8 ignore start */
-        default: {
-          throw error(`Invalid spec type: ${spec.type}`, {
-            spec: depSpec,
-            found: depName,
-          })
-        }
-        /* c8 ignore end */
       }
     }
   }

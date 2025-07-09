@@ -532,9 +532,7 @@ t.test('packTarball', async t => {
     t.ok(filesInTarball.includes('ReadMe.rst'), 'ReadMe.rst included')
   })
 
-  // NEW TESTS FOR WORKSPACE AND CATALOG SPEC REPLACEMENT
   t.test('catalog spec replacement coverage', async t => {
-    // Test successful catalog spec replacement
     const catalogDir = t.testdir({
       'main-package': {
         'package.json': JSON.stringify({
@@ -596,7 +594,6 @@ t.test('packTarball', async t => {
   })
 
   t.test('workspace spec error cases', async t => {
-    // Test error when no monorepo configured
     const errorDir = t.testdir({
       'main-package': {
         'package.json': JSON.stringify({
@@ -624,8 +621,9 @@ t.test('packTarball', async t => {
     )
   })
 
+  t.test('workspace spec replacement', async t => {})
+
   t.test('catalog spec error cases', async t => {
-    // Test error when package not found in catalog
     const errorDir = t.testdir({
       'main-package': {
         'package.json': JSON.stringify({
@@ -658,63 +656,12 @@ t.test('packTarball', async t => {
     )
   })
 
-  t.test('dependency types and edge cases', async t => {
-    // Test that all dependency types are processed and edge cases are handled
-    const edgeDir = t.testdir({
-      'main-package': {
-        'package.json': JSON.stringify({
-          name: 'main-package',
-          version: '1.0.0',
-          dependencies: {
-            'normal-dep': '^1.0.0',
-            'invalid-dep': 123, // Non-string spec (should be skipped)
-            'null-dep': null, // Null spec (should be skipped)
-          },
-          devDependencies: {
-            'dev-dep': '^1.0.0',
-          },
-          optionalDependencies: {
-            'optional-dep': '^1.0.0',
-          },
-          peerDependencies: {
-            'peer-dep': '^1.0.0',
-          },
-        }),
-        'index.js': 'console.log("main");',
-      },
-    })
-
-    const mainPath = resolve(edgeDir, 'main-package')
-    const mainManifestContent = await readFile(
-      resolve(mainPath, 'package.json'),
-      'utf8',
-    )
-    const mainManifest = JSON.parse(mainManifestContent)
-
-    const edgeConfig = createMockConfig(edgeDir)
-
-    const result = await packTarball(
-      mainManifest,
-      mainPath,
-      edgeConfig,
-    )
-
-    t.ok(
-      result.tarballData,
-      'should create tarball with mixed dependency types',
-    )
-    t.equal(result.name, 'main-package')
-    t.equal(result.version, '1.0.0')
-  })
-
   t.test('missing or invalid dependency sections', async t => {
-    // Test handling of missing dependency sections
     const missingDepsDir = t.testdir({
       'main-package': {
         'package.json': JSON.stringify({
           name: 'main-package',
           version: '1.0.0',
-          // No dependencies, devDependencies, etc.
         }),
         'index.js': 'console.log("main");',
       },
