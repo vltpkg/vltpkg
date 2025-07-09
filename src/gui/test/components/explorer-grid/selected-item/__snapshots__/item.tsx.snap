@@ -8,7 +8,7 @@ exports[`Item renders connection lines 1`] = `
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
-        <gui-tabs value="[object Object]">
+        <gui-tabs value="overview">
           <gui-tabs-list
             variant="ghost"
             classname="w-full gap-2 px-6"
@@ -24,8 +24,10 @@ exports[`Item renders connection lines 1`] = `
             <gui-dependencies-tabs-button>
             </gui-dependencies-tabs-button>
           </gui-tabs-list>
-          <gui-router-outlet>
-          </gui-router-outlet>
+          <div class="min-h-64 overflow-hidden rounded-b-xl bg-card">
+            <gui-router-outlet>
+            </gui-router-outlet>
+          </div>
         </gui-tabs>
       </div>
     </gui-card>
@@ -42,7 +44,7 @@ exports[`Item renders with the default structure 1`] = `
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
-        <gui-tabs value="[object Object]">
+        <gui-tabs value="overview">
           <gui-tabs-list
             variant="ghost"
             classname="w-full gap-2 px-6"
@@ -58,8 +60,10 @@ exports[`Item renders with the default structure 1`] = `
             <gui-dependencies-tabs-button>
             </gui-dependencies-tabs-button>
           </gui-tabs-list>
-          <gui-router-outlet>
-          </gui-router-outlet>
+          <div class="min-h-64 overflow-hidden rounded-b-xl bg-card">
+            <gui-router-outlet>
+            </gui-router-outlet>
+          </div>
         </gui-tabs>
       </div>
     </gui-card>

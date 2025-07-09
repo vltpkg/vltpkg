@@ -20,7 +20,10 @@ exports[`VersionsTabButton renders default 1`] = `
 
 exports[`VersionsTabContent filters newer versions 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="flex flex-col px-6 py-4">
     <div class="mb-3 border-b-[1px] border-muted pb-1">
       <div class="flex cursor-default justify-between">
@@ -198,7 +201,10 @@ exports[`VersionsTabContent filters newer versions 1`] = `
 
 exports[`VersionsTabContent filters pre-releases 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="flex flex-col px-6 py-4">
     <div class="mb-3 border-b-[1px] border-muted pb-1">
       <div class="flex cursor-default justify-between">
@@ -376,7 +382,10 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
 
 exports[`VersionsTabContent filters versions 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="flex flex-col px-6 py-4">
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
@@ -495,7 +504,10 @@ exports[`VersionsTabContent filters versions 1`] = `
 
 exports[`VersionsTabContent handles missing manifest version 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="flex flex-col px-6 py-4">
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
@@ -614,7 +626,10 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
 
 exports[`VersionsTabContent renders an empty state 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <div class="flex h-full min-h-64 w-full items-center justify-center overflow-hidden">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
       <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
@@ -637,7 +652,10 @@ exports[`VersionsTabContent renders an empty state 1`] = `
 
 exports[`VersionsTabContent renders with versions 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="flex flex-col px-6 py-4">
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
@@ -756,7 +774,10 @@ exports[`VersionsTabContent renders with versions 1`] = `
 
 exports[`VersionsTabContent toggles pre-releases 1`] = `
 
-<gui-tabs-content value="versions">
+<gui-tabs-content
+  value="versions"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="flex flex-col px-6 py-4">
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">

@@ -1,4 +1,4 @@
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import Markdown from 'react-markdown'
 import {
@@ -17,6 +17,10 @@ import { toHumanNumber } from '@/utils/human-number.ts'
 import { Github } from '@/components/icons/index.ts'
 import { getRepositoryUrl } from '@/utils/get-repo-url.ts'
 import { ContributorList } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
 
 export const OverviewTabButton = () => {
   return (
@@ -204,7 +208,8 @@ export const OverviewTabContent = () => {
     : []
 
   return (
-    <TabsContent
+    <MotionTabsContent
+      {...tabMotion}
       value="overview"
       className="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&>aside]:border-b-[1px] [&>aside]:border-red-500 xl:[&>aside]:border-b-[0px]">
       <div className="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&:has(aside)]:col-span-8">
@@ -241,7 +246,7 @@ export const OverviewTabContent = () => {
         )}
       </div>
       <TabContentAside />
-    </TabsContent>
+    </MotionTabsContent>
   )
 }
 

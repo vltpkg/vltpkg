@@ -23,6 +23,12 @@ vi.mock(
       ...actual,
       useSelectedItemStore: vi.fn(),
       SelectedItemProvider: 'gui-selected-item-provider',
+      useTabNavigation: {
+        tab: 'dependencies',
+        subTab: 'licenses',
+        setActiveTab: vi.fn(),
+        setActiveSubTab: vi.fn(),
+      },
     }
   },
 )
@@ -153,10 +159,6 @@ test('LicensesTabButton renders default', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      activeSubTab: 'licenses',
-      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -196,10 +198,6 @@ test('LicensesTabButton renders with license count', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      activeSubTab: 'licenses',
-      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -239,10 +237,6 @@ test('LicensesTabContent renders with an empty state', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'licenses',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -282,10 +276,6 @@ test('LicensesTabContent renders with licenses', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      activeSubTab: 'licenses',
-      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,

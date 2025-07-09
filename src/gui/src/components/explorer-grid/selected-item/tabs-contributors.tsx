@@ -1,5 +1,4 @@
 import { TabsContent } from '@/components/ui/tabs.tsx'
-import { Link, useParams } from 'react-router'
 import { Button } from '@/components/ui/button.tsx'
 import {
   ArrowLeft,
@@ -12,7 +11,10 @@ import {
   AvatarImage,
   AvatarFallback,
 } from '@radix-ui/react-avatar'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import {
+  useSelectedItemStore,
+  useTabNavigation,
+} from '@/components/explorer-grid/selected-item/context.tsx'
 import { cn } from '@/lib/utils.ts'
 import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
 import {
@@ -24,7 +26,6 @@ import {
 } from '@/components/ui/tooltip.tsx'
 import { useGraphStore } from '@/state/index.ts'
 
-import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { Contributor } from '@/lib/external-info.ts'
 
 interface ContributorAvatarProps {
@@ -115,10 +116,12 @@ const Contributor = ({
 }
 
 export const ContributorList = () => {
-  const { query } = useParams<{ query: string; tab: Tab }>()
   const contributors = useSelectedItemStore(
     state => state.contributors,
   )
+  const { setActiveTab } = useTabNavigation()
+
+  const handleToContributors = () => setActiveTab('contributors')
 
   if (!contributors || contributors.length === 0) return null
 
@@ -146,13 +149,11 @@ export const ContributorList = () => {
         <Button
           className="duration-250 font-muted-foreground h-fit rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal text-foreground transition-colors hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
           variant="default"
-          asChild>
-          <Link to={`/explore/${query}/contributors`}>
-            See all contributors
-            <span>
-              <ArrowRight size={14} />
-            </span>
-          </Link>
+          onClick={handleToContributors}>
+          See all contributors
+          <span>
+            <ArrowRight size={14} />
+          </span>
         </Button>
       </div>
     </div>
@@ -163,9 +164,7 @@ export const ContributorTabContent = () => {
   const contributors = useSelectedItemStore(
     state => state.contributors,
   )
-  const setActiveTab = useSelectedItemStore(
-    state => state.setActiveTab,
-  )
+  const { setActiveTab } = useTabNavigation()
 
   const handleBackToOverview = () => setActiveTab('overview')
 

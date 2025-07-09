@@ -6,7 +6,7 @@ import React, {
   memo,
 } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import {
   History,
   ArrowUpDown,
@@ -50,6 +50,10 @@ import { NumberFlow } from '@/components/number-flow.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { Separator } from '@/components/ui/separator.tsx'
 import { Virtuoso } from 'react-virtuoso'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
 
 import type { ChartConfig } from '@/components/ui/chart.tsx'
 import type { Version } from '@/lib/external-info.ts'
@@ -622,7 +626,7 @@ export const VersionsTabContent = () => {
   ]
 
   return (
-    <TabsContent value="versions">
+    <MotionTabsContent {...tabMotion} value="versions">
       {isEmpty ?
         <EmptyState message="There is no versioning information about this package yet." />
       : <section className="flex flex-col px-6 py-4">
@@ -784,6 +788,6 @@ export const VersionsTabContent = () => {
           }
         </section>
       }
-    </TabsContent>
+    </MotionTabsContent>
   )
 }

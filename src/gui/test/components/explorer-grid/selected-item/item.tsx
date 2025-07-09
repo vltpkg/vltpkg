@@ -28,6 +28,12 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: vi.fn(() => ({
+      tab: 'overview',
+      subTab: undefined,
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    })),
   }),
 )
 
@@ -92,10 +98,6 @@ afterEach(() => {
 test('Item renders with the default structure', () => {
   vi.mocked(useSelectedItemStore).mockReturnValue({
     selectedItem: SELECTED_ITEM,
-    activeTab: 'insights',
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,
@@ -132,10 +134,6 @@ test('Item renders with the default structure', () => {
 test('Item renders connection lines', () => {
   vi.mocked(useSelectedItemStore).mockReturnValue({
     selectedItem: SELECTED_ITEM,
-    activeTab: 'insights',
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,

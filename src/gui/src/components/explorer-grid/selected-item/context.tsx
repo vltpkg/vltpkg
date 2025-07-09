@@ -1,4 +1,3 @@
-import { useNavigate, useParams } from 'react-router'
 import {
   createContext,
   useContext,
@@ -11,6 +10,7 @@ import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.ts'
 import { fetchDetails } from '@/lib/external-info.ts'
 import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/index.ts'
+import { generatePath, useNavigate, useParams } from 'react-router'
 
 import type { StoreApi } from 'zustand'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -369,8 +369,6 @@ const getDependencyInformation = async (
 
 type SelectedItemStoreState = DetailsInfo & {
   selectedItem: GridItemData
-  activeTab: Tab
-  activeSubTab: SubTabDependencies | undefined
   manifest: Manifest | null
   rawManifest: Manifest | null
   packageScore?: PackageScore
@@ -385,10 +383,6 @@ type SelectedItemStoreState = DetailsInfo & {
 }
 
 type SelectedItemStoreAction = {
-  setActiveTab: (tab: SelectedItemStoreState['activeTab']) => void
-  setActiveSubTab: (
-    newSubTab: SelectedItemStoreState['activeSubTab'],
-  ) => void
   setDepLicenses: (
     depLicenses: SelectedItemStoreState['depLicenses'],
   ) => void
@@ -429,18 +423,6 @@ export const SelectedItemProvider = ({
   const q = useGraphStore(state => state.q)
   const graph = useGraphStore(state => state.graph)
   const query = useGraphStore(state => state.query)
-  const params = useParams<{
-    query: string
-    tab: Tab
-    subTab?: SubTabDependencies
-  }>()
-  const navigate = useNavigate()
-
-  const activeTab =
-    params.subTab ? 'dependencies' : (params.tab ?? 'overview')
-  const activeSubTab =
-    params.subTab ||
-    (activeTab === 'dependencies' ? 'insights' : undefined)
 
   /**
    * We initialize the zustand store as a scoped state within the context:
@@ -452,8 +434,6 @@ export const SelectedItemProvider = ({
   const selectedItemStore = useRef(
     createStore<SelectedItemStore>(set => ({
       selectedItem,
-      activeTab: activeTab,
-      activeSubTab: activeSubTab,
       manifest: selectedItem.to?.manifest ?? null,
       rawManifest: selectedItem.to?.rawManifest ?? null,
       packageScore: selectedItem.to?.insights.score,
@@ -465,18 +445,6 @@ export const SelectedItemProvider = ({
       depCount: undefined,
       duplicatedDeps: undefined,
       depFunding: undefined,
-      setActiveTab: (newTab: SelectedItemStoreState['activeTab']) => {
-        set(state => ({ ...state, activeTab: newTab }))
-        void navigate(newTab)
-      },
-      setActiveSubTab: (
-        newSubTab: SelectedItemStoreState['activeSubTab'],
-      ) => {
-        set(state => ({ ...state, activeSubTab: newSubTab }))
-        if (newSubTab) {
-          void navigate(`dependencies/${newSubTab}`)
-        }
-      },
       setDepLicenses: (
         depLicenses: SelectedItemStoreState['depLicenses'],
       ) => set(() => ({ depLicenses })),
@@ -548,14 +516,6 @@ export const SelectedItemProvider = ({
     )
   }, [q, graph, query, selectedItemStore])
 
-  useEffect(() => {
-    selectedItemStore.setState(state => ({
-      ...state,
-      activeTab: activeTab,
-      activeSubTab: activeSubTab,
-    }))
-  }, [activeTab, activeSubTab, selectedItemStore])
-
   return (
     <SelectedItemContext.Provider value={selectedItemStore}>
       {children}
@@ -573,4 +533,58 @@ export const useSelectedItemStore = <T,>(
     )
   }
   return useStore(store, selector)
+}
+
+export const useTabNavigation = (): {
+  tab: Tab
+  subTab: SubTabDependencies | undefined
+  setActiveTab: (tab: Tab) => void
+  setActiveSubTab: (subTab: SubTabDependencies, tab?: Tab) => void
+} => {
+  const {
+    query = '',
+    tab,
+    subTab,
+  } = useParams<{
+    query: string
+    tab: Tab
+    subTab?: SubTabDependencies
+  }>()
+  const navigate = useNavigate()
+
+  const getConstructedURL = (
+    query: string,
+    tab: Tab,
+    subTab?: SubTabDependencies,
+  ) => {
+    return generatePath('/explore/:query/:tab/:subTab', {
+      query,
+      tab,
+      subTab:
+        tab === 'dependencies' ?
+          subTab ? subTab
+          : 'insights'
+        : '',
+    })
+  }
+
+  const setActiveTab = (tab: Tab) => {
+    const newPath = getConstructedURL(query, tab)
+    void navigate(newPath)
+  }
+
+  const setActiveSubTab = (
+    subTab: SubTabDependencies,
+    tab: Tab = 'dependencies',
+  ) => {
+    const newPath = getConstructedURL(query, tab, subTab)
+    void navigate(newPath)
+  }
+
+  return {
+    tab: tab ?? 'overview',
+    subTab,
+    setActiveTab,
+    setActiveSubTab,
+  }
 }
