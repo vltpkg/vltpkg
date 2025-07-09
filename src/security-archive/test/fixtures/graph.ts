@@ -14,6 +14,11 @@ export const specOptions = {
 const projectRoot = '.'
 export const newGraph = (rootName: string): GraphLike => {
   const graph = {} as GraphLike
+  // Initialize nodesByName before calling addNode
+  graph.nodesByName = new Map()
+  graph.nodes = new Map()
+  graph.edges = new Set()
+
   const addNode = newNode(graph)
   const mainImporter = addNode(rootName)
   mainImporter.id = joinDepIDTuple(['file', '.'])
@@ -22,57 +27,67 @@ export const newGraph = (rootName: string): GraphLike => {
   mainImporter.graph = graph
   graph.importers = new Set([mainImporter])
   graph.mainImporter = mainImporter
-  graph.nodes = new Map([[mainImporter.id, mainImporter]])
-  graph.edges = new Set()
+  graph.nodes.set(mainImporter.id, mainImporter)
 
   return graph
 }
 export const newNode =
   (graph: GraphLike) =>
-  (name: string, version = '1.0.0', registry?: string): NodeLike => ({
-    projectRoot,
-    edgesIn: new Set(),
-    edgesOut: new Map(),
-    importer: false,
-    mainImporter: false,
-    graph,
-    id: joinDepIDTuple([
-      'registry',
-      registry ?? '',
-      `${name}@${version}`,
-    ]),
-    name,
-    version,
-    location:
-      'node_modules/.vlt/·${registry}·${name}@${version}/node_modules/${name}',
-    manifest: { name, version },
-    rawManifest: undefined,
-    integrity: 'sha512-deadbeef',
-    resolved: undefined,
-    dev: false,
-    optional: false,
-    confused: false,
-    setResolved() {},
-    maybeSetConfusedManifest() {},
-    setConfusedManifest() {},
-    toJSON() {
-      return {
-        id: this.id,
-        name: this.name,
-        version: this.version,
-        location: this.location,
-        importer: this.importer,
-        manifest: this.manifest,
-        rawManifest: this.rawManifest,
-        projectRoot: this.projectRoot,
-        integrity: this.integrity,
-        resolved: this.resolved,
-        dev: this.dev,
-        optional: this.optional,
-        confused: false,
-      }
-    },
-  })
+  (name: string, version = '1.0.0', registry?: string): NodeLike => {
+    const node: NodeLike = {
+      projectRoot,
+      edgesIn: new Set(),
+      edgesOut: new Map(),
+      importer: false,
+      mainImporter: false,
+      graph,
+      id: joinDepIDTuple([
+        'registry',
+        registry ?? '',
+        `${name}@${version}`,
+      ]),
+      name,
+      version,
+      location:
+        'node_modules/.vlt/·${registry}·${name}@${version}/node_modules/${name}',
+      manifest: { name, version },
+      rawManifest: undefined,
+      integrity: 'sha512-deadbeef',
+      resolved: undefined,
+      dev: false,
+      optional: false,
+      confused: false,
+      setResolved() {},
+      maybeSetConfusedManifest() {},
+      setConfusedManifest() {},
+      toJSON() {
+        return {
+          id: this.id,
+          name: this.name,
+          version: this.version,
+          location: this.location,
+          importer: this.importer,
+          manifest: this.manifest,
+          rawManifest: this.rawManifest,
+          projectRoot: this.projectRoot,
+          integrity: this.integrity,
+          resolved: this.resolved,
+          dev: this.dev,
+          optional: this.optional,
+          confused: false,
+        }
+      },
+    }
+
+    // Update nodesByName when creating a new node
+    const existingNodes =
+      graph.nodesByName.get(name) ?? new Set<NodeLike>()
+    existingNodes.add(node)
+    graph.nodesByName.set(name, existingNodes)
+
+    return node
+  }
+
 const newEdge = (
   from: NodeLike,
   spec: SpecLike<Spec>,

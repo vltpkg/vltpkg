@@ -4,12 +4,12 @@ import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
 import { loadPackageJson } from 'package-json-from-dist'
-import { asDepID, splitDepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { GraphLike } from '@vltpkg/graph'
+import type { GraphLike, NodeLike } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
   PackageReportData,
@@ -99,6 +99,21 @@ export const { version } = loadPackageJson(
 }
 
 /**
+ * Retrieves a node from the graph using its name and version.
+ */
+const retrieveNodeFromGraph = (
+  graph: GraphLike,
+  name: string,
+  version: string,
+): NodeLike | undefined => {
+  for (const node of graph.nodesByName.get(name) ?? []) {
+    if (node.version === version) {
+      return node
+    }
+  }
+}
+
+/**
  * A database of security information for given packages in a graph.
  *
  * Using the SecurityArchive.refresh() method will update the local cache
@@ -185,7 +200,7 @@ export class SecurityArchive
   #loadItemsFromDatabase(db: DatabaseSync, graph: GraphLike): void {
     const depIDs: string[] = []
     for (const node of graph.nodes.values()) {
-      depIDs.push(`'${node.id}'`)
+      depIDs.push(`'${baseDepID(node.id)}'`)
     }
     // retrieves from the db packages using their dep-id reference
     // and only include entries that have a valid TTL value
@@ -199,7 +214,7 @@ export class SecurityArchive
     this.#expired.clear()
     for (const entry of dbRead.all() as DBReadEntry[]) {
       const { depID, now, report, start, ttl } = entry
-      const id = asDepID(depID)
+      const id = baseDepID(asDepID(depID))
       try {
         this.set(id, asPackageReportData(JSON.parse(report)), {
           ttl,
@@ -230,7 +245,8 @@ export class SecurityArchive
   ): Promise<void> {
     const expiredQueue = new Set<Record<'purl', string>>()
     for (const depID of this.#expired) {
-      const node = graph.nodes.get(depID)
+      const node = graph.nodes.get(baseDepID(depID))
+
       /* c8 ignore next */
       if (!node) continue
       const purl = `pkg:npm/${node.name}@${node.version}`
@@ -256,13 +272,14 @@ export class SecurityArchive
     const queue = new Set<Record<'purl', string>>()
     const nodes = graph.nodes.values()
     for (const node of nodes) {
+      const normalizedId = baseDepID(node.id)
       // only queue up valid public registry
       // references that are missing from the archive
       // also skips any pkg marked as expired
       if (
         usesTargetRegistry(node.id, specOptions) &&
-        !this.has(node.id) &&
-        !this.#expired.has(node.id)
+        !this.has(normalizedId) &&
+        !this.#expired.has(normalizedId)
       ) {
         const purl = `pkg:npm/${node.name}@${node.version}`
         queue.add({ purl })
@@ -314,20 +331,11 @@ export class SecurityArchive
       if (!line.trim()) continue
       const data = JSON.parse(line + '}') as JSONItemResponse
       const scope = data.namespace ? `${data.namespace}/` : ''
-      const depID = joinDepIDTuple([
-        'registry',
-        '',
-        `${scope}${data.name}@${data.version}`,
-      ])
-      const aliasedDepID = joinDepIDTuple([
-        'registry',
-        'npm',
-        `${scope}${data.name}@${data.version}`,
-      ])
-      const node =
-        graph.nodes.get(depID) ?? graph.nodes.get(aliasedDepID)
+      const name = `${scope}${data.name}`
+      const node = retrieveNodeFromGraph(graph, name, data.version)
       if (node) {
-        fetchedDepIDs.add(node.id)
+        const normalizedId = baseDepID(node.id)
+        fetchedDepIDs.add(baseDepID(node.id))
         // Calculate average score from all score components
         const scoreComponents = [
           data.score.license,
@@ -348,7 +356,7 @@ export class SecurityArchive
           overall: newAverageScore,
         }
         this.set(
-          node.id,
+          normalizedId,
           asPackageReportData({
             ...data,
             score: scoreWithNewAverage,
@@ -399,7 +407,7 @@ export class SecurityArchive
   #validateReportData(graph: GraphLike, specOptions: SpecOptions) {
     for (const node of graph.nodes.values()) {
       if (usesTargetRegistry(node.id, specOptions)) {
-        if (!this.has(node.id)) {
+        if (!this.has(baseDepID(node.id))) {
           this.ok = false
           return
         }
