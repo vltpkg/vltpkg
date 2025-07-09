@@ -2,14 +2,14 @@
 
 exports[`InsightBadge renders as a marker 1`] = `
 
-<span class="inline-flex items-center justify-center size-3 p-0 rounded-full text-foreground bg-red-500/70">
+<span class="inline-flex items-center justify-center size-3 p-0 rounded-full text-red-600 dark:text-red-500 bg-red-500/5 dark:bg-red-600/10 hover:bg-red-500/15 border-[1px] border-red-600/80 hover:border-red-500/80">
 </span>
 
 `;
 
 exports[`InsightBadge renders default 1`] = `
 
-<span class="inline-flex items-center justify-center rounded-full px-3 py-0.5 pt-1 text-xs font-courier font-normal text-foreground bg-red-500/70">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-0.5 pt-1 text-xs font-courier font-normal text-yellow-700 dark:text-yellow-600 bg-yellow-500/5 dark:bg-yellow-600/10 hover:bg-yellow-500/15 border-[1px] border-yellow-600/80 hover:border-yellow-500/80">
   :mock-selector
 </span>
 

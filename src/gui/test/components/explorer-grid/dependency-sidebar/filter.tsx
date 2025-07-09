@@ -73,6 +73,10 @@ vi.mock('@/components/ui/kbd.tsx', () => ({
   Kbd: 'gui-kbd',
 }))
 
+vi.mock('@/components/ui/relation-badge.tsx', () => ({
+  RelationBadge: 'gui-relation-badge',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

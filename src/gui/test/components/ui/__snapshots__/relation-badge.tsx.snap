@@ -1,0 +1,88 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`RelationBadge renders as a marker 1`] = `
+
+<div class="relative items-center justify-center cursor-default size-2 rounded-full bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500 m-0 inline-block p-0">
+</div>
+
+`;
+
+exports[`RelationBadge renders default 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
+    Production Dependency
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders dev 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-orange-200 dark:bg-orange-950 border-[1px] border-orange-500 dark:border-orange-500">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-orange-700 dark:text-orange-500">
+    dev
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders optional 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-emerald-200 dark:bg-emerald-950 border-[1px] border-emerald-500 dark:border-emerald-500">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-emerald-700 dark:text-emerald-500">
+    optional
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders peer 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-fuchsia-100 dark:bg-fuchsia-950 border-[1px] border-fuchsia-500 dark:border-fuchsia-500">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-fuchsia-800 dark:text-fuchsia-400">
+    peer
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders peerOptional 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-pink-100 dark:bg-pink-950 border-[1px] border-pink-500 dark:border-pink-500">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-pink-800 dark:text-pink-400">
+    peerOptional
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders prod 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
+    prod
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders undefined 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-gray-100 border-[1px] border-neutral-900">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-neutral-900">
+    undefined
+  </span>
+</div>
+
+`;
+
+exports[`RelationBadge renders workspace 1`] = `
+
+<div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-gray-500/25 dark:bg-gray-500/30 border-[1px] border-gray-600 dark:border-gray-400">
+  <span class="text-xs font-medium inline-flex items-center justify-center text-gray-600 dark:text-gray-400">
+    workspace
+  </span>
+</div>
+
+`;

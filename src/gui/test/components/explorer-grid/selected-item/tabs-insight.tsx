@@ -41,13 +41,6 @@ vi.mock(
   }),
 )
 
-vi.mock(
-  '@/components/explorer-grid/selected-item/insights.tsx',
-  () => ({
-    getSecurityAlerts: vi.fn(),
-  }),
-)
-
 vi.mock('react-router', () => ({
   Link: 'gui-link',
 }))
@@ -59,15 +52,9 @@ vi.mock('@/components/ui/tabs.tsx', () => ({
 
 vi.mock(
   '@/components/explorer-grid/selected-item/insight-badge.tsx',
-  async () => {
-    const actual = await import(
-      '@/components/explorer-grid/selected-item/insight-badge.tsx'
-    )
-    return {
-      ...actual,
-      InsightBadge: 'gui-insight-badge',
-    }
-  },
+  () => ({
+    InsightBadge: 'gui-insight-badge',
+  }),
 )
 
 vi.mock('lucide-react', () => ({

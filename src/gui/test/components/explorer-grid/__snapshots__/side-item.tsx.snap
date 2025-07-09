@@ -24,9 +24,9 @@ exports[`SideItem clicks on a workspace item change the query 1`] = `
           v1.0.0
         </span>
         <div class="absolute -bottom-3 right-2.5">
-          <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+          <gui-relation-badge relation="prod">
             prod
-          </gui-badge>
+          </gui-relation-badge>
         </div>
       </gui-card-header>
     </gui-card>
@@ -68,9 +68,9 @@ exports[`SideItem render as aliased dependency 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -113,9 +113,9 @@ exports[`SideItem render as dependency 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-[1px] border-lime-600 dark:border-lime-700 bg-lime-100 dark:bg-lime-300 dark:text-lime-900 hover:bg-lime-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="peer">
               peer
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -158,9 +158,9 @@ exports[`SideItem render as dependency with long name 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-[1px] border-lime-600 dark:border-lime-700 bg-lime-100 dark:bg-lime-300 dark:text-lime-900 hover:bg-lime-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="peer">
               peer
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -203,9 +203,9 @@ exports[`SideItem render as dependent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -248,9 +248,9 @@ exports[`SideItem render as git dependency 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -296,9 +296,9 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -341,9 +341,9 @@ exports[`SideItem render as parent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -389,9 +389,9 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>
@@ -426,9 +426,9 @@ exports[`SideItem render as workspace item 1`] = `
             v1.0.0
           </span>
           <div class="absolute -bottom-3 right-2.5">
-            <gui-badge classname="border-transparent bg-cyan-100 hover:bg-cyan-100/80 h-[18px] rounded-full text-xxs font-normal">
+            <gui-relation-badge relation="prod">
               prod
-            </gui-badge>
+            </gui-relation-badge>
           </div>
         </gui-card-header>
       </gui-card>

@@ -145,7 +145,7 @@ exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
             style="width: 150px;"
           >
             <gui-insight-badge
-              color="yellow"
+              color="medium"
               classname="lowercase"
             >
               :abandoned
@@ -182,7 +182,7 @@ exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
             style="width: 150px;"
           >
             <gui-insight-badge
-              color="yellow"
+              color="medium"
               classname="lowercase"
             >
               :confused
@@ -219,7 +219,7 @@ exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
             style="width: 150px;"
           >
             <gui-insight-badge
-              color="yellow"
+              color="medium"
               classname="lowercase"
             >
               :eval
@@ -350,7 +350,7 @@ exports[`InsightsTabContent renders with insights 1`] = `
             style="width: 150px;"
           >
             <gui-insight-badge
-              color="yellow"
+              color="medium"
               classname="lowercase"
             >
               :abandoned
@@ -387,7 +387,7 @@ exports[`InsightsTabContent renders with insights 1`] = `
             style="width: 150px;"
           >
             <gui-insight-badge
-              color="yellow"
+              color="medium"
               classname="lowercase"
             >
               :confused
@@ -424,7 +424,7 @@ exports[`InsightsTabContent renders with insights 1`] = `
             style="width: 150px;"
           >
             <gui-insight-badge
-              color="yellow"
+              color="medium"
               classname="lowercase"
             >
               :eval

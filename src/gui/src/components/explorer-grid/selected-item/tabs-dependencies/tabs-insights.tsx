@@ -19,16 +19,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils.ts'
 import {
   SortingHeader,
   tableClassNames,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
-import {
-  InsightBadge,
-  getAlertColor,
-} from '@/components/explorer-grid/selected-item/insight-badge.tsx'
+import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import {
   getScoreColor,
   scoreColors,
@@ -37,6 +33,7 @@ import { Warning } from '@/components/explorer-grid/selected-item/tabs-dependenc
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { toHumanString } from '@/utils/human-string.ts'
 
+import type { ColumnDef } from '@tanstack/react-table'
 import type { DepWarning } from '@/components/explorer-grid/selected-item/context.tsx'
 
 export const InsightsTabButton = () => {
@@ -151,7 +148,7 @@ export const InsightsTabContent = () => {
         ),
         cell: ({ row }) => (
           <InsightBadge
-            color={getAlertColor(row.original.severity)}
+            color={row.original.severity}
             className="lowercase">
             {row.original.selector}
           </InsightBadge>

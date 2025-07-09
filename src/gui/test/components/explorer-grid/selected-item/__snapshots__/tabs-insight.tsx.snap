@@ -74,7 +74,7 @@ exports[`InsightTabContent renders with insights 1`] = `
       <div class="duration-250 grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-colors hover:bg-muted">
         <div class="col-span-3 flex w-full items-start">
           <gui-insight-badge
-            color="yellow"
+            color="medium"
             tooltipcontent="medium"
           >
             :mock-selector

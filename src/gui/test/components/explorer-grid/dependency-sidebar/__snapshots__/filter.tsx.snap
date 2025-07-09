@@ -62,40 +62,55 @@ exports[`filter-button renders default 1`] = `
                     classname="gap-2"
                     tabindex="1"
                   >
-                    <div class="size-2 rounded-full border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-                    </div>
+                    <gui-relation-badge
+                      variant="marker"
+                      relation="prod"
+                    >
+                    </gui-relation-badge>
                     prod
                   </gui-dropdown-menu-item>
                   <gui-dropdown-menu-item
                     classname="gap-2"
                     tabindex="2"
                   >
-                    <div class="size-2 rounded-full border-[1px] dark:border-fuchsia-600 border-fuchsia-500 bg-fuchsia-100 dark:bg-fuchsia-300 text-neutral-900 dark:text-fuchsia-900 hover:bg-fuchsia-100/80">
-                    </div>
+                    <gui-relation-badge
+                      variant="marker"
+                      relation="dev"
+                    >
+                    </gui-relation-badge>
                     dev
                   </gui-dropdown-menu-item>
                   <gui-dropdown-menu-item
                     classname="gap-2"
                     tabindex="3"
                   >
-                    <div class="size-2 rounded-full border-[1px] border-lime-600 dark:border-lime-700 bg-lime-100 dark:bg-lime-300 text-neutral-900 dark:text-lime-900 hover:bg-lime-100/80">
-                    </div>
+                    <gui-relation-badge
+                      variant="marker"
+                      relation="peer"
+                    >
+                    </gui-relation-badge>
                     peer
                   </gui-dropdown-menu-item>
                   <gui-dropdown-menu-item
                     classname="gap-2"
                     tabindex="4"
                   >
-                    <div class="size-2 rounded-full border-[1px] border-orange-500 dark:border-orange-400 bg-orange-100 text-neutral-900 dark:text-orange-900 hover:bg-orange-100/80">
-                    </div>
+                    <gui-relation-badge
+                      variant="marker"
+                      relation="optional"
+                    >
+                    </gui-relation-badge>
                     optional
                   </gui-dropdown-menu-item>
                   <gui-dropdown-menu-item
                     classname="gap-2"
                     tabindex="5"
                   >
-                    <div class="size-2 rounded-full border-[1px] border-yellow-600 dark:border-yellow-400 bg-yellow-100 text-neutral-900 dark:text-yellow-900 hover:bg-yellow-100/80">
-                    </div>
+                    <gui-relation-badge
+                      variant="marker"
+                      relation="peerOptional"
+                    >
+                    </gui-relation-badge>
                     peerOptional
                   </gui-dropdown-menu-item>
                 </gui-dropdown-menu-sub-content>
@@ -121,36 +136,36 @@ exports[`filter-list renders with filters 1`] = `
     tabindex="0"
     style="opacity: 1; filter: blur(0px); transform: none; transform-origin: 50% 0px 0;"
   >
-    <gui-badge
+    <gui-relation-badge
       variant="default"
-      classname="cursor-default border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80"
+      relation="prod"
     >
       prod
-    </gui-badge>
+    </gui-relation-badge>
   </div>
   <div
     class="flex h-fit w-fit items-center justify-center"
     tabindex="0"
     style="opacity: 1; filter: blur(0px); transform: none; transform-origin: 50% 0px 0;"
   >
-    <gui-badge
+    <gui-relation-badge
       variant="default"
-      classname="cursor-default border-[1px] dark:border-fuchsia-600 border-fuchsia-500 bg-fuchsia-100 dark:bg-fuchsia-300 text-neutral-900 dark:text-fuchsia-900 hover:bg-fuchsia-100/80"
+      relation="dev"
     >
       dev
-    </gui-badge>
+    </gui-relation-badge>
   </div>
   <div
     class="flex h-fit w-fit items-center justify-center"
     tabindex="0"
     style="opacity: 1; filter: blur(0px); transform: none; transform-origin: 50% 0px 0;"
   >
-    <gui-badge
+    <gui-relation-badge
       variant="default"
-      classname="cursor-default border-[1px] border-lime-600 dark:border-lime-700 bg-lime-100 dark:bg-lime-300 text-neutral-900 dark:text-lime-900 hover:bg-lime-100/80"
+      relation="peer"
     >
       peer
-    </gui-badge>
+    </gui-relation-badge>
   </div>
 </section>
 

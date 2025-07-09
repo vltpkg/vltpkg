@@ -11,57 +11,51 @@ import {
   TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 
-export const getAlertColor = (
-  severity: PackageAlert['severity'],
-): InsightColor => {
-  switch (severity) {
-    case 'low':
-      return 'gray'
-    case 'medium':
-      return 'yellow'
-    case 'high':
-      return 'orange'
-    case 'critical':
-      return 'red'
-  }
-}
-
-export type InsightColor =
-  | 'gray' /** Low severity */
-  | 'yellow' /** Middle severity */
-  | 'orange' /** High severity */
-  | 'red' /** Critical severity */
-
-const colors: Record<
-  InsightColor,
+type InsightColor = Record<
+  PackageAlert['severity'],
   {
-    foreground: string
     background: string
+    border: string
+    text: string
   }
-> = {
-  gray: {
-    foreground: 'text-foreground',
-    background: 'bg-neutral-400/70 dark:bg-neutral-600/70',
+>
+
+export const alertStyles: InsightColor = {
+  low: {
+    background:
+      'bg-gray-500/5 dark:bg-gray-600/10 hover:bg-gray-500/15',
+    border:
+      'border-[1px] border-gray-600/80 hover:border-gray-500/80',
+    text: 'text-gray-600 dark:text-gray-400',
   },
-  yellow: {
-    foreground: 'text-foreground',
-    background: 'bg-yellow-600/70',
+  medium: {
+    background:
+      'bg-yellow-500/5 dark:bg-yellow-600/10 hover:bg-yellow-500/15',
+    border:
+      'border-[1px] border-yellow-600/80 hover:border-yellow-500/80',
+    text: 'text-yellow-700 dark:text-yellow-600',
   },
-  orange: {
-    foreground: 'text-foreground',
-    background: 'bg-orange-500/70',
+  high: {
+    background: 'bg-red-500/5 dark:bg-red-600/10 hover:bg-red-500/15',
+    border: 'border-[1px] border-red-600/80 hover:border-red-500/80',
+    text: 'text-red-600 dark:text-red-500',
   },
-  red: {
-    foreground: 'text-foreground',
-    background: 'bg-red-500/70',
+  critical: {
+    background: 'bg-red-500/5 dark:bg-red-600/10 hover:bg-red-500/15',
+    border: 'border-[1px] border-red-600/80 hover:border-red-500/80',
+    text: 'text-red-600 dark:text-red-500',
   },
-}
+} as const
+
+export const getAlertStyle = (
+  severity: PackageAlert['severity'],
+): InsightColor[PackageAlert['severity']] => alertStyles[severity]
 
 interface InsightBadgeProps
   extends React.ComponentProps<'span'>,
     VariantProps<typeof variants> {
   children?: string
-  color?: InsightColor
+  color?: PackageAlert['severity']
   tooltipContent?: string
 }
 
@@ -73,9 +67,9 @@ const variants = cva('inline-flex items-center justify-center', {
       marker: 'size-3 p-0 rounded-full',
     },
     color: Object.fromEntries(
-      Object.entries(colors).map(([key, value]) => [
+      Object.entries(alertStyles).map(([key, value]) => [
         key,
-        `${value.foreground} ${value.background}`,
+        `${value.text} ${value.background} ${value.border}`,
       ]),
     ),
   },
