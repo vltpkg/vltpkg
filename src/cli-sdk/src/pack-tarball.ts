@@ -20,7 +20,7 @@ export type PackTarballResult = {
 
 /**
  * Replace workspace: and catalog: specs with actual versions
- * @param {Manifest} manifest - The manifest to process
+ * @param {Manifest} manifest_ - The manifest to process
  * @param {LoadedConfig} config - The loaded configuration containing project root, monorepo, and catalog data
  * @returns {Manifest} The manifest with replaced specs
  */
@@ -28,121 +28,113 @@ const replaceWorkspaceAndCatalogSpecs = (
   manifest_: Manifest,
   config: LoadedConfig,
 ): Manifest => {
-  try {
-    // Create a deep copy of the manifest to avoid modifying the original
-    const manifest = JSON.parse(JSON.stringify(manifest_)) as Manifest
+  // Create a deep copy of the manifest to avoid modifying the original
+  const manifest = JSON.parse(JSON.stringify(manifest_)) as Manifest
 
-    // Get workspace and catalog configuration from config
-    const { monorepo, catalog = {}, catalogs = {} } = config.options
+  // Get workspace and catalog configuration from config
+  const { monorepo, catalog = {}, catalogs = {} } = config.options
 
-    // Process dependency types
-    const depTypes = [
-      'dependencies',
-      'devDependencies',
-      'optionalDependencies',
-      'peerDependencies',
-    ] as const
+  // Process dependency types
+  const depTypes = [
+    'dependencies',
+    'devDependencies',
+    'optionalDependencies',
+    'peerDependencies',
+  ] as const
 
-    for (const depType of depTypes) {
-      const deps = manifest[depType]
-      if (!deps || typeof deps !== 'object') continue
+  for (const depType of depTypes) {
+    const deps = manifest[depType]
+    /* c8 ignore next */
+    if (!deps || typeof deps !== 'object') continue
 
-      const depsObj = deps as Record<string, unknown>
-      for (const [depName, depSpec] of Object.entries(depsObj)) {
-        if (typeof depSpec !== 'string') continue
+    const depsObj = deps as Record<string, unknown>
+    for (const [depName, depSpec] of Object.entries(depsObj)) {
+      /* c8 ignore next */
+      if (typeof depSpec !== 'string') continue
 
-        try {
-          // Handle workspace: specs
-          if (depSpec.startsWith('workspace:')) {
-            assert(
-              monorepo,
-              error(
-                `No workspace configuration found for ${depName}`,
-                {
-                  found: depName,
-                },
-              ),
-            )
+      const spec = Spec.parse(`${depName}@${depSpec}`, {
+        catalog,
+        catalogs,
+      })
 
-            const spec = Spec.parse(`${depName}@${depSpec}`)
-            if (spec.type === 'workspace') {
-              const workspaceName = spec.workspace || depName
-              const workspace = monorepo.get(workspaceName)
-              assert(
-                workspace,
-                error(`Workspace '${workspaceName}' not found`, {
-                  found: workspaceName,
-                  validOptions: Array.from(monorepo.keys()),
-                }),
-              )
-
-              const actualVersion = workspace.manifest.version
-              assert(
-                actualVersion,
-                error(
-                  `No version found for workspace '${workspaceName}'`,
-                  {
-                    found: workspaceName,
-                    wanted: 'package version',
-                  },
-                ),
-              )
-
-              depsObj[depName] = actualVersion
-            }
-          } else if (depSpec.startsWith('catalog:')) {
-            const spec = Spec.parse(`${depName}@${depSpec}`, {
-              catalog,
-              catalogs,
-            })
-            if (spec.type === 'catalog') {
-              const catalogName = spec.catalog || ''
-              const targetCatalog =
-                catalogName ? catalogs[catalogName] : catalog
-              assert(
-                targetCatalog,
-                error(`Catalog '${catalogName}' not found`, {
-                  found: catalogName,
-                  validOptions: Object.keys(catalogs),
-                }),
-              )
-
-              const actualVersion = targetCatalog[depName]
-              assert(
-                actualVersion,
-                error(
-                  `Package '${depName}' not found in catalog '${catalogName || 'default'}'`,
-                  {
-                    found: depName,
-                    validOptions: Object.keys(targetCatalog),
-                  },
-                ),
-              )
-
-              depsObj[depName] = actualVersion
-            }
-          }
-        } catch (err) {
-          throw error(
-            `Failed to resolve spec for ${depName}@${depSpec} in ${depType}`,
-            {
-              cause: err,
-              spec: depSpec,
+      switch (spec.type) {
+        case 'workspace': {
+          assert(
+            monorepo,
+            error(`No workspace configuration found for ${depName}`, {
               found: depName,
-            },
+            }),
           )
+
+          const workspaceName = spec.workspace || depName
+          const workspace = monorepo.get(workspaceName)
+          assert(
+            workspace,
+            error(`Workspace '${workspaceName}' not found`, {
+              found: workspaceName,
+              validOptions: Array.from(monorepo.keys()),
+            }),
+          )
+
+          const actualVersion = workspace.manifest.version
+          assert(
+            actualVersion,
+            error(
+              `No version found for workspace '${workspaceName}'`,
+              {
+                found: workspaceName,
+                wanted: 'package version',
+              },
+            ),
+          )
+
+          depsObj[depName] = actualVersion
+
+          break
         }
+
+        case 'catalog': {
+          const catalogName = spec.catalog || ''
+          const targetCatalog =
+            catalogName ? catalogs[catalogName] : catalog
+          assert(
+            targetCatalog,
+            error(`Catalog '${catalogName}' not found`, {
+              found: catalogName,
+              validOptions: Object.keys(catalogs),
+            }),
+          )
+
+          const actualVersion = targetCatalog[depName]
+          assert(
+            actualVersion,
+            error(
+              `Package '${depName}' not found in catalog '${catalogName || 'default'}'`,
+              {
+                found: depName,
+                validOptions: Object.keys(targetCatalog),
+              },
+            ),
+          )
+
+          depsObj[depName] = actualVersion
+
+          break
+        }
+
+        /* c8 ignore start */
+        default: {
+          throw error(`Invalid spec type: ${spec.type}`, {
+            spec: depSpec,
+            found: depName,
+          })
+        }
+        /* c8 ignore end */
       }
     }
-
-    return manifest
-  } catch (err) {
-    throw error('Failed to resolve workspace or catalog specs', {
-      cause: err,
-      name: manifest_.name,
-      version: manifest_.version,
-    })
   }
+
+  return manifest
 }
 
 /**
