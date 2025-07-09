@@ -1,0 +1,327 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ContributorList renders with less than 6 contributors 1`] = `
+
+<div class="flex cursor-default flex-col gap-2 px-6 pb-4">
+  <gui-tooltip-provider>
+    <gui-tooltip delayduration="150">
+      <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+        Contributors
+        <span>
+          <gui-circle-help-icon size="16">
+          </gui-circle-help-icon>
+        </span>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Contributors are aggregated from metadata on this artifact
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+  <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center -space-x-2">
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+    </div>
+    <gui-button
+      classname="duration-250 font-muted-foreground h-fit rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal text-foreground transition-colors hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
+      variant="default"
+      aschild="true"
+    >
+      <gui-router-link to="/explore/:root/contributors">
+        See all contributors
+        <span>
+          <gui-arrow-right-icon size="14">
+          </gui-arrow-right-icon>
+        </span>
+      </gui-router-link>
+    </gui-button>
+  </div>
+</div>
+
+`;
+
+exports[`ContributorList renders with more than 6 contributors 1`] = `
+
+<div class="flex cursor-default flex-col gap-2 px-6 pb-4">
+  <gui-tooltip-provider>
+    <gui-tooltip delayduration="150">
+      <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+        Contributors
+        <span>
+          <gui-circle-help-icon size="16">
+          </gui-circle-help-icon>
+        </span>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Contributors are aggregated from metadata on this artifact
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+  <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center -space-x-2">
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-avatar classname="size-6">
+        <gui-avatar-image
+          classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-6"
+          src="https://acme.com/avatar.png"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-6">
+          <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <div class="flex size-6 items-center justify-center rounded-full bg-background p-0.5 outline outline-[1px] outline-neutral-200 dark:outline-neutral-700">
+        <span class="font-mono text-xxs font-medium tabular-nums text-muted-foreground">
+          +1
+        </span>
+      </div>
+    </div>
+    <gui-button
+      classname="duration-250 font-muted-foreground h-fit rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal text-foreground transition-colors hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
+      variant="default"
+      aschild="true"
+    >
+      <gui-router-link to="/explore/:root/contributors">
+        See all contributors
+        <span>
+          <gui-arrow-right-icon size="14">
+          </gui-arrow-right-icon>
+        </span>
+      </gui-router-link>
+    </gui-button>
+  </div>
+</div>
+
+`;
+
+exports[`ContributorTabContent renders with contributors 1`] = `
+
+<gui-tabs-content value="contributors">
+  <section class="flex flex-col gap-4 py-4">
+    <div class="flex items-center gap-3 px-6">
+      <gui-button classname="inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] border-muted bg-transparent px-3 py-1 text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900">
+        <gui-arrow-left-icon>
+        </gui-arrow-left-icon>
+        <span>
+          Back
+        </span>
+      </gui-button>
+      <gui-tooltip-provider>
+        <gui-tooltip delayduration="150">
+          <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+            4 contributors
+            <span>
+              <gui-circle-help-icon size="16">
+              </gui-circle-help-icon>
+            </span>
+          </gui-tooltip-trigger>
+          <gui-tooltip-portal>
+            <gui-tooltip-content>
+              Contributors are aggregated from metadata on this artifact
+            </gui-tooltip-content>
+          </gui-tooltip-portal>
+        </gui-tooltip>
+      </gui-tooltip-provider>
+    </div>
+    <div class="flex flex-col gap-2">
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
+        <gui-avatar classname="size-9">
+          <gui-avatar-image
+            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            src="https://acme.com/avatar.png"
+          >
+          </gui-avatar-image>
+          <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            John Doe
+          </p>
+          <p class="text-xs text-muted-foreground">
+            johndoe@acme.com
+          </p>
+        </div>
+      </div>
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
+        <gui-avatar classname="size-9">
+          <gui-avatar-image
+            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            src="https://acme.com/avatar.png"
+          >
+          </gui-avatar-image>
+          <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            Jane Doe
+          </p>
+          <p class="text-xs text-muted-foreground">
+            janedoe@acme.com
+          </p>
+        </div>
+      </div>
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
+        <gui-avatar classname="size-9">
+          <gui-avatar-image
+            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            src="https://acme.com/avatar.png"
+          >
+          </gui-avatar-image>
+          <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            John Smith
+          </p>
+          <p class="text-xs text-muted-foreground">
+            johnsmith@acme.com
+          </p>
+        </div>
+      </div>
+      <div
+        role="button"
+        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      >
+        <gui-avatar classname="size-9">
+          <gui-avatar-image
+            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            src="https://acme.com/avatar.png"
+          >
+          </gui-avatar-image>
+          <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            Sarah Davis
+          </p>
+          <p class="text-xs text-muted-foreground">
+            sarahdavis@acme.com
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</gui-tabs-content>
+
+`;
+
+exports[`ContributorTabContent renders with no contributors 1`] = `
+
+<gui-empty-state
+  icon="gui-users-round-icon"
+  message="We couldn't find any contributors for this project"
+>
+</gui-empty-state>
+
+`;

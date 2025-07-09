@@ -2,42 +2,18 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
-  OverviewTabButton,
-  OverviewTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
+  ContributorTabContent,
+  ContributorList,
+} from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
-import type { GridItemData } from '@/components/explorer-grid/types.ts'
-import type { DetailsInfo } from '@/lib/external-info.ts'
 
-const ITEM_WITH_DESCRIPTION = {
-  ...SELECTED_ITEM,
-  to: {
-    name: 'item',
-    version: '1.0.0',
-    id: ['registry', 'custom', 'item@1.0.0'],
-    manifest: {
-      description: '## Description\n\nThis is a custom description',
-    },
-    rawManifest: null,
-  },
-} as unknown as GridItemData
-
-const ITEM_DETAILS_WITH_AUTHOR = {
-  ...SELECTED_ITEM_DETAILS,
-  author: {
-    name: 'John Doe',
-    mail: 'johndoe@acme.com',
-    email: 'johndoe@acme.com',
-    url: 'https://acme.com/johndoe',
-    web: 'https://acme.com/johndoe',
-  },
-} as unknown as DetailsInfo
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import type { Contributor } from '@/lib/external-info.ts'
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
@@ -48,43 +24,47 @@ vi.mock(
 )
 
 vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',
 }))
 
-vi.mock('react-markdown', () => ({
-  default: 'gui-markdown',
+vi.mock('react-router', () => ({
+  Link: 'gui-router-link',
+  useParams: vi.fn().mockReturnValue({
+    query: ':root',
+  }),
+}))
+
+vi.mock('@/components/ui/button.tsx', () => ({
+  Button: 'gui-button',
 }))
 
 vi.mock('lucide-react', () => ({
-  FileText: 'gui-file-text-icon',
-  Globe: 'gui-globe-icon',
-  Bug: 'gui-bug-icon',
-  RectangleHorizontal: 'gui-rectangle-horizontal-icon',
-  Star: 'gui-star-icon',
-  CircleDot: 'gui-circle-dot-icon',
-  GitPullRequest: 'gui-git-pull-request-icon',
-  Link: 'gui-link-icon',
+  ArrowLeft: 'gui-arrow-left-icon',
+  ArrowRight: 'gui-arrow-right-icon',
+  UsersRound: 'gui-users-round-icon',
+  CircleHelp: 'gui-circle-help-icon',
 }))
 
-vi.mock('@/components/icons/index.ts', () => ({
-  Github: 'gui-github-icon',
-}))
-
-vi.mock('@/components/ui/data-badge.tsx', () => ({
-  DataBadge: 'gui-data-badge',
-}))
-
-vi.mock('@/components/ui/link.tsx', () => ({
-  Link: 'gui-link',
+vi.mock('@radix-ui/react-avatar', () => ({
+  Avatar: 'gui-avatar',
+  AvatarImage: 'gui-avatar-image',
+  AvatarFallback: 'gui-avatar-fallback',
 }))
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-contributors.tsx',
+  '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx',
   () => ({
-    ContributorList: 'gui-contributor-list',
+    EmptyState: 'gui-empty-state',
   }),
 )
+
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipPortal: 'gui-tooltip-portal',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipTrigger: 'gui-tooltip-trigger',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -101,12 +81,52 @@ afterEach(() => {
   cleanup()
 })
 
-test('OverviewTabButton renders default', () => {
+const mockContributors = [
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'John Doe',
+    email: 'johndoe@acme.com',
+  },
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'Jane Doe',
+    email: 'janedoe@acme.com',
+  },
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'John Smith',
+    email: 'johnsmith@acme.com',
+  },
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'Sarah Davis',
+    email: 'sarahdavis@acme.com',
+  },
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'Laura Brown',
+    email: 'laurabrown@acme.com',
+  },
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'Anna Miller',
+    email: 'annamiller@acme.com',
+  },
+
+  {
+    avatar: 'https://acme.com/avatar.png',
+    name: 'Rachel Wilson',
+    email: 'rachelwilson@acme.com',
+  },
+] satisfies Contributor[]
+
+test('ContributorTabContent renders with contributors', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     manifest: {},
     rawManifest: null,
+    contributors: mockContributors.slice(0, 4),
     insights: undefined,
     activeTab: 'overview' as const,
     activeSubTab: undefined,
@@ -133,20 +153,19 @@ test('OverviewTabButton renders default', () => {
   )
 
   const Container = () => {
-    return <OverviewTabButton />
+    return <ContributorTabContent />
   }
-
   const { container } = render(<Container />)
-
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewTabContent renders default', () => {
+test('ContributorTabContent renders with no contributors', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     manifest: {},
     rawManifest: null,
+    contributors: undefined,
     insights: undefined,
     activeTab: 'overview' as const,
     activeSubTab: undefined,
@@ -173,27 +192,24 @@ test('OverviewTabContent renders default', () => {
   )
 
   const Container = () => {
-    return <OverviewTabContent />
+    return <ContributorTabContent />
   }
-
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewTabContent renders with content', () => {
+test('ContributorList renders with less than 6 contributors', () => {
   const mockState = {
-    selectedItem: ITEM_WITH_DESCRIPTION,
-    ...ITEM_DETAILS_WITH_AUTHOR,
+    selectedItem: SELECTED_ITEM,
+    ...SELECTED_ITEM_DETAILS,
+    manifest: {},
+    rawManifest: null,
+    contributors: mockContributors.slice(0, 3),
     insights: undefined,
     activeTab: 'overview' as const,
     activeSubTab: undefined,
     setActiveSubTab: vi.fn(),
     setActiveTab: vi.fn(),
-    rawManifest: null,
-    manifest: {
-      description: '## Description\n\nThis is a custom description',
-      keywords: ['testing', 'vitest'],
-    },
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -215,51 +231,24 @@ test('OverviewTabContent renders with content', () => {
   )
 
   const Container = () => {
-    return <OverviewTabContent />
+    return <ContributorList />
   }
-
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewTabContent renders with an aside and content', () => {
+test('ContributorList renders with more than 6 contributors', () => {
   const mockState = {
-    selectedItem: ITEM_WITH_DESCRIPTION,
-    ...ITEM_DETAILS_WITH_AUTHOR,
+    selectedItem: SELECTED_ITEM,
+    ...SELECTED_ITEM_DETAILS,
+    manifest: {},
+    rawManifest: null,
+    contributors: mockContributors,
     insights: undefined,
     activeTab: 'overview' as const,
     activeSubTab: undefined,
     setActiveSubTab: vi.fn(),
     setActiveTab: vi.fn(),
-    rawManifest: null,
-    contributors: [
-      {
-        name: 'John Doe',
-        email: 'johndoe@acme.com',
-        avatar: 'https://acme.com/johndoe',
-      },
-      {
-        name: 'Jane Doo',
-        email: 'janedoo@acme.com',
-        avatar: 'https://acme.com/janedoo',
-      },
-    ],
-    stargazersCount: 100,
-    openIssueCount: '10',
-    openPullRequestCount: '5',
-    manifest: {
-      homepage: 'https://acme.com',
-      repository: {
-        type: 'git',
-        url: 'github.com/acme/repo.git',
-      },
-      bugs: {
-        url: 'https://acme.com/bugs',
-      },
-      funding: {
-        url: 'https://acme.com/funding',
-      },
-    },
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -281,9 +270,8 @@ test('OverviewTabContent renders with an aside and content', () => {
   )
 
   const Container = () => {
-    return <OverviewTabContent />
+    return <ContributorList />
   }
-
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })

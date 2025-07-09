@@ -181,6 +181,37 @@ global.fetch = vi.fn(async url => ({
           ],
         }
       }
+      case 'https://registry.npmjs.org/with-contributors': {
+        return {
+          contributors: [
+            {
+              name: 'Contributor One',
+              email: 'contrib1@example.com',
+            },
+            'Contributor Two <contrib2@example.com>',
+          ],
+          maintainers: [
+            {
+              name: 'Maintainer One',
+              email: 'maintainer1@example.com',
+            },
+          ],
+          versions: {
+            '1.0.0': {
+              version: '1.0.0',
+              dist: {
+                unpackedSize: 1000,
+                integrity: 'sha512-abc123',
+                tarball:
+                  'https://registry.npmjs.org/with-contributors/-/with-contributors-1.0.0.tgz',
+              },
+            },
+          },
+          time: {
+            '1.0.0': '2023-01-01T00:00:00.000Z',
+          },
+        }
+      }
       case 'https://api.github.com/repos/ruyadorno/github-repo-info': {
         return {
           stargazers_count: 100,
@@ -841,6 +872,23 @@ test('fetchDetails with contributors in manifest', async () => {
           'https://gravatar.com/avatar/296b6a91e056b396b44a3035b407e2433bfa8e78a94ecb30635af80576f58810?d=retro',
       },
     ],
+    versions: [
+      {
+        version: '1.0.0',
+        publishedDate: '2023-01-01T00:00:00.000Z',
+        unpackedSize: 1000,
+        integrity: 'sha512-abc123',
+        tarball:
+          'https://registry.npmjs.org/with-contributors/-/with-contributors-1.0.0.tgz',
+        gitHead: undefined,
+        publishedAuthor: {
+          name: undefined,
+          email: undefined,
+          avatar: undefined,
+        },
+      },
+    ],
+    greaterVersions: [],
   })
 })
 
