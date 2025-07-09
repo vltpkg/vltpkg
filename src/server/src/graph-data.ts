@@ -52,6 +52,8 @@ const getGraphData = async (
     ...options,
     mainManifest,
     loadManifests: true,
+    skipHiddenLockfile: false,
+    skipLoadingNodesOnModifiersChange: false,
   })
   const importers = [...graph.importers]
   const securityArchive = await SecurityArchive.start({
