@@ -153,7 +153,7 @@ release PR should be:
 
 1. Marked as ready for review
 1. Approved
-1. Merged
+1. Merged (Make sure to use "Rebase and merge")
 
 #### Release PR
 
