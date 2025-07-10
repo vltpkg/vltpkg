@@ -23,13 +23,5 @@ export const Dashboard = () => {
     })
   }, [stamp, navigate, updateErrorCause, updateDashboard])
 
-  return (
-    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
-      <DashboardContent />
-    </section>
-  )
-}
-
-const DashboardContent = () => {
   return <DashboardGrid />
 }

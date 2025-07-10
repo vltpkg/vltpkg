@@ -1,6 +1,8 @@
 // vlt icons
 export * from './vlt.tsx'
 export * from './query.tsx'
+export * from './vsr.tsx'
+export * from './vlt-client.tsx'
 
 // general
 export * from './github.tsx'

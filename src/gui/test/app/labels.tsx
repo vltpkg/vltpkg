@@ -8,29 +8,12 @@ vi.mock('@/components/labels/label.tsx', () => ({
   Label: 'gui-label',
 }))
 
-vi.mock('@/components/ui/button.tsx', () => ({
-  Button: 'gui-button',
-}))
-
-vi.mock('lucide-react', () => ({
-  Plus: 'gui-plus-icon',
-}))
-
-vi.mock('@/components/ui/filter-search.tsx', () => ({
-  FilterSearch: 'gui-filter-search',
-}))
-
 vi.mock('@/components/sort-toggle.tsx', () => ({
-  SortToggle: 'gui-sort-toggle',
   sortAlphabeticallyAscending: vi.fn(),
 }))
 
 vi.mock('@/components/ui/checkbox.tsx', () => ({
   Checkbox: 'gui-checkbox',
-}))
-
-vi.mock('@/components/labels/delete-label.tsx', () => ({
-  DeleteLabel: 'gui-delete-label',
 }))
 
 vi.mock('@/components/labels/create-label.tsx', () => ({

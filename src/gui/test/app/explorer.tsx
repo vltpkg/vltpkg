@@ -23,33 +23,10 @@ import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn().mockReturnValue(vi.fn()),
-  useLocation: vi.fn().mockReturnValue({
-    pathname: '',
-  }),
-  useParams: vi.fn().mockReturnValue({
-    query: '',
-    tab: '',
-    subTab: '',
-  }),
 }))
 
-vi.mock('@/components/query-bar/index.tsx', () => ({
-  QueryBar: 'gui-query-bar',
-}))
-
-vi.mock('@/components/ui/logo.tsx', () => ({
-  Logo: 'gui-logo',
-}))
-
-vi.mock('@/components/ui/title.tsx', () => ({
-  Title: 'gui-title',
-}))
-
-vi.mock('@/components/ui/card.tsx', () => ({
-  Card: 'gui-card',
-  CardDescription: 'gui-card-description',
-  CardHeader: 'gui-card-header',
-  CardTitle: 'gui-card-title',
+vi.mock('@/components/hooks/use-query-navigation.tsx', () => ({
+  useQueryNavigation: vi.fn(),
 }))
 
 vi.mock('@/components/explorer-grid/index.tsx', () => ({
@@ -58,10 +35,6 @@ vi.mock('@/components/explorer-grid/index.tsx', () => ({
 
 vi.mock('@/components/explorer-grid/setup-project.tsx', () => ({
   SetupProject: 'gui-setup-project',
-}))
-
-vi.mock('@/components/explorer-grid/root-button.tsx', () => ({
-  RootButton: 'gui-root-button',
 }))
 
 export const restHandlers = [
