@@ -610,6 +610,12 @@ export const definition = j
     otp: {
       description: `Provide an OTP to use when publishing a package.`,
     },
+    'publish-directory': {
+      hint: 'path',
+      description: `Directory to use for pack and publish operations instead of the current directory.
+                    Similar to pnpm's publishConfig.directory feature.
+                    The directory must exist and nothing will be copied to it.`,
+    },
   })
 
   .flag({
