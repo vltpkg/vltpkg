@@ -62,6 +62,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --os=<os>
     --otp=<otp>
     --package=<p>
+    --publish-directory=<path>
     --recursive
     --registries=<name=url>
     --registry=<url>
@@ -116,6 +117,7 @@ Unknown config option: asdf
     os
     otp
     package
+    publish-directory
     recursive
     registries
     registry
