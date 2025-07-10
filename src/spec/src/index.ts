@@ -7,33 +7,13 @@ import {
 } from 'node:path'
 import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
-import {
-  defaultRegistry,
-  defaultRegistries,
-  defaultGitHosts,
-  defaultGitHostArchives,
-  defaultScopeRegistries,
-  defaultJsrRegistries,
-  getOptions,
-  gitHostWebsites,
-  kCustomInspect,
-  Spec as BrowserSpec,
-} from './browser.ts'
 import type { SpecLike } from './browser.ts'
+import { Spec as BrowserSpec, kCustomInspect } from './browser.ts'
 
-export {
-  defaultRegistry,
-  defaultRegistries,
-  defaultGitHosts,
-  defaultGitHostArchives,
-  defaultScopeRegistries,
-  defaultJsrRegistries,
-  getOptions,
-  gitHostWebsites,
-  kCustomInspect,
-}
-export * from './types.ts'
+// eslint-disable-next-line import/export
+export * from './browser.ts'
 
+// eslint-disable-next-line import/export
 export class Spec extends BrowserSpec implements SpecLike<Spec> {
   [kCustomInspect](
     _depth?: number,
