@@ -1,11 +1,13 @@
 import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import t from 'tap'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, baseDepID } from '@vltpkg/dep-id'
 import { SecurityArchive } from '../src/index.ts'
 import {
   specOptions,
   getSimpleReportGraph,
+  newGraph,
+  newNode,
 } from './fixtures/graph.ts'
 import type { PackageReportData } from '../src/types.ts'
 
@@ -472,4 +474,178 @@ ${JSON.stringify(englishDaysReport)}
       'should calculate average score correctly with 2 decimal places',
     )
   })
+})
+
+t.test('DepID normalization', async t => {
+  const dir = t.testdir()
+  const path = resolve(dir, 'normalization.db')
+
+  // Create a proper graph with a node that has extra information in its DepID
+  const graph = newGraph('test-project')
+  const addNode = newNode(graph)
+
+  const depIDWithExtra = joinDepIDTuple([
+    'registry',
+    '',
+    '@ruyadorno/foo@1.0.0',
+    'extra-peer-dep-info',
+  ])
+  const baseDepIDValue = baseDepID(depIDWithExtra)
+
+  const fooNode = addNode('@ruyadorno/foo')
+  fooNode.id = depIDWithExtra // Node itself can have extra info
+  // But graph stores nodes using normalized DepID keys
+  graph.nodes.set(baseDepIDValue, fooNode)
+
+  // Mock fetch response
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(fooReport) + '\n',
+      }) as unknown as Response,
+  })
+
+  const archive = await SecurityArchive.start({
+    graph,
+    path,
+    specOptions,
+  })
+
+  t.test('should normalize DepID in cache', async t => {
+    // The cache should store the normalized (base) DepID, not the one with extra info
+    t.strictSame(
+      archive.has(baseDepIDValue),
+      true,
+      'should find the normalized DepID in cache',
+    )
+
+    t.strictSame(
+      archive.has(depIDWithExtra),
+      false,
+      'should not find the non-normalized DepID in cache',
+    )
+
+    t.strictSame(
+      archive.get(baseDepIDValue),
+      fooReport,
+      'should retrieve data using normalized DepID',
+    )
+
+    t.strictSame(
+      archive.get(depIDWithExtra),
+      undefined,
+      'should not retrieve data using non-normalized DepID',
+    )
+  })
+
+  t.test('should normalize DepID in database', async t => {
+    // Check that the database stores the normalized DepID
+    const db = new DatabaseSync(path)
+    const dbRead = db.prepare('SELECT depID, report FROM cache')
+    const dbData = dbRead.all() as { depID: string; report: string }[]
+
+    t.equal(dbData.length, 1, 'should have one entry in database')
+    t.ok(dbData[0], 'should have a database entry')
+    t.equal(
+      dbData[0]!.depID,
+      baseDepIDValue,
+      'should store normalized DepID in database',
+    )
+
+    // Verify the stored data is correct
+    const storedData = JSON.parse(dbData[0]!.report)
+    t.strictSame(
+      storedData,
+      fooReport,
+      'should store correct data for normalized DepID',
+    )
+
+    db.close()
+  })
+
+  t.test('should handle lookup with mixed DepID formats', async t => {
+    // Create a fresh archive to test loading from database
+    const freshArchive = new SecurityArchive({ path })
+    await freshArchive.refresh({ graph, specOptions })
+
+    // Should find the data using the normalized DepID
+    t.strictSame(
+      freshArchive.has(baseDepIDValue),
+      true,
+      'should find normalized DepID after loading from database',
+    )
+
+    t.strictSame(
+      freshArchive.get(baseDepIDValue),
+      fooReport,
+      'should retrieve data using normalized DepID after loading from database',
+    )
+  })
+
+  t.test('should normalize different DepID types', async t => {
+    // Test git DepID normalization
+    const gitDepIDWithExtra = joinDepIDTuple([
+      'git',
+      'github:user/repo',
+      'branch-name',
+      'git-extra-info',
+    ])
+    const gitBaseDepID = baseDepID(gitDepIDWithExtra)
+
+    t.not(
+      gitDepIDWithExtra,
+      gitBaseDepID,
+      'git DepID with extra should differ from base',
+    )
+
+    // Test remote DepID normalization
+    const remoteDepIDWithExtra = joinDepIDTuple([
+      'remote',
+      'https://example.com/package.tgz',
+      'remote-extra-info',
+    ])
+    const remoteBaseDepID = baseDepID(remoteDepIDWithExtra)
+
+    t.not(
+      remoteDepIDWithExtra,
+      remoteBaseDepID,
+      'remote DepID with extra should differ from base',
+    )
+
+    // Test that registry DepID normalization works as expected
+    const registryDepIDWithExtra = joinDepIDTuple([
+      'registry',
+      'npm',
+      'package@1.0.0',
+      'registry-extra-info',
+    ])
+    const registryBaseDepID = baseDepID(registryDepIDWithExtra)
+
+    t.not(
+      registryDepIDWithExtra,
+      registryBaseDepID,
+      'registry DepID with extra should differ from base',
+    )
+  })
+
+  t.test(
+    'should handle nodes with non-normalized IDs but normalized keys',
+    async t => {
+      // Test that the system works when the node.id has extra info but graph key is normalized
+      const nodeFromGraph = graph.nodes.get(baseDepIDValue)
+      t.ok(nodeFromGraph, 'should find node using normalized key')
+      t.equal(
+        nodeFromGraph!.id,
+        depIDWithExtra,
+        'node.id should retain extra information',
+      )
+      t.equal(
+        baseDepID(nodeFromGraph!.id),
+        baseDepIDValue,
+        'baseDepID of node.id should equal the normalized key',
+      )
+    },
+  )
 })
