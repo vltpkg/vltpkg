@@ -22,7 +22,7 @@ const tabAsideSet = new Set<Tab>([
   'overview',
   'insights',
   'versions',
-  'manifest',
+  'json',
 ])
 
 const motionVariants: MotionProps = {
