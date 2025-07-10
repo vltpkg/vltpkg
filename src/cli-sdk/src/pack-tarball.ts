@@ -153,33 +153,28 @@ export const packTarball = async (
     error('Package must have a name and version'),
   )
 
-  // Check if publishDirectory is configured
-  const publishDirectory = config.get('publish-directory')
   let packDir = dir
 
+  // Check if publishDirectory is configured
+  const publishDirectory = config.get('publish-directory')
   if (publishDirectory) {
     // Validate that the publish directory exists and is a directory
-    if (!existsSync(publishDirectory)) {
-      throw error(
-        `Publish directory does not exist: ${publishDirectory}`,
-        {
-          found: publishDirectory,
-          wanted: 'existing directory',
-        },
-      )
-    }
-
-    const stats = statSync(publishDirectory)
-    if (!stats.isDirectory()) {
-      throw error(
+    assert(
+      existsSync(publishDirectory),
+      error(`Publish directory does not exist: ${publishDirectory}`, {
+        found: publishDirectory,
+      }),
+    )
+    assert(
+      statSync(publishDirectory).isDirectory(),
+      error(
         `Publish directory is not a directory: ${publishDirectory}`,
         {
           found: publishDirectory,
           wanted: 'directory',
         },
-      )
-    }
-
+      ),
+    )
     packDir = publishDirectory
   }
 

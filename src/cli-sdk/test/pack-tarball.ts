@@ -9,7 +9,7 @@ import type { LoadedConfig } from '../src/config/index.ts'
 // Helper to create a mock LoadedConfig for tests
 const createMockConfig = (
   testdir: string,
-  overrides?: any,
+  overrides?: Record<string, unknown>,
 ): LoadedConfig => {
   const packageJson = new PackageJson()
   const scurry = new PathScurry(testdir)
@@ -22,15 +22,15 @@ const createMockConfig = (
       packageJson,
       scurry,
       projectRoot: testdir,
-      packageInfo: {} as any,
+      packageInfo: {},
       ...overrides,
     },
     get: (key: string) => overrides?.[key],
     getRecord: () => ({}),
-    jack: {} as any,
-    values: {} as any,
+    jack: {},
+    values: {},
     positionals: [],
-    command: {} as any,
+    command: {},
     commandValues: {},
   } as unknown as LoadedConfig
 }
@@ -92,7 +92,7 @@ t.test('packTarball', async t => {
   t.test('throws error if manifest missing name', async t => {
     const badManifest = { version: '1.0.0' }
     await t.rejects(
-      packTarball(badManifest as any, packagePath, config),
+      packTarball(badManifest, packagePath, config),
       /Package must have a name and version/,
     )
   })
@@ -100,7 +100,7 @@ t.test('packTarball', async t => {
   t.test('throws error if manifest missing version', async t => {
     const badManifest = { name: 'bad-package' }
     await t.rejects(
-      packTarball(badManifest as any, packagePath, config),
+      packTarball(badManifest, packagePath, config),
       /Package must have a name and version/,
     )
   })
@@ -1012,7 +1012,6 @@ t.test('publish-directory option', async t => {
           'Publish directory does not exist: /nonexistent/directory',
         cause: {
           found: '/nonexistent/directory',
-          wanted: 'existing directory',
         },
       })
     },
