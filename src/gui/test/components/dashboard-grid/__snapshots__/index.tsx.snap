@@ -6,7 +6,7 @@ exports[`dashboard-grid render default 1`] = `
   <div class="flex h-full flex-col px-8 py-4">
     <div
       class="flex w-full max-w-8xl flex-col"
-      style="opacity: 0; transform: translateY(-5px);"
+      style="opacity: 1; transform: none;"
     >
       <p class="mb-4 text-sm font-semibold">
         Projects
@@ -28,7 +28,7 @@ exports[`dashboard-grid with results 1`] = `
   <div class="flex h-full flex-col px-8 py-4">
     <div
       class="flex w-full max-w-8xl flex-col"
-      style="opacity: 0; transform: translateY(-5px);"
+      style="opacity: 1; transform: none;"
     >
       <p class="mb-4 text-sm font-semibold">
         Projects
