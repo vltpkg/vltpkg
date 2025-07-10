@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FocusedAside renders default 1`] = `
+
+<div class="col-span-full lg:col-span-3 lg:pl-4 lg:pr-0">
+  <div style="opacity: 0; filter: blur(2px); transform: translateY(2px);">
+    <gui-tab-content-aside classname="h-fit border-l-[1.6px] border-muted py-0">
+    </gui-tab-content-aside>
+  </div>
+</div>
+
+`;

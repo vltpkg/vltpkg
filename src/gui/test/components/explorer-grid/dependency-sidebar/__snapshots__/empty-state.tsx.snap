@@ -31,27 +31,8 @@ exports[`dependency-empty-state renders default 1`] = `
       No dependencies
     </h3>
     <p class="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
-      Your project's dependencies will appear here, install one to see it appear
+      This package has no installed dependencies
     </p>
-    <gui-popover open="true">
-      <gui-popover-trigger aschild="true">
-        <gui-button classname="mt-2 h-8 w-fit border-[1px] border-muted">
-          Install a dependency
-          <span style="transform: rotate(45deg);">
-            <gui-plus-icon>
-            </gui-plus-icon>
-          </span>
-        </gui-button>
-      </gui-popover-trigger>
-      <gui-popover-content
-        align="center"
-        side="top"
-        classname="right-0 top-0 w-96 p-0"
-      >
-        <gui-add-dependencies-popover>
-        </gui-add-dependencies-popover>
-      </gui-popover-content>
-    </gui-popover>
   </div>
 </div>
 

@@ -149,10 +149,10 @@ export const ExplorerGrid = () => {
   const query = useGraphStore(state => state.query)
   const items = getItemsData(edges, nodes, query)
   return (
-    <div className="px-8 py-4">
+    <section>
       {items.length === 1 && items[0] ?
         <SelectedItem item={items[0]} />
       : <Results items={items} />}
-    </div>
+    </section>
   )
 }

@@ -109,7 +109,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             <Card
               role="article"
               className={cn(
-                'group relative z-[10] cursor-default transition-colors',
+                'group relative z-[10] cursor-default rounded-xl shadow-none transition-colors',
                 highlight && 'border-muted',
                 onSelect && 'hover:border-muted hover:bg-card-accent',
               )}

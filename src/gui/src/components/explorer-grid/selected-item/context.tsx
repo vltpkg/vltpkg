@@ -473,8 +473,10 @@ export const SelectedItemProvider = ({
         newSubTab: SelectedItemStoreState['activeSubTab'],
       ) => {
         set(state => ({ ...state, activeSubTab: newSubTab }))
-        if (newSubTab) {
-          void navigate(`dependencies/${newSubTab}`)
+        if (newSubTab && params.query) {
+          void navigate(
+            `/explore/${params.query}/dependencies/${newSubTab}`,
+          )
         }
       },
       setDepLicenses: (

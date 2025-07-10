@@ -138,7 +138,9 @@ export const FilterButton = () => {
           </TooltipTrigger>
 
           <TooltipPortal>
-            <TooltipContent>Filter dependencies</TooltipContent>
+            <TooltipContent className="z-[100]">
+              Filter dependencies
+            </TooltipContent>
           </TooltipPortal>
 
           <DropdownMenuContent

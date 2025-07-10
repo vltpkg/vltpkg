@@ -2,7 +2,7 @@
 
 exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -73,7 +73,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
 
 exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicked 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -214,7 +214,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
 
 exports[`CrumbNav component > renders breadcrumb with semver selector 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5"
@@ -229,7 +229,7 @@ exports[`CrumbNav component > renders breadcrumb with semver selector 1`] = `
 
 exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -286,7 +286,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
 
 exports[`CrumbNav component > renders multiple breadcrumb items with separators 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -329,7 +329,7 @@ exports[`CrumbNav component > renders multiple breadcrumb items with separators 
 
 exports[`CrumbNav component > renders single breadcrumb item 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5"
@@ -344,7 +344,7 @@ exports[`CrumbNav component > renders single breadcrumb item 1`] = `
 
 exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 items 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -408,7 +408,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
 
 exports[`CrumbNav component > renders with custom className 1`] = `
 
-<nav class="flex flex-row items-center gap-1 custom-nav-class">
+<nav class="flex items-center gap-1 custom-nav-class">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -437,7 +437,7 @@ exports[`CrumbNav component > renders with custom className 1`] = `
 
 exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
@@ -466,7 +466,7 @@ exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
 
 exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
 
-<nav class="flex flex-row items-center gap-1">
+<nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
       classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"

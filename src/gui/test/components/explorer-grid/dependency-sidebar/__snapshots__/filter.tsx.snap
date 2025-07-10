@@ -17,7 +17,7 @@ exports[`filter-button renders default 1`] = `
         </gui-dropdown-menu-trigger>
       </gui-tooltip-trigger>
       <gui-tooltip-portal>
-        <gui-tooltip-content>
+        <gui-tooltip-content classname="z-[100]">
           Filter dependencies
         </gui-tooltip-content>
       </gui-tooltip-portal>
