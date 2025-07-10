@@ -2,17 +2,19 @@
 
 exports[`renders Layout with an outlet 1`] = `
 
-<gui-sidebar-provider defaultopen="true">
-  <gui-app-sidebar>
-  </gui-app-sidebar>
-  <gui-sidebar-inset>
-    <gui-nav-header>
-    </gui-nav-header>
-    <gui-router-outlet>
-    </gui-router-outlet>
-  </gui-sidebar-inset>
-  <gui-toaster>
-  </gui-toaster>
-</gui-sidebar-provider>
+<div class="flex flex-col">
+  <gui-nav-header>
+  </gui-nav-header>
+  <gui-sidebar-provider defaultopen="true">
+    <gui-app-sidebar>
+    </gui-app-sidebar>
+    <gui-sidebar-inset>
+      <gui-router-outlet>
+      </gui-router-outlet>
+    </gui-sidebar-inset>
+    <gui-toaster>
+    </gui-toaster>
+  </gui-sidebar-provider>
+</div>
 
 `;

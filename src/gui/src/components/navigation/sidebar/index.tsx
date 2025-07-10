@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/sidebar.tsx'
 
 /* sidebar components */
-import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.tsx'
 import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.tsx'
 import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
 import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.tsx'
@@ -39,8 +38,10 @@ export const defaultOpen: boolean = (() => {
 
 export const AppSidebar = () => {
   return (
-    <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader />
+    <Sidebar
+      className="relative flex h-full grow"
+      collapsible="icon"
+      variant="inset">
       <SidebarContent>
         <SidebarMainNav />
         <SidebarQueryNav />
@@ -52,7 +53,7 @@ export const AppSidebar = () => {
           <SidebarToggle />
         </SidebarMenu>
       </SidebarFooter>
-      <SidebarRail className="group-data-[state=collapsed]:-translate-x-[0.65rem] hover:after:bg-transparent" />
+      <SidebarRail />
     </Sidebar>
   )
 }

@@ -119,7 +119,7 @@ export const QueryBar = ({
           autoCapitalize="off"
           ref={inputRef}
           className={cn(
-            'text-sm text-transparent caret-black dark:caret-white',
+            'bg-white text-sm text-transparent caret-black dark:bg-muted-foreground/5 dark:caret-white',
             startContent && 'pl-10',
             endContent && 'pr-32',
             className,

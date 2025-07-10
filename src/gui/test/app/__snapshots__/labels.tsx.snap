@@ -2,36 +2,8 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px] px-8">
+<section class="flex h-full w-full flex-col px-8">
   <div class="flex w-full max-w-8xl flex-col">
-    <div class="mb-4 flex justify-between pt-1">
-      <div class="flex gap-2">
-        <gui-filter-search
-          placeholder="Filter Labels"
-          items="[object Object],[object Object],[object Object]"
-        >
-        </gui-filter-search>
-        <gui-sort-toggle
-          filtereditems
-          sortkey="name"
-        >
-        </gui-sort-toggle>
-        <gui-delete-label
-          deletedialogopen="false"
-          selectedlabels
-        >
-        </gui-delete-label>
-      </div>
-      <div>
-        <gui-button disabled="false">
-          <span>
-            New Label
-          </span>
-          <gui-plus-icon>
-          </gui-plus-icon>
-        </gui-button>
-      </div>
-    </div>
     <div class="mt-6">
       <div
         class="grid grid-cols-8 px-3"

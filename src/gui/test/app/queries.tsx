@@ -9,7 +9,6 @@ vi.mock('@/lib/start-data.ts', () => ({
 }))
 
 vi.mock('react-router', () => ({
-  NavLink: 'gui-nav-link',
   useNavigate: vi.fn(),
 }))
 
@@ -17,30 +16,8 @@ vi.mock('@/components/queries/saved-item.tsx', () => ({
   SavedQueryItem: 'gui-saved-query-item',
 }))
 
-vi.mock('@/components/ui/filter-search.tsx', () => ({
-  FilterSearch: 'gui-filter-search',
-}))
-
-vi.mock('@/components/queries/delete-query.tsx', () => ({
-  DeleteQuery: 'gui-delete-query',
-}))
-
 vi.mock('@/components/sort-toggle.tsx', () => ({
-  SortToggle: 'gui-sort-toggle',
   sortAlphabeticallyAscending: vi.fn(),
-}))
-
-vi.mock('@/components/ui/button.tsx', () => ({
-  Button: 'gui-button',
-}))
-
-vi.mock('lucide-react', () => ({
-  Plus: 'gui-plus-icon',
-  Tag: 'gui-tag-icon',
-}))
-
-vi.mock('@/components/ui/badge.tsx', () => ({
-  Badge: 'gui-badge',
 }))
 
 vi.mock('@/components/ui/checkbox.tsx', () => ({

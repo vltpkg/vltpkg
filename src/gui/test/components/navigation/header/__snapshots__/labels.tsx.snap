@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LabelsHeader renders correctly 1`] = `
+
+<div class="flex w-full justify-between gap-5">
+  <gui-filter-search
+    placeholder="Filter Labels"
+    items="[object Object],[object Object],[object Object]"
+    classname="grow"
+  >
+  </gui-filter-search>
+  <gui-sort-toggle
+    filtereditems
+    sortkey="name"
+    classnames="[object Object]"
+  >
+  </gui-sort-toggle>
+  <gui-delete-label
+    deletedialogopen="false"
+    selectedlabels
+    classname="rounded-xl"
+  >
+  </gui-delete-label>
+  <gui-button
+    disabled="false"
+    classname="rounded-xl"
+  >
+    <span class="hidden md:flex">
+      New Label
+    </span>
+    <gui-plus-icon>
+    </gui-plus-icon>
+  </gui-button>
+</div>
+
+`;

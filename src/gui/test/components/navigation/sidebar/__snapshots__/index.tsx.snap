@@ -3,11 +3,10 @@
 exports[`AppSidebar renders with the correct structure 1`] = `
 
 <gui-sidebar
+  classname="relative flex h-full grow"
   collapsible="icon"
   variant="inset"
 >
-  <gui-sidebar-header>
-  </gui-sidebar-header>
   <gui-sidebar-content>
     <gui-sidebar-main-nav>
     </gui-sidebar-main-nav>
@@ -24,7 +23,7 @@ exports[`AppSidebar renders with the correct structure 1`] = `
       </gui-sidebar-toggle>
     </gui-sidebar-menu>
   </gui-sidebar-footer>
-  <gui-sidebar-rail classname="group-data-[state=collapsed]:-translate-x-[0.65rem] hover:after:bg-transparent">
+  <gui-sidebar-rail>
   </gui-sidebar-rail>
 </gui-sidebar>
 

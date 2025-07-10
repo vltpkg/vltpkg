@@ -1,0 +1,86 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders Header for route / 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
+  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+    <gui-vlt-icon>
+    </gui-vlt-icon>
+  </div>
+  <div class="flex w-full">
+    <gui-dashboard-header>
+    </gui-dashboard-header>
+  </div>
+  <gui-linear-menu>
+  </gui-linear-menu>
+</div>
+
+`;
+
+exports[`renders Header for route /explore 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
+  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+    <gui-vlt-icon>
+    </gui-vlt-icon>
+  </div>
+  <div class="flex w-full">
+    <gui-explorer-header>
+    </gui-explorer-header>
+  </div>
+  <gui-linear-menu>
+  </gui-linear-menu>
+</div>
+
+`;
+
+exports[`renders Header for route /help 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
+  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+    <gui-vlt-icon>
+    </gui-vlt-icon>
+  </div>
+  <div class="flex w-full">
+    <gui-help-header>
+    </gui-help-header>
+  </div>
+  <gui-linear-menu>
+  </gui-linear-menu>
+</div>
+
+`;
+
+exports[`renders Header for route /labels 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
+  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+    <gui-vlt-icon>
+    </gui-vlt-icon>
+  </div>
+  <div class="flex w-full">
+    <gui-labels-header>
+    </gui-labels-header>
+  </div>
+  <gui-linear-menu>
+  </gui-linear-menu>
+</div>
+
+`;
+
+exports[`renders Header for route /queries 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
+  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+    <gui-vlt-icon>
+    </gui-vlt-icon>
+  </div>
+  <div class="flex w-full">
+    <gui-queries-header>
+    </gui-queries-header>
+  </div>
+  <gui-linear-menu>
+  </gui-linear-menu>
+</div>
+
+`;

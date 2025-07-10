@@ -3,18 +3,20 @@
 exports[`renders Layout for the "/" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-dashboard>
-      </gui-dashboard>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-dashboard>
+        </gui-dashboard>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -22,18 +24,20 @@ exports[`renders Layout for the "/" view 1`] = `
 exports[`renders Layout for the "/create-new-project" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-create-new-project>
-      </gui-create-new-project>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-create-new-project>
+        </gui-create-new-project>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -41,18 +45,20 @@ exports[`renders Layout for the "/create-new-project" view 1`] = `
 exports[`renders Layout for the "/error" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-error-found>
-      </gui-error-found>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-error-found>
+        </gui-error-found>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -60,18 +66,20 @@ exports[`renders Layout for the "/error" view 1`] = `
 exports[`renders Layout for the "/explore" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-explorer>
-      </gui-explorer>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-explorer>
+        </gui-explorer>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -79,18 +87,20 @@ exports[`renders Layout for the "/explore" view 1`] = `
 exports[`renders Layout for the "/help" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-help-selectors>
-      </gui-help-selectors>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-help-selectors>
+        </gui-help-selectors>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -98,18 +108,20 @@ exports[`renders Layout for the "/help" view 1`] = `
 exports[`renders Layout for the "/help/selectors" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-help-selectors>
-      </gui-help-selectors>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-help-selectors>
+        </gui-help-selectors>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -117,18 +129,20 @@ exports[`renders Layout for the "/help/selectors" view 1`] = `
 exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-labels>
-      </gui-labels>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-labels>
+        </gui-labels>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;
@@ -136,18 +150,20 @@ exports[`renders Layout for the "/labels" view 1`] = `
 exports[`renders Layout for the "/queries" view 1`] = `
 
 <gui-layout>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-header>
-      </gui-header>
-      <gui-queries>
-      </gui-queries>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-queries>
+        </gui-queries>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
 </gui-layout>
 
 `;

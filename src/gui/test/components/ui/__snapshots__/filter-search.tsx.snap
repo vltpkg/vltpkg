@@ -2,7 +2,7 @@
 
 exports[`filter-search > should render correctly 1`] = `
 
-<div class="relative flex w-[384px] items-center ">
+<div class="relative flex w-full items-center">
   <gui-search-icon
     size="18"
     classname="absolute left-0 ml-3 text-neutral-500"
@@ -10,7 +10,7 @@ exports[`filter-search > should render correctly 1`] = `
   </gui-search-icon>
   <gui-input
     type="text"
-    classname="bg-white pl-9 pr-20 dark:bg-muted-foreground/5"
+    classname="rounded-xl bg-white pl-9 pr-20 dark:bg-muted-foreground/5"
     role="search"
     placeholder="mock-test"
     value

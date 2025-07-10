@@ -3,8 +3,8 @@
 exports[`delete-query > labels render default 1`] = `
 
 <gui-dialog open="true">
-  <gui-tooltip open="false">
-    <gui-tooltip-provider>
+  <gui-tooltip-provider>
+    <gui-tooltip open="false">
       <gui-dialog-trigger aschild="true">
         <gui-button variant="destructive">
           Delete
@@ -13,8 +13,8 @@ exports[`delete-query > labels render default 1`] = `
       <gui-tooltip-content>
         Delete Queries
       </gui-tooltip-content>
-    </gui-tooltip-provider>
-  </gui-tooltip>
+    </gui-tooltip>
+  </gui-tooltip-provider>
   <gui-dialog-content>
     <gui-dialog-header>
       <gui-dialog-title classname="font-medium">
