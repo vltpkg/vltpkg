@@ -44,5 +44,5 @@ export function notFound(c: HonoContext) {
 }
 
 export function isOK(c: HonoContext) {
-  return c.json({ ok: true }, 200)
+  return c.json({}, 200)
 }
