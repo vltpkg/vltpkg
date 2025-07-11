@@ -17,6 +17,7 @@ exports[`TabsManifestContent renders with a json object 1`] = `
 <gui-tabs-content
   value="json"
   classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
+  style="opacity: 0; filter: blur(2px);"
 >
   <gui-code-block
     classname="px-6 py-4"

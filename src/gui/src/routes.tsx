@@ -43,7 +43,11 @@ import type {
 } from '@/components/explorer-grid/selected-item/context.tsx'
 
 const TabRouter = () => {
-  const { tab } = useParams<{ tab: Tab }>()
+  const { tab } = useParams<{
+    query: string
+    tab: Tab
+    subTab?: SubTabDependencies
+  }>()
   switch (tab) {
     case 'overview':
       return <OverviewTabContent />
@@ -63,7 +67,11 @@ const TabRouter = () => {
 }
 
 const SubTabRouter = () => {
-  const { subTab } = useParams<{ subTab: SubTabDependencies }>()
+  const { subTab } = useParams<{
+    query: string
+    tab: Tab
+    subTab?: SubTabDependencies
+  }>()
   switch (subTab) {
     case 'insights':
       return <InsightsTabContent />
@@ -108,15 +116,7 @@ export const routes: RouteObject[] = [
           {
             path: ':tab',
             element: <TabRouter />,
-          },
-          {
-            path: 'dependencies',
-            element: <DependenciesTabContent />,
             children: [
-              {
-                index: true,
-                element: <Navigate to="insights" replace />,
-              },
               {
                 path: ':subTab',
                 element: <SubTabRouter />,

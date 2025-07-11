@@ -18,6 +18,12 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: vi.fn(() => ({
+      tab: 'dependencies',
+      subTab: 'insights',
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    })),
   }),
 )
 
@@ -87,10 +93,6 @@ test('DependenciesTabsButton renders correctly', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -129,10 +131,6 @@ test('DependenciesTabContent renders default', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -171,10 +169,6 @@ test('DependenciesTabContent renders an empty state', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,

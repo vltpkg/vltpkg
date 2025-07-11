@@ -20,6 +20,12 @@ vi.mock(
       ...actual,
       useSelectedItemStore: vi.fn(),
       SelectedItemProvider: 'gui-selected-item-provider',
+      useTabNavigation: {
+        tab: 'dependencies',
+        subTab: 'duplicates',
+        setActiveTab: vi.fn(),
+        setActiveSubTab: vi.fn(),
+      },
     }
   },
 )
@@ -74,10 +80,6 @@ test('DuplicatesTabButton renders correctly', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      activeSubTab: 'duplicates',
-      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -117,10 +119,6 @@ test('DuplicatesTabButton renders with a count', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'duplicates',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -160,10 +158,6 @@ test('DuplicatesTabContent renders with an empty state', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'duplicates',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -203,10 +197,6 @@ test('DuplicatesTabContent renders with duplicated deps', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'duplicates',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,

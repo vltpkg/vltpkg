@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
@@ -20,10 +20,14 @@ import {
 import { ChartContainer } from '@/components/ui/chart.tsx'
 import { cn } from '@/lib/utils.ts'
 import { toHumanNumber } from '@/utils/human-number.ts'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
 
-import type { ChartConfig } from '@/components/ui/chart.tsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
 import type { PackageAlert } from '@vltpkg/security-archive'
+import type { ChartConfig } from '@/components/ui/chart.tsx'
 
 export const InsightTabButton = () => {
   const insights = useSelectedItemStore(state => state.insights)
@@ -281,7 +285,7 @@ export const InsightTabContent = () => {
   >(insights)
 
   return (
-    <TabsContent value="insights">
+    <MotionTabsContent {...tabMotion} value="insights">
       <>
         {packageScore && <InsightScore />}
 
@@ -344,6 +348,6 @@ export const InsightTabContent = () => {
           See all Selectors & Insights
         </Link>
       </div>
-    </TabsContent>
+    </MotionTabsContent>
   )
 }

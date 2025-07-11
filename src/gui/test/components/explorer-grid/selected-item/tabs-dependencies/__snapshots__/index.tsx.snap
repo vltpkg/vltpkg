@@ -2,7 +2,10 @@
 
 exports[`DependenciesTabContent renders an empty state 1`] = `
 
-<gui-tabs-content value="dependencies">
+<gui-tabs-content
+  value="dependencies"
+  style="opacity: 0; filter: blur(2px);"
+>
   <gui-tabs value="insights">
     <gui-tabs-list variant="nestedCard">
       <gui-insights-tab-button>
@@ -14,8 +17,10 @@ exports[`DependenciesTabContent renders an empty state 1`] = `
       <gui-funding-tab-button>
       </gui-funding-tab-button>
     </gui-tabs-list>
-    <gui-router-outlet>
-    </gui-router-outlet>
+    <div class="min-h-64 overflow-hidden rounded-b-xl bg-card">
+      <gui-router-outlet>
+      </gui-router-outlet>
+    </div>
   </gui-tabs>
 </gui-tabs-content>
 
@@ -23,7 +28,10 @@ exports[`DependenciesTabContent renders an empty state 1`] = `
 
 exports[`DependenciesTabContent renders default 1`] = `
 
-<gui-tabs-content value="dependencies">
+<gui-tabs-content
+  value="dependencies"
+  style="opacity: 0; filter: blur(2px);"
+>
   <gui-tabs value="insights">
     <gui-tabs-list variant="nestedCard">
       <gui-insights-tab-button>
@@ -35,8 +43,10 @@ exports[`DependenciesTabContent renders default 1`] = `
       <gui-funding-tab-button>
       </gui-funding-tab-button>
     </gui-tabs-list>
-    <gui-router-outlet>
-    </gui-router-outlet>
+    <div class="min-h-64 overflow-hidden rounded-b-xl bg-card">
+      <gui-router-outlet>
+      </gui-router-outlet>
+    </div>
   </gui-tabs>
 </gui-tabs-content>
 

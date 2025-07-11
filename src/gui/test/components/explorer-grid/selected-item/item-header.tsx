@@ -39,6 +39,12 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: vi.fn(() => ({
+      tab: 'overview',
+      subTab: undefined,
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    })),
   }),
 )
 
@@ -112,10 +118,6 @@ afterEach(() => {
 test('ItemHeader renders with default item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    activeTab: 'overview',
-    setActiveTab: vi.fn(),
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,
@@ -154,10 +156,6 @@ test('ItemHeader renders with default item', () => {
 test('ItemHeader renders with custom registry item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM_CUSTOM_REGISTRY,
-    activeTab: 'overview',
-    setActiveTab: vi.fn(),
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,
@@ -202,10 +200,6 @@ test('ItemHeader renders with custom registry item', () => {
 test('ItemHeader renders with scoped registry item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM_SCOPED_REGISTRY,
-    activeTab: 'overview',
-    setActiveTab: vi.fn(),
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,
@@ -255,10 +249,6 @@ test('ItemHeader renders with scoped registry item', () => {
 test('ItemHeader renders with default git host item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM_DEFAULT_GIT_HOST,
-    activeTab: 'overview',
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,
@@ -303,10 +293,6 @@ test('ItemHeader renders with default git host item', () => {
 test('ItemHeader renders with a package score', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    activeTab: 'overview',
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: MOCK_PACKAGE_SCORE,
@@ -345,10 +331,6 @@ test('ItemHeader renders with a package score', () => {
 test('ItemHeader renders with insights', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    activeTab: 'overview',
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     manifest: null,
     rawManifest: null,
     packageScore: undefined,
@@ -407,10 +389,6 @@ test('ItemHeader renders with a version information', () => {
 
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    activeTab: 'overview',
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     manifest: mockManifest,
     rawManifest: null,
     packageScore: undefined,

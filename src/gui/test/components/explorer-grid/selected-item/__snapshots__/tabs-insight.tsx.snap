@@ -14,7 +14,10 @@ exports[`InsightTabButton renders default 1`] = `
 
 exports[`InsightTabContent renders an empty state 1`] = `
 
-<gui-tabs-content value="insights">
+<gui-tabs-content
+  value="insights"
+  style="opacity: 0; filter: blur(2px);"
+>
   <div class="flex h-64 w-full cursor-default items-center justify-center px-6 py-4">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
       <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
@@ -43,7 +46,10 @@ exports[`InsightTabContent renders an empty state 1`] = `
 
 exports[`InsightTabContent renders with insights 1`] = `
 
-<gui-tabs-content value="insights">
+<gui-tabs-content
+  value="insights"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="mt-2 flex flex-col px-6 py-4">
     <div class="mb-4 grid cursor-default grid-cols-10 gap-2 border-b-[1px] border-muted px-2 pb-4">
       <div class="col-span-3 flex w-full items-start">
@@ -107,7 +113,10 @@ exports[`InsightTabContent renders with insights 1`] = `
 
 exports[`InsightTabContent renders with no insights but a package score 1`] = `
 
-<gui-tabs-content value="insights">
+<gui-tabs-content
+  value="insights"
+  style="opacity: 0; filter: blur(2px);"
+>
   <section class="mt-3 border-b-[1px] border-muted pb-6">
     <div class="grid grid-cols-5 gap-2 px-6">
       <div class="flex flex-col items-center justify-center">

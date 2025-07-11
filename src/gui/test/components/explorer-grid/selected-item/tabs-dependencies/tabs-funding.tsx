@@ -20,6 +20,12 @@ vi.mock(
       ...actual,
       useSelectedItemStore: vi.fn(),
       SelectedItemProvider: 'gui-selected-item-provider',
+      useTabNavigation: {
+        tab: 'dependencies',
+        subTab: 'funding',
+        setActiveTab: vi.fn(),
+        setActiveSubTab: vi.fn(),
+      },
     }
   },
 )
@@ -94,10 +100,6 @@ test('FundingTabButton renders correctly', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      activeSubTab: 'funding',
-      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -137,10 +139,6 @@ test('FundingTabButton renders with a count', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'funding',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -180,10 +178,6 @@ test('FundingTabContent renders with an empty state ', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'funding',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -223,10 +217,6 @@ test('FundingTabContent renders with an funding', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'funding',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
