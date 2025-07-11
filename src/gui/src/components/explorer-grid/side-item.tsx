@@ -105,7 +105,16 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
           )}
         />
         <ContextMenu>
-          <ContextMenuTrigger>
+          <ContextMenuTrigger className="group/side-item relative">
+            {item.stacked && (
+              <>
+                <div className="duration-250 absolute inset-x-2 top-1 z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50" />
+                {item.size > 2 && (
+                  <div className="duration-250 absolute inset-x-3 top-2 z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30" />
+                )}
+              </>
+            )}
+
             <Card
               role="article"
               className={cn(
@@ -115,18 +124,15 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
               )}
               onClick={onSelect}>
               <CardHeader className="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-                {!isWorkspace && (
-                  <SideItemSpec
-                    spec={item.spec}
-                    itemSize={item.size}
-                  />
-                )}
+                {!isWorkspace && <SideItemSpec spec={item.spec} />}
                 <TooltipProvider>
                   <Tooltip delayDuration={150}>
                     <TooltipTrigger className="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
                       {itemName}
                     </TooltipTrigger>
-                    <TooltipContent>{itemName}</TooltipContent>
+                    <TooltipContent align="start">
+                      {itemName}
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
                 {!item.id.startsWith('uninstalled-dep:') && (
@@ -135,7 +141,10 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
                   </span>
                 )}
 
-                <SideItemBadges labels={item.labels} />
+                <SideItemBadges
+                  labels={item.labels}
+                  itemSize={item.size}
+                />
               </CardHeader>
             </Card>
           </ContextMenuTrigger>
@@ -155,27 +164,42 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
 
 const SideItemBadges = ({
   labels,
+  itemSize,
 }: {
   labels: SideItemOptions['item']['labels']
+  itemSize: SideItemOptions['item']['size']
 }) => {
-  if (!labels) return null
+  if (!labels && (itemSize === 0 || !itemSize)) return null
+
   return (
-    <div className="absolute -bottom-3 right-2.5">
-      {labels.map((label, idx) => (
-        <RelationBadge key={`${label}-${idx}`} relation={label}>
-          {label}
-        </RelationBadge>
-      ))}
+    <div className="absolute inset-x-0 -bottom-3 px-2.5">
+      <div className="relative flex w-full items-center justify-end">
+        {itemSize > 1 && (
+          <div className="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              {itemSize - 1} more
+            </span>
+          </div>
+        )}
+
+        {labels && labels.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {labels.map((label, idx) => (
+              <RelationBadge key={`${label}-${idx}`} relation={label}>
+                {label}
+              </RelationBadge>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
 const SideItemSpec = ({
   spec,
-  itemSize,
 }: {
   spec: SideItemOptions['item']['spec']
-  itemSize: SideItemOptions['item']['size']
 }) => {
   if (!spec?.bareSpec) return null
 
@@ -194,11 +218,6 @@ const SideItemSpec = ({
           : spec.bareSpec
         }
       />
-      {itemSize > 1 && (
-        <span className="text-xs font-medium text-muted-foreground">
-          and {itemSize - 1} more.
-        </span>
-      )}
     </div>
   )
 }
