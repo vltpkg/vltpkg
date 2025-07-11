@@ -2071,6 +2071,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/semver':
+        specifier: workspace:*
+        version: link:../semver
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'

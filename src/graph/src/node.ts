@@ -247,9 +247,6 @@ export class Node implements NodeLike {
 
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version
-    if (this.version?.startsWith('v')) {
-      this.version = this.version.slice(1)
-    }
   }
 
   /**

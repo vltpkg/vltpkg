@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { Version } from '@vltpkg/semver'
 
 /** anything that can be encoded in JSON */
 export type JSONField =
@@ -135,6 +136,20 @@ export const normalizeFunding = (
   const fundingArray = Array.isArray(funding) ? funding : [funding]
   const sources = fundingArray.map(normalizeItem)
   return sources
+}
+
+/**
+ * Normalize the version field in a manifest.
+ */
+export const normalizeVersion = (
+  manifest: Manifest | ManifestRegistry,
+): Manifest | ManifestRegistry => {
+  if (!manifest.version) {
+    return manifest
+  }
+  const version = Version.parse(manifest.version)
+  manifest.version = version.toString()
+  return manifest
 }
 
 /* Parse a string or object into a normalized contributor */
@@ -545,6 +560,8 @@ export const asManifest = (
 export const normalizeManifest = (
   manifest: Manifest | ManifestRegistry,
 ): Manifest => {
+  manifest = normalizeVersion(manifest)
+
   // checks for properties with specific normalization helper methods,
   // if there's nothing to normalize then we just return the original manifest
   if (

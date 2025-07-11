@@ -42,6 +42,7 @@ import {
   normalizeContributors,
   normalizeFunding,
   normalizeManifest,
+  normalizeVersion,
   parsePerson,
 } from '../src/index.ts'
 
@@ -54,7 +55,7 @@ t.test('manifest', t => {
   t.equal(isManifest({ name: 'x', version: null }), false)
   t.equal(isManifest({ name: 'x', version: 'y' }), true)
   t.equal(isManifest({ name: 'x', version: 420 }), false)
-  const om: Record<any, unknown> = { name: 'x', version: '123' }
+  const om: Record<any, unknown> = { name: 'x', version: '1.2.3' }
   // this is fine, type-detected
   const mok: Manifest = asManifest(om)
   mok
@@ -530,6 +531,158 @@ t.test('normalizeFunding', t => {
   t.end()
 })
 
+t.test('normalizeVersion', t => {
+  t.test('returns same manifest when no version', t => {
+    const manifest = { name: 'test' }
+    const result = normalizeVersion(manifest)
+    t.equal(result, manifest, 'should return same object reference')
+    t.end()
+  })
+
+  t.test('returns same manifest when version is undefined', t => {
+    const manifest = { name: 'test', version: undefined }
+    const result = normalizeVersion(manifest)
+    t.equal(result, manifest, 'should return same object reference')
+    t.end()
+  })
+
+  t.test('returns same manifest when version is empty string', t => {
+    const manifest = { name: 'test', version: '' }
+    const result = normalizeVersion(manifest)
+    t.equal(result, manifest, 'should return same object reference')
+    t.end()
+  })
+
+  t.test('normalizes version with v prefix', t => {
+    const manifest = { name: 'test', version: 'v1.0.0' }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '1.0.0')
+    t.end()
+  })
+
+  t.test('normalizes version with whitespace', t => {
+    const manifest = { name: 'test', version: '  1.0.0  ' }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '1.0.0')
+    t.end()
+  })
+
+  t.test(
+    'normalizes version with both v prefix and whitespace',
+    t => {
+      const manifest = { name: 'test', version: '  v1.0.0  ' }
+      const result = normalizeVersion(manifest)
+      t.same(result.version, '1.0.0')
+      t.end()
+    },
+  )
+
+  t.test('normalizes version with = prefix', t => {
+    const manifest = { name: 'test', version: '=1.0.0' }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '1.0.0')
+    t.end()
+  })
+
+  t.test('leaves normal version unchanged', t => {
+    const manifest = { name: 'test', version: '1.0.0' }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '1.0.0')
+    t.end()
+  })
+
+  t.test('normalizes complex version strings', t => {
+    const manifest = {
+      name: 'test',
+      version: '  v1.0.0-beta.1+build.123  ',
+    }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '1.0.0-beta.1+build.123')
+    t.end()
+  })
+
+  t.test('normalizes prerelease versions', t => {
+    const manifest = { name: 'test', version: 'v2.0.0-alpha.1' }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '2.0.0-alpha.1')
+    t.end()
+  })
+
+  t.test('normalizes build metadata', t => {
+    const manifest = {
+      name: 'test',
+      version: 'v1.0.0+20130313144700',
+    }
+    const result = normalizeVersion(manifest)
+    t.same(result.version, '1.0.0+20130313144700')
+    t.end()
+  })
+
+  t.test('throws error for invalid version - missing patch', t => {
+    const manifest = { name: 'test', version: '1.2' }
+    t.throws(() => normalizeVersion(manifest), {
+      message: /invalid version/,
+    })
+    t.end()
+  })
+
+  t.test(
+    'throws error for invalid version - missing minor and patch',
+    t => {
+      const manifest = { name: 'test', version: '1' }
+      t.throws(() => normalizeVersion(manifest), {
+        message: /invalid version/,
+      })
+      t.end()
+    },
+  )
+
+  t.test('throws error for invalid version - too many parts', t => {
+    const manifest = { name: 'test', version: '1.2.3.4' }
+    t.throws(() => normalizeVersion(manifest), {
+      message: /invalid version/,
+    })
+    t.end()
+  })
+
+  t.test(
+    'throws error for invalid version - non-numeric parts',
+    t => {
+      const manifest = { name: 'test', version: 'hello.world.test' }
+      t.throws(() => normalizeVersion(manifest), {
+        message: /invalid version/,
+      })
+      t.end()
+    },
+  )
+
+  t.test('throws error for invalid version - empty prerelease', t => {
+    const manifest = { name: 'test', version: '1.2.3-' }
+    t.throws(() => normalizeVersion(manifest), {
+      message: /invalid version/,
+    })
+    t.end()
+  })
+
+  t.test('throws error for invalid version - empty build', t => {
+    const manifest = { name: 'test', version: '1.2.3+' }
+    t.throws(() => normalizeVersion(manifest), {
+      message: /invalid version/,
+    })
+    t.end()
+  })
+
+  t.test('throws error for invalid version - only whitespace', t => {
+    const manifest = { name: 'test', version: '   ' }
+    t.throws(() => normalizeVersion(manifest), {
+      message: /invalid version/,
+    })
+    t.end()
+  })
+
+  t.end()
+})
+
 t.test('normalizeManifest', t => {
   t.test('returns same manifest when no funding', t => {
     const manifest = { name: 'test', version: '1.0.0' }
@@ -565,6 +718,28 @@ t.test('normalizeManifest', t => {
     ])
     t.end()
   })
+
+  t.test(
+    'normalizes manifest with version that needs normalization',
+    t => {
+      const manifest = {
+        name: 'test',
+        version: '  v1.0.0  ',
+        funding: 'https://github.com/sponsors/user',
+      }
+      const result = normalizeManifest(manifest)
+      t.not(result, manifest, 'should return new object reference')
+      t.same(
+        result.version,
+        '1.0.0',
+        'should normalize version by trimming whitespace and removing v prefix',
+      )
+      t.same(result.funding, [
+        { url: 'https://github.com/sponsors/user', type: 'github' },
+      ])
+      t.end()
+    },
+  )
 
   t.test('preserves other manifest properties', t => {
     const manifest = {
@@ -696,6 +871,18 @@ t.test('normalizeManifest', t => {
       'maintainers' in result,
       'maintainers field should be removed',
     )
+    t.end()
+  })
+
+  t.test('throws error for invalid version', t => {
+    const manifest = {
+      name: 'test',
+      version: '123', // Invalid semver - missing minor and patch
+      funding: 'https://github.com/sponsors/user',
+    }
+    t.throws(() => normalizeManifest(manifest), {
+      message: /invalid version/,
+    })
     t.end()
   })
 

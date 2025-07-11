@@ -287,9 +287,6 @@ const parseDir = (
           h, // uses spec from hydrated id
           {
             name,
-            ...(h.registrySpec ?
-              { version: h.registrySpec } // adds version if available
-            : null),
           },
           depId,
           queryModifier,
