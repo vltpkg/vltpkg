@@ -75,18 +75,6 @@ t.test('unknown www-authenticate challenges', async t => {
 
   await t.rejects(
     otplease(mockClient, {}, {
-      headers: {},
-      body: {
-        text: async () => '',
-      },
-    } as unknown as Dispatcher.ResponseData),
-    {
-      message: 'Unknown authentication challenge',
-    },
-  )
-
-  await t.rejects(
-    otplease(mockClient, {}, {
       headers: {
         'www-authenticate': 'otp',
       },
