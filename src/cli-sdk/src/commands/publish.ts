@@ -120,7 +120,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   const {
     name,
     version,
-    filename,
+    tarballName,
     tarballData,
     unpackedSize,
     files,
@@ -154,13 +154,14 @@ export const command: CommandFn<CommandResult> = async conf => {
           ...manifest.dist,
           integrity,
           shasum,
-          tarball: new URL(`${name}/-/${filename}`, registryUrl).href,
+          tarball: new URL(`${name}/-/${tarballName}`, registryUrl)
+            .href,
         },
       },
     },
     access,
     _attachments: {
-      [filename]: {
+      [tarballName]: {
         content_type: 'application/octet-stream',
         data: tarballData.toString('base64'),
         length: tarballData.length,
@@ -196,6 +197,7 @@ export const command: CommandFn<CommandResult> = async conf => {
 
     if (response.statusCode !== 200 && response.statusCode !== 201) {
       throw error('Failed to publish package', {
+        url: publishUrl,
         response,
       })
     }
