@@ -101,7 +101,7 @@ export const CrumbNav = ({
     const constructedCrumbPath = parts
       .slice(0, crumbIndex + 1)
       .map(i => i.value)
-      .join('>')
+      .join(' > ')
     updateQuery(constructedCrumbPath)
   }
 
