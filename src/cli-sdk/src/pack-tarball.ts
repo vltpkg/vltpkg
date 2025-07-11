@@ -7,6 +7,7 @@ import assert from 'node:assert'
 import { existsSync, statSync } from 'node:fs'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
+import { join } from 'node:path'
 
 export type PackTarballResult = {
   name: string
@@ -148,11 +149,6 @@ export const packTarball = async (
   dir: string,
   config: LoadedConfig,
 ): Promise<PackTarballResult> => {
-  assert(
-    manifest.name && manifest.version,
-    error('Package must have a name and version'),
-  )
-
   let packDir = dir
 
   // Check if publishDirectory is configured
@@ -175,8 +171,16 @@ export const packTarball = async (
         },
       ),
     )
+    if (existsSync(join(publishDirectory, 'package.json'))) {
+      manifest = config.options.packageJson.read(publishDirectory)
+    }
     packDir = publishDirectory
   }
+
+  assert(
+    manifest.name && manifest.version,
+    error('Package must have a name and version'),
+  )
 
   const processedManifest = replaceWorkspaceAndCatalogSpecs(
     manifest,
