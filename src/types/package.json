@@ -19,7 +19,8 @@
     }
   },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*"
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/semver": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
