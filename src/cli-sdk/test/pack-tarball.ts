@@ -1048,4 +1048,68 @@ t.test('publish-directory option', async t => {
       })
     },
   )
+
+  await t.test(
+    'uses package.json from publish directory when available',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'original-pkg',
+            version: '1.0.0',
+            description: 'Original package',
+          }),
+          'index.js': 'module.exports = {}',
+        },
+        'publish-here': {
+          'package.json': JSON.stringify({
+            name: 'publish-pkg',
+            version: '2.0.0',
+            description: 'Publish package',
+          }),
+          'index.js': 'module.exports = {}',
+        },
+      })
+
+      const publishDir = resolve(testdir, 'publish-here')
+      const originalDir = resolve(testdir, 'original-dir')
+
+      const config = createMockConfig(testdir, {
+        'publish-directory': publishDir,
+      })
+
+      // Pass the original manifest, but expect the publish directory's manifest to be used
+      const originalManifest = {
+        name: 'original-pkg',
+        version: '1.0.0',
+        description: 'Original package',
+      }
+
+      const result = await packTarball(
+        originalManifest,
+        originalDir,
+        config,
+      )
+
+      // The result should use the manifest from the publish directory
+      t.equal(
+        result.name,
+        'publish-pkg',
+        'Should use name from publish directory manifest',
+      )
+      t.equal(
+        result.version,
+        '2.0.0',
+        'Should use version from publish directory manifest',
+      )
+      t.equal(
+        result.filename,
+        'publish-pkg-2.0.0.tgz',
+        'Should use filename based on publish directory manifest',
+      )
+      t.ok(result.tarballData)
+      t.ok(result.files.includes('package.json'))
+      t.ok(result.files.includes('index.js'))
+    },
+  )
 })
