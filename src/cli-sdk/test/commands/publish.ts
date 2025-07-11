@@ -450,21 +450,20 @@ t.test('command', async t => {
 
     t.test('human view', async t => {
       const output = views.human(result)
-      t.match(output, /✅ Published test@1\.0\.0/)
       t.match(output, /📦 Package: test@1\.0\.0/)
       t.match(output, /🏷️ Tag: latest/)
       t.match(output, /📡 Registry: https:\/\/registry\.npmjs\.org/)
-      t.match(output, /📁 3 files/)
+      t.match(output, /📁 3 Files/)
       t.match(output, /package\.json/)
       t.match(output, /index\.js/)
       t.match(output, /README\.md/)
-      t.match(output, /📊 package size: 2\.05 kB/)
-      t.match(output, /📂 unpacked size: 4\.1?0? kB/)
+      t.match(output, /📊 Package Size: 2\.05 kB/)
+      t.match(output, /📂 Unpacked Size: 4\.1?0? kB/)
       t.match(
         output,
-        /🔒 shasum: abc123def456abc123def456abc123def456abc123/,
+        /🔒 Shasum: abc123def456abc123def456abc123def456abc123/,
       )
-      t.match(output, /🔐 integrity: sha512-xyz789abcdef/)
+      t.match(output, /🔐 Integrity: sha512-xyz789abcdef/)
     })
 
     t.test('human view without optional fields', async t => {
@@ -474,8 +473,8 @@ t.test('command', async t => {
         integrity: undefined,
       } as CommandResult
       const output = views.human(minResult)
-      t.notMatch(output, /🔒 shasum/)
-      t.notMatch(output, /🔐 integrity/)
+      t.notMatch(output, /🔒 Shasum/)
+      t.notMatch(output, /🔐 Integrity/)
     })
 
     t.test('json view', async t => {

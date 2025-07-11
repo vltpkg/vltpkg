@@ -39,15 +39,15 @@ type CommandResult = {
 export const views = {
   human: r => {
     const lines = [
-      `📦 ${r.name}@${r.version}`,
-      `📄 ${r.filename}`,
-      `📁 ${r.files.length} files`,
+      `📦 Package: ${r.id}`,
+      `📄 File: ${r.filename}`,
+      `📁 ${r.files.length} Files`,
       ...r.files.map(f => `  - ${f}`),
-      `📊 package size: ${prettyBytes(r.size)}`,
-      `📂 unpacked size: ${prettyBytes(r.unpackedSize)}`,
+      `📊 Package Size: ${prettyBytes(r.size)}`,
+      `📂 Unpacked Size: ${prettyBytes(r.unpackedSize)}`,
     ]
-    if (r.shasum) lines.push(`🔒 shasum: ${r.shasum}`)
-    if (r.integrity) lines.push(`🔐 integrity: ${r.integrity}`)
+    if (r.shasum) lines.push(`🔒 Shasum: ${r.shasum}`)
+    if (r.integrity) lines.push(`🔐 Integrity: ${r.integrity}`)
     return lines.join('\n')
   },
   json: r => r,
