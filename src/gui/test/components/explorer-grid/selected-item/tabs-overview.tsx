@@ -44,6 +44,12 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: {
+      tab: 'overview',
+      subTab: undefined,
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    },
   }),
 )
 
@@ -108,10 +114,6 @@ test('OverviewTabButton renders default', () => {
     manifest: {},
     rawManifest: null,
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -148,10 +150,6 @@ test('OverviewTabContent renders default', () => {
     manifest: {},
     rawManifest: null,
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -185,10 +183,6 @@ test('OverviewTabContent renders with content', () => {
     selectedItem: ITEM_WITH_DESCRIPTION,
     ...ITEM_DETAILS_WITH_AUTHOR,
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     rawManifest: null,
     manifest: {
       description: '## Description\n\nThis is a custom description',
@@ -227,10 +221,6 @@ test('OverviewTabContent renders with an aside and content', () => {
     selectedItem: ITEM_WITH_DESCRIPTION,
     ...ITEM_DETAILS_WITH_AUTHOR,
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     rawManifest: null,
     contributors: [
       {

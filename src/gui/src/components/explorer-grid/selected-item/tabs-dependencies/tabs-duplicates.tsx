@@ -1,10 +1,14 @@
 import React from 'react'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { Blocks } from 'lucide-react'
 import { useGraphStore } from '@/state/index.ts'
 import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
 
 export const DuplicatesTabButton = () => {
   const duplicatedDeps = useSelectedItemStore(
@@ -45,7 +49,7 @@ export const DuplicatesTabContent = () => {
     )
 
   return (
-    <TabsContent value="duplicates">
+    <MotionTabsContent {...tabMotion} value="duplicates">
       {duplicatedDeps && duplicatedDepCount > 0 ?
         <div className="px-6 pt-4">
           <div className="relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3">
@@ -101,6 +105,6 @@ export const DuplicatesTabContent = () => {
           message="No duplicated dependencies found."
         />
       }
-    </TabsContent>
+    </MotionTabsContent>
   )
 }

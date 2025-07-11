@@ -17,6 +17,7 @@ exports[`OverviewTabContent renders default 1`] = `
 <gui-tabs-content
   value="overview"
   classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+  style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
     <div class="flex h-64 w-full items-center justify-center px-6 py-4">
@@ -55,6 +56,7 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
 <gui-tabs-content
   value="overview"
   classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+  style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
     <div class="flex h-64 w-full items-center justify-center px-6 py-4">
@@ -217,6 +219,7 @@ exports[`OverviewTabContent renders with content 1`] = `
 <gui-tabs-content
   value="overview"
   classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+  style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
     <div class="flex flex-col gap-2 px-6 py-4">

@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion'
 import { useGraphStore } from '@/state/index.ts'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import {
+  useSelectedItemStore,
+  useTabNavigation,
+} from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   Avatar,
   AvatarImage,
@@ -295,9 +298,7 @@ const PackageOverallScore = ({
 }: {
   className?: string
 }) => {
-  const setActiveTab = useSelectedItemStore(
-    state => state.setActiveTab,
-  )
+  const { setActiveTab } = useTabNavigation()
   const packageScore = useSelectedItemStore(
     state => state.packageScore,
   )
@@ -370,9 +371,7 @@ const PackageImage = () => {
 }
 
 const PackageNewerVersionsAvailable = () => {
-  const setActiveTab = useSelectedItemStore(
-    state => state.setActiveTab,
-  )
+  const { setActiveTab } = useTabNavigation()
   const greaterVersions = useSelectedItemStore(
     state => state.greaterVersions,
   )

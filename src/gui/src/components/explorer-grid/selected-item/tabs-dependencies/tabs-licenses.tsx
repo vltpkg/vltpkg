@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useGraphStore } from '@/state/index.ts'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import {
   Table,
   TableBody,
@@ -28,6 +28,11 @@ import {
 import { Warning } from '@/components/explorer-grid/selected-item/tabs-dependencies/warning.tsx'
 import { alertStyles } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
+
 import type { LicenseWarningType } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
 
@@ -240,7 +245,7 @@ export const LicensesTabContent = () => {
   })
 
   return (
-    <TabsContent value="licenses">
+    <MotionTabsContent {...tabMotion} value="licenses">
       {depLicenses?.allLicenses && uniqueLicenses > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div className="px-6">
@@ -356,6 +361,6 @@ export const LicensesTabContent = () => {
           message="No license data was found."
         />
       }
-    </TabsContent>
+    </MotionTabsContent>
   )
 }

@@ -42,6 +42,12 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: {
+      tab: 'json',
+      subTab: undefined,
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    },
   }),
 )
 
@@ -76,10 +82,6 @@ test('TabsManifestButton renders default', () => {
     manifest: {},
     rawManifest: null,
     insights: undefined,
-    activeTab: 'json' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -113,12 +115,8 @@ test('TabsManifestContent renders with a json object', () => {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     insights: undefined,
-    activeTab: 'json' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
     manifest: MOCK_MANIFEST,
     rawManifest: null,
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,

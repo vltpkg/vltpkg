@@ -15,6 +15,12 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: {
+      tab: 'dependencies',
+      subTab: 'insights',
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    },
   }),
 )
 
@@ -134,10 +140,6 @@ test('InsightsTabButton renders with insight count', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -177,10 +179,6 @@ test('InsightsTabContent renders with an empty state', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -220,10 +218,6 @@ test('InsightsTabContent renders with insights', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
-      setActiveTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,
@@ -263,10 +257,6 @@ test('InsightsTabContent renders with a warning for unscanned deps', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
       selectedItem: SELECTED_ITEM,
-      activeTab: 'dependencies',
-      setActiveTab: vi.fn(),
-      activeSubTab: 'insights',
-      setActiveSubTab: vi.fn(),
       manifest: null,
       rawManifest: null,
       packageScore: undefined,

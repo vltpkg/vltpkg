@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import {
   Table,
   TableBody,
@@ -15,7 +15,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { HeartHandshake } from 'lucide-react'
 import { cn } from '@/lib/utils.ts'
@@ -26,6 +25,12 @@ import {
   tableClassNames,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
+
+import type { ColumnDef } from '@tanstack/react-table'
 
 export const FundingTabButton = () => {
   const depFunding = useSelectedItemStore(state => state.depFunding)
@@ -155,7 +160,7 @@ export const FundingTabContent = () => {
   })
 
   return (
-    <TabsContent value="funding">
+    <MotionTabsContent {...tabMotion} value="funding">
       {depFunding && fundingCount > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div className="flex flex-col gap-3 px-6">
@@ -250,6 +255,6 @@ export const FundingTabContent = () => {
           message="No dependencies are looking for funding."
         />
       }
-    </TabsContent>
+    </MotionTabsContent>
   )
 }

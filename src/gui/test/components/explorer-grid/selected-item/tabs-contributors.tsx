@@ -20,18 +20,17 @@ vi.mock(
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
+    useTabNavigation: vi.fn(() => ({
+      tab: 'contributors',
+      subTab: undefined,
+      setActiveTab: vi.fn(),
+      setActiveSubTab: vi.fn(),
+    })),
   }),
 )
 
 vi.mock('@/components/ui/tabs.tsx', () => ({
   TabsContent: 'gui-tabs-content',
-}))
-
-vi.mock('react-router', () => ({
-  Link: 'gui-router-link',
-  useParams: vi.fn().mockReturnValue({
-    query: ':root',
-  }),
 }))
 
 vi.mock('@/components/ui/button.tsx', () => ({
@@ -128,10 +127,6 @@ test('ContributorTabContent renders with contributors', () => {
     rawManifest: null,
     contributors: mockContributors.slice(0, 4),
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -167,10 +162,6 @@ test('ContributorTabContent renders with no contributors', () => {
     rawManifest: null,
     contributors: undefined,
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -206,10 +197,6 @@ test('ContributorList renders with less than 6 contributors', () => {
     rawManifest: null,
     contributors: mockContributors.slice(0, 3),
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,
@@ -245,10 +232,6 @@ test('ContributorList renders with more than 6 contributors', () => {
     rawManifest: null,
     contributors: mockContributors,
     insights: undefined,
-    activeTab: 'overview' as const,
-    activeSubTab: undefined,
-    setActiveSubTab: vi.fn(),
-    setActiveTab: vi.fn(),
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,

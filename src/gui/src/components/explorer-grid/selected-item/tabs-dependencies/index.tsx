@@ -1,17 +1,22 @@
 import { Outlet } from 'react-router'
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@/components/ui/tabs.tsx'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import {
+  useSelectedItemStore,
+  useTabNavigation,
+} from '@/components/explorer-grid/selected-item/context.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { InsightsTabButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-insights.tsx'
 import { LicensesTabButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-licenses.tsx'
 import { DuplicatesTabButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-duplicates.tsx'
 import { FundingTabButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-funding.tsx'
+import { AnimatePresence } from 'framer-motion'
+import {
+  MotionTabsContent,
+  tabMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
+import { useRef, useCallback } from 'react'
+
 import type { SubTabDependencies } from '@/components/explorer-grid/selected-item/context.tsx'
 
 export const DependenciesTabsButton = () => {
@@ -36,27 +41,41 @@ export const DependenciesTabsButton = () => {
 }
 
 export const DependenciesTabContent = () => {
-  const activeTab =
-    useSelectedItemStore(state => state.activeSubTab) ?? 'insights'
-  const setActiveSubTab = useSelectedItemStore(
-    state => state.setActiveSubTab,
+  const { subTab: activeSubTab, setActiveSubTab } = useTabNavigation()
+  const currentSubTabRef = useRef<SubTabDependencies | undefined>(
+    activeSubTab,
   )
 
-  const handleSubTabChange = (newSubTab: string) => {
-    setActiveSubTab(newSubTab as SubTabDependencies)
+  if (currentSubTabRef.current !== activeSubTab) {
+    currentSubTabRef.current = activeSubTab
   }
 
+  const handleSubTabChange = useCallback(
+    (subTab: string) => {
+      const newSubTab = subTab as SubTabDependencies
+      if (currentSubTabRef.current !== newSubTab) {
+        currentSubTabRef.current = newSubTab
+        setActiveSubTab(newSubTab)
+      }
+    },
+    [setActiveSubTab],
+  )
+
   return (
-    <TabsContent value="dependencies">
-      <Tabs onValueChange={handleSubTabChange} value={activeTab}>
+    <MotionTabsContent {...tabMotion} value="dependencies">
+      <Tabs onValueChange={handleSubTabChange} value={activeSubTab}>
         <TabsList variant="nestedCard">
           <InsightsTabButton />
           <LicensesTabButton />
           <DuplicatesTabButton />
           <FundingTabButton />
         </TabsList>
-        <Outlet />
+        <div className="min-h-64 overflow-hidden rounded-b-xl bg-card">
+          <AnimatePresence initial={false} mode="wait">
+            <Outlet key={activeSubTab} />
+          </AnimatePresence>
+        </div>
       </Tabs>
-    </TabsContent>
+    </MotionTabsContent>
   )
 }
