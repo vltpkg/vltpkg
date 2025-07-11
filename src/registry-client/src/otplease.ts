@@ -11,6 +11,16 @@ import { createInterface } from 'node:readline/promises'
 // eslint-disable-next-line no-console
 const log = (msg: string) => console.error(msg)
 
+const question = async (text: string): Promise<string> => {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+  const answer = await rl.question(text)
+  rl.close()
+  return answer
+}
+
 const otpChallengeNotice =
   /^Open ([^ ]+) to use your security key for authentication or enter OTP from your authenticator app/i
 
@@ -32,7 +42,9 @@ export const otplease = async (
 
   if (wwwAuth.has('otp')) {
     // do a web auth opener to get otp token
-    const challenge = getWebAuthChallenge(await response.body.json())
+    const challenge = getWebAuthChallenge(
+      await response.body.json().catch(() => null),
+    )
     if (challenge) {
       return {
         ...options,
@@ -47,11 +59,10 @@ export const otplease = async (
       if (match?.[1]) {
         await urlOpen(match[1])
         log(notice)
-        const otp = await createInterface({
-          input: process.stdin,
-          output: process.stdout,
-        }).question('OTP: ')
-        return { ...options, otp }
+        return {
+          ...options,
+          otp: await question('OTP: '),
+        }
       }
     }
 
@@ -65,12 +76,13 @@ export const otplease = async (
   }
 
   // see if the body is prompting for otp
-  const text = await response.body.text()
+  const text = await response.body.text().catch(() => '')
   if (text.toLowerCase().includes('one-time pass')) {
-    const otp = await createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    }).question(text)
-    return { ...options, otp }
+    return {
+      ...options,
+      otp: await question(text),
+    }
   }
+
+  throw error('Unknown authentication challenge', { response })
 }
