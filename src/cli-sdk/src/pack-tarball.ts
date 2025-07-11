@@ -12,6 +12,7 @@ export type PackTarballResult = {
   name: string
   version: string
   filename: string
+  tarballName: string
   tarballData: Buffer
   unpackedSize: number
   files: string[]
@@ -184,6 +185,7 @@ export const packTarball = async (
   )
 
   const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
+  const tarballName = `${manifest.name}-${manifest.version}.tgz`
 
   try {
     config.options.packageJson.write(packDir, processedManifest)
@@ -346,6 +348,7 @@ export const packTarball = async (
       name: manifest.name,
       version: manifest.version,
       filename,
+      tarballName,
       tarballData,
       unpackedSize,
       files,
