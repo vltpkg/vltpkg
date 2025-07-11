@@ -83,6 +83,4 @@ export const otplease = async (
       otp: await question(text),
     }
   }
-
-  throw error('Unknown authentication challenge', { response })
 }
