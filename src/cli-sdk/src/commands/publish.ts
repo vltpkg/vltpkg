@@ -52,17 +52,16 @@ export type CommandResult = {
 export const views = {
   human: r => {
     const lines = [
-      `✅ Published ${r.name}@${r.version}`,
       `📦 Package: ${r.id}`,
       `🏷️ Tag: ${r.tag}`,
       `📡 Registry: ${r.registry}`,
-      `📁 ${r.files.length} files`,
+      `📁 ${r.files.length} Files`,
       ...r.files.map(f => `  - ${f}`),
-      `📊 package size: ${prettyBytes(r.size)}`,
-      `📂 unpacked size: ${prettyBytes(r.unpackedSize)}`,
+      `📊 Package Size: ${prettyBytes(r.size)}`,
+      `📂 Unpacked Size: ${prettyBytes(r.unpackedSize)}`,
     ]
-    if (r.shasum) lines.push(`🔒 shasum: ${r.shasum}`)
-    if (r.integrity) lines.push(`🔐 integrity: ${r.integrity}`)
+    if (r.shasum) lines.push(`🔒 Shasum: ${r.shasum}`)
+    if (r.integrity) lines.push(`🔐 Integrity: ${r.integrity}`)
 
     return lines.join('\n')
   },
