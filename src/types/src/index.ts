@@ -144,8 +144,13 @@ export const normalizeFunding = (
 export const normalizeVersion = (
   manifest: Manifest | ManifestRegistry,
 ): Manifest | ManifestRegistry => {
-  if (!manifest.version) {
+  if (!Object.hasOwn(manifest, 'version')) {
     return manifest
+  }
+  if (!manifest.version) {
+    throw error('version is empty', {
+      manifest,
+    })
   }
   const version = Version.parse(manifest.version)
   manifest.version = version.toString()

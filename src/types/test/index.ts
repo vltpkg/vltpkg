@@ -539,17 +539,49 @@ t.test('normalizeVersion', t => {
     t.end()
   })
 
-  t.test('returns same manifest when version is undefined', t => {
-    const manifest = { name: 'test', version: undefined }
-    const result = normalizeVersion(manifest)
-    t.equal(result, manifest, 'should return same object reference')
+  t.test('throws when version is 0', t => {
+    const manifest = {
+      name: 'test',
+      version: 0,
+    } as unknown as Manifest
+    t.throws(
+      () => normalizeVersion(manifest),
+      /version is empty/,
+      'should throw error for invalid version',
+    )
     t.end()
   })
 
-  t.test('returns same manifest when version is empty string', t => {
+  t.test('throws when version is RegExp', t => {
+    const manifest = {
+      name: 'test',
+      version: /0/,
+    } as unknown as Manifest
+    t.throws(
+      () => normalizeVersion(manifest),
+      /version.replace is not a function/,
+      'should throw error for invalid type',
+    )
+    t.end()
+  })
+
+  t.test('throws when version is undefined', t => {
+    const manifest = { name: 'test', version: undefined }
+    t.throws(
+      () => normalizeVersion(manifest),
+      /version is empty/,
+      'should throw error for empty version',
+    )
+    t.end()
+  })
+
+  t.test('throws when version is empty string', t => {
     const manifest = { name: 'test', version: '' }
-    const result = normalizeVersion(manifest)
-    t.equal(result, manifest, 'should return same object reference')
+    t.throws(
+      () => normalizeVersion(manifest),
+      /version is empty/,
+      'should throw error for empty version',
+    )
     t.end()
   })
 
