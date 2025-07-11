@@ -315,10 +315,6 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
       data-state="closed"
       class="group/side-item relative"
     >
-      <div class="duration-250 absolute inset-x-2 top-1 z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
-      </div>
-      <div class="duration-250 absolute inset-x-3 top-2 z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30">
-      </div>
       <gui-card
         role="article"
         classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
@@ -358,6 +354,10 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
         </gui-card-header>
       </gui-card>
     </span>
+    <div class="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
+    </div>
+    <div class="duration-250 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30">
+    </div>
   </div>
 </div>
 
@@ -428,8 +428,6 @@ exports[`SideItem render as two-stacked dependent 1`] = `
       data-state="closed"
       class="group/side-item relative"
     >
-      <div class="duration-250 absolute inset-x-2 top-1 z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
-      </div>
       <gui-card
         role="article"
         classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
@@ -469,6 +467,8 @@ exports[`SideItem render as two-stacked dependent 1`] = `
         </gui-card-header>
       </gui-card>
     </span>
+    <div class="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
+    </div>
   </div>
 </div>
 

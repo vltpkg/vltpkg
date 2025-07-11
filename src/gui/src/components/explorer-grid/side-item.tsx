@@ -106,15 +106,6 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
         />
         <ContextMenu>
           <ContextMenuTrigger className="group/side-item relative">
-            {item.stacked && (
-              <>
-                <div className="duration-250 absolute inset-x-2 top-1 z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50" />
-                {item.size > 2 && (
-                  <div className="duration-250 absolute inset-x-3 top-2 z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30" />
-                )}
-              </>
-            )}
-
             <Card
               role="article"
               className={cn(
@@ -156,6 +147,14 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
               Remove dependency
             </ContextMenuItem>
           </ContextMenuContent>
+          {item.stacked && (
+            <>
+              <div className="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50" />
+              {item.size > 2 && (
+                <div className="duration-250 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30" />
+              )}
+            </>
+          )}
         </ContextMenu>
       </div>
     )
