@@ -39,6 +39,7 @@ import {
   isRecordStringString,
   isRecordStringT,
   longDependencyTypes,
+  normalizeBugs,
   normalizeContributors,
   normalizeFunding,
   normalizeManifest,
@@ -715,13 +716,102 @@ t.test('normalizeVersion', t => {
   t.end()
 })
 
-t.test('normalizeManifest', t => {
-  t.test('returns same manifest when no funding', t => {
-    const manifest = { name: 'test', version: '1.0.0' }
-    const result = normalizeManifest(manifest)
-    t.equal(result, manifest, 'should return same object reference')
+t.test('normalizeBugs', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeBugs(undefined), undefined)
+    t.equal(normalizeBugs(null), undefined)
     t.end()
   })
+
+  t.test('handles string email', t => {
+    const result = normalizeBugs('bugs@example.com')
+    t.same(result, [{ type: 'email', email: 'bugs@example.com' }])
+    t.end()
+  })
+
+  t.test('handles string URL', t => {
+    const result = normalizeBugs(
+      'https://github.com/owner/repo/issues',
+    )
+    t.same(result, [
+      { type: 'link', url: 'https://github.com/owner/repo/issues' },
+    ])
+    t.end()
+  })
+
+  t.test('handles object with url only', t => {
+    const bugs = { url: 'https://github.com/owner/repo/issues' }
+    const result = normalizeBugs(bugs)
+    t.same(result, [
+      { type: 'link', url: 'https://github.com/owner/repo/issues' },
+    ])
+    t.end()
+  })
+
+  t.test('handles object with email only', t => {
+    const bugs = { email: 'bugs@example.com' }
+    const result = normalizeBugs(bugs)
+    t.same(result, [{ type: 'email', email: 'bugs@example.com' }])
+    t.end()
+  })
+
+  t.test('handles object with both url and email', t => {
+    const bugs = {
+      url: 'https://github.com/owner/repo/issues',
+      email: 'bugs@example.com',
+    }
+    const result = normalizeBugs(bugs)
+    t.same(result, [
+      { type: 'link', url: 'https://github.com/owner/repo/issues' },
+      { type: 'email', email: 'bugs@example.com' },
+    ])
+    t.end()
+  })
+
+  t.test('handles invalid bugs entries', t => {
+    const result = normalizeBugs({ invalid: 'data' })
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles empty object', t => {
+    const result = normalizeBugs({})
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles string that looks like URL with email', t => {
+    const result = normalizeBugs('mailto:bugs@example.com')
+    t.same(result, [{ type: 'link', url: 'mailto:bugs@example.com' }])
+    t.end()
+  })
+
+  t.test('handles non-string, non-object input', t => {
+    t.equal(normalizeBugs(123), undefined)
+    t.equal(normalizeBugs(true), undefined)
+    t.equal(normalizeBugs([]), undefined)
+    t.end()
+  })
+
+  t.test('handles plain string without @ or URL schemes', t => {
+    const result = normalizeBugs('example.com')
+    t.same(result, [{ type: 'link', url: 'example.com' }])
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('normalizeManifest', t => {
+  t.test(
+    'returns same manifest when no funding, contributors, or bugs',
+    t => {
+      const manifest = { name: 'test', version: '1.0.0' }
+      const result = normalizeManifest(manifest)
+      t.equal(result, manifest, 'should return same object reference')
+      t.end()
+    },
+  )
 
   t.test('normalizes manifest with object funding', t => {
     const manifest = {
@@ -915,6 +1005,87 @@ t.test('normalizeManifest', t => {
     t.throws(() => normalizeManifest(manifest), {
       message: /invalid version/,
     })
+    t.end()
+  })
+
+  t.test('normalizes manifest with string bugs', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      bugs: 'https://github.com/owner/repo/issues',
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.bugs, [
+      { type: 'link', url: 'https://github.com/owner/repo/issues' },
+    ])
+    t.end()
+  })
+
+  t.test('normalizes manifest with object bugs', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      bugs: { url: 'https://github.com/owner/repo/issues' },
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.bugs, [
+      { type: 'link', url: 'https://github.com/owner/repo/issues' },
+    ])
+    t.end()
+  })
+
+  t.test('normalizes manifest with bugs email', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      bugs: 'bugs@example.com',
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.bugs, [
+      { type: 'email', email: 'bugs@example.com' },
+    ])
+    t.end()
+  })
+
+  t.test(
+    'normalizes manifest with bugs containing both url and email',
+    t => {
+      const manifest = {
+        name: 'test',
+        version: '1.0.0',
+        bugs: {
+          url: 'https://github.com/owner/repo/issues',
+          email: 'bugs@example.com',
+        },
+      }
+      const result = normalizeManifest(manifest)
+      t.not(result, manifest, 'should return new object reference')
+      t.same(result.bugs, [
+        { type: 'link', url: 'https://github.com/owner/repo/issues' },
+        { type: 'email', email: 'bugs@example.com' },
+      ])
+      t.end()
+    },
+  )
+
+  t.test('preserves other manifest properties with bugs', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      description: 'A test package',
+      bugs: 'https://github.com/owner/repo/issues',
+      dependencies: { foo: '^1.0.0' },
+    }
+    const result = normalizeManifest(manifest)
+    t.same(result.bugs, [
+      { type: 'link', url: 'https://github.com/owner/repo/issues' },
+    ])
+    t.same(result.name, manifest.name)
+    t.same(result.description, manifest.description)
+    t.same(result.dependencies, manifest.dependencies)
     t.end()
   })
 

@@ -263,6 +263,64 @@ export type Bugs =
       email?: string
     }
 
+/**
+ * Normalized bugs entry - always an object with type and url/email
+ */
+export type NormalizedBugsEntry = {
+  type?: 'email' | 'link'
+  url?: string
+  email?: string
+}
+
+/**
+ * Normalized bugs - always an array of objects
+ */
+export type NormalizedBugs = NormalizedBugsEntry[]
+
+/**
+ * Normalize bugs information to a {@link NormalizedBugs} consistent format.
+ */
+export const normalizeBugs = (
+  bugs: unknown,
+): NormalizedBugs | undefined => {
+  if (bugs === undefined || bugs === null) {
+    return undefined
+  }
+
+  if (typeof bugs === 'string') {
+    // Try to parse as URL first - if it succeeds, treat as link
+    try {
+      new URL(bugs)
+      return [{ type: 'link', url: bugs }]
+    } catch {
+      // TODO: need a more robust email validation, likely
+      // to be replaced with valibot / zod
+      // If URL parsing fails, check if it's a valid email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (emailRegex.test(bugs)) {
+        return [{ type: 'email', email: bugs }]
+      } else {
+        // Default to link for plain strings like 'example.com'
+        return [{ type: 'link', url: bugs }]
+      }
+    }
+  }
+
+  if (isObject(bugs)) {
+    const obj = bugs as { url?: string; email?: string }
+    const result: NormalizedBugsEntry[] = []
+
+    if (obj.url) {
+      result.push({ type: 'link', url: obj.url })
+    }
+    if (obj.email) {
+      result.push({ type: 'email', email: obj.email })
+    }
+
+    return result.length > 0 ? result : undefined
+  }
+}
+
 export type Manifest = {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
@@ -572,6 +630,7 @@ export const normalizeManifest = (
   if (
     manifest.funding === undefined &&
     manifest.contributors === undefined &&
+    manifest.bugs === undefined &&
     !('maintainers' in manifest)
   ) {
     return manifest
@@ -582,12 +641,14 @@ export const normalizeManifest = (
     manifest.contributors,
     (manifest as ManifestRegistry).maintainers,
   )
+  const normalizedBugs = normalizeBugs(manifest.bugs)
 
   // Create result with normalized data
   const result: Manifest = {
     ...manifest,
     funding: normalizedFunding as Funding,
     contributors: normalizedContributors,
+    bugs: normalizedBugs as Bugs,
   }
 
   // Remove maintainers field if it exists in the raw manifest
