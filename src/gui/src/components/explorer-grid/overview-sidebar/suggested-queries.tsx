@@ -66,7 +66,7 @@ export const SuggestedQueries = ({
   return (
     <div
       className={cn(
-        'my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-lg border-[1px] border-dashed border-muted bg-muted-foreground/5 p-3',
+        'my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed border-muted bg-white p-3 dark:bg-muted-foreground/5',
         className,
       )}>
       <div className="flex w-full items-center justify-between">
@@ -111,7 +111,7 @@ export const SuggestedQueries = ({
                   <div
                     role="button"
                     onClick={() => runQuery(query.query)}
-                    className="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-sm border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50">
+                    className="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-lg border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50">
                     <Search
                       size={16}
                       className="duration-250 text-muted-foreground transition-colors group-hover:text-foreground"

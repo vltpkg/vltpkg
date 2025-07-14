@@ -100,6 +100,16 @@ vi.mock('@/components/navigation/crumb-nav.tsx', () => ({
   CrumbNav: 'gui-crumb-nav',
 }))
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
+  () => ({
+    useFocusState: vi.fn(() => ({
+      focused: false,
+      setFocused: vi.fn(),
+    })),
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

@@ -14,7 +14,7 @@ exports[`SideItem clicks on a workspace item change the query 1`] = `
   >
     <gui-card
       role="article"
-      classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+      classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
         <button
@@ -57,7 +57,7 @@ exports[`SideItem render as aliased dependency 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -109,7 +109,7 @@ exports[`SideItem render as dependency 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -161,7 +161,7 @@ exports[`SideItem render as dependency with long name 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -213,7 +213,7 @@ exports[`SideItem render as dependent 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -265,7 +265,7 @@ exports[`SideItem render as git dependency 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -317,7 +317,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -378,7 +378,7 @@ exports[`SideItem render as parent 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors border-muted hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors border-muted hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -430,7 +430,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <div class="flex items-center gap-2">
@@ -489,7 +489,7 @@ exports[`SideItem render as workspace item 1`] = `
     >
       <gui-card
         role="article"
-        classname="group relative z-[10] cursor-default transition-colors hover:border-muted hover:bg-card-accent"
+        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
       >
         <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
           <button
