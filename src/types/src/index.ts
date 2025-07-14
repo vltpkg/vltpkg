@@ -258,17 +258,23 @@ export type Bugs =
       email?: string
     }
 
-/** Normalized bugs entry - always an object with type and url/email */
+/**
+ * Normalized bugs entry - always an object with type and url/email
+ */
 export type NormalizedBugsEntry = {
   type?: 'email' | 'link'
   url?: string
   email?: string
 }
 
-/** Normalized bugs - always an array of objects */
+/**
+ * Normalized bugs - always an array of objects
+ */
 export type NormalizedBugs = NormalizedBugsEntry[]
 
-/** Normalize bugs information to a consistent format. */
+/**
+ * Normalize bugs information to a {@link NormalizedBugs} consistent format.
+ */
 export const normalizeBugs = (
   bugs: unknown,
 ): NormalizedBugs | undefined => {
@@ -282,6 +288,8 @@ export const normalizeBugs = (
       new URL(bugs)
       return [{ type: 'link', url: bugs }]
     } catch {
+      // TODO: need a more robust email validation, likely
+      // to be replaced with valibot / zod
       // If URL parsing fails, check if it's a valid email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (emailRegex.test(bugs)) {
@@ -306,8 +314,6 @@ export const normalizeBugs = (
 
     return result.length > 0 ? result : undefined
   }
-
-  return undefined
 }
 
 export type Manifest = {
