@@ -7,16 +7,18 @@ exports[`ItemHeader renders with a package score 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -54,7 +56,7 @@ exports[`ItemHeader renders with a package score 1`] = `
           </gui-scroll-bar>
         </gui-scroll-area>
       </div>
-      <div class="pb-3 pr-6 pt-4">
+      <div class="pr-6">
         <div class="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-colors after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
           <gui-progress-circle
             value="80"
@@ -71,7 +73,7 @@ exports[`ItemHeader renders with a package score 1`] = `
           </gui-progress-circle>
           <div class="flex flex-col">
             <p class="text-sm font-semibold text-neutral-600 dark:text-neutral-300">
-              Package Score
+              Package score
             </p>
             <p class="font-mono text-xs font-medium tabular-nums text-neutral-400">
               80/100
@@ -81,11 +83,11 @@ exports[`ItemHeader renders with a package score 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >
@@ -121,16 +123,18 @@ exports[`ItemHeader renders with a version information 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -170,11 +174,11 @@ exports[`ItemHeader renders with a version information 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >
@@ -206,7 +210,7 @@ exports[`ItemHeader renders with a version information 1`] = `
     </gui-data-badge>
   </div>
   <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
-    <gui-scroll-area classname="relative overflow-hidden border-b-[1px] border-muted py-3 w-full">
+    <gui-scroll-area classname="relative overflow-hidden py-3 border-b-[1px] border-muted w-full">
       <div class="pointer-events-none absolute right-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-l from-card">
       </div>
       <div class="pointer-events-none absolute left-0 top-0 z-[100] h-full w-[24px] bg-gradient-to-r from-card">
@@ -251,16 +255,18 @@ exports[`ItemHeader renders with custom registry item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -306,11 +312,11 @@ exports[`ItemHeader renders with custom registry item 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >
@@ -346,16 +352,18 @@ exports[`ItemHeader renders with default git host item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -400,11 +408,11 @@ exports[`ItemHeader renders with default git host item 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >
@@ -440,16 +448,18 @@ exports[`ItemHeader renders with default item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -489,11 +499,11 @@ exports[`ItemHeader renders with default item 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >
@@ -529,16 +539,18 @@ exports[`ItemHeader renders with insights 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -578,11 +590,11 @@ exports[`ItemHeader renders with insights 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >
@@ -618,16 +630,18 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex w-full justify-between">
-      <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-4">
-        <gui-avatar classname="aspect-square size-[3.875rem]">
+    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    </div>
+    <div class="flex w-full justify-between py-4">
+      <div class="flex gap-4 overflow-hidden pl-6">
+        <gui-avatar classname="aspect-square size-16">
           <gui-avatar-image
-            classname="aspect-square size-[3.875rem] rounded-md border-[1px] bg-secondary object-cover"
+            classname="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
             src="https://example.com/favicon.png"
             alt="Example Favicon"
           >
           </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-[3.875rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <gui-avatar-fallback classname="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
             <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
@@ -673,11 +687,11 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
       </div>
     </div>
   </div>
-  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+  <div class="flex h-10 w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
       <gui-avatar>
         <gui-avatar-image
-          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          classname="size-5 rounded-sm border-[1px] border-border"
           src="https://example.com/avatar.png"
           alt="John Doe"
         >

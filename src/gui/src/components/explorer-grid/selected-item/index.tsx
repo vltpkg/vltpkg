@@ -7,6 +7,10 @@ import { GridHeader } from '@/components/explorer-grid/header.tsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
 import { OverviewSidebar } from '@/components/explorer-grid/overview-sidebar/index.tsx'
 import { updateDependentsItem } from '@/lib/update-dependents-item.ts'
+import { FocusButton } from '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx'
+import { FocusedView } from '@/components/explorer-grid/selected-item/focused-view/index.tsx'
+import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { QueryResponseNode } from '@vltpkg/query'
@@ -175,6 +179,8 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
     count,
     item.to,
   )
+  const { focused } = useFocusState()
+
   const workspaceClick =
     ({ item }: { item: GridItemData }) =>
     () => {
@@ -184,6 +190,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
       }
       return undefined
     }
+
   const dependencyClick = (item: GridItemData) => () => {
     const itemQuery = getItemQuery(item)
     if (itemQuery) {
@@ -203,40 +210,72 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
   }
 
   return (
-    <div className="grid w-full max-w-8xl grid-cols-8 gap-4 pb-8">
-      <div className="relative col-span-2">
-        <OverviewSidebar
-          dependencies={dependencies}
-          parentItem={parentItem}
-          workspaces={workspaces}
-          dependents={dependents}
-          onWorkspaceClick={workspaceClick}
-          onDependentClick={updateDependentsItem({
-            query,
-            updateQuery,
-          })}
-        />
-      </div>
-      <div className="col-span-4">
-        <GridHeader>Selected</GridHeader>
-        <div className="flex flex-col gap-6">
-          <Item
+    <>
+      <AnimatePresence initial={false} mode="wait">
+        {focused ?
+          <FocusedView
             item={item}
+            dependencies={dependencies}
+            onDependencyClick={dependencyClick}
+            uninstalledDependencies={uninstalledDependencies}
+            importerId={importerId}
             // This is necessary to force a re-render of the selected item
             key={`${item.id}-${item.name}-${stamp}`}
           />
-        </div>
-      </div>
-      <div className="col-span-2">
-        {dependencies.length > 0 || item.to?.importer ?
-          <DependencySideBar
-            dependencies={dependencies}
-            importerId={importerId}
-            onDependencyClick={dependencyClick}
-            uninstalledDependencies={uninstalledDependencies}
-          />
-        : ''}
-      </div>
-    </div>
+        : <motion.div
+            initial={{
+              opacity: 0,
+              filter: 'blur(2px)',
+            }}
+            animate={{
+              opacity: 1,
+              filter: 'blur(0px)',
+            }}
+            exit={{
+              opacity: 0,
+              filter: 'blur(2px)',
+            }}
+            transition={{ ease: 'easeInOut', duration: 0.25 }}
+            className="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4">
+            <div className="relative col-span-2">
+              <OverviewSidebar
+                dependencies={dependencies}
+                parentItem={parentItem}
+                workspaces={workspaces}
+                dependents={dependents}
+                onWorkspaceClick={workspaceClick}
+                onDependentClick={updateDependentsItem({
+                  query,
+                  updateQuery,
+                })}
+              />
+            </div>
+            <div className="col-span-4">
+              <div className="flex items-center justify-between">
+                <GridHeader>Selected</GridHeader>
+                <FocusButton />
+              </div>
+              <div className="flex flex-col gap-6">
+                <Item
+                  item={item}
+                  // This is necessary to force a re-render of the selected item
+                  key={`${item.id}-${item.name}-${stamp}`}
+                />
+              </div>
+            </div>
+            <div className="col-span-2">
+              {dependencies.length > 0 || item.to?.importer ?
+                <DependencySideBar
+                  dependencies={dependencies}
+                  importerId={importerId}
+                  onDependencyClick={dependencyClick}
+                  uninstalledDependencies={uninstalledDependencies}
+                />
+              : ''}
+            </div>
+          </motion.div>
+        }
+      </AnimatePresence>
+    </>
   )
 }

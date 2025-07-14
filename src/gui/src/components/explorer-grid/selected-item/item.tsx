@@ -18,20 +18,24 @@ import { useRef, useCallback } from 'react'
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
-export const Item = ({ item }: { item: GridItemData }) => {
+interface ItemProps {
+  item: GridItemData
+}
+
+export const Item = ({ item }: ItemProps) => {
   return (
     <SelectedItemProvider selectedItem={item}>
-      <div className="relative">
-        <Card className="relative border-muted">
+      <section className="relative">
+        <Card className="relative rounded-xl border-muted shadow-none">
           <ItemHeader />
           <SelectedItemTabs />
         </Card>
-      </div>
+      </section>
     </SelectedItemProvider>
   )
 }
 
-const SelectedItemTabs = () => {
+export const SelectedItemTabs = () => {
   const selectedItem = useSelectedItemStore(
     state => state.selectedItem,
   )

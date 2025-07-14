@@ -21,6 +21,7 @@ export type Action = {
   updateSpecOptions: (specOptions: State['specOptions']) => void
   updateStamp: () => void
   updateTheme: (theme: State['theme']) => void
+  updateFocused: (focused: State['focused']) => void
   reset: () => void
   saveQuery: (item: SavedQuery) => void
   updateSavedQuery: (savedQuery: SavedQuery) => void
@@ -130,6 +131,10 @@ export type State = {
    * Store the current theme value.
    */
   theme: 'light' | 'dark'
+  /**
+   * Whether the selected item is in focused view mode.
+   */
+  focused: boolean
   /**
    * Saved queries in localStorage.
    */

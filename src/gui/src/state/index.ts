@@ -71,6 +71,9 @@ const initialState: State = {
   specOptions: undefined,
   stamp: newStamp(),
   theme: localStorage.getItem('vite-ui-theme') as State['theme'],
+  focused: JSON.parse(
+    localStorage.getItem('focused') ?? 'false',
+  ) as boolean,
   savedQueries: JSON.parse(
     localStorage.getItem('saved-queries') || '[]',
   ) as State['savedQueries'],
@@ -118,6 +121,10 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ specOptions })),
     updateStamp: () => set(() => ({ stamp: newStamp() })),
     updateTheme: (theme: State['theme']) => set(() => ({ theme })),
+    updateFocused: (focused: State['focused']) => {
+      set(() => ({ focused }))
+      localStorage.setItem('focused', JSON.stringify(focused))
+    },
     reset: () => set(initialState),
     updateSavedQuery: (updatedItem: SavedQuery) => {
       const savedQueries = get().savedQueries ?? []

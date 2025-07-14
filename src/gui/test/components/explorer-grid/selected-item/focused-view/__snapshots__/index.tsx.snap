@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FocusedView renders default 1`] = `
+
+<gui-selected-item-provider selecteditem="[object Object]">
+  <section
+    class="relative pb-4"
+    style="opacity: 0; filter: blur(2px);"
+  >
+    <gui-item-header classname="pb-0">
+      <gui-focused-button>
+      </gui-focused-button>
+    </gui-item-header>
+    <div class="mx-6 grid grid-cols-12">
+      <div class="col-span-full h-fit rounded-xl border-[1px] border-muted bg-white pt-2 dark:bg-neutral-900 lg:col-span-9">
+        <gui-selected-item-tabs>
+        </gui-selected-item-tabs>
+      </div>
+      <gui-focused-aside
+        dependencies
+        uninstalleddependencies
+      >
+      </gui-focused-aside>
+    </div>
+  </section>
+</gui-selected-item-provider>
+
+`;

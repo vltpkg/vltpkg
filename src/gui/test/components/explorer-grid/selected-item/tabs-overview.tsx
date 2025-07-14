@@ -92,6 +92,16 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
+  () => ({
+    useFocusState: () => ({
+      isFocused: false,
+      setIsFocused: vi.fn(),
+    }),
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

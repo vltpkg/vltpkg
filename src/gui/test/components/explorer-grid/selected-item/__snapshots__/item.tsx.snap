@@ -3,8 +3,8 @@
 exports[`Item renders connection lines 1`] = `
 
 <gui-selected-item-provider selecteditem="[object Object]">
-  <div class="relative">
-    <gui-card classname="relative border-muted">
+  <section class="relative">
+    <gui-card classname="relative rounded-xl border-muted shadow-none">
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
@@ -31,7 +31,7 @@ exports[`Item renders connection lines 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-  </div>
+  </section>
 </gui-selected-item-provider>
 
 `;
@@ -39,8 +39,8 @@ exports[`Item renders connection lines 1`] = `
 exports[`Item renders with the default structure 1`] = `
 
 <gui-selected-item-provider selecteditem="[object Object]">
-  <div class="relative">
-    <gui-card classname="relative border-muted">
+  <section class="relative">
+    <gui-card classname="relative rounded-xl border-muted shadow-none">
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
@@ -67,7 +67,7 @@ exports[`Item renders with the default structure 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-  </div>
+  </section>
 </gui-selected-item-provider>
 
 `;

@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FocusButton renders default 1`] = `
+
+<gui-button
+  classname="duration-250 relative inline-flex h-7 w-24 items-center gap-1.5 border-[1px] border-muted bg-white px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/30 hover:bg-white/80 dark:bg-neutral-900 dark:hover:bg-neutral-900/80"
+  variant="default"
+>
+  <span>
+    Unfocus
+  </span>
+  <gui-minimize-icon>
+  </gui-minimize-icon>
+</gui-button>
+
+`;
