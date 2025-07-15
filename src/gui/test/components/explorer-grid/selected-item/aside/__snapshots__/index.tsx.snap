@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideOverview renders with the correct structure 1`] = `
+
+<gui-aside>
+  <gui-aside-repo>
+  </gui-aside-repo>
+  <gui-aside-funding>
+  </gui-aside-funding>
+  <gui-aside-bugs>
+  </gui-aside-bugs>
+  <gui-aside-metadata>
+  </gui-aside-metadata>
+</gui-aside>
+
+`;

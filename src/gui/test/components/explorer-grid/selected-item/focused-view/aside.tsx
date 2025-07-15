@@ -14,16 +14,16 @@ vi.mock('react-router', () => ({
 }))
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-overview.tsx',
+  '@/components/explorer-grid/dependency-sidebar/index.tsx',
   () => ({
-    TabContentAside: 'gui-tab-content-aside',
+    DependencySideBar: 'gui-dependency-sidebar',
   }),
 )
 
 vi.mock(
-  '@/components/explorer-grid/dependency-sidebar/index.tsx',
+  '@/components/explorer-grid/selected-item/aside/index.tsx',
   () => ({
-    DependencySideBar: 'gui-dependency-sidebar',
+    AsideOverview: 'gui-aside-overview',
   }),
 )
 
