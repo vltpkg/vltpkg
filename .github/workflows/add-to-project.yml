@@ -1,0 +1,18 @@
+name: Add Issue/PR to Project
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  add_to_project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add to GitHub Project
+        uses: actions/add-to-project@v1
+        with:
+          project-url: https://github.com/orgs/vltpkg/projects/3
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_PAT }}
