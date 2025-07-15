@@ -29,6 +29,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { formatDownloadSize } from '@/utils/format-download-size.ts'
@@ -324,12 +325,14 @@ const VersionItem = memo(
                       addSuffix: true,
                     })}
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {format(
-                      publishedDate,
-                      'MMMM do, yyyy | HH:mm:ss',
-                    )}
-                  </TooltipContent>
+                  <TooltipPortal>
+                    <TooltipContent>
+                      {format(
+                        publishedDate,
+                        'MMMM do, yyyy | HH:mm:ss',
+                      )}
+                    </TooltipContent>
+                  </TooltipPortal>
                 </Tooltip>
               </TooltipProvider>
             </>
@@ -369,9 +372,11 @@ const VersionItem = memo(
                     {publishedAuthor?.name}
                   </p>
                 </TooltipTrigger>
-                <TooltipContent>
-                  {publishedAuthor?.name}
-                </TooltipContent>
+                <TooltipPortal>
+                  <TooltipContent>
+                    {publishedAuthor?.name}
+                  </TooltipContent>
+                </TooltipPortal>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -445,9 +450,11 @@ const DownloadGraph = () => {
                     <CircleHelp strokeWidth={2} size={16} />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent className="font-normal">
-                  Downloads across all package versions
-                </TooltipContent>
+                <TooltipPortal>
+                  <TooltipContent className="font-normal">
+                    Downloads across all package versions
+                  </TooltipContent>
+                </TooltipPortal>
               </Tooltip>
             </h3>
           </TooltipProvider>
