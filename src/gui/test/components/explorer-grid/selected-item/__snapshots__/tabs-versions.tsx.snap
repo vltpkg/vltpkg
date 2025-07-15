@@ -41,9 +41,11 @@ exports[`VersionsTabContent filters newer versions 1`] = `
                     </gui-circle-help-icon>
                   </span>
                 </gui-tooltip-trigger>
-                <gui-tooltip-content classname="font-normal">
-                  Downloads across all package versions
-                </gui-tooltip-content>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content classname="font-normal">
+                    Downloads across all package versions
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
               </gui-tooltip>
             </h3>
           </gui-tooltip-provider>
@@ -222,9 +224,11 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
                     </gui-circle-help-icon>
                   </span>
                 </gui-tooltip-trigger>
-                <gui-tooltip-content classname="font-normal">
-                  Downloads across all package versions
-                </gui-tooltip-content>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content classname="font-normal">
+                    Downloads across all package versions
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
               </gui-tooltip>
             </h3>
           </gui-tooltip-provider>
