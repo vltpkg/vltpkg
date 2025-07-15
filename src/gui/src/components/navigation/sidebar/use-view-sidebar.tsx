@@ -11,8 +11,13 @@ export const useViewSidebar = () => {
     return pathname.includes('/explore')
   }
 
+  const isOnSettingsView = () => {
+    return pathname.includes('/settings')
+  }
+
   return {
     isOnHelpView,
     isOnExploreView,
+    isOnSettingsView,
   }
 }
