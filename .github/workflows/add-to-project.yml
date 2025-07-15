@@ -14,5 +14,4 @@ jobs:
         uses: actions/add-to-project@v1.0.2
         with:
           project-url: https://github.com/orgs/vltpkg/projects/3
-        env:
-          GITHUB_TOKEN: ${{ secrets.PROJECT_PAT }}
+          github-token: ${{ secrets.PROJECT_PAT }}
