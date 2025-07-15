@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add to GitHub Project
-        uses: actions/add-to-project@1
+        uses: actions/add-to-project@v1.0.2
         with:
           project-url: https://github.com/orgs/vltpkg/projects/3
         env:
