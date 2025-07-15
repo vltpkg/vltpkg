@@ -136,7 +136,7 @@ const getItemsData = (
   const item = items[0]
   if (item && items.length === 1) {
     item.title = item.to?.name || 'Missing package'
-    item.version = item.to?.version ? `v${item.to.version}` : ''
+    item.version = item.to?.version || ''
     item.breadcrumbs = getBreadcrumbs(query)
   }
 

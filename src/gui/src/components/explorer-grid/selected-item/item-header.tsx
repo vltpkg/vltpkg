@@ -460,7 +460,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
               <h1 className="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 {selectedItem.title}
                 <span className="ml-2 font-courier text-sm text-muted-foreground">
-                  {selectedItem.version}
+                  v{selectedItem.version}
                 </span>
               </h1>
               <PackageNewerVersionsAvailable />
