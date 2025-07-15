@@ -248,6 +248,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                   query,
                   updateQuery,
                 })}
+                selectedItem={item}
               />
             </div>
             <div className="col-span-4">
