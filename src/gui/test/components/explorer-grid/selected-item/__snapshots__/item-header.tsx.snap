@@ -30,7 +30,7 @@ exports[`ItemHeader renders with a package score 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
@@ -146,7 +146,7 @@ exports[`ItemHeader renders with a version information 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
@@ -278,7 +278,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
@@ -375,7 +375,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
@@ -471,7 +471,7 @@ exports[`ItemHeader renders with default item 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
@@ -562,7 +562,7 @@ exports[`ItemHeader renders with insights 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
@@ -653,7 +653,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
                 <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                   item
                   <span class="ml-2 font-courier text-sm text-muted-foreground">
-                    1.0.0
+                    v1.0.0
                   </span>
                 </h1>
                 <gui-tooltip-provider>
