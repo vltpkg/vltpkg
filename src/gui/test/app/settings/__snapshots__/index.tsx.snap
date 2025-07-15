@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SettingsView renders default 1`] = `
+
+<gui-setting-wrapper>
+  <gui-setting-section title="General">
+    <gui-setting-field
+      name="Input option"
+      description="This is an input option"
+      field="[object Object]"
+    >
+    </gui-setting-field>
+    <gui-setting-split>
+    </gui-setting-split>
+    <gui-setting-field
+      name="Dropdown option"
+      description="This is a dropdown option"
+      field="[object Object]"
+    >
+    </gui-setting-field>
+    <gui-setting-field
+      name="Dropdown option"
+      description="This is a dropdown option"
+      field="[object Object]"
+    >
+    </gui-setting-field>
+    <gui-setting-split>
+    </gui-setting-split>
+    <gui-setting-field
+      name="Toggle option"
+      description="This is a toggle option"
+      field="[object Object]"
+    >
+    </gui-setting-field>
+  </gui-setting-section>
+</gui-setting-wrapper>
+
+`;
