@@ -15,6 +15,7 @@ import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.ts
 /* sidebar nav menus */
 import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.tsx'
 import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.tsx'
+import { SidebarSettingsNav } from '@/components/navigation/sidebar/sidebar-settings-nav.tsx'
 
 import { footerMenuItems } from '@/components/navigation/sidebar/menu.ts'
 
@@ -44,6 +45,7 @@ export const AppSidebar = () => {
       variant="inset">
       <SidebarContent>
         <SidebarMainNav />
+        <SidebarSettingsNav />
         <SidebarQueryNav />
       </SidebarContent>
       <SidebarFooter className="mb-[0.875px]">
