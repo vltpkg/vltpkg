@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideFunding renders nothing when funding is empty 1`] = `
+
+
+`;
+
+exports[`AsideFunding renders with funding data 1`] = `
+
+<gui-aside-section>
+  <gui-aside-header>
+    Funding
+  </gui-aside-header>
+  <gui-aside-item href="https://www.acme.com/funding1">
+    Website
+  </gui-aside-item>
+  <gui-aside-item href="https://www.acme.com/funding2">
+    Website
+  </gui-aside-item>
+</gui-aside-section>
+
+`;

@@ -55,7 +55,7 @@ const dataBadgeVariants = tv({
   },
 })
 
-interface DataBadgeProps
+export interface DataBadgeProps
   extends React.ComponentProps<'div'>,
     VariantProps<typeof dataBadgeVariants> {
   classNames?: {
