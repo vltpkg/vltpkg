@@ -29,6 +29,7 @@ import {
   MotionTabsContent,
   tabMotion,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
+import { getKnownHostname } from '@/utils/get-known-hostname.ts'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -70,7 +71,7 @@ export const FundingTabContent = () => {
   const fundingTableData = useMemo(() => {
     return Object.entries(depFunding ?? {}).map(([url, funding]) => ({
       count: funding.count,
-      type: funding.type,
+      type: getKnownHostname(funding.url) ?? 'Unknown',
       origin: url,
     }))
   }, [depFunding])
@@ -130,7 +131,7 @@ export const FundingTabContent = () => {
         accessorKey: 'origin',
         header: ({ column }) => (
           <SortingHeader
-            header="Type"
+            header="Origin"
             column={column}
             className={tableClassNames.cell}
           />
@@ -226,6 +227,7 @@ export const FundingTabContent = () => {
                         key={cell.id}
                         className={cn(
                           tableClassNames.cell,
+                          'normal-case',
                           'first-of-type:pl-8 last-of-type:pr-8',
                         )}
                         style={{
