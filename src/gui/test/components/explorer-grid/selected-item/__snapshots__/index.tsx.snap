@@ -11,6 +11,7 @@ exports[`SelectedItem renders default 1`] = `
       dependencies
       workspaces
       dependents
+      selecteditem="[object Object]"
     >
     </gui-overview-sidebar>
   </div>

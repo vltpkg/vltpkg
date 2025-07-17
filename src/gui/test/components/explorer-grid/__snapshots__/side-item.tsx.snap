@@ -1,94 +1,73 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SideItem clicks on a workspace item change the query 1`] = `
-
-<div class="group relative">
-  <div
-    style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-    class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
-  >
-  </div>
-  <span
-    data-state="closed"
-    class="group/side-item relative"
-  >
-    <gui-card
-      role="article"
-      classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-    >
-      <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-        <button
-          data-state="closed"
-          class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-        >
-          workspace-item
-        </button>
-        <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-          v1.0.0
-        </span>
-        <div class="absolute inset-x-0 -bottom-3 px-2.5">
-          <div class="relative flex w-full items-center justify-end">
-            <div class="flex flex-wrap items-center gap-1">
-              <gui-relation-badge relation="prod">
-                prod
-              </gui-relation-badge>
-            </div>
-          </div>
-        </div>
-      </gui-card-header>
-    </gui-card>
-  </span>
-</div>
-
-`;
-
 exports[`SideItem render as aliased dependency 1`] = `
 
 <div>
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="npm:item@^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            aliased-item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="npm:item@^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  aliased-item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    aliased-item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -100,47 +79,68 @@ exports[`SideItem render as dependency 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="peer">
-                  peer
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="peer">
+                    peer
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -152,47 +152,68 @@ exports[`SideItem render as dependency with long name 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="peer">
-                  peer
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="peer">
+                    peer
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -204,47 +225,68 @@ exports[`SideItem render as dependent 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -256,47 +298,68 @@ exports[`SideItem render as git dependency 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="github:vltpkg/item"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="github:vltpkg/item"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -308,56 +371,77 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
-                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
-                  4 more
-                </span>
-              </div>
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    4 more
+                  </span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
-    <div class="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
-    </div>
-    <div class="duration-250 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30">
-    </div>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+      <div class="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
+      </div>
+      <div class="duration-250 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30">
+      </div>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -369,47 +453,96 @@ exports[`SideItem render as parent 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none parent"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors border-muted hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors border-muted hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 py-2 px-3">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
+          </gui-card-header>
+        </gui-card>
+        <gui-card classname="mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] bg-secondary/50 px-3 py-1.5 shadow-none dark:bg-neutral-950">
+          <div class="flex w-full items-baseline justify-between gap-2">
+            <gui-tooltip-provider delayduration="150">
+              <gui-tooltip>
+                <gui-tooltip-trigger classname="grow cursor-default overflow-hidden truncate text-left text-xs font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider delayduration="150">
+              <gui-tooltip>
+                <gui-tooltip-trigger classname="w-full max-w-24 cursor-default overflow-hidden truncate text-right font-courier text-xs text-muted-foreground">
+                  ^1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="end">
+                    ^1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
           </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -421,54 +554,75 @@ exports[`SideItem render as two-stacked dependent 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <div class="flex items-center gap-2">
-            <gui-data-badge
-              variant="mono"
-              classnames="[object Object]"
-              content="^1.0.0"
-            >
-            </gui-data-badge>
-          </div>
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
-                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
-                  1 more
-                </span>
-              </div>
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <div class="flex items-center gap-2">
+              <gui-data-badge
+                variant="mono"
+                classnames="[object Object]"
+                content="^1.0.0"
+              >
+              </gui-data-badge>
+            </div>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    1 more
+                  </span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
-    <div class="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
-    </div>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+      <div class="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50">
+      </div>
+    </gui-context-menu>
   </div>
 </div>
 
@@ -480,39 +634,60 @@ exports[`SideItem render as workspace item 1`] = `
   <div class="group relative">
     <div
       style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
     >
     </div>
-    <span
-      data-state="closed"
-      class="group/side-item relative"
-    >
-      <gui-card
-        role="article"
-        classname="group relative z-[10] cursor-default rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
-      >
-        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-          <button
-            data-state="closed"
-            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
-          >
-            workspace-item
-          </button>
-          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
-            v1.0.0
-          </span>
-          <div class="absolute inset-x-0 -bottom-3 px-2.5">
-            <div class="relative flex w-full items-center justify-end">
-              <div class="flex flex-wrap items-center gap-1">
-                <gui-relation-badge relation="prod">
-                  prod
-                </gui-relation-badge>
+    <gui-context-menu>
+      <gui-context-menu-trigger classname="group/side-item relative">
+        <gui-card
+          role="article"
+          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+        >
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                  workspace-item
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    workspace-item
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <gui-tooltip-provider>
+              <gui-tooltip delayduration="150">
+                <gui-tooltip-trigger classname="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                  v1.0.0
+                </gui-tooltip-trigger>
+                <gui-tooltip-portal>
+                  <gui-tooltip-content align="start">
+                    v1.0.0
+                  </gui-tooltip-content>
+                </gui-tooltip-portal>
+              </gui-tooltip>
+            </gui-tooltip-provider>
+            <div class="absolute inset-x-0 -bottom-3 px-2.5">
+              <div class="relative flex w-full items-center justify-end">
+                <div class="flex flex-wrap items-center gap-1">
+                  <gui-relation-badge relation="prod">
+                    prod
+                  </gui-relation-badge>
+                </div>
               </div>
             </div>
-          </div>
-        </gui-card-header>
-      </gui-card>
-    </span>
+          </gui-card-header>
+        </gui-card>
+      </gui-context-menu-trigger>
+      <gui-context-menu-content>
+        <gui-context-menu-item disabled="true">
+          <gui-package-minus>
+          </gui-package-minus>
+          Remove dependency
+        </gui-context-menu-item>
+      </gui-context-menu-content>
+    </gui-context-menu>
   </div>
 </div>
 

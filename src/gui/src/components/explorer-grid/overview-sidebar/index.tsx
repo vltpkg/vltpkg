@@ -30,6 +30,7 @@ type OverviewSidebarProps = {
   onDependentClick: (
     opts: OnDependentClickOptions,
   ) => (e: React.MouseEvent | MouseEvent) => void
+  selectedItem?: GridItemData
 }
 
 export const OverviewSidebar = ({
@@ -39,6 +40,7 @@ export const OverviewSidebar = ({
   dependents,
   onWorkspaceClick,
   onDependentClick,
+  selectedItem,
 }: OverviewSidebarProps) => {
   return (
     <>
@@ -47,6 +49,7 @@ export const OverviewSidebar = ({
         header="Parent"
         items={parentItem}
         onClick={onDependentClick}
+        selectedItem={selectedItem}
       />
       <OverviewSection
         header="Workspaces"
@@ -80,6 +83,7 @@ type OverviewSectionProps = {
   onClick:
     | OverviewSidebarProps['onWorkspaceClick']
     | OverviewSidebarProps['onDependentClick']
+  selectedItem?: GridItemData
 }
 
 const OverviewSection = ({
@@ -89,6 +93,7 @@ const OverviewSection = ({
   isWorkspace = false,
   highlight = false,
   onClick,
+  selectedItem,
 }: OverviewSectionProps) => {
   if (!items) return null
   if (Array.isArray(items) && items.length <= 0) return null
@@ -110,6 +115,7 @@ const OverviewSection = ({
         </div>
       : <SideItem
           parent={isParent}
+          selectedItem={selectedItem}
           item={items}
           highlight={highlight}
           onSelect={onClick({ item: items, isParent })}

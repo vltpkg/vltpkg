@@ -13,20 +13,26 @@ vi.mock('lucide-react', async () => ({
 
 vi.mock('@/components/ui/card.tsx', () => ({
   Card: 'gui-card',
-  CardDescription: 'gui-card-description',
   CardHeader: 'gui-card-header',
-  CardTitle: 'gui-card-title',
 }))
 
 vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
-vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
-  DropdownMenu: 'gui-dropdown-menu',
-  DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
-  DropdownMenuContent: 'gui-dropdown-menu-content',
-  DropdownMenuItem: 'gui-dropdown-menu-item',
+vi.mock('@/components/ui/context-menu.tsx', () => ({
+  ContextMenu: 'gui-context-menu',
+  ContextMenuTrigger: 'gui-context-menu-trigger',
+  ContextMenuContent: 'gui-context-menu-content',
+  ContextMenuItem: 'gui-context-menu-item',
+}))
+
+vi.mock('@/components/ui/tooltip.tsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipPortal: 'gui-tooltip-portal',
 }))
 
 vi.mock('@/components/ui/relation-badge.tsx', () => ({
@@ -72,12 +78,15 @@ test('SideItem render as parent', async () => {
     size: 1,
     spec: Spec.parse('item', '^1.0.0'),
   } satisfies GridItemData
+
   render(
     <SideItem
       item={item}
+      parent={true}
       dependencies={false}
       highlight={true}
       onSelect={() => {}}
+      selectedItem={item}
     />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
@@ -212,7 +221,7 @@ test('SideItem render as workspace item', async () => {
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-test('SideItem clicks on a workspace item change the query', () => {
+test('SideItem clicks on a workspace item calls onSelect', () => {
   const mockOnWorkspaceClick = vi.fn()
 
   const item = {
@@ -226,21 +235,17 @@ test('SideItem clicks on a workspace item change the query', () => {
     spec: Spec.parse('workspace-item', '^1.0.0'),
   } satisfies GridItemData
 
-  const Container = () => {
-    return (
-      <SideItem
-        item={item}
-        dependencies={false}
-        isWorkspace={true}
-        onSelect={() => mockOnWorkspaceClick(item)}
-      />
-    )
-  }
+  const { getByRole } = render(
+    <SideItem
+      item={item}
+      dependencies={false}
+      isWorkspace={true}
+      onSelect={() => mockOnWorkspaceClick(item)}
+    />,
+  )
 
-  const { container, getByText } = render(<Container />)
-  const workspaceItem = getByText('workspace-item')
-  fireEvent.click(workspaceItem)
+  const workspaceCard = getByRole('article')
+  fireEvent.click(workspaceCard)
 
-  expect(container.innerHTML).toMatchSnapshot()
   expect(mockOnWorkspaceClick).toHaveBeenCalledWith(item)
 })
