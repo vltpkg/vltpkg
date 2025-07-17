@@ -23,6 +23,7 @@ import {
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
 import { cn } from '@/lib/utils.ts'
 import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
+import { getKnownHostname } from '@/utils/get-known-hostname.ts'
 
 export const OverviewTabButton = () => {
   return (
@@ -33,10 +34,6 @@ export const OverviewTabButton = () => {
       Overview
     </TabsTrigger>
   )
-}
-
-const getSiteName = (url: string): string | undefined => {
-  return new URL(url).hostname.replace(/^www\./, '').split('.')[0]
 }
 
 interface AsideEmptyStateProps {
@@ -109,7 +106,7 @@ export const TabContentAside = ({
               <span className="flex items-center justify-center">
                 <Globe size={16} className="text-muted-foreground" />
               </span>
-              <span>{getSiteName(manifest.homepage)}</span>
+              <span>Website</span>
             </Link>
           )}
           {manifest?.repository && (
@@ -219,7 +216,7 @@ export const TabContentAside = ({
                     <span className="flex items-center justify-center text-muted-foreground">
                       <LucideLink size={16} />
                     </span>
-                    <span>{getSiteName(url)}</span>
+                    <span>{getKnownHostname(url) ?? 'Website'}</span>
                   </Link>
                 )
               })

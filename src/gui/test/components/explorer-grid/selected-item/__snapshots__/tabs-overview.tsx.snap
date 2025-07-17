@@ -104,7 +104,7 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
             </gui-globe-icon>
           </span>
           <span>
-            acme
+            Website
           </span>
         </gui-link>
         <gui-link
@@ -204,7 +204,7 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
             </gui-link-icon>
           </span>
           <span>
-            acme
+            Website
           </span>
         </gui-link>
       </div>
