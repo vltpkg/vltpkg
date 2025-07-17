@@ -25,6 +25,8 @@ import { cn } from '@/lib/utils.ts'
 import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 import { getKnownHostname } from '@/utils/get-known-hostname.ts'
 
+import type { NormalizedKeywords } from '@vltpkg/types'
+
 export const OverviewTabButton = () => {
   return (
     <TabsTrigger
@@ -232,13 +234,9 @@ export const OverviewTabContent = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
   const { focused } = useFocusState()
 
-  const keywords =
-    manifest?.keywords ?
-      Array.isArray(manifest.keywords) ? manifest.keywords
-      : typeof manifest.keywords === 'string' ?
-        (manifest.keywords as string).split(', ')
-      : []
-    : []
+  const keywords = manifest?.keywords as
+    | NormalizedKeywords
+    | undefined
 
   return (
     <MotionTabsContent
@@ -259,7 +257,7 @@ export const OverviewTabContent = () => {
 
         <ContributorList />
 
-        {manifest?.keywords && (
+        {keywords && (
           <div className="flex grow flex-col justify-end gap-2 px-6 pb-4">
             <h4 className="text-sm font-medium capitalize text-muted-foreground">
               keywords
