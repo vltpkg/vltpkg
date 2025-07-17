@@ -1,0 +1,344 @@
+---
+title: Using Catalogs for Dependency Management
+sidebar:
+  label: Catalogs
+  order: 5
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The vlt client provides powerful catalog support for managing
+dependency versions across your projects and workspaces. This feature,
+heavily inspired by pnpm's implementation, allows you to define
+centralized dependency specifications that can be reused throughout
+your project, reducing duplication and simplifying version
+orchestration across shared dependencies.
+
+## What are Catalogs?
+
+Catalogs are centralized repositories of dependency specifications
+defined in your `vlt.json` file. They allow you to:
+
+- **Centralize version management**: Define dependency versions once
+  and reuse them across multiple workspaces
+- **Reduce duplication**: Eliminate the need to specify the same
+  version ranges in multiple `package.json` files
+- **Simplify updates**: Update a dependency version in one place and
+  have it apply everywhere it's used
+- **Maintain consistency**: Ensure all workspaces use the same
+  versions of shared dependencies
+
+## Catalog Configuration
+
+Catalogs are configured in your project's `vlt.json` file using two
+main fields:
+
+### Default Catalog (`catalog`)
+
+The `catalog` field defines a default catalog of dependency
+specifications:
+
+<Code
+  code={JSON.stringify(
+    {
+      catalog: {
+        typescript: '^5.0.0',
+        eslint: '^8.0.0',
+        prettier: '^3.0.0',
+        '@types/node': '^20.0.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Named Catalogs (`catalogs`)
+
+The `catalogs` field allows you to define multiple named catalogs for
+different purposes:
+
+<Code
+  code={JSON.stringify(
+    {
+      catalogs: {
+        build: {
+          typescript: '^5.0.0',
+          rollup: '^4.0.0',
+          esbuild: '^0.19.0',
+        },
+        testing: {
+          vitest: '^1.0.0',
+          jest: '^29.0.0',
+          '@testing-library/react': '^14.0.0',
+        },
+        dev: {
+          eslint: '^8.0.0',
+          prettier: '^3.0.0',
+          husky: '^8.0.0',
+        },
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+You can combine both approaches in the same configuration:
+
+<Code
+  code={JSON.stringify(
+    {
+      catalog: {
+        typescript: '^5.0.0',
+        prettier: '^3.0.0',
+      },
+      catalogs: {
+        testing: {
+          vitest: '^1.0.0',
+          jest: '^29.0.0',
+        },
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+## Using the `catalog:` Protocol
+
+Once you've defined catalogs in your `vlt.json`, you can reference
+them in your `package.json` files using the `catalog:` protocol.
+
+### Default Catalog Reference
+
+To reference a dependency from the default catalog, use `catalog:`
+without specifying a catalog name:
+
+<Code
+  code={JSON.stringify(
+    {
+      name: 'my-package',
+      dependencies: {
+        typescript: 'catalog:',
+        prettier: 'catalog:',
+      },
+      devDependencies: {
+        '@types/node': 'catalog:',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+### Named Catalog Reference
+
+To reference a dependency from a named catalog, use
+`catalog:<catalog-name>`:
+
+<Code
+  code={JSON.stringify(
+    {
+      name: 'my-test-package',
+      devDependencies: {
+        vitest: 'catalog:testing',
+        jest: 'catalog:testing',
+        eslint: 'catalog:dev',
+        typescript: 'catalog:build',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+## Installation Examples
+
+### Installing from Catalogs
+
+You can install packages directly using the catalog protocol:
+
+<Code
+  code="$ vlt install typescript@catalog:"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="$ vlt install vitest@catalog:testing"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Adding Dependencies to Catalogs
+
+When you install a new dependency, you can add it to a catalog by
+first updating your `vlt.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      catalog: {
+        typescript: '^5.0.0',
+        prettier: '^3.0.0',
+        lodash: '^4.17.21',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Then reference it in your `package.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      dependencies: {
+        lodash: 'catalog:',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+## Real-World Example
+
+Here's how the vlt project itself uses catalogs in its `vlt.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: ['src/*', 'infra/*', 'www/*'],
+      catalog: {
+        '@eslint/js': '^9.28.0',
+        '@types/node': '^22.15.29',
+        eslint: '^9.28.0',
+        prettier: '^3.6.0',
+        typescript: '5.7.3',
+        tap: '^21.1.0',
+        tshy: '^3.0.2',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+And how it's used in workspace packages:
+
+<Code
+  code={JSON.stringify(
+    {
+      name: '@vltpkg/spec',
+      devDependencies: {
+        '@eslint/js': 'catalog:',
+        '@types/node': 'catalog:',
+        eslint: 'catalog:',
+        prettier: 'catalog:',
+        typescript: 'catalog:',
+        tap: 'catalog:',
+        tshy: 'catalog:',
+      },
+    },
+    null,
+    2,
+  )}
+  title="src/spec/package.json"
+  lang="json"
+/>
+
+## Advanced Usage
+
+### Catalog Chaining
+
+You can even chain catalog references with other protocols. For
+example, using catalog with named registries:
+
+<Code
+  code={JSON.stringify(
+    {
+      dependencies: {
+        'my-internal-package': 'internal:my-package@catalog:internal',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+Where your `vlt.json` might look like:
+
+<Code
+  code={JSON.stringify(
+    {
+      registries: {
+        internal: 'https://npm.internal.company.com',
+      },
+      catalogs: {
+        internal: {
+          'my-package': '^2.1.0',
+        },
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+## Best Practices
+
+1. **Group Related Dependencies**: Use named catalogs to group
+   dependencies by purpose (build tools, testing, etc.)
+
+2. **Use Semantic Versioning**: Define version ranges in catalogs
+   using semantic versioning principles
+
+3. **Keep Catalogs Updated**: Regularly review and update catalog
+   entries to maintain security and compatibility
+
+4. **Document Catalog Purpose**: Consider adding comments in your
+   `vlt.json` to document what each catalog is for
+
+5. **Start with Common Dependencies**: Begin by cataloging
+   dependencies that are used across multiple workspaces
+
+## Error Handling
+
+If you reference a catalog or dependency that doesn't exist, vlt will
+provide helpful error messages:
+
+- **Missing catalog**: "Named catalog not found"
+- **Missing dependency in catalog**: "Name not found in catalog"
+
+These errors include suggestions for valid options to help you correct
+the reference.
+
+## Migration from Other Package Managers
+
+If you're migrating from pnpm, the catalog syntax is largely
+compatible. Simply move your pnpm catalog definitions from
+`pnpm-workspace.yaml` to the `catalog` and `catalogs` fields in
+`vlt.json`.
