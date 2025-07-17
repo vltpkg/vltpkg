@@ -158,11 +158,11 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             </Card>
 
             {parent && (
-              <Card className="mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] bg-secondary/50 px-3 py-2 shadow-none dark:bg-neutral-950">
+              <Card className="mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] bg-secondary/50 px-3 py-1.5 shadow-none dark:bg-neutral-950">
                 <div className="flex w-full items-baseline justify-between gap-2">
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
-                      <TooltipTrigger className="grow cursor-default overflow-hidden truncate text-left text-sm font-medium">
+                      <TooltipTrigger className="grow cursor-default overflow-hidden truncate text-left text-xs font-medium">
                         {selectedItem?.name}
                       </TooltipTrigger>
                       <TooltipPortal>
@@ -175,7 +175,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
 
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
-                      <TooltipTrigger className="w-full max-w-24 cursor-default overflow-hidden truncate text-right font-courier text-sm text-muted-foreground">
+                      <TooltipTrigger className="w-full max-w-24 cursor-default overflow-hidden truncate text-right font-courier text-xs text-muted-foreground">
                         {selectedItem?.spec?.bareSpec}
                       </TooltipTrigger>
                       <TooltipPortal>
