@@ -42,6 +42,7 @@ import {
   normalizeBugs,
   normalizeContributors,
   normalizeFunding,
+  normalizeKeywords,
   normalizeManifest,
   normalizeVersion,
   parsePerson,
@@ -802,6 +803,147 @@ t.test('normalizeBugs', t => {
   t.end()
 })
 
+t.test('normalizeKeywords', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeKeywords(undefined), undefined)
+    t.equal(normalizeKeywords(null), undefined)
+    t.end()
+  })
+
+  t.test('handles empty string', t => {
+    const result = normalizeKeywords('')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles string with only whitespace', t => {
+    const result = normalizeKeywords(' ')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles string with multiple spaces', t => {
+    const result = normalizeKeywords('   ')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles empty array', t => {
+    const result = normalizeKeywords([])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles array with empty strings', t => {
+    const result = normalizeKeywords(['', ' ', '   '])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles array with some valid keywords', t => {
+    const result = normalizeKeywords(['', 'react', ' ', 'typescript'])
+    t.same(result, ['react', 'typescript'])
+    t.end()
+  })
+
+  t.test('handles comma-separated string', t => {
+    const result = normalizeKeywords(
+      'keyword 1, keyword 2, keyword 3',
+    )
+    t.same(result, ['keyword 1', 'keyword 2', 'keyword 3'])
+    t.end()
+  })
+
+  t.test(
+    'handles comma-separated string with extra whitespace',
+    t => {
+      const result = normalizeKeywords(
+        '  react  ,  typescript  ,  node  ',
+      )
+      t.same(result, ['react', 'typescript', 'node'])
+      t.end()
+    },
+  )
+
+  t.test('handles comma-separated string with empty segments', t => {
+    const result = normalizeKeywords('react, , typescript, , node')
+    t.same(result, ['react', 'typescript', 'node'])
+    t.end()
+  })
+
+  t.test('handles single keyword string', t => {
+    const result = normalizeKeywords('javascript')
+    t.same(result, ['javascript'])
+    t.end()
+  })
+
+  t.test('handles single keyword string with whitespace', t => {
+    const result = normalizeKeywords('  javascript  ')
+    t.same(result, ['javascript'])
+    t.end()
+  })
+
+  t.test('handles valid array of keywords', t => {
+    const result = normalizeKeywords(['react', 'typescript', 'node'])
+    t.same(result, ['react', 'typescript', 'node'])
+    t.end()
+  })
+
+  t.test('handles array with whitespace in keywords', t => {
+    const result = normalizeKeywords([
+      '  react  ',
+      '  typescript  ',
+      '  node  ',
+    ])
+    t.same(result, ['react', 'typescript', 'node'])
+    t.end()
+  })
+
+  t.test('handles mixed array with valid and invalid entries', t => {
+    const result = normalizeKeywords([
+      'react',
+      '',
+      'typescript',
+      ' ',
+      'node',
+      '   ',
+    ])
+    t.same(result, ['react', 'typescript', 'node'])
+    t.end()
+  })
+
+  t.test('handles array with non-string entries', t => {
+    const result = normalizeKeywords([
+      'react',
+      123,
+      'typescript',
+      null,
+      'node',
+      undefined,
+      true,
+    ])
+    t.same(result, ['react', 'typescript', 'node'])
+    t.end()
+  })
+
+  t.test('handles invalid input types', t => {
+    t.equal(normalizeKeywords(123), undefined)
+    t.equal(normalizeKeywords(true), undefined)
+    t.equal(normalizeKeywords({}), undefined)
+    t.end()
+  })
+
+  t.test('handles complex comma-separated string', t => {
+    const result = normalizeKeywords(
+      'react, vue, angular, svelte, solid',
+    )
+    t.same(result, ['react', 'vue', 'angular', 'svelte', 'solid'])
+    t.end()
+  })
+
+  t.end()
+})
+
 t.test('normalizeManifest', t => {
   t.test(
     'returns same manifest when no funding, contributors, or bugs',
@@ -1083,6 +1225,61 @@ t.test('normalizeManifest', t => {
     t.same(result.bugs, [
       { type: 'link', url: 'https://github.com/owner/repo/issues' },
     ])
+    t.same(result.name, manifest.name)
+    t.same(result.description, manifest.description)
+    t.same(result.dependencies, manifest.dependencies)
+    t.end()
+  })
+
+  t.test(
+    'normalizes manifest with comma-separated keywords string',
+    t => {
+      const manifest = {
+        name: 'test',
+        version: '1.0.0',
+        keywords: 'react, typescript, node',
+      }
+      const result = normalizeManifest(manifest)
+      t.not(result, manifest, 'should return new object reference')
+      t.same(result.keywords, ['react', 'typescript', 'node'])
+      t.end()
+    },
+  )
+
+  t.test('normalizes manifest with keywords array', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      keywords: ['react', '', 'typescript', '  node  '],
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.same(result.keywords, ['react', 'typescript', 'node'])
+    t.end()
+  })
+
+  t.test('normalizes manifest with empty keywords', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      keywords: '',
+    }
+    const result = normalizeManifest(manifest)
+    t.not(result, manifest, 'should return new object reference')
+    t.equal(result.keywords, undefined)
+    t.end()
+  })
+
+  t.test('preserves other manifest properties with keywords', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      description: 'A test package',
+      keywords: 'react, typescript',
+      dependencies: { foo: '^1.0.0' },
+    }
+    const result = normalizeManifest(manifest)
+    t.same(result.keywords, ['react', 'typescript'])
     t.same(result.name, manifest.name)
     t.same(result.description, manifest.description)
     t.same(result.dependencies, manifest.dependencies)

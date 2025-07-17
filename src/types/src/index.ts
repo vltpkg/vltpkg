@@ -263,6 +263,8 @@ export type Bugs =
       email?: string
     }
 
+export type Keywords = string[] | string
+
 /**
  * Normalized bugs entry - always an object with type and url/email
  */
@@ -271,6 +273,11 @@ export type NormalizedBugsEntry = {
   url?: string
   email?: string
 }
+
+/**
+ * Normalized keywords - always an array of strings
+ */
+export type NormalizedKeywords = string[]
 
 /**
  * Normalized bugs - always an array of objects
@@ -321,6 +328,41 @@ export const normalizeBugs = (
   }
 }
 
+/**
+ * Normalize keywords information to a {@link NormalizedKeywords} consistent format.
+ */
+export const normalizeKeywords = (
+  keywords: unknown,
+): NormalizedKeywords | undefined => {
+  if (keywords === undefined || keywords === null) {
+    return undefined
+  }
+
+  let keywordArray: string[] = []
+
+  if (typeof keywords === 'string') {
+    // Handle comma-separated string values
+    keywordArray = keywords
+      .split(',')
+      .map(keyword => keyword.trim())
+      .filter(keyword => keyword.length > 0)
+  } else if (Array.isArray(keywords)) {
+    // Handle array of strings, filter out empty/invalid entries
+    keywordArray = keywords
+      .filter(
+        (keyword): keyword is string => typeof keyword === 'string',
+      )
+      .map(keyword => keyword.trim())
+      .filter(keyword => keyword.length > 0)
+  } else {
+    // Invalid format, return undefined
+    return undefined
+  }
+
+  // Return undefined if no valid keywords remain
+  return keywordArray.length > 0 ? keywordArray : undefined
+}
+
 export type Manifest = {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
@@ -364,7 +406,7 @@ export type Manifest = {
   /** a short description of the package */
   description?: string
   /** search keywords */
-  keywords?: string[]
+  keywords?: Keywords
   /** where to go to file issues */
   bugs?: Bugs
   /** where the development happens */
@@ -631,6 +673,7 @@ export const normalizeManifest = (
     manifest.funding === undefined &&
     manifest.contributors === undefined &&
     manifest.bugs === undefined &&
+    manifest.keywords === undefined &&
     !('maintainers' in manifest)
   ) {
     return manifest
@@ -642,6 +685,7 @@ export const normalizeManifest = (
     (manifest as ManifestRegistry).maintainers,
   )
   const normalizedBugs = normalizeBugs(manifest.bugs)
+  const normalizedKeywords = normalizeKeywords(manifest.keywords)
 
   // Create result with normalized data
   const result: Manifest = {
@@ -649,6 +693,7 @@ export const normalizeManifest = (
     funding: normalizedFunding as Funding,
     contributors: normalizedContributors,
     bugs: normalizedBugs as Bugs,
+    keywords: normalizedKeywords as Keywords,
   }
 
   // Remove maintainers field if it exists in the raw manifest
