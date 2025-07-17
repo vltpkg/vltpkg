@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipContent,
   TooltipTrigger,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 import { cn } from '@/lib/utils.ts'
 import { RelationBadge } from '@/components/ui/relation-badge.tsx'
@@ -25,6 +26,7 @@ export type SideItemOptions = GridItemOptions & {
   onSelect?: (e: React.MouseEvent) => void
   onUninstall?: (item: GridItemData) => void
   isWorkspace?: boolean
+  selectedItem?: GridItemData
 }
 
 export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
@@ -37,6 +39,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
       parent,
       isWorkspace,
       onUninstall,
+      selectedItem,
     },
     ref,
   ) => {
@@ -80,7 +83,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
     group-has-[.parent]:border-l-[0px]
     group-has-[.parent]:w-[var(--column-gap-x)]
     group-has-[.parent]:h-[1px]
-    group-has-[.parent]:top-[50%]
+    group-has-[.parent]:top-[25%]
     group-has-[.parent]:rounded-none
   `
 
@@ -109,27 +112,42 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             <Card
               role="article"
               className={cn(
-                'group relative z-[10] cursor-default rounded-xl shadow-none transition-colors',
+                'group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors',
                 highlight && 'border-muted',
                 onSelect && 'hover:border-muted hover:bg-card-accent',
               )}
               onClick={onSelect}>
-              <CardHeader className="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
+              <CardHeader
+                className={cn(
+                  'relative flex w-full flex-row items-baseline gap-3 px-2 py-2',
+                  parent && 'px-3',
+                )}>
                 {!isWorkspace && <SideItemSpec spec={item.spec} />}
                 <TooltipProvider>
                   <Tooltip delayDuration={150}>
-                    <TooltipTrigger className="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                    <TooltipTrigger className="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
                       {itemName}
                     </TooltipTrigger>
-                    <TooltipContent align="start">
-                      {itemName}
-                    </TooltipContent>
+                    <TooltipPortal>
+                      <TooltipContent align="start">
+                        {itemName}
+                      </TooltipContent>
+                    </TooltipPortal>
                   </Tooltip>
                 </TooltipProvider>
                 {!item.id.startsWith('uninstalled-dep:') && (
-                  <span className="ml-auto font-courier text-sm font-normal text-muted-foreground">
-                    {`v${item.version}`}
-                  </span>
+                  <TooltipProvider>
+                    <Tooltip delayDuration={150}>
+                      <TooltipTrigger className="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                        {`v${item.version}`}
+                      </TooltipTrigger>
+                      <TooltipPortal>
+                        <TooltipContent align="start">
+                          {`v${item.version}`}
+                        </TooltipContent>
+                      </TooltipPortal>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
 
                 <SideItemBadges
@@ -138,6 +156,38 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
                 />
               </CardHeader>
             </Card>
+
+            {parent && (
+              <Card className="mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] bg-secondary/50 px-3 py-1.5 shadow-none dark:bg-neutral-950">
+                <div className="flex w-full items-baseline justify-between gap-2">
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger className="grow cursor-default overflow-hidden truncate text-left text-xs font-medium">
+                        {selectedItem?.name}
+                      </TooltipTrigger>
+                      <TooltipPortal>
+                        <TooltipContent align="start">
+                          {selectedItem?.name}
+                        </TooltipContent>
+                      </TooltipPortal>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger className="w-full max-w-24 cursor-default overflow-hidden truncate text-right font-courier text-xs text-muted-foreground">
+                        {selectedItem?.spec?.bareSpec}
+                      </TooltipTrigger>
+                      <TooltipPortal>
+                        <TooltipContent align="end">
+                          {selectedItem?.spec?.bareSpec}
+                        </TooltipContent>
+                      </TooltipPortal>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </Card>
+            )}
           </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem
@@ -209,7 +259,7 @@ const SideItemSpec = ({
         classNames={{
           wrapperClassName:
             'inline-flex min-w-[10ch] max-w-[20ch] h-[1.375rem]',
-          contentClassName: 'truncate pt-0.5',
+          contentClassName: 'overflow-hidden truncate pt-0.5',
         }}
         content={
           spec.type === 'registry' && spec.semver ?
