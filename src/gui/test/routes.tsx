@@ -74,6 +74,9 @@ vi.mock('@/app/queries.tsx', () => ({
 vi.mock('@/app/help/help-selectors.tsx', () => ({
   HelpSelectors: 'gui-help-selectors',
 }))
+vi.mock('@/app/settings/index.tsx', () => ({
+  SettingsView: 'gui-settings-view',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -146,5 +149,10 @@ test('renders Layout for the "/help" view', () => {
 
 test('renders Layout for the "/help/selectors" view', () => {
   const { container } = renderWithRouter('/help/selectors')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders Layout for the "/settings/general" view', () => {
+  const { container } = renderWithRouter('/settings/general')
   expect(container.innerHTML).toMatchSnapshot()
 })
