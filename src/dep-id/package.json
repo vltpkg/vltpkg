@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/dep-id",
   "description": "create and hydrate dependency IDs",
-  "version": "0.0.0-17",
+  "version": "0.0.0-18",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
