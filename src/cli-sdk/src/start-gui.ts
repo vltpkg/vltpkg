@@ -44,6 +44,7 @@ export const startGUI = async (
   const server = createServer({
     ...conf.options,
     assetsDir: getAssetsDir(),
+    loadedConfig: conf,
   })
   server.on('needConfigUpdate', dir => {
     conf.resetOptions(dir)

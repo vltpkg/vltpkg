@@ -1943,6 +1943,12 @@ importers:
 
   src/server:
     dependencies:
+      '@vltpkg/cli-sdk':
+        specifier: workspace:*
+        version: link:../cli-sdk
+      '@vltpkg/config':
+        specifier: workspace:*
+        version: link:../config
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
@@ -1973,6 +1979,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/vlt-json':
+        specifier: workspace:*
+        version: link:../vlt-json
       package-json-from-dist:
         specifier: 'catalog:'
         version: 1.0.1

@@ -125,6 +125,7 @@ t.test('startGUI()', async t => {
         t.strictSame(options, {
           ...conf.options,
           assetsDir: undefined,
+          loadedConfig: conf,
         })
         serverCreated = true
         return mockServer
