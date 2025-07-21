@@ -1943,6 +1943,12 @@ importers:
 
   src/server:
     dependencies:
+      '@vltpkg/cli-sdk':
+        specifier: workspace:*
+        version: link:../cli-sdk
+      '@vltpkg/config':
+        specifier: workspace:*
+        version: link:../config
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
