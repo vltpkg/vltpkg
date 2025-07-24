@@ -1,11 +1,11 @@
 {
-  "name": "@vltpkg/server",
-  "description": "The server backend that powers the vlt gui",
-  "version": "0.0.0-18",
+  "name": "@vltpkg/config",
+  "description": "Project config logic for vltpkg",
+  "version": "0.0.0-17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/server"
+    "directory": "src/config"
   },
   "tshy": {
     "selfLink": false,
@@ -15,35 +15,21 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./dashboard": "./src/dashboard.ts",
-      "./project-tools": "./src/project-tools.ts"
+      ".": "./src/index.ts"
     }
   },
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
-    "@vltpkg/config": "workspace:*",
-    "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/dot-prop": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/git": "workspace:*",
-    "@vltpkg/graph": "workspace:*",
-    "@vltpkg/gui": "workspace:*",
-    "@vltpkg/init": "workspace:*",
+    "@vltpkg/output": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/security-archive": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "package-json-from-dist": "catalog:",
-    "path-scurry": "catalog:",
-    "promise-call-limit": "catalog:",
-    "resolve-import": "^2.0.0",
-    "serve-handler": "^6.1.6"
+    "path-scurry": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
-    "@types/serve-handler": "^6.1.4",
-    "@vltpkg/package-info": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
@@ -80,19 +66,12 @@
       "import": {
         "default": "./src/index.ts"
       }
-    },
-    "./dashboard": {
-      "import": {
-        "default": "./src/dashboard.ts"
-      }
-    },
-    "./project-tools": {
-      "import": {
-        "default": "./src/project-tools.ts"
-      }
     }
   },
   "files": [
     "dist"
+  ],
+  "keywords": [
+    "vltpkg"
   ]
 }
