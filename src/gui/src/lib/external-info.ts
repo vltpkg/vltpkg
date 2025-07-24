@@ -10,6 +10,7 @@ import type {
   Manifest,
   Packument,
   NormalizedContributor,
+  Person
 } from '@vltpkg/types'
 
 export type Semver = `${number}.${number}.${number}`
@@ -312,7 +313,7 @@ export async function* fetchDetails(
 
   // tries to retrieve author info from the in-memory manifest
   if (manifest?.author) {
-    maniAuthor = readAuthor(manifest.author)
+    maniAuthor = readAuthor(manifest.author as string | Person)
     if (maniAuthor) {
       trackPromise(Promise.resolve({ author: maniAuthor }))
     }
