@@ -1,4 +1,4 @@
-import { normalizeManifest, Person } from '@vltpkg/types'
+import { normalizeManifest } from '@vltpkg/types'
 import { compare, gt, prerelease } from '@vltpkg/semver'
 import {
   getRepoOrigin,
@@ -10,6 +10,7 @@ import type {
   Manifest,
   Packument,
   NormalizedContributor,
+  Person
 } from '@vltpkg/types'
 
 export type Semver = `${number}.${number}.${number}`
