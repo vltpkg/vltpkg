@@ -531,6 +531,7 @@ export const definition = j
                       commands.)
                     - mermaid: Output mermaid diagramming syntax. (Only
                       relevant for certain commands.)
+                    - silent: Suppress all output to stdout.
 
                     If the requested view format is not supported for the
                     current command, or if no option is provided, then it
@@ -542,6 +543,7 @@ export const definition = j
         'mermaid',
         'gui',
         'inspect',
+        'silent',
       ] as const,
     },
   })

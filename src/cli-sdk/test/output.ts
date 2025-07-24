@@ -112,6 +112,15 @@ t.test('outputCommand', async t => {
     t.strictSame(logs(), [['{ ohthehumanity: true }']])
   })
 
+  t.test('success output (silent)', async t => {
+    const logs = t.capture(console, 'log').args
+    const confSilent = {
+      values: { view: 'silent' },
+    } as LoadedConfig
+    await outputCommand(cliCommand, confSilent)
+    t.strictSame(logs(), [], 'no output produced with silent view')
+  })
+
   t.test('undefined output', async t => {
     const logs = t.capture(console, 'log').args
     await outputCommand(
