@@ -404,6 +404,7 @@ Object {
       - inspect: Output results with \`util.inspect\`.
       - gui: Start a local web server and opens a browser to explore the results. (Only relevant for certain commands.)
       - mermaid: Output mermaid diagramming syntax. (Only relevant for certain commands.)
+      - silent: Suppress all output to stdout.
       
       If the requested view format is not supported for the current command, or if no option is provided, then it will fall back to the default.
     ),
@@ -415,6 +416,7 @@ Object {
       "mermaid",
       "gui",
       "inspect",
+      "silent",
     ],
   },
   "workspace": Object {

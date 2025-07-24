@@ -146,11 +146,10 @@ const runCommand = async (
     get: (key: string) => (values as any)[key],
   } as LoadedConfig
   const res = await cmd.command(config)
-  const output = cmd.views[values.view](
-    res,
-    { colors: values.color },
-    config,
-  )
+  const output =
+    values.view === 'silent' ?
+      undefined
+    : cmd.views[values.view](res, { colors: values.color }, config)
   return values.view === 'json' ?
       JSON.stringify(output, null, 2)
     : output

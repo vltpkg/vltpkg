@@ -84,6 +84,8 @@ export const views = {
     : result,
 } as const satisfies Views<ExecResult>
 
+type ViewValues = 'human' | 'json' | 'inspect' | 'silent'
+
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
   fg: F
@@ -94,16 +96,19 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   spaces?: number
   conf: LoadedConfig
   projectRoot: string
-  view: 'human' | 'json' | 'inspect'
+  view: ViewValues
+  validViewValues = new Map<string, ViewValues>([
+    ['human', 'human'],
+    ['json', 'json'],
+    ['inspect', 'inspect'],
+    ['silent', 'silent'],
+  ])
 
   constructor(conf: LoadedConfig, bg: B, fg: F) {
     this.conf = conf
     this.bg = bg
     this.fg = fg
-    this.view =
-      conf.values.view === 'json' ? 'json'
-      : conf.values.view === 'inspect' ? 'inspect'
-      : 'human'
+    this.view = this.validViewValues.get(conf.values.view) ?? 'human'
     const {
       projectRoot,
       positionals: [arg0, ...args],

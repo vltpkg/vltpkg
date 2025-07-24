@@ -49,6 +49,7 @@ export const getView = <T>(
 
   const viewFn =
     viewName === 'inspect' ? identity
+    : viewName === 'silent' ? () => undefined
     : typeof views === 'function' ? views
     : views && typeof views === 'object' ? views[viewName]
     : identity
@@ -61,7 +62,8 @@ export const getView = <T>(
   if (
     !viewFn &&
     conf.values.view !== defaultView &&
-    conf.values.view !== 'json'
+    conf.values.view !== 'json' &&
+    conf.values.view !== 'silent'
   ) {
     conf.values.view = defaultView
     process.env.VLT_VIEW = defaultView
@@ -147,7 +149,7 @@ export const outputCommand = async <T>(
 
   try {
     const output = await onDone(await command(conf))
-    if (output !== undefined) {
+    if (output !== undefined && conf.values.view !== 'silent') {
       stdout(
         conf.values.view === 'json' ?
           JSON.stringify(output, null, 2)
