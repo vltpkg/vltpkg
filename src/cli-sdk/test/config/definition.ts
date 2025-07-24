@@ -144,3 +144,8 @@ t.test('getSortedCliDefinitions', async t => {
   >('../../src/config/definition.ts')
   t.matchSnapshot(getSortedCliOptions(), 'sorted CLI definitions')
 })
+
+t.test('silent view option is valid', async t => {
+  const { values } = definition.parse(['--view', 'silent'])
+  t.equal(values.view, 'silent')
+})
