@@ -395,7 +395,7 @@ export type Manifest = {
   /** supported CPU architectures this package can run on */
   cpu?: string[] | string
   /** URLs that can be visited to fund this project */
-  funding?: Funding
+  funding?: Funding | NormalizedFundingEntry[]
   /** The homepage of the repository */
   homepage?: string
   /**
@@ -406,9 +406,9 @@ export type Manifest = {
   /** a short description of the package */
   description?: string
   /** search keywords */
-  keywords?: Keywords
+  keywords?: Keywords | NormalizedKeywords
   /** where to go to file issues */
-  bugs?: Bugs
+  bugs?: Bugs | NormalizedBugsEntry[]
   /** where the development happens */
   repository?: Repository
   /** the main module, if exports['.'] is not set */
@@ -429,12 +429,35 @@ export type Manifest = {
   /** npm puts this on published manifests */
   gypfile?: boolean
   /** the author of a package */
-  author?: Person
+  author?: Person | NormalizedContributor
   /** contributors to the package */
   contributors?: NormalizedContributor[]
   /** the license of the package */
   license?: string
 }
+
+/**
+ * Utility type that overrides specific properties of type T with new types from R.
+ * Constrains override values to exclude undefined, ensuring that normalization
+ * cannot introduce undefined to fields that shouldn't have it.
+ */
+export type Override<
+  T,
+  R extends { [K in keyof R]: R[K] extends undefined ? never : R[K] },
+> = {
+  [K in keyof T]: K extends keyof R ? R[K] : T[K]
+}
+
+export type NormalizedManifest = Override<
+  Manifest,
+  {
+    bugs: NormalizedBugsEntry[]
+    author: NormalizedContributor
+    contributors: NormalizedContributor[]
+    funding: NormalizedFundingEntry[]
+    keywords: NormalizedKeywords
+  }
+>
 
 export type ManifestRegistry = Manifest &
   Required<Pick<Manifest, 'name' | 'version' | 'dist'>> & {
@@ -688,12 +711,12 @@ export const normalizeManifest = (
   const normalizedKeywords = normalizeKeywords(manifest.keywords)
 
   // Create result with normalized data
-  const result: Manifest = {
+  const result = {
     ...manifest,
-    funding: normalizedFunding as Funding,
+    funding: normalizedFunding,
     contributors: normalizedContributors,
-    bugs: normalizedBugs as Bugs,
-    keywords: normalizedKeywords as Keywords,
+    bugs: normalizedBugs,
+    keywords: normalizedKeywords,
   }
 
   // Remove maintainers field if it exists in the raw manifest
