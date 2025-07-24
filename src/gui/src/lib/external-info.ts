@@ -1,4 +1,4 @@
-import { normalizeManifest } from '@vltpkg/types'
+import { normalizeManifest, Person } from '@vltpkg/types'
 import { compare, gt, prerelease } from '@vltpkg/semver'
 import {
   getRepoOrigin,
@@ -312,7 +312,7 @@ export async function* fetchDetails(
 
   // tries to retrieve author info from the in-memory manifest
   if (manifest?.author) {
-    maniAuthor = readAuthor(manifest.author)
+    maniAuthor = readAuthor(manifest.author as string | Person)
     if (maniAuthor) {
       trackPromise(Promise.resolve({ author: maniAuthor }))
     }
