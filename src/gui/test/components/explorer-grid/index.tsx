@@ -177,6 +177,7 @@ test('ExplorerGrid with stack', async () => {
 test('ExplorerGrid renders workspace with edges in', async () => {
   const { graph } = load({
     lockfile: {
+      lockfileVersion: 0,
       options: {},
       nodes: {},
       edges: {

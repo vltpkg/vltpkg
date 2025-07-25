@@ -29,6 +29,7 @@ const transferData: TransferData = {
     },
   ],
   lockfile: {
+    lockfileVersion: 0,
     options: {
       registries: {
         custom: 'http://example.com',

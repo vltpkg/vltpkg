@@ -116,6 +116,7 @@ t.test('graph data for vlt project', async t => {
       },
     ],
     lockfile: {
+      lockfileVersion: 0,
       options: {},
       nodes: {
         [abbrevDepID]: [
@@ -198,6 +199,7 @@ t.test('graph data for depless vlt project', async t => {
       },
     ],
     lockfile: {
+      lockfileVersion: 0,
       options: {},
       nodes: {},
       edges: {},
