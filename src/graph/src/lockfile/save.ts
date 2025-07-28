@@ -172,6 +172,7 @@ export const lockfileData = ({
   const hasItems = (clean: Record<string, unknown> | undefined) =>
     clean && Object.keys(clean).length
   return {
+    lockfileVersion: 0,
     options: {
       ...(hasItems(cleanModifiers) ?
         { modifiers: cleanModifiers }

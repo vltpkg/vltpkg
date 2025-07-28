@@ -67,8 +67,8 @@ export const loadHidden = (options: LoadOptions): Graph => {
 
 export const loadObject = (
   options: LoadOptions,
-  lockfileData: Omit<LockfileData, 'options'> &
-    Partial<Pick<LockfileData, 'options'>>,
+  lockfileData: Omit<LockfileData, 'options' | 'lockfileVersion'> &
+    Partial<Pick<LockfileData, 'options' | 'lockfileVersion'>>,
 ) => {
   const {
     mainManifest,
