@@ -64,6 +64,7 @@ t.test('diff two graphs', async t => {
       },
     },
     {
+      lockfileVersion: 0,
       options: {
         registries: {
           npm: 'https://registry.npmjs.org/',
@@ -123,6 +124,7 @@ t.test('diff two graphs', async t => {
       },
     },
     {
+      lockfileVersion: 0,
       options: {
         registries: {
           npm: 'https://registry.npmjs.org/',

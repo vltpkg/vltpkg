@@ -15,6 +15,7 @@ import type { Graph } from '../graph.ts'
  * a {@link Graph} representing a previous install.
  */
 export type LockfileData = {
+  lockfileVersion: number
   options: SpecOptions & {
     modifiers?: Record<string, string> | undefined
   }

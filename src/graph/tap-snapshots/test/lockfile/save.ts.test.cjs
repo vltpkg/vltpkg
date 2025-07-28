@@ -7,6 +7,7 @@
 'use strict'
 exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile with confused manifest 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registries": {
       "custom": "http://example.com"
@@ -37,6 +38,7 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
 
 exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "catalog": {
       "x": "1.2.3"
@@ -67,6 +69,7 @@ exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must matc
 
 exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "scope-registries": {
       "@myscope": "https://example.com/"
@@ -86,6 +89,7 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] 
 
 exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "jsr-registries": {
       "intl": "https://jsr.example.com/"
@@ -105,6 +109,7 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] 
 
 exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registry": "http://example.com"
   },
@@ -115,6 +120,7 @@ exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 
 
 exports[`test/lockfile/save.ts > TAP > overrides default registries > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registry": "http://example.com",
     "registries": {
@@ -128,6 +134,7 @@ exports[`test/lockfile/save.ts > TAP > overrides default registries > must match
 
 exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registries": {
       "custom": "http://example.com"
@@ -149,6 +156,7 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 
 exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registries": {
       "custom": "http://example.com"
@@ -205,6 +213,7 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
 
 exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registries": {
       "custom": "http://example.com"
@@ -229,6 +238,7 @@ Object {
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
+  "lockfileVersion": 0,
   "nodes": Object {
     "··foo@1.0.0": Array [
       0,
@@ -249,6 +259,7 @@ Object {
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
+  "lockfileVersion": 0,
   "nodes": Object {
     "··foo@1.0.0": Array [
       0,
@@ -269,6 +280,7 @@ Object {
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
+  "lockfileVersion": 0,
   "nodes": Object {
     "··foo@1.0.0": Array [
       0,
@@ -289,6 +301,7 @@ Object {
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
+  "lockfileVersion": 0,
   "nodes": Object {
     "··foo@1.0.0": Array [
       0,
@@ -306,6 +319,7 @@ Object {
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > should save lockfile with modifiers 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "modifiers": {
       ":root > #foo": "2"
@@ -326,6 +340,7 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
 
 exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match snapshot 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registries": {
       "custom": "http://example.com"
@@ -343,6 +358,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
 
 exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with workspaces nodes 1`] = `
 {
+  "lockfileVersion": 0,
   "options": {
     "registries": {
       "custom": "http://example.com"

@@ -10,6 +10,7 @@ Object {
   "edges": Object {
     "file·. foo": "optional * ··foo@1.2.3",
   },
+  "lockfileVersion": 0,
   "nodes": Object {
     "··foo@1.2.3": Array [
       0,

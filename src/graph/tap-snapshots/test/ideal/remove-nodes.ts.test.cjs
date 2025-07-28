@@ -8,6 +8,7 @@
 exports[`test/ideal/remove-nodes.ts > TAP > removeNodes > should remove the node and edge from the graph 1`] = `
 Object {
   "edges": Object {},
+  "lockfileVersion": 0,
   "nodes": Object {},
   "options": Object {
     "registries": Object {},
