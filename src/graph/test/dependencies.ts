@@ -143,7 +143,7 @@ t.test('asDependencyTypeShort', async t => {
 // Helper function to create mock NodeLike objects for testing
 const createMockNode = (
   overrides: Partial<NodeLike> = {},
-  manifest?: Manifest | null,
+  manifest?: Pick<Manifest, 'peerDependenciesMeta'> | null,
 ): NodeLike => ({
   id: joinDepIDTuple(['registry', 'npm', 'test-pkg@1.0.0']),
   confused: false,

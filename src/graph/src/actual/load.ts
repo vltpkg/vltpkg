@@ -12,7 +12,7 @@ import { loadHidden } from '../lockfile/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Path, PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
@@ -30,7 +30,7 @@ export type LoadOptions = SpecOptions & {
   /**
    * The project root manifest.
    */
-  mainManifest?: Manifest
+  mainManifest?: NormalizedManifest
   /**
    * The graph modifiers helper object.
    */

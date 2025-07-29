@@ -4,7 +4,7 @@ import { reify } from './reify/index.ts'
 import { GraphModifier } from './modifiers.ts'
 import { init } from '@vltpkg/init'
 import { asError } from '@vltpkg/types'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
 import type { AddImportersDependenciesMap } from './dependencies.ts'
@@ -17,7 +17,7 @@ export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
-  let mainManifest: Manifest | undefined = undefined
+  let mainManifest: NormalizedManifest | undefined = undefined
   try {
     mainManifest = options.packageJson.read(options.projectRoot)
   } catch (err) {

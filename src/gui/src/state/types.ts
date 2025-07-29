@@ -5,7 +5,7 @@ import type {
   QueryResponseNode,
 } from '@vltpkg/query'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
-import type { Integrity, Manifest } from '@vltpkg/types'
+import type { Integrity, NormalizedManifest } from '@vltpkg/types'
 
 export type Action = {
   updateAppData: (appData: State['appData']) => void
@@ -67,7 +67,7 @@ export type RawNode = {
   name: string
   version: string
   location: string
-  manifest: Manifest
+  manifest: NormalizedManifest
   projectRoot?: string
   integrity?: Integrity
   resolved?: string
@@ -215,7 +215,7 @@ export type DashboardDataProject = {
   name: string
   readablePath: string
   path: string
-  manifest: Manifest
+  manifest: NormalizedManifest
   tools: DashboardTools[]
   mtime?: number | null
 }

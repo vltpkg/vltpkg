@@ -6,7 +6,7 @@ import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
 import { Graph } from '../graph.ts'
 import type { PathScurry } from 'path-scurry'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { LockfileData } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
@@ -19,7 +19,7 @@ export type LoadOptions = SpecOptions & {
   /**
    * The project root manifest.
    */
-  mainManifest: Manifest
+  mainManifest: NormalizedManifest
   /**
    * The graph modifiers helper object.
    */

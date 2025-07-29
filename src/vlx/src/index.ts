@@ -5,9 +5,9 @@ import type {
   Resolution,
 } from '@vltpkg/package-info'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
-import type { Integrity, Manifest } from '@vltpkg/types'
+import type { Integrity, NormalizedManifest } from '@vltpkg/types'
 
-export type VlxManifest = Manifest & {
+export type VlxManifest = NormalizedManifest & {
   vlx?: {
     integrity?: Integrity
     signatures?: Resolution['signatures']

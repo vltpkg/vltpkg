@@ -1,6 +1,18 @@
 import { error } from '@vltpkg/error-cause'
 import { Version } from '@vltpkg/semver'
 
+/**
+ * Utility type that overrides specific properties of type T with new types
+ * from R. Constrains override values to exclude undefined, ensuring that
+ * normalization cannot introduce undefined to fields that shouldn't have it.
+ */
+export type Override<
+  T,
+  R extends { [K in keyof R]: R[K] extends undefined ? never : R[K] },
+> = {
+  [K in keyof T]: K extends keyof R ? R[K] : T[K]
+}
+
 /** anything that can be encoded in JSON */
 export type JSONField =
   | JSONField[]
@@ -62,88 +74,137 @@ export type FundingEntry =
   | { url: string; type?: string; [key: string]: JSONField }
 export type Funding = FundingEntry | FundingEntry[]
 
-/** Normalized funding entry - always an object with url and optional additional properties */
+/**
+ * An object with url and optional additional properties
+ */
 export type NormalizedFundingEntry = {
   url: string
   type?: string
   [key: string]: JSONField
 }
-/** Normalized funding - always an array of objects */
+
+/**
+ * Normalized funding information, an array of {@link NormalizedFundingEntry}.
+ */
 export type NormalizedFunding = NormalizedFundingEntry[]
 
-/** Normalize funding information to a consistent format. */
-export const normalizeFunding = (
-  funding: unknown,
-): NormalizedFunding | undefined => {
-  if (funding === undefined || funding === null) {
-    return undefined
+/**
+ * Normalize a single funding entry to a consistent format.
+ */
+const normalizeFundingEntry = (
+  item: unknown,
+): NormalizedFundingEntry => {
+  const getTypeFromUrl = (url: string): string => {
+    try {
+      const { hostname } = new URL(url)
+      const domain =
+        hostname.startsWith('www.') ? hostname.slice(4) : hostname
+      if (domain === 'github.com') return 'github'
+      if (domain === 'patreon.com') return 'patreon'
+      if (domain === 'opencollective.com') return 'opencollective'
+      return 'individual'
+    } catch {
+      return 'invalid'
+    }
   }
 
-  const normalizeItem = (item: unknown): NormalizedFundingEntry => {
-    const getTypeFromUrl = (url: string): string => {
-      try {
-        const { hostname } = new URL(url)
-        const domain =
-          hostname.startsWith('www.') ? hostname.slice(4) : hostname
-        if (domain === 'github.com') return 'github'
-        if (domain === 'patreon.com') return 'patreon'
-        if (domain === 'opencollective.com') return 'opencollective'
-        return 'individual'
-      } catch {
-        return 'invalid'
-      }
-    }
-
-    const validateType = (
-      url: string,
-      type?: string,
-    ): string | undefined => {
-      const urlType = getTypeFromUrl(url)
-      if (
-        !type ||
-        ['github', 'patreon', 'opencollective'].includes(urlType)
-      )
-        return urlType
-      if (urlType === 'invalid') return undefined
-      return type
-    }
-
-    if (typeof item === 'string') {
-      return { url: item, type: getTypeFromUrl(item) }
-    }
+  const validateType = (
+    url: string,
+    type?: string,
+  ): string | undefined => {
+    const urlType = getTypeFromUrl(url)
     if (
-      isObject(item) &&
-      'url' in item &&
-      typeof item.url === 'string'
-    ) {
-      const obj = item
-      const url = obj.url as string
-      const validatedType = validateType(
-        url,
-        obj.type as string | undefined,
-      )
-      const result = { ...obj, url } as Record<string, unknown>
-      if (validatedType) {
-        result.type = validatedType
-      } else {
-        delete result.type
-      }
-      return result as NormalizedFundingEntry
-    }
-    return { url: '', type: 'individual' }
+      !type ||
+      ['github', 'patreon', 'opencollective'].includes(urlType)
+    )
+      return urlType
+    if (urlType === 'invalid') return undefined
+    return type
   }
 
-  const fundingArray = Array.isArray(funding) ? funding : [funding]
-  const sources = fundingArray.map(normalizeItem)
-  return sources
+  if (typeof item === 'string') {
+    return { url: item, type: getTypeFromUrl(item) }
+  }
+  if (
+    isObject(item) &&
+    'url' in item &&
+    typeof item.url === 'string'
+  ) {
+    // If the item is already normalized, return it directly
+    if (isNormalizedFundingEntry(item)) {
+      return item
+    }
+
+    const obj = item
+    const url = obj.url as string
+    const validatedType = validateType(
+      url,
+      obj.type as string | undefined,
+    )
+    const result = { ...obj, url } as Record<string, unknown>
+    if (validatedType) {
+      result.type = validatedType
+    } else {
+      delete result.type
+    }
+    return result as NormalizedFundingEntry
+  }
+  return { url: '', type: 'individual' }
 }
 
 /**
- * Normalize the version field in a manifest.
+ * Normalize funding information to a consistent format.
  */
-export const normalizeVersion = (
-  manifest: Manifest | ManifestRegistry,
-): Manifest | ManifestRegistry => {
+export const normalizeFunding = (
+  funding: unknown,
+): NormalizedFunding | undefined => {
+  if (!funding) return
+
+  const fundingArray = Array.isArray(funding) ? funding : [funding]
+  const sources = fundingArray.map(normalizeFundingEntry)
+  return sources.length > 0 ? sources : undefined
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedFundingEntry}.
+ */
+export const isNormalizedFundingEntry = (
+  o: unknown,
+): o is NormalizedFundingEntry => {
+  return (
+    isObject(o) &&
+    'url' in o &&
+    typeof o.url === 'string' &&
+    !!o.url &&
+    'type' in o &&
+    typeof o.type === 'string' &&
+    ['github', 'patreon', 'opencollective', 'individual'].includes(
+      o.type,
+    )
+  )
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedFunding}.
+ */
+export const isNormalizedFunding = (
+  o: unknown,
+): o is NormalizedFunding => {
+  return (
+    Array.isArray(o) &&
+    o.length > 0 &&
+    o.every(isNormalizedFundingEntry)
+  )
+}
+
+/**
+ * Given a version Normalize the version field in a manifest.
+ */
+export const fixManifestVersion = <
+  T extends Manifest | ManifestRegistry,
+>(
+  manifest: T,
+): T => {
   if (!Object.hasOwn(manifest, 'version')) {
     return manifest
   }
@@ -157,30 +218,30 @@ export const normalizeVersion = (
   return manifest
 }
 
-/* Parse a string or object into a normalized contributor */
+const kWriteAccess = Symbol.for('writeAccess')
+const kIsPublisher = Symbol.for('isPublisher')
+
+/**
+ * Parse a string or object into a normalized contributor.
+ */
 export const parsePerson = (
-  author: unknown,
+  person: unknown,
   writeAccess?: boolean,
   isPublisher?: boolean,
-): NormalizedContributor | undefined => {
-  if (typeof author === 'string') {
-    const NAME_PATTERN = /^([^(<]+)/
-    const EMAIL_PATTERN = /<([^<>]+)>/
-    const name = NAME_PATTERN.exec(author)?.[0].trim() || ''
-    const email = EMAIL_PATTERN.exec(author)?.[1] || ''
-    if (!name && !email) return undefined
-    return {
-      name: name || undefined,
-      email: email || undefined,
-      writeAccess: writeAccess ?? false,
-      isPublisher: isPublisher ?? false,
+): NormalizedContributorEntry | undefined => {
+  if (!person) return
+
+  if (isObject(person)) {
+    // this is an already parsed object person, just return its value
+    if (isNormalizedContributorEntry(person)) {
+      return person
     }
-  } else if (isObject(author)) {
+
     const name =
-      typeof author.name === 'string' ? author.name : undefined
+      typeof person.name === 'string' ? person.name : undefined
     const email =
-      typeof author.email === 'string' ? author.email
-      : typeof author.mail === 'string' ? author.mail
+      typeof person.email === 'string' ? person.email
+      : typeof person.mail === 'string' ? person.mail
       : undefined
 
     if (!name && !email) return undefined
@@ -188,21 +249,78 @@ export const parsePerson = (
     return {
       name,
       email,
-      writeAccess: writeAccess ?? false,
-      isPublisher: isPublisher ?? false,
+      [kWriteAccess]: writeAccess ?? false,
+      [kIsPublisher]: isPublisher ?? false,
+    }
+  } else if (typeof person === 'string') {
+    const NAME_PATTERN = /^([^(<]+)/
+    const EMAIL_PATTERN = /<([^<>]+)>/
+    const name = NAME_PATTERN.exec(person)?.[0].trim() || ''
+    const email = EMAIL_PATTERN.exec(person)?.[1] || ''
+    if (!name && !email) return undefined
+    return {
+      name: name || undefined,
+      email: email || undefined,
+      [kWriteAccess]: writeAccess ?? false,
+      [kIsPublisher]: isPublisher ?? false,
     }
   }
-  return undefined
+  return
 }
 
 /**
- * Represents a normalized contributor object.
+ * Normalized contributors - always an array of {@link NormalizedContributorEntry}.
  */
-export type NormalizedContributor = {
+export type NormalizedContributors = NormalizedContributorEntry[]
+
+/**
+ * Represents a normalized contributor object. This is the type that is
+ * used in the {@link NormalizedManifest} and {@link NormalizedManifestRegistry}
+ * objects.
+ */
+export type NormalizedContributorEntry = {
   email?: string
   name?: string
+  // in-memory we store those keys as symbols so that they
+  // don't get written to user-managed package.json files
+  [kWriteAccess]?: boolean
+  [kIsPublisher]?: boolean
+  // we also have a plain version that is used in the
+  // transfer data format and lockfiles
   writeAccess?: boolean
   isPublisher?: boolean
+}
+
+/**
+ * Type guard to check if a value is a normalized contributor entry.
+ */
+export const isNormalizedContributorEntry = (
+  o: unknown,
+): o is NormalizedContributorEntry => {
+  return (
+    isObject(o) &&
+    typeof o.name === 'string' &&
+    !!o.name &&
+    typeof o.email === 'string' &&
+    !!o.email &&
+    (isBoolean((o as NormalizedContributorEntry)[kWriteAccess]) ||
+      isBoolean(o.writeAccess)) &&
+    (isBoolean((o as NormalizedContributorEntry)[kIsPublisher]) ||
+      isBoolean(o.isPublisher))
+  )
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedContributors}.
+ */
+export const isNormalizedContributors = (
+  o: unknown,
+): o is NormalizedContributors => {
+  return (
+    Array.isArray(o) &&
+    o.length > 0 &&
+    o.every(isNormalizedContributorEntry)
+  )
 }
 
 /**
@@ -211,20 +329,39 @@ export type NormalizedContributor = {
 export const normalizeContributors = (
   contributors: unknown,
   maintainers?: unknown,
-): NormalizedContributor[] | undefined => {
-  if (!contributors && !maintainers) {
-    return undefined
-  }
+): NormalizedContributorEntry[] | undefined => {
+  if (!contributors && !maintainers) return
 
-  const result: NormalizedContributor[] = []
+  const result: NormalizedContributorEntry[] = []
 
   // Parse regular contributors (if any)
   if (contributors) {
     const contributorsArray: unknown[] =
       Array.isArray(contributors) ? contributors : [contributors]
+
+    const normalizedArray = contributorsArray.every(
+      isNormalizedContributorEntry,
+    )
+    const noMaintainers =
+      !maintainers ||
+      (Array.isArray(maintainers) && maintainers.length === 0)
+
+    // If all contributors are already normalized, and there are
+    // no maintainers, return the contributors directly
+    if (normalizedArray) {
+      if (noMaintainers) {
+        return contributorsArray.length > 0 ?
+            contributorsArray
+          : undefined
+      } else {
+        result.push(...contributorsArray)
+      }
+    }
+
+    // Parse each contributor and filter out undefined values
     const parsedContributors = contributorsArray
       .map(person => parsePerson(person))
-      .filter((c): c is NormalizedContributor => c !== undefined)
+      .filter((c): c is NormalizedContributorEntry => c !== undefined)
     result.push(...parsedContributors)
   }
 
@@ -234,11 +371,11 @@ export const normalizeContributors = (
       Array.isArray(maintainers) ? maintainers : [maintainers]
     const parsedMaintainers = maintainersArray
       .map(person => parsePerson(person, true, true))
-      .filter((c): c is NormalizedContributor => c !== undefined)
+      .filter((c): c is NormalizedContributorEntry => c !== undefined)
     result.push(...parsedMaintainers)
   }
 
-  return result
+  return result.length > 0 ? result : undefined
 }
 
 export type Person =
@@ -280,9 +417,49 @@ export type NormalizedBugsEntry = {
 export type NormalizedKeywords = string[]
 
 /**
- * Normalized bugs - always an array of objects
+ * Normalized bugs - always an array of {@link NormalizedBugsEntry}
  */
 export type NormalizedBugs = NormalizedBugsEntry[]
+
+/**
+ * Helper function to normalize a single {@link Bugs} entry.
+ */
+const normalizeSingleBug = (bug: unknown): NormalizedBugsEntry[] => {
+  const res: NormalizedBugsEntry[] = []
+
+  if (typeof bug === 'string') {
+    // Try to parse as URL first - if it succeeds, treat as link
+    try {
+      new URL(bug)
+      res.push({ type: 'link', url: bug })
+    } catch {
+      // TODO: need a more robust email validation, likely
+      // to be replaced with valibot / zod
+      // If URL parsing fails, check if it's a valid email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (emailRegex.test(bug)) {
+        res.push({ type: 'email', email: bug })
+      } else {
+        // Default to link for plain strings like 'example.com'
+        res.push({ type: 'link', url: bug })
+      }
+    }
+  } else if (isObject(bug)) {
+    if (isNormalizedBugsEntry(bug)) {
+      res.push(bug)
+    }
+    const obj = bug as { url?: string; email?: string }
+
+    if (obj.url) {
+      res.push({ type: 'link', url: obj.url })
+    }
+    if (obj.email) {
+      res.push({ type: 'email', email: obj.email })
+    }
+  }
+
+  return res.length > 0 ? res : []
+}
 
 /**
  * Normalize bugs information to a {@link NormalizedBugs} consistent format.
@@ -290,42 +467,46 @@ export type NormalizedBugs = NormalizedBugsEntry[]
 export const normalizeBugs = (
   bugs: unknown,
 ): NormalizedBugs | undefined => {
-  if (bugs === undefined || bugs === null) {
-    return undefined
+  if (!bugs) return
+
+  const result: NormalizedBugsEntry[] = []
+
+  // Handle array of bugs entries
+  if (Array.isArray(bugs)) {
+    for (const bug of bugs) {
+      result.push(...normalizeSingleBug(bug))
+    }
+  } else {
+    // Handle single bugs entry
+    result.push(...normalizeSingleBug(bugs))
   }
 
-  if (typeof bugs === 'string') {
-    // Try to parse as URL first - if it succeeds, treat as link
-    try {
-      new URL(bugs)
-      return [{ type: 'link', url: bugs }]
-    } catch {
-      // TODO: need a more robust email validation, likely
-      // to be replaced with valibot / zod
-      // If URL parsing fails, check if it's a valid email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (emailRegex.test(bugs)) {
-        return [{ type: 'email', email: bugs }]
-      } else {
-        // Default to link for plain strings like 'example.com'
-        return [{ type: 'link', url: bugs }]
-      }
-    }
-  }
+  return result.length > 0 ? result : undefined
+}
 
-  if (isObject(bugs)) {
-    const obj = bugs as { url?: string; email?: string }
-    const result: NormalizedBugsEntry[] = []
+/**
+ * Type guard to check if a value is a {@link NormalizedBugsEntry}.
+ */
+export const isNormalizedBugsEntry = (
+  o: unknown,
+): o is NormalizedBugsEntry => {
+  return (
+    isObject(o) &&
+    'type' in o &&
+    ((o.type === 'email' &&
+      typeof o.email === 'string' &&
+      !!o.email) ||
+      (o.type === 'link' && typeof o.url === 'string' && !!o.url))
+  )
+}
 
-    if (obj.url) {
-      result.push({ type: 'link', url: obj.url })
-    }
-    if (obj.email) {
-      result.push({ type: 'email', email: obj.email })
-    }
-
-    return result.length > 0 ? result : undefined
-  }
+/**
+ * Type guard to check if a value is a {@link NormalizedBugs}.
+ */
+export const isNormalizedBugs = (o: unknown): o is NormalizedBugs => {
+  return (
+    Array.isArray(o) && o.length > 0 && o.every(isNormalizedBugsEntry)
+  )
 }
 
 /**
@@ -334,9 +515,7 @@ export const normalizeBugs = (
 export const normalizeKeywords = (
   keywords: unknown,
 ): NormalizedKeywords | undefined => {
-  if (keywords === undefined || keywords === null) {
-    return undefined
-  }
+  if (!keywords) return
 
   let keywordArray: string[] = []
 
@@ -347,6 +526,10 @@ export const normalizeKeywords = (
       .map(keyword => keyword.trim())
       .filter(keyword => keyword.length > 0)
   } else if (Array.isArray(keywords)) {
+    // If all keywords are already normalized, return them directly
+    if (isNormalizedKeywords(keywords)) {
+      return keywords as unknown as NormalizedKeywords
+    }
     // Handle array of strings, filter out empty/invalid entries
     keywordArray = keywords
       .filter(
@@ -355,12 +538,30 @@ export const normalizeKeywords = (
       .map(keyword => keyword.trim())
       .filter(keyword => keyword.length > 0)
   } else {
-    // Invalid format, return undefined
-    return undefined
+    // Invalid format
+    return
   }
 
-  // Return undefined if no valid keywords remain
   return keywordArray.length > 0 ? keywordArray : undefined
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedKeywords}.
+ */
+export const isNormalizedKeywords = (
+  o: unknown,
+): o is NormalizedKeywords => {
+  return (
+    Array.isArray(o) &&
+    o.length > 0 &&
+    o.every(
+      keyword =>
+        typeof keyword === 'string' &&
+        !!keyword &&
+        !keyword.startsWith(' ') &&
+        !keyword.endsWith(' '),
+    )
+  )
 }
 
 export type Manifest = {
@@ -395,7 +596,7 @@ export type Manifest = {
   /** supported CPU architectures this package can run on */
   cpu?: string[] | string
   /** URLs that can be visited to fund this project */
-  funding?: Funding | NormalizedFundingEntry[]
+  funding?: Funding
   /** The homepage of the repository */
   homepage?: string
   /**
@@ -406,9 +607,9 @@ export type Manifest = {
   /** a short description of the package */
   description?: string
   /** search keywords */
-  keywords?: Keywords | NormalizedKeywords
+  keywords?: Keywords
   /** where to go to file issues */
-  bugs?: Bugs | NormalizedBugsEntry[]
+  bugs?: Bugs
   /** where the development happens */
   repository?: Repository
   /** the main module, if exports['.'] is not set */
@@ -429,41 +630,58 @@ export type Manifest = {
   /** npm puts this on published manifests */
   gypfile?: boolean
   /** the author of a package */
-  author?: Person | NormalizedContributor
+  author?: Person
   /** contributors to the package */
-  contributors?: NormalizedContributor[]
+  contributors?: Person[]
   /** the license of the package */
   license?: string
 }
 
-/**
- * Utility type that overrides specific properties of type T with new types from R.
- * Constrains override values to exclude undefined, ensuring that normalization
- * cannot introduce undefined to fields that shouldn't have it.
- */
-export type Override<
-  T,
-  R extends { [K in keyof R]: R[K] extends undefined ? never : R[K] },
-> = {
-  [K in keyof T]: K extends keyof R ? R[K] : T[K]
+export type NormalizedFields = {
+  bugs: NormalizedBugs | undefined
+  author: NormalizedContributorEntry | undefined
+  contributors: NormalizedContributors | undefined
+  funding: NormalizedFunding | undefined
+  keywords: NormalizedKeywords | undefined
 }
 
-export type NormalizedManifest = Override<
-  Manifest,
-  {
-    bugs: NormalizedBugsEntry[]
-    author: NormalizedContributor
-    contributors: NormalizedContributor[]
-    funding: NormalizedFundingEntry[]
-    keywords: NormalizedKeywords
-  }
+/**
+ * A {@link Manifest} object that contains normalized fields.
+ */
+export type NormalizedManifest = Override<Manifest, NormalizedFields>
+
+/**
+ * A {@link ManifestRegistry} object that contains normalized fields.
+ */
+export type NormalizedManifestRegistry = Override<
+  ManifestRegistry,
+  NormalizedFields
 >
 
+/**
+ * A specific type of {@link Manifest} that represents manifests that were
+ * retrieved from a registry, these will always have `name`, `version`
+ * and `dist` information along with an optional `maintainers` field.
+ */
 export type ManifestRegistry = Manifest &
   Required<Pick<Manifest, 'name' | 'version' | 'dist'>> & {
     maintainers?: unknown
   }
 
+/**
+ * Maps the manifest type to the equivalent normalized manifest type.
+ */
+export type SomeNormalizedManifest<T> =
+  T extends ManifestRegistry ? NormalizedManifestRegistry
+  : NormalizedManifest
+
+/**
+ * A document that represents available package versions in a given registry
+ * along with extra information, such as `dist-tags` and `maintainers` info.
+ * The `versions` field is key-value structure in which keys are the
+ * available versions of a given package and values are
+ * {@link ManifestRegistry} objects.
+ */
 export type Packument = {
   name: string
   'dist-tags': Record<string, string>
@@ -503,6 +721,12 @@ export type RevDoc = Omit<Packument, 'versions'> & {
   /** all named shas referenced above */
   shas: Record<string, string[]>
 }
+
+/**
+ * A type guard to check if a value is a boolean.
+ */
+export const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean'
 
 export const integrityRE = /^sha512-[a-zA-Z0-9/+]{86}==$/
 export const isIntegrity = (i: unknown): i is Integrity =>
@@ -654,6 +878,10 @@ export const maybeString = (a: unknown): a is string | undefined =>
 export const maybeDist = (a: unknown): a is Manifest['dist'] =>
   a === undefined || (isObject(a) && maybeString(a.tarball))
 
+/**
+ * Is a given unknown value a valid {@link Manifest} object?
+ * Returns `true` if so.
+ */
 export const isManifest = (m: unknown): m is Manifest =>
   isObject(m) &&
   !Array.isArray(m) &&
@@ -667,11 +895,19 @@ export const isManifest = (m: unknown): m is Manifest =>
   maybePeerDependenciesMetaSet(m.peerDependenciesMeta) &&
   maybeDist(m.dist)
 
+/**
+ * A specific {@link Manifest} that is retrieved uniquely from reading
+ * registry packument and manifest endpoints, it has `dist`, `name` and
+ * `version` fields defined.
+ */
 export const isManifestRegistry = (
   m: unknown,
 ): m is ManifestRegistry =>
   isManifest(m) && !!m.dist && !!m.name && !!m.version
 
+/**
+ * Given an unknown value, convert it to a {@link Manifest}.
+ */
 export const asManifest = (
   m: unknown,
   from?: (...a: unknown[]) => any,
@@ -679,29 +915,22 @@ export const asManifest = (
   if (!isManifest(m)) {
     throw error('invalid manifest', { found: m }, from ?? asManifest)
   }
-  return normalizeManifest(m)
+  return m
 }
 
 /**
- * Returns a {@link Manifest} with normalized data.
+ * Given a {@link Manifest} returns a {@link NormalizedManifest} that
+ * contains normalized author, bugs, funding, contributors, keywords and
+ * version fields.
  */
-export const normalizeManifest = (
-  manifest: Manifest | ManifestRegistry,
-): Manifest => {
-  manifest = normalizeVersion(manifest)
+export const normalizeManifest = <
+  T extends Manifest | ManifestRegistry,
+>(
+  manifest: T,
+): SomeNormalizedManifest<T> => {
+  manifest = fixManifestVersion(manifest)
 
-  // checks for properties with specific normalization helper methods,
-  // if there's nothing to normalize then we just return the original manifest
-  if (
-    manifest.funding === undefined &&
-    manifest.contributors === undefined &&
-    manifest.bugs === undefined &&
-    manifest.keywords === undefined &&
-    !('maintainers' in manifest)
-  ) {
-    return manifest
-  }
-
+  const normalizedAuthor = parsePerson(manifest.author)
   const normalizedFunding = normalizeFunding(manifest.funding)
   const normalizedContributors = normalizeContributors(
     manifest.contributors,
@@ -710,27 +939,93 @@ export const normalizeManifest = (
   const normalizedBugs = normalizeBugs(manifest.bugs)
   const normalizedKeywords = normalizeKeywords(manifest.keywords)
 
-  // Create result with normalized data
-  const result = {
-    ...manifest,
-    funding: normalizedFunding,
-    contributors: normalizedContributors,
-    bugs: normalizedBugs,
-    keywords: normalizedKeywords,
+  // holds the same object reference but renames the variable here
+  // so that it's simpler to cast it to the normalized type
+  const normalizedManifest = manifest as SomeNormalizedManifest<T>
+
+  if (normalizedAuthor) {
+    normalizedManifest.author = normalizedAuthor
+  } else {
+    delete normalizedManifest.author
+  }
+
+  if (normalizedFunding) {
+    normalizedManifest.funding = normalizedFunding
+  } else {
+    delete normalizedManifest.funding
+  }
+
+  if (normalizedContributors) {
+    normalizedManifest.contributors = normalizedContributors
+  } else {
+    delete normalizedManifest.contributors
+  }
+
+  if (normalizedBugs) {
+    normalizedManifest.bugs = normalizedBugs
+  } else {
+    delete normalizedManifest.bugs
+  }
+
+  if (normalizedKeywords) {
+    normalizedManifest.keywords = normalizedKeywords
+  } else {
+    delete normalizedManifest.keywords
   }
 
   // Remove maintainers field if it exists in the raw manifest
-  if ('maintainers' in manifest && manifest.maintainers) {
-    // Return a new manifest without the maintainers field
-    const resultWithoutMaintainers: Record<string, unknown> =
-      structuredClone(result)
-    delete resultWithoutMaintainers.maintainers
-    return resultWithoutMaintainers as Manifest
+  // this can only happen if the manifest is of ManifestRegistry type
+  if (
+    'maintainers' in normalizedManifest &&
+    normalizedManifest.maintainers
+  ) {
+    delete normalizedManifest.maintainers
+    return normalizedManifest
   }
 
-  return result
+  return normalizedManifest
 }
 
+/**
+ * Type guard to check if a value is a {@link NormalizedManifest}.
+ */
+export const isNormalizedManifest = (
+  o: unknown,
+): o is NormalizedManifest => {
+  return (
+    isManifest(o) &&
+    // given that all these values are optional and potentially undefined
+    // we only check their value content if they are present
+    ('author' in o ? isNormalizedContributorEntry(o.author) : true) &&
+    ('contributors' in o ?
+      isNormalizedContributors(o.contributors)
+    : true) &&
+    ('funding' in o ? isNormalizedFunding(o.funding) : true) &&
+    ('bugs' in o ? isNormalizedBugs(o.bugs) : true) &&
+    ('keywords' in o ? isNormalizedKeywords(o.keywords) : true)
+  )
+}
+
+/**
+ * Given an unknown value, convert it to a {@link NormalizedManifest}.
+ */
+export const asNormalizedManifest = (
+  m: unknown,
+  from?: (...a: unknown[]) => any,
+): NormalizedManifest => {
+  if (!isNormalizedManifest(m)) {
+    throw error(
+      'invalid normalized manifest',
+      { found: m },
+      from ?? asNormalizedManifest,
+    )
+  }
+  return m
+}
+
+/**
+ * Given an unknown value, convert it to a {@link ManifestRegistry}.
+ */
 export const asManifestRegistry = (
   m: unknown,
   from?: (...a: unknown[]) => any,
@@ -742,7 +1037,69 @@ export const asManifestRegistry = (
       from ?? asManifestRegistry,
     )
   }
-  return normalizeManifest(m) as ManifestRegistry
+  return m
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedManifestRegistry}.
+ */
+export const isNormalizedManifestRegistry = (
+  o: unknown,
+): o is NormalizedManifestRegistry => {
+  return isNormalizedManifest(o) && isManifestRegistry(o)
+}
+
+/**
+ * Given an unknown value, convert it to a {@link NormalizedManifestRegistry}.
+ */
+export const asNormalizedManifestRegistry = (
+  m: unknown,
+  from?: (...a: unknown[]) => any,
+): NormalizedManifestRegistry => {
+  if (!isNormalizedManifestRegistry(m)) {
+    throw error(
+      'invalid normalized manifest registry',
+      { found: m },
+      from ?? asNormalizedManifestRegistry,
+    )
+  }
+  return m
+}
+
+/**
+ * Expands a normalized contributor entry by converting the
+ * in-memory symbols to their plain values.
+ */
+const expandNormalizedContributorEntrySymbols = (
+  c: NormalizedContributorEntry,
+): NormalizedContributorEntry => {
+  return {
+    ...c,
+    writeAccess: c[kWriteAccess],
+    isPublisher: c[kIsPublisher],
+  }
+}
+
+/**
+ * Walks a normalized manifest and expands any symbols found
+ * in the `author` and `contributors` fields.
+ */
+export const expandNormalizedManifestSymbols = (
+  m: NormalizedManifest,
+): NormalizedManifest => {
+  const res = { ...m }
+
+  if (isNormalizedContributorEntry(m.author)) {
+    res.author = expandNormalizedContributorEntrySymbols(m.author)
+  }
+
+  if (isNormalizedContributors(m.contributors)) {
+    res.contributors = m.contributors.map(
+      expandNormalizedContributorEntrySymbols,
+    )
+  }
+
+  return res
 }
 
 export const assertManifest: (

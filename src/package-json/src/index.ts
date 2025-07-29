@@ -1,7 +1,11 @@
 import { error } from '@vltpkg/error-cause'
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
-import { asManifest, longDependencyTypes } from '@vltpkg/types'
-import type { Manifest } from '@vltpkg/types'
+import {
+  asManifest,
+  longDependencyTypes,
+  normalizeManifest,
+} from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { readFileSync, writeFileSync, lstatSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { homedir } from 'node:os'
@@ -21,12 +25,12 @@ export class PackageJson {
   /**
    * cache of `package.json` loads
    */
-  #cache = new Map<string, Manifest>()
+  #cache = new Map<string, NormalizedManifest>()
 
   /**
    * cache of `package.json` paths by manifest
    */
-  #pathCache = new Map<Manifest, string>()
+  #pathCache = new Map<NormalizedManifest, string>()
 
   /**
    * cache of load errors
@@ -37,7 +41,10 @@ export class PackageJson {
    * Reads and parses contents of a `package.json` file at a directory `dir`.
    * `reload` will optionally skip reading from the cache when set to `true`.
    */
-  read(dir: string, { reload }: { reload?: boolean } = {}): Manifest {
+  read(
+    dir: string,
+    { reload }: { reload?: boolean } = {},
+  ): NormalizedManifest {
     const cachedPackageJson = !reload && this.#cache.get(dir)
     if (cachedPackageJson) {
       return cachedPackageJson
@@ -57,8 +64,10 @@ export class PackageJson {
     }
 
     try {
-      const res: Manifest = asManifest(
-        parse(readFileSync(filename, { encoding: 'utf8' })),
+      const res = normalizeManifest(
+        asManifest(
+          parse(readFileSync(filename, { encoding: 'utf8' })),
+        ),
       )
       this.#cache.set(dir, res)
       this.#pathCache.set(res, dir)
@@ -73,7 +82,11 @@ export class PackageJson {
     }
   }
 
-  write(dir: string, manifest: Manifest, indent?: number): void {
+  write(
+    dir: string,
+    manifest: NormalizedManifest,
+    indent?: number,
+  ): void {
     const filename =
       dir.endsWith('package.json') ?
         resolve(dir)
@@ -102,7 +115,7 @@ export class PackageJson {
     }
   }
 
-  save(manifest: Manifest): void {
+  save(manifest: NormalizedManifest): void {
     const dir = this.#pathCache.get(manifest)
     if (!dir) {
       throw error(
@@ -116,7 +129,7 @@ export class PackageJson {
     this.write(dir, manifest)
   }
 
-  fix(manifest: Manifest): void {
+  fix(manifest: NormalizedManifest): void {
     for (const depType of longDependencyTypes) {
       const deps = manifest[depType]
       if (deps) {

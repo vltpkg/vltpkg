@@ -2,7 +2,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type { GlobOptionsWithFileTypesFalse } from 'glob'
 import { globSync } from 'glob'
@@ -629,12 +629,16 @@ export class Workspace {
   id: DepID
   path: string
   fullpath: string
-  manifest: Manifest
+  manifest: NormalizedManifest
   groups: string[] = []
   name: string
   #keys?: string[]
 
-  constructor(path: string, manifest: Manifest, fullpath: string) {
+  constructor(
+    path: string,
+    manifest: NormalizedManifest,
+    fullpath: string,
+  ) {
     this.id = joinDepIDTuple(['workspace', path])
     workspaceCache.set(fullpath, this)
     this.path = path
