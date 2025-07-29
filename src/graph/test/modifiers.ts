@@ -6,7 +6,10 @@ import { reload } from '@vltpkg/vlt-json'
 import type { Node } from '../src/node.ts'
 import { Edge } from '../src/edge.ts'
 import type { GraphLike, NodeLike, EdgeLike } from '../src/types.ts'
-import type { DependencyTypeShort, Manifest } from '@vltpkg/types'
+import type {
+  DependencyTypeShort,
+  NormalizedManifest,
+} from '@vltpkg/types'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 // Graph fixtures code
@@ -192,7 +195,7 @@ const getSimpleGraph = (): GraphLike => {
         email: 'ruyadorno@example.com',
       },
     ],
-  } as Manifest
+  } as NormalizedManifest
 
   c.manifest = {
     ...c.manifest,
@@ -202,7 +205,7 @@ const getSimpleGraph = (): GraphLike => {
       },
     },
     keywords: ['something', 'someother'],
-  } as Manifest
+  } as NormalizedManifest
 
   d.manifest = {
     ...d.manifest,
@@ -222,7 +225,7 @@ const getSimpleGraph = (): GraphLike => {
       ],
       e: ['foo', 'bar'],
     },
-  } as Manifest
+  } as NormalizedManifest
   return graph
 }
 

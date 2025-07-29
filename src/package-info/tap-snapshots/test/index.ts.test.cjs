@@ -22,7 +22,12 @@ Object {
 
 exports[`test/index.ts > TAP > manifest > must match snapshot 1`] = `
 Object {
-  "author": "GitHub Inc.",
+  "author": Object {
+    "email": undefined,
+    "name": "GitHub Inc.",
+    [Symbol.for(isPublisher)]: false,
+    [Symbol.for(writeAccess)]: false,
+  },
   "description": "Like ruby's abbrev module, but in js",
   "devDependencies": Object {
     "@npmcli/eslint-config": "^4.0.0",
@@ -70,7 +75,12 @@ Object {
 
 exports[`test/index.ts > TAP > manifest > must match snapshot 2`] = `
 Object {
-  "author": "GitHub Inc.",
+  "author": Object {
+    "email": undefined,
+    "name": "GitHub Inc.",
+    [Symbol.for(isPublisher)]: false,
+    [Symbol.for(writeAccess)]: false,
+  },
   "description": "Like ruby's abbrev module, but in js",
   "devDependencies": Object {
     "@npmcli/eslint-config": "^4.0.0",
@@ -133,7 +143,12 @@ Object {
   "name": "abbrev",
   "versions": Object {
     "2.0.0": Object {
-      "author": "GitHub Inc.",
+      "author": Object {
+        "email": undefined,
+        "name": "GitHub Inc.",
+        [Symbol.for(isPublisher)]: false,
+        [Symbol.for(writeAccess)]: false,
+      },
       "description": "Like ruby's abbrev module, but in js",
       "devDependencies": Object {
         "@npmcli/eslint-config": "^4.0.0",
@@ -189,7 +204,12 @@ Object {
   "name": "abbrev",
   "versions": Object {
     "2.0.0": Object {
-      "author": "GitHub Inc.",
+      "author": Object {
+        "email": undefined,
+        "name": "GitHub Inc.",
+        [Symbol.for(isPublisher)]: false,
+        [Symbol.for(writeAccess)]: false,
+      },
       "description": "Like ruby's abbrev module, but in js",
       "devDependencies": Object {
         "@npmcli/eslint-config": "^4.0.0",
