@@ -5,7 +5,7 @@ import type { PackageJson } from '@vltpkg/package-json'
 import type {
   DependencyTypeLong,
   DependencyTypeShort,
-  Manifest,
+  NormalizedManifest,
 } from '@vltpkg/types'
 import { longDependencyTypes } from '@vltpkg/types'
 import type {
@@ -59,7 +59,7 @@ const addOrRemoveDeps = (
   addOrRemove?:
     | AddImportersDependenciesMap
     | RemoveImportersDependenciesMap,
-): Manifest | undefined => {
+): NormalizedManifest | undefined => {
   const importer = graph.nodes.get(importerId)
   if (!importer) {
     throw error('Failed to retrieve importer node', {
@@ -158,7 +158,7 @@ export const updatePackageJson = ({
   packageJson,
   remove,
 }: UpdatePackageJsonOptions) => {
-  const manifestsToUpdate = new Set<Manifest>()
+  const manifestsToUpdate = new Set<NormalizedManifest>()
   const operations = new Set([add, remove])
 
   for (const operation of operations) {

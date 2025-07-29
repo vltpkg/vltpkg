@@ -13,6 +13,10 @@ import type {
   PackageInfoClientRequestOptions,
   Resolution,
 } from '@vltpkg/package-info'
+import {
+  asNormalizedManifest,
+  normalizeManifest,
+} from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import {
   existsSync,
@@ -49,9 +53,13 @@ const fixtureName = async (spec: Spec) =>
 let fixtureMapChanged = false
 let resolutionsMapChanged = false
 
-export const fixtureManifest = (name: string): Manifest =>
-  JSON.parse(
-    readFileSync(resolve(fixtureDir, name) + '.json', 'utf8'),
+export const fixtureManifest = (name: string) =>
+  asNormalizedManifest(
+    normalizeManifest(
+      JSON.parse(
+        readFileSync(resolve(fixtureDir, name) + '.json', 'utf8'),
+      ),
+    ),
   )
 
 const actualPackageInfo = new PackageInfoClient()

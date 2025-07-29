@@ -233,6 +233,56 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 `
 
+exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and contributors > should save hidden lockfile with normalized manifest containing author and contributors 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      {
+        "name": "foo",
+        "version": "1.0.0",
+        "author": {
+          "name": "John Doe",
+          "email": "john@example.com",
+          "writeAccess": false,
+          "isPublisher": false
+        },
+        "contributors": [
+          {
+            "name": "Jane Smith",
+            "email": "jane@example.com",
+            "writeAccess": false,
+            "isPublisher": false
+          },
+          {
+            "name": "Bob Wilson",
+            "email": "bob@example.com",
+            "writeAccess": false,
+            "isPublisher": false
+          }
+        ],
+        "dist": {
+          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+        }
+      }
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > store modifiers > with empty modifiers config > should save lockfile without modifiers when config is empty 1`] = `
 Object {
   "edges": Object {

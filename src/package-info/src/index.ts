@@ -562,7 +562,7 @@ export class PackageInfoClient {
             latest: manifest.version ?? '',
           },
           versions: {
-            [manifest.version ?? '']: manifest,
+            [manifest.version ?? '']: manifest as Manifest,
           },
         }
       }

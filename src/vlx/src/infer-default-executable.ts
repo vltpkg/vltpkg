@@ -1,4 +1,4 @@
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 
 /**
  * Infer the default binary from a package.
@@ -8,7 +8,7 @@ import type { Manifest } from '@vltpkg/types'
 export const inferDefaultExecutable = ({
   name,
   bin,
-}: Manifest): undefined | [string, string] => {
+}: NormalizedManifest): undefined | [string, string] => {
   if (!bin) return undefined
 
   let binName = name?.startsWith('@') ? name.split('/')[1] : name

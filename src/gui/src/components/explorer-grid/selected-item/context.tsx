@@ -23,7 +23,10 @@ import type {
 import type { PropsWithChildren } from 'react'
 import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
-import type { Manifest, NormalizedFunding } from '@vltpkg/types'
+import type {
+  NormalizedManifest,
+  NormalizedFunding,
+} from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
 
 export type Tab =
@@ -333,10 +336,7 @@ const getDependencyInformation = async (
       }
 
       if (manifest?.funding) {
-        processFunding(
-          manifest.funding as NormalizedFunding,
-          counters.depFunding,
-        )
+        processFunding(manifest.funding, counters.depFunding)
       }
 
       processLicense(license, licenseInsights, counters.depLicenses)
@@ -369,8 +369,8 @@ const getDependencyInformation = async (
 
 type SelectedItemStoreState = DetailsInfo & {
   selectedItem: GridItemData
-  manifest: Manifest | null
-  rawManifest: Manifest | null
+  manifest: NormalizedManifest | null
+  rawManifest: NormalizedManifest | null
   packageScore?: PackageScore
   insights: SocketSecurityDetails[] | undefined
   depCount: number | undefined
