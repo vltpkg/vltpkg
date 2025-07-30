@@ -2,6 +2,8 @@
   "name": "vlt",
   "description": "The vlt CLI",
   "version": "0.0.0-18",
+  "homepage": "https://vlt.sh",
+  "bugs": "https://github.com/vltpkg/vltpkg/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -19,5 +21,39 @@
   },
   "publishConfig": {
     "directory": "./.build-publish"
-  }
+  },
+  "keywords": [
+    "vlt",
+    "package",
+    "manager",
+    "cli",
+    "install",
+    "dependency",
+    "dependencies",
+    "gui",
+    "graph",
+    "run",
+    "build",
+    "distribute",
+    "publish",
+    "npm",
+    "pnpm",
+    "yarn",
+    "bun",
+    "deno",
+    "node",
+    "javascript",
+    "typescript",
+    "maintence",
+    "module",
+    "cjs",
+    "esm",
+    "init",
+    "create",
+    "project",
+    "workspace",
+    "monorepo",
+    "registry",
+    "vsr"
+  ]
 }
