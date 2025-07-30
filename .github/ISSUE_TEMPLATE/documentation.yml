@@ -1,0 +1,192 @@
+name: 📚 Documentation
+description: Improve or create documentation
+title: "[DOCS] "
+labels: ["documentation", "enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📚 Documentation
+        Thanks for helping improve our documentation! Clear documentation is essential for project success and developer experience.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📋 Description
+      description: Describe what documentation needs to be created, updated, or improved.
+      placeholder: "Describe the documentation work needed..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: 📝 Documentation Type
+      description: What type of documentation is this?
+      options:
+        - API Documentation - Document APIs, methods, functions
+        - User Guide - End-user instructions and guides
+        - Developer Guide - Technical documentation for developers
+        - Getting Started - Onboarding and setup instructions
+        - Tutorial - Step-by-step learning content
+        - Reference - Technical reference material
+        - FAQ - Frequently asked questions
+        - Troubleshooting - Problem-solving guides
+        - Architecture - System design and architecture docs
+        - Contributing Guide - How to contribute to the project
+        - Changelog - Release notes and changes
+        - README - Project overview and basic info
+        - Code Comments - Inline code documentation
+        - Other - Specify in description
+    validations:
+      required: true
+
+  - type: dropdown
+    id: action
+    attributes:
+      label: 🔄 Action Needed
+      description: What kind of documentation work is required?
+      options:
+        - Create - Write new documentation from scratch
+        - Update - Modify existing documentation
+        - Fix - Correct errors in existing documentation
+        - Reorganize - Restructure existing documentation
+        - Translate - Translate documentation to another language
+        - Migrate - Move documentation to new format/location
+        - Remove - Delete outdated documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_state
+    attributes:
+      label: 📄 Current State
+      description: What is the current state of the documentation (if any exists)?
+      placeholder: "Describe existing documentation or lack thereof..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: target_audience
+    attributes:
+      label: 👥 Target Audience
+      description: Who is the intended audience for this documentation?
+      placeholder: "End users, developers, contributors, specific teams..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: content_outline
+    attributes:
+      label: 📖 Content Outline
+      description: Provide an outline or structure for the documentation content.
+      placeholder: |
+        1. Introduction
+        2. Main topics to cover
+        3. Examples to include
+        4. Conclusion
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Priority Level
+      description: How important is this documentation work?
+      options:
+        - Low - Nice to have, not urgent
+        - Medium - Important for user experience
+        - High - Critical for adoption/usage
+        - Critical - Blocking other work
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: ⚡ Complexity Level
+      description: How complex is this documentation work?
+      options:
+        - Simple - Quick updates or fixes
+        - Medium - Moderate writing/research needed
+        - Complex - Extensive research and writing
+        - Unknown - Needs investigation
+    validations:
+      required: false
+
+  - type: textarea
+    id: research_needed
+    attributes:
+      label: 🔍 Research Required
+      description: What research or investigation is needed before writing?
+      placeholder: "Information gathering, SME interviews, code analysis..."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: deliverables
+    attributes:
+      label: 📦 Deliverables
+      description: What specific deliverables are expected?
+      options:
+        - label: Written documentation (markdown, wiki, etc.)
+        - label: Code examples and snippets
+        - label: Diagrams or flowcharts
+        - label: Screenshots or images
+        - label: Video tutorials or demos
+        - label: Interactive examples
+        - label: API reference material
+        - label: Migration guides
+        - label: Best practices documentation
+
+  - type: checkboxes
+    id: definition_of_done
+    attributes:
+      label: ✅ Definition of Done
+      description: Check all criteria that should be met for this documentation to be considered complete
+      options:
+        - label: Content written and accurate
+        - label: Technical accuracy verified
+        - label: Code examples tested and working
+        - label: Grammar and style reviewed
+        - label: Peer reviewed for clarity
+        - label: Properly formatted and structured
+        - label: Links and references verified
+        - label: Images and diagrams included
+        - label: Published in appropriate location
+        - label: Cross-referenced with related docs
+        - label: Feedback incorporated from reviewers
+
+  - type: textarea
+    id: existing_resources
+    attributes:
+      label: 🔗 Existing Resources
+      description: Are there any existing resources, references, or related documentation?
+      placeholder: "Links to related docs, reference materials, or similar examples..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: 🎯 Success Criteria
+      description: How will you measure the success of this documentation?
+      placeholder: "User feedback, reduced support tickets, adoption metrics..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 📎 Additional Context
+      description: Any other relevant information or context.
+      placeholder: "Additional requirements, constraints, or considerations..."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **For AI Agents (Copilot/Cursor):** This documentation request contains structured information including target audience, content outline, and deliverables. Use the documentation type and complexity level to plan the work. The Definition of Done provides clear quality criteria for documentation completion.
