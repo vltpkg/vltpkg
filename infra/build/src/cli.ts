@@ -10,16 +10,20 @@ import { isBin } from './bins.ts'
 
 const parseOptions = () => {
   const {
-    values: { outdir, platform, arch, bins, quiet },
+    values: { outdir, bins, ...values },
     positionals: [action = 'bundle'],
   } = parseArgs({
     allowPositionals: true,
+    allowNegative: true,
     options: {
       outdir: { type: 'string' },
       platform: { type: 'string' },
       arch: { type: 'string' },
       bins: { type: 'string', multiple: true },
       quiet: { type: 'boolean' },
+      splitting: { type: 'boolean', default: true },
+      minify: { type: 'boolean', default: false },
+      sourcemap: { type: 'boolean', default: true },
     },
   })
 
@@ -28,7 +32,7 @@ const parseOptions = () => {
 
   return [
     action,
-    { outdir: resolve(outdir), platform, arch, bins, quiet },
+    { outdir: resolve(outdir), bins, ...values },
   ] as const
 }
 
