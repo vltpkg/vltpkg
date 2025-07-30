@@ -14,7 +14,10 @@
 
 ### Documentation
 
-Full documentation, startup guides & API references can be found at [docs.vlt.sh](https://docs.vlt.sh). `vlt` comes with it multiple companion binaries which helpfully alias common commands (ex. `vlr` is equivalent to `vlt run`, `vlx` is `vlt exec` etc.)
+Full documentation, startup guides & API references can be found at
+[docs.vlt.sh](https://docs.vlt.sh). `vlt` comes with it multiple
+companion binaries which helpfully alias common commands (ex. `vlr` is
+equivalent to `vlt run`, `vlx` is `vlt exec` etc.)
 
 #### Usage
 
