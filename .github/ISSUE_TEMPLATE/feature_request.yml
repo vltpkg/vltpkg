@@ -1,0 +1,122 @@
+name: ✨ Feature Request
+description: Propose a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "feature"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Feature Request
+        Thanks for taking the time to suggest a new feature! Please provide detailed information to help us understand and evaluate your proposal.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📋 Description
+      description: Provide a clear and concise description of the feature you'd like to see implemented.
+      placeholder: "Describe the feature..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problem Statement
+      description: What problem does this feature solve? Is your feature request related to a problem?
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe the solution you'd like to see implemented.
+      placeholder: "I would like to see..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered any alternative solutions or features?
+      placeholder: "Alternative approaches I've considered..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: design_considerations
+    attributes:
+      label: 🎨 Design Considerations
+      description: Any specific design requirements, UI/UX considerations, or architectural concerns?
+      placeholder: "Design requirements and considerations..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: research
+    attributes:
+      label: 🔍 Research & Prior Art
+      description: Any relevant research, existing implementations, or prior art to consider?
+      placeholder: "Links to similar implementations, research papers, or reference materials..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Priority Level
+      description: How important is this feature?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve workflow
+        - High - Significant impact
+        - Critical - Blocking work
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: ⚡ Estimated Complexity
+      description: How complex do you think this feature might be to implement?
+      options:
+        - Simple - Few hours of work
+        - Medium - 1-3 days of work
+        - Complex - 1+ weeks of work
+        - Unknown - Needs investigation
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: definition_of_done
+    attributes:
+      label: ✅ Definition of Done
+      description: Check all criteria that should be met for this feature to be considered complete
+      options:
+        - label: Feature implemented and working as described
+        - label: Unit tests written and passing
+        - label: Integration tests written and passing  
+        - label: Documentation updated
+        - label: Code reviewed and approved
+        - label: Performance impact assessed
+        - label: Accessibility considerations addressed
+        - label: Security implications reviewed
+        - label: Backwards compatibility maintained
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 📎 Additional Context
+      description: Add any other context, screenshots, mockups, or examples about the feature request.
+      placeholder: "Any additional information that would help..."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **For AI Agents (Copilot/Cursor):** This feature request contains structured requirements in the Description, Problem Statement, and Proposed Solution sections. The Definition of Done provides clear completion criteria. Consider the Priority Level and Complexity estimates when planning implementation.
