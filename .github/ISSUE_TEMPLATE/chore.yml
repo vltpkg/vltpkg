@@ -1,0 +1,151 @@
+name: 🔧 Chore
+description: Maintenance tasks, refactoring, or technical improvements
+title: "[CHORE] "
+labels: ["chore", "maintenance"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔧 Chore
+        Thanks for identifying a maintenance task! Please provide details about the work needed to keep our codebase healthy and efficient.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📋 Description
+      description: Provide a clear description of the maintenance task or improvement needed.
+      placeholder: "Describe the chore/maintenance task..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📂 Category
+      description: What type of chore is this?
+      options:
+        - Code Refactoring - Improve code structure/quality
+        - Dependency Updates - Update packages/libraries
+        - Performance Optimization - Improve speed/efficiency
+        - Code Cleanup - Remove unused code/comments
+        - Build/CI Improvements - Improve build process
+        - Testing Infrastructure - Improve test setup/coverage
+        - Documentation Maintenance - Update/fix docs
+        - Security Updates - Address security concerns
+        - Configuration Changes - Update settings/config
+        - Tooling Improvements - Improve developer tools
+        - Other - Specify in description
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 🎯 Motivation
+      description: Why is this chore necessary? What problem does it solve or what improvement does it provide?
+      placeholder: "This is needed because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 🎌 Scope of Work
+      description: What specific areas of the codebase will be affected?
+      placeholder: "Files/modules/components that will be modified..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: 📊 Impact Level
+      description: What is the expected impact of this chore?
+      options:
+        - Low - Minor improvements, no breaking changes
+        - Medium - Noticeable improvements, minimal risk
+        - High - Significant improvements, some risk
+        - Critical - Major changes, needs careful planning
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⏰ Urgency
+      description: How urgent is this maintenance task?
+      options:
+        - Low - Can be done when time permits
+        - Medium - Should be done in next sprint
+        - High - Should be done soon
+        - Critical - Needs immediate attention
+    validations:
+      required: true
+
+  - type: textarea
+    id: breaking_changes
+    attributes:
+      label: ⚠️ Breaking Changes
+      description: Will this chore introduce any breaking changes? If so, describe them.
+      placeholder: "Any breaking changes or migration steps..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing_strategy
+    attributes:
+      label: 🧪 Testing Strategy
+      description: How will you ensure this chore doesn't break existing functionality?
+      placeholder: "Testing approach and validation steps..."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: definition_of_done
+    attributes:
+      label: ✅ Definition of Done
+      description: Check all criteria that should be met for this chore to be considered complete
+      options:
+        - label: Changes implemented as described
+        - label: Existing functionality verified unaffected
+        - label: Tests updated and passing
+        - label: Documentation updated if needed
+        - label: Code reviewed and approved
+        - label: Performance impact assessed
+        - label: Breaking changes documented
+        - label: Migration guide provided (if applicable)
+        - label: Rollback plan prepared (if high risk)
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 🔗 Dependencies
+      description: Are there any dependencies or prerequisites for this chore?
+      placeholder: "Dependencies on other issues, external factors, etc..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: ⏱️ Estimated Timeline
+      description: How long do you estimate this chore will take?
+      placeholder: "Estimated time to complete..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 📎 Additional Context
+      description: Any other relevant information, links, or context.
+      placeholder: "Links to related issues, documentation, or resources..."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **For AI Agents (Copilot/Cursor):** This chore contains structured information about maintenance work including scope, impact level, and testing strategy. Use the category and urgency to prioritize the work. The Definition of Done provides clear completion criteria for technical improvements.
