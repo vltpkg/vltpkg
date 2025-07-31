@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 
@@ -131,15 +131,17 @@ export const getWorkspace = (dir: string) => ({
   pj: readPkgJson(dir),
 })
 
-export const getWorkspaces = (ignoreFolders: string[]): Workspace[] =>
+export const getWorkspaces = (): Workspace[] =>
   [
     ROOT,
     ...getPnpmWorkspaceConfig().packages.flatMap(p =>
       readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
         withFileTypes: true,
       })
-        .filter(w => !ignoreFolders.includes(w.name))
         .filter(w => w.isDirectory())
+        .filter(w =>
+          existsSync(resolve(w.parentPath, w.name, 'package.json')),
+        )
         .map(w => resolve(w.parentPath, w.name)),
     ),
   ].map(getWorkspace)
