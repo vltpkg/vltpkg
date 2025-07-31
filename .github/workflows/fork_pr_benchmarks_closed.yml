@@ -1,3 +1,5 @@
+name: Bencher Archive closed PR
+
 on:
   pull_request_target:
     types: [closed]
