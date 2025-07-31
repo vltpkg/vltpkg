@@ -14,7 +14,7 @@ jobs:
         fixture: ["vue"]
         variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
     env:
-      PR_EVENT: ${{ matrix.fixture }}-${{ matrix.variation }}-event.json
+      PR_EVENT: results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
     steps:
 
       - name: Download Benchmark Results
