@@ -55,4 +55,4 @@ jobs:
           --adapter shell_hyperfine \
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
           --ci-number "$PR_NUMBER" \
-          --file "results-${{ matrix.fixture }}-${{ matrix.variation }}/benchmarks.json" \
+          --file "results-${{ matrix.fixture }}-${{ matrix.variation }}-benchmarks.json" \
