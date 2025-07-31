@@ -54,6 +54,7 @@ this repository and its corresponding license:
 | [@vltpkg/cache-unzip](./src/cache-unzip)           | [BSD-2-Clause-Patent](./src/cache-unzip/LICENSE)      | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cache-unzip?logo=npm)      |
 | [@vltpkg/cli-sdk](./src/cli-sdk)                   | [BSD-2-Clause-Patent](./src/cli-sdk/LICENSE)          | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-sdk?logo=npm)          |
 | [@vltpkg/cmd-shim](./src/cmd-shim)                 | [BSD-2-Clause-Patent](./src/cmd-shim/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cmd-shim?logo=npm)         |
+| [@vltpkg/config](./src/config)                     | [BSD-2-Clause-Patent](./src/config/LICENSE)           | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/config?logo=npm)           |
 | [@vltpkg/dep-id](./src/dep-id)                     | [BSD-2-Clause-Patent](./src/dep-id/LICENSE)           | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/dep-id?logo=npm)           |
 | [@vltpkg/dot-prop](./src/dot-prop)                 | [MIT](./src/dot-prop/LICENSE)                         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/dot-prop?logo=npm)         |
 | [@vltpkg/dss-breadcrumb](./src/dss-breadcrumb)     | [BSD-2-Clause-Patent](./src/dss-breadcrumb/LICENSE)   | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/dss-breadcrumb?logo=npm)   |
