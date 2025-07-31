@@ -403,18 +403,13 @@ const fixPackage = async (
 
 const main = async () => {
   const config = getPnpmWorkspaceConfig()
-  // TODO: make the full path check when needed,
-  // for now it only looks up the base folder name
-  const ignoreFolders = ['cli-benchmarks']
-  const workspaces = getWorkspaces(ignoreFolders).map(
-    ({ dir, pkgPath, pj }) => ({
-      dir,
-      pj,
-      pkgPath,
-      isRoot: dir === ROOT,
-      relDir: `${dir == ROOT ? '.' : relative(dir, ROOT)}/`,
-    }),
-  )
+  const workspaces = getWorkspaces().map(({ dir, pkgPath, pj }) => ({
+    dir,
+    pj,
+    pkgPath,
+    isRoot: dir === ROOT,
+    relDir: `${dir == ROOT ? '.' : relative(dir, ROOT)}/`,
+  }))
   for (const ws of workspaces) {
     writeJson(ws.pkgPath, await fixPackage(ws, config))
   }
