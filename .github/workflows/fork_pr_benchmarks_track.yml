@@ -13,8 +13,6 @@ jobs:
       matrix:
         fixture: ["vue"]
         variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
-    env:
-      PR_EVENT: results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
     steps:
 
       - name: Download Benchmark Results
@@ -34,7 +32,7 @@ jobs:
         with:
           script: |
             let fs = require('fs');
-            let prEvent = JSON.parse(fs.readFileSync(process.env.PR_EVENT, {encoding: 'utf8'}));
+            let prEvent = JSON.parse(fs.readFileSync('event.json', {encoding: 'utf8'}));
             core.exportVariable("PR_HEAD", prEvent.pull_request.head.ref);
             core.exportVariable("PR_BASE", prEvent.pull_request.base.ref);
             core.exportVariable("PR_BASE_SHA", prEvent.pull_request.base.sha);
@@ -55,4 +53,4 @@ jobs:
           --adapter shell_hyperfine \
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
           --ci-number "$PR_NUMBER" \
-          --file "results-${{ matrix.fixture }}-${{ matrix.variation }}-benchmarks.json" \
+          --file "benchmarks.json" \
