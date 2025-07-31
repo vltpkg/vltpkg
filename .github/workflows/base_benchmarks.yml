@@ -41,7 +41,7 @@ jobs:
 
       - name: Run Benchmarks variations
         run: |
-          bash ./infra/cli-benchmarks/benchmark.sh ${{ matrix.fixture }} ${{ matrix.variation }}
+          bash ./infra/cli-benchmarks/scripts/benchmark.sh ${{ matrix.fixture }} ${{ matrix.variation }}
 
       - uses: bencherdev/bencher@main
       - name: Track base branch benchmarks with Bencher
