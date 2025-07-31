@@ -1,0 +1,149 @@
+name: Community Sync Agenda
+
+on:
+  schedule:
+    # Runs every Tuesday at 9:00 AM UTC (gives extra day to manage agenda issues/prs)
+    - cron: '0 9 * * 2'
+  workflow_dispatch:
+    inputs:
+      week_override:
+        description: 'Override week (format: YYYY-MM-DD for the Monday of that week)'
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  create-agenda:
+    name: Create Community Sync Agenda
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Create Agenda Issue
+        id: create-agenda
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Since date-fns is not available, we'll use plain JavaScript
+            const now = context.payload.inputs?.week_override ? new Date(context.payload.inputs.week_override) : new Date();
+            
+            // Get Monday of current week
+            const dayOfWeek = now.getDay();
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday = 0, Monday = 1
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + diff);
+            monday.setHours(0, 0, 0, 0);
+            
+            // Get Thursday (meeting day)
+            const thursday = new Date(monday);
+            thursday.setDate(monday.getDate() + 3);
+            
+            const weekOfYear = monday.toISOString().split('T')[0];
+            const weekDisplay = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const thursdayDisplay = thursday.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            });
+            
+            // Search for issues and PRs with 'agenda' label
+            const agendaItems = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} label:agenda state:open`,
+              sort: 'created',
+              order: 'desc'
+            });
+            
+            // Format agenda items
+            let agendaSection = '';
+            if (agendaItems.data.items.length > 0) {
+              agendaSection = '\n\n';
+              for (const item of agendaItems.data.items) {
+                const type = item.pull_request ? 'PR' : 'Issue';
+                const labels = item.labels.map(label => '`' + label.name + '`').join(' ');
+                agendaSection += '1. **' + type + ' #' + item.number + '**: [' + item.title + '](' + item.html_url + ')\n';
+              }
+            } else {
+              agendaSection = '\n\n*No items currently marked with `agenda` label.*\n\n';
+            }
+            
+            // Create the issue body
+            const issueBody = '# Community Sync Agenda - Week of ' + weekDisplay + '\n\n' +
+              '**Meeting Date**: ' + thursdayDisplay + ' at 2:00 PM EST\n\n' +
+              '**Stream Link**: https://riverside.fm/studio/vlt-community\n' +
+              '**YouTube**: https://www.youtube.com/@vltpkg\n\n' +
+              '## Agenda\n\n' +
+              '### Housekeeping\n' +
+              '1. **Introduction(s)** - Note the name of the call, state the day & date\n' +
+              '1. **[Code of Conduct Acknowledgement](https://github.com/vltpkg/vltpkg/blob/main/CODE_OF_CONDUCT.md)**\n' +
+              '1. **Outline Intentions & Desired Outcomes** - Interact with the community to ensure movement on important issues/ideas for the project\n' +
+              '1. **Announcements** - Any project updates, releases, or community news\n\n' +
+              '### Marked Issues & PRs\n' + agendaSection + '\n' +
+              '## How to Join\n\n' +
+              'Anyone is free to watch or be a guest in our calls as long as they abide by our project\'s [Code of Conduct](https://github.com/vltpkg/vltpkg/blob/main/CODE_OF_CONDUCT.md).\n\n' +
+              '- **Join the call**: https://riverside.fm/studio/vlt-community\n' +
+              '- **Watch live on YouTube**: https://www.youtube.com/@vltpkg\n' +
+              '- **Calendar**: Add our [public events calendar](https://calendar.google.com/calendar/embed?src=c_ee5f7f2a875caac1c7a90183d7faf31f2fe0e22b94aca147f005bfb3e0c7e072%40group.calendar.google.com&ctz=America%2FToronto)\n\n' +
+              'By joining the call as a guest or contributing to the discussion, you agree to our [Recording Release terms](https://github.com/vltpkg/vltpkg/blob/main/COMMUNITY_SYNC.md#recording-release).\n\n' +
+              '## Meeting Notes\n\n' +
+              'After the call, notes will be added to the [meetings directory](https://github.com/vltpkg/vltpkg/tree/main/meetings).\n\n' +
+              '<!-- \n' +
+              'Add items to this agenda by:\n' +
+              '1. Adding the \'agenda\' label to relevant issues or PRs\n' +
+              '2. Commenting on this issue with additional topics\n' +
+              '-->';
+
+            const title = 'Community Sync Agenda - Week of ' + weekDisplay + ' (' + weekOfYear + ')';
+            
+            // Check if an issue with this title already exists
+            const existingIssues = await github.rest.search.issuesAndPullRequests({
+              q: 'repo:' + context.repo.owner + '/' + context.repo.repo + ' is:issue "' + title + '" in:title'
+            });
+            
+            if (existingIssues.data.items.length > 0) {
+              console.log('Agenda issue for week of ' + weekDisplay + ' already exists: #' + existingIssues.data.items[0].number);
+              core.setOutput('issue_number', existingIssues.data.items[0].number);
+              core.setOutput('issue_url', existingIssues.data.items[0].html_url);
+              core.setOutput('created', 'false');
+              core.setOutput('agenda_items_count', agendaItems.data.items.length);
+              return;
+            }
+            
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: issueBody,
+              labels: ['community-sync', 'agenda']
+            });
+            
+            console.log('Created agenda issue #' + issue.data.number + ': ' + issue.data.html_url);
+            core.setOutput('issue_number', issue.data.number);
+            core.setOutput('issue_url', issue.data.html_url);
+            core.setOutput('created', 'true');
+            core.setOutput('agenda_items_count', agendaItems.data.items.length);
+                         
+      - name: Summary
+        run: |
+          echo "✅ Community Sync agenda workflow completed"
+          echo "📄 Issue #${{ steps.create-agenda.outputs.issue_number }}: ${{ steps.create-agenda.outputs.issue_url }}"
+          echo "📋 Found ${{ steps.create-agenda.outputs.agenda_items_count }} agenda items"
+          if [ "${{ steps.create-agenda.outputs.created }}" = "true" ]; then
+            echo "🆕 New agenda issue created"
+          else
+            echo "♻️  Agenda issue already existed"
+          fi

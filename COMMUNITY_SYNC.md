@@ -41,43 +41,54 @@ of our [Recording Release](#recording-release) outlined below.
 
 #### Recording Release:
 
-> &nbsp; I, the “Recorded Party”, hereby authorize
-> `vlt technology inc.` (the “Released Party”) the right and
-> permission to copyright and/or publish, reproduce or otherwise use
-> my name, voice, and likeness in video, photographs, written
-> materials, and audio-visual recordings. I acknowledge and understand
-> these materials about or of me may be used for both commercial
-> and/or non-commercial purposes. &nbsp; I understand that my image
-> may be edited, copied, exhibited, published and/or distributed. I
-> also understand this material may be used individually or in
-> conjunction with other media in any medium, including without
-> limitation to print publications, digital publications, and/or
-> public broadcast for any lawful purpose. There is no time limit on
-> the validity of this release nor are there any geographic
-> limitations on where these materials may be distributed. &nbsp; I
-> hereby acknowledge and grant `vlt technology inc.` and its
-> employees, agents, licenses, successors, and third-party
-> organizations all ownership rights and irrevocable right and
-> permission to use, copyright, publish, sell, distribute, and/or
-> promote the recorded video, photo, interview, audio and/or text.
-> &nbsp; I understand that my participation is voluntary and that I
-> may, at any time, discontinue my involvement be leaving a recording
-> session. &nbsp; I understand that `vlt technology inc.` can see no
-> risk presently, and that I take full responsibility for my
-> involvement in this project and the risks that it may entail (be
-> they legal, physical, or mental) and release `vlt technology inc.`
-> from any claims, demands, losses, damages, suits, and liabilities of
-> any kind whatsoever in connection with the foregoing. &nbsp; I
-> hereby certify that I am over eighteen years of age and am competent
-> to contract in my own name insofar as the above is concerned. If I
-> am under eighteen years of age, my parents or legal guardians have
-> read this document and have given their consent by allowing my
-> participation. &nbsp; By joining a recording session, I acknowledge
-> that I have completely read and fully understand the above consent
-> and release and agree to be bound thereby. I hereby release any and
-> all claims against any person or organization utilizing this
-> material for marketing, educational, promotional, and/or any other
-> lawful purpose whatsoever.
+```
+I, the “Recorded Party”, hereby authorize vlt technology inc.
+(the “Released Party”) the right and permission to copyright
+and/or publish, reproduce or otherwise use my name, voice,
+and likeness in video, photographs, written materials, and
+audio-visual recordings. I acknowledge and understand these
+materials about or of me may be used for both commercial
+and/or non-commercial purposes.
+
+I understand that my image may be edited, copied, exhibited,
+published and/or distributed. I also understand this material
+may be used individually or in conjunction with other media
+in any medium, including without limitation to print publications,
+digital publications, and/or public broadcast for any lawful
+purpose. There is no time limit on the validity of this release
+nor are there any geographic limitations on where these materials
+may be distributed.
+
+I hereby acknowledge and grant vlt technology inc. and its
+employees, agents, licenses, successors, and third-party
+organizations all ownership rights and irrevocable right and
+permission to use, copyright, publish, sell, distribute, and/or
+promote the recorded video, photo, interview, audio and/or text.
+
+I understand that my participation is voluntary and that I
+may, at any time, discontinue my involvement be leaving a
+recording session.
+
+I understand that vlt technology inc. can see no
+risk presently, and that I take full responsibility for my
+involvement in this project and the risks that it may entail
+(be they legal, physical, or mental) and release vlt technology inc.
+from any claims, demands, losses, damages, suits, and liabilities of
+any kind whatsoever in connection with the foregoing.
+
+I hereby certify that I am over eighteen years of age and am
+competent to contract in my own name insofar as the above is
+concerned. If I am under eighteen years of age, my parents or
+legal guardians have read this document and have given their
+consent by allowing my participation.
+
+By joining a recording session, I acknowledge that I have
+completely read and fully understand the above consent and
+release and agree to be bound thereby. I hereby release any
+and all claims against any person or organization utilizing
+this material for marketing, educational, promotional, and/or
+any other lawful purpose whatsoever.
+```
 
 ---
 
