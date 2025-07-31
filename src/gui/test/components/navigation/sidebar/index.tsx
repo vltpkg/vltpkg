@@ -40,6 +40,12 @@ vi.mock(
     SidebarQueryNav: 'gui-sidebar-query-nav',
   }),
 )
+vi.mock(
+  '@/components/navigation/sidebar/sidebar-settings-nav.tsx',
+  () => ({
+    SidebarSettingsNav: 'gui-sidebar-settings-nav',
+  }),
+)
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
