@@ -37,7 +37,7 @@ jobs:
 
       - name: Install & Setup Tools
         run: |
-          bash ./infra/cli-benchmarks/setup.sh
+          bash ./infra/cli-benchmarks/scripts/setup.sh
 
       - name: Run Benchmarks variations
         run: |
