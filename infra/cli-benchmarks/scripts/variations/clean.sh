@@ -14,4 +14,4 @@ hyperfine \
   --prepare="sleep 1; bash $BENCH_SCRIPTS/clean-helpers.sh clean_all" \
   --conclude="sleep 1; bash $BENCH_SCRIPTS/clean-helpers.sh clean_all" \
   --cleanup="bash $BENCH_SCRIPTS/clean-helpers.sh clean_all" \
-  "$BENCH_COMMAND_VLT"
+  "vlt install: $BENCH_FIXTURE & $BENCH_VARIATION" "$BENCH_COMMAND_VLT"
