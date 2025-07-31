@@ -1,3 +1,5 @@
+name: Baseline Benchmarks
+
 on:
   push:
     branches: main
@@ -53,7 +55,8 @@ jobs:
           --testbed ubuntu-latest \
           --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --threshold-test percentage \
-          --threshold-max-sample-size 64 \
+          --threshold-min-sample-size 7 \
+          --threshold-max-sample-size 10 \
           --threshold-upper-boundary 0.05 \
           --thresholds-reset \
           --adapter shell_hyperfine \
