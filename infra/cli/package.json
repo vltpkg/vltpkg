@@ -2,8 +2,6 @@
   "name": "vlt",
   "description": "The vlt CLI",
   "version": "0.0.0-18",
-  "homepage": "https://vlt.sh",
-  "bugs": "https://github.com/vltpkg/vltpkg/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -18,9 +16,6 @@
   },
   "scripts": {
     "prepack": "vlt-build-prepack"
-  },
-  "publishConfig": {
-    "directory": "./.build-publish"
   },
   "keywords": [
     "vlt",
@@ -55,5 +50,10 @@
     "monorepo",
     "registry",
     "vsr"
-  ]
+  ],
+  "publishConfig": {
+    "directory": "./.build-publish"
+  },
+  "bugs": "https://github.com/vltpkg/vltpkg/issues",
+  "homepage": "https://vlt.sh"
 }
