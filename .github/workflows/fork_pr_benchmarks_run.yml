@@ -50,11 +50,8 @@ jobs:
           name: results-${{ matrix.fixture }}-${{ matrix.variation }}
           path: ./results/${{ matrix.fixture }}/${{ matrix.variation }}/
 
-      - name: Rename event.json file
-        run: cp ${{ github.event_path }} ./results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
-
       - name: Upload GitHub Pull Request Event
         uses: actions/upload-artifact@v4
         with:
           name: results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
-          path: ./results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
+          path: ${{ github.event_path }}
