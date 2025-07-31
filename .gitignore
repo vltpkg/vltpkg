@@ -26,6 +26,8 @@ tsconfig.tsbuildinfo
 /infra/*/docs
 /infra/*/node_modules
 /infra/*/scripts/fixtures/
+/infra/cli-benchmarks/**/node_modules
+/infra/cli-benchmarks/**/vlt-lock.json
 
 /infra/benchmark/.artifacts
 

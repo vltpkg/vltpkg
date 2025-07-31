@@ -131,13 +131,14 @@ export const getWorkspace = (dir: string) => ({
   pj: readPkgJson(dir),
 })
 
-export const getWorkspaces = (): Workspace[] =>
+export const getWorkspaces = (ignoreFolders: string[]): Workspace[] =>
   [
     ROOT,
     ...getPnpmWorkspaceConfig().packages.flatMap(p =>
       readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
         withFileTypes: true,
       })
+        .filter(w => !ignoreFolders.includes(w.name))
         .filter(w => w.isDirectory())
         .map(w => resolve(w.parentPath, w.name)),
     ),

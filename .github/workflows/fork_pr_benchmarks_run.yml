@@ -1,0 +1,57 @@
+name: Run Benchmarks
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+
+jobs:
+  benchmark_fork_pr_branch:
+    name: Run Fork PR Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        fixture: ["vue"]
+        variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
+    env:
+      BENCH_WARMUP: '2'
+      BENCH_RUNS: '10'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          check-latest: true
+
+      - name: Install Dependencies
+        run: pnpm install --filter="./src/*" --ignore-scripts
+
+      - name: Setup vlt binaries
+        run: echo "$(pwd)/scripts/bins" >> $GITHUB_PATH
+
+      - name: Install & Setup Tools
+        run: |
+          bash ./infra/cli-benchmarks/scripts/setup.sh
+
+      - name: Run Benchmarks variations
+        run: |
+          bash ./infra/cli-benchmarks/scripts/benchmark.sh ${{ matrix.fixture }} ${{ matrix.variation }}
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.fixture }}-${{ matrix.variation }}
+          path: ./results/${{ matrix.fixture }}/${{ matrix.variation }}/
+
+      - name: Upload GitHub Pull Request Event
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
+          path: ${{ github.event_path }}

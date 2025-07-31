@@ -1,0 +1,61 @@
+on:
+  push:
+    branches: main
+
+jobs:
+  benchmark_base_branch:
+    name: Continuous Benchmarking with Bencher
+    permissions:
+      checks: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fixture: ["vue"]
+        variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
+    env:
+      BENCH_WARMUP: '2'
+      BENCH_RUNS: '10'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          check-latest: true
+
+      - name: Install Dependencies
+        run: pnpm install --filter="./src/*" --ignore-scripts
+
+      - name: Setup vlt binaries
+        run: echo "$(pwd)/scripts/bins" >> $GITHUB_PATH
+
+      - name: Install & Setup Tools
+        run: |
+          bash ./infra/cli-benchmarks/setup.sh
+
+      - name: Run Benchmarks variations
+        run: |
+          bash ./infra/cli-benchmarks/benchmark.sh ${{ matrix.fixture }} ${{ matrix.variation }}
+
+      - uses: bencherdev/bencher@main
+      - name: Track base branch benchmarks with Bencher
+        run: |
+          bencher run \
+          --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
+          --token '${{ secrets.BENCHER_API_TOKEN }}' \
+          --branch main \
+          --testbed ubuntu-latest \
+          --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
+          --threshold-test percentage \
+          --threshold-max-sample-size 64 \
+          --threshold-upper-boundary 0.05 \
+          --thresholds-reset \
+          --adapter shell_hyperfine \
+          --github-actions '${{ secrets.GITHUB_TOKEN }}' \
+          --file "./results/${{ matrix.fixture }}/${{ matrix.variation }}/benchmarks.json"
