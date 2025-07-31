@@ -26,6 +26,7 @@
 /infra/*/scripts/fixtures
 /infra/*/tap-snapshots
 /infra/*/test/fixtures/**/*.json
+/infra/cli-benchmarks/**
 
 /www/*/.*/
 /www/*/dist
