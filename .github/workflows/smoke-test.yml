@@ -94,10 +94,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
       - uses: pnpm/action-setup@v4
         with:
           run_install: false

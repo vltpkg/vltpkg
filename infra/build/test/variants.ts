@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs'
 t.test('snapshot', async t => {
   const bin = '__BIN__' as Bin
   const dirs = {
-    Node: '__DIR__',
+    Source: '__DIR__',
     Bundle: '__DIR__',
     Compile: '__DIR__',
   }
@@ -48,23 +48,23 @@ t.test('snapshot', async t => {
 })
 
 t.test('isVariant', async t => {
-  t.ok(isVariant('Node'))
+  t.ok(isVariant('Source'))
   t.ok(!isVariant('Unknown'))
 })
 
 t.test('cleanup=true', async t => {
   const dir = t.testdir()
-  const { Node, Bundle, Compile } = createArtifacts({
+  const { Source, Bundle, Compile } = createArtifacts({
     cleanup: true,
     bins: ['vlt'],
     dirs: {
-      Node: join(dir, 'node'),
+      Source: join(dir, 'source'),
       Bundle: join(dir, 'bundle'),
       Compile: join(dir, 'compile'),
     },
   })
 
-  t.notOk(Node.cleanup)
+  t.notOk(Source.cleanup)
   t.ok(Bundle.cleanup)
   t.ok(Compile.cleanup)
 
@@ -79,16 +79,16 @@ t.test('cleanup=true', async t => {
 })
 
 t.test('cleanup=false', async t => {
-  const { Node, Bundle, Compile } = createArtifacts({
+  const { Source, Bundle, Compile } = createArtifacts({
     cleanup: false,
     dirs: {
-      Node: '__DIR__',
+      Source: '__DIR__',
       Bundle: '__DIR__',
       Compile: '__DIR__',
     },
   })
 
-  t.notOk(Node.cleanup)
+  t.notOk(Source.cleanup)
   t.notOk(Bundle.cleanup)
   t.notOk(Compile.cleanup)
 })
