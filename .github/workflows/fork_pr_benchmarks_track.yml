@@ -9,11 +9,8 @@ jobs:
   track_fork_pr_branch:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    permissions:
-      checks: write
     strategy:
-      matrix:
-        fixture: ["vue"]
+      matrix: fixture: ["vue"]
         variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
     steps:
 
@@ -43,7 +40,7 @@ jobs:
       - uses: bencherdev/bencher@main
       - name: Track Benchmarks with Bencher
         run: |
-          bencher run \
+          BENCHER_RESULTS=$(bencher run \
           --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch "$PR_HEAD" \
@@ -55,4 +52,6 @@ jobs:
           --adapter shell_hyperfine \
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
           --ci-number "$PR_NUMBER" \
-          --file "benchmarks.json" || true
+          --format json \
+          --file "benchmarks.json" || true)
+          echo "$BENCHER_RESULTS"
