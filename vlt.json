@@ -1,6 +1,5 @@
 {
   "workspaces": ["src/*", "infra/*", "www/*"],
-  "config": {},
   "catalog": {
     "@eslint/js": "^9.28.0",
     "@types/node": "^22.15.29",

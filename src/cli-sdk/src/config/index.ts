@@ -302,6 +302,12 @@ export class Config {
   positionals?: string[]
 
   /**
+   * Original arguments used for parsing (stored for reload purposes)
+   * @internal
+   */
+  #originalArgs?: string[]
+
+  /**
    * The root of the project where a vlt.json, vlt.json,
    * package.json, or .git was found. Not necessarily the `process.cwd()`,
    * though that is the default location.
@@ -336,6 +342,9 @@ export class Config {
    */
   parse(args: string[] = process.argv): this & ParsedConfig {
     if (isParsed(this)) return this
+
+    // Store the original args for potential reload
+    this.#originalArgs = [...args]
 
     this.jack.loadEnvDefaults()
     const p = this.jack.parseRaw(args)
@@ -417,7 +426,8 @@ export class Config {
     which: WhichConfig,
     values: NonNullable<ConfigFileData>,
   ) {
-    return save('config', pairsToRecords(values), which)
+    save('config', pairsToRecords(values), which)
+    await this.#reloadConfig()
   }
 
   /**
@@ -584,6 +594,45 @@ export class Config {
     this.projectRoot = dirname(find('project', this.projectRoot))
     await this.#maybeLoadConfigFile('project')
     return this
+  }
+
+  /**
+   * Clear cached config values to force re-reading from updated files.
+   * @internal
+   */
+  async #reloadConfig() {
+    // Clear the memoized options to force recalculation
+    this.#options = undefined
+  }
+
+  /**
+   * Force a complete reload of config files from disk.
+   * This clears all caches and re-reads config files.
+   * Useful for long-running processes that need to pick up config changes.
+   */
+  async reloadFromDisk(): Promise<void> {
+    // Clear the memoized options to force recalculation
+    this.#options = undefined
+
+    // Clear the parsed state to force re-parsing
+    // This is crucial because parse() returns early if already parsed
+    this.values = undefined
+    this.positionals = undefined
+    this.command = undefined
+
+    // Clear vlt-json caches for both user and project configs
+    // This ensures that the next time config files are read, they'll be re-read from disk
+    const { unload } = await import('@vltpkg/vlt-json')
+    unload('user')
+    unload('project')
+
+    // Force reload of config files by calling the load methods again
+    // This will re-read the files and re-apply them to the jack parser
+    await this.#maybeLoadConfigFile('user')
+    await this.#maybeLoadConfigFile('project')
+
+    // Re-parse to pick up the updated config values using the original arguments
+    this.parse(this.#originalArgs)
   }
 
   /**
