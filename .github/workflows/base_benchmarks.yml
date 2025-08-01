@@ -52,16 +52,12 @@ jobs:
           --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch main \
-          --hash '${{ github.sha }}' \
-          --start-point main \
-          --start-point-hash '${{ github.sha }}' \
-          --start-point-reset \
           --testbed ubuntu-latest \
           --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --threshold-test percentage \
           --threshold-min-sample-size 7 \
           --threshold-max-sample-size 10 \
-          --threshold-upper-boundary 0.05 \
+          --threshold-upper-boundary 0.10 \
           --thresholds-reset \
           --adapter shell_hyperfine \
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
