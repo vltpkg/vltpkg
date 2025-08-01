@@ -52,6 +52,7 @@ jobs:
           --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch main \
+          --hash '${{ github.sha }}' \
           --testbed ubuntu-latest \
           --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --threshold-test percentage \
