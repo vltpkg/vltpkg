@@ -55,6 +55,7 @@ jobs:
           --hash '${{ github.sha }}' \
           --start-point main \
           --start-point-hash '${{ github.sha }}' \
+          --start-point-reset \
           --testbed ubuntu-latest \
           --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --threshold-test percentage \
