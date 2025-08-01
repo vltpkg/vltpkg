@@ -2,6 +2,7 @@
   "name": "@vltpkg/cli-compiled",
   "description": "The vlt CLI",
   "version": "0.0.0-18",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",

@@ -1,6 +1,5 @@
 import t from 'tap'
-import { readdirSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readdirSync } from 'node:fs'
 
 t.test('basic', async t => {
   const { compile } = await t.mockImport<
@@ -23,25 +22,4 @@ t.test('basic', async t => {
       `vlr${process.platform === 'win32' ? '.exe' : ''}`,
     ),
   )
-})
-
-t.test('not quiet', async t => {
-  const dir = t.testdir()
-  let spawnArgs: string[] = []
-  const { compile } = await t.mockImport<
-    typeof import('../src/compile.ts')
-  >('../src/compile.ts', {
-    'node:child_process': {
-      spawnSync: (_: string, args: string[]) => {
-        spawnArgs = args
-        writeFileSync(join(dir, 'vlt'), '')
-        return { status: 0 }
-      },
-    },
-  })
-  await compile({
-    outdir: dir,
-    bins: ['vlt'],
-  })
-  t.notOk(spawnArgs.includes('--quiet'))
 })

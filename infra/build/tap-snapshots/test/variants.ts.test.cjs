@@ -41,7 +41,7 @@ Object {
 }
 `
 
-exports[`test/variants.ts > TAP > snapshot > Node 1`] = `
+exports[`test/variants.ts > TAP > snapshot > Source 1`] = `
 Object {
   "args": "node __DIR__/__BIN__.ts",
   "bin": "__DIR__/__BIN__.ts",
@@ -50,7 +50,7 @@ Object {
 }
 `
 
-exports[`test/variants.ts > TAP > snapshot > Node windows 1`] = `
+exports[`test/variants.ts > TAP > snapshot > Source windows 1`] = `
 Object {
   "args": "node __DIR__\\\\__BIN__.ts",
   "bin": "__DIR__\\\\__BIN__.ts",

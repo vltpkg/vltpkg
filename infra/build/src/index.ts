@@ -6,7 +6,6 @@ export {
   createVariants,
   createArtifacts,
   VARIANTS,
-  VARIANT_VALUES,
   isVariant,
   PUBLISHED_VARIANT,
 } from './variants.ts'
@@ -15,5 +14,4 @@ export type {
   VariantOptions,
   VariantWithArtifact,
   Artifact,
-  ArtifactKey,
 } from './variants.ts'

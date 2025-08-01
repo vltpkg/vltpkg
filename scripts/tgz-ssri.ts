@@ -45,6 +45,10 @@ const main = (arg?: string) => {
   const res: string[] = []
 
   for (const ws of getWorkspaces()) {
+    if (ws.pj.private) {
+      continue
+    }
+
     const tarball = findPackageTgz(ws)
 
     if (!tarball) {

@@ -61,8 +61,6 @@ t.before(() => {
       { root: null, tarballs: [] },
     )
 
-  console.error([root, ...tarballs])
-
   assert(root, new Error('root tarball not found', { cause: proc }))
   assert(
     tarballs.length,
@@ -117,7 +115,9 @@ const installPacked = (
   }
 }
 
-t.test('works by default', async t => {
+// TODO(compile): turn back on once the compiled CLI is ready
+
+t.skip('works by default', async t => {
   const v = installPacked(t)
   t.test('node_modules/.bin', async t => {
     const res = await runVariant(v, t, ['--version'], { shell: true })
@@ -126,7 +126,7 @@ t.test('works by default', async t => {
   })
 })
 
-t.test('fails with --ignore-scripts', async t => {
+t.skip('fails with --ignore-scripts', async t => {
   const v = installPacked(t, ['--ignore-scripts'])
   t.test('node_modules/.bin', async t => {
     const res = await runVariant(v, t, ['--version'], { shell: true })

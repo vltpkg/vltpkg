@@ -142,7 +142,7 @@ const createVariants = ({
       artifacts: createArtifacts({
         windows,
         dirs: {
-          Node: REPLACE_DIR,
+          Source: REPLACE_DIR,
           Bundle: REPLACE_DIR,
           Compile: REPLACE_DIR,
         },
@@ -165,7 +165,7 @@ const Langs = {
 } as const
 
 const Dirs = {
-  Node: {
+  Source: {
     source: ['infra', 'build', 'src', 'bins'],
     dest: '',
     prepare: false,
@@ -224,7 +224,7 @@ const main = async () => {
                 file: artifact.bin(bin),
                 env: Object.entries({
                   ...env,
-                  ...(variantName === 'Node' ?
+                  ...(variantName === 'Source' ?
                     { __VLT_INTERNAL_LIVE_RELOAD: '1' }
                   : undefined),
                 }),

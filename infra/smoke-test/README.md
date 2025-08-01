@@ -33,13 +33,7 @@ smoke test in this workspace.
 The following variants of the CLI can be tested:
 
 ```ts
-export const allVariants = [
-  'source',
-  'denoSource',
-  'bundle',
-  'denoBundle',
-  'compile',
-] as const
+export const allVariants = ['source', 'bundle', 'compile'] as const
 ```
 
 Not all of these are meant to be published, but they should all behave
@@ -68,9 +62,6 @@ import {
 
 t.test('install a package', async t => {
   const { status, stdout } = await runMultiple(t, ['i', 'eslint'], {
-    variants: defaultVariants,
-    // variants: allVariants,
-    // variants: ['source', 'denoSource'],
     test: async (t, { dirs }) => {
       const lock = JSON.parse(
         readFileSync(join(dirs.project, 'vlt-lock.json'), 'utf-8'),
