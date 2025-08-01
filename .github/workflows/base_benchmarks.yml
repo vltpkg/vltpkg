@@ -53,6 +53,8 @@ jobs:
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch main \
           --hash '${{ github.sha }}' \
+          --start-point main \
+          --start-point-hash '${{ github.sha }}' \
           --testbed ubuntu-latest \
           --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --threshold-test percentage \
