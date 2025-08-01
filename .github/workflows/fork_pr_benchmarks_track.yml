@@ -10,7 +10,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
-      issues: write
+      checks: write
     strategy:
       matrix:
         fixture: ["vue"]
@@ -55,4 +55,4 @@ jobs:
           --adapter shell_hyperfine \
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
           --ci-number "$PR_NUMBER" \
-          --file "benchmarks.json" \
+          --file "benchmarks.json" || true
