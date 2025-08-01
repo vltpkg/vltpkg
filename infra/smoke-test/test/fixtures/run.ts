@@ -12,7 +12,6 @@ import {
   createArtifacts,
   createVariants,
   isVariant,
-  VARIANT_VALUES,
   VARIANTS,
   PUBLISHED_VARIANT,
 } from '@vltpkg/infra-build'
@@ -33,18 +32,20 @@ const filterVariants = (variants: readonly Variant[]) => {
 }
 
 export const allVariants = filterVariants(VARIANTS)
-export const defaultVariants = filterVariants([
-  VARIANT_VALUES.Node,
-  VARIANT_VALUES.Bundle,
-  VARIANT_VALUES.Compile,
-])
+export const defaultVariants = filterVariants(
+  // Don't test the compiled variant since we arent publishing it as `vlt`.
+  // This is decoupled from the `PUBLISHED_VARIANT` in infra-build because
+  // we will want to test it before publishing.
+  // TODO(compile): turn back on once the compiled CLI is ready
+  VARIANTS.filter(v => v !== 'Compile'),
+)
 
 export const Artifacts = createArtifacts({
   bins: Bins,
   cleanup: !t.saveFixture,
   windows: process.platform === 'win32',
   dirs: {
-    Node: BINS_DIR,
+    Source: BINS_DIR,
     Bundle: join(process.cwd(), '.build-bundle'),
     Compile: join(process.cwd(), '.build-compile'),
   },
@@ -332,7 +333,7 @@ export const runVariant = async (
 
 // Export all variants as individual commands
 export const source: Command = (...args) =>
-  runVariant(Variants.Node, ...args)
+  runVariant(Variants.Source, ...args)
 
 export const bundle: Command = (...args) =>
   runVariant(Variants.Bundle, ...args)

@@ -295,11 +295,11 @@ const fixCliVariants = async (ws: Workspace) => {
   }
 
   const isDefaultCli = workspaceBasename === 'cli'
+  const isBundle = PUBLISHED_VARIANT === 'Bundle'
 
   const cliVariant =
     isDefaultCli ?
-      PUBLISHED_VARIANT === 'Bundle' ?
-        'cli-js'
+      isBundle ? 'cli-js'
       : 'cli-compiled'
     : workspaceBasename
 
@@ -322,18 +322,22 @@ const fixCliVariants = async (ws: Workspace) => {
     case 'cli-compiled':
       ws.pj.name = '@vltpkg/cli-compiled'
       ws.pj.engines = undefined
+      ws.pj.private = isBundle ? true : undefined
       break
     default: {
       const [platform, arch] = workspaceBasename.split('-').splice(1)
       descriptionExtra += ` (${platform}-${arch})`
       ws.pj.name = `@vltpkg/cli-${platform}-${arch}`
       ws.pj.engines = undefined
+      ws.pj.private = isBundle ? true : undefined
       break
     }
   }
 
+  // The default CLI is always published as `vlt`
   if (isDefaultCli) {
     ws.pj.name = 'vlt'
+    delete ws.pj.private
   }
 
   ws.pj.description = `The vlt CLI${descriptionExtra}`

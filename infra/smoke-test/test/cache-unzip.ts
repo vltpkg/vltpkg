@@ -4,13 +4,12 @@ import type { Dirent } from 'node:fs'
 import { join } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
-import { runMultiple, allVariants } from './fixtures/run.ts'
+import { runMultiple } from './fixtures/run.ts'
 
 t.test(
   'unzips all cache entries after a successful install',
   async t => {
     const { status } = await runMultiple(t, ['i', 'abbrev'], {
-      variants: allVariants,
       test: async ({ t, dirs }) => {
         // wait for unref'd process to finish. this is an arbitrary amount of
         // time but should be enough for a small install.

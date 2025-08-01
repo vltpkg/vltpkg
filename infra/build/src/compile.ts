@@ -1,8 +1,7 @@
-import os, { tmpdir } from 'node:os'
+import os, { EOL, tmpdir } from 'node:os'
 import assert from 'node:assert'
 import { join, resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync } from 'node:fs'
+import { mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import {
   bundle,
   basenameWithoutExtension,
@@ -14,7 +13,6 @@ import type { Bin } from './bins.ts'
 const spawnCompile = ({
   source,
   outdir,
-  quiet,
   entry,
   exclude,
   arch,
@@ -30,7 +28,7 @@ const spawnCompile = ({
 }) => {
   const outfile = join(outdir, basenameWithoutExtension(entry))
 
-  const include = readdirSync(source, {
+  const files = readdirSync(source, {
     recursive: true,
     withFileTypes: true,
   })
@@ -38,53 +36,16 @@ const spawnCompile = ({
     .map(f => join(f.parentPath, f.name))
     .filter(f => f !== entry && !exclude.includes(f))
 
-  const spawnOptions = {
-    command: 'deno',
-    args: [
-      'compile',
-      '-A',
-      '--no-remote',
-      '--no-npm',
-      '--no-check',
-      '--no-lock',
-      '--unstable-node-globals',
-      '--unstable-bare-node-builtins',
-      quiet ? '--quiet' : '',
-      `--output=${outfile}`,
-      `--target=${[
-        {
-          arm64: 'aarch64',
-          x64: 'x86_64',
-        }[arch],
-        {
-          linux: 'unknown-linux-gnu',
-          win32: 'pc-windows-msvc',
-          darwin: 'apple-darwin',
-        }[platform],
-      ].join('-')}`,
-      ...include
-        // deno doesnt support source maps in compiled binaries
-        // https://github.com/denoland/deno/issues/4499
-        .filter(f => !f.endsWith('.js.map'))
-        .map(i => `--include=${i}`),
-      entry,
-    ],
-  }
+  const nonSourcemapFiles = files.filter(f => !f.endsWith('.js.map'))
 
-  const res = spawnSync(spawnOptions.command, spawnOptions.args, {
-    shell: true,
-    encoding: 'utf8',
-    stdio: 'inherit',
-  })
-  assert(
-    res.status === 0,
-    new Error('compile error', {
-      cause: {
-        ...res,
-        command: spawnOptions.command,
-        args: spawnOptions.args,
-      },
-    }),
+  // Not implemented yet!
+  // But this is where the compiled binary would be written.
+  // Just use these variables for now because they will be needed later.
+  // TODO(compile): use a child process to create the compiled binary
+  writeFileSync(
+    /* c8 ignore next */
+    outfile + (process.platform === 'win32' ? '.exe' : ''),
+    [arch, platform, ...files, ...nonSourcemapFiles].join(EOL),
   )
 
   const compiledOutfile = readdirSync(outdir).find(

@@ -123,9 +123,6 @@ following:
 
 - `./scripts/bins/bundle`: The `esbuild` bundled JavaScript with
   `node`
-- `./scripts/bins/deno`: The TypeScript source using `deno`
-- `./scripts/bins/deno-bundle`: The `esbuild` bundled JavaScript using
-  `deno`
 - `./scripts/bins/compile`: The compiled variant for the current
   platform
 
@@ -195,11 +192,14 @@ gh workflow run release.yml --ref=main -f action=publish
 
 ### Published CLI Packages
 
-The following packages are published as part of the CLI:
+The following packages can be published as part of the CLI. Which
+packages are published is dependent on the value of
+`PUBLISHED_VARIANT` in
+[`@vltpkg/infra-build`](./infra/build/src/variants.ts).
 
-- `vlt` The variant of the CLI as set by `PUBLISHED_VARIANT` in
-  [`@vltpkg/infra-build`](./infra/build/src/variants.ts)
-- `@vltpkg/cli-js` The JS variant of the CLI.
+- `vlt` This will either be the JS or compiled variant of the CLI.
+- `@vltpkg/cli-js` The JS variant of the CLI. This is always published
+  and is helpful for testing/debugging vs the compiled variant.
 - `@vltpkg/cli-compiled` The is the compiled variant of the CLI. This
   package only has placeholder bins that are swapped out in a
   postinstall for one of the platform variants below.
@@ -219,7 +219,7 @@ The bundled JS variant of the CLI exists in the `infra/cli-js`
 directory, because it is still published for manual testing and
 comparisons and it is an intermediary of the compiled CLI, so it gets
 tested in `smoke-tests` to help debug the build pipeline of
-`TS source` -> `esbuild bundled JS` -> `compiled Deno`.
+`TS source` -> `esbuild bundled JS` -> `compiled`.
 
 The compiled variant of the CLI exists in the `infra/cli-compiled`
 directory, because the end goal is to publish this as the default
