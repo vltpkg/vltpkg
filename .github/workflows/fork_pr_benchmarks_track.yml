@@ -10,7 +10,8 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     strategy:
-      matrix: fixture: ["vue"]
+      matrix:
+        fixture: ["vue"]
         variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
     steps:
 
