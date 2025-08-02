@@ -53,7 +53,7 @@ jobs:
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch main \
           --testbed ubuntu-latest \
-          --threshold-measure vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
+          --threshold-measure latency \
           --threshold-test percentage \
           --threshold-min-sample-size 7 \
           --threshold-max-sample-size 10 \
