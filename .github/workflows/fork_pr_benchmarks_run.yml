@@ -50,8 +50,67 @@ jobs:
           name: results-${{ matrix.fixture }}-${{ matrix.variation }}
           path: ./results/${{ matrix.fixture }}/${{ matrix.variation }}/
 
+  consolidate:
+    name: Consolidate Benchmark Results
+    needs: [benchmark_fork_pr_branch]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Results
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+          pattern: results-*
+
+      - name: Consolidate benchmarks
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Define fixture and variation values from the strategy matrix
+            const fixtures = ["vue"];
+            const variations = ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"];
+
+            const consolidatedResults = {
+              results: []
+            };
+
+            // Read and consolidate benchmark results
+            for (const fixture of fixtures) {
+              for (const variation of variations) {
+                const benchmarkPath = path.join('results', `results-${fixture}-${variation}`, 'benchmarks.json');
+
+                try {
+                  console.log(`Reading benchmark file: ${benchmarkPath}`);
+                  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8'));
+
+                  // Take the first entry from the results array
+                  if (benchmarkData.results && benchmarkData.results.length > 0) {
+                    consolidatedResults.results.push(benchmarkData.results[0]);
+                    console.log(`Added result for ${fixture}-${variation}: ${benchmarkData.results[0].command}`);
+                  } else {
+                    console.warn(`No results found in ${benchmarkPath}`);
+                  }
+                } catch (error) {
+                  console.error(`Failed to read ${benchmarkPath}: ${error.message}`);
+                }
+              }
+            }
+
+            // Save consolidated results
+            const outputPath = 'benchmarks.json';
+            fs.writeFileSync(outputPath, JSON.stringify(consolidatedResults, null, 2));
+            console.log(`Consolidated ${consolidatedResults.results.length} benchmark results to ${outputPath}`);
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks.json
+          path: benchmarks.json
+
       - name: Upload GitHub Pull Request Event
         uses: actions/upload-artifact@v4
         with:
-          name: results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
+          name: event.json
           path: ${{ github.event_path }}
