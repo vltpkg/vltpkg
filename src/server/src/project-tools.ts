@@ -47,7 +47,7 @@ export const asProjectTools = (str: string): ProjectTools => {
 }
 
 export const inferTools = (
-  manifest: Manifest,
+  manifest: Pick<Manifest, 'engines'> & Record<string, unknown>,
   folder: PathBase,
   scurry: PathScurry,
 ) => {

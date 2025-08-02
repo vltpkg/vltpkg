@@ -281,7 +281,7 @@ const omitDefReg = (s?: string): string =>
  */
 export const getTuple = (
   spec: Spec,
-  mani: Manifest,
+  mani: Pick<Manifest, 'name' | 'version'>,
   extra?: string,
 ): DepIDTuple => {
   const f = spec.final
@@ -367,6 +367,6 @@ export const isPackageNameConfused = (spec?: Spec, name?: string) =>
  */
 export const getId = (
   spec: Spec,
-  mani: Manifest,
+  mani: Pick<Manifest, 'name' | 'version'>,
   extra?: string,
 ): DepID => joinDepIDTuple(getTuple(spec, mani, extra))

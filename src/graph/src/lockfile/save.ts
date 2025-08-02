@@ -1,4 +1,7 @@
-import { isRecordStringString } from '@vltpkg/types'
+import {
+  expandNormalizedManifestSymbols,
+  isRecordStringString,
+} from '@vltpkg/types'
 import {
   defaultGitHostArchives,
   defaultGitHosts,
@@ -86,11 +89,13 @@ const formatNodes = (
       lockfileNode[4] = location
     }
 
-    if (saveManifests) {
-      lockfileNode[5] = node.manifest
+    if (saveManifests && node.manifest) {
+      lockfileNode[5] = expandNormalizedManifestSymbols(node.manifest)
 
-      if (node.confused) {
-        lockfileNode[6] = node.rawManifest
+      if (node.confused && node.rawManifest) {
+        lockfileNode[6] = expandNormalizedManifestSymbols(
+          node.rawManifest,
+        )
       }
     }
 

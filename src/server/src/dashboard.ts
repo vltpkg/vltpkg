@@ -1,7 +1,7 @@
 import { getUser } from '@vltpkg/git'
 import { getAuthorFromGitUser } from '@vltpkg/init'
 import type { PackageJson } from '@vltpkg/package-json'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { writeFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -21,7 +21,7 @@ export type DashboardProjectData = {
   name: string
   readablePath: string
   path: string
-  manifest: Manifest
+  manifest: NormalizedManifest
   tools: ProjectTools[]
   mtime?: number
 }

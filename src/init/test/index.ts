@@ -88,9 +88,12 @@ t.test('init existing', async t => {
     'index.js',
     'should add missing main',
   )
-  t.equal(
+  t.match(
     result.manifest?.data.author,
-    'User <foo@bar.ca>',
+    {
+      name: 'User',
+      email: 'foo@bar.ca',
+    },
     'should add missing author',
   )
 
@@ -123,9 +126,12 @@ t.test('init existing', async t => {
     'index.js',
     'file should add missing main',
   )
-  t.equal(
+  t.same(
     fileContent.author,
-    'User <foo@bar.ca>',
+    {
+      name: 'User',
+      email: 'foo@bar.ca',
+    },
     'file should add missing author',
   )
 })
@@ -267,9 +273,12 @@ t.test('init existing partial package.json', async t => {
     'index.js',
     'should add missing main from template',
   )
-  t.equal(
+  t.match(
     result.manifest?.data.author,
-    'User <foo@bar.ca>',
+    {
+      name: 'User',
+      email: 'foo@bar.ca',
+    },
     'should add missing author from template',
   )
 })

@@ -8,8 +8,10 @@ import type { Spec } from '@vltpkg/spec/browser'
 import type {
   Repository,
   Manifest,
+  NormalizedManifest,
   Packument,
-  NormalizedContributor,
+  NormalizedContributorEntry,
+  Person,
 } from '@vltpkg/types'
 
 export type Semver = `${number}.${number}.${number}`
@@ -75,7 +77,7 @@ export type Version = {
   gitHead?: string
 }
 
-export type Contributor = NormalizedContributor & {
+export type Contributor = NormalizedContributorEntry & {
   avatar?: string
 }
 
@@ -135,7 +137,7 @@ export const readRepository = (
 }
 
 const getContributorAvatars = async (
-  mani: Manifest,
+  mani: NormalizedManifest,
 ): Promise<Contributor[] | undefined> => {
   if (!mani.contributors || mani.contributors.length === 0)
     return undefined
@@ -179,7 +181,7 @@ export const parseAriaLabelFromSVG = (
 export async function* fetchDetails(
   s: Spec,
   signal: AbortSignal,
-  manifest?: Manifest,
+  manifest?: NormalizedManifest,
 ): AsyncGenerator<DetailsInfo> {
   const spec = s.final
   const promisesQueue: Promise<DetailsInfo>[] = []
@@ -312,7 +314,7 @@ export async function* fetchDetails(
 
   // tries to retrieve author info from the in-memory manifest
   if (manifest?.author) {
-    maniAuthor = readAuthor(manifest.author)
+    maniAuthor = readAuthor(manifest.author as string | Person)
     if (maniAuthor) {
       trackPromise(Promise.resolve({ author: maniAuthor }))
     }
@@ -360,7 +362,7 @@ export async function* fetchDetails(
       fetch(String(url), { signal })
         .then(res => res.json())
         .then((mani: Manifest & { _npmUser?: AuthorInfo }) => {
-          mani = normalizeManifest(mani)
+          ;(mani as NormalizedManifest) = normalizeManifest(mani)
           // retries favicon retrieval in case it wasn't found before
           if (!githubAPI && mani.repository) {
             const repo = readRepository(mani.repository)
@@ -417,9 +419,9 @@ export async function* fetchDetails(
           const versions = Object.entries(packu.versions)
             .sort((a, b) => compare(b[0], a[0]))
             .map(async ([version, mani]) => {
-              mani = normalizeManifest(mani)
+              ;(mani as NormalizedManifest) = normalizeManifest(mani)
               const email = (
-                mani as Manifest & {
+                mani as NormalizedManifest & {
                   _npmUser?: {
                     name?: string
                     email?: string
@@ -430,7 +432,7 @@ export async function* fetchDetails(
                 email ? await retrieveAvatar(email) : undefined
 
               const npmUser = (
-                mani as Manifest & {
+                mani as NormalizedManifest & {
                   _npmUser?: {
                     name?: string
                     email?: string

@@ -114,7 +114,7 @@ export const asDependency = (obj: unknown): Dependency => {
 export const shorten = (
   typeLong: DependencyTypeLong,
   name?: string,
-  manifest?: Manifest | null,
+  manifest?: Pick<Manifest, 'peerDependenciesMeta'> | null,
 ): DependencyTypeShort => {
   const shortName = dependencyTypes.get(typeLong)
   if (!shortName) {

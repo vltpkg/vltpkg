@@ -1,6 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
-import type { Manifest } from '@vltpkg/types'
 import type { Attribute } from 'postcss-selector-parser'
 import t from 'tap'
 import {
@@ -22,6 +21,8 @@ import type {
   GraphSelectionState,
   ParserState,
 } from '../src/types.ts'
+
+type ManifestLike = Record<string, any>
 
 const testAttr = selectorFixture(attribute)
 
@@ -193,21 +194,21 @@ t.test('getManifestPropertyValues', async t => {
     'should return the value from a array-nested object',
   )
 
-  b.manifest = { foo: 1 } as Manifest
+  b.manifest = { foo: 1 } as ManifestLike
   t.strictSame(
     getManifestPropertyValues(b, ['foo'], 'foo'),
     ['1'],
     'should return values as strings',
   )
 
-  b.manifest = { keywords: [undefined, 'foo'] } as Manifest
+  b.manifest = { keywords: [undefined, 'foo'] } as ManifestLike
   t.strictSame(
     getManifestPropertyValues(b, ['keywords'], 'keywords'),
     ['', 'foo'],
     'should turn falsy values into empty strings',
   )
 
-  b.manifest = 'bad manifest' as Manifest
+  b.manifest = 'bad manifest' as unknown as ManifestLike
   t.strictSame(
     getManifestPropertyValues(b, ['name'], 'name'),
     undefined,

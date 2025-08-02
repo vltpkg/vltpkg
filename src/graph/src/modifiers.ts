@@ -4,14 +4,18 @@ import {
 } from '@vltpkg/dss-breadcrumb'
 import { error } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec'
-import { asManifest, assertRecordStringString } from '@vltpkg/types'
+import {
+  asNormalizedManifest,
+  assertRecordStringString,
+  normalizeManifest,
+} from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type {
   ModifierBreadcrumb,
   ModifierInteractiveBreadcrumb,
 } from '@vltpkg/dss-breadcrumb'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import type { Edge } from './edge.ts'
 import type { Node } from './node.ts'
 import type { Dependency } from './dependencies.ts'
@@ -36,7 +40,7 @@ export type BaseModifierEntry = {
   type: 'edge' | 'node'
   query: string
   breadcrumb: ModifierBreadcrumb
-  value: string | Manifest
+  value: string | NormalizedManifest
   refs: Set<{
     name: string
     from: Node
@@ -57,7 +61,7 @@ export type EdgeModifierEntry = BaseModifierEntry & {
  */
 export type NodeModifierEntry = BaseModifierEntry & {
   type: 'node'
-  manifest: Manifest
+  manifest: NormalizedManifest
 }
 
 /**
@@ -196,7 +200,9 @@ export class GraphModifier {
         this.#edgeModifiers.add(mod)
         /* c8 ignore start - TODO */
       } else {
-        const manifest = asManifest(value)
+        const manifest = asNormalizedManifest(
+          normalizeManifest(value),
+        )
         mod = {
           breadcrumb,
           query: key,

@@ -4,7 +4,10 @@ import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest, DependencySaveType } from '@vltpkg/types'
+import type {
+  NormalizedManifest,
+  DependencySaveType,
+} from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
@@ -21,7 +24,7 @@ const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 // in case the DepID module needs to change its delimiter again ever.
 const mainDepID = joinDepIDTuple(['file', '.'])
 
-export type ManifestInventory = Map<DepID, Manifest>
+export type ManifestInventory = Map<DepID, NormalizedManifest>
 
 const getMap = <T extends Map<any, any>>(m?: T) =>
   m ?? (new Map() as T)
@@ -45,7 +48,7 @@ export type GraphOptions = SpecOptions & {
   /**
    * The main importer manifest info.
    */
-  mainManifest: Manifest
+  mainManifest: NormalizedManifest
   /**
    * An inventory of seen manifests.
    */
@@ -292,7 +295,7 @@ export class Graph implements GraphLike {
    */
   addNode(
     id?: DepID,
-    manifest?: Manifest,
+    manifest?: NormalizedManifest,
     spec?: Spec,
     name?: string,
     version?: string,
@@ -338,7 +341,7 @@ export class Graph implements GraphLike {
     fromNode: Node,
     depType: DependencySaveType,
     spec: Spec,
-    manifest?: Manifest,
+    manifest?: NormalizedManifest,
     id?: DepID,
     extra?: string,
   ) {

@@ -1,5 +1,8 @@
 import type { DepID } from '@vltpkg/dep-id'
-import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
+import type {
+  NormalizedManifest,
+  DependencyTypeShort,
+} from '@vltpkg/types'
 import type { Spec, SpecLikeBase } from '@vltpkg/spec'
 
 export type EdgeLike = {
@@ -27,7 +30,7 @@ export type GraphLike = {
   ) => EdgeLike
   addNode: (
     id?: DepID,
-    manifest?: Manifest,
+    manifest?: NormalizedManifest,
     spec?: Spec,
     name?: string,
     version?: string,
@@ -40,8 +43,8 @@ export type NodeLike = {
   edgesIn: Set<EdgeLike>
   edgesOut: Map<string, EdgeLike>
   location?: string
-  manifest?: Manifest | null
-  rawManifest?: Manifest | null
+  manifest?: NormalizedManifest | null
+  rawManifest?: NormalizedManifest | null
   name?: string | null
   version?: string | null
   integrity?: string | null
@@ -73,6 +76,12 @@ export type NodeLike = {
   }
   toString(): string
   setResolved(): void
-  setConfusedManifest(fixed: Manifest, confused?: Manifest): void
-  maybeSetConfusedManifest(spec: Spec, confused?: Manifest): void
+  setConfusedManifest(
+    fixed: NormalizedManifest,
+    confused?: NormalizedManifest,
+  ): void
+  maybeSetConfusedManifest(
+    spec: Spec,
+    confused?: NormalizedManifest,
+  ): void
 }

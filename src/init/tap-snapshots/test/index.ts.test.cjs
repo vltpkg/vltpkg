@@ -11,7 +11,10 @@ exports[`test/index.ts > TAP > init > should init a new package.json file 1`] = 
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "author": "User <foo@bar.ca>"
+  "author": {
+    "name": "User",
+    "email": "foo@bar.ca"
+  }
 }
 
 `
@@ -20,7 +23,12 @@ exports[`test/index.ts > TAP > init > should initialize the data 1`] = `
 Object {
   "manifest": Object {
     "data": Object {
-      "author": "User <foo@bar.ca>",
+      "author": Object {
+        "email": "foo@bar.ca",
+        "name": "User",
+        [Symbol.for(isPublisher)]: false,
+        [Symbol.for(writeAccess)]: false,
+      },
       "description": "",
       "main": "index.js",
       "name": "my-project",
@@ -41,7 +49,9 @@ exports[`test/index.ts > TAP > init with author info > should init a new package
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "author": "Ruy Adorno"
+  "author": {
+    "name": "Ruy Adorno"
+  }
 }
 
 `
@@ -50,7 +60,12 @@ exports[`test/index.ts > TAP > init with author info > should output expected me
 Object {
   "manifest": Object {
     "data": Object {
-      "author": "Ruy Adorno",
+      "author": Object {
+        "email": undefined,
+        "name": "Ruy Adorno",
+        [Symbol.for(isPublisher)]: false,
+        [Symbol.for(writeAccess)]: false,
+      },
       "description": "",
       "main": "index.js",
       "name": "my-project",
