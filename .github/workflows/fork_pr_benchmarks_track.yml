@@ -40,18 +40,6 @@ jobs:
             core.exportVariable("PR_BASE_SHA", prEvent.pull_request.base.sha);
             core.exportVariable("PR_NUMBER", prEvent.number);
 
-      - name: Add comment to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: "👋 This is a comment added by a GitHub Action!"
-            });
-
       - uses: bencherdev/bencher@main
       - name: Track Benchmarks with Bencher
         run: |
