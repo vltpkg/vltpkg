@@ -9,6 +9,8 @@ jobs:
   track_fork_pr_branch:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
     strategy:
       matrix:
         fixture: ["vue"]
@@ -41,7 +43,7 @@ jobs:
       - uses: bencherdev/bencher@main
       - name: Track Benchmarks with Bencher
         run: |
-          BENCHER_RESULTS=$(bencher run \
+          bencher run \
           --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch "$PR_HEAD" \
@@ -54,5 +56,5 @@ jobs:
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
           --ci-number "$PR_NUMBER" \
           --format json \
-          --file "benchmarks.json" || true)
+          --file "benchmarks.json"
           echo "$BENCHER_RESULTS"
