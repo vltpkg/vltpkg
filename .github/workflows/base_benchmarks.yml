@@ -7,8 +7,6 @@ on:
 jobs:
   benchmark_base_branch:
     name: Continuous Benchmarking with Bencher
-    permissions:
-      checks: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -54,6 +52,8 @@ jobs:
   consolidate:
     name: Consolidate Benchmark Results
     needs: [benchmark_base_branch]
+    permissions:
+      checks: write
     runs-on: ubuntu-latest
     steps:
       - name: Download Results
