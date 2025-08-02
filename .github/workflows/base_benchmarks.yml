@@ -53,7 +53,7 @@ jobs:
 
   consolidate:
     name: Consolidate Benchmark Results
-    needs: [benchmark_fork_pr_branch]
+    needs: [benchmark_base_branch]
     runs-on: ubuntu-latest
     steps:
       - name: Download Results
