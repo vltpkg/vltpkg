@@ -11,22 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-    strategy:
-      matrix:
-        fixture: ["vue"]
-        variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
     steps:
 
       - name: Download Benchmark Results
         uses: dawidd6/action-download-artifact@v6
         with:
-          name: results-${{ matrix.fixture }}-${{ matrix.variation }}
+          name: benchmarks.json
           run_id: ${{ github.event.workflow_run.id }}
 
       - name: Download PR Event
         uses: dawidd6/action-download-artifact@v6
         with:
-          name: results-${{ matrix.fixture }}-${{ matrix.variation }}-event.json
+          name: event.json
           run_id: ${{ github.event.workflow_run.id }}
 
       - name: Export PR Event Data
@@ -44,7 +40,7 @@ jobs:
       - name: Track Benchmarks with Bencher
         run: |
           bencher run \
-          --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
+          --project vltpkg-monorepo \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch "$PR_HEAD" \
           --start-point "$PR_BASE" \

@@ -8,16 +8,12 @@ jobs:
   archive_fork_pr_branch:
     name: Archive closed fork PR branch with Bencher
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        fixture: ["vue"]
-        variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
     steps:
       - uses: actions/checkout@v4
       - uses: bencherdev/bencher@main
       - name: Archive closed fork PR branch with Bencher
         run: |
           bencher archive \
-          --project vltpkg-${{ matrix.fixture }}-${{ matrix.variation }} \
+          --project vltpkg-monorepo \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch "$GITHUB_HEAD_REF"
