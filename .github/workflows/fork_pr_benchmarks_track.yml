@@ -30,7 +30,7 @@ jobs:
           run_id: ${{ github.event.workflow_run.id }}
 
       - name: Export PR Event Data
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             let fs = require('fs');
@@ -39,6 +39,18 @@ jobs:
             core.exportVariable("PR_BASE", prEvent.pull_request.base.ref);
             core.exportVariable("PR_BASE_SHA", prEvent.pull_request.base.sha);
             core.exportVariable("PR_NUMBER", prEvent.number);
+
+      - name: Add comment to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: "👋 This is a comment added by a GitHub Action!"
+            });
 
       - uses: bencherdev/bencher@main
       - name: Track Benchmarks with Bencher
