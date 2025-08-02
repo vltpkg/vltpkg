@@ -56,6 +56,8 @@ jobs:
       checks: write
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download Results
         uses: actions/download-artifact@v4
         with:
