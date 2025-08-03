@@ -113,6 +113,7 @@ jobs:
           --project vltpkg-monorepo \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch main \
+          --hash "${{ github.sha }}" \
           --testbed ubuntu-latest \
           --threshold-measure latency \
           --threshold-test percentage \
