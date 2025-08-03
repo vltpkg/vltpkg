@@ -8,6 +8,7 @@ source "$1/variations/common.sh"
 # When running a clean benchmark, we want to clean up all the things in
 # between each run using the clean-helper.sh script.
 hyperfine \
+  --ignore-failure \
   --export-json="$BENCH_OUTPUT_FOLDER/benchmarks.json" \
   --warmup="$BENCH_WARMUP" \
   --runs="$BENCH_RUNS" \

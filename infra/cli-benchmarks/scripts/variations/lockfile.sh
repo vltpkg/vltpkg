@@ -8,6 +8,7 @@ source "$1/variations/common.sh"
 # When running a cache benchmark, we want to clean up only the node_modules
 # directory and the lockfiles between each run.
 hyperfine \
+  --ignore-failure \
   --export-json="$BENCH_OUTPUT_FOLDER/benchmarks.json" \
   --warmup="$BENCH_WARMUP" \
   --runs="$BENCH_RUNS" \

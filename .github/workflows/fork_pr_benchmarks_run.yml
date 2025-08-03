@@ -61,6 +61,91 @@ jobs:
           path: results
           pattern: results-*
 
+      - name: Clean benchmarks result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Define fixture and variation values from the strategy matrix
+            const fixtures = ["vue"];
+            const variations = ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"];
+
+            // Helper functions for statistical calculations
+            function calculateMean(times) {
+              return times.reduce((sum, time) => sum + time, 0) / times.length;
+            }
+
+            function calculateStddev(times, mean) {
+              const variance = times.reduce((sum, time) => sum + Math.pow(time - mean, 2), 0) / times.length;
+              return Math.sqrt(variance);
+            }
+
+            function calculateMedian(times) {
+              const sorted = [...times].sort((a, b) => a - b);
+              const mid = Math.floor(sorted.length / 2);
+              return sorted.length % 2 === 0
+                ? (sorted[mid - 1] + sorted[mid]) / 2
+                : sorted[mid];
+            }
+
+            // Clean benchmark results
+            for (const fixture of fixtures) {
+              for (const variation of variations) {
+                const benchmarkPath = path.join('results', `results-${fixture}-${variation}`, 'benchmarks.json');
+
+                try {
+                  console.log(`Cleaning benchmark file: ${benchmarkPath}`);
+                  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8'));
+
+                  if (benchmarkData.results && benchmarkData.results.length > 0) {
+                    const result = benchmarkData.results[0];
+                    const { times, exit_codes } = result;
+
+                    if (times && exit_codes && times.length === exit_codes.length) {
+                      // Filter out times where exit_codes is not 0
+                      const cleanTimes = times.filter((time, index) => exit_codes[index] === 0);
+                      const cleanExitCodes = exit_codes.filter(code => code === 0);
+
+                      if (cleanTimes.length > 0) {
+                        // Recalculate statistics
+                        const mean = calculateMean(cleanTimes);
+                        const stddev = calculateStddev(cleanTimes, mean);
+                        const median = calculateMedian(cleanTimes);
+                        const min = Math.min(...cleanTimes);
+                        const max = Math.max(...cleanTimes);
+
+                        // Update the result object
+                        result.times = cleanTimes;
+                        result.exit_codes = cleanExitCodes;
+                        result.mean = mean;
+                        result.stddev = stddev;
+                        result.median = median;
+                        result.min = min;
+                        result.max = max;
+
+                        console.log(`Cleaned ${fixture}-${variation}: ${times.length - cleanTimes.length} failed runs removed, ${cleanTimes.length} valid runs remaining`);
+                      } else {
+                        console.warn(`All runs failed for ${fixture}-${variation}`);
+                      }
+                    } else {
+                      console.warn(`Invalid times/exit_codes arrays for ${fixture}-${variation}`);
+                    }
+
+                    // Save the cleaned data back to the file
+                    fs.writeFileSync(benchmarkPath, JSON.stringify(benchmarkData, null, 2));
+                  } else {
+                    console.warn(`No results found in ${benchmarkPath}`);
+                  }
+                } catch (error) {
+                  console.error(`Failed to clean ${benchmarkPath}: ${error.message}`);
+                }
+              }
+            }
+
+            console.log('Benchmark cleaning completed');
+
       - name: Consolidate benchmarks
         uses: actions/github-script@v7
         with:
