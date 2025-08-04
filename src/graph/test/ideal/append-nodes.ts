@@ -2,6 +2,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { asNormalizedManifest } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -66,13 +67,13 @@ t.test('append a new node to a graph from a registry', async t => {
       borked: '*',
     },
   }
-  const mainManifest: Manifest = {
+  const mainManifest = asNormalizedManifest({
     name: 'my-project',
     version: '1.0.0',
     dependencies: {
       foo: '^1.0.0',
     },
-  }
+  })
   const graph = new Graph({
     projectRoot: t.testdirName,
     ...configData,

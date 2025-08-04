@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import * as dotProp from '@vltpkg/dot-prop'
 import { error } from '@vltpkg/error-cause'
 import type { PackageJson } from '@vltpkg/package-json'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import assert from 'node:assert'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
@@ -18,7 +18,7 @@ import type { Monorepo as _Monorepo } from '@vltpkg/workspaces'
 import type { QueryResponseNode } from '@vltpkg/query'
 
 type ManifestWithLocation = {
-  manifest: Manifest
+  manifest: NormalizedManifest
   location: string
 }
 

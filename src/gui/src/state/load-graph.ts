@@ -15,7 +15,10 @@ import {
   defaultRegistry,
   defaultScopeRegistries,
 } from '@vltpkg/spec/browser'
-import type { DependencyTypeShort, Manifest } from '@vltpkg/types'
+import type {
+  DependencyTypeShort,
+  NormalizedManifest,
+} from '@vltpkg/types'
 import type { TransferData } from './types.ts'
 import { assert } from '@/lib/utils.ts'
 
@@ -110,7 +113,7 @@ export const load = (transfered: TransferData): LoadResponse => {
       this.edges.add(edge)
       return edge
     },
-    addNode(id?: DepID, manifest?: Manifest) {
+    addNode(id?: DepID, manifest?: NormalizedManifest) {
       const graph = this as GraphLike
       assert(id, 'id is required')
       assert(manifest, 'manifest is required')
@@ -129,7 +132,10 @@ export const load = (transfered: TransferData): LoadResponse => {
         optional: false,
         confused: false,
         setResolved() {},
-        setConfusedManifest(fixed: Manifest, confused?: Manifest) {
+        setConfusedManifest(
+          fixed: NormalizedManifest,
+          confused?: NormalizedManifest,
+        ) {
           this.manifest = fixed
           this.rawManifest = confused
           this.confused = true

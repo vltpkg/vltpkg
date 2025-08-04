@@ -8,12 +8,12 @@ import {
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
+import { expandNormalizedManifestSymbols } from '@vltpkg/types'
 import type {
   Integrity,
-  Manifest,
+  NormalizedManifest,
   DependencyTypeShort,
 } from '@vltpkg/types'
-import { normalizeManifest } from '@vltpkg/types'
 import { Edge } from './edge.ts'
 import type { GraphLike, NodeLike } from './types.ts'
 import { stringifyNode } from './stringify-node.ts'
@@ -32,7 +32,7 @@ export class Node implements NodeLike {
 
   #options: SpecOptions
   #location?: string
-  #rawManifest?: Manifest
+  #rawManifest?: NormalizedManifest
 
   #optional = false
   /**
@@ -129,7 +129,7 @@ export class Node implements NodeLike {
   /**
    * The manifest this node represents in the graph.
    */
-  manifest?: Manifest
+  manifest?: NormalizedManifest
 
   /**
    * Project where this node resides
@@ -222,7 +222,7 @@ export class Node implements NodeLike {
   constructor(
     options: NodeOptions,
     id?: DepID,
-    manifest?: Manifest,
+    manifest?: NormalizedManifest,
     spec?: Spec,
     name?: string,
     version?: string,
@@ -243,7 +243,7 @@ export class Node implements NodeLike {
       this.id = getId(spec, manifest)
     }
     this.graph = options.graph
-    this.manifest = manifest && normalizeManifest(manifest)
+    this.manifest = manifest
 
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version
@@ -333,14 +333,17 @@ export class Node implements NodeLike {
    * The raw manifest before any modifications.
    * If not set, falls back to the current manifest.
    */
-  get rawManifest(): Manifest | undefined {
+  get rawManifest(): NormalizedManifest | undefined {
     return this.#rawManifest ?? this.manifest
   }
 
   /**
    * Sets this node as having a manifest-confused manifest.
    */
-  setConfusedManifest(fixed: Manifest, confused?: Manifest) {
+  setConfusedManifest(
+    fixed: NormalizedManifest,
+    confused?: NormalizedManifest,
+  ) {
     this.manifest = fixed
     this.#rawManifest = confused
     this.confused = true
@@ -350,7 +353,10 @@ export class Node implements NodeLike {
   /**
    * Sets this node as having a manifest-confused manifest.
    */
-  maybeSetConfusedManifest(spec: Spec, confused?: Manifest) {
+  maybeSetConfusedManifest(
+    spec: Spec,
+    confused?: NormalizedManifest,
+  ) {
     if (isPackageNameConfused(spec, this.manifest?.name)) {
       this.setConfusedManifest(
         {
@@ -369,7 +375,9 @@ export class Node implements NodeLike {
       version: this.version,
       location: this.location,
       importer: this.importer,
-      manifest: this.manifest,
+      manifest:
+        this.manifest &&
+        expandNormalizedManifestSymbols(this.manifest),
       projectRoot: this.projectRoot,
       integrity: this.integrity,
       resolved: this.resolved,

@@ -48,7 +48,7 @@ const clobberSymlink = async (
  */
 export const addEdge = async (
   edge: Edge,
-  manifest: Manifest,
+  manifest: Pick<Manifest, 'bin'>,
   scurry: PathScurry,
   remover: RollbackRemove,
 ) => {
