@@ -10,7 +10,7 @@ const parseScope = (scoped: string): [string | undefined, string] => {
 
 /** get the bin scripts for a package */
 export const binPaths = (
-  manifest: Manifest,
+  manifest: Pick<Manifest, 'bin' | 'name'>,
 ): Record<string, string> => {
   const { name, bin } = manifest
 

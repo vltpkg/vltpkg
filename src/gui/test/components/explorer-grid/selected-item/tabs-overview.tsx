@@ -253,12 +253,18 @@ test('OverviewTabContent renders with an aside and content', () => {
         type: 'git',
         url: 'github.com/acme/repo.git',
       },
-      bugs: {
-        url: 'https://acme.com/bugs',
-      },
-      funding: {
-        url: 'https://acme.com/funding',
-      },
+      bugs: [
+        {
+          url: 'https://acme.com/bugs',
+          type: 'link',
+        },
+      ],
+      funding: [
+        {
+          url: 'https://acme.com/funding',
+          type: 'individual',
+        },
+      ],
     },
     depCount: undefined,
     setDepCount: vi.fn(),

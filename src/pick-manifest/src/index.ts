@@ -25,7 +25,9 @@ export type PickManifestOptions = {
   arch?: string
 }
 
-export type Manifestish = Manifest | RevDocEntry
+export type Manifestish =
+  | Pick<Manifest, 'engines' | 'os' | 'cpu'>
+  | Pick<RevDocEntry, 'engines' | 'os' | 'cpu'>
 export type Packumentish = Packument | RevDoc
 export type PickManifestish<T extends Packumentish> =
   T extends RevDoc ? RevDocEntry : Manifest

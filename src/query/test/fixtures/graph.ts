@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { GraphLike, NodeLike } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec/browser'
+import { normalizeManifest } from '@vltpkg/types'
+import type { GraphLike, NodeLike } from '@vltpkg/graph'
 import type { SpecLike, SpecOptions } from '@vltpkg/spec/browser'
 import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
 
@@ -42,7 +43,7 @@ export const newNode =
     location:
       joinDepIDTuple(['registry', '', `${name}@${version}`]) +
       `/node_modules/${name}`,
-    manifest: { name, version },
+    manifest: normalizeManifest({ name, version }),
     integrity: 'sha512-deadbeef',
     resolved: undefined,
     dev: false,
@@ -176,7 +177,7 @@ export const getSimpleGraph = (): GraphLike => {
 
   // give some nodes an expanded manifest so that we can test
   // more attribute selector scenarios
-  b.manifest = {
+  b.manifest = normalizeManifest({
     ...b.manifest,
     version: '2.0.0',
     scripts: {
@@ -189,9 +190,9 @@ export const getSimpleGraph = (): GraphLike => {
         email: 'ruyadorno@example.com',
       },
     ],
-  } as Manifest
+  } as Manifest)
 
-  c.manifest = {
+  c.manifest = normalizeManifest({
     ...c.manifest,
     peerDependenciesMeta: {
       foo: {
@@ -199,9 +200,9 @@ export const getSimpleGraph = (): GraphLike => {
       },
     },
     keywords: ['something', 'someother'],
-  } as Manifest
+  } as Manifest)
 
-  d.manifest = {
+  d.manifest = normalizeManifest({
     ...d.manifest,
     private: true,
     a: {
@@ -219,7 +220,7 @@ export const getSimpleGraph = (): GraphLike => {
       ],
       e: ['foo', 'bar'],
     },
-  } as Manifest
+  } as Manifest)
   return graph
 }
 
@@ -462,11 +463,11 @@ export const getSemverRichGraph = (): GraphLike => {
     e2,
   )
   updateNodeVersion(f, '4.5.6')
-  f.manifest = {
+  f.manifest = normalizeManifest({
     ...f.manifest,
     version: '4.5.6',
     arbitrarySemverValue: '2.0.0',
-  } as Manifest
+  } as Manifest)
   updateNodeVersion(g, '1.2.3-rc.1+rev.2')
   g.manifest = {
     ...g.manifest,

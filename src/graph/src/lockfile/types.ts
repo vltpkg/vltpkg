@@ -2,7 +2,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type {
   Integrity,
-  Manifest,
+  NormalizedManifest,
   DependencyTypeShort,
 } from '@vltpkg/types'
 import type { Graph } from '../graph.ts'
@@ -56,8 +56,8 @@ export type LockfileNode = [
   integrity?: Integrity | null,
   resolved?: string | null,
   location?: string | null,
-  manifest?: Manifest | null,
-  rawManifest?: Manifest | null,
+  manifest?: NormalizedManifest | null,
+  rawManifest?: NormalizedManifest | null,
 ]
 
 /**

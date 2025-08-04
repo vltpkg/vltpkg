@@ -1,10 +1,10 @@
 import { getUser } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
 import type { JSONObj } from '@vltpkg/registry-client'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { basename, resolve } from 'node:path'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
-import { asError } from '@vltpkg/types'
+import { asError, normalizeManifest } from '@vltpkg/types'
 export { getAuthorFromGitUser }
 
 // eslint-disable-next-line no-console
@@ -21,16 +21,14 @@ export type CustomizableInitOptions = {
   author: string
 }
 
-const template = ({
-  name,
-  author,
-}: CustomizableInitOptions): Manifest => ({
-  name,
-  version: '1.0.0',
-  description: '',
-  main: 'index.js',
-  ...(author ? { author } : undefined),
-})
+const template = ({ name, author }: CustomizableInitOptions) =>
+  normalizeManifest({
+    name,
+    version: '1.0.0',
+    description: '',
+    main: 'index.js',
+    ...(author ? { author } : undefined),
+  })
 
 export type JSONFileInfo<T extends JSONObj = JSONObj> = {
   path: string
@@ -38,7 +36,7 @@ export type JSONFileInfo<T extends JSONObj = JSONObj> = {
 }
 
 export type InitFileResults = {
-  manifest?: JSONFileInfo<Manifest>
+  manifest?: JSONFileInfo<NormalizedManifest>
   // TODO: enable these if/when we do more than just the manifest
   // Eg:
   // workspaces?: JSONFileInfo
@@ -52,7 +50,7 @@ export const init = async ({
 }: InitOptions = {}): Promise<InitFileResults> => {
   const packageJson = new PackageJson()
   const path = resolve(cwd, 'package.json')
-  let existingData: Manifest | undefined
+  let existingData: NormalizedManifest | undefined
 
   try {
     existingData = packageJson.read(cwd)
@@ -72,7 +70,7 @@ export const init = async ({
   })
 
   // Merge template with existing data, preserving existing properties
-  const data: Manifest =
+  const data: NormalizedManifest =
     existingData ? { ...templateData, ...existingData } : templateData
 
   const indent = 2

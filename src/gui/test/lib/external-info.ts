@@ -7,6 +7,7 @@ import {
   parseAriaLabelFromSVG,
 } from '@/lib/external-info.ts'
 import type { DetailsInfo } from '@/lib/external-info.ts'
+import { normalizeManifest } from '@vltpkg/types'
 
 const sleep = (time: number) =>
   new Promise<void>(resolve => {
@@ -423,13 +424,13 @@ test('readRepository from object pattern', () => {
 })
 
 test('fetchDetails returns the correct details including downloadsRange', async () => {
-  const mani = {
+  const mani = normalizeManifest({
     name: 'my-package',
     version: '1.0.0',
     description: 'my-package description',
     license: 'MIT',
     author: 'Ruy Adorno',
-  }
+  })
   const spec = Spec.parse('my-package', '1.0.0')
   const res: any = {}
   const abortController = new AbortController()
@@ -492,11 +493,11 @@ test('fetchDetails from various async requests', async () => {
 })
 
 test('unable to fetch remote details', async () => {
-  const mani = {
+  const mani = normalizeManifest({
     name: 'missing-info',
     version: '1.0.0',
     author: 'Ruy',
-  }
+  })
   const spec = Spec.parse('missing-info', '1.0.0')
   const abortController = new AbortController()
   const signal = abortController.signal

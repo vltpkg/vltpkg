@@ -1,6 +1,6 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
@@ -19,11 +19,11 @@ const getVlxInstall = async (
     mockVlxInfo?: (
       path: string,
       options: VlxOptions,
-      manifest?: Manifest,
+      manifest?: NormalizedManifest,
     ) => { path: string; options: VlxOptions }
   } = {},
 ) => {
-  const installs: [string, Manifest][] = []
+  const installs: [string, NormalizedManifest][] = []
   const packageJson = new PackageJson()
   const dir = t.testdir({})
 

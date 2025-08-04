@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
 import { resolve } from 'node:path'
 import type { VlxInfo, VlxManifest, VlxOptions } from './index.ts'
@@ -10,7 +10,7 @@ import { mountPath } from './mount-path.ts'
 export const vlxInfo = (
   path: string,
   options: VlxOptions,
-  manifest?: Manifest,
+  manifest?: NormalizedManifest,
 ): VlxInfo => {
   const root = new XDG('vlt/vlx').data()
   path = mountPath(root, path)

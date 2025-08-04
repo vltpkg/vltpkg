@@ -23,7 +23,10 @@ exports[`test/commands/pkg.ts > TAP > init > should init a new package.json file
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "author": "Ruy <ruy@example.com>"
+  "author": {
+    "name": "Ruy",
+    "email": "ruy@example.com"
+  }
 }
 
 `

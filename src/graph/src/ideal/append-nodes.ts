@@ -4,8 +4,8 @@ import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import { longDependencyTypes } from '@vltpkg/types'
-import type { DependencyTypeLong } from '@vltpkg/types'
+import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
+import type { DependencyTypeLong, Manifest } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
 import { asDependency, shorten } from '../dependencies.ts'
 import type { Dependency } from '../dependencies.ts'
@@ -172,7 +172,7 @@ export const appendNodes = async (
         fromNode,
         type,
         spec,
-        mani,
+        normalizeManifest(mani as Manifest),
         fileTypeInfo?.id,
         queryModifier,
       )

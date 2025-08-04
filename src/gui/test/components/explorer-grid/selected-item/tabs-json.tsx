@@ -1,6 +1,7 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
+import { normalizeManifest } from '@vltpkg/types'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -13,9 +14,8 @@ import {
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
-import type { Manifest } from '@vltpkg/types'
 
-const MOCK_MANIFEST: Manifest = {
+const MOCK_MANIFEST = normalizeManifest({
   name: 'acme-package',
   version: '1.0.0',
   author: 'John Doe',
@@ -28,7 +28,7 @@ const MOCK_MANIFEST: Manifest = {
     '@acme/3': '3.0.0',
     '@acme/4': '4.0.0',
   },
-}
+})
 
 const ITEM_WITH_MANIFEST = {
   ...SELECTED_ITEM,

@@ -25,8 +25,6 @@ import { cn } from '@/lib/utils.ts'
 import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 import { getKnownHostname } from '@/utils/get-known-hostname.ts'
 
-import type { NormalizedKeywords } from '@vltpkg/types'
-
 export const OverviewTabButton = () => {
   return (
     <TabsTrigger
@@ -123,26 +121,19 @@ export const TabContentAside = ({
               <span>Repository</span>
             </Link>
           )}
-          {manifest?.bugs &&
-            (() => {
-              let href: string | null = null
+          {manifest?.bugs?.length &&
+            manifest.bugs.map((bug, idx) => {
+              let href: string | undefined
 
-              if (typeof manifest.bugs === 'string') {
-                href = manifest.bugs
-              } else if (
-                'url' in manifest.bugs &&
-                manifest.bugs.url
-              ) {
-                href = manifest.bugs.url
-              } else if (
-                'email' in manifest.bugs &&
-                manifest.bugs.email
-              ) {
-                href = `mailto:${manifest.bugs.email}`
+              if (bug.url) {
+                href = bug.url
+              } else if (bug.email) {
+                href = `mailto:${bug.email}`
               }
 
               return href ?
                   <Link
+                    key={`bug-${encodeURIComponent(href)}-${idx}`}
                     href={href}
                     className="text-sm text-foreground">
                     <span className="flex items-center justify-center">
@@ -154,7 +145,7 @@ export const TabContentAside = ({
                     <span>Bug reports</span>
                   </Link>
                 : null
-            })()}
+            })}
           {openPR && (
             <div className="flex items-center gap-2">
               <GitPullRequest
@@ -234,9 +225,7 @@ export const OverviewTabContent = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
   const { focused } = useFocusState()
 
-  const keywords = manifest?.keywords as
-    | NormalizedKeywords
-    | undefined
+  const keywords = manifest?.keywords
 
   return (
     <MotionTabsContent

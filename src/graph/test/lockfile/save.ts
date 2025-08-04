@@ -634,3 +634,68 @@ t.test('store modifiers', async t => {
     )
   })
 })
+
+t.test(
+  'saveManifests with normalized author and contributors',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+
+    // Import normalizeManifest function and types
+    const { normalizeManifest } = await import('@vltpkg/types')
+
+    // Create a package manifest with both author and contributors
+    const rawManifest = {
+      name: 'foo',
+      version: '1.0.0',
+      author: 'John Doe <john@example.com>',
+      contributors: [
+        'Jane Smith <jane@example.com>',
+        { name: 'Bob Wilson', email: 'bob@example.com' },
+      ],
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as const,
+      },
+    } as any
+
+    // Normalize the manifest as required by Node class
+    const normalizedManifest = normalizeManifest(rawManifest)
+
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo@^1.0.0'),
+      normalizedManifest,
+    )
+    if (!foo) {
+      throw new Error('Missing expected package')
+    }
+    foo.setResolved()
+
+    // Use saveHidden which automatically sets saveManifests: true
+    saveHidden({ ...configData, graph })
+    t.matchSnapshot(
+      readFileSync(
+        resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+        {
+          encoding: 'utf8',
+        },
+      ),
+      'should save hidden lockfile with normalized manifest containing author and contributors',
+    )
+  },
+)

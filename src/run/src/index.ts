@@ -115,7 +115,7 @@ export type RunOptions = SharedOptions & {
   /**
    * Pass in a manifest to avoid having to read it at all
    */
-  manifest?: Manifest
+  manifest?: Pick<Manifest, 'scripts' | 'gypfile'>
 
   /**
    * if the script is not defined in package.json#scripts, just ignore it and

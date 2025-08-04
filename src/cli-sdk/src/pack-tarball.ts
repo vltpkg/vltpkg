@@ -1,4 +1,4 @@
-import type { Manifest } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { create as tarCreate, list as tarList } from 'tar'
 import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
@@ -23,14 +23,14 @@ export type PackTarballResult = {
 
 /**
  * Replace workspace: and catalog: specs with actual versions
- * @param {Manifest} manifest_ - The manifest to process
+ * @param {NormalizedManifest} manifest_ - The manifest to process
  * @param {LoadedConfig} config - The loaded configuration containing project root, monorepo, and catalog data
- * @returns {Manifest} The manifest with replaced specs
+ * @returns {NormalizedManifest} The manifest with replaced specs
  */
 const replaceWorkspaceAndCatalogSpecs = (
-  manifest_: Manifest,
+  manifest_: NormalizedManifest,
   config: LoadedConfig,
-): Manifest => {
+): NormalizedManifest => {
   // Create a deep copy of the manifest to avoid modifying the original
   const manifest = structuredClone(manifest_)
 
@@ -140,13 +140,13 @@ const replaceWorkspaceAndCatalogSpecs = (
 
 /**
  * Create a tarball from a package directory
- * @param {Manifest} manifest - The manifest of the package to pack
+ * @param {NormalizedManifest} manifest - The manifest of the package to pack
  * @param {string} dir - The directory containing the package to pack
  * @param {LoadedConfig} [config] - The loaded configuration (for workspace/catalog resolution)
  * @returns {Promise<PackTarballResult>} The manifest, filename, and tarball data (unless dry run)
  */
 export const packTarball = async (
-  manifest: Manifest,
+  manifest: NormalizedManifest,
   dir: string,
   config: LoadedConfig,
 ): Promise<PackTarballResult> => {
@@ -258,7 +258,7 @@ export const packTarball = async (
           }
 
           // If files field is specified in package.json, use it for inclusion
-          const manifestWithFiles = manifest as Manifest & {
+          const manifestWithFiles = manifest as NormalizedManifest & {
             files?: string[]
           }
           if (
