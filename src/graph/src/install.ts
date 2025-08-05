@@ -29,7 +29,6 @@ export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
-  // Check for lockfile when expect-lockfile or frozen-lockfile is set
   if (options.expectLockfile || options.frozenLockfile) {
     const lockfilePath = resolve(options.projectRoot, 'vlt-lock.json')
     if (!existsSync(lockfilePath)) {
@@ -42,7 +41,6 @@ export const install = async (
     }
   }
 
-  // Load manifest first to have it available for validation and later use
   let mainManifest: NormalizedManifest | undefined = undefined
   try {
     mainManifest = options.packageJson.read(options.projectRoot)
@@ -57,9 +55,7 @@ export const install = async (
     }
   }
 
-  // Additional validation for frozen-lockfile
   if (options.frozenLockfile) {
-    // Prevent any modifications when frozen
     if (add && add.size > 0) {
       const dependencies: string[] = []
       for (const [, deps] of add) {
@@ -73,7 +69,6 @@ export const install = async (
       )
     }
 
-    // Load lockfile and check if it's synchronized
     const monorepo =
       options.monorepo ??
       Monorepo.maybeLoad(options.projectRoot, {
@@ -88,7 +83,6 @@ export const install = async (
       skipLoadingNodesOnModifiersChange: false,
     })
 
-    // Compare lockfile with package.json manifests
     const emptyAdd = Object.assign(
       new Map<DepID, Map<string, Dependency>>(),
       { modifiedDependencies: false },
@@ -103,12 +97,10 @@ export const install = async (
       ...options,
     })
 
-    // Check for any modifications
     if (
       importerSpecs.add.modifiedDependencies ||
       importerSpecs.remove.modifiedDependencies
     ) {
-      // Collect details about what's out of sync
       const details: string[] = []
 
       for (const [importerId, deps] of importerSpecs.add) {
@@ -147,7 +139,6 @@ export const install = async (
     }
   }
 
-  // Delete node_modules directory for clean install (only for ci command)
   const remover = new RollbackRemove()
   if (options.cleanInstall) {
     const nodeModulesPath = resolve(
