@@ -42,6 +42,21 @@ export const install = async (
     }
   }
 
+  // Load manifest first to have it available for validation and later use
+  let mainManifest: NormalizedManifest | undefined = undefined
+  try {
+    mainManifest = options.packageJson.read(options.projectRoot)
+  } catch (err) {
+    if (asError(err).message === 'Could not read package.json file') {
+      await init({ cwd: options.projectRoot })
+      mainManifest = options.packageJson.read(options.projectRoot, {
+        reload: true,
+      })
+    } else {
+      throw err
+    }
+  }
+
   // Additional validation for frozen-lockfile
   if (options.frozenLockfile) {
     // Prevent any modifications when frozen
@@ -56,23 +71,6 @@ export const install = async (
         'Cannot add dependencies when using --frozen-lockfile',
         { found: dependencies.join(', ') },
       )
-    }
-
-    // Load manifest first to have it available for validation
-    let mainManifest: NormalizedManifest | undefined = undefined
-    try {
-      mainManifest = options.packageJson.read(options.projectRoot)
-    } catch (err) {
-      if (
-        asError(err).message === 'Could not read package.json file'
-      ) {
-        await init({ cwd: options.projectRoot })
-        mainManifest = options.packageJson.read(options.projectRoot, {
-          reload: true,
-        })
-      } else {
-        throw err
-      }
     }
 
     // Load lockfile and check if it's synchronized
@@ -150,56 +148,47 @@ export const install = async (
   }
 
   // Delete node_modules directory for clean install (only for ci command)
+  const remover = new RollbackRemove()
   if (options.cleanInstall) {
     const nodeModulesPath = resolve(
       options.projectRoot,
       'node_modules',
     )
     if (existsSync(nodeModulesPath)) {
-      const remover = new RollbackRemove()
       await remover.rm(nodeModulesPath)
       remover.confirm()
     }
   }
 
-  let mainManifest: NormalizedManifest | undefined = undefined
   try {
-    mainManifest = options.packageJson.read(options.projectRoot)
+    const modifiers = GraphModifier.maybeLoad(options)
+
+    const act = actualLoad({
+      ...options,
+      mainManifest,
+      loadManifests: true,
+      modifiers: undefined, // modifiers should not be used here
+    })
+    const graph = await idealBuild({
+      ...options,
+      actual: act,
+      add,
+      mainManifest,
+      loadManifests: true,
+      modifiers,
+    })
+    const diff = await reify({
+      ...options,
+      add,
+      actual: act,
+      graph,
+      loadManifests: true,
+      modifiers,
+    })
+
+    return { graph, diff }
   } catch (err) {
-    if (asError(err).message === 'Could not read package.json file') {
-      await init({ cwd: options.projectRoot })
-      mainManifest = options.packageJson.read(options.projectRoot, {
-        reload: true,
-      })
-    } else {
-      throw err
-    }
+    await remover.rollback()
+    throw err
   }
-
-  const modifiers = GraphModifier.maybeLoad(options)
-
-  const act = actualLoad({
-    ...options,
-    mainManifest,
-    loadManifests: true,
-    modifiers: undefined, // modifiers should not be used here
-  })
-  const graph = await idealBuild({
-    ...options,
-    actual: act,
-    add,
-    mainManifest,
-    loadManifests: true,
-    modifiers,
-  })
-  const diff = await reify({
-    ...options,
-    add,
-    actual: act,
-    graph,
-    loadManifests: true,
-    modifiers,
-  })
-
-  return { graph, diff }
 }
