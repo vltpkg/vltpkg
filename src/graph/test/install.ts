@@ -592,6 +592,131 @@ t.test(
   },
 )
 
+t.test('install with frozenLockfile and spec changes', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+      dependencies: {
+        react: '^19.0.0', // Changed from ^18.0.0 to ^19.0.0
+      },
+    }),
+    'vlt-lock.json': JSON.stringify({
+      lockfileVersion: 0,
+      options: {},
+      nodes: {
+        '': [
+          0,
+          'test',
+          '',
+          '',
+          '',
+          {
+            name: 'test',
+            version: '1.0.0',
+            dependencies: { react: '^18.0.0' },
+          },
+        ],
+        'registry::react@18.0.0': [
+          0,
+          'react',
+          '',
+          '',
+          '',
+          { name: 'react', version: '18.0.0' },
+        ],
+      },
+      edges: {
+        ' react': 'prod ^18.0.0 registry::react@18.0.0',
+      },
+    }),
+  })
+
+  const options = {
+    projectRoot: dir,
+    scurry: new PathScurry(),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    frozenLockfile: true,
+  } as unknown as InstallOptions
+
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/reify/index.ts': {
+      reify: async () => ({ diff: {} }),
+    },
+    '../src/ideal/get-importer-specs.ts': {
+      getImporterSpecs: () => ({
+        add: Object.assign(new Map(), {
+          modifiedDependencies: false,
+        }),
+        remove: Object.assign(new Map(), {
+          modifiedDependencies: false,
+        }),
+      }),
+    },
+    '../src/lockfile/load.ts': {
+      load: () => {
+        // Create a mock spec object with a toString method
+        const mockSpec18 = {
+          toString: () => 'react@^18.0.0',
+          type: 'registry',
+          name: 'react',
+          spec: '^18.0.0',
+        }
+        const graph = {
+          nodes: new Map([
+            [
+              '',
+              {
+                location: dir,
+                id: '',
+                manifest: { dependencies: { react: '^19.0.0' } },
+              },
+            ],
+          ]),
+          importers: [
+            {
+              id: '',
+              location: dir,
+              manifest: { dependencies: { react: '^19.0.0' } },
+              edgesOut: new Map([
+                [
+                  'react',
+                  {
+                    spec: mockSpec18,
+                    name: 'react',
+                    from: { location: dir },
+                    to: { id: 'registry::react@18.0.0' },
+                  },
+                ],
+              ]),
+            },
+          ],
+          gc: () => {},
+        }
+        return graph
+      },
+      loadHidden: () => ({
+        nodes: new Map(),
+        importers: [],
+      }),
+    },
+    '@vltpkg/workspaces': {
+      Monorepo: {
+        maybeLoad: () => undefined,
+      },
+    },
+  })
+
+  await t.rejects(
+    install(options, new Map() as AddImportersDependenciesMap),
+    /Lockfile is out of sync with package\.json.*react spec changed from.*\^18.*to.*\^19/s,
+    'should throw error when dependency specs have changed',
+  )
+})
+
 t.test(
   'install with frozenLockfile prevents adding packages',
   async t => {
@@ -629,6 +754,8 @@ t.test(
       '',
       new Map([['new-dep', { spec: {}, type: 'prod' }]]),
     )
+    // Set the modifiedDependencies flag to match the new implementation check
+    Object.assign(addDeps, { modifiedDependencies: true })
 
     await t.rejects(
       install(options, addDeps as AddImportersDependenciesMap),

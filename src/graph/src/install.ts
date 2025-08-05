@@ -5,7 +5,7 @@ import { GraphModifier } from './modifiers.ts'
 import { init } from '@vltpkg/init'
 import { error } from '@vltpkg/error-cause'
 import type { NormalizedManifest } from '@vltpkg/types'
-import { asError } from '@vltpkg/types'
+import { asError, longDependencyTypes } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
 import type {
@@ -19,6 +19,7 @@ import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
 import { Monorepo } from '@vltpkg/workspaces'
+import { Spec } from '@vltpkg/spec'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -56,7 +57,7 @@ export const install = async (
   }
 
   if (options.frozenLockfile) {
-    if (add && add.size > 0) {
+    if (add?.modifiedDependencies) {
       const dependencies: string[] = []
       for (const [, deps] of add) {
         for (const [name] of deps) {
@@ -97,11 +98,41 @@ export const install = async (
       ...options,
     })
 
+    // Check for spec changes by comparing package.json specs with lockfile edges
+    const specChanges: string[] = []
+    for (const importer of lockfileGraph.importers) {
+      for (const depType of longDependencyTypes) {
+        const deps = Object.entries(
+          importer.manifest?.[depType] ?? {},
+        )
+        for (const [depName, depSpec] of deps) {
+          const edge = importer.edgesOut.get(depName)
+          if (edge?.spec) {
+            const manifestSpec = Spec.parse(depName, depSpec, options)
+            // Compare the spec strings to detect changes
+            if (edge.spec.toString() !== manifestSpec.toString()) {
+              const node = lockfileGraph.nodes.get(importer.id)
+              /* c8 ignore next */
+              const location = node?.location || importer.id
+              specChanges.push(
+                `  ${location}: ${depName} spec changed from "${edge.spec}" to "${manifestSpec}"`,
+              )
+            }
+          }
+        }
+      }
+    }
+
     if (
       importerSpecs.add.modifiedDependencies ||
-      importerSpecs.remove.modifiedDependencies
+      importerSpecs.remove.modifiedDependencies ||
+      specChanges.length > 0
     ) {
       const details: string[] = []
+
+      if (specChanges.length > 0) {
+        details.push(...specChanges)
+      }
 
       for (const [importerId, deps] of importerSpecs.add) {
         if (deps.size > 0) {
