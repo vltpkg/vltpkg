@@ -73,7 +73,7 @@ t.test('frozen-lockfile flag', async t => {
 
   const options = {
     projectRoot: dir,
-    frozenLockfile: true,
+    'frozen-lockfile': true,
   }
 
   let log = ''
