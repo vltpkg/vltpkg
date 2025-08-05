@@ -70,6 +70,11 @@ export type LoadOptions = SpecOptions & {
    * Used by ci command to enforce lockfile integrity.
    */
   expectLockfile?: boolean
+  /**
+   * If set to `true`, fail if lockfile is missing or out of sync with package.json.
+   * Prevents any lockfile modifications and is stricter than expectLockfile.
+   */
+  frozenLockfile?: boolean
 }
 
 export type ReadEntry = {

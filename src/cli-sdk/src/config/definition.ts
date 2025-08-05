@@ -602,7 +602,12 @@ export const definition = j
       description: 'Run command without making any changes',
     },
     'expect-lockfile': {
-      description: 'Fail if lockfile is missing or out of date. Used by ci command to enforce lockfile integrity.',
+      description:
+        'Fail if lockfile is missing or out of date. Used by ci command to enforce lockfile integrity.',
+    },
+    'frozen-lockfile': {
+      description:
+        'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
     },
   })
   .opt({
