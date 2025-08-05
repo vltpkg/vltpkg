@@ -179,7 +179,8 @@ export const install = async (
 
     return { graph, diff }
   } catch (err) {
-    await remover.rollback()
+    /* c8 ignore next */
+    await remover.rollback().catch(() => {})
     throw err
   }
 }

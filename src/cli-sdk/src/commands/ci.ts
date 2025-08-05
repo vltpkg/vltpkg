@@ -24,14 +24,12 @@ export const views = {
 } as const satisfies Views<Graph>
 
 export const command: CommandFn<Graph> = async conf => {
-  // Set expectLockfile and cleanInstall for ci command
   const ciOptions = {
     ...conf.options,
     expectLockfile: true,
-    cleanInstall: true, // This triggers node_modules deletion for clean install
+    cleanInstall: true,
   }
 
-  // CI command doesn't support adding new packages
   const { graph } = await install(ciOptions)
   return graph
 }

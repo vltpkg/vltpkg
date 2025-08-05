@@ -14,6 +14,7 @@ import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
 import { resolve } from 'node:path'
+import { error } from '@vltpkg/error-cause'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -1071,3 +1072,88 @@ t.test('install with expectLockfile but no node_modules', async t => {
     'should not confirm removal when nothing to remove',
   )
 })
+
+t.test(
+  'install with cleanInstall should rollback on idealBuild error',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: 0,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+      node_modules: {
+        'some-package': {
+          'package.json': JSON.stringify({
+            name: 'some-package',
+            version: '1.0.0',
+          }),
+        },
+      },
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      expectLockfile: true,
+      cleanInstall: true, // This is set by ci command
+    } as unknown as InstallOptions
+
+    const removedPaths: string[] = []
+    let confirmed = false
+    let rolledBack = false
+
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/ideal/build.ts': {
+        build: async () => {
+          throw error('idealBuild failed for testing', {})
+        },
+      },
+      '../src/reify/index.ts': {
+        reify: async () => ({ diff: {} }),
+      },
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: class MockRollbackRemove {
+          async rm(path: string) {
+            removedPaths.push(path)
+          }
+          confirm() {
+            confirmed = true
+          }
+          async rollback() {
+            rolledBack = true
+          }
+        },
+      },
+    })
+
+    await t.rejects(
+      install(options, new Map() as AddImportersDependenciesMap),
+      /idealBuild failed for testing/,
+      'should throw error from idealBuild',
+    )
+
+    t.ok(
+      removedPaths.length > 0,
+      'should have attempted to remove node_modules during clean install',
+    )
+    t.ok(
+      removedPaths.some(p => p.includes('node_modules')),
+      'should have attempted to remove node_modules directory',
+    )
+    t.ok(
+      confirmed,
+      'should confirm removal initially during clean install',
+    )
+    t.ok(rolledBack, 'should rollback removal after error')
+  },
+)
