@@ -11,7 +11,7 @@ const Command = await t.mockImport<
 >('../../src/commands/ci.ts', {
   '@vltpkg/graph': {
     async install(opts: any) {
-      log += `install expectLockfile=${opts.expectLockfile}\n`
+      log += `install expectLockfile=${opts.expectLockfile} cleanInstall=${opts.cleanInstall}\n`
       return {
         graph: {},
       }
@@ -31,7 +31,10 @@ t.test('command execution', async t => {
     values: {},
     options,
   } as unknown as LoadedConfig)
-  t.matchSnapshot(log, 'should call install with expectLockfile true')
+  t.matchSnapshot(
+    log,
+    'should call install with expectLockfile and cleanInstall true',
+  )
 })
 
 t.test('views', t => {
@@ -41,27 +44,36 @@ t.test('views', t => {
       toJSON: () => ({ ci: true }),
     } as unknown as Graph),
     { ci: true },
-    'json view returns graph.toJSON()'
+    'json view returns graph.toJSON()',
   )
 
   // Test human view is InstallReporter
   t.equal(
     Command.views.human.name,
     'InstallReporter',
-    'human view uses InstallReporter'
+    'human view uses InstallReporter',
   )
-  
+
   t.end()
 })
 
 t.test('command description and examples', t => {
   const usage = Command.usage()
   const usageStr = usage.usage()
-  
-  t.ok(usageStr.includes('Clean install from lockfile'), 'includes description')
-  t.ok(usageStr.includes('Deletes node_modules'), 'mentions node_modules deletion')
+
+  t.ok(
+    usageStr.includes('Clean install from lockfile'),
+    'includes description',
+  )
+  t.ok(
+    usageStr.includes('Deletes node_modules'),
+    'mentions node_modules deletion',
+  )
   t.ok(usageStr.includes('vlt-lock.json'), 'mentions lockfile')
-  t.ok(usageStr.includes('--expect-lockfile'), 'mentions expect-lockfile')
-  
+  t.ok(
+    usageStr.includes('--expect-lockfile'),
+    'mentions expect-lockfile',
+  )
+
   t.end()
 })

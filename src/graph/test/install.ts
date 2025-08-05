@@ -162,18 +162,89 @@ t.test('unknown error reading package.json', async t => {
   )
 })
 
-t.test('install with expectLockfile option', async t => {
+t.test(
+  'install with expectLockfile option (no clean install)',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: 0,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+      node_modules: {
+        'some-package': {
+          'package.json': JSON.stringify({
+            name: 'some-package',
+            version: '1.0.0',
+          }),
+        },
+      },
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      expectLockfile: true,
+      // No cleanInstall option - just expect-lockfile
+    } as unknown as InstallOptions
+
+    const removedPaths: string[] = []
+    let confirmed = false
+
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/reify/index.ts': {
+        reify: async () => ({ diff: {} }),
+      },
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: class MockRollbackRemove {
+          async rm(path: string) {
+            removedPaths.push(path)
+          }
+          confirm() {
+            confirmed = true
+          }
+        },
+      },
+    })
+
+    await install(options, new Map() as AddImportersDependenciesMap)
+
+    t.equal(
+      removedPaths.length,
+      0,
+      'should NOT remove node_modules with only expectLockfile',
+    )
+    t.notOk(confirmed, 'should NOT confirm removal')
+  },
+)
+
+t.test('install with cleanInstall option (ci command)', async t => {
   const dir = t.testdir({
-    'package.json': JSON.stringify({ name: 'test', version: '1.0.0' }),
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
     'vlt-lock.json': JSON.stringify({
       lockfileVersion: 0,
       options: {},
       nodes: {},
       edges: {},
     }),
-    'node_modules': {
+    node_modules: {
       'some-package': {
-        'package.json': JSON.stringify({ name: 'some-package', version: '1.0.0' }),
+        'package.json': JSON.stringify({
+          name: 'some-package',
+          version: '1.0.0',
+        }),
       },
     },
   })
@@ -184,9 +255,10 @@ t.test('install with expectLockfile option', async t => {
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     expectLockfile: true,
+    cleanInstall: true, // This is set by ci command
   } as unknown as InstallOptions
 
-  let removedPaths: string[] = []
+  const removedPaths: string[] = []
   let confirmed = false
 
   const { install } = await t.mockImport<
@@ -209,43 +281,58 @@ t.test('install with expectLockfile option', async t => {
 
   await install(options, new Map() as AddImportersDependenciesMap)
 
-  t.ok(removedPaths.length > 0, 'should remove node_modules')
-  t.ok(removedPaths.some(p => p.includes('node_modules')), 'should remove node_modules directory')
+  t.ok(
+    removedPaths.length > 0,
+    'should remove node_modules with cleanInstall',
+  )
+  t.ok(
+    removedPaths.some(p => p.includes('node_modules')),
+    'should remove node_modules directory',
+  )
   t.ok(confirmed, 'should confirm removal')
 })
 
-t.test('install with expectLockfile but missing lockfile', async t => {
-  const dir = t.testdir({
-    'package.json': JSON.stringify({ name: 'test', version: '1.0.0' }),
-    // No vlt-lock.json file
-  })
+t.test(
+  'install with expectLockfile but missing lockfile',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      // No vlt-lock.json file
+    })
 
-  const options = {
-    projectRoot: dir,
-    scurry: new PathScurry(),
-    packageJson: new PackageJson(),
-    packageInfo: mockPackageInfo,
-    expectLockfile: true,
-  } as unknown as InstallOptions
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      expectLockfile: true,
+    } as unknown as InstallOptions
 
-  const { install } = await t.mockImport<
-    typeof import('../src/install.ts')
-  >('../src/install.ts', {
-    '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
-    },
-  })
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/reify/index.ts': {
+        reify: async () => ({ diff: {} }),
+      },
+    })
 
-  await t.rejects(
-    install(options, new Map() as AddImportersDependenciesMap),
-    /vlt-lock\.json file is required when using --expect-lockfile or ci command/,
-    'should throw error when lockfile is missing',
-  )
-})
+    await t.rejects(
+      install(options, new Map() as AddImportersDependenciesMap),
+      /vlt-lock\.json file is required when using --expect-lockfile or ci command/,
+      'should throw error when lockfile is missing',
+    )
+  },
+)
 
 t.test('install with expectLockfile but no node_modules', async t => {
   const dir = t.testdir({
-    'package.json': JSON.stringify({ name: 'test', version: '1.0.0' }),
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
     'vlt-lock.json': JSON.stringify({
       lockfileVersion: 0,
       options: {},
@@ -263,7 +350,7 @@ t.test('install with expectLockfile but no node_modules', async t => {
     expectLockfile: true,
   } as unknown as InstallOptions
 
-  let removedPaths: string[] = []
+  const removedPaths: string[] = []
   let confirmed = false
 
   const { install } = await t.mockImport<
@@ -286,6 +373,13 @@ t.test('install with expectLockfile but no node_modules', async t => {
 
   await install(options, new Map() as AddImportersDependenciesMap)
 
-  t.equal(removedPaths.length, 0, 'should not try to remove non-existent node_modules')
-  t.notOk(confirmed, 'should not confirm removal when nothing to remove')
+  t.equal(
+    removedPaths.length,
+    0,
+    'should not try to remove non-existent node_modules',
+  )
+  t.notOk(
+    confirmed,
+    'should not confirm removal when nothing to remove',
+  )
 })

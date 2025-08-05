@@ -15,13 +15,14 @@ import { resolve } from 'node:path'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
+  cleanInstall?: boolean // Only set by ci command for clean install
 }
 
 export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
-  // Handle expect-lockfile option (ci behavior)
+  // Check for lockfile when expect-lockfile is set or during ci command
   if (options.expectLockfile) {
     const lockfilePath = resolve(options.projectRoot, 'vlt-lock.json')
     if (!existsSync(lockfilePath)) {
@@ -32,8 +33,10 @@ export const install = async (
         },
       )
     }
+  }
 
-    // Delete node_modules directory for clean install (like npm ci)
+  // Delete node_modules directory for clean install (only for ci command)
+  if (options.cleanInstall) {
     const nodeModulesPath = resolve(
       options.projectRoot,
       'node_modules',

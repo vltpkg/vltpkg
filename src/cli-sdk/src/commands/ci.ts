@@ -10,9 +10,9 @@ export const usage: CommandUsage = () =>
     command: 'ci',
     usage: '',
     description: `Clean install from lockfile. Deletes node_modules and installs 
-                  dependencies exactly as specified in vlt-lock.json. Equivalent 
-                  to running 'vlt install --expect-lockfile' after deleting 
-                  node_modules.`,
+                  dependencies exactly as specified in vlt-lock.json. This is 
+                  similar to running 'vlt install --expect-lockfile' but performs 
+                  a clean install by removing node_modules first.`,
     examples: {
       '': { description: 'Clean install from lockfile' },
     },
@@ -24,12 +24,13 @@ export const views = {
 } as const satisfies Views<Graph>
 
 export const command: CommandFn<Graph> = async conf => {
-  // Set expect-lockfile to true for ci command
+  // Set expectLockfile and cleanInstall for ci command
   const ciOptions = {
     ...conf.options,
     expectLockfile: true,
+    cleanInstall: true, // This triggers node_modules deletion for clean install
   }
-  
+
   // CI command doesn't support adding new packages
   const { graph } = await install(ciOptions)
   return graph
