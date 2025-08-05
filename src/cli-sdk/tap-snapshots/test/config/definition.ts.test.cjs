@@ -186,6 +186,10 @@ Object {
     "hint": "n",
     "type": "number",
   },
+  "frozen-lockfile": Object {
+    "description": "Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.",
+    "type": "boolean",
+  },
   "git-host-archives": Object {
     "description": String(
       Similar to the \`--git-host <name>=<template>\` option, this option can define a template string that will be expanded to provide the URL to download a pre-built tarball of the git repository.
@@ -471,6 +475,7 @@ Array [
   "--fetch-retry-factor=<n>",
   "--fetch-retry-maxtimeout=<n>",
   "--fetch-retry-mintimeout=<n>",
+  "--frozen-lockfile",
   "--git-host-archives=<name=template>",
   "--git-hosts=<name=template>",
   "--git-shallow",
@@ -524,6 +529,7 @@ Array [
   "fetch-retry-factor",
   "fetch-retry-maxtimeout",
   "fetch-retry-mintimeout",
+  "frozen-lockfile",
   "git-host-archives",
   "git-hosts",
   "git-shallow",

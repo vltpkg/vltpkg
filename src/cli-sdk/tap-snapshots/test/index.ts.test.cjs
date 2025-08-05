@@ -51,6 +51,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --fetch-retry-factor=<n>
     --fetch-retry-maxtimeout=<n>
     --fetch-retry-mintimeout=<n>
+    --frozen-lockfile
     --git-host-archives=<name=template>
     --git-hosts=<name=template>
     --git-shallow
@@ -107,6 +108,7 @@ Unknown config option: asdf
     fetch-retry-factor
     fetch-retry-maxtimeout
     fetch-retry-mintimeout
+    frozen-lockfile
     git-host-archives
     git-hosts
     git-shallow
