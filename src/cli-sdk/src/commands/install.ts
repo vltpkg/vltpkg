@@ -22,6 +22,15 @@ export const views = {
 export const command: CommandFn<Graph> = async conf => {
   const monorepo = conf.options.monorepo
   const { add } = parseAddArgs(conf, monorepo)
-  const { graph } = await install(conf.options, add)
+  const frozenLockfile = conf.options['frozen-lockfile']
+  const expectLockfile = conf.options['expect-lockfile']
+  const { graph } = await install(
+    {
+      ...conf.options,
+      frozenLockfile,
+      expectLockfile,
+    },
+    add,
+  )
   return graph
 }

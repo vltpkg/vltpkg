@@ -3,20 +3,45 @@ import { build as idealBuild } from './ideal/build.ts'
 import { reify } from './reify/index.ts'
 import { GraphModifier } from './modifiers.ts'
 import { init } from '@vltpkg/init'
-import { asError } from '@vltpkg/types'
+import { error } from '@vltpkg/error-cause'
 import type { NormalizedManifest } from '@vltpkg/types'
+import { asError } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
-import type { AddImportersDependenciesMap } from './dependencies.ts'
+import { getDependencies } from './dependencies.ts'
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
+} from './dependencies.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
+import type { DepID } from '@vltpkg/dep-id'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { load as loadVirtual } from './lockfile/load.ts'
+import { getImporterSpecs } from './ideal/get-importer-specs.ts'
+import { Spec } from '@vltpkg/spec'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
+  cleanInstall?: boolean // Only set by ci command for clean install
 }
 
 export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
+  if (options.expectLockfile || options.frozenLockfile) {
+    const lockfilePath = resolve(options.projectRoot, 'vlt-lock.json')
+    if (!existsSync(lockfilePath)) {
+      throw error(
+        'vlt-lock.json file is required when using --expect-lockfile, --frozen-lockfile, or ci command',
+        {
+          path: lockfilePath,
+        },
+      )
+    }
+  }
+
   let mainManifest: NormalizedManifest | undefined = undefined
   try {
     mainManifest = options.packageJson.read(options.projectRoot)
@@ -30,30 +55,149 @@ export const install = async (
       throw err
     }
   }
-  const modifiers = GraphModifier.maybeLoad(options)
 
-  const act = actualLoad({
-    ...options,
-    mainManifest,
-    loadManifests: true,
-    modifiers: undefined, // modifiers should not be used here
-  })
-  const graph = await idealBuild({
-    ...options,
-    actual: act,
-    add,
-    mainManifest,
-    loadManifests: true,
-    modifiers,
-  })
-  const diff = await reify({
-    ...options,
-    add,
-    actual: act,
-    graph,
-    loadManifests: true,
-    modifiers,
-  })
+  if (options.frozenLockfile) {
+    if (add?.modifiedDependencies) {
+      const dependencies: string[] = []
+      for (const [, deps] of add) {
+        for (const [name] of deps) {
+          dependencies.push(name)
+        }
+      }
+      throw error(
+        'Cannot add dependencies when using --frozen-lockfile',
+        { found: dependencies.join(', ') },
+      )
+    }
 
-  return { graph, diff }
+    const lockfileGraph = loadVirtual({
+      ...options,
+      mainManifest,
+      skipLoadingNodesOnModifiersChange: false,
+    })
+
+    const emptyAdd = Object.assign(
+      new Map<DepID, Map<string, Dependency>>(),
+      { modifiedDependencies: false },
+    )
+    const emptyRemove = Object.assign(new Map<DepID, Set<string>>(), {
+      modifiedDependencies: false,
+    })
+    const importerSpecs = getImporterSpecs({
+      graph: lockfileGraph,
+      add: emptyAdd,
+      remove: emptyRemove,
+      ...options,
+    })
+
+    // Check for spec changes by comparing package.json specs with lockfile edges
+    const specChanges: string[] = []
+    for (const importer of lockfileGraph.importers) {
+      const deps = getDependencies(importer, options)
+      for (const [depName, dep] of deps) {
+        const edge = importer.edgesOut.get(depName)
+        if (edge?.spec) {
+          if (edge.spec.toString() !== dep.spec.toString()) {
+            const node = lockfileGraph.nodes.get(importer.id)
+            /* c8 ignore next */
+            const location = node?.location || importer.id
+            specChanges.push(
+              `  ${location}: ${depName} spec changed from "${edge.spec}" to "${dep.spec}"`,
+            )
+          }
+        }
+      }
+    }
+
+    if (
+      importerSpecs.add.modifiedDependencies ||
+      importerSpecs.remove.modifiedDependencies ||
+      specChanges.length > 0
+    ) {
+      const details: string[] = []
+
+      if (specChanges.length > 0) {
+        details.push(...specChanges)
+      }
+
+      for (const [importerId, deps] of importerSpecs.add) {
+        if (deps.size > 0) {
+          const node = lockfileGraph.nodes.get(importerId)
+          const location = node?.location || importerId
+          const depNames = Array.from(deps.keys())
+          details.push(
+            `  ${location}: ${deps.size} dependencies to add (${depNames.join(', ')})`,
+          )
+        }
+      }
+
+      for (const [importerId, deps] of importerSpecs.remove) {
+        if (deps.size > 0) {
+          const node = lockfileGraph.nodes.get(importerId)
+          const location = node?.location || importerId
+          const depNames = Array.from(deps)
+          details.push(
+            `  ${location}: ${deps.size} dependencies to remove (${depNames.join(', ')})`,
+          )
+        }
+      }
+
+      const lockfilePath = resolve(
+        options.projectRoot,
+        'vlt-lock.json',
+      )
+      throw error(
+        'Lockfile is out of sync with package.json. Run "vlt install" to update.\n' +
+          details.join('\n'),
+        {
+          path: lockfilePath,
+        },
+      )
+    }
+  }
+
+  const remover = new RollbackRemove()
+  if (options.cleanInstall) {
+    const nodeModulesPath = resolve(
+      options.projectRoot,
+      'node_modules',
+    )
+    if (existsSync(nodeModulesPath)) {
+      await remover.rm(nodeModulesPath)
+      remover.confirm()
+    }
+  }
+
+  try {
+    const modifiers = GraphModifier.maybeLoad(options)
+
+    const act = actualLoad({
+      ...options,
+      mainManifest,
+      loadManifests: true,
+      modifiers: undefined, // modifiers should not be used here
+    })
+    const graph = await idealBuild({
+      ...options,
+      actual: act,
+      add,
+      mainManifest,
+      loadManifests: true,
+      modifiers,
+    })
+    const diff = await reify({
+      ...options,
+      add,
+      actual: act,
+      graph,
+      loadManifests: true,
+      modifiers,
+    })
+
+    return { graph, diff }
+  } catch (err) {
+    /* c8 ignore next */
+    await remover.rollback().catch(() => {})
+    throw err
+  }
 }
