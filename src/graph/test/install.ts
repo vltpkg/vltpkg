@@ -594,31 +594,8 @@ t.test('install with frozenLockfile and spec changes', async t => {
     'vlt-lock.json': JSON.stringify({
       lockfileVersion: 0,
       options: {},
-      nodes: {
-        '': [
-          0,
-          'test',
-          '',
-          '',
-          '',
-          {
-            name: 'test',
-            version: '1.0.0',
-            dependencies: { react: '^18.0.0' },
-          },
-        ],
-        'registry::react@18.0.0': [
-          0,
-          'react',
-          '',
-          '',
-          '',
-          { name: 'react', version: '18.0.0' },
-        ],
-      },
-      edges: {
-        ' react': 'prod ^18.0.0 registry::react@18.0.0',
-      },
+      nodes: {},
+      edges: {},
     }),
   })
 
