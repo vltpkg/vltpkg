@@ -26,7 +26,7 @@ jobs:
           check-latest: true
 
       - name: Boostrap
-        run: npx vlt install --view=json
+        run: npx vlt install
 
       - name: Build vlt
         run: node --run build:bundle
@@ -35,7 +35,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
       
       - name: Install Dependencies
-        run: vlt install --view=json
+        run: vlt install
 
       - name: Formatting
         id: format
@@ -117,7 +117,7 @@ jobs:
           check-latest: true
 
       - name: Boostrap
-        run: npx vlt install --view=json
+        run: npx vlt install
 
       - name: Build vlt
         run: node --run build:bundle
@@ -126,7 +126,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
       
       - name: Install Dependencies
-        run: vlt install --view=json
+        run: vlt install
 
       - name: Run Typecheck
         continue-on-error: true

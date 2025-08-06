@@ -74,27 +74,12 @@ t.test('default view depends on stdout TTY status', t => {
   t.test('tty false', async t => {
     delete process.env.VLT_VIEW
     t.intercept(process.stdout, 'isTTY', { value: false })
-    t.intercept(process, 'env', {
-      value: { ...process.env, CI: false },
-    })
     t.equal(process.stdout.isTTY, false)
     const { definition } = await t.mockImport<
       typeof import('../../src/config/definition.ts')
     >('../../src/config/definition.ts')
     const { values } = definition.parse([])
     t.equal(values.view, 'json')
-    t.end()
-  })
-  t.test('ci true', async t => {
-    delete process.env.VLT_VIEW
-    t.intercept(process, 'env', {
-      value: { ...process.env, CI: true },
-    })
-    const { definition } = await t.mockImport<
-      typeof import('../../src/config/definition.ts')
-    >('../../src/config/definition.ts')
-    const { values } = definition.parse([])
-    t.equal(values.view, 'human')
     t.end()
   })
   t.end()

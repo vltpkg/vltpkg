@@ -5,7 +5,7 @@ t.intercept(process.stderr, 'isTTY', { value: false })
 t.intercept(process, 'env', {
   value: Object.fromEntries(
     Object.entries(process.env).filter(
-      ([k]) => !['FORCE_COLOR', 'NO_COLOR', 'CI'].includes(k),
+      ([k]) => !['FORCE_COLOR', 'NO_COLOR'].includes(k),
     ),
   ),
 })
