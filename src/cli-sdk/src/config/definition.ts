@@ -2,14 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
 
-export const defaultView =
-  // If stdout is a TTY, use human output
-  process.stdout.isTTY ? 'human'
-    // If its not a TTY but is a CI environment, use human output
-    // TODO: make a better view option for CI environments
-  : process.env.CI ? 'human'
-    // Otherwise, use json output
-  : 'json'
+export const defaultView = process.stdout.isTTY ? 'human' : 'json'
 
 export const defaultEditor = () =>
   process.env.EDITOR ||
