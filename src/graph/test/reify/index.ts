@@ -436,3 +436,112 @@ t.test('failure of optional node just deletes it', async t => {
     t.throws(() => lstatSync(resolve(projectRoot, path)))
   }
 })
+
+t.test('early termination when no changes are needed', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+    },
+  })
+
+  const projectRoot = resolve(dir, 'project')
+
+  // Create a graph and use it as both actual and ideal to ensure no changes
+  const baseGraph = actual.load({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+
+  // Mock the internal functions to track if they're called
+  let addNodesCalled = false
+  let deleteEdgesCalled = false
+  let addEdgesCalled = false
+  let buildCalled = false
+  let deleteNodesCalled = false
+
+  const { reify: testReify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    './add-nodes.ts': {
+      addNodes: (..._args: any[]) => {
+        addNodesCalled = true
+        return []
+      },
+    },
+    './delete-edges.ts': {
+      deleteEdges: (..._args: any[]) => {
+        deleteEdgesCalled = true
+        return []
+      },
+    },
+    './add-edges.ts': {
+      addEdges: (..._args: any[]) => {
+        addEdgesCalled = true
+        return []
+      },
+    },
+    './build.ts': {
+      build: (..._args: any[]) => {
+        buildCalled = true
+        return Promise.resolve()
+      },
+    },
+    './delete-nodes.ts': {
+      deleteNodes: (..._args: any[]) => {
+        deleteNodesCalled = true
+        return []
+      },
+    },
+  })
+
+  // Execute reify with the same graph as both actual and ideal
+  const result = await testReify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    graph: baseGraph,
+    actual: baseGraph,
+  })
+
+  // Verify early termination behavior
+  t.ok(result, 'reify should return a diff object')
+  t.equal(result.hasChanges(), false, 'diff should have no changes')
+
+  // Verify that no reification work was performed
+  t.equal(
+    addNodesCalled,
+    false,
+    'addNodes should not be called when no changes',
+  )
+  t.equal(
+    deleteEdgesCalled,
+    false,
+    'deleteEdges should not be called when no changes',
+  )
+  t.equal(
+    addEdgesCalled,
+    false,
+    'addEdges should not be called when no changes',
+  )
+  t.equal(
+    buildCalled,
+    false,
+    'build should not be called when no changes',
+  )
+  t.equal(
+    deleteNodesCalled,
+    false,
+    'deleteNodes should not be called when no changes',
+  )
+})

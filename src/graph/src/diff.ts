@@ -138,4 +138,13 @@ ${lines
   .join('\n')}
 }`
   }
+
+  hasChanges(): boolean {
+    return (
+      this.nodes.add.size > 0 ||
+      this.nodes.delete.size > 0 ||
+      this.edges.add.size > 0 ||
+      this.edges.delete.size > 0
+    )
+  }
 }
