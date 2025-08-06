@@ -65,6 +65,16 @@ export type LoadOptions = SpecOptions & {
    * Load only importers into the graph if the modifiers have changed.
    */
   skipLoadingNodesOnModifiersChange?: boolean
+  /**
+   * If set to `true`, fail if lockfile is missing or out of date.
+   * Used by ci command to enforce lockfile integrity.
+   */
+  expectLockfile?: boolean
+  /**
+   * If set to `true`, fail if lockfile is missing or out of sync with package.json.
+   * Prevents any lockfile modifications and is stricter than expectLockfile.
+   */
+  frozenLockfile?: boolean
 }
 
 export type ReadEntry = {

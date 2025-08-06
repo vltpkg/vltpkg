@@ -44,12 +44,14 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --dashboard-root=<path>
     --dry-run
     --editor=<program>
+    --expect-lockfile
     --expect-results=<value>
     --fallback-command=<command>
     --fetch-retries=<n>
     --fetch-retry-factor=<n>
     --fetch-retry-maxtimeout=<n>
     --fetch-retry-mintimeout=<n>
+    --frozen-lockfile
     --git-host-archives=<name=template>
     --git-hosts=<name=template>
     --git-shallow
@@ -99,12 +101,14 @@ Unknown config option: asdf
     dashboard-root
     dry-run
     editor
+    expect-lockfile
     expect-results
     fallback-command
     fetch-retries
     fetch-retry-factor
     fetch-retry-maxtimeout
     fetch-retry-mintimeout
+    frozen-lockfile
     git-host-archives
     git-hosts
     git-shallow

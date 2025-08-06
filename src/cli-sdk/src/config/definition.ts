@@ -13,6 +13,7 @@ export const defaultEditor = () =>
 
 const canonicalCommands = {
   cache: 'cache',
+  ci: 'ci',
   config: 'config',
   exec: 'exec',
   'exec-local': 'exec-local',
@@ -599,6 +600,14 @@ export const definition = j
   .flag({
     'dry-run': {
       description: 'Run command without making any changes',
+    },
+    'expect-lockfile': {
+      description:
+        'Fail if lockfile is missing or out of date. Used by ci command to enforce lockfile integrity.',
+    },
+    'frozen-lockfile': {
+      description:
+        'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
     },
   })
   .opt({

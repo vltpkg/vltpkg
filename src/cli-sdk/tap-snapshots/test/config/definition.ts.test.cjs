@@ -10,6 +10,7 @@ Object {
   "?": "help",
   "add": "install",
   "cache": "cache",
+  "ci": "ci",
   "conf": "config",
   "config": "config",
   "exec": "exec",
@@ -108,6 +109,10 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "expect-lockfile": Object {
+    "description": "Fail if lockfile is missing or out of date. Used by ci command to enforce lockfile integrity.",
+    "type": "boolean",
+  },
   "expect-results": Object {
     "description": String(
       When running \`vlt query\`, this option allows you to set a expected number of resulting items.
@@ -136,6 +141,7 @@ Object {
     "type": "string",
     "validOptions": Array [
       "cache",
+      "ci",
       "config",
       "exec",
       "exec-local",
@@ -179,6 +185,10 @@ Object {
     "description": "Number of milliseconds before starting first retry",
     "hint": "n",
     "type": "number",
+  },
+  "frozen-lockfile": Object {
+    "description": "Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.",
+    "type": "boolean",
   },
   "git-host-archives": Object {
     "description": String(
@@ -458,12 +468,14 @@ Array [
   "--dashboard-root=<path>",
   "--dry-run",
   "--editor=<program>",
+  "--expect-lockfile",
   "--expect-results=<value>",
   "--fallback-command=<command>",
   "--fetch-retries=<n>",
   "--fetch-retry-factor=<n>",
   "--fetch-retry-maxtimeout=<n>",
   "--fetch-retry-mintimeout=<n>",
+  "--frozen-lockfile",
   "--git-host-archives=<name=template>",
   "--git-hosts=<name=template>",
   "--git-shallow",
@@ -510,12 +522,14 @@ Array [
   "dashboard-root",
   "dry-run",
   "editor",
+  "expect-lockfile",
   "expect-results",
   "fallback-command",
   "fetch-retries",
   "fetch-retry-factor",
   "fetch-retry-maxtimeout",
   "fetch-retry-mintimeout",
+  "frozen-lockfile",
   "git-host-archives",
   "git-hosts",
   "git-shallow",

@@ -56,3 +56,53 @@ t.strictSame(
   } as unknown as Graph),
   { install: true },
 )
+
+t.test('frozen-lockfile flag', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+    'vlt-lock.json': JSON.stringify({
+      lockfileVersion: 0,
+      options: {},
+      nodes: {},
+      edges: {},
+    }),
+  })
+
+  const options = {
+    projectRoot: dir,
+    'frozen-lockfile': true,
+  }
+
+  let log = ''
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install(opts: any, add: any) {
+        log += `install frozenLockfile=${opts.frozenLockfile}\n`
+        if (add && add.size > 0) {
+          log += `add packages: ${add.size}\n`
+        }
+        return {
+          graph: {},
+        }
+      },
+      asDependency: (dep: any) => dep,
+    },
+  })
+
+  await Command.command({
+    positionals: [],
+    values: {},
+    options,
+  } as unknown as LoadedConfig)
+
+  t.match(
+    log,
+    /install frozenLockfile=true/,
+    'should pass frozenLockfile to install',
+  )
+})
