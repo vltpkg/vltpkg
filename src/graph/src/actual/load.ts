@@ -405,14 +405,13 @@ const parseDir = (
  */
 export const load = (options: LoadOptions): Graph => {
   const done = graphStep('actual')
-  // TODO: once hidden lockfile is more reliable, default to false here
   const {
     modifiers,
     monorepo,
     projectRoot,
     packageJson,
     scurry,
-    skipHiddenLockfile = true,
+    skipHiddenLockfile = false,
     skipLoadingNodesOnModifiersChange = false,
   } = options
   const mainManifest =
@@ -420,6 +419,7 @@ export const load = (options: LoadOptions): Graph => {
 
   if (!skipHiddenLockfile) {
     try {
+      // if we reach here, the hidden lockfile is valid
       const graph = loadHidden({
         projectRoot,
         mainManifest,
@@ -427,9 +427,12 @@ export const load = (options: LoadOptions): Graph => {
         monorepo,
         scurry,
       })
-      // TODO: check mtime of lockfile vs .vlt folder
+      done()
       return graph
-    } catch {}
+    } catch {
+      // if validation fails or any other error occurs,
+      // fall back to filesystem traversal
+    }
   }
 
   const graph = new Graph({ ...options, mainManifest })
