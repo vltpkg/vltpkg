@@ -194,3 +194,433 @@ t.test('diff two graphs', async t => {
   t.matchSnapshot(inspect(diff, { colors: true }), 'diff with color')
   t.matchSnapshot(inspect(diff, { colors: false }), 'diff no color')
 })
+
+t.test('hasChanges method', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
+    }),
+  })
+
+  // Test 1: No changes - identical graphs should return false
+  t.test('returns false when graphs are identical', t => {
+    const graphData = {
+      lockfileVersion: 0,
+      options: {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+        },
+      },
+      nodes: {
+        [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+          0,
+          'foo',
+          'sha512-foofoofoo==',
+        ],
+      } as Record<DepID, LockfileNode>,
+      edges: {
+        [edgeKey(['file', '.'], 'foo')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      } as LockfileEdges,
+    }
+
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      graphData,
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      graphData,
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.hasChanges(),
+      false,
+      'identical graphs should have no changes',
+    )
+    t.end()
+  })
+
+  // Test 2: Only nodes added should return true
+  t.test('returns true when only nodes are added', t => {
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'new-package@1.0.0'])]: [
+            0,
+            'new-package',
+            'sha512-newpackage==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.hasChanges(),
+      true,
+      'adding nodes should result in changes',
+    )
+    t.ok(diff.nodes.add.size > 0, 'should have nodes to add')
+    t.equal(
+      diff.nodes.delete.size,
+      0,
+      'should have no nodes to delete',
+    )
+    t.equal(diff.edges.add.size, 0, 'should have no edges to add')
+    t.equal(
+      diff.edges.delete.size,
+      0,
+      'should have no edges to delete',
+    )
+    t.end()
+  })
+
+  // Test 3: Only nodes deleted should return true
+  t.test('returns true when only nodes are deleted', t => {
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'old-package@1.0.0'])]: [
+            0,
+            'old-package',
+            'sha512-oldpackage==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.hasChanges(),
+      true,
+      'deleting nodes should result in changes',
+    )
+    t.equal(diff.nodes.add.size, 0, 'should have no nodes to add')
+    t.ok(diff.nodes.delete.size > 0, 'should have nodes to delete')
+    t.equal(diff.edges.add.size, 0, 'should have no edges to add')
+    t.equal(
+      diff.edges.delete.size,
+      0,
+      'should have no edges to delete',
+    )
+    t.end()
+  })
+
+  // Test 4: Only edges added should return true
+  t.test('returns true when only edges are added', t => {
+    const sharedNodes = {
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+        0,
+        'foo',
+        'sha512-foofoofoo==',
+      ],
+    } as Record<DepID, LockfileNode>
+
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: sharedNodes,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: sharedNodes,
+        edges: {
+          [edgeKey(['file', '.'], 'foo')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        } as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.hasChanges(),
+      true,
+      'adding edges should result in changes',
+    )
+    t.equal(diff.nodes.add.size, 0, 'should have no nodes to add')
+    t.equal(
+      diff.nodes.delete.size,
+      0,
+      'should have no nodes to delete',
+    )
+    t.ok(diff.edges.add.size > 0, 'should have edges to add')
+    t.equal(
+      diff.edges.delete.size,
+      0,
+      'should have no edges to delete',
+    )
+    t.end()
+  })
+
+  // Test 5: Only edges deleted should return true
+  t.test('returns true when only edges are deleted', t => {
+    const sharedNodes = {
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+        0,
+        'foo',
+        'sha512-foofoofoo==',
+      ],
+    } as Record<DepID, LockfileNode>
+
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: sharedNodes,
+        edges: {
+          [edgeKey(['file', '.'], 'foo')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        } as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: sharedNodes,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.hasChanges(),
+      true,
+      'deleting edges should result in changes',
+    )
+    t.equal(diff.nodes.add.size, 0, 'should have no nodes to add')
+    t.equal(
+      diff.nodes.delete.size,
+      0,
+      'should have no nodes to delete',
+    )
+    t.equal(diff.edges.add.size, 0, 'should have no edges to add')
+    t.ok(diff.edges.delete.size > 0, 'should have edges to delete')
+    t.end()
+  })
+
+  // Test 6: Multiple types of changes should return true
+  t.test('returns true when multiple types of changes exist', t => {
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'old-package@1.0.0'])]: [
+            0,
+            'old-package',
+            'sha512-oldpackage==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'old-package')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'old-package@1.0.0']),
+        } as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'new-package@1.0.0'])]: [
+            0,
+            'new-package',
+            'sha512-newpackage==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'new-package')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'new-package@1.0.0']),
+        } as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.hasChanges(),
+      true,
+      'multiple changes should result in changes',
+    )
+    t.ok(diff.nodes.add.size > 0, 'should have nodes to add')
+    t.ok(diff.nodes.delete.size > 0, 'should have nodes to delete')
+    t.ok(diff.edges.add.size > 0, 'should have edges to add')
+    t.ok(diff.edges.delete.size > 0, 'should have edges to delete')
+    t.end()
+  })
+})
