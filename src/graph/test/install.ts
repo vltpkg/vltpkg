@@ -343,14 +343,8 @@ t.test(
       'vlt-lock.json': JSON.stringify({
         lockfileVersion: 0,
         options: {},
-        nodes: {
-          'registry:some-package@1.0.0': [0, 'some-package', ''],
-        },
-        edges: {
-          '': [
-            ['some-package', 'prod', 'registry:some-package@1.0.0'],
-          ],
-        },
+        nodes: {},
+        edges: {},
       }),
       node_modules: {
         'some-package': {
