@@ -62,15 +62,7 @@ const formatNodes = (
     const resolved = customRegistry ? node.resolved : undefined
     // if it's in a location other than the default, stash that
     const location =
-      (
-        node.id.startsWith('file') ||
-        node.location.endsWith(
-          '/node_modules/.vlt/' +
-            node.id +
-            '/node_modules/' +
-            node.name,
-        )
-      ) ?
+      node.id.startsWith('file') || node.inVltStore() ?
         undefined
       : node.location
 

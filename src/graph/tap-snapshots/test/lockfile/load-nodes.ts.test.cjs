@@ -49,7 +49,7 @@ Array [
     "id": "file·linked",
     "importer": false,
     "integrity": undefined,
-    "location": "./node_modules/.vlt/file·linked/node_modules/linked",
+    "location": "linked",
     "manifest": undefined,
     "modifier": undefined,
     "name": "linked",
@@ -129,6 +129,70 @@ Object {
   "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
   "version": "1.0.0",
 }
+`
+
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with hydration from actual graph > should hydrate nodes with data from actual graph 1`] = `
+Array [
+  Object {
+    "dev": false,
+    "hasManifest": true,
+    "id": "··bar@1.5.0",
+    "integrity": "sha512-actualBarIntegrity==",
+    "manifestKeys": Array [
+      "description",
+      "name",
+      "version",
+    ],
+    "name": "bar",
+    "optional": true,
+    "resolved": "https://registry.npmjs.org/bar/-/bar-1.5.0.tgz",
+    "version": "1.5.0",
+  },
+  Object {
+    "dev": true,
+    "hasManifest": true,
+    "id": "··baz@3.0.0",
+    "integrity": "sha512-lockfileBazIntegrity==",
+    "manifestKeys": Array [
+      "name",
+      "scripts",
+      "version",
+    ],
+    "name": "baz",
+    "optional": false,
+    "resolved": "https://registry.npmjs.org/baz/-/baz-3.0.0.tgz",
+    "version": "3.0.0",
+  },
+  Object {
+    "dev": false,
+    "hasManifest": true,
+    "id": "··foo@2.0.0",
+    "integrity": "sha512-actualFooIntegrity==",
+    "manifestKeys": Array [
+      "dependencies",
+      "name",
+      "version",
+    ],
+    "name": "foo",
+    "optional": false,
+    "resolved": "https://registry.npmjs.org/foo/-/foo-2.0.0.tgz",
+    "version": "2.0.0",
+  },
+  Object {
+    "dev": false,
+    "hasManifest": true,
+    "id": "··missing@1.0.0",
+    "integrity": "sha512-missingIntegrity==",
+    "manifestKeys": Array [
+      "name",
+      "version",
+    ],
+    "name": "missing",
+    "optional": false,
+    "resolved": "https://registry.npmjs.org/missing/-/missing-1.0.0.tgz",
+    "version": "1.0.0",
+  },
+]
 `
 
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes with manifest > should load nodes into graph with manifest data 1`] = `
@@ -235,6 +299,21 @@ Array [
     "id": "··regular-pkg@1.0.0",
     "modifier": undefined,
     "name": "regular-pkg",
+  },
+]
+`
+
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with no actual graph provided > should load nodes without hydration from actual graph 1`] = `
+Array [
+  Object {
+    "dev": false,
+    "hasManifest": false,
+    "id": "··standalone@1.0.0",
+    "integrity": undefined,
+    "name": "standalone",
+    "optional": false,
+    "resolved": "https://registry.npmjs.org/standalone/-/standalone-1.0.0.tgz",
+    "version": "1.0.0",
   },
 ]
 `

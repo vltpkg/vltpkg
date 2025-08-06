@@ -399,11 +399,14 @@ export class Graph implements GraphLike {
   /**
    * Removes a node and its relevant edges from the graph.
    *
+   * Use the `keepEdges` option to keep the edges that were pointing to
+   * this node and only removes their `to` property value.
+   *
    * If a replacement is provided, then any edges that were previously
    * pointing to the removed node will be directed to the replacement,
    * if it is valid to do so.
    */
-  removeNode(node: Node, replacement?: Node) {
+  removeNode(node: Node, replacement?: Node, keepEdges?: boolean) {
     this.nodes.delete(node.id)
     const nbn = this.nodesByName.get(node.name)
     // if it's the last one, just remove the set
@@ -429,6 +432,8 @@ export class Graph implements GraphLike {
         )
       ) {
         edge.to = replacement
+      } else if (keepEdges) {
+        edge.to = undefined
       } else {
         edge.from.edgesOut.delete(edge.spec.name)
         this.edges.delete(edge)
