@@ -7,8 +7,7 @@ export const defaultView =
   process.stdout.isTTY ? 'human'
     // If its not a TTY but is a CI environment, use human output
     // TODO: make a better view option for CI environments
-  : /* c8 ignore next */
-  process.env.CI ? 'human'
+  : process.env.CI ? 'human'
     // Otherwise, use json output
   : 'json'
 
