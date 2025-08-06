@@ -97,18 +97,12 @@ export const install = async (
       for (const [depName, dep] of deps) {
         const edge = importer.edgesOut.get(depName)
         if (edge?.spec) {
-          const manifestSpec = Spec.parse(
-            depName,
-            dep.spec.toString(),
-            options,
-          )
-          // Compare the spec strings to detect changes
-          if (edge.spec.toString() !== manifestSpec.toString()) {
+          if (edge.spec.toString() !== dep.spec.toString()) {
             const node = lockfileGraph.nodes.get(importer.id)
             /* c8 ignore next */
             const location = node?.location || importer.id
             specChanges.push(
-              `  ${location}: ${depName} spec changed from "${edge.spec}" to "${manifestSpec}"`,
+              `  ${location}: ${depName} spec changed from "${edge.spec}" to "${dep.spec}"`,
             )
           }
         }
