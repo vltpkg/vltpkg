@@ -7,6 +7,7 @@ import type { GraphLike } from '../types.ts'
 export const loadNodes = (
   graph: GraphLike,
   nodes: LockfileData['nodes'],
+  actual?: GraphLike,
 ) => {
   const entries = Object.entries(nodes) as [DepID, LockfileNode][]
   for (const [id, lockfileNode] of entries) {
@@ -23,16 +24,23 @@ export const loadNodes = (
       manifest,
       rawManifest,
     ] = lockfileNode
-    const [type, , maybeExtra, lastExtra] = splitDepID(id)
+    const [type, filepath, maybeExtra, lastExtra] = splitDepID(id)
     const extra =
       type === 'registry' || type === 'git' ? lastExtra : maybeExtra
     const registrySpec = maybeExtra
 
+    // The reference node is a node that matches the same id from the
+    // current iterating node in the provided `actual` graph, this allows
+    // for hydrating missing manifest, integrity, and resolved values
+    // that may be missing from the lockfile
+    const referenceNode = actual?.nodes.get(id)
+    const mani = manifest ?? referenceNode?.manifest
+
     // if the lockfile has manifest data then it should just use that
     // otherwise tries to infer name / version value from the lockfile node
     const node =
-      manifest ?
-        graph.addNode(id, manifest)
+      mani ?
+        graph.addNode(id, mani)
       : graph.addNode(
           id,
           undefined,
@@ -53,12 +61,19 @@ export const loadNodes = (
     const { dev, optional } = getBooleanFlagsFromNum(flags)
     node.dev = dev
     node.optional = optional
-    node.integrity = integrity ?? undefined
-    node.resolved = resolved ?? undefined
+    node.integrity = integrity ?? referenceNode?.integrity
+    node.resolved = resolved ?? referenceNode?.resolved
     if (!node.resolved) node.setResolved()
-    if (location) node.location = location
-    if (manifest && rawManifest) {
-      node.setConfusedManifest(manifest, rawManifest)
+    if (location) {
+      node.location = location
+    } else {
+      // set the location to file dependencies based on the id value
+      if (type === 'file') {
+        node.location = filepath
+      }
+    }
+    if (mani && rawManifest) {
+      node.setConfusedManifest(mani, rawManifest)
     }
   }
 }

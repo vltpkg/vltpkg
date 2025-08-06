@@ -20,7 +20,7 @@ export const removeOptionalSubgraph = (
 ) => {
   const removed = new Set<Node>()
   for (const node of findOptionalSubgraph(startingNode)) {
-    graph.removeNode(node)
+    graph.removeNode(node, undefined, true)
     removed.add(node)
   }
   return removed

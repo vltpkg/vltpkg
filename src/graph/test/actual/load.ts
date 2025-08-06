@@ -1084,6 +1084,112 @@ t.test('modifiers integration', async t => {
   })
 })
 
+t.test('hidden lockfile', async t => {
+  await t.test('should use hidden lockfile by default', async t => {
+    const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: {
+          a: '^1.0.0',
+        },
+      }),
+      'vlt.json': '{}',
+      node_modules: {
+        '.vlt-lock.json': JSON.stringify({
+          lockfileVersion: 0,
+          options: configData,
+          nodes: {
+            [aDepID]: [
+              0,
+              'a',
+              null,
+              null,
+              null,
+              {
+                name: 'a',
+                version: '1.0.0',
+              },
+            ],
+          },
+          edges: {
+            'file:. a': `prod ^1.0.0 ${aDepID}`,
+          },
+        }),
+        '.vlt': {
+          [aDepID]: {
+            node_modules: {
+              a: {
+                'package.json': JSON.stringify({
+                  name: 'a',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+        },
+        a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+      },
+    })
+
+    t.chdir(projectRoot)
+    unload('project')
+
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests: true,
+      ...configData,
+    })
+
+    // Should load the node from hidden lockfile
+    const nodeA = graph.nodes.get(aDepID)
+    t.ok(nodeA, 'should load node from hidden lockfile')
+    t.equal(nodeA?.name, 'a', 'node should have correct name')
+    t.equal(
+      nodeA?.version,
+      '1.0.0',
+      'node should have correct version',
+    )
+  })
+
+  await t.test(
+    'should handle missing hidden lockfile gracefully',
+    async t => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'test-project-3',
+          version: '1.0.0',
+          dependencies: {
+            a: '^1.0.0',
+          },
+        }),
+        'vlt.json': '{}',
+        // No node_modules directory
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      })
+
+      // Should create a graph with missing dependencies
+      t.ok(graph, 'should create graph even without node_modules')
+      t.equal(graph.nodes.size, 1, 'should contain only root node')
+    },
+  )
+})
+
 t.test('asStoreConfigObject', async t => {
   t.strictSame(
     asStoreConfigObject({ modifiers: { '#a': '1' } }),

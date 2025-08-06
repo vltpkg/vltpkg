@@ -17,6 +17,10 @@ const getMap = <T extends Map<any, any>>(m?: T) =>
 
 export type BuildIdealOptions = LoadActualOptions & {
   /**
+   * An actual graph
+   */
+  actual?: Graph
+  /**
    * A `Map` in which keys are {@link DepID} linking to another `Map` in which
    * keys are the dependency names and values are {@link Dependency}. This
    * structure represents dependencies that need to be added to the importer

@@ -32,18 +32,19 @@ export const install = async (
   }
   const modifiers = GraphModifier.maybeLoad(options)
 
-  const graph = await idealBuild({
-    ...options,
-    add,
-    mainManifest,
-    loadManifests: true,
-    modifiers,
-  })
   const act = actualLoad({
     ...options,
     mainManifest,
     loadManifests: true,
     modifiers: undefined, // modifiers should not be used here
+  })
+  const graph = await idealBuild({
+    ...options,
+    actual: act,
+    add,
+    mainManifest,
+    loadManifests: true,
+    modifiers,
   })
   const diff = await reify({
     ...options,

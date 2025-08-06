@@ -324,3 +324,169 @@ t.test(
     )
   },
 )
+
+t.test('load nodes with hydration from actual graph', async t => {
+  // Create the target graph that will receive loaded nodes
+  const targetGraph = new Graph({
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+    },
+    projectRoot: t.testdirName,
+  })
+
+  // Create the actual graph with reference nodes containing full data
+  const actualGraph = new Graph({
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+    },
+    projectRoot: t.testdirName,
+  })
+
+  // Add reference nodes to the actual graph with complete data
+  const fooManifest = {
+    name: 'foo',
+    version: '2.0.0',
+    dependencies: {
+      bar: '^1.0.0',
+    },
+  }
+  const fooId = joinDepIDTuple(['registry', '', 'foo@2.0.0'])
+  const fooNode = actualGraph.addNode(fooId, fooManifest)
+  fooNode.integrity = 'sha512-actualFooIntegrity=='
+  fooNode.resolved = 'https://registry.npmjs.org/foo/-/foo-2.0.0.tgz'
+
+  const barManifest = {
+    name: 'bar',
+    version: '1.5.0',
+    main: 'index.js',
+  }
+  const barId = joinDepIDTuple(['registry', '', 'bar@1.5.0'])
+  const barNode = actualGraph.addNode(barId, barManifest)
+  barNode.integrity = 'sha512-actualBarIntegrity=='
+  barNode.resolved = 'https://registry.npmjs.org/bar/-/bar-1.5.0.tgz'
+
+  const bazManifest = {
+    name: 'baz',
+    version: '3.0.0',
+    scripts: {
+      test: 'echo "test"',
+    },
+  }
+  const bazId = joinDepIDTuple(['registry', '', 'baz@3.0.0'])
+  const bazNode = actualGraph.addNode(bazId, bazManifest)
+  bazNode.integrity = 'sha512-actualBazIntegrity=='
+  bazNode.resolved = 'https://registry.npmjs.org/baz/-/baz-3.0.0.tgz'
+
+  // Create lockfile nodes with missing data that should be hydrated
+  const nodes = {
+    // Node missing manifest - should get it from actual graph
+    [fooId]: [
+      0, // flags
+      'foo', // name
+      null, // integrity - missing, should be hydrated
+      null, // resolved - missing, should be hydrated
+      null, // location
+      null, // manifest - missing, should be hydrated
+    ],
+    // Node missing integrity and resolved - should get them from actual graph
+    [barId]: [
+      1, // optional flag
+      'bar', // name
+      null, // integrity - missing, should be hydrated
+      null, // resolved - missing, should be hydrated
+      null, // location
+      {
+        name: 'bar',
+        version: '1.5.0',
+        description: 'lockfile version with partial data',
+      }, // manifest - present but different from actual
+    ],
+    // Node with partial data - should only hydrate missing fields
+    [bazId]: [
+      2, // dev flag
+      'baz', // name
+      'sha512-lockfileBazIntegrity==', // integrity - present, should NOT be overridden
+      null, // resolved - missing, should be hydrated
+      null, // location
+      null, // manifest - missing, should be hydrated
+    ],
+    // Node not in actual graph - should load with just lockfile data
+    [joinDepIDTuple(['registry', '', 'missing@1.0.0'])]: [
+      0,
+      'missing',
+      'sha512-missingIntegrity==',
+      'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz',
+      null,
+      {
+        name: 'missing',
+        version: '1.0.0',
+      },
+    ],
+  } as LockfileData['nodes']
+
+  // Load nodes with hydration from actual graph
+  loadNodes(targetGraph, nodes, actualGraph)
+
+  t.matchSnapshot(
+    [...targetGraph.nodes.values()]
+      .filter(node => node.name !== 'my-project') // Exclude main importer
+      .map(n => ({
+        id: n.id,
+        name: n.name,
+        version: n.version,
+        integrity: n.integrity,
+        resolved: n.resolved,
+        dev: n.dev,
+        optional: n.optional,
+        hasManifest: !!n.manifest,
+        manifestKeys:
+          n.manifest ? Object.keys(n.manifest).sort() : [],
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    'should hydrate nodes with data from actual graph',
+  )
+})
+
+t.test('load nodes with no actual graph provided', async t => {
+  const graph = new Graph({
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+    },
+    projectRoot: t.testdirName,
+  })
+
+  // Create lockfile nodes with missing data but no actual graph to hydrate from
+  const nodes = {
+    [joinDepIDTuple(['registry', '', 'standalone@1.0.0'])]: [
+      0,
+      'standalone',
+      null, // integrity - missing, no hydration source
+      null, // resolved - missing, no hydration source
+      null,
+      null, // manifest - missing, no hydration source
+    ],
+  } as LockfileData['nodes']
+
+  // Load nodes without actual graph (should handle gracefully)
+  loadNodes(graph, nodes) // No actual parameter
+
+  t.matchSnapshot(
+    [...graph.nodes.values()]
+      .filter(node => node.name !== 'my-project') // Exclude main importer
+      .map(n => ({
+        id: n.id,
+        name: n.name,
+        version: n.version,
+        integrity: n.integrity,
+        resolved: n.resolved,
+        dev: n.dev,
+        optional: n.optional,
+        hasManifest: !!n.manifest,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    'should load nodes without hydration from actual graph',
+  )
+})

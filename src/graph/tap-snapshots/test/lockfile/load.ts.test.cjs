@@ -12,11 +12,7 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(linked@file:./linked) -prod-> to: Node {
-        id: 'file·linked',
-        location: './node_modules/.vlt/file·linked/node_modules/linked',
-        resolved: 'linked'
-      },
+      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file·linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0 || 1.2.3 ||  2.3.4) -prod-> to: Node {
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
@@ -253,11 +249,7 @@ exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(linked@file:./linked) -prod-> to: Node {
-        id: 'file·linked',
-        location: './node_modules/.vlt/file·linked/node_modules/linked',
-        resolved: 'linked'
-      },
+      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file·linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0 || 1.2.3 ||  2.3.4) -prod-> to: Node {
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',

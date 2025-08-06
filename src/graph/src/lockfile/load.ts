@@ -13,6 +13,10 @@ import type { GraphModifier } from '../modifiers.ts'
 
 export type LoadOptions = SpecOptions & {
   /**
+   * An optional {@link Graph} object to hydrate extra data from.
+   */
+  actual?: Graph
+  /**
    * The project root dirname.
    */
   projectRoot: string
@@ -131,8 +135,16 @@ export const loadObject = (
     skipLoadingNodesOnModifiersChange && modifiersChanged
   )
   if (shouldLoadDependencies) {
-    loadNodes(graph, lockfileData.nodes)
+    loadNodes(graph, lockfileData.nodes, options.actual)
     loadEdges(graph, lockfileData.edges, mergedOptions)
+  }
+
+  // hydrate missing node-level registry data
+  for (const node of graph.nodes.values()) {
+    const [firstEdge] = node.edgesIn
+    if (firstEdge?.spec.registry) {
+      node.registry = firstEdge.spec.registry
+    }
   }
 
   return graph
