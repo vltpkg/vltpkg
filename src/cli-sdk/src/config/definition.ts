@@ -4,10 +4,11 @@ import { jack } from 'jackspeak'
 
 export const defaultView =
   // If stdout is a TTY, use human output
-  process.stdout.isTTY ? 'human'
+  process.stdout.isTTY ?
+    'human'
     // If its not a TTY but is a CI environment, use human output
     // TODO: make a better view option for CI environments
-  : process.env.CI ? 'human'
+    // : process.env.CI ? 'human'
     // Otherwise, use json output
   : 'json'
 
