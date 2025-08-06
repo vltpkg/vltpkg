@@ -433,10 +433,7 @@ export class Graph implements GraphLike {
       ) {
         edge.to = replacement
       } else if (keepEdges) {
-        const e = edge.from.edgesOut.get(edge.spec.name)
-        if (e) {
-          e.to = undefined
-        }
+        edge.to = undefined
       } else {
         edge.from.edgesOut.delete(edge.spec.name)
         this.edges.delete(edge)
