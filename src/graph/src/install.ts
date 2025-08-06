@@ -18,7 +18,6 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
-import { Monorepo } from '@vltpkg/workspaces'
 import { Spec } from '@vltpkg/spec'
 
 export type InstallOptions = LoadOptions & {
@@ -70,17 +69,9 @@ export const install = async (
       )
     }
 
-    const monorepo =
-      options.monorepo ??
-      Monorepo.maybeLoad(options.projectRoot, {
-        packageJson: options.packageJson,
-        scurry: options.scurry,
-      })
-
     const lockfileGraph = loadVirtual({
       ...options,
       mainManifest,
-      monorepo,
       skipLoadingNodesOnModifiersChange: false,
     })
 
