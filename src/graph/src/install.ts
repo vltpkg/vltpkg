@@ -19,7 +19,6 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
-import { Spec } from '@vltpkg/spec'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
