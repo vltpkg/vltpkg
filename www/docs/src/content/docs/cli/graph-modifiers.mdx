@@ -1,0 +1,190 @@
+---
+title: Using Workspaces in a Monorepo Project with vlt
+sidebar:
+  label: Workspaces
+  order: 8
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+# Graph Modifiers
+
+Graph Modifiers are a recent addition to the **vlt client** that allow
+you to dynamically alter and refine how the package dependency graph
+is traversed and evaluated. This feature gives you granular control
+over installed packages, including their transitive dependencies,
+letting you target exactly which parts of the graph to operate on.
+
+---
+
+## Overview
+
+Graph Modifiers extend the existing dependency graph traversal logic
+in **vlt** using our [Dependency Selector Syntax](/cli/selectors).
+These selectors let you modify the behavior of an existing
+`vlt install` operation, allowing you to target specific packages and
+their dependencies.
+
+**Note:** In its initial release, Graph Modifiers support a limited
+subset of the Dependency Selector Syntax:
+
+- `:root`
+- `:project`
+- `:workspace`
+- ID selectors (`#package-name`)
+- Semantic version selectors (`:v(^1.0.0)`)
+- Direct dependency combinator (`>`)
+
+### Understanding how Graph Modifiers work
+
+User-defined Graph Modifier entries will be read and applied during
+the graph build phase. In order to apply new modifier entries the
+graph build will be retriggered every time the `"modifiers"` property
+is changed in the `vlt.json` file
+
+---
+
+## Usage
+
+Graph Modifiers are configured via the `modifiers` field in your
+`vlt.json` configuration file. Below are some examples on how to use
+it:
+
+### Basic Overrides
+
+```json
+{
+  "modifiers": {
+    ":root > #express": "^4.18.0",
+    "#lodash": "^4.17.21"
+  }
+}
+```
+
+The keys are selectors that identify which dependency to override, and
+the values specify the versions to enforce.
+
+### Universal Selector
+
+```json
+{
+  "modifiers": {
+    "#react": "^18.2.0"
+  }
+}
+```
+
+Replaces **every** occurrence of `react` in the dependency tree with
+version `^18.2.0`.
+
+### Path-Specific Selector
+
+```json
+{
+  "modifiers": {
+    ":root > #next > #react": "^17.0.0"
+  }
+}
+```
+
+Only overrides `react` when it’s a direct dependency of `next`, which
+is a direct dependency of the root project.
+
+### Adding Comments to Selectors
+
+```json
+{
+  "modifiers": {
+    "/* pin down exact version */ :root > #express > #body-parser > #qs": "=6.10.0"
+  }
+}
+```
+
+Inline comments can be added to selector keys for clarity.
+
+### Specificity Resolution
+
+```json
+{
+  "dependencies": {
+    "express": "^4.17.0"
+  },
+  "modifiers": {
+    ":root > #express > #cookie": "^0.5.0",
+    "#cookie": "^0.4.0"
+  }
+}
+```
+
+CSS-like specificity rules determine which modifier applies when
+multiple selectors match the same dependency. Here, the more specific
+`:root > #express > #cookie` takes precedence over `#cookie`.
+
+### Semver Pseudo-Selectors
+
+```json
+{
+  "modifiers": {
+    "#lodash:v(^4.0.0)": "^4.17.21"
+  }
+}
+```
+
+This only affects `lodash` dependencies matching the semver range
+`^4.0.0`.
+
+### Integration with Catalogs
+
+```json
+{
+  "catalogs": {
+    "tools": {
+      "react": "^18.2.0"
+    }
+  },
+  "modifiers": {
+    "#react": "catalog:tools"
+  }
+}
+```
+
+It's possible to point to configured catalogued versions from
+modifiers.
+
+### Using with workspaces
+
+```json
+{
+  "workspaces": "packages/*",
+  "modifiers": {
+    ":workspace > #typescript": "^5.0.0",
+    "#core:workspace > #typescript": "~5.1.0"
+  }
+}
+```
+
+You may use the `:workspace` selector to target workspaces. In the
+example above we target a specific workspace named `core` by combining
+the `#core` ID selector with the `:workspace` selector.
+
+---
+
+## Best Practices
+
+- **Start Small:** Test modifiers incrementally to understand how you
+  are modifying your install,
+- **Combine wisely:** Use path-specific and universal selectors to
+  control installations accurately.
+
+---
+
+## See Also
+
+- [Workspaces](/cli/workspaces)
+- [Catalogs](/cli/catalogs)
+
+---
+
+Graph Modifiers enable precise and efficient package management in
+vlt. Future updates will expand selector support and add advanced
+capabilities.
