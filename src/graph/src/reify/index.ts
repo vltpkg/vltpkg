@@ -58,6 +58,12 @@ export const reify = async (options: ReifyOptions) => {
     })
 
   const diff = new Diff(actual, graph)
+  if (!diff.hasChanges()) {
+    // nothing to do, so just return the diff
+    done()
+    return diff
+  }
+
   const remover = new RollbackRemove()
   let success = false
   try {
