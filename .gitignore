@@ -9,6 +9,7 @@ tsconfig.tsbuildinfo
 /node_modules
 /pnpm-exec-summary.json
 /scripts/fixtures/
+/results/
 
 /src/*/.tap
 /src/*/.tshy-build
