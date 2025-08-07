@@ -1,7 +1,7 @@
 import { useParams } from 'react-router'
-import { TabContentAside } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AsideOverview } from '@/components/explorer-grid/selected-item/aside/index.tsx'
 
 import type {
   SubTabDependencies,
@@ -51,8 +51,8 @@ export const FocusedAside = ({
     <div className="col-span-full lg:col-span-3 lg:pl-4 lg:pr-0">
       <AnimatePresence>
         {tabAsideSet.has(activeTab) ?
-          <motion.div {...motionVariants}>
-            <TabContentAside className="h-fit border-l-[1.6px] border-muted py-0" />
+          <motion.div {...motionVariants} className="p-0">
+            <AsideOverview className="h-fit py-0" />
           </motion.div>
         : activeTab === 'dependencies' ?
           <motion.aside
@@ -65,7 +65,7 @@ export const FocusedAside = ({
               importerId={importerId}
             />
           </motion.aside>
-        : <TabContentAside className="py-0" />}
+        : null}
       </AnimatePresence>
     </div>
   )

@@ -2,12 +2,15 @@
 
 exports[`FocusedView renders default 1`] = `
 
-<gui-selected-item-provider selecteditem="[object Object]">
+<gui-selected-item-provider
+  selecteditem="[object Object]"
+  asideoveriewvisible="false"
+>
   <section
     class="relative pb-4"
     style="opacity: 0; filter: blur(2px);"
   >
-    <gui-item-header classname="pb-0">
+    <gui-item-header classnames="[object Object]">
       <gui-focused-button>
       </gui-focused-button>
     </gui-item-header>

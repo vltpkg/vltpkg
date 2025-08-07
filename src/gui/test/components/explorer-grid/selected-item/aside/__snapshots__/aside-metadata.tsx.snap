@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideMetadata renders nothing when there is no metadata 1`] = `
+
+
+`;
+
+exports[`AsideMetadata renders with all metadata 1`] = `
+
+<gui-aside-section>
+  <gui-aside-header>
+    Metadata
+  </gui-aside-header>
+  <gui-aside-item
+    icon="gui-download"
+    count="1 KB"
+  >
+  </gui-aside-item>
+  <gui-aside-item icon="gui-package">
+    ESM
+  </gui-aside-item>
+  <gui-aside-item
+    icon="gui-file-lock2"
+    copytoclipboard="[object Object]"
+  >
+    Integrity Value
+  </gui-aside-item>
+  <gui-aside-item
+    icon="gui-circle-fading-arrow-up"
+    copytoclipboard="[object Object]"
+  >
+    Tarball URL
+  </gui-aside-item>
+</gui-aside-section>
+<gui-aside-section>
+  <gui-aside-header>
+    Engines
+  </gui-aside-header>
+  <gui-aside-item
+    count=">=14.0.0"
+    classnames="[object Object]"
+    databadgetooltip="[object Object]"
+    icon="gui-node"
+  >
+  </gui-aside-item>
+  <gui-aside-item
+    count=">=6.0.0"
+    classnames="[object Object]"
+    databadgetooltip="[object Object]"
+    icon="gui-npm"
+  >
+  </gui-aside-item>
+</gui-aside-section>
+
+`;

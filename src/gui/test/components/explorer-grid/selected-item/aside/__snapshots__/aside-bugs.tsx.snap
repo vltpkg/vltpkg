@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideBugs renders nothing when bugs is empty 1`] = `
+
+
+`;
+
+exports[`AsideBugs renders with bugs data 1`] = `
+
+<gui-aside-section>
+  <gui-aside-header>
+    Bug reports
+  </gui-aside-header>
+  <gui-aside-item
+    type="link"
+    href="https://www.acme.com/bugs1"
+  >
+    Website
+  </gui-aside-item>
+  <gui-aside-item
+    type="link"
+    href="https://www.acme.com/bugs2"
+  >
+    Website
+  </gui-aside-item>
+</gui-aside-section>
+
+`;

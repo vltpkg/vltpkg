@@ -1,0 +1,77 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideHeader renders with text 1`] = `
+
+<h4 class="text-sm font-medium capitalize text-muted-foreground">
+  Test Header
+</h4>
+
+`;
+
+exports[`AsideItem renders with a copy to clipboard feature 1`] = `
+
+<div class="flex items-center text-nowrap text-sm text-foreground gap-2">
+  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+  </span>
+  <span class="text-sm">
+    Copy this text
+  </span>
+</div>
+
+`;
+
+exports[`AsideItem renders with a count badge 1`] = `
+
+<div class="flex items-center text-nowrap text-sm text-foreground gap-2">
+  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+  </span>
+  <gui-data-badge
+    variant="count"
+    content="5"
+  >
+  </gui-data-badge>
+  <span class="text-sm">
+    Test Count Item
+  </span>
+</div>
+
+`;
+
+exports[`AsideItem renders with a link 1`] = `
+
+<gui-link
+  href="https://www.acme.com"
+  classname="flex items-center text-nowrap text-sm text-foreground"
+>
+  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+    <gui-link-icon size="16">
+    </gui-link-icon>
+  </span>
+  <span class="text-sm">
+    https://www.acme.com
+  </span>
+</gui-link>
+
+`;
+
+exports[`AsideItem renders with an icon 1`] = `
+
+<div class="flex items-center text-nowrap text-sm text-foreground gap-2">
+  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+    <gui-smile-icon size="16">
+    </gui-smile-icon>
+  </span>
+  <span class="text-sm">
+    Test Item
+  </span>
+</div>
+
+`;
+
+exports[`AsideSection renders with children 1`] = `
+
+<div class="flex flex-col gap-2">
+  Test Section Content
+</div>
+
+`;

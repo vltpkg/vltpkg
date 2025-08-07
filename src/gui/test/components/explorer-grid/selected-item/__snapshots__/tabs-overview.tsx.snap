@@ -16,7 +16,7 @@ exports[`OverviewTabContent renders default 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
@@ -55,7 +55,7 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
@@ -86,130 +86,6 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
     <gui-contributor-list>
     </gui-contributor-list>
   </div>
-  <aside class="order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4">
-    <div class="flex flex-col gap-2">
-      <h4 class="text-sm font-medium capitalize text-muted-foreground">
-        about
-      </h4>
-      <div class="flex flex-col gap-2">
-        <gui-link
-          href="https://acme.com"
-          classname="text-sm text-foreground"
-        >
-          <span class="flex items-center justify-center">
-            <gui-globe-icon
-              size="16"
-              classname="text-muted-foreground"
-            >
-            </gui-globe-icon>
-          </span>
-          <span>
-            Website
-          </span>
-        </gui-link>
-        <gui-link
-          href="https://github.com/acme/repo"
-          classname="text-sm text-foreground"
-        >
-          <span class="flex w-4 items-center justify-center">
-            <gui-github-icon
-              size="16"
-              classname="text-muted-foreground"
-            >
-            </gui-github-icon>
-          </span>
-          <span>
-            Repository
-          </span>
-        </gui-link>
-        <gui-link
-          href="https://acme.com/bugs"
-          classname="text-sm text-foreground"
-        >
-          <span class="flex items-center justify-center">
-            <gui-bug-icon
-              size="16"
-              classname="text-muted-foreground"
-            >
-            </gui-bug-icon>
-          </span>
-          <span>
-            Bug reports
-          </span>
-        </gui-link>
-        <div class="flex items-center gap-2">
-          <gui-git-pull-request-icon
-            size="16"
-            classname="text-muted-foreground"
-          >
-          </gui-git-pull-request-icon>
-          <div class="flex gap-1">
-            <gui-data-badge
-              variant="count"
-              content="5"
-            >
-            </gui-data-badge>
-            <p class="text-sm">
-              Pull requests
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <gui-circle-dot-icon
-            size="16"
-            classname="text-muted-foreground"
-          >
-          </gui-circle-dot-icon>
-          <div class="flex gap-1">
-            <gui-data-badge
-              variant="count"
-              content="10"
-            >
-            </gui-data-badge>
-            <p class="text-sm">
-              Issues
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <gui-star-icon
-            size="16"
-            classname="text-muted-foreground"
-          >
-          </gui-star-icon>
-          <div class="flex gap-1">
-            <gui-data-badge
-              variant="count"
-              content="100"
-            >
-            </gui-data-badge>
-            <p class="text-sm">
-              Stars
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="flex flex-col gap-2">
-      <h4 class="text-sm font-medium capitalize text-muted-foreground">
-        funding
-      </h4>
-      <div class="flex flex-col gap-2">
-        <gui-link
-          href="https://acme.com/funding"
-          classname="text-sm text-foreground"
-        >
-          <span class="flex items-center justify-center text-muted-foreground">
-            <gui-link-icon size="16">
-            </gui-link-icon>
-          </span>
-          <span>
-            Website
-          </span>
-        </gui-link>
-      </div>
-    </div>
-  </aside>
 </gui-tabs-content>
 
 `;
@@ -218,7 +94,7 @@ exports[`OverviewTabContent renders with content 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
@@ -236,7 +112,7 @@ This is a custom description
     </div>
     <gui-contributor-list>
     </gui-contributor-list>
-    <div class="flex grow flex-col justify-end gap-2 px-6 pb-4">
+    <div class="mt-auto flex flex-col justify-end gap-2 px-6 py-4">
       <h4 class="text-sm font-medium capitalize text-muted-foreground">
         keywords
       </h4>

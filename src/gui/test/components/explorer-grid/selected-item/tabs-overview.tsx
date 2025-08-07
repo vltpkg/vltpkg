@@ -64,25 +64,11 @@ vi.mock('react-markdown', () => ({
 
 vi.mock('lucide-react', () => ({
   FileText: 'gui-file-text-icon',
-  Globe: 'gui-globe-icon',
-  Bug: 'gui-bug-icon',
   RectangleHorizontal: 'gui-rectangle-horizontal-icon',
-  Star: 'gui-star-icon',
-  CircleDot: 'gui-circle-dot-icon',
-  GitPullRequest: 'gui-git-pull-request-icon',
-  Link: 'gui-link-icon',
-}))
-
-vi.mock('@/components/icons/index.ts', () => ({
-  Github: 'gui-github-icon',
 }))
 
 vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
-}))
-
-vi.mock('@/components/ui/link.tsx', () => ({
-  Link: 'gui-link',
 }))
 
 vi.mock(
@@ -93,12 +79,9 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
+  '@/components/explorer-grid/selected-item/aside/index.tsx',
   () => ({
-    useFocusState: () => ({
-      isFocused: false,
-      setIsFocused: vi.fn(),
-    }),
+    AsideOverview: 'gui-aside-overview',
   }),
 )
 

@@ -59,28 +59,12 @@ vi.mock('@/components/ui/tooltip.tsx', () => ({
   TooltipContent: 'gui-tooltip-content',
   TooltipTrigger: 'gui-tooltip-trigger',
   TooltipProvider: 'gui-tooltip-provider',
+  TooltipPortal: 'gui-tooltip-portal',
 }))
 
 vi.mock('lucide-react', () => ({
   Home: 'gui-home-icon',
-  Scale: 'gui-scale-icon',
   ArrowBigUpDash: 'gui-arrow-big-up-dash-icon',
-  EyeOff: 'gui-eye-off-icon',
-  Download: 'gui-download-icon',
-  Package: 'gui-package-icon',
-}))
-
-vi.mock('@/components/ui/progress-bar.tsx', () => ({
-  ProgressBar: 'gui-progress-bar',
-}))
-
-vi.mock('@/components/icons/index.ts', () => ({
-  Npm: 'gui-npm-icon',
-  Node: 'gui-node-icon',
-  Yarn: 'gui-yarn-icon',
-  Pnpm: 'gui-pnpm-icon',
-  Deno: 'gui-deno-icon',
-  Bun: 'gui-bun-icon',
 }))
 
 vi.mock('@/components/ui/scroll-area.tsx', () => ({

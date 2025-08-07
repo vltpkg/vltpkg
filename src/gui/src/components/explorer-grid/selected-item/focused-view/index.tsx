@@ -24,7 +24,9 @@ export const FocusedView = ({
   importerId,
 }: FocusedViewProps) => {
   return (
-    <SelectedItemProvider selectedItem={item}>
+    <SelectedItemProvider
+      selectedItem={item}
+      asideOveriewVisible={false}>
       <motion.section
         initial={{
           opacity: 0,
@@ -40,7 +42,13 @@ export const FocusedView = ({
         }}
         transition={{ ease: 'easeInOut', duration: 0.25 }}
         className="relative pb-4">
-        <ItemHeader className="pb-0">
+        <ItemHeader
+          classNames={{
+            wrapperClassName: 'pb-0',
+            contentClassName: 'grid grid-cols-12',
+            breadCrumbWrapperClassName: 'col-span-12',
+            packageImageSpecClassName: 'col-span-full lg:col-span-9',
+          }}>
           <FocusButton />
         </ItemHeader>
         <div className="mx-6 grid grid-cols-12">
