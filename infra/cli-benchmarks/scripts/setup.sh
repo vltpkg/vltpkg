@@ -18,9 +18,6 @@ echo "hyperfine: $HYPERFINE_VERSION"
 # Create Results Directory
 mkdir -p ./results/
 
-# Rename fixtures package.json files
-mv infra/cli-benchmarks/fixtures/vue/package.json_ infra/cli-benchmarks/fixtures/vue/package.json
-
 # Log Package Manager Versions
 echo "Logging package manager versions..."
 PNPM_VERSION="$(pnpm -v)"
