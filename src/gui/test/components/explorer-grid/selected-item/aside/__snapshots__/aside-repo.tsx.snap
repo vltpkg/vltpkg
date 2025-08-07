@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideRepo renders nothing when there is no repo data 1`] = `
+
+
+`;
+
+exports[`AsideRepo renders with all repo data 1`] = `
+
+<gui-aside-section>
+  <gui-aside-header>
+    About
+  </gui-aside-header>
+  <gui-aside-item
+    icon="[object Object]"
+    href="https://www.acme.com"
+  >
+    Website
+  </gui-aside-item>
+  <gui-aside-item icon="[object Object]">
+    Repository
+  </gui-aside-item>
+  <gui-aside-item
+    count="3"
+    icon="[object Object]"
+  >
+    Pull Requests
+  </gui-aside-item>
+  <gui-aside-item
+    count="5"
+    icon="[object Object]"
+  >
+    Issues
+  </gui-aside-item>
+  <gui-aside-item
+    count="100"
+    icon="[object Object]"
+  >
+    Stars
+  </gui-aside-item>
+  <gui-aside-item icon="[object Object]">
+    MIT
+  </gui-aside-item>
+</gui-aside-section>
+
+`;
