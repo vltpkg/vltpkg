@@ -11,9 +11,7 @@ safe_remove() {
 # Function to safely clean vlt cache
 clean_vlt_cache() {
   if command -v vlt &> /dev/null; then
-    if [ -n "$(vlt config get cache 2>/dev/null)" ]; then
-      safe_remove "$(vlt config get cache)"
-    fi
+    safe_remove "$(vlt config get cache | xargs)"
   fi
 }
 
