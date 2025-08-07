@@ -27,6 +27,7 @@ export const command: CommandFn<Graph> = async conf => {
   const ciOptions = {
     ...conf.options,
     expectLockfile: true,
+    frozenLockfile: true,
     cleanInstall: true,
   }
 
