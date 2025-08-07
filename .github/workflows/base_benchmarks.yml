@@ -30,10 +30,16 @@ jobs:
           check-latest: true
 
       - name: Install Dependencies
-        run: pnpm install --filter="./src/*" --ignore-scripts
+        run: pnpm --filter="!smoke-test" install --ignore-scripts
+
+      - name: Prepare
+        run: pnpm --filter="!smoke-test" prepare
+
+      - name: Build
+        run: pnpm run build:bundle
 
       - name: Setup vlt binaries
-        run: echo "$(pwd)/scripts/bins" >> $GITHUB_PATH
+        run: echo "$(pwd)/scripts/bins/bundle" >> $GITHUB_PATH
 
       - name: Install & Setup Tools
         run: |
