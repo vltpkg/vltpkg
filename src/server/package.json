@@ -21,6 +21,8 @@
     }
   },
   "dependencies": {
+    "@vltpkg/cli-sdk": "workspace:*",
+    "@vltpkg/config": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
@@ -31,6 +33,7 @@
     "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "@vltpkg/vlt-json": "workspace:*",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:",

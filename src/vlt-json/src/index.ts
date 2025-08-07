@@ -116,7 +116,6 @@ const runValidator: <T>(
   if (x !== undefined) v(x, file)
 }
 
-/** This should only be used in tests */
 export const unload = (which: WhichConfig = 'project') => {
   const file = find(which)
   delete datas[which]

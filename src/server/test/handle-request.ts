@@ -615,3 +615,392 @@ t.test('/uninstall', async t => {
   t.equal(okCalled, true)
   t.equal(uninstallCalled, true)
 })
+
+t.test('/config get entire config', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let configGetCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    get: async (key?: string) => {
+      configGetCalled = true
+      t.equal(key, undefined, 'should call get without key')
+      return {
+        registry: 'https://registry.npmjs.org/',
+        cache: '/tmp/cache',
+      }
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {}
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(
+          data,
+          '{"registry":"https://registry.npmjs.org/","cache":"/tmp/cache"}',
+        )
+        okCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+  t.equal(configGetCalled, true)
+})
+
+t.test('/config get specific key', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let configGetCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    get: async (key?: string) => {
+      configGetCalled = true
+      t.equal(key, 'registry', 'should call get with registry key')
+      return 'https://registry.npmjs.org/'
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 'registry' }
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(data, 'https://registry.npmjs.org/')
+        okCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+  t.equal(configGetCalled, true)
+})
+
+t.test('/config undefined result', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    get: async (_key?: string) => {
+      return undefined
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 'nonexistent' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Config key not found')
+        t.equal(error, 'The specified config key does not exist')
+        t.equal(code, 404)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config error handling', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    get: async (_key?: string) => {
+      throw new Error('Config access failed')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 'registry' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Config retrieval failed')
+        t.equal(error, 'Config access failed')
+        t.equal(code, 500)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/set', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let configSetCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    set: async (key: string, value: string) => {
+      configSetCalled = true
+      t.equal(key, 'registry', 'should call set with correct key')
+      t.equal(
+        value,
+        'https://custom.registry.com/',
+        'should call set with correct value',
+      )
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {
+          key: 'registry',
+          value: 'https://custom.registry.com/',
+        }
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(data, 'Config value set successfully')
+        okCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+  t.equal(configSetCalled, true)
+})
+
+t.test('/config/set key not string', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 123, value: 'some-value' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'Config key must be a string')
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/set value not string', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 'registry', value: 123 }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'Config value must be a string')
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/set error handling', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    set: async (_key: string, _value: string) => {
+      throw new Error('Set operation failed')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {
+          key: 'registry',
+          value: 'https://custom.registry.com/',
+        }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Config set failed')
+        t.equal(error, 'Set operation failed')
+        t.equal(code, 500)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/delete', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let configDeleteCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    delete: async (key: string) => {
+      configDeleteCalled = true
+      t.equal(key, 'registry', 'should call delete with correct key')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 'registry' }
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(data, 'Config value deleted successfully')
+        okCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+  t.equal(configDeleteCalled, true)
+})
+
+t.test('/config/delete key not string', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 123 }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'Config key must be a string')
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/delete error handling', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    delete: async (_key: string) => {
+      throw new Error('Delete operation failed')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { key: 'registry' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Config delete failed')
+        t.equal(error, 'Delete operation failed')
+        t.equal(code, 500)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})

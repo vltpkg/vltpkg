@@ -1,11 +1,4 @@
 import { error } from '@vltpkg/error-cause'
-import type { SecurityArchive } from '@vltpkg/security-archive'
-import type {
-  ActualLoadOptions,
-  InstallOptions,
-  UninstallOptions,
-} from '@vltpkg/graph'
-import type { PackageJson } from '@vltpkg/package-json'
 import EventEmitter from 'node:events'
 import {
   mkdirSync,
@@ -15,7 +8,6 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import type { Server } from 'node:http'
 import { createServer as createHttpServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, relative, resolve } from 'node:path'
@@ -25,6 +17,18 @@ import { getAssetsDir } from './get-assets-dir.ts'
 import { updateGraphData } from './graph-data.ts'
 import { handleRequest } from './handle-request.ts'
 import { listenCarefully } from './listen-carefully.ts'
+import { Config } from '@vltpkg/cli-sdk/config'
+import { ConfigManager } from './config-data.ts'
+
+import type { SecurityArchive } from '@vltpkg/security-archive'
+import type {
+  ActualLoadOptions,
+  InstallOptions,
+  UninstallOptions,
+} from '@vltpkg/graph'
+import type { PackageJson } from '@vltpkg/package-json'
+import type { Server } from 'node:http'
+import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
 
 export const createServer = (options: VltServerOptions) =>
   new VltServer(options)
@@ -40,6 +44,7 @@ export type VltServerOptions = InstallOptions &
     publicDir?: string
     'dashboard-root'?: string[]
     packageJson: PackageJson
+    loadedConfig?: LoadedConfig
   }
 
 export type VltServerStartOptions = {
@@ -50,6 +55,7 @@ export type VltServerListening = VltServer & {
   publicDir: string
   assetsDir: string
   port: number
+  config: ConfigManager
 }
 
 export type VltServerNotListening = VltServer & {
@@ -68,6 +74,7 @@ export class VltServer extends EventEmitter<{
 
   dashboard?: Dashboard
   appData?: AppDataManager
+  config?: ConfigManager
   hasDashboard = false
   options: VltServerOptions
   port?: number
@@ -169,6 +176,10 @@ export class VltServer extends EventEmitter<{
     })
     this.hasDashboard = await this.dashboard.update()
     await this.updateGraph()
+
+    // Initialize the config
+    const conf = this.options.loadedConfig ?? (await Config.load())
+    this.config = new ConfigManager({ config: conf })
   }
 
   async close() {
