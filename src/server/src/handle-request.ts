@@ -1,15 +1,16 @@
 import { install, uninstall } from '@vltpkg/graph'
 import { init } from '@vltpkg/init'
-import type { DependencyTypeShort } from '@vltpkg/types'
 import { mkdirSync } from 'node:fs'
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import { resolve } from 'node:path'
 import { handleStatic } from './handle-static.ts'
-import type { VltServerListening } from './index.ts'
 import * as json from './json.ts'
 import { parseInstallOptions } from './parse-install-options.ts'
 import { parseUninstallOptions } from './parse-uninstall-options.ts'
 import { asError } from '@vltpkg/types'
+
+import type { DependencyTypeShort } from '@vltpkg/types'
+import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { VltServerListening } from './index.ts'
 
 export type GUIInstallOptions = Record<
   string,
@@ -147,6 +148,95 @@ export const handleRequest = async (
         return json.ok(res, 'ok')
       } catch (err) {
         return json.error(res, 'Uninstall failed', err, 500)
+      }
+    }
+
+    case `/config`: {
+      try {
+        const data = await json.read<{ key?: string }>(req)
+        const result = await server.config.get(data.key)
+
+        if (result === undefined) {
+          return json.error(
+            res,
+            'Config key not found',
+            'The specified config key does not exist',
+            404,
+          )
+        }
+
+        const stringResult =
+          typeof result === 'string' ? result : JSON.stringify(result)
+        return json.ok(res, stringResult)
+      } catch (err) {
+        return json.error(
+          res,
+          'Config retrieval failed',
+          asError(err).message,
+          500,
+        )
+      }
+    }
+
+    case `/config/set`: {
+      try {
+        const data = await json.read<{
+          key: unknown
+          value: unknown
+        }>(req)
+
+        if (typeof data.key !== 'string') {
+          return json.error(
+            res,
+            'Bad request',
+            'Config key must be a string',
+            400,
+          )
+        }
+
+        if (typeof data.value !== 'string') {
+          return json.error(
+            res,
+            'Bad request',
+            'Config value must be a string',
+            400,
+          )
+        }
+
+        await server.config.set(data.key, data.value)
+        return json.ok(res, 'Config value set successfully')
+      } catch (err) {
+        return json.error(
+          res,
+          'Config set failed',
+          asError(err).message,
+          500,
+        )
+      }
+    }
+
+    case `/config/delete`: {
+      try {
+        const data = await json.read<{ key: unknown }>(req)
+
+        if (typeof data.key !== 'string') {
+          return json.error(
+            res,
+            'Bad request',
+            'Config key must be a string',
+            400,
+          )
+        }
+
+        await server.config.delete(data.key)
+        return json.ok(res, 'Config value deleted successfully')
+      } catch (err) {
+        return json.error(
+          res,
+          'Config delete failed',
+          asError(err).message,
+          500,
+        )
       }
     }
 
