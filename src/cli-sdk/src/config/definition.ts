@@ -40,6 +40,7 @@ const canonicalCommands = {
   run: 'run',
   token: 'token',
   uninstall: 'uninstall',
+  update: 'update',
   'exec-cache': 'exec-cache',
   version: 'version',
   whoami: 'whoami',

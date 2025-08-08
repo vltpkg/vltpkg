@@ -10,6 +10,7 @@ export * from './stringify-node.ts'
 export * from './types.ts'
 export * from './install.ts'
 export * from './uninstall.ts'
+export * from './update.ts'
 export * from './diff.ts'
 export * from './modifiers.ts'
 
