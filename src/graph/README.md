@@ -168,6 +168,7 @@ to the filesystem.
 ## References
 
 - package.json format and behavior:
-  <https://docs.npmjs.com/cli/v11/configuring-npm/package-json>
-- Semantic Versioning: <https://semver.org/spec/v2.0.0.html>
-- Monorepos: <https://monorepo.tools>
+  [https://docs.npmjs.com/cli/v11/configuring-npm/package-json](https://docs.npmjs.com/cli/v11/configuring-npm/package-json)
+- Semantic Versioning:
+  [https://semver.org/spec/v2.0.0.html](https://semver.org/spec/v2.0.0.html)
+- Monorepos: [https://monorepo.tools](https://monorepo.tools)
