@@ -8,6 +8,7 @@ import type { NormalizedManifest } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
 import { Graph } from './graph.ts'
+import { graphStep } from '@vltpkg/output'
 
 export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -30,6 +31,7 @@ export const update = async (options: UpdateOptions) => {
 
   const modifiers = GraphModifier.maybeLoad(options)
 
+  const done = graphStep('build')
   const graph = await buildIdealFromStartingGraph({
     ...options,
     add: Object.assign(new Map(), { modifiedDependencies: false }),
@@ -37,6 +39,7 @@ export const update = async (options: UpdateOptions) => {
     graph: new Graph({ ...options, mainManifest }),
     modifiers,
   })
+  done()
 
   const act = actualLoad({
     ...options,
