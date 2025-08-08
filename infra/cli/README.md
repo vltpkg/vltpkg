@@ -10,7 +10,7 @@
 ![Discord Server Status](https://img.shields.io/discord/1093366081067954178?logo=discord&label=Discord)
 [![Socket Security Status](https://socket.dev/api/badge/npm/package/vlt)](https://socket.dev/npm/package/vlt)
 
-![screenshots](https://github.com/user-attachments/assets/f2d50548-d637-4230-b685-2386f8adb1e9)
+![screenshots](https://blog.vlt.sh/static/images/introducing-vlt-and-vsr/introducing-vlt-and-vsr.png)
 
 ### Documentation
 
