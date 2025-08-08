@@ -1,0 +1,123 @@
+---
+description: Build Ideal Graphs from manifests and starting graphs
+globs: src/graph/src/ideal/*
+alwaysApply: false
+---
+# Building Ideal Graphs
+
+Guidance for working with the Ideal Graph builder in `@vltpkg/graph`, which produces the desired end-state graph used for installs.
+
+<rule>
+name: graph_ideal
+description: How Ideal graphs are constructed, merged with add/remove, and expanded via remote manifests
+filters:
+  # Ideal builder implementation and helpers
+  - type: path
+    pattern: "^src/graph/src/ideal/"
+  - type: file_name
+    pattern: "^(build|build-ideal-from-starting-graph|append-nodes|get-importer-specs|remove-satisfied-specs|add-nodes|remove-nodes|types)\\.ts$"
+  # High-level orchestration reference
+  - type: content
+    pattern: "ideal\\.build\(|buildIdealFromStartingGraph\("
+
+actions:
+  - type: guide
+    message: |
+      ## Overview
+
+      The Ideal Graph represents the desired post-install state. It is constructed by:
+      1. Selecting a starting graph: prefer Virtual (lockfile) and fall back to Actual (`node_modules`) when needed.
+      2. Merging user-provided `add`/`remove` requests with importer manifest deltas.
+      3. Expanding dependencies by fetching manifests/artifacts and recursively placing packages.
+      4. Reusing existing nodes that satisfy specs to minimize network and duplication.
+
+      Entry point: `src/graph/src/ideal/build.ts` → `ideal.build(options)`
+
+  - type: architecture_guide
+    message: |
+      ## Starting Graph Selection (`build.ts`)
+
+      - Attempts to load a Virtual Graph from lockfile first with `skipLoadingNodesOnModifiersChange: true`.
+      - On failure, loads the Actual Graph with the same skip flag.
+      - Uses shared instances of `packageJson`, `scurry`, and `monorepo` for efficiency.
+      - Delegates to `buildIdealFromStartingGraph()` for merging and expansion.
+
+  - type: architecture_guide
+    message: |
+      ## Merge and Expansion (`build-ideal-from-starting-graph.ts`)
+
+      - Computes importer deltas via `get-importer-specs.ts`:
+        - Builds `AddImportersDependenciesMap` and `RemoveImportersDependenciesMap` by comparing importer manifests to the starting graph.
+        - Prunes already-satisfied dependencies using `remove-satisfied-specs.ts`.
+        - Flags whether dependencies were modified (`modifiedDependencies`).
+      - Merges user-provided `add`/`remove` over computed deltas; user input wins.
+      - Invokes `add-nodes.ts` to fetch and incorporate remote manifests and expand the graph.
+      - After expansion, calls `setDefaultLocation()` on nodes to normalize store layout hints.
+      - Finally, removes dependencies listed in `remove` via `remove-nodes.ts` and garbage-collects unreachable nodes (`graph.gc()`).
+
+  - type: architecture_guide
+    message: |
+      ## Node Appending and Reuse (`append-nodes.ts`, `add-nodes.ts`)
+
+      - Resolves dependency specs to nodes by first attempting `graph.findResolution()` to reuse existing nodes that satisfy the spec.
+      - When a satisfying node is not found, fetches manifests/artifacts via `@vltpkg/package-info`, selects appropriate versions (respecting platform/engine constraints), and places new nodes with correct flags.
+      - Recursively descends into each newly placed node's dependencies, applying `@vltpkg/spec` parsing and honoring modifiers if present.
+      - Ensures added nodes have consistent `registry`, `resolved`, and `integrity` fields as available.
+
+  - type: integration_guide
+    message: |
+      ## Options and Inputs
+
+      - `projectRoot`, `packageJson`, `scurry`, `monorepo` — Required/shared instances for deterministic traversal and manifest access.
+      - `packageInfo: PackageInfoClient` — Required for remote manifest and artifact retrieval.
+      - `add?: AddImportersDependenciesMap` — Explicit dependencies to add per importer.
+      - `remove?: RemoveImportersDependenciesMap` — Explicit dependency names to remove per importer.
+      - Modifiers integration — If `modifiers` are provided, selectors can adjust specs during resolution; Ideal builder will then record modifier info on nodes for downstream awareness.
+
+      ### Behavior and Guarantees
+      - Reuses nodes whenever they satisfy requested specs.
+      - Expands transitive dependencies recursively using resolved manifests.
+      - Produces a graph ready for hoisting and reification, with stable, default locations set where applicable.
+
+  - type: development_workflow
+    message: |
+      ## Practical Tips
+
+      - Always prefer the lockfile as the starting point for reproducibility.
+      - Keep `add`/`remove` mappings minimal; rely on `get-importer-specs.ts` to detect manifest drift.
+      - Pass shared `packageJson` and `scurry` instances across phases (Actual/Virtual load → Ideal build → Reify).
+      - Use `graph.findResolution()` aggressively in new features to avoid duplicate nodes and redundant network calls.
+
+examples:
+  - input: |
+      import { ideal } from '@vltpkg/graph'
+      const graph = await ideal.build({ projectRoot, packageInfo, packageJson, scurry })
+    output: "Ideal graph built from lockfile or actual as starting point"
+
+  - input: |
+      // Add and remove across importers
+      const add = new Map()
+      const remove = new Map()
+      const g = await ideal.build({ projectRoot, packageInfo, packageJson, scurry, add, remove })
+    output: "Importer deltas merged with user-provided add/remove and expanded"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - graph
+    - ideal
+    - build
+    - manifests
+    - modifiers
+    - performance
+  related_rules:
+    - graph_workspace_architecture
+    - graph_data_structure
+    - graph_lockfiles
+    - graph_load_actual
+    - graph_modifiers
+    - graph_reify
+    - monorepo-structure
+</rule>
+

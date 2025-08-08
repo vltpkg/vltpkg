@@ -1,0 +1,139 @@
+---
+description: Understanding Graph Modifiers
+globs: src/graph/**
+alwaysApply: false
+---
+# Graph
+
+Understanding and working with graphs in the vlt package manager.
+
+<rule>
+name: graph_workspace_architecture
+description: High-level architecture, concepts, and workflows of the @vltpkg/graph workspace
+filters:
+  # Trigger when working inside the graph workspace
+  - type: path
+    pattern: "^src/graph/"
+  # Trigger when editing core graph API entry points
+  - type: file_name
+    pattern: "^(index|graph|node|edge|diff)\.ts$"
+  # Trigger when working with lockfile or reify subsystems
+  - type: path
+    pattern: "^src/graph/src/(lockfile|reify|ideal|actual)/"
+  # Trigger when referencing monorepo-wide deps used by graph
+  - type: path
+    pattern: "^src/(dep-id|spec|semver|package-info|package-json|workspaces)/"
+  # Trigger when editing README/docs for the graph workspace
+  - type: file_name
+    pattern: "README\.md$"
+
+actions:
+  - type: guide
+    message: |
+      ## @vltpkg/graph Overview
+
+      The `@vltpkg/graph` workspace implements a dependency graph that models a JavaScript/TypeScript project's installed and desired package state. It is the foundation used by the installer to compute and apply filesystem changes under `node_modules`.
+
+      - **`@graph/package.json`**: The workspace manifest defining the library name and its dependencies.
+      - **`@graph/src/index.ts`**: The public entry point re-exporting internal types, helpers, and submodules.
+
+      ### Core Data Structures
+      - **`Graph` (`@graph/src/graph.ts`)**: Represents the package relationship graph for a project. It is the authoritative source used to determine how `node_modules` should be structured.
+      - **`Node` (`@graph/src/node.ts`)**: Represents a unique package instance. Uniqueness is defined by `@vltpkg/dep-id` which encodes package identity into a single string identifier.
+      - **`Edge` (`@graph/src/edge.ts`)**: Represents a dependency relationship (eg. entries from `dependencies`, `devDependencies`, `peerDependencies`, etc.) between two nodes.
+      - **`Diff` (`@graph/src/diff.ts`)**: Computes and stores the minimal set of changes to transform one graph (Actual) into another (Ideal).
+
+      See the npm documentation for `package.json` format and semantics: [npm package.json docs](https://raw.githubusercontent.com/npm/cli/refs/heads/latest/docs/lib/content/configuring-npm/package-json.md).
+
+  - type: architecture_guide
+    message: |
+      ## Architectural Dependencies (Workspaces)
+
+      The graph workspace integrates tightly with other internal workspaces:
+      - **`@vltpkg/dep-id`**: Generates unique IDs for packages, enabling `Node` identity and efficient graph operations.
+      - **`@vltpkg/spec`**: Parses and normalizes dependency specs (eg. ranges, tags, git, file, workspace). Provides registry and scope semantics.
+      - **`@vltpkg/semver`**: Semantic Versioning operations underpinning spec satisfaction. Learn more at [semver.org](https://raw.githubusercontent.com/semver/semver.org/refs/heads/gh-pages/index.md).
+      - **`@vltpkg/package-info`**: Fetches remote manifests and artifacts for registry, git, and tarball sources.
+      - **`@vltpkg/package-json`**: Reads and caches local `package.json` files with normalization helpers.
+      - **`@vltpkg/workspaces`**: Discovers and manages monorepo workspaces. Importers in the graph include the main project and all configured workspaces. For an end-user overview of workspaces, see the docs site entry under `www/docs`.
+
+      In the graph, root-level nodes are called **importers**. The `mainImporter` corresponds to the project root (its `package.json`), and other importers come from `@vltpkg/workspaces` discovery. These serve as starting points when loading/constructing graphs.
+
+  - type: architecture_guide
+    message: |
+      ## Graph Construction Modes
+
+      The graph system builds three primary graph variants, which are then used to produce npm-compatible installs:
+
+      - **Virtual Graphs** (Lockfile-based)
+        - Loaded from lockfiles; entry points in `@graph/src/lockfile/`:
+          - Load: `load.ts` (`load()`), Hidden: `loadHidden()`
+          - Save: `save.ts` (`save()` for `vlt-lock.json`, `saveHidden()` for `node_modules/.vlt-lock.json`)
+        - See the lockfile rule for format and integration details.
+
+      - **Actual Graphs** (Filesystem-based)
+        - Loaded from `node_modules` by recursively traversing symlinks and directories: `@graph/src/actual/load.ts`.
+        - May be shortcut by the Hidden Lockfile (`node_modules/.vlt-lock.json`) for performance.
+        - Applied to disk via the `reify/` subsystem, which encodes the minimal filesystem operations required by Node.js module resolution.
+
+      - **Ideal Graphs** (Desired end state)
+        - Entry point: `@graph/src/ideal/build.ts`
+        - Starts from either a Virtual Graph (preferred) or falls back to an Actual Graph.
+        - Merges explicit `add`/`remove` requests with importer manifests via `get-importer-specs.ts`.
+        - Resolves new nodes by fetching manifests/artifacts using `@vltpkg/package-info`, recursively expanding the graph.
+        - Reuses existing nodes that satisfy specs to avoid unnecessary network calls.
+
+      After building the Ideal and loading the Actual, the installer computes a `Diff` and applies it using the `reify/` subsystem to minimize work.
+
+  - type: integration_guide
+    message: |
+      ## Key Entry Points and Public API (`@graph/src/index.ts`)
+
+      The main entry point re-exports the public API:
+      - `actual.load(options)` — Load from `node_modules` (or from Hidden Lockfile when available).
+      - `ideal.build(options)` — Build an Ideal Graph starting from a Virtual or Actual starting point.
+      - `lockfile.load/save` — Read and write lockfiles.
+      - `reify(options)` — Compute a `Diff` between Actual and Ideal and apply filesystem changes.
+      - Types and utilities: `Graph`, `Node`, `Edge`, `Diff`, dependency helpers, visualization outputs, etc.
+
+  - type: development_workflow
+    message: |
+      ## Development Workflow Tips
+
+      - Share instances of `monorepo`, `packageJson`, and `scurry` across loader/build steps for performance.
+      - Prefer Hidden Lockfile (`node_modules/.vlt-lock.json`) when available for faster Actual loads.
+      - When modifiers or installer options change, you'll often rebuild the Ideal Graph with `skipLoadingNodesOnModifiersChange` to avoid loading stale dependency nodes.
+      - Determinism: Node and Edge ordering is intentionally stable to produce reproducible lockfiles.
+
+      ### Useful References
+      - Monorepo concepts and related workspaces: see the monorepo structure rule and `www/docs`.
+      - `package.json` behavior: [npm package.json docs](https://raw.githubusercontent.com/npm/cli/refs/heads/latest/docs/lib/content/configuring-npm/package-json.md)
+      - Semantic Versioning: [semver.org](https://raw.githubusercontent.com/semver/semver.org/refs/heads/gh-pages/index.md)
+
+examples:
+  - input: |
+      // Build an Ideal Graph and reify changes
+      import { ideal, reify } from '@vltpkg/graph'
+      
+      const graph = await ideal.build({ projectRoot, packageInfo, packageJson, scurry })
+      await reify({ graph, packageInfo, packageJson, scurry })
+    output: "Ideal graph built and applied to disk via reify"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - graph
+    - architecture
+    - lockfiles
+    - install
+    - workspaces
+  related_rules:
+    - graph_ideal
+    - graph_data_structure
+    - graph_load_actual
+    - graph_lockfiles
+    - graph_modifiers
+    - graph_reify
+</rule>
+
