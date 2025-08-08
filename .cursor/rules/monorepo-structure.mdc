@@ -46,8 +46,13 @@ actions:
       - `src/cache` (`@vltpkg/cache`) - Cache system
       - `src/cache-unzip` (`@vltpkg/cache-unzip`) - Cache entry optimization
       - `src/graph` (`@vltpkg/graph`) - Main data structure managing package installs
+        - 📋 **See `@graph/index.mdc`** for understanding installs and the graph library
+        - 📋 **See `@graph/data-structure.mdc`** for understanding the graph data structure
+        - 📋 **See `@graph/ideal.mdc`** for building Ideal graphs
+        - 📋 **See `@graph/load-actual.mdc`** for understanding loading Graph data from node_modules folders
         - 📋 **See `@graph/modifiers.mdc`** for understanding Graph modifiers
         - 📋 **See `@graph/lockfiles.mdc`** for working with lockfiles
+        - 📋 **See `@graph/reify.mdc`** for understanding how to save packages to node_modules folders
       - `src/types` (`@vltpkg/types`) - Common TypeScript types
       - `src/dep-id` (`@vltpkg/dep-id`) - Unique Graph node identifiers
       - `src/spec` (`@vltpkg/spec`) - Package specifier parsing
@@ -164,6 +169,5 @@ metadata:
     - cli-sdk-workspace           # CLI SDK workspace architecture and patterns
     - gui-validation-workflow     # GUI workspace specific validation workflow
     - query-pseudo-selector-creation  # Guide for implementing new query pseudo-selectors
-    - graph/modifiers             # Understanding Graph modifiers
-    - graph/lockfiles             # Working with lockfiles in the vlt package manager
+    - graph_workspace_architecture  # Understanding installs and the graph library
 </rule>

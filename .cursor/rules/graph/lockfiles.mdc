@@ -1,6 +1,6 @@
 ---
 description: Understanding Graph Modifiers
-globs: src/graph/src/lockfile/*
+globs: src/graph/src/lockfile/*,src/graph/test/lockfile/*
 alwaysApply: false
 ---
 # Graph Lockfiles
@@ -257,7 +257,8 @@ metadata:
     - install
     - dependencies
   related_rules:
-    - monorepo-structure      # For workspace navigation
+    - graph_workspace_architecture
+    - graph_data_structure
     - graph/modifiers         # For modifier integration
     - cli-sdk-workspace       # For CLI command integration
 </rule>

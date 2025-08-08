@@ -1,0 +1,162 @@
+---
+description: Graph core data structures (Graph, Node, Edge, Types)
+globs: src/graph/src/graph.ts,src/graph/src/node.ts,src/graph/src/edge.ts,src/graph/src/types.ts,src/graph/test/graph.ts,src/graph/test/node.ts,src/graph/test/edge.ts
+alwaysApply: false
+---
+# Graph Core Data Structures
+
+Detailed reference for the data model used by `@vltpkg/graph`, covering `Graph`, `Node`, `Edge`, and public type shapes. Use this to inform future implementation work across the graph system.
+
+<rule>
+name: graph_data_structure
+description: In-depth documentation of Graph, Node, Edge, and their invariants and behaviors
+filters:
+  # Core data structure files
+  - type: path
+    pattern: "^src/graph/src/(graph|node|edge|types)\\.ts$"
+  # Files that consume these types frequently
+  - type: path
+    pattern: "^src/graph/src/(ideal|actual|lockfile|reify)/"
+  # Mentions of Graph/Node/Edge in content
+  - type: content
+    pattern: "class Graph|class Node|class Edge|GraphLike|NodeLike|EdgeLike"
+
+actions:
+  - type: guide
+    message: |
+      ## Overview
+
+      The graph library models a project's installable dependency universe using:
+      - `Graph` — global container of nodes and edges, with importer roots, caches, and helpers
+      - `Node` — unique package instance; identity provided by `@vltpkg/dep-id`
+      - `Edge` — directed dependency relationship from `from` to `to` with a parsed `Spec`
+
+      Public type shapes (`GraphLike`, `NodeLike`, `EdgeLike`) are defined in `src/graph/src/types.ts` for loose coupling with higher-level modules.
+
+  - type: architecture_guide
+    message: |
+      ## Graph (`src/graph/src/graph.ts`)
+
+      Construction:
+      - Initializes `mainImporter` from the project root manifest using a `file:.` DepID
+      - Discovers additional importer nodes from `@vltpkg/workspaces`, adding each as a root
+
+      Core fields:
+      - `importers: Set<Node>` — roots of traversal (main project + workspaces)
+      - `mainImporter: Node` — the primary project importer
+      - `nodes: Map<DepID, Node>` — all nodes keyed by unique `DepID`
+      - `nodesByName: Map<string, Set<Node>>` — lookup by package name
+      - `edges: Set<Edge>` — all edges across the graph
+      - `manifests: Map<DepID, NormalizedManifest>` — manifest inventory
+      - `resolutions: Map<string, Node>` / `resolutionsReverse: Map<Node, Set<string>>` — resolution caches
+      - `extraneousDependencies: Set<Edge>` — edges present on disk but not declared when loading Actual graphs
+
+      Important methods:
+      - `addNode(id?, manifest?, spec?, name?, version?)` — creates a node; populates indices and resolution cache
+      - `addEdge(type, spec, from, to?)` — creates/updates an edge; ensures spec naming; de-duplicates similar edges
+      - `placePackage(fromNode, depType, spec, manifest?, id?, extra?)` — high-level placement that either creates a missing edge (if no `manifest`/`id`) or ensures a node exists and connects the edge, setting dev/optional flags
+      - `findResolution(spec, fromNode, queryModifier?)` — searches `nodesByName` for a satisfying node (via `@vltpkg/satisfies`), keyed by spec + from location + modifier for caching
+      - `removeNode(node, replacement?, keepEdges?)` — deletes node and rewires or removes affected edges
+      - `removeEdgeResolution(edge, queryModifier?)` — clears a specific cached resolution and potentially prunes the referenced node if orphaned
+      - `gc()` — trims unreachable nodes/edges not reachable from importers; used after optional failures
+      - `toJSON()` — serializes using `lockfileData()` to produce a stable, deterministic representation
+
+      Resolution cache key:
+      - `getResolutionCacheKey(spec.final, from.location, queryModifier)`; file-based specs include `from.location` to avoid cross-importer leakage
+
+  - type: architecture_guide
+    message: |
+      ## Node (`src/graph/src/node.ts`)
+
+      Identity and metadata:
+      - `id: DepID` — unique identity; from `getId(spec, manifest)` or explicit `id`
+      - `manifest?: NormalizedManifest` — may be undefined when not read (eg. Actual load without manifests)
+      - `name`, `version`, `integrity`, `resolved`, `registry`, `modifier`
+
+      Location and store model:
+      - `location: string` — defaults to `./node_modules/.vlt/<DepID>/node_modules/<name>` if not set
+      - `inVltStore()` — memoized check whether node is located in the store layout
+      - `nodeModules(scurry)` — directory where this node’s dependencies are linked (store parent vs direct `node_modules`)
+      - `setImporterLocation(location)` — marks importer nodes and sets location
+      - `setDefaultLocation()` — relocates nodes into default store path when appropriate
+
+      Dependency flags and propagation:
+      - `dev` and `optional` flags indicate reachability via dev or optional/peerOptional edges
+      - Clearing `dev` or `optional` cascades to non-dev/non-optional children (ensures consistency)
+
+      Confused manifests:
+      - `maybeSetConfusedManifest(spec, manifest?)` sets `confused=true` when manifest name differs from requested spec name; preserves `rawManifest`
+
+  - type: architecture_guide
+    message: |
+      ## Edge (`src/graph/src/edge.ts`)
+
+      - `from: Node`, `to?: Node` — directed relation; `to` may be missing to model missing dependencies
+      - `type: DependencyTypeShort` — one of `prod | dev | peer | peerOptional | optional`
+      - `spec: Spec` — parsed from `@vltpkg/spec`; `spec.name` is enforced during creation for correctness
+      - Convenience flags: `dev`, `optional`, `peer`, `peerOptional`
+      - `valid()` checks satisfaction of `to.id` against `spec` using `@vltpkg/satisfies` with `from.location` and `projectRoot`
+
+  - type: data_format_guide
+    message: |
+      ## Public Type Shapes (`src/graph/src/types.ts`)
+
+      - `GraphLike` — minimal interface exposing graph fields and methods used by clients that should not depend on full implementation details
+      - `NodeLike` — minimal node shape with key fields (`id`, `edgesIn`, `edgesOut`, `manifest`, `location`, `name`, etc.) and behaviors (eg. `setResolved`, `maybeSetConfusedManifest`)
+      - `EdgeLike` — minimal edge shape including `from`, `spec`, `to?`, and flags
+
+      These types enable testing, visualization, and interop with modules like `ideal`, `actual`, `lockfile`, and `reify` without tightly coupling to class implementations.
+
+  - type: architecture_guide
+    message: |
+      ## Invariants and Modeling Notes
+
+      - Node identity (`DepID`) is unique across the graph; `nodes` map keys must not collide
+      - `nodesByName` collects multiple versions/locations of the same package name for resolution and hoisting
+      - `edgesOut` is keyed by `spec.name`; Graph ensures spec name correctness, disallowing missing names for missing edges
+      - Missing dependencies are represented as edges with `to=undefined`
+      - Extraneous dependencies are tracked in `graph.extraneousDependencies` when loading Actual with manifests
+      - Resolution caching is query-modifier aware to reflect modified specs
+      - Deterministic ordering is maintained in serialization to ensure stable lockfiles
+
+  - type: development_workflow
+    message: |
+      ## Practical Usage Tips
+
+      - Prefer `placePackage()` for top-down placement (it handles node creation, flags, and edges)
+      - Use `findResolution()` before creating new nodes to reuse satisfying ones (crucial for Ideal builds)
+      - When removing nodes, consider `replacement` or `keepEdges` to preserve structure where valid
+      - After structural changes that may orphan nodes, use `gc()` to prune unreachable subgraphs
+      - When serializing, rely on `graph.toJSON()` which delegates to lockfile formatting for consistency
+
+examples:
+  - input: |
+      // Find a reusable node satisfying a spec before creating a new one
+      const reuse = graph.findResolution(spec, fromNode)
+      if (reuse) graph.addEdge('prod', spec, fromNode, reuse)
+    output: "Resolution cache leveraged; avoided unnecessary node creation"
+
+  - input: |
+      // Model a missing dependency
+      graph.addEdge('prod', spec, importer)
+    output: "Creates a dangling edge (to=undefined) representing a missing dep"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - graph
+    - data-structures
+    - types
+    - nodes
+    - edges
+    - invariants
+  related_rules:
+    - graph_workspace_architecture
+    - graph_lockfiles
+    - graph_modifiers
+    - graph_load_actual
+    - graph_reify
+    - monorepo-structure
+</rule>
+
