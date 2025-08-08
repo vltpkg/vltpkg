@@ -1,106 +1,151 @@
 ---
 description: Understanding Graph Modifiers
-globs:
+globs: src/graph/src/modifiers.ts,src/graph/test/modifiers.ts
 alwaysApply: false
 ---
 # Graph Modifiers
 
-What we refer to as "Graph Modifiers" is a common API that enables features of the previous-gen package managers capabilities such as:
-- Overrides / Resolutions
-- Package Extensions
+Understanding and working with Graph Modifiers in the vlt package manager.
 
-## Motivation
+<rule>
+name: graph_modifiers
+description: Guide for configuring and integrating Graph Modifiers (overrides/resolutions and package extensions)
+filters:
+  # Modifier core and Ideal integration points
+  - type: path
+    pattern: "^src/graph/src/modifiers\\.ts$"
+  - type: path
+    pattern: "^src/graph/src/ideal/"
+  # DSS parsing/building utilities used by modifiers
+  - type: path
+    pattern: "^src/dss-(parser|breadcrumb)/"
+  # Detect vlt.json modifier usage
+  - type: content
+    pattern: "\"modifiers\"\s*:"
 
-The vlt client needs to be a capable tool that can satisfy power user requirements like customization of a given graph resolution.
-By leveraging the Dependency Selector Syntax as its end-user facing API the client takes advantage of the robustness of the query language to provide fine-grain control to its graph install to advanced users.
+actions:
+  - type: guide
+    message: |
+      ## What are Graph Modifiers?
 
-### Overrides / Resolutions:
+      Graph Modifiers are a common API enabling advanced customization of dependency resolution and graph construction:
+      - **Overrides / Resolutions**: Replace or pin dependency specs throughout the graph (direct or transitive).
+      - **Package Extensions**: Augment package manifests with extra dependency metadata (eg. add missing peerDeps or mark peer deps optional).
 
-Being able to replace dependencies declarations of a given dependency helps end-users getting around problems in their current install graph. Some common examples are:
+      ### Motivation
+      Power users frequently need to patch dependency trees quickly—eg. to address security issues, unify versions, or work around abandoned packages. By using the Dependency Selector Syntax (DSS) as the user-facing language, vlt provides expressive, precise, and composable control over graph shape and versions.
 
-- Replacing a transitive dependency that has known security issues
-- Enforcing usage of a unique package version across the install
-- Updating dependencies of a direct (or transitive) abandoned dependency
-- Forcing the downgrade of a specific package version that would otherwise be satisfied by a greater, spec-fulfilling version
+  - type: architecture_guide
+    message: |
+      ## Key Modules
+      - `src/graph/src/modifiers.ts` — Tracks graph traversal and applies active modifiers to nodes/edges.
+      - `src/graph/src/ideal/*` — Builds the Ideal graph and integrates modifier application during dependency expansion.
+      - `src/dss-parser/` — Parses DSS queries.
+      - `src/dss-breadcrumb/` — Interactive representation that allows walking a query in lockstep with graph traversal.
 
-**Refs:**
+  - type: integration_guide
+    message: |
+      ## User-facing Syntax and UX
 
-- npm Overrides: https://docs.npmjs.com/cli/v10/configuring-npm/package-json?v=true#overrides
-- pnpm Overrides: https://pnpm.io/settings#overrides
-- yarn Resolutions: https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/
+      All configuration lives in the project's `vlt.json` under the top-level `"modifiers"` key.
 
-### Package Extensions
+      ### The `modifiers` key
+      ```json
+      {
+        "workspaces": "packages/*",
+        "modifiers": {
+          
+        }
+      }
+      ```
 
-Adding dependency declarations to a dependency can help end-users fixing some specific categories of errors, such as:
+      ### Edge Modifiers (Overrides / Resolutions)
+      Provide a string spec to replace the matched dependency's version/spec:
+      ```json
+      {
+        "modifiers": {
+          ":root > #a > #b": "^1.0.0"
+        }
+      }
+      ```
 
-- Declaring missing peer-dependencies to a given package
-- Defining a peer-dependency as optional
-- Fixing missing dependencies in general
+      When multiple selectors match, the most specific selector wins. Example (result should be `1`):
+      ```json
+      {
+        "dependencies": {
+          "a": "^1.0.0"
+        },
+        "modifiers": {
+          ":root > #a > #b": "1",
+          "#a > #b": "2"
+        }
+      }
+      ```
 
-Refs:
+      Set a unique version for a given dependency across the graph:
+      ```json
+      {
+        "modifiers": {
+          "#react": "^19"
+        }
+      }
+      ```
 
-- Yarn extensions database (serves as a good repository of real-life problems end-users are patching with this feature): https://github.com/yarnpkg/berry/blob/master/packages/yarnpkg-extensions/sources/index.ts
-- pnpm Package Extensions: https://pnpm.io/settings#packageextensions
+      ### Package Extensions
+      Add or adjust dependency declarations for specific packages to fix issues like missing peers or to mark peers optional. Examples vary by selector and extension intent; consult your DSS patterns and package names to scope changes safely.
 
-## Implementation
+      ### References
+      - npm Overrides: <https://docs.npmjs.com/cli/v11/configuring-npm/package-json#overrides>
+      - pnpm Overrides: <https://pnpm.io/settings#overrides>
+      - Yarn Resolutions: <https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/>
+      - Yarn Extensions DB: <https://github.com/yarnpkg/berry/blob/master/packages/yarnpkg-extensions/sources/index.ts>
+      - pnpm Package Extensions: <https://pnpm.io/settings#packageextensions>
 
-### User-facing syntax & UX
+  - type: development_workflow
+    message: |
+      ## Development Workflow and Considerations
 
-From the user point of view, all of the configuration and management of the graph modifier API features happens at the `vlt.json` file.
+      - Prefer sharing `monorepo`, `packageJson`, and `scurry` instances across loaders/builders.
+      - Use `skipLoadingNodesOnModifiersChange` when reusing a starting graph but modifiers changed since last build.
+      - Hidden Lockfile (`node_modules/.vlt-lock.json`) accelerates Actual graph loads. If modifiers changed, rebuild Ideal.
+      - Deterministic ordering ensures reproducible lockfiles after modifier changes.
 
-#### The modifiers key
+      ### Testing
+      - Validate selector specificity precedence.
+      - Test overrides across direct and transitive dependencies.
+      - Verify package extensions effect on peer/optional semantics.
+      - Confirm Ideal graph reuses satisfying nodes to avoid unnecessary network fetches.
 
-To configure overrides and package extensions, a new object defined using the `"modifiers"` property of the `vlt.json` file, e.g:
+examples:
+  - input: |
+      # Override a transitive dependency
+      {
+        "modifiers": {
+          ":root > #webpack > #browserslist": "^4.23.0"
+        }
+      }
+    output: "Transitive browserslist spec overridden via DSS selector"
 
-```json
-{
-  "workspaces": "packages/*",
-  "modifiers": {
-    ...
-  }
-}
-```
+  - input: |
+      # Pin a single version across the graph
+      {
+        "modifiers": {
+          "#react": "^19"
+        }
+      }
+    output: "All matching react specs unified to ^19"
 
-#### Setting Edge Modifiers
-
-Edge modifiers are the equivalent of the Overrides feature, they are applied when a string value is used in the modifiers object, e.g:
-
-```json
-{
-  "modifiers": {
-    ":root > #a > #b": "^1.0.0"
-  }
-}
-```
-
-In case of conflicting results among multiple queries, selector specificity is then used to define which one applies to a given edge (result should be `1`):
-
-```json
-{
-  "dependencies": {
-    "a": "^1.0.0"
-  },
-  "modifiers": {
-    ":root > #a > #b": "1",
-    "#a > #b": "2"
-  }
-}
-```
-
-Setting a unique version value for a given dependency:
-
-```json
-{
-  "modifiers": {
-    "#react": "^19"
-  }
-}
-```
-
-#### Code Location
-
-The bulk of the logic to handle modifiers while building the graph is located at `src/graph/src/modifiers.ts` - that module is responsible for tracking seen elements and apply known modifiers to nodes and edges as the graph is traversed, other modules of interest are:
-- `src/dss-parser/` The main Dependency Selector Syntax query language parser
-- `src/dss-breadcrumb/` The library that implements an interactive object representation that is meant to represent the described query while enabling the modifiers module to traverse that query as the graph is traversed.
-- `src/graph/src/ideal/*` The build ideal graph is the place that implements that understanding of Graph modifiers and the ability to replace packages at runtime with user-provided values from the configuration.
-
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - modifiers
+    - graph
+    - overrides
+    - extensions
+    - dss
+  related_rules:
+    - graph_workspace_architecture
+    - graph_data_structure
+    - graph_lockfiles
+</rule>
