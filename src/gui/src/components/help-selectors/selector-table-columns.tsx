@@ -1,6 +1,5 @@
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
-import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { InlineCode } from '@/components/ui/inline-code.tsx'
 
 import type { Column, ColumnDef } from '@tanstack/react-table'
@@ -27,26 +26,16 @@ const SortingHeader = ({
   )
 }
 
-export const selectorColumns: ColumnDef<SelectorInTable>[] = [
+export const selectorColumns: ColumnDef<SelectorInTable, string>[] = [
   {
     accessorKey: 'selector',
     header: ({ column }) => (
       <SortingHeader header="Selector" column={column} />
     ),
     cell: ({ row }) => {
-      const { selector, severity } = row.original
+      const { selector } = row.original
 
-      if (!severity)
-        return <InlineCode color="pink">{selector}</InlineCode>
-
-      return (
-        <InsightBadge
-          className="self-start"
-          tooltipContent={`${severity} severity`}
-          color={severity}>
-          {selector}
-        </InsightBadge>
-      )
+      return <InlineCode color="pink">{selector}</InlineCode>
     },
     size: 350,
     maxSize: 350,
