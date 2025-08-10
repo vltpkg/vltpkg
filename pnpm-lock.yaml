@@ -51,6 +51,9 @@ catalogs:
     polite-json:
       specifier: ^5.0.0
       version: 5.0.0
+    postcss-selector-parser:
+      specifier: ^7.1.0
+      version: 7.1.0
     prettier:
       specifier: ^3.6.0
       version: 3.6.0
@@ -783,7 +786,7 @@ importers:
         specifier: workspace:*
         version: link:../error-cause
       postcss-selector-parser:
-        specifier: ^7.1.0
+        specifier: 'catalog:'
         version: 7.1.0
     devDependencies:
       '@eslint/js':
@@ -1124,6 +1127,9 @@ importers:
       '@vltpkg/dss-breadcrumb':
         specifier: workspace:*
         version: link:../dss-breadcrumb
+      '@vltpkg/dss-parser':
+        specifier: workspace:*
+        version: link:../dss-parser
       '@vltpkg/graph':
         specifier: workspace:*
         version: link:../graph
@@ -1160,6 +1166,9 @@ importers:
       lz-string:
         specifier: 'catalog:'
         version: 1.5.0
+      postcss-selector-parser:
+        specifier: 'catalog:'
+        version: 7.1.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1613,7 +1622,7 @@ importers:
         specifier: 'catalog:'
         version: 6.2.1
       postcss-selector-parser:
-        specifier: ^7.1.0
+        specifier: 'catalog:'
         version: 7.1.0
     devDependencies:
       '@eslint/js':

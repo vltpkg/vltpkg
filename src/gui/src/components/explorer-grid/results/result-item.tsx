@@ -59,7 +59,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
   const manifest = item.to?.manifest
   const insights = item.to?.insights
   return (
-    <div className="group relative z-10">
+    <div className="group relative">
       {item.stacked && (
         <>
           {item.size > 2 && (

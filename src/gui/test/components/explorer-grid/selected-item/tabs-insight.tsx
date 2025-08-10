@@ -12,7 +12,7 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
+import type { SocketSecurityDetails } from '@/lib/constants/selectors.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 
 const MOCK_INSIGHTS: SocketSecurityDetails[] = [
