@@ -210,9 +210,10 @@ export const load = (transfered: TransferData): LoadResponse => {
 
   // populate nodes and edges from loaded data
   const graph = maybeGraph as GraphLike
-  lockfile.loadNodes(graph, transfered.lockfile.nodes)
   const specOptions = loadSpecOptions(transfered.lockfile)
+  lockfile.loadNodes(graph, transfered.lockfile.nodes)
   lockfile.loadEdges(graph, transfered.lockfile.edges, specOptions)
+
   const securityArchive = SecurityArchive.load(
     transfered.securityArchive,
   )

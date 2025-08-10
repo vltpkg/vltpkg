@@ -20,6 +20,8 @@ import { resolveSaveType } from './resolve-save-type.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
+const cacheKeySeparator = '│'
+
 // this is always the same, but we don't hard code it as a string,
 // in case the DepID module needs to change its delimiter again ever.
 const mainDepID = joinDepIDTuple(['file', '.'])
@@ -40,8 +42,18 @@ const getResolutionCacheKey = (
 ): string => {
   const f = spec.final
   // if it's a file: dep, then the fromNode location matters
-  const fromPref = f.type === 'file' ? location + ' : ' : ''
-  return fromPref + String(f) + queryModifier
+  const fromPrefix = f.type === 'file' ? location + ' : ' : ''
+  // the unique key should also precise what is the type of the spec,
+  // and in the case of a registry, what registry it is from.
+  const typePrecisionKey =
+    f.registry ?
+      `${cacheKeySeparator}registry` +
+      `${cacheKeySeparator}${f.registry}`
+    : f.gitRemote ?
+      `${cacheKeySeparator}git` + `${cacheKeySeparator}${f.gitRemote}`
+    : `${cacheKeySeparator}${f.type}`
+  const modifierSuffix = `${cacheKeySeparator}${queryModifier}`
+  return fromPrefix + String(f) + typePrecisionKey + modifierSuffix
 }
 
 export type GraphOptions = SpecOptions & {
@@ -312,17 +324,6 @@ export class Graph implements GraphLike {
     const nbn = this.nodesByName.get(node.name) ?? new Set()
     nbn.add(node)
     this.nodesByName.set(node.name, nbn)
-    if (spec) {
-      const f = String(spec.final)
-      // if it's a file: type, then that is fromNode-specific,
-      // so we can't shortcut add it here.
-      if (spec.final.type !== 'file') {
-        this.resolutions.set(f, node)
-        const rrev = this.resolutionsReverse.get(node) ?? new Set()
-        rrev.add(f)
-        this.resolutionsReverse.set(node, rrev)
-      }
-    }
     if (manifest) {
       this.manifests.set(node.id, manifest)
     }
@@ -344,7 +345,7 @@ export class Graph implements GraphLike {
     manifest?: NormalizedManifest,
     id?: DepID,
     extra?: string,
-  ) {
+  ): Node | undefined {
     // if no manifest is available, then create an edge that has no
     // reference to any other node, representing a missing dependency
     if (!manifest && !id) {
@@ -393,6 +394,18 @@ export class Graph implements GraphLike {
     toNode.maybeSetConfusedManifest(spec, manifest)
 
     this.addEdge(depType, spec, fromNode, toNode)
+
+    // populate resolution cache if applicable
+    const f = getResolutionCacheKey(
+      spec.final,
+      fromNode.location,
+      extra || '',
+    )
+    this.resolutions.set(f, toNode)
+    const rrev = this.resolutionsReverse.get(toNode) ?? new Set()
+    rrev.add(f)
+    this.resolutionsReverse.set(toNode, rrev)
+
     return toNode
   }
 
@@ -460,6 +473,50 @@ export class Graph implements GraphLike {
       if (node.edgesIn.size === 0) {
         this.nodes.delete(node.id)
       }
+    }
+  }
+
+  /**
+   * Reset resolution cache data.
+   */
+  resetResolution() {
+    // Clear all cache structures
+    this.resolutions.clear()
+    this.resolutionsReverse.clear()
+    this.nodesByName.clear()
+
+    // Rebuild nodesByName from all nodes
+    for (const node of this.nodes.values()) {
+      const nbn = this.nodesByName.get(node.name) ?? new Set()
+      nbn.add(node)
+      this.nodesByName.set(node.name, nbn)
+    }
+
+    // Rebuild resolution caches from all edges that have resolved targets
+    const seenNodes = new Set<Node>()
+    for (const edge of this.edges) {
+      const { to: node } = edge
+      if (!node) continue // Skip unresolved edges
+
+      // Only process each node once to avoid duplicate cache entries
+      if (seenNodes.has(node)) continue
+      seenNodes.add(node)
+
+      // Initialize resolutionsReverse entry for this node if it doesn't exist
+      if (!this.resolutionsReverse.has(node)) {
+        this.resolutionsReverse.set(node, new Set())
+      }
+
+      // Get the modifier if the node has one associated to it
+      const queryModifier = node.modifier || ''
+      const resolutionKey = getResolutionCacheKey(
+        edge.spec.final,
+        edge.from.location,
+        queryModifier,
+      )
+
+      this.resolutions.set(resolutionKey, node)
+      this.resolutionsReverse.get(node)?.add(resolutionKey)
     }
   }
 

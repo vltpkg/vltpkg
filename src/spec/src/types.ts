@@ -141,6 +141,9 @@ export type SpecLikeBase = {
   /** Is this a spec that overrides another spec? */
   overridden: boolean
 
+  /** tracks the registry that this spec should inherited from */
+  set inheritedRegistry(reg: string | undefined)
+
   toString(): string
 }
 

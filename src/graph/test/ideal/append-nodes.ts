@@ -433,7 +433,7 @@ t.test('resolve against the correct registries', async t => {
   }
   const bxManifest = {
     name: 'x',
-    version: '1.99.99',
+    version: '1.1.1',
     description: 'x on b',
     dependencies: { y: '1000' },
   }
@@ -497,11 +497,11 @@ t.test('resolve against the correct registries', async t => {
   const deps: Dependency[] = [
     {
       type: 'prod',
-      spec: Spec.parse('bar@a:bar@1.x', { registries }),
+      spec: Spec.parse('bar', 'a:bar@1.x', { registries }),
     },
     {
       type: 'prod',
-      spec: Spec.parse('baz@b:bar@1.x', { registries }),
+      spec: Spec.parse('baz', 'b:baz@1.x', { registries }),
     },
   ]
   const add = new Map(deps.map(dep => [dep.spec.name, dep]))
@@ -517,7 +517,7 @@ t.test('resolve against the correct registries', async t => {
     },
     new Set(),
   )
-  t.matchSnapshot(inspect(graph, { colors: false }))
+  t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
 
 // Add a basic test for appendNodes that verifies it can handle
