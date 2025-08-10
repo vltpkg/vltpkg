@@ -36,6 +36,10 @@ vi.mock('@/components/ui/kbd.tsx', () => ({
   Kbd: 'gui-kbd',
 }))
 
+vi.mock('@/components/query-builder/index.tsx', () => ({
+  QueryBuilder: 'gui-query-builder',
+}))
+
 vi.mock('@/components/explorer-grid/save-query.tsx', () => {
   return {
     default: 'gui-save-query-button',
