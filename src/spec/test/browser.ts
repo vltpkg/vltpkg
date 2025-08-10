@@ -908,3 +908,153 @@ t.test('isSpec', async t => {
     'object with all required properties should pass the type guard',
   )
 })
+
+t.test('inheritedRegistry setter', async t => {
+  const defaultRegistry = 'https://registry.npmjs.org/'
+  const inheritedRegistry = 'https://custom.registry.com/'
+  const ruyadornoRegistry = 'https://ruy.example.com/'
+  const options = {
+    registry: defaultRegistry,
+    'scope-registries': {
+      '@ruyadorno': ruyadornoRegistry,
+    },
+  }
+
+  // Test case 1: registry should be updated when it matches the default
+  const spec1 = Spec.parse('foo', '1.2.3', options)
+  t.equal(
+    spec1.registry,
+    defaultRegistry,
+    'should start with default registry',
+  )
+
+  spec1.inheritedRegistry = inheritedRegistry
+  t.equal(
+    spec1.registry,
+    inheritedRegistry,
+    'should update to inherited registry when using default',
+  )
+
+  // Test case 2: registry should NOT be updated when it's already customized
+  const spec2 = Spec.parse('bar', 'lorem:baz@1.0.0', {
+    ...options,
+    registries: { lorem: 'https://different.registry.com/' },
+  })
+  const originalRegistry = spec2.registry
+  t.not(
+    originalRegistry,
+    defaultRegistry,
+    'should have a different registry than default',
+  )
+
+  spec2.inheritedRegistry = inheritedRegistry
+  t.equal(
+    spec2.registry,
+    originalRegistry,
+    'should not change when registry is already customized',
+  )
+
+  // Test case 3: registry should be updated for scoped packages using default
+  const spec3 = Spec.parse('@scope/pkg', '1.2.3', options)
+  t.equal(
+    spec3.registry,
+    defaultRegistry,
+    'scoped package should start with default registry',
+  )
+
+  spec3.inheritedRegistry = inheritedRegistry
+  t.equal(
+    spec3.registry,
+    inheritedRegistry,
+    'scoped package should update to inherited registry',
+  )
+
+  // Test case 4: custom scoped registry
+  const spec4 = Spec.parse('@ruyadorno/foo', '1.0.0', options)
+  t.equal(
+    spec4.registry,
+    ruyadornoRegistry,
+    'scoped package should start with default registry',
+  )
+
+  spec4.inheritedRegistry = inheritedRegistry
+  t.equal(
+    spec4.registry,
+    ruyadornoRegistry,
+    'scoped package with custom registry should not update to inherited registry',
+  )
+
+  t.end()
+})
+
+t.test(
+  'inheritedRegistry setter edge cases with null/undefined values',
+  async t => {
+    const defaultRegistry = 'https://registry.npmjs.org/'
+    const options = {
+      registry: defaultRegistry,
+    }
+
+    // Test case 1: registry should NOT be updated when inheritedRegistry is set to undefined
+    const spec1 = Spec.parse('test-pkg@1.0.0', options)
+    t.equal(
+      spec1.registry,
+      defaultRegistry,
+      'should start with default registry',
+    )
+
+    spec1.inheritedRegistry = undefined
+    t.equal(
+      spec1.registry,
+      defaultRegistry,
+      'should remain unchanged when inheritedRegistry set to undefined',
+    )
+
+    // Test case 2: registry should NOT be updated when inheritedRegistry is set to null
+    const spec2 = Spec.parse('another-pkg@2.0.0', options)
+    t.equal(
+      spec2.registry,
+      defaultRegistry,
+      'should start with default registry',
+    )
+
+    spec2.inheritedRegistry = null as any
+    t.equal(
+      spec2.registry,
+      defaultRegistry,
+      'should remain unchanged when inheritedRegistry set to null',
+    )
+
+    // Test case 3: verify the setter works correctly when set multiple times
+    const spec3 = Spec.parse('multi-call-pkg@3.0.0', options)
+    const newRegistry1 = 'https://first-registry.com/'
+    const newRegistry2 = 'https://second-registry.com/'
+
+    spec3.inheritedRegistry = newRegistry1
+    t.equal(
+      spec3.registry,
+      newRegistry1,
+      'should update to first inherited registry',
+    )
+
+    // Since registry is no longer the default, it should not change on second call
+    spec3.inheritedRegistry = newRegistry2
+    t.equal(
+      spec3.registry,
+      newRegistry1,
+      'should not change when registry is no longer default',
+    )
+
+    // Test case 4: spec is not of type=registry
+    const spec4 = Spec.parse('bar', 'github:foo/bar', options)
+    t.equal(spec4.type, 'git', 'should be of type git')
+
+    spec4.inheritedRegistry = newRegistry1
+    t.notOk(
+      spec4.registry,
+      'should not have a registry property defined',
+    )
+
+    t.end()
+  },
+)

@@ -433,7 +433,7 @@ t.test('resolve against the correct registries', async t => {
   }
   const bxManifest = {
     name: 'x',
-    version: '1.99.99',
+    version: '1.1.1',
     description: 'x on b',
     dependencies: { y: '1000' },
   }
@@ -497,11 +497,11 @@ t.test('resolve against the correct registries', async t => {
   const deps: Dependency[] = [
     {
       type: 'prod',
-      spec: Spec.parse('bar@a:bar@1.x', { registries }),
+      spec: Spec.parse('bar', 'a:bar@1.x', { registries }),
     },
     {
       type: 'prod',
-      spec: Spec.parse('baz@b:bar@1.x', { registries }),
+      spec: Spec.parse('baz', 'b:baz@1.x', { registries }),
     },
   ]
   const add = new Map(deps.map(dep => [dep.spec.name, dep]))
@@ -517,7 +517,7 @@ t.test('resolve against the correct registries', async t => {
     },
     new Set(),
   )
-  t.matchSnapshot(inspect(graph, { colors: false }))
+  t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
 
 // Add a basic test for appendNodes that verifies it can handle
@@ -862,5 +862,113 @@ t.test(
       node => node.manifest?.name === 'bar',
     )
     t.ok(barNode, 'bar node should be added as a nested dependency')
+  },
+)
+
+// Failing test capturing nondeterminism from concurrent manifest resolution
+t.test(
+  'appendNodes produces deterministic graphs under varying timings',
+  async t => {
+    const mainManifest = {
+      name: 'root',
+      version: '1.0.0',
+      dependencies: {
+        '@vltpkg/a': '1',
+        '@vltpkg/b': '1',
+      },
+    }
+
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+
+    const makePackageInfo = (delays: {
+      a: number
+      b: number
+      c1: number
+      c12: number
+    }) => {
+      const pkgInfo = {
+        async manifest(spec: Spec) {
+          const name = spec.name
+          switch (name) {
+            case '@vltpkg/a': {
+              await sleep(delays.a)
+              return {
+                name,
+                version: '1.0.0',
+                dependencies: { '@vltpkg/c': '1' },
+              }
+            }
+            case '@vltpkg/b': {
+              await sleep(delays.b)
+              return {
+                name,
+                version: '1.0.0',
+                dependencies: { '@vltpkg/c': '1 || 2' },
+              }
+            }
+            case '@vltpkg/c': {
+              // choose version based on requested range, with different delays
+              if (spec.bareSpec.trim() === '1') {
+                await sleep(delays.c1)
+                return { name, version: '1.0.0' }
+              } else {
+                await sleep(delays.c12)
+                return { name, version: '2.0.0' }
+              }
+            }
+            default:
+              return null
+          }
+        },
+      } as unknown as PackageInfoClient
+      return pkgInfo
+    }
+
+    const buildGraph = async (delays: {
+      a: number
+      b: number
+      c1: number
+      c12: number
+    }) => {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      const deps: Dependency[] = [
+        asDependency({
+          spec: Spec.parse('@vltpkg/a', '1'),
+          type: 'prod',
+        }),
+        asDependency({
+          spec: Spec.parse('@vltpkg/b', '1'),
+          type: 'prod',
+        }),
+      ]
+      const add = new Map(deps.map(d => [d.spec.name, d]))
+      await appendNodes(
+        add,
+        makePackageInfo(delays),
+        graph,
+        graph.mainImporter,
+        deps,
+        new PathScurry(t.testdirName),
+        configData,
+        new Set(),
+      )
+      return graph
+    }
+
+    // First build: favor resolving b and c@2 first
+    const graph1 = await buildGraph({ a: 20, b: 0, c1: 30, c12: 0 })
+
+    // Second build: favor resolving a and c@1 first
+    const graph2 = await buildGraph({ a: 0, b: 20, c1: 0, c12: 30 })
+
+    t.same(
+      graph1.toJSON(),
+      graph2.toJSON(),
+      'graphs should be equal regardless of manifest resolution timing',
+    )
   },
 )

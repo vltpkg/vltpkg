@@ -147,5 +147,8 @@ export const loadObject = (
     }
   }
 
+  // populate initial data to graph resolution caches
+  graph.resetResolution()
+
   return graph
 }

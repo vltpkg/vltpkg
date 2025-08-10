@@ -9,6 +9,30 @@ exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = 
 @vltpkg/graph.Graph { lockfileVersion: 0, options: [Object], nodes: {}, edges: {} }
 `
 
+exports[`test/graph.ts > TAP > using placePackage > should add a type=git package 1`] = `
+@vltpkg/graph.Graph {
+  lockfileVersion: 0,
+  options: { registries: {} },
+  nodes: {
+    '··bar@1.0.0': [
+      0,
+      'bar',
+      <3 empty items>,
+      { name: 'bar', version: '1.0.0', dependencies: [Object] }
+    ],
+    '··foo@1.0.0': [ 0, 'foo', <3 empty items>, { name: 'foo', version: '1.0.0' } ],
+    'file·a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ],
+    'git·github%3Afoo§bar·': [ 0, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ]
+  },
+  edges: {
+    'file·. missing': 'prod ^1.0.0 MISSING',
+    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
+    'file·. a': 'prod file:./a file·a',
+    'file·. bar': 'prod github:foo/bar git·github%3Afoo§bar·'
+  }
+}
+`
+
 exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 0,
