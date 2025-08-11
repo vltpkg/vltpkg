@@ -256,6 +256,10 @@ Object {
     "multiple": true,
     "type": "string",
   },
+  "lockfile-only": Object {
+    "description": "Only update the lockfile (vlt-lock.json), skip all node_modules operations including package extraction and filesystem changes.",
+    "type": "boolean",
+  },
   "no-bail": Object {
     "description": "When running scripts across multiple workspaces, continue on failure, running the script for all workspaces.",
     "short": "B",
@@ -484,6 +488,7 @@ Array [
   "--help",
   "--identity=<name>",
   "--jsr-registries=<name=url>",
+  "--lockfile-only",
   "--no-bail",
   "--no-color",
   "--node-version=<version>",
@@ -538,6 +543,7 @@ Array [
   "help",
   "identity",
   "jsr-registries",
+  "lockfile-only",
   "no-bail",
   "no-color",
   "node-version",
