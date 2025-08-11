@@ -49,6 +49,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   const { add } = parseAddArgs(conf, monorepo)
   const frozenLockfile = conf.options['frozen-lockfile']
   const expectLockfile = conf.options['expect-lockfile']
+  const lockfileOnly = conf.options['lockfile-only']
   /* c8 ignore start */
   const allowScripts =
     conf.get('allow-scripts') ?
@@ -61,6 +62,7 @@ export const command: CommandFn<InstallResult> = async conf => {
       frozenLockfile,
       expectLockfile,
       allowScripts,
+      lockfileOnly,
     },
     add,
   )

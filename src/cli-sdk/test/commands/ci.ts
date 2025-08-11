@@ -80,3 +80,37 @@ t.test('command description and examples', t => {
 
   t.end()
 })
+
+t.test('lockfile-only flag', async t => {
+  const options = {
+    'lockfile-only': true,
+  }
+
+  let log = ''
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/ci.ts')
+  >('../../src/commands/ci.ts', {
+    '@vltpkg/graph': {
+      async install(opts: any) {
+        log += `install expectLockfile=${opts.expectLockfile} cleanInstall=${opts.cleanInstall} lockfileOnly=${opts.lockfileOnly}\n`
+        return {
+          graph: {},
+        }
+      },
+    },
+  })
+
+  await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+
+  t.match(
+    log,
+    /install expectLockfile=true cleanInstall=true lockfileOnly=true/,
+    'should pass lockfileOnly along with other ci options',
+  )
+  t.end()
+})

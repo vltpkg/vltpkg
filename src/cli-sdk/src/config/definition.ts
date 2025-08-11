@@ -638,6 +638,10 @@ export const definition = j
       description:
         'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
     },
+    'lockfile-only': {
+      description:
+        'Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.',
+    },
   })
   .opt({
     'allow-scripts': {
