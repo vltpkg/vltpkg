@@ -76,7 +76,13 @@ const DeleteQuery = ({
                 variant="ghost">
                 <Trash />
               </Button>
-            : <Button variant="destructive">{text}</Button>}
+            : <Button
+                variant="destructive"
+                size="sm"
+                className="rounded-lg">
+                {text}
+              </Button>
+            }
           </DialogTrigger>
           <TooltipContent>
             Delete {selectedQueries.length <= 1 ? 'Query' : 'Queries'}
