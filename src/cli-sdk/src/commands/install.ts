@@ -24,11 +24,13 @@ export const command: CommandFn<Graph> = async conf => {
   const { add } = parseAddArgs(conf, monorepo)
   const frozenLockfile = conf.options['frozen-lockfile']
   const expectLockfile = conf.options['expect-lockfile']
+  const lockfileOnly = conf.options['lockfile-only']
   const { graph } = await install(
     {
       ...conf.options,
       frozenLockfile,
       expectLockfile,
+      lockfileOnly,
     },
     add,
   )

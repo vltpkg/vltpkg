@@ -75,6 +75,11 @@ export type LoadOptions = SpecOptions & {
    * Prevents any lockfile modifications and is stricter than expectLockfile.
    */
   frozenLockfile?: boolean
+  /**
+   * If set to `true`, only update the lockfile without performing any node_modules
+   * operations. Skips package extraction, filesystem operations, and hidden lockfile saves.
+   */
+  lockfileOnly?: boolean
 }
 
 export type ReadEntry = {

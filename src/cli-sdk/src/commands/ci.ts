@@ -24,11 +24,13 @@ export const views = {
 } as const satisfies Views<Graph>
 
 export const command: CommandFn<Graph> = async conf => {
+  const lockfileOnly = conf.options['lockfile-only']
   const ciOptions = {
     ...conf.options,
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,
+    lockfileOnly,
   }
 
   const { graph } = await install(ciOptions)
