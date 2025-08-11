@@ -4,7 +4,7 @@ exports[`directory select > renders correctly 1`] = `
 
 <gui-popover>
   <gui-popover-trigger aschild="true">
-    <gui-button classname="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
+    <gui-button classname="group flex h-10 w-full items-center justify-between rounded-lg border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
       Global
       <gui-chevron-down-icon classname="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180">
       </gui-chevron-down-icon>

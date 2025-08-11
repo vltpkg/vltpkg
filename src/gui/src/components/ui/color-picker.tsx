@@ -62,7 +62,7 @@ export function ColorPicker({
     <div className="mx-auto w-full max-w-md px-2 py-1">
       <div className="relative w-full">
         <Input
-          className="w-full"
+          className="w-full rounded-lg"
           type="text"
           value={inputColor}
           onChange={handleInputChange}
@@ -81,7 +81,7 @@ export function ColorPicker({
                 onChange(e.target.value)
               }
             }}
-            className="relative h-[20px] w-[20px] cursor-default opacity-0"
+            className="relative h-5 w-5 cursor-default opacity-0"
             type="color"
           />
         </div>
