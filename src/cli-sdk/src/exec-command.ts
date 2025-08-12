@@ -5,6 +5,7 @@
 
 import { error } from '@vltpkg/error-cause'
 import { isErrorWithCause } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import type {
   exec,
   execFG,
@@ -19,16 +20,15 @@ import type {
   RunResult,
 } from '@vltpkg/run'
 import { Query } from '@vltpkg/query'
-import type { QueryResponseNode } from '@vltpkg/query'
 import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
-import type { Workspace } from '@vltpkg/workspaces'
 import { Monorepo } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import type { LoadedConfig } from './config/index.ts'
 import { stderr, stdout, styleTextStdout } from './output.ts'
 import type { Views } from './view.ts'
 import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
+import assert from 'node:assert'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -88,16 +88,20 @@ export const views = {
 
 type ViewValues = 'human' | 'json' | 'inspect' | 'silent'
 
+// Removed separate target abstraction; use private helpers on ExecCommand instead.
+
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
   fg: F
   arg0?: string
   args: string[]
-  monorepo?: Monorepo
-  nodes?: QueryResponseNode[]
-  nodeLocations?: string[]
-  /** how many places are we doing things in? */
-  spaces?: number
+  /**
+   * Implementation detail: Only one of these will be set based on the user
+   * input. They are kept private to force consumers to use shared methods.
+   */
+  #monorepo?: Monorepo
+  #nodes?: string[]
+  // no derived container; use private helpers based on #monorepo/#nodeLocations
   conf: LoadedConfig
   projectRoot: string
   view: ViewValues
@@ -122,8 +126,9 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.projectRoot = projectRoot
   }
 
-  hasMonorepo(): this is this & { monorepo: Monorepo } {
-    return !!this.monorepo
+  #targetCount(): number {
+    if (this.#nodes) return this.#nodes.length
+    return this.#monorepo?.size ?? 1
   }
 
   hasArg0(): this is this & { arg0: string } {
@@ -150,53 +155,30 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,
       })
-      this.nodes = nodes
-      this.nodeLocations = nodes
-        .map(n => n.toJSON().location)
-        .filter(v => v !== undefined)
-      this.spaces = this.nodeLocations.length
-      if (this.nodeLocations.length === 0) {
-        throw error('no matching nodes found for query', {
-          found: queryString,
-        })
+      this.#nodes = []
+      for (const node of nodes) {
+        const { location } = node.toJSON()
+        assert(
+          location,
+          error(`node ${node.id} has no location`, {
+            found: node,
+          }),
+        )
+        this.#nodes.push(location)
       }
-      if (this.nodeLocations.length !== this.nodes.length) {
-        throw error('some nodes are missing locations', {
-          found: this.nodeLocations,
-        })
-      }
-      // console.log('nodes', nodes)
-      // console.log(
-      //   'nodes',
-      //   nodes.map(n => n.toJSON()),
-      // )
-      // const importerPaths = nodes
-      //   .filter(n => n.importer)
-      //   .map(n => n.location)
-      //   .filter(v => v !== undefined)
-      // this.monorepo =
-      //   importerPaths.length ?
-      //     Monorepo.load(this.projectRoot, {
-      //       load: {
-      //         paths: importerPaths,
-      //       },
-      //     })
-      //   : undefined
-      // this.spaces = this.monorepo?.size ?? 0
     } else {
       const paths = conf.get('workspace')
       const groups = conf.get('workspace-group')
       const recursive = conf.get('recursive')
-      this.monorepo =
+      this.#monorepo =
         paths?.length || groups?.length || recursive ?
           Monorepo.load(this.projectRoot, {
             load: { paths, groups },
           })
         : undefined
-      this.spaces = this.monorepo?.size ?? 1
     }
 
-    if (this.spaces === 1) {
+    if (this.#targetCount() === 1) {
       const arg = this.fgArg()
       if (!arg) return this.noArgsSingle()
       const result = await this.fg(arg)
@@ -206,14 +188,17 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       return result
     }
 
-    if (
-      (!this.hasMonorepo() && !this.nodeLocations) ||
-      this.spaces === 0
-    ) {
-      throw error('no matching workspaces found', {
-        /* c8 ignore next - already guarded */
-        validOptions: [...(this.monorepo?.load().paths() ?? [])],
-      })
+    if (this.#targetCount() === 0) {
+      if (queryString) {
+        throw error('no matching nodes found for query', {
+          found: queryString,
+        })
+      } else {
+        throw error('no matching workspaces found', {
+          /* c8 ignore next - already guarded */
+          validOptions: [...(this.#monorepo?.load().paths() ?? [])],
+        })
+      }
     }
 
     if (!this.hasArg0()) {
@@ -223,40 +208,18 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     // run across workspaces
     let failed = false
     let resultMap: Map<string, SpawnResultStdioStrings> = new Map()
-    if (this.nodeLocations) {
-      for (const location of this.nodeLocations) {
-        const result = await this.bg(this.bgArg(location)).catch(
-          (er: unknown) => {
-            if (isErrorWithCause(er) && isRunResult(er.cause)) {
-              this.printResult(location, er.cause)
-            }
-            failed = true
-            throw er
-          },
-        )
-        if (!failed) this.printResult(location, result)
-        resultMap.set(location, result)
-      }
-    } else {
-      const workspaceResultMap = await this.monorepo.run(async ws => {
-        const result = await this.bg(this.bgArg(ws.fullpath)).catch(
-          (er: unknown) => {
-            if (isErrorWithCause(er) && isRunResult(er.cause)) {
-              this.printResult(ws.path, er.cause)
-            }
-            failed = true
-            throw er
-          },
-        )
-        if (!failed) this.printResult(ws.path, result)
-        return result
-      })
-      resultMap = new Map(
-        [...workspaceResultMap.entries()].map(([ws, v]) => [
-          ws.path,
-          v,
-        ]),
+    for (const { label, cwd } of this.iterateTargets()) {
+      const result = await this.bg(this.bgArg(cwd)).catch(
+        (er: unknown) => {
+          if (isErrorWithCause(er) && isRunResult(er.cause)) {
+            this.printResult(label, er.cause)
+          }
+          failed = true
+          throw er
+        },
       )
+      if (!failed) this.printResult(label, result)
+      resultMap.set(label, result)
     }
 
     const results: Record<string, RunResult> = {}
@@ -311,11 +274,11 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   getCwd(): string {
-    if (this.nodeLocations) {
-      return this.nodeLocations[0] ?? this.projectRoot
+    if (this.#nodes) {
+      return this.#nodes[0] ?? this.projectRoot
     }
     return (
-      this.monorepo?.values().next().value?.fullpath ??
+      this.#monorepo?.values().next().value?.fullpath ??
       this.projectRoot
     )
   }
@@ -358,9 +321,30 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
   /* c8 ignore stop - not used, only here to override */
 
-  noArgsMulti(this: this & { monorepo: Monorepo }): MultiScriptSet {
+  noArgsMulti(): MultiScriptSet {
     throw error(
       'Cannot spawn interactive shells in multiple workspaces',
     )
+  }
+
+  *iterateTargets(): Iterable<{
+    label: string
+    cwd: string
+    manifest: NormalizedManifest
+  }> {
+    if (this.#nodes) {
+      for (const location of this.#nodes) {
+        const manifest = this.conf.options.packageJson.read(location)
+        yield { label: location, cwd: location, manifest }
+      }
+    } else if (this.#monorepo) {
+      for (const ws of this.#monorepo.values()) {
+        yield {
+          label: ws.path,
+          cwd: ws.fullpath,
+          manifest: ws.manifest,
+        }
+      }
+    }
   }
 }

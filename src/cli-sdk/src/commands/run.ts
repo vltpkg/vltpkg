@@ -1,5 +1,4 @@
 import { run, runFG } from '@vltpkg/run'
-import type { Monorepo } from '@vltpkg/workspaces'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import type {
@@ -38,22 +37,12 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
     return scripts
   }
 
-  noArgsMulti(this: this & { monorepo: Monorepo }): MultiScriptSet {
-    const scriptSet: MultiScriptSet = {}
-    if (this.nodeLocations) {
-      for (const location of this.nodeLocations) {
-        const { scripts = {} } =
-          this.conf.options.packageJson.read(location)
-        if (scripts) scriptSet[location] = scripts
-      }
-    } else {
-      for (const [ws, scripts] of this.monorepo.runSync(
-        ({ manifest: { scripts } }) => scripts,
-      )) {
-        if (scripts) scriptSet[ws.path] = scripts
-      }
+  noArgsMulti(): MultiScriptSet {
+    const scripts: MultiScriptSet = {}
+    for (const { label, manifest } of this.iterateTargets()) {
+      if (manifest.scripts) scripts[label] = manifest.scripts
     }
-    return scriptSet
+    return scripts
   }
 }
 
