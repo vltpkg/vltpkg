@@ -5,7 +5,7 @@ import './commands/run.ts'
 
 import type { RunResult } from '@vltpkg/run'
 import { exec, execFG } from '@vltpkg/run'
-import type { Monorepo, Workspace } from '@vltpkg/workspaces'
+import type { Monorepo } from '@vltpkg/workspaces'
 import type { LoadedConfig } from '../src/config/index.ts'
 import { ExecCommand } from '../src/exec-command.ts'
 import { resolve } from 'node:path'

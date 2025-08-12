@@ -207,8 +207,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     }
 
     // run across workspaces
-    let failed = false
-    let resultMap: Map<string, SpawnResultStdioStrings> = new Map()
+    let failed = false as boolean
+    const resultMap = new Map<string, SpawnResultStdioStrings>()
     for (const { label, cwd } of this.iterateTargets()) {
       const result = await this.bg(this.bgArg(cwd)).catch(
         (er: unknown) => {

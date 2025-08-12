@@ -1,4 +1,3 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
