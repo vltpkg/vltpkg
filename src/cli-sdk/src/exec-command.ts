@@ -19,6 +19,7 @@ import type {
   RunResult,
 } from '@vltpkg/run'
 import { Query } from '@vltpkg/query'
+import type { QueryResponseNode } from '@vltpkg/query'
 import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
 import type { Workspace } from '@vltpkg/workspaces'
@@ -27,6 +28,7 @@ import { ansiToAnsi } from 'ansi-to-pre'
 import type { LoadedConfig } from './config/index.ts'
 import { stderr, stdout, styleTextStdout } from './output.ts'
 import type { Views } from './view.ts'
+import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -92,6 +94,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   arg0?: string
   args: string[]
   monorepo?: Monorepo
+  nodes?: QueryResponseNode[]
+  nodeLocations?: string[]
   /** how many places are we doing things in? */
   spaces?: number
   conf: LoadedConfig
@@ -146,19 +150,39 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,
       })
-      const importerPaths = nodes
-        .filter(n => n.importer)
-        .map(n => n.location)
+      this.nodes = nodes
+      this.nodeLocations = nodes
+        .map(n => n.toJSON().location)
         .filter(v => v !== undefined)
-      this.monorepo =
-        importerPaths.length ?
-          Monorepo.load(this.projectRoot, {
-            load: {
-              paths: importerPaths,
-            },
-          })
-        : undefined
-      this.spaces = this.monorepo?.size ?? 0
+      this.spaces = this.nodeLocations.length
+      if (this.nodeLocations.length === 0) {
+        throw error('no matching nodes found for query', {
+          found: queryString,
+        })
+      }
+      if (this.nodeLocations.length !== this.nodes.length) {
+        throw error('some nodes are missing locations', {
+          found: this.nodeLocations,
+        })
+      }
+      // console.log('nodes', nodes)
+      // console.log(
+      //   'nodes',
+      //   nodes.map(n => n.toJSON()),
+      // )
+      // const importerPaths = nodes
+      //   .filter(n => n.importer)
+      //   .map(n => n.location)
+      //   .filter(v => v !== undefined)
+      // this.monorepo =
+      //   importerPaths.length ?
+      //     Monorepo.load(this.projectRoot, {
+      //       load: {
+      //         paths: importerPaths,
+      //       },
+      //     })
+      //   : undefined
+      // this.spaces = this.monorepo?.size ?? 0
     } else {
       const paths = conf.get('workspace')
       const groups = conf.get('workspace-group')
@@ -182,7 +206,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       return result
     }
 
-    if (!this.hasMonorepo() || this.spaces === 0) {
+    if (
+      (!this.hasMonorepo() && !this.nodeLocations) ||
+      this.spaces === 0
+    ) {
       throw error('no matching workspaces found', {
         /* c8 ignore next - already guarded */
         validOptions: [...(this.monorepo?.load().paths() ?? [])],
@@ -195,42 +222,65 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     // run across workspaces
     let failed = false
-    const resultMap = await this.monorepo.run(async ws => {
-      const result = await this.bg(this.bgArg(ws)).catch(
-        (er: unknown) => {
-          if (isErrorWithCause(er) && isRunResult(er.cause)) {
-            this.printResult(ws, er.cause)
-          }
-          failed = true
-          throw er
-        },
+    let resultMap: Map<string, SpawnResultStdioStrings> = new Map()
+    if (this.nodeLocations) {
+      for (const location of this.nodeLocations) {
+        const result = await this.bg(this.bgArg(location)).catch(
+          (er: unknown) => {
+            if (isErrorWithCause(er) && isRunResult(er.cause)) {
+              this.printResult(location, er.cause)
+            }
+            failed = true
+            throw er
+          },
+        )
+        if (!failed) this.printResult(location, result)
+        resultMap.set(location, result)
+      }
+    } else {
+      const workspaceResultMap = await this.monorepo.run(async ws => {
+        const result = await this.bg(this.bgArg(ws.fullpath)).catch(
+          (er: unknown) => {
+            if (isErrorWithCause(er) && isRunResult(er.cause)) {
+              this.printResult(ws.path, er.cause)
+            }
+            failed = true
+            throw er
+          },
+        )
+        if (!failed) this.printResult(ws.path, result)
+        return result
+      })
+      resultMap = new Map(
+        [...workspaceResultMap.entries()].map(([ws, v]) => [
+          ws.path,
+          v,
+        ]),
       )
-      if (!failed) this.printResult(ws, result)
-      return result
-    })
+    }
 
     const results: Record<string, RunResult> = {}
-    for (const [ws, result] of resultMap) {
+    for (const [wsPath, result] of resultMap) {
       if (result.status === 0 && result.signal === null) {
         result.stdout = ''
         result.stderr = ''
       }
-      results[ws.path] = result
+      results[wsPath] = result
     }
     return results
   }
 
-  printResult(ws: Workspace, result: RunResult) {
+  printResult(path: string, result: RunResult) {
     // non-human results just get printed at the end
     if (this.view !== 'human') return
 
     if (result.status === 0 && result.signal === null) {
-      stdout(ws.path, 'ok')
+      stdout(path, 'ok')
     } else {
       stdout(
         styleTextStdout(
           ['bgWhiteBright', 'black', 'bold'],
-          ws.path + ' failure',
+          path + ' failure',
         ),
         {
           status: result.status,
@@ -260,9 +310,18 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     return this.interactiveShell()
   }
 
+  getCwd(): string {
+    if (this.nodeLocations) {
+      return this.nodeLocations[0] ?? this.projectRoot
+    }
+    return (
+      this.monorepo?.values().next().value?.fullpath ??
+      this.projectRoot
+    )
+  }
+
   fgArg(): RunnerOptions | undefined {
-    const ws = this.monorepo?.values().next().value
-    const cwd = ws?.fullpath ?? this.projectRoot
+    const cwd = this.getCwd()
     const arg0 = this.arg0 ?? this.defaultArg0()
 
     // return undefined so noArgsSingle will be called instead
@@ -274,21 +333,21 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       arg0,
       args: this.args,
       projectRoot: this.projectRoot,
-      packageJson: this.monorepo?.packageJson,
+      packageJson: this.conf.options.packageJson,
       'script-shell':
         this.arg0 ? this.conf.get('script-shell') : false,
     }
   }
 
-  bgArg(this: this & { arg0: string }, ws: Workspace): RunnerOptions {
+  bgArg(this: this & { arg0: string }, cwd: string): RunnerOptions {
     return {
-      cwd: ws.fullpath,
+      cwd,
       acceptFail: !this.conf.get('bail'),
       ignoreMissing: true,
       arg0: this.arg0,
       args: this.args,
       projectRoot: this.projectRoot,
-      packageJson: this.monorepo?.packageJson,
+      packageJson: this.conf.options.packageJson,
       'script-shell': this.conf.get('script-shell'),
     }
   }

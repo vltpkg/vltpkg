@@ -33,18 +33,25 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
 
   noArgsSingle(): ScriptSet {
     // called when there's no arg0, with a single workspace or root
-    const ws = this.monorepo?.values().next().value
-    const cwd = ws?.fullpath ?? this.projectRoot
+    const cwd = this.getCwd()
     const { scripts = {} } = this.conf.options.packageJson.read(cwd)
     return scripts
   }
 
   noArgsMulti(this: this & { monorepo: Monorepo }): MultiScriptSet {
     const scriptSet: MultiScriptSet = {}
-    for (const [ws, scripts] of this.monorepo.runSync(
-      ({ manifest: { scripts } }) => scripts,
-    )) {
-      if (scripts) scriptSet[ws.path] = scripts
+    if (this.nodeLocations) {
+      for (const location of this.nodeLocations) {
+        const { scripts = {} } =
+          this.conf.options.packageJson.read(location)
+        if (scripts) scriptSet[location] = scripts
+      }
+    } else {
+      for (const [ws, scripts] of this.monorepo.runSync(
+        ({ manifest: { scripts } }) => scripts,
+      )) {
+        if (scripts) scriptSet[ws.path] = scripts
+      }
     }
     return scriptSet
   }
