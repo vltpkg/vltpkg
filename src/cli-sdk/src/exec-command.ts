@@ -29,6 +29,7 @@ import { stderr, stdout, styleTextStdout } from './output.ts'
 import type { Views } from './view.ts'
 import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
 import assert from 'node:assert'
+import { resolve } from 'node:path'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -274,8 +275,11 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   getCwd(): string {
+    // If no node or workspace location is available fall back to project root
     if (this.#nodes) {
-      return this.#nodes[0] ?? this.projectRoot
+      const [first] = this.#nodes
+      assert(first, error('no nodes found'))
+      return resolve(this.projectRoot, first)
     }
     return (
       this.#monorepo?.values().next().value?.fullpath ??
@@ -335,7 +339,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     if (this.#nodes) {
       for (const location of this.#nodes) {
         const manifest = this.conf.options.packageJson.read(location)
-        yield { label: location, cwd: location, manifest }
+        const label =
+          location.startsWith('./') ? location.slice(2) : location
+        const cwd = resolve(this.projectRoot, location)
+        yield { label, cwd, manifest }
       }
     } else if (this.#monorepo) {
       for (const ws of this.#monorepo.values()) {

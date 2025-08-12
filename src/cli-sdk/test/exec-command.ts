@@ -15,6 +15,11 @@ t.test('basic', t => {
       projectRoot: t.testdirName,
       positionals: [],
       get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
       values: {},
     } as unknown as LoadedConfig,
     exec,
@@ -36,6 +41,11 @@ t.test('with view', t => {
       projectRoot: t.testdirName,
       positionals: [],
       get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
       values: {
         view: 'inspect',
       },
@@ -45,10 +55,7 @@ t.test('with view', t => {
   )
   t.equal(e.view, 'inspect')
   t.equal(
-    e.printResult(
-      {} as unknown as Workspace,
-      {} as unknown as RunResult,
-    ),
+    e.printResult('path', {} as unknown as RunResult),
     undefined,
   )
   t.end()

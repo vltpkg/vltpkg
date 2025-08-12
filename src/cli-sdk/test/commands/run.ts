@@ -206,12 +206,16 @@ t.test('run script across no workspaces', async t => {
     conf.projectRoot = dir
     const logs = t.capture(console, 'log').args
     const errs = t.capture(console, 'error').args
-    await t.rejects(command(conf), {
-      message: 'no matching workspaces found',
-      cause: {
-        validOptions: new Set(['src/a', 'src/b']),
-      },
-    })
+    if (args.includes('--scope')) {
+      await t.rejects(command(conf), {
+        message: 'no matching nodes found for query',
+        cause: { found: ':workspace#c' },
+      })
+    } else {
+      await t.rejects(command(conf), {
+        message: 'no matching workspaces found',
+      })
+    }
     t.strictSame(logs(), [])
     t.strictSame(errs(), [])
   }
@@ -265,33 +269,15 @@ t.test('one ws fails, with bail', async t => {
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
   await t.rejects(command(conf), {
-    message: 'failed graph traversal',
+    message: 'command failed',
     cause: {
-      node: {
-        id: joinDepIDTuple(['workspace', 'src/a']),
-        path: 'src/a',
-        fullpath: resolve(dir, 'src/a'),
-        manifest: {
-          scripts: {
-            hello: fail,
-          },
-        },
-        groups: ['packages'],
-        name: 'src/a',
-      },
-      path: [],
-      cause: {
-        message: 'command failed',
-        cause: {
-          command: 'node -e "process.exit(1)"',
-          args: [],
-          cwd: resolve(dir, 'src/a'),
-          status: 1,
-          signal: null,
-          stdout: '',
-          stderr: '',
-        },
-      },
+      command: 'node -e "process.exit(1)"',
+      args: [],
+      cwd: resolve(dir, 'src/a'),
+      status: 1,
+      signal: null,
+      stdout: '',
+      stderr: '',
     },
   })
 
