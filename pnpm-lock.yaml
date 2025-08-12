@@ -456,6 +456,9 @@ importers:
       '@vltpkg/package-json':
         specifier: workspace:*
         version: link:../package-json
+      '@vltpkg/promise-spawn':
+        specifier: workspace:*
+        version: link:../promise-spawn
       '@vltpkg/query':
         specifier: workspace:*
         version: link:../query
