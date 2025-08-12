@@ -215,7 +215,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       return result
     }
 
-    let resultMap: Map<string, SpawnResultStdioStrings> = new Map()
+    const resultMap = new Map<string, SpawnResultStdioStrings>()
     if (this.#nodes) {
       for (const { label, cwd } of this.getTargets()) {
         const result = await runInDir(cwd, label)
@@ -282,7 +282,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   getCwd(): string {
-    // If no node or workspace location is available fall back to project root
     if (this.#nodes) {
       const [first] = this.#nodes
       assert(first, error('no nodes found'))
