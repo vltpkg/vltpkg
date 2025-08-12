@@ -8,6 +8,8 @@ import { exec, execFG } from '@vltpkg/run'
 import type { Monorepo, Workspace } from '@vltpkg/workspaces'
 import type { LoadedConfig } from '../src/config/index.ts'
 import { ExecCommand } from '../src/exec-command.ts'
+import { resolve } from 'node:path'
+import { unload } from '@vltpkg/vlt-json'
 
 t.test('basic', t => {
   const e = new ExecCommand(
@@ -59,4 +61,64 @@ t.test('with view', t => {
     undefined,
   )
   t.end()
+})
+
+t.test('getCwd', async t => {
+  // fallback to projectRoot when no nodes/monorepo
+  {
+    const e = new ExecCommand(
+      {
+        projectRoot: t.testdirName,
+        positionals: [],
+        get() {},
+        options: {
+          packageJson: {
+            read: () => ({}),
+          },
+        },
+        values: {},
+      } as unknown as LoadedConfig,
+      (async () => ({})) as any,
+      (async () => ({})) as any,
+    )
+    t.equal(e.getCwd(), t.testdirName)
+  }
+
+  // when nodes are selected via --scope, cwd is the first node absolute path
+  {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': '{}',
+      src: {
+        a: { 'package.json': JSON.stringify({ name: 'a' }) },
+        b: { 'package.json': JSON.stringify({ name: 'b' }) },
+      },
+      '.git': {},
+    })
+    t.chdir(dir)
+    const { Config } = await t.mockImport<
+      typeof import('../src/config/index.ts')
+    >('../src/config/index.ts')
+    unload()
+    const conf = await Config.load(t.testdirName, [])
+    conf.projectRoot = dir
+    conf.values.scope = ':workspace#a'
+    const dummyBG = (async () => ({
+      command: 'x',
+      args: [],
+      cwd: dir,
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })) as any
+    const dummyFG = dummyBG
+    const e = new ExecCommand(
+      conf as unknown as LoadedConfig,
+      dummyBG,
+      dummyFG,
+    )
+    await e.run()
+    t.equal(e.getCwd(), resolve(dir, 'src/a'))
+  }
 })

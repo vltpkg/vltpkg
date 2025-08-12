@@ -340,6 +340,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       for (const location of this.#nodes) {
         const manifest = this.conf.options.packageJson.read(location)
         const label =
+          /* c8 ignore next */
           location.startsWith('./') ? location.slice(2) : location
         const cwd = resolve(this.projectRoot, location)
         yield { label, cwd, manifest }
