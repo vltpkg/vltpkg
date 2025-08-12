@@ -1,5 +1,4 @@
 import { run, runFG } from '@vltpkg/run'
-import type { Monorepo } from '@vltpkg/workspaces'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import type {
@@ -33,20 +32,17 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
 
   noArgsSingle(): ScriptSet {
     // called when there's no arg0, with a single workspace or root
-    const ws = this.monorepo?.values().next().value
-    const cwd = ws?.fullpath ?? this.projectRoot
+    const cwd = this.getCwd()
     const { scripts = {} } = this.conf.options.packageJson.read(cwd)
     return scripts
   }
 
-  noArgsMulti(this: this & { monorepo: Monorepo }): MultiScriptSet {
-    const scriptSet: MultiScriptSet = {}
-    for (const [ws, scripts] of this.monorepo.runSync(
-      ({ manifest: { scripts } }) => scripts,
-    )) {
-      if (scripts) scriptSet[ws.path] = scripts
+  noArgsMulti(): MultiScriptSet {
+    const scripts: MultiScriptSet = {}
+    for (const { label, manifest } of this.getTargets()) {
+      if (manifest.scripts) scripts[label] = manifest.scripts
     }
-    return scriptSet
+    return scripts
   }
 }
 
