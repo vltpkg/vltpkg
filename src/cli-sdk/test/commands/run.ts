@@ -268,15 +268,21 @@ t.test('one ws fails, with bail', async t => {
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
   await t.rejects(command(conf), {
-    message: 'command failed',
+    message: 'failed graph traversal',
     cause: {
-      command: 'node -e "process.exit(1)"',
-      args: [],
-      cwd: resolve(dir, 'src/a'),
-      status: 1,
-      signal: null,
-      stdout: '',
-      stderr: '',
+      code: 'GRAPHRUN_TRAVERSAL',
+      cause: {
+        message: 'command failed',
+        cause: {
+          command: 'node -e "process.exit(1)"',
+          args: [],
+          cwd: resolve(dir, 'src/a'),
+          status: 1,
+          signal: null,
+          stdout: '',
+          stderr: '',
+        },
+      },
     },
   })
 

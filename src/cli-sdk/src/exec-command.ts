@@ -76,8 +76,8 @@ export const views = {
     if (isScriptSet(result)) stdout('Scripts available:', result)
     else if (isMultiScriptSet(result)) {
       stdout('Scripts available:')
-      for (const [wsPath, scripts] of Object.entries(result)) {
-        stdout(wsPath, scripts)
+      for (const [path, scripts] of Object.entries(result)) {
+        stdout(path, scripts)
       }
     }
   },
@@ -89,20 +89,13 @@ export const views = {
 
 type ViewValues = 'human' | 'json' | 'inspect' | 'silent'
 
-// Removed separate target abstraction; use private helpers on ExecCommand instead.
-
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
   fg: F
   arg0?: string
   args: string[]
-  /**
-   * Implementation detail: Only one of these will be set based on the user
-   * input. They are kept private to force consumers to use shared methods.
-   */
   #monorepo?: Monorepo
   #nodes?: string[]
-  // no derived container; use private helpers based on #monorepo/#nodeLocations
   conf: LoadedConfig
   projectRoot: string
   view: ViewValues
@@ -208,8 +201,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     // run across workspaces
     let failed = false as boolean
-    const resultMap = new Map<string, SpawnResultStdioStrings>()
-    for (const { label, cwd } of this.iterateTargets()) {
+    const runInDir = async (cwd: string, label: string) => {
       const result = await this.bg(this.bgArg(cwd)).catch(
         (er: unknown) => {
           if (isErrorWithCause(er) && isRunResult(er.cause)) {
@@ -220,16 +212,31 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         },
       )
       if (!failed) this.printResult(label, result)
-      resultMap.set(label, result)
+      return result
+    }
+
+    let resultMap: Map<string, SpawnResultStdioStrings> = new Map()
+    if (this.#nodes) {
+      for (const { label, cwd } of this.getTargets()) {
+        const result = await runInDir(cwd, label)
+        resultMap.set(label, result)
+      }
+    } else if (this.#monorepo) {
+      const wsResultMap = await this.#monorepo.run(async ws => {
+        return runInDir(ws.fullpath, ws.path)
+      })
+      for (const [ws, result] of wsResultMap) {
+        resultMap.set(ws.path, result)
+      }
     }
 
     const results: Record<string, RunResult> = {}
-    for (const [wsPath, result] of resultMap) {
+    for (const [path, result] of resultMap) {
       if (result.status === 0 && result.signal === null) {
         result.stdout = ''
         result.stderr = ''
       }
-      results[wsPath] = result
+      results[path] = result
     }
     return results
   }
@@ -331,11 +338,12 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     )
   }
 
-  *iterateTargets(): Iterable<{
+  getTargets(): {
     label: string
     cwd: string
     manifest: NormalizedManifest
-  }> {
+  }[] {
+    const targets = []
     if (this.#nodes) {
       for (const location of this.#nodes) {
         const manifest = this.conf.options.packageJson.read(location)
@@ -343,16 +351,17 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
           /* c8 ignore next */
           location.startsWith('./') ? location.slice(2) : location
         const cwd = resolve(this.projectRoot, location)
-        yield { label, cwd, manifest }
+        targets.push({ label, cwd, manifest })
       }
     } else if (this.#monorepo) {
-      for (const ws of this.#monorepo.values()) {
-        yield {
+      this.#monorepo.runSync(ws => {
+        targets.push({
           label: ws.path,
           cwd: ws.fullpath,
           manifest: ws.manifest,
-        }
-      }
+        })
+      })
     }
+    return targets
   }
 }

@@ -39,7 +39,7 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
 
   noArgsMulti(): MultiScriptSet {
     const scripts: MultiScriptSet = {}
-    for (const { label, manifest } of this.iterateTargets()) {
+    for (const { label, manifest } of this.getTargets()) {
       if (manifest.scripts) scripts[label] = manifest.scripts
     }
     return scripts
