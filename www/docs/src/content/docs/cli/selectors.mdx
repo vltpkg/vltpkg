@@ -1,11 +1,11 @@
 ---
-title: Dependency Query Selectors
+title: Dependency Selector Syntax
 sidebar:
   label: Query Selectors
   order: 3
 ---
 
-## Supported Query Syntax Reference
+## Supported Dependency Selector Syntax Reference
 
 The vlt query syntax enable usage of css-selector-like strings to
 filter packages.
@@ -20,7 +20,7 @@ notably:
 Split by group of selectors below is the complete reference to
 supported elements.
 
-### Attribute selectors
+### Attribute Selectors
 
 Attribute selectors are used to match a value found in the
 `package.json` metadata for each of the nodes being queried to a
@@ -63,14 +63,13 @@ that in mind it's advised to rely on using **Attribute selectors**
 
 e.g: `#foo` is the same as `[name=foo]`
 
-### Pseudo class selectors
+### Pseudo Class Selectors
 
 - `:attr(key, [attr=value])` The attribute pseudo-class allows for
   selecting packages based on nested properties of its `package.json`
   metadata. As an example, here is a query that filters only packages
   that declares an optional peer dependency named `foo`:
   `:attr(peerDependenciesMeta, foo, [optional=true])`
-- `:empty` Matches packages that have no dependencies installed.
 - `:has(<selector-list>)` Matches only packages that have valid
   results for the selector expression used. As an example, here is a
   query that matches all packages that have a peer dependency on
@@ -86,7 +85,6 @@ e.g: `#foo` is the same as `[name=foo]`
   of the same name, this selector has a forgiving behavior regarding
   its nested selector list ignoring any usage of non-existing ids,
   classes, combinators, operators and pseudo-selectors.
-- `:link` Matches linked packages only.
 - `:not(<selector-list>)` Negation pseudo-class, select packages that
   do not match a list of selectors.
 - `:outdated(<type>)` Matches packages that are outdated, the type
@@ -103,8 +101,6 @@ e.g: `#foo` is the same as `[name=foo]`
     current one
   - `patch` a version exists that is a semver patch greater than the
     current one
-- `:private` Matches packages that have the property `private` set on
-  their `package.json` file.
 - `:published(<date>)` Matches packages based on their publication
   date. The date parameter can be prefixed with a comparator (`>`,
   `<`, `>=`, `<=`). If no comparator is provided, it will match exact
@@ -137,23 +133,27 @@ e.g: `#foo` is the same as `[name=foo]`
 - `:type(registry|file|git|remote|workspace)` Matches packages based
   on their type, e.g, to retrieve all git dependencies: `:type(git)`.
 
-### Pseudo Elements
+### Pseudo States
 
+- `:private` Matches packages that have the property `private` set on
+  their `package.json` file.
+- `:empty` Matches packages that have no dependencies installed.
+- `:root` Returns the root node, that represents the package defined
+  at the top-level `package.json` of your project folder.
+- `:scope` Returns the current scope of a given selector
+- `:project` Returns both the root node (as defined below) along with
+  any workspace declared in your project.
+- `:workspace` Matches the current project workspaces (listed in your
+  `vlt.json` file).
+- `:prod` Matches prod dependencies to your current project.
 - `:dev` Matches packages that are only used as dev dependencies in
   your current project.
 - `:optional` Matches packages that are optional to your current
   project.
 - `:peer` Matches peer dependencies to your current project.
-- `:prod` Matches prod dependencies to your current project.
-- `:project` Returns both the root node (as defined below) along with
-  any workspace declared in your project.
-- `:root` Returns the root node, that represents the package defined
-  at the top-level `package.json` of your project folder.
-- `:scope` Returns the current scope of a given selector
-- `:workspace` Matches the current project workspaces (listed in your
-  `vlt.json` file).
+- `:link` Matches linked packages only.
 
-### Insights Selectors
+### Security Insights Pseudo Classes & States
 
 The following pseudo-selectors rely on security data provided by
 [Socket](https://socket.dev/), the usage of any of these selectors is
