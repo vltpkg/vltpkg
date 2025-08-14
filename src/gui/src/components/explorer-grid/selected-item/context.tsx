@@ -9,9 +9,14 @@ import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.ts'
 import { fetchDetails } from '@/lib/external-info.ts'
-import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/index.ts'
+import { PSEUDO_SECURITY_SELECTORS } from '@/lib/constants/index.ts'
 import { generatePath, useNavigate, useParams } from 'react-router'
 
+import type {
+  SocketCategory,
+  SocketSecurityDetails,
+  SocketSeverity,
+} from '@/lib/constants/index.ts'
 import type { StoreApi } from 'zustand'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { DetailsInfo } from '@/lib/external-info.ts'
@@ -21,7 +26,6 @@ import type {
   LicenseInsights,
 } from '@vltpkg/query'
 import type { PropsWithChildren } from 'react'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 import type {
   NormalizedManifest,
@@ -61,7 +65,7 @@ export type DepLicenses = {
     {
       licenses: string[]
       count: number
-      severity: SocketSecurityDetails['severity']
+      severity: SocketSeverity
     }
   >
   totalCount: number
@@ -69,9 +73,9 @@ export type DepLicenses = {
 
 export type DepWarning = {
   selector: string
-  severity: SocketSecurityDetails['severity']
+  severity: SocketSeverity
   description: string
-  category: SocketSecurityDetails['category']
+  category: SocketCategory
   count: number
 }
 
@@ -88,46 +92,73 @@ const getSocketInsights = (
 ): SocketSecurityDetails[] | undefined => {
   if (!insights?.scanned) return
 
-  return Object.entries(insights)
-    .flatMap(([key, value]) => {
-      if (typeof value === 'boolean' && value) {
-        return SOCKET_SECURITY_DETAILS[
-          key as keyof typeof SOCKET_SECURITY_DETAILS
-        ] as SocketSecurityDetails
-      }
+  const results: SocketSecurityDetails[] = []
 
-      if (typeof value === 'object') {
-        return Object.entries(value)
-          .filter(([, subValue]) => subValue === true)
-          .map(([subKey]) => {
-            const parentInsight =
-              SOCKET_SECURITY_DETAILS[
-                key as keyof typeof SOCKET_SECURITY_DETAILS
-              ]
-            return (
-                parentInsight && typeof parentInsight === 'object'
-              ) ?
-                (parentInsight[
-                  subKey as keyof typeof parentInsight
-                ] as SocketSecurityDetails)
-              : undefined
+  Object.entries(insights).forEach(([key, value]) => {
+    if (key === 'scanned') return
+    if (typeof value === 'boolean' && value) {
+      const selector =
+        PSEUDO_SECURITY_SELECTORS[
+          `:${key}` as keyof typeof PSEUDO_SECURITY_SELECTORS
+        ]
+      if ('severity' in selector && 'securityCategory' in selector) {
+        results.push({
+          selector: selector.selector,
+          severity: selector.severity,
+          description: selector.description,
+          category: selector.securityCategory,
+        })
+      }
+    } else if (typeof value === 'object') {
+      const parentInsight =
+        PSEUDO_SECURITY_SELECTORS[
+          `:${key}` as keyof typeof PSEUDO_SECURITY_SELECTORS
+        ]
+      if (
+        key !== 'score' &&
+        key !== 'cve' &&
+        key !== 'cwe' &&
+        key !== 'severity' &&
+        'arguments' in parentInsight
+      ) {
+        Object.entries(value as Record<string, boolean>)
+          .filter(([, subValue]) => subValue)
+          .forEach(([subKey]) => {
+            const argumentDetail = parentInsight.arguments.find(
+              arg => arg.argument === subKey,
+            )
+            if (argumentDetail) {
+              results.push({
+                selector: parentInsight.selector,
+                severity: argumentDetail.severity,
+                description: argumentDetail.description,
+                category: parentInsight.securityCategory,
+              })
+            }
           })
-          .filter(Boolean)
       }
+    }
+  })
 
-      return []
-    })
-    .filter(Boolean) as SocketSecurityDetails[]
+  return results
 }
 
 export const getLicenseSeverity = (
   warningType: LicenseWarningType,
-): SocketSecurityDetails['severity'] => {
-  const licenseDetails = SOCKET_SECURITY_DETAILS.license as Record<
-    LicenseWarningType,
-    SocketSecurityDetails
-  >
-  return licenseDetails[warningType].severity
+): SocketSeverity => {
+  const licenseSelector = PSEUDO_SECURITY_SELECTORS[':license']
+
+  const licenseArgument = licenseSelector.arguments.find(
+    arg => arg.argument === warningType,
+  )
+
+  if (!licenseArgument?.severity) {
+    throw new Error(
+      `No severity found for license warning type: ${warningType}`,
+    )
+  }
+
+  return licenseArgument.severity
 }
 
 const initializeCounters = () => ({
@@ -189,61 +220,23 @@ const processInsights = (
   insights: Insights,
   depWarnings: Map<string, DepWarning>,
 ) => {
-  for (const [key, value] of Object.entries(insights)) {
-    if (
-      !value ||
-      key === 'score' ||
-      key === 'scanned' ||
-      key === 'license'
-    )
-      continue
+  const securityDetails = getSocketInsights(insights)
+  if (!securityDetails) return
 
-    if (typeof value === 'boolean') {
-      const detail = SOCKET_SECURITY_DETAILS[
-        key as keyof typeof SOCKET_SECURITY_DETAILS
-      ] as SocketSecurityDetails
-      const selector = String(detail.selector)
-      const existing = depWarnings.get(selector)
-      if (existing) {
-        existing.count++
-      } else {
-        depWarnings.set(selector, {
-          selector,
-          severity: detail.severity,
-          category: detail.category,
-          description: detail.description,
-          count: 1,
-        })
-      }
-    } else if (typeof value === 'object') {
-      const parentInsight =
-        SOCKET_SECURITY_DETAILS[
-          key as keyof typeof SOCKET_SECURITY_DETAILS
-        ]
-      if (parentInsight && typeof parentInsight === 'object') {
-        Object.entries(value as Record<string, boolean>)
-          .filter(([, subValue]) => subValue)
-          .forEach(([subKey]) => {
-            const detail = parentInsight[
-              subKey as keyof typeof parentInsight
-            ] as SocketSecurityDetails
-            const selector = String(detail.selector)
-            const existing = depWarnings.get(selector)
-            if (existing) {
-              existing.count++
-            } else {
-              depWarnings.set(selector, {
-                selector,
-                severity: detail.severity,
-                category: detail.category,
-                description: detail.description,
-                count: 1,
-              })
-            }
-          })
-      }
+  securityDetails.forEach(detail => {
+    const existing = depWarnings.get(detail.selector)
+    if (existing) {
+      existing.count++
+    } else {
+      depWarnings.set(detail.selector, {
+        selector: detail.selector,
+        severity: detail.severity,
+        category: detail.category,
+        description: detail.description,
+        count: 1,
+      })
     }
-  }
+  })
 }
 
 const processFunding = (

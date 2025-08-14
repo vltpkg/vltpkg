@@ -13,6 +13,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { Label } from '@/components/ui/label.tsx'
@@ -72,9 +73,11 @@ const SaveQueryButton = () => {
                 <Star ref={scope} size={20} fill={starColor} />
               </div>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Save query</p>
-            </TooltipContent>
+            <TooltipPortal>
+              <TooltipContent>
+                <p>Save query</p>
+              </TooltipContent>
+            </TooltipPortal>
           </Tooltip>
         </TooltipProvider>
       </PopoverTrigger>

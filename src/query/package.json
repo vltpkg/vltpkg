@@ -28,7 +28,7 @@
     "@vltpkg/types": "workspace:*",
     "minimatch": "catalog:",
     "p-retry": "catalog:",
-    "postcss-selector-parser": "^7.1.0"
+    "postcss-selector-parser": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
