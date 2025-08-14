@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import type { ChangeEvent } from 'react'
 import { Star, ChevronsUpDown } from 'lucide-react'
 import { CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { useTheme } from '@/components/ui/theme-provider.tsx'
@@ -19,11 +18,13 @@ import { Label } from '@/components/ui/label.tsx'
 import { Input } from '@/components/ui/input.tsx'
 import { useAnimate } from 'framer-motion'
 import { useGraphStore } from '@/state/index.ts'
-import type { QueryLabel, SavedQuery } from '@/state/types.ts'
 import { LabelSelect } from '@/components/labels/label-select.tsx'
 import { LabelBadge } from '@/components/labels/label-badge.tsx'
 import { v4 as uuidv4 } from 'uuid'
 import { DeleteQuery } from '@/components/queries/delete-query.tsx'
+
+import type { ChangeEvent } from 'react'
+import type { QueryLabel, SavedQuery } from '@/state/types.ts'
 
 interface SaveQueryPopoverProps {
   isOpen: boolean
@@ -63,13 +64,13 @@ const SaveQueryButton = () => {
           <Tooltip>
             <TooltipTrigger
               asChild
-              className="flex h-[1.5rem] w-[1.5rem] cursor-default items-center justify-center rounded-sm bg-input transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700">
+              className="flex size-6 cursor-default items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 transition-colors hover:bg-neutral-300 dark:border-neutral-700 dark:bg-muted dark:hover:bg-neutral-700">
               <div
                 onClick={() =>
                   setShowSaveQueryPopover(!showSaveQueryPopover)
                 }
-                className="inline-flex h-[1.5rem] w-[1.5rem] items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
-                <Star ref={scope} size={20} fill={starColor} />
+                className="inline-flex size-5 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[15px] [&_svg]:shrink-0">
+                <Star ref={scope} fill={starColor} />
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -78,7 +79,7 @@ const SaveQueryButton = () => {
           </Tooltip>
         </TooltipProvider>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="end">
+      <PopoverContent className="w-full rounded-xl p-0" align="end">
         <SaveQueryPopover
           isOpen={showSaveQueryPopover}
           setIsOpen={setShowSaveQueryPopover}
@@ -222,30 +223,32 @@ const SaveQueryPopover = ({
 
   return (
     <div className="flex w-[325px] flex-col">
-      <CardHeader className="px-6 py-4">
-        <CardTitle className="text-lg font-medium">
+      <CardHeader className="px-6 py-3">
+        <CardTitle className="text-md font-medium">
           {savedQuery ? 'Edit Query' : 'Added Query!'}
         </CardTitle>
       </CardHeader>
       <div className="flex flex-col gap-2 border-t-[1px] border-muted-foreground/20 px-6 py-4">
-        <Label className="border-none font-medium">Name</Label>
+        <Label className="border-none p-0 font-medium">Name</Label>
         <Input
           type="text"
           autoComplete="off"
           placeholder="Name"
+          className="rounded-lg"
           value={queryName}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             const value = e.currentTarget.value
             setQueryName(value)
           }}
         />
-        <Label className="mt-2 border-none font-medium">
+        <Label className="mt-2 border-none p-0 font-medium">
           Directory
         </Label>
         <Input
           id="query-context"
           type="text"
           autoComplete="off"
+          className="rounded-lg"
           placeholder="Directory (optional)"
           value={editContext}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -253,9 +256,11 @@ const SaveQueryPopover = ({
             setEditContext(value)
           }}
         />
-        <Label className="mt-2 border-none font-medium">Labels</Label>
+        <Label className="mt-2 border-none p-0 font-medium">
+          Labels
+        </Label>
         {selectedLabels.length !== 0 && (
-          <div className="ml-2 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {selectedLabels.map((label, idx) => (
               <LabelBadge
                 key={idx}
@@ -270,7 +275,7 @@ const SaveQueryPopover = ({
             <Button
               variant="outline"
               role="combobox"
-              className="w-full justify-between font-normal">
+              className="w-full justify-between rounded-lg font-normal">
               Select labels
               <ChevronsUpDown className="opacity-50" />
             </Button>
@@ -289,6 +294,7 @@ const SaveQueryPopover = ({
               <DeleteQuery
                 type="button"
                 text="Remove"
+                className="rounded-lg"
                 deleteDialogOpen={deleteDialogOpen}
                 setDeleteDialogOpen={setDeleteDialogOpen}
                 onClose={() => setIsOpen(false)}
@@ -303,7 +309,12 @@ const SaveQueryPopover = ({
                 ]}
               />
             )}
-            <Button onClick={() => setIsOpen(false)}>Done</Button>
+            <Button
+              size="sm"
+              className="rounded-lg"
+              onClick={() => setIsOpen(false)}>
+              Done
+            </Button>
           </div>
         </div>
       </div>

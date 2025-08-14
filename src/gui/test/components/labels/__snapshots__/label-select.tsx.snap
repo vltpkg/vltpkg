@@ -2,14 +2,14 @@
 
 exports[`label-select > should render correctly 1`] = `
 
-<gui-command classname>
+<gui-command>
   <gui-command-input
     value
     classname="w-full"
     placeholder="Search labels"
   >
   </gui-command-input>
-  <gui-command-list classname="rounded-sm">
+  <gui-command-list classname="rounded-xl">
     <gui-command-empty classname="my-3 items-center px-3 py-2">
       <gui-dialog open="false">
         <div class="flex w-full flex-col items-center gap-3">

@@ -7,13 +7,14 @@ import {
   CommandList,
 } from '@/components/ui/command.tsx'
 import { Check, Pencil } from 'lucide-react'
-import type { QueryLabel } from '@/state/types.ts'
 import { useGraphStore } from '@/state/index.ts'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { CreateLabelModal } from '@/components/labels/create-label-dialog.tsx'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog.tsx'
+
+import type { QueryLabel } from '@/state/types.ts'
 
 interface LabelSelect {
   setIsOpen: (isOpen: boolean) => void
@@ -22,11 +23,11 @@ interface LabelSelect {
   className?: string
 }
 
-const LabelSelect = ({
+export const LabelSelect = ({
   setIsOpen,
   setItems,
   selectedItems,
-  className = '',
+  className,
 }: LabelSelect) => {
   const savedLabels = useGraphStore(state => state.savedQueryLabels)
   const boxRef = useRef<HTMLDivElement>(null)
@@ -83,7 +84,7 @@ const LabelSelect = ({
         className="w-full"
         placeholder="Search labels"
       />
-      <CommandList className="rounded-sm">
+      <CommandList className="rounded-xl">
         <CommandEmpty className="my-3 items-center px-3 py-2">
           <Dialog
             open={isCreateModalOpen}
@@ -155,5 +156,3 @@ const LabelSelect = ({
     </Command>
   )
 }
-
-export { LabelSelect }

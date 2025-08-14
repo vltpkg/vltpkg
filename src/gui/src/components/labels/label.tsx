@@ -15,9 +15,11 @@ import {
   ColorPicker,
   DEFAULT_COLOR,
 } from '@/components/ui/color-picker.tsx'
-import type { Color, QueryLabel } from '@/state/types.ts'
 import { useGraphStore } from '@/state/index.ts'
 import { useToast } from '@/components/hooks/use-toast.ts'
+import { cn } from '@/lib/utils.ts'
+
+import type { Color, QueryLabel } from '@/state/types.ts'
 
 interface LabelProps {
   queryLabel: QueryLabel
@@ -25,7 +27,11 @@ interface LabelProps {
   handleSelect: (label: QueryLabel) => void
 }
 
-const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
+export const Label = ({
+  queryLabel,
+  checked,
+  handleSelect,
+}: LabelProps) => {
   const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [editDescription, setEditDescription] = useState<string>('')
@@ -83,13 +89,19 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
 
   return (
     <div
-      className={`group rounded-sm border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
+      className={cn(
+        'group rounded-xl border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent',
+        isExpanded ? 'border-muted-foreground' : 'border-muted',
+      )}>
       <div className="flex grid grid-cols-8 items-center px-3 py-2">
         <div className="col-span-2 flex items-center gap-3">
           <Checkbox
             onCheckedChange={() => handleSelect(queryLabel)}
             checked={checked}
-            className={`border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100 ${checked ? 'opacity-100' : 'opacity-0'}`}
+            className={cn(
+              'border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100',
+              checked ? 'opacity-100' : 'opacity-0',
+            )}
           />
           <LabelBadge
             name={editName.trim() !== '' ? editName : 'Label preview'}
@@ -104,7 +116,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
         <div className="flex items-center justify-center">
           <Button
             variant="ghost"
-            className="flex items-center justify-center gap-1"
+            className="flex items-center justify-center gap-1 rounded-lg"
             onClick={() =>
               queriesReferenced ? navigateToRef() : undefined
             }>
@@ -115,7 +127,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
         <div className="flex items-center justify-end">
           <Button
             variant="outline"
-            className="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
+            className="h-[2rem] rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
             onClick={handleEdit}>
             {isExpanded ? 'Close' : 'Edit'}
           </Button>
@@ -135,6 +147,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
                 value={editName}
                 onChange={e => setEditName(e.target.value)}
                 placeholder="Name"
+                className="rounded-lg"
               />
             </div>
             <div className="flex grow flex-col gap-2">
@@ -146,6 +159,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
                 value={editDescription}
                 onChange={e => setEditDescription(e.target.value)}
                 placeholder="Description (optional)"
+                className="rounded-lg"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -155,13 +169,13 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    className="w-[120px] font-normal"
+                    className="w-[120px] rounded-lg font-normal"
                     variant="outline">
                     <Palette />
                     <span>{editColor}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent>
+                <PopoverContent className="rounded-xl">
                   <ColorPicker
                     defaultInput={editColor}
                     defaultColor={editColor}
@@ -170,7 +184,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="mb-0.5 flex items-end">
+            <div className="flex items-end">
               <Button
                 disabled={
                   editName.trim() === '' ||
@@ -178,7 +192,8 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
                 }
                 onClick={handleSaveChanges}
                 variant="default"
-                size="sm">
+                size="sm"
+                className="h-10 rounded-lg">
                 Save changes
               </Button>
             </div>
@@ -188,5 +203,3 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
     </div>
   )
 }
-
-export { Label }
