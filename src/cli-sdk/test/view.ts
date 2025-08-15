@@ -12,11 +12,11 @@ const vc = new ViewClass<true>(options, config)
 t.equal(vc.options, options, 'has options')
 t.equal(vc.config, config, 'has config')
 t.equal(vc.start(), undefined)
-t.equal(vc.done(true, { time: 1 }), undefined)
+t.equal(await vc.done(true, { time: 1 }), undefined)
 //@ts-expect-error
-vc.done(false, { time: 1 })
+await vc.done(false, { time: 1 })
 //@ts-expect-error
-vc.done(true, {})
+await vc.done(true, {})
 t.equal(vc.error({}), undefined)
 
 class MyView extends ViewClass {}

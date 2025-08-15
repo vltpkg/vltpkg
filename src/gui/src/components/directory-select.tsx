@@ -118,7 +118,7 @@ export const DirectorySelect = ({
                     key={location.path}
                     value=""
                     className="hover:bg-accent"
-                    onSelect={currentValue => {
+                    onSelect={(currentValue: string) => {
                       setDirectory(currentValue === '' ? '' : '')
                       setDisplayPath('Global')
                     }}>
@@ -135,7 +135,7 @@ export const DirectorySelect = ({
                 : <CommandItem
                     key={location.path}
                     value={location.path}
-                    onSelect={currentValue => {
+                    onSelect={(currentValue: string) => {
                       setDirectory(
                         currentValue === directory ? '' : (
                           currentValue
