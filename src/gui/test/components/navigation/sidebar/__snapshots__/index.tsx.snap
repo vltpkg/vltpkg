@@ -10,12 +10,14 @@ exports[`AppSidebar renders with the correct structure 1`] = `
   <gui-sidebar-content>
     <gui-sidebar-main-nav>
     </gui-sidebar-main-nav>
+    <gui-sidebar-settings-nav>
+    </gui-sidebar-settings-nav>
     <gui-sidebar-query-nav>
     </gui-sidebar-query-nav>
   </gui-sidebar-content>
   <gui-sidebar-footer classname="mb-[0.875px]">
     <gui-sidebar-menu>
-      <gui-sidebar-menu-link items="[object Object]">
+      <gui-sidebar-menu-link items="[object Object],[object Object]">
       </gui-sidebar-menu-link>
       <gui-sidebar-theme-switcher>
       </gui-sidebar-theme-switcher>
