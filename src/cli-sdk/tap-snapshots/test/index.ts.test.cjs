@@ -58,6 +58,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --help
     --identity=<name>
     --jsr-registries=<name=url>
+    --lockfile-only
     --no-bail
     --no-color
     --node-version=<version>
@@ -115,6 +116,7 @@ Unknown config option: asdf
     help
     identity
     jsr-registries
+    lockfile-only
     no-bail
     no-color
     node-version
