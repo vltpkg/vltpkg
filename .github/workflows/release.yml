@@ -211,6 +211,7 @@ jobs:
       version: ${{ steps.versions.outputs.version }}
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -227,6 +228,9 @@ jobs:
           node-version: '^22.14.0'
           cache: pnpm
           check-latest: true
+
+      - name: Setup npm
+        run: npm i npm@11 -g
 
       - name: Install dependencies
         run: pnpm install
@@ -250,7 +254,6 @@ jobs:
 
       - name: Publish
         run: |
-          echo "//registry.npmjs.org/:_authToken=\${NPM_AUTH_TOKEN}" > .npmrc
           pnpm publish \
             --filter="[$(git rev-parse HEAD~1)]" \
             --access=public \
@@ -258,7 +261,7 @@ jobs:
             --publish-branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" \
             ${{ needs.pre-check.outputs.dry-run == 'true' && '--dry-run' }}
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: false
 
       - name: Create Git Tag
         if: needs.pre-check.outputs.dry-run != 'true'
