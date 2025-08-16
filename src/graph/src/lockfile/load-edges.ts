@@ -48,6 +48,10 @@ export const loadEdges = (
         },
       })
     }
+
+    // sets a registry for this spec to inherit from
+    spec.inheritedRegistry = from.registry
+
     const to =
       toId === 'MISSING' ? undefined : graph.nodes.get(asDepID(toId))
     if (!isDependencyTypeShort(depType)) {
@@ -55,6 +59,7 @@ export const loadEdges = (
         validOptions: [...longDependencyTypes],
       })
     }
+
     graph.addEdge(depType, spec, from, to)
   }
 }

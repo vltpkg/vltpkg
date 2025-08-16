@@ -47,15 +47,17 @@ t.test('Graph', async t => {
     inspect(graph, { depth: 0 }),
     'should print with special tag name',
   )
-  const newNode = graph.addNode(
-    undefined,
+  const newNode = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@^1.0.0'),
     {
       name: 'foo',
       version: '1.0.0',
       dependencies: { localdep: 'file:localdep' },
     },
-    Spec.parse('foo@^1.0.0'),
   )
+  if (!newNode) throw new Error('failed to place foo@1.0.0')
   t.strictSame(
     graph.nodes.size,
     2,
@@ -76,12 +78,12 @@ t.test('Graph', async t => {
     'location gutcheck',
   )
 
-  const localdep = graph.addNode(
-    joinDepIDTuple(['file', newNode.location + '/localdep']),
-    { name: 'localdep', version: '1.2.3' },
+  const localdep = graph.placePackage(
+    newNode,
+    'prod',
     Spec.parse('localdep@file:localdep'),
-    'localdep',
-    '1.2.3',
+    { name: 'localdep', version: '1.2.3' },
+    joinDepIDTuple(['file', 'localdep', newNode.id]),
   )
   t.equal(
     graph.findResolution(
@@ -112,7 +114,10 @@ t.test('Graph', async t => {
   )
   t.same(
     graph.resolutionsReverse.get(newNode),
-    new Set(['foo@^1.0.0', 'foo@1.x']),
+    new Set([
+      'foo@^1.0.0│registry│https://registry.npmjs.org/│',
+      'foo@1.x│registry│https://registry.npmjs.org/│',
+    ]),
   )
   t.same(graph.nodesByName.get('foo'), new Set([newNode]))
   const fooTwo = graph.addNode(
@@ -178,6 +183,71 @@ t.test('Graph', async t => {
   t.same(graph.nodesByName.get('foo'), new Set([fooTwo]))
   graph.removeNode(fooTwo)
   t.same(graph.nodesByName.get('foo'), undefined)
+})
+
+t.test('findResolution respects registries', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const registries = {
+    a: 'https://a.example.com/',
+    b: 'https://b.example.com/',
+  }
+  const graph = new Graph({
+    projectRoot,
+    ...configData,
+    registries,
+    mainManifest: { name: 'proj', version: '1.0.0' },
+  })
+
+  // add bar in registry a
+  const barA = graph.addNode(
+    joinDepIDTuple([
+      'registry',
+      'https://a.example.com/',
+      'bar@1.0.0',
+    ]),
+    { name: 'bar', version: '1.0.0' },
+    Spec.parse('bar@a:bar@1.0.0', { registries }),
+  )
+  // add bar in registry b
+  const barB = graph.addNode(
+    joinDepIDTuple([
+      'registry',
+      'https://b.example.com/',
+      'bar@1.0.0',
+    ]),
+    { name: 'bar', version: '1.0.0' },
+    Spec.parse('bar@b:bar@1.0.0', { registries }),
+  )
+
+  // same name, different registries
+  t.ok(barA, 'node for registry a created')
+  t.ok(barB, 'node for registry b created')
+
+  // resolve explicitly against a
+  const resA = graph.findResolution(
+    Spec.parse('bar@a:bar@1.x', { registries }),
+    graph.mainImporter,
+  )
+  t.equal(resA, barA, 'resolves to registry a node')
+
+  // resolve explicitly against b
+  const resB = graph.findResolution(
+    Spec.parse('bar@b:bar@1.x', { registries }),
+    graph.mainImporter,
+  )
+  t.equal(resB, barB, 'resolves to registry b node')
+
+  // resolve without registry uses any satisfying node (barA or barB)
+  const resAny = graph.findResolution(
+    Spec.parse('bar@1.x'),
+    graph.mainImporter,
+  )
+  t.notOk(
+    resAny,
+    'should not resolve to any node if its registry has not been specified',
+  )
 })
 
 t.test('using placePackage', async t => {
@@ -280,6 +350,21 @@ t.test('using placePackage', async t => {
       ),
     /Impossible to place a missing, nameless dependency/,
     'should throw an impossible to place error',
+  )
+
+  // place a package using a github spec
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar', 'github:foo/bar'),
+    {
+      name: 'bar',
+      version: '1.0.0',
+    },
+  )
+  t.matchSnapshot(
+    inspect(graph, { depth: 3 }),
+    'should add a type=git package',
   )
 })
 
@@ -935,7 +1020,7 @@ t.test('removeEdgeResolution', async t => {
       throw new Error('Failed to create test setup')
 
     // Manually add to resolution cache with query modifier
-    const resolutionKey = `bar@^1.0.0${queryModifier}`
+    const resolutionKey = `bar@^1.0.0│registry│https://registry.npmjs.org/│${queryModifier}`
     graph.resolutions.set(resolutionKey, barNode)
     const reverseSet =
       graph.resolutionsReverse.get(barNode) ?? new Set()
@@ -1105,6 +1190,363 @@ t.test('removeEdgeResolution', async t => {
       'baz node no longer has edge in edgesIn',
     )
   })
+})
+
+t.test('resetResolution method', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+      bar: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  t.test('should rebuild all cache data structures', async t => {
+    // Create a complex graph with multiple nodes and edges
+    const fooNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo@^1.0.0'),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dependencies: {
+          baz: '^2.0.0',
+          qux: '^1.0.0',
+        },
+      },
+    )
+
+    const barNode = graph.placePackage(
+      graph.mainImporter,
+      'dev',
+      Spec.parse('bar@^1.0.0'),
+      {
+        name: 'bar',
+        version: '1.0.0',
+        dependencies: {
+          baz: '^2.0.0',
+        },
+      },
+    )
+
+    graph.placePackage(fooNode!, 'prod', Spec.parse('baz@^2.0.0'), {
+      name: 'baz',
+      version: '2.0.0',
+    })
+
+    graph.placePackage(barNode!, 'prod', Spec.parse('baz@^2.0.0'), {
+      name: 'baz',
+      version: '2.0.0',
+    })
+
+    const quxNode = graph.placePackage(
+      fooNode!,
+      'prod',
+      Spec.parse('qux@^1.0.0'),
+      {
+        name: 'qux',
+        version: '1.0.0',
+      },
+    )
+
+    // Create duplicate foo node to test nodesByName with multiple entries
+    const fooNode2 = graph.addNode(
+      joinDepIDTuple(['registry', 'custom', 'foo@2.0.0']),
+      {
+        name: 'foo',
+        version: '2.0.0',
+      },
+      Spec.parse('foo@2.0.0'),
+    )
+
+    // Verify initial state has populated caches
+    t.ok(graph.resolutions.size > 0, 'resolutions cache is populated')
+    t.ok(
+      graph.resolutionsReverse.size > 0,
+      'resolutionsReverse cache is populated',
+    )
+    t.ok(graph.nodesByName.size > 0, 'nodesByName cache is populated')
+    t.ok(
+      graph.nodesByName.get('foo')?.has(fooNode!),
+      'nodesByName has foo node',
+    )
+    t.ok(
+      graph.nodesByName.get('foo')?.has(fooNode2),
+      'nodesByName has second foo node',
+    )
+
+    // Store initial cache state for comparison
+    const initialResolutions = new Map(graph.resolutions)
+    const initialResolutionsReverse = new Map(
+      [...graph.resolutionsReverse.entries()].map(([k, v]) => [
+        k,
+        new Set(v),
+      ]),
+    )
+    const initialNodesByName = new Map(
+      [...graph.nodesByName.entries()].map(([k, v]) => [
+        k,
+        new Set(v),
+      ]),
+    )
+
+    // Reset resolution caches
+    graph.resetResolution()
+
+    // Verify caches are rebuilt correctly
+    t.equal(
+      graph.resolutions.size,
+      initialResolutions.size,
+      'resolutions cache size matches initial',
+    )
+    t.equal(
+      graph.resolutionsReverse.size,
+      initialResolutionsReverse.size,
+      'resolutionsReverse cache size matches initial',
+    )
+    t.equal(
+      graph.nodesByName.size,
+      initialNodesByName.size,
+      'nodesByName cache size matches initial',
+    )
+
+    // Verify nodesByName is correctly rebuilt
+    t.ok(
+      graph.nodesByName.get('foo')?.has(fooNode!),
+      'nodesByName still has first foo node after reset',
+    )
+    t.ok(
+      graph.nodesByName.get('foo')?.has(fooNode2),
+      'nodesByName still has second foo node after reset',
+    )
+    t.equal(
+      graph.nodesByName.get('foo')?.size,
+      2,
+      'nodesByName has correct number of foo nodes',
+    )
+
+    // Verify resolution functionality still works
+    const foundFoo = graph.findResolution(
+      Spec.parse('foo@^1.0.0'),
+      graph.mainImporter,
+    )
+    t.equal(foundFoo, fooNode, 'findResolution still works for foo')
+
+    const foundQux = graph.findResolution(
+      Spec.parse('qux@^1.0.0'),
+      fooNode!,
+    )
+    t.equal(foundQux, quxNode, 'findResolution still works for qux')
+  })
+
+  t.test('should handle empty graph', async t => {
+    const emptyGraph = new Graph({
+      ...configData,
+      mainManifest: { name: 'empty', version: '1.0.0' },
+      projectRoot,
+    })
+
+    // Verify only main importer exists
+    t.equal(
+      emptyGraph.nodes.size,
+      1,
+      'empty graph has only main importer',
+    )
+    t.equal(emptyGraph.edges.size, 0, 'empty graph has no edges')
+
+    // Reset should not throw
+    t.doesNotThrow(
+      () => emptyGraph.resetResolution(),
+      'resetResolution works on empty graph',
+    )
+
+    // Verify main importer is still in nodesByName
+    t.ok(
+      emptyGraph.nodesByName.has('empty'),
+      'main importer still in nodesByName',
+    )
+  })
+
+  t.test('should handle graph with unresolved edges', async t => {
+    // Create some resolved and unresolved edges
+    const alphaNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('alpha@^1.0.0'),
+      {
+        name: 'alpha',
+        version: '1.0.0',
+      },
+    )
+
+    // Create an unresolved edge
+    graph.addEdge(
+      'prod',
+      Spec.parse('missing@^1.0.0'),
+      graph.mainImporter,
+    )
+
+    const initialResolvedCount = [...graph.edges].filter(
+      e => e.to,
+    ).length
+    const initialUnresolvedCount = [...graph.edges].filter(
+      e => !e.to,
+    ).length
+
+    t.ok(initialResolvedCount > 0, 'graph has resolved edges')
+    t.ok(initialUnresolvedCount > 0, 'graph has unresolved edges')
+
+    // Reset resolution
+    graph.resetResolution()
+
+    // Verify unresolved edges are still unresolved
+    const finalUnresolvedCount = [...graph.edges].filter(
+      e => !e.to,
+    ).length
+    t.equal(
+      finalUnresolvedCount,
+      initialUnresolvedCount,
+      'unresolved edges remain unresolved after reset',
+    )
+
+    // Verify resolved edges are still resolved and cached
+    const foundAlpha = graph.findResolution(
+      Spec.parse('alpha@^1.0.0'),
+      graph.mainImporter,
+    )
+    t.equal(
+      foundAlpha,
+      alphaNode,
+      'resolved edges still work after reset',
+    )
+  })
+
+  t.test('should handle nodes with modifiers', async t => {
+    // Create a node with a modifier
+    const modifiedNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('modified@^1.0.0'),
+      {
+        name: 'modified',
+        version: '1.0.0',
+      },
+      undefined,
+      ':root > #modified',
+    )
+
+    t.equal(
+      modifiedNode?.modifier,
+      ':root > #modified',
+      'node has correct modifier',
+    )
+
+    // Store reference to verify after reset
+    const originalModifier = modifiedNode?.modifier
+
+    // Reset resolution
+    graph.resetResolution()
+
+    // Verify node with modifier is correctly cached
+    t.ok(
+      graph.nodesByName.has('modified'),
+      'modified node is in nodesByName after reset',
+    )
+    t.ok(
+      graph.resolutionsReverse.has(modifiedNode!),
+      'modified node is in resolutionsReverse after reset',
+    )
+
+    // Verify the modifier is preserved and cache works
+    t.equal(
+      modifiedNode?.modifier,
+      originalModifier,
+      'node modifier preserved after reset',
+    )
+
+    const foundModified = graph.findResolution(
+      Spec.parse('modified@^1.0.0'),
+      graph.mainImporter,
+      ':root > #modified',
+    )
+    t.equal(
+      foundModified,
+      modifiedNode,
+      'findResolution works with modifier after reset',
+    )
+  })
+
+  t.test(
+    'should rebuild resolution cache with correct keys',
+    async t => {
+      // Create nodes with different types of specs
+      const registryNode = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('registry-pkg@^1.0.0'),
+        {
+          name: 'registry-pkg',
+          version: '1.0.0',
+        },
+      )
+
+      const fileNode = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('file-pkg@file:./local'),
+        {
+          name: 'file-pkg',
+          version: '1.0.0',
+        },
+        joinDepIDTuple(['file', 'local']),
+      )
+
+      // Store initial cache keys
+      const initialResolutionKeys = new Set(graph.resolutions.keys())
+
+      // Reset resolution
+      graph.resetResolution()
+
+      // Verify all resolution keys are rebuilt
+      const finalResolutionKeys = new Set(graph.resolutions.keys())
+      t.equal(
+        finalResolutionKeys.size,
+        initialResolutionKeys.size,
+        'same number of resolution keys after reset',
+      )
+
+      // Verify specific resolution lookups work
+      const foundRegistry = graph.findResolution(
+        Spec.parse('registry-pkg@^1.0.0'),
+        graph.mainImporter,
+      )
+      t.equal(
+        foundRegistry,
+        registryNode,
+        'registry node resolution works after reset',
+      )
+
+      const foundFile = graph.findResolution(
+        Spec.parse('file-pkg@file:./local'),
+        graph.mainImporter,
+      )
+      t.equal(
+        foundFile,
+        fileNode,
+        'file node resolution works after reset',
+      )
+    },
+  )
 })
 
 t.test('removeNode with keepEdges parameter', async t => {
