@@ -201,7 +201,10 @@ t.test('outputCommand', async t => {
       start() {
         startCalled = true
       }
-      done(result: true, opts: { time: number }): undefined {
+      async done(
+        result: true,
+        opts: { time: number },
+      ): Promise<undefined> {
         doneCalled = result
         t.matchOnlyStrict(opts, { time: Number })
       }
