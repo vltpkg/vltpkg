@@ -14,6 +14,13 @@ let mockListReturn: unknown = {
 let shouldThrowError = false
 let errorMessage = 'Mock error'
 
+// vlt-json mocks and state
+let mockUserSection: Record<string, unknown> | undefined
+let mockProjectSection: Record<string, unknown> | undefined
+const mockUnloadCalls: ('user' | 'project')[] = []
+const mockFindCalls: { which: 'user' | 'project'; cwd?: string }[] =
+  []
+
 const { ConfigManager } = await t.mockImport<
   typeof import('../src/config-data.ts')
 >('../src/config-data.ts', {
@@ -36,13 +43,39 @@ const { ConfigManager } = await t.mockImport<
       return mockListReturn
     },
   },
+  '@vltpkg/vlt-json': {
+    unload: (which?: 'user' | 'project') => {
+      if (which) mockUnloadCalls.push(which)
+    },
+    reload: () => undefined,
+    save: () => undefined,
+    load: <T>(
+      field: string,
+      _validator: (x: unknown) => x is T,
+      which: 'user' | 'project' = 'project',
+    ): T | undefined => {
+      if (field !== 'config') return undefined
+      return (
+        which === 'user' ? mockUserSection : (
+          mockProjectSection
+        )) as any
+    },
+    find: (which: 'user' | 'project' = 'project', cwd?: string) => {
+      mockFindCalls.push({ which, cwd })
+      return cwd ? `${cwd}/vlt.json` : '/tmp/vlt.json'
+    },
+  },
 })
 
 // Mock LoadedConfig
-const createMockConfig = (positionals: string[] = []): LoadedConfig =>
+const createMockConfig = (
+  positionals: string[] = [],
+  projectRoot = '/test/project',
+): LoadedConfig =>
   ({
-    positionals: [...positionals], // Clone array to avoid mutation issues
-  }) as LoadedConfig
+    positionals: [...positionals],
+    projectRoot,
+  }) as unknown as LoadedConfig
 
 t.beforeEach(() => {
   // Reset all mock state before each test
@@ -55,6 +88,10 @@ t.beforeEach(() => {
   mockListReturn = { registry: 'https://registry.npmjs.org/' }
   shouldThrowError = false
   errorMessage = 'Mock error'
+  mockUserSection = undefined
+  mockProjectSection = undefined
+  mockUnloadCalls.length = 0
+  mockFindCalls.length = 0
 })
 
 t.test('ConfigManager constructor', t => {
@@ -96,6 +133,12 @@ t.test('get method without key', async t => {
   )
   t.equal(mockListCalls.length, 1, 'calls list once')
   t.equal(mockGetCalls.length, 0, 'does not call get')
+  t.same(
+    mockUnloadCalls.sort(),
+    ['project', 'user'].sort(),
+    'unloads caches',
+  )
+  t.equal(mockFindCalls.length, 1, 'find called to set project root')
   t.end()
 })
 
@@ -127,6 +170,55 @@ t.test('get method with key', async t => {
 })
 
 t.test(
+  'get method with which=project returns that section',
+  async t => {
+    const config = createMockConfig()
+    const manager = new ConfigManager({ config })
+    mockProjectSection = { a: 1, b: 'two' }
+    const result = await manager.get(undefined, 'project')
+    t.strictSame(result, mockProjectSection)
+    t.equal(
+      mockFindCalls[0]?.cwd,
+      config.projectRoot,
+      'find uses projectRoot',
+    )
+    t.end()
+  },
+)
+
+t.test('get method with which=user returns that section', async t => {
+  const config = createMockConfig()
+  const manager = new ConfigManager({ config })
+  mockUserSection = { u: true }
+  const result = await manager.get(undefined, 'user')
+  t.strictSame(result, mockUserSection)
+  t.end()
+})
+
+t.test(
+  'get method with key and which uses only that section and no fallback',
+  async t => {
+    const config = createMockConfig(['original'])
+    const manager = new ConfigManager({ config })
+    mockProjectSection = { only: 'here' }
+    const found = await manager.get('only', 'project')
+    t.equal(found, 'here', 'found value from project section')
+    const notFound = await manager.get('missing', 'project')
+    t.equal(
+      notFound,
+      undefined,
+      'no fallback beyond specific section',
+    )
+    t.strictSame(
+      config.positionals,
+      ['original'],
+      'positionals unchanged',
+    )
+    t.end()
+  },
+)
+
+t.test(
   'get method preserves original positionals on error',
   async t => {
     const config = createMockConfig(['original', 'values'])
@@ -149,27 +241,29 @@ t.test(
   },
 )
 
-t.test('set method', async t => {
+t.test('setPairs method', async t => {
   const config = createMockConfig(['config'])
   const manager = new ConfigManager({ config })
 
-  await manager.set('registry', 'https://custom.registry.com/')
+  await manager.setPairs([
+    { key: 'registry', value: 'https://custom.registry.com/' },
+  ])
 
   // The set method now uses direct config file manipulation
   // so we just verify it completes without error
-  t.pass('set method completed successfully')
+  t.pass('setPairs completed successfully')
   t.end()
 })
 
-t.test('delete method', async t => {
+t.test('deleteMany method', async t => {
   const config = createMockConfig(['config'])
   const manager = new ConfigManager({ config })
 
-  await manager.delete('registry')
+  await manager.deleteMany(['registry'])
 
   // The delete method now uses direct config file manipulation
   // so we just verify it completes without error
-  t.pass('delete method completed successfully')
+  t.pass('deleteMany completed successfully')
   t.end()
 })
 
@@ -203,28 +297,42 @@ t.test('get method with key and configSection', async t => {
   t.end()
 })
 
-t.test('set method error handling paths', async t => {
+t.test('setPairs error handling paths', async t => {
   const config = createMockConfig(['config'])
   const manager = new ConfigManager({ config })
 
   // This is a coverage test to ensure error handling paths are executed
   // The actual implementation will handle any errors gracefully
-  await manager.set('registry', 'https://custom.registry.com/')
-  t.pass(
-    'set method completed successfully and covers error handling paths',
-  )
+  await manager.setPairs([
+    { key: 'registry', value: 'https://custom.registry.com/' },
+  ])
+  t.pass('setPairs completed successfully and covers error paths')
   t.end()
 })
 
-t.test('delete method error handling paths', async t => {
+t.test('deleteMany error handling paths', async t => {
   const config = createMockConfig(['config'])
   const manager = new ConfigManager({ config })
 
   // This is a coverage test to ensure error handling paths are executed
   // The actual implementation will handle any errors gracefully
+  await manager.deleteMany(['registry'])
+  t.pass('deleteMany completed successfully and covers error paths')
+  t.end()
+})
+
+t.test('set wrapper delegates to setValues', async t => {
+  const config = createMockConfig(['config'])
+  const manager = new ConfigManager({ config })
+  await manager.set('registry', 'https://custom.registry.com/')
+  t.pass('set wrapper executed')
+  t.end()
+})
+
+t.test('delete wrapper delegates to deleteMany', async t => {
+  const config = createMockConfig(['config'])
+  const manager = new ConfigManager({ config })
   await manager.delete('registry')
-  t.pass(
-    'delete method completed successfully and covers error handling paths',
-  )
+  t.pass('delete wrapper executed')
   t.end()
 })

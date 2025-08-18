@@ -1,15 +1,21 @@
-import { install, uninstall } from '@vltpkg/graph'
-import { init } from '@vltpkg/init'
 import { mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { install, uninstall } from '@vltpkg/graph'
+import { init } from '@vltpkg/init'
+import { asError } from '@vltpkg/types'
 import { handleStatic } from './handle-static.ts'
 import * as json from './json.ts'
 import { parseInstallOptions } from './parse-install-options.ts'
 import { parseUninstallOptions } from './parse-uninstall-options.ts'
-import { asError } from '@vltpkg/types'
+import {
+  isValidWhich,
+  normalizeKeyPairs,
+  normalizeKeyValuePairs,
+} from './utils.ts'
 
-import type { DependencyTypeShort } from '@vltpkg/types'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { DependencyTypeShort } from '@vltpkg/types'
+import type { WhichConfig } from '@vltpkg/vlt-json'
 import type { VltServerListening } from './index.ts'
 
 export type GUIInstallOptions = Record<
@@ -153,21 +159,30 @@ export const handleRequest = async (
 
     case `/config`: {
       try {
-        const data = await json.read<{ key?: string }>(req)
-        const result = await server.config.get(data.key)
-
-        if (result === undefined) {
-          return json.error(
+        const data = await json.read<{
+          which: WhichConfig
+          pairs?: unknown
+        }>(req)
+        if (!data.pairs) {
+          const entire = await server.config.get(
+            undefined,
+            data.which,
+          )
+          return json.ok(
             res,
-            'Config key not found',
-            'The specified config key does not exist',
-            404,
+            typeof entire === 'string' ? entire : (
+              JSON.stringify(entire)
+            ),
           )
         }
 
-        const stringResult =
-          typeof result === 'string' ? result : JSON.stringify(result)
-        return json.ok(res, stringResult)
+        const keysRes = normalizeKeyPairs(res, data.pairs)
+        if (!keysRes.ok) return json.ok(res, '{}')
+        const out: Record<string, unknown> = {}
+        for (const key of keysRes.keys) {
+          out[key] = await server.config.get(key, data.which)
+        }
+        return json.ok(res, JSON.stringify(out))
       } catch (err) {
         return json.error(
           res,
@@ -181,30 +196,21 @@ export const handleRequest = async (
     case `/config/set`: {
       try {
         const data = await json.read<{
-          key: unknown
-          value: unknown
+          which: WhichConfig
+          pairs: unknown
         }>(req)
-
-        if (typeof data.key !== 'string') {
+        if (!isValidWhich(data.which)) {
           return json.error(
             res,
             'Bad request',
-            'Config key must be a string',
+            'which must be "user" or "project"',
             400,
           )
         }
-
-        if (typeof data.value !== 'string') {
-          return json.error(
-            res,
-            'Bad request',
-            'Config value must be a string',
-            400,
-          )
-        }
-
-        await server.config.set(data.key, data.value)
-        return json.ok(res, 'Config value set successfully')
+        const normRes = normalizeKeyValuePairs(res, data.pairs)
+        if (!normRes.ok) return
+        await server.config.setPairs(normRes.normalized, data.which)
+        return json.ok(res, 'Config values set successfully')
       } catch (err) {
         return json.error(
           res,
@@ -217,19 +223,22 @@ export const handleRequest = async (
 
     case `/config/delete`: {
       try {
-        const data = await json.read<{ key: unknown }>(req)
-
-        if (typeof data.key !== 'string') {
+        const data = await json.read<{
+          which: WhichConfig
+          pairs: unknown
+        }>(req)
+        if (!isValidWhich(data.which)) {
           return json.error(
             res,
             'Bad request',
-            'Config key must be a string',
+            'which must be "user" or "project"',
             400,
           )
         }
-
-        await server.config.delete(data.key)
-        return json.ok(res, 'Config value deleted successfully')
+        const keysRes = normalizeKeyPairs(res, data.pairs)
+        if (!keysRes.ok) return
+        await server.config.deleteMany(keysRes.keys, data.which)
+        return json.ok(res, 'Config values deleted successfully')
       } catch (err) {
         return json.error(
           res,
