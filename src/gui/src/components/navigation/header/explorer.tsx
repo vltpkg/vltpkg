@@ -19,7 +19,7 @@ export const ExplorerHeader = () => {
           <div className="relative mr-3 hidden items-center gap-1 md:flex">
             <QueryMatches />
             <SaveQueryButton />
-            <Kbd className='before:content-[" "] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600'>
+            <Kbd className='before:content-[" "] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[2px] before:rounded-sm before:bg-neutral-200 before:dark:bg-neutral-700'>
               <Command size={12} />
             </Kbd>
             <Kbd className="text-sm">k</Kbd>

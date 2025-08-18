@@ -1,5 +1,4 @@
 import { NavLink, useNavigate } from 'react-router'
-import type { SavedQuery } from '@/state/types.ts'
 import { useMemo } from 'react'
 import { useGraphStore } from '@/state/index.ts'
 import {
@@ -14,8 +13,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { LabelBadge } from '@/components/labels/label-badge.tsx'
+import { cn } from '@/lib/utils.ts'
 
-const QueryMatches = () => {
+import type { SavedQuery } from '@/state/types.ts'
+
+export const QueryMatches = () => {
   const savedQueries = useGraphStore(state => state.savedQueries)
   const activeQuery = useGraphStore(state => state.query)
   const matchedQueries = useMemo(
@@ -41,7 +43,7 @@ const QueryMatches = () => {
 
 const LabelTags = ({
   queries,
-  className = '',
+  className,
 }: {
   queries: SavedQuery[]
   className?: string
@@ -52,6 +54,18 @@ const LabelTags = ({
     void navigate(`/labels?name=${encodeURIComponent(labelName)}`)
   }
 
+  const dedupedLabels = useMemo(() => {
+    const seen = new Set<string>()
+    return queries
+      .flatMap(q => q.labels ?? [])
+      .filter(label => {
+        const key = label.name
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+  }, [queries])
+
   return (
     <Popover>
       <PopoverTrigger className="flex items-center justify-center">
@@ -60,51 +74,43 @@ const LabelTags = ({
             <TooltipTrigger
               asChild
               className="flex items-center justify-center">
-              <div className={`flex -space-x-2 ${className}`}>
-                {queries.map(query => {
-                  if (!query.labels?.length) return null
-
-                  return query.labels.map((label, idx) => (
-                    <div
-                      className="inline-block size-4 rounded-full ring-1 ring-muted"
-                      key={idx}
-                      style={{
-                        backgroundColor: label.color,
-                        borderColor: label.color,
-                      }}
-                    />
-                  ))
-                })}
+              <div className={cn('flex -space-x-2', className)}>
+                {dedupedLabels.map((label, idx) => (
+                  <div
+                    className="inline-block size-4 rounded-full border border-[1px] border-white dark:border-neutral-800"
+                    key={idx}
+                    style={{
+                      backgroundColor: label.color,
+                    }}
+                  />
+                ))}
               </div>
             </TooltipTrigger>
             <TooltipContent>Labels</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </PopoverTrigger>
-      <PopoverContent>
-        <p className="mb-2 font-semibold">Labels</p>
-        <div className="flex flex-wrap gap-2">
-          {queries.map(query => {
-            if (!query.labels?.length) return null
-
-            return query.labels.map((label, idx) => (
+      <PopoverContent className="rounded-xl">
+        <div className="flex flex-col gap-2">
+          <p className="font-medium">Labels</p>
+          <div className="flex flex-wrap gap-2">
+            {dedupedLabels.map((label, idx) => (
               <button
                 onClick={() => navigateToLabel(label.name)}
                 key={idx}>
                 <LabelBadge name={label.name} color={label.color} />
               </button>
-            ))
-          })}
+            ))}
+          </div>
         </div>
       </PopoverContent>
     </Popover>
   )
 }
 
-// need to pass the query as a URL Param
 const Notification = ({
   numberOfQueries,
-  className = '',
+  className,
   query,
 }: {
   numberOfQueries: number
@@ -114,10 +120,11 @@ const Notification = ({
   return (
     <NavLink
       to={`/queries?query=${encodeURIComponent(query)}`}
-      className={`flex h-[1.5rem] cursor-pointer items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted px-2 py-1 text-[10px] transition-colors ${className}`}>
+      className={cn(
+        'h-6 cursor-pointer items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 px-2 py-1 text-xxs transition-colors dark:border-neutral-700 dark:bg-muted',
+        className,
+      )}>
       Matches {numberOfQueries} Queries
     </NavLink>
   )
 }
-
-export { QueryMatches }

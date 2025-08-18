@@ -1,11 +1,5 @@
 import { useNavigate } from 'react-router'
 import { useEffect, useState, useMemo } from 'react'
-import type {
-  SavedQuery,
-  Action,
-  QueryLabel,
-  DashboardData,
-} from '@/state/types.ts'
 import { useGraphStore } from '@/state/index.ts'
 import { Input } from '@/components/ui/input.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -27,6 +21,14 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip.tsx'
 import { DirectorySelect } from '@/components/directory-select.tsx'
+import { cn } from '@/lib/utils.ts'
+
+import type {
+  SavedQuery,
+  Action,
+  QueryLabel,
+  DashboardData,
+} from '@/state/types.ts'
 
 type SelectQueryOptions = {
   navigate: (route: string) => void
@@ -83,7 +85,7 @@ export const selectQuery = async ({
   }
 }
 
-const SavedQueryItem = ({
+export const SavedQueryItem = ({
   item,
   handleSelect,
   checked,
@@ -158,13 +160,19 @@ const SavedQueryItem = ({
 
   return (
     <div
-      className={`group flex flex-col rounded-sm border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
+      className={cn(
+        'group flex flex-col rounded-xl border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent',
+        isExpanded ? 'border-muted-foreground' : 'border-muted',
+      )}>
       <div className="grid grid-cols-12 gap-4 px-3 py-2">
         <div className="col-span-2 flex grow items-center gap-3">
           <Checkbox
             checked={checked}
             onCheckedChange={() => handleSelect(item)}
-            className={`border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100 ${checked ? 'opacity-100' : ''}`}
+            className={cn(
+              'border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100',
+              checked && 'opacity-100',
+            )}
           />
           <p className="truncate text-sm font-medium">
             {editName.trim() !== '' ? editName : 'Query Name'}
@@ -198,14 +206,14 @@ const SavedQueryItem = ({
         <div className="col-span-2 flex items-center justify-end gap-4">
           <Button
             variant="outline"
-            className="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
+            className="h-8 rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
             onClick={handleEdit}>
             {isExpanded ? 'Close' : 'Edit'}
           </Button>
           {editContext.trim() !== '' && (
             <Button
               variant="outline"
-              className="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
+              className="h-8 rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
               role="link"
               onClick={() => void runQuery()}>
               <span>Run</span>
@@ -229,6 +237,7 @@ const SavedQueryItem = ({
                 value={editName}
                 onChange={e => setEditName(e.target.value)}
                 placeholder="Name"
+                className="rounded-lg"
               />
             </div>
             <div className="flex grow flex-col gap-2">
@@ -240,7 +249,7 @@ const SavedQueryItem = ({
                 placeholder="Query"
                 value={editQuery}
                 onChange={e => setEditQuery(e.target.value)}
-                className="w-full"
+                className="w-full rounded-lg"
               />
             </div>
             <div className="flex grow flex-col gap-2">
@@ -277,13 +286,14 @@ const SavedQueryItem = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={popoverOpen}
-                    className="w-full justify-between">
+                    className="w-full justify-between rounded-lg">
                     Select labels
                     <ChevronsUpDown className="opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0">
+                <PopoverContent className="rounded-xl p-0">
                   <LabelSelect
+                    className="rounded-xl"
                     selectedItems={selectedLabels}
                     setItems={setSelectedLabels}
                     setIsOpen={setLabelSelectOpen}
@@ -296,6 +306,7 @@ const SavedQueryItem = ({
           {/* footer */}
           <div className="mb-0.5 flex items-end justify-end">
             <Button
+              className="rounded-lg"
               disabled={!isValid}
               onClick={handleSaveChanges}
               variant="default"
@@ -308,5 +319,3 @@ const SavedQueryItem = ({
     </div>
   )
 }
-
-export { SavedQueryItem }

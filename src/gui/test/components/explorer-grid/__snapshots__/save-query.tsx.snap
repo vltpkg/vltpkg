@@ -8,13 +8,13 @@ exports[`save-query > should render correctly 1`] = `
       <gui-tooltip>
         <gui-tooltip-trigger
           aschild="true"
-          classname="flex h-[1.5rem] w-[1.5rem] cursor-default items-center justify-center rounded-sm bg-input transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700"
+          classname="flex size-6 cursor-default items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 transition-colors hover:bg-neutral-300 dark:border-neutral-700 dark:bg-muted dark:hover:bg-neutral-700"
         >
-          <div class="inline-flex h-[1.5rem] w-[1.5rem] items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+          <div class="inline-flex size-5 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-[15px] [&amp;_svg]:shrink-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="24"
+              height="24"
               viewbox="0 0 24 24"
               fill="#fafafa"
               stroke="currentColor"
@@ -38,7 +38,7 @@ exports[`save-query > should render correctly 1`] = `
     </gui-tooltip-provider>
   </gui-popover-trigger>
   <gui-popover-content
-    classname="w-full p-0"
+    classname="w-full rounded-xl p-0"
     align="end"
   >
   </gui-popover-content>

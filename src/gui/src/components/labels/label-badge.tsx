@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge.tsx'
 import { useTheme } from '@/components/ui/theme-provider.tsx'
+import { cn } from '@/lib/utils.ts'
 
 interface LabelBadgeProps {
   name: string
@@ -41,10 +42,10 @@ const getContrastTextColor = (hex: string, theme: string): string => {
   return luminance > 0.618 ? 'black' : 'white'
 }
 
-const LabelBadge = ({
+export const LabelBadge = ({
   name,
   color,
-  className = '',
+  className,
 }: LabelBadgeProps) => {
   const { resolvedTheme: theme } = useTheme()
   const [textColor, setTextColor] = useState<string>('')
@@ -61,10 +62,8 @@ const LabelBadge = ({
         backgroundColor: color,
         color: textColor,
       }}
-      className={`font-medium ${className}`}>
+      className={cn('font-medium', className)}>
       {name}
     </Badge>
   )
 }
-
-export { LabelBadge }

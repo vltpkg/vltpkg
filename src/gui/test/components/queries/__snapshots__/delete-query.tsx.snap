@@ -6,7 +6,11 @@ exports[`delete-query > labels render default 1`] = `
   <gui-tooltip-provider>
     <gui-tooltip open="false">
       <gui-dialog-trigger aschild="true">
-        <gui-button variant="destructive">
+        <gui-button
+          variant="destructive"
+          size="sm"
+          classname="rounded-lg"
+        >
           Delete
         </gui-button>
       </gui-dialog-trigger>
