@@ -623,9 +623,10 @@ t.test('/config get entire config', async t => {
 
   // Mock server config
   ;(context.server as any).config = {
-    get: async (key?: string) => {
+    get: async (key?: string, which?: 'user' | 'project') => {
       configGetCalled = true
       t.equal(key, undefined, 'should call get without key')
+      t.equal(which, 'project')
       return {
         registry: 'https://registry.npmjs.org/',
         cache: '/tmp/cache',
@@ -639,8 +640,14 @@ t.test('/config get entire config', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return {}
+        return { which: 'project' }
       },
+      error: (
+        _res: ServerResponse,
+        _errType: string,
+        _error: string,
+        _code: number,
+      ) => {},
       ok: (res: ServerResponse, data: string) => {
         t.equal(res, context.res)
         t.equal(
@@ -656,6 +663,90 @@ t.test('/config get entire config', async t => {
   t.equal(configGetCalled, true)
 })
 
+t.test('/config get entire config as string', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let configGetCalled = false
+
+  ;(context.server as any).config = {
+    get: async (key?: string, which?: 'user' | 'project') => {
+      configGetCalled = true
+      t.equal(key, undefined, 'should call get without key')
+      t.equal(which, 'project')
+      return 'hello-config'
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { which: 'project' }
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(data, 'hello-config')
+        okCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+  t.equal(configGetCalled, true)
+})
+
+t.test('/config invalid pairs returns empty object', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let errorCalled = false
+
+  // server.config.get should not be called when pairs are invalid
+  ;(context.server as any).config = {
+    get: async () => {
+      t.fail('config.get should not be called for invalid pairs')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        // invalid: empty pairs array
+        return { which: 'project', pairs: [] }
+      },
+      // normalizeKeyPairs will call error; provide a no-op to avoid throwing
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(
+          error,
+          'Config delete requires a non-empty keys array',
+        )
+        t.equal(code, 400)
+        errorCalled = true
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(data, '{}')
+        okCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+  t.equal(errorCalled, true)
+})
+
 t.test('/config get specific key', async t => {
   const context = getContext(t)
   let okCalled = false
@@ -663,8 +754,9 @@ t.test('/config get specific key', async t => {
 
   // Mock server config
   ;(context.server as any).config = {
-    get: async (key?: string) => {
+    get: async (key?: string, which?: 'user' | 'project') => {
       configGetCalled = true
+      t.equal(which, 'project')
       t.equal(key, 'registry', 'should call get with registry key')
       return 'https://registry.npmjs.org/'
     },
@@ -676,11 +768,17 @@ t.test('/config get specific key', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 'registry' }
+        return { which: 'project', pairs: [{ key: 'registry' }] }
       },
+      error: (
+        _res: ServerResponse,
+        _errType: string,
+        _error: string,
+        _code: number,
+      ) => {},
       ok: (res: ServerResponse, data: string) => {
         t.equal(res, context.res)
-        t.equal(data, 'https://registry.npmjs.org/')
+        t.equal(data, '{"registry":"https://registry.npmjs.org/"}')
         okCalled = true
       },
     },
@@ -692,7 +790,7 @@ t.test('/config get specific key', async t => {
 
 t.test('/config undefined result', async t => {
   const context = getContext(t)
-  let errorCalled = false
+  let okCalled = false
 
   // Mock server config
   ;(context.server as any).config = {
@@ -707,24 +805,23 @@ t.test('/config undefined result', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 'nonexistent' }
+        return { which: 'project', pairs: [{ key: 'nonexistent' }] }
       },
       error: (
-        res: ServerResponse,
-        errType: string,
-        error: string,
-        code: number,
-      ) => {
+        _res: ServerResponse,
+        _errType: string,
+        _error: string,
+        _code: number,
+      ) => {},
+      ok: (res: ServerResponse, data: string) => {
         t.equal(res, context.res)
-        t.equal(errType, 'Config key not found')
-        t.equal(error, 'The specified config key does not exist')
-        t.equal(code, 404)
-        errorCalled = true
+        t.equal(data, '{}')
+        okCalled = true
       },
     },
   })
   await handleRequest(context.req, context.res, context.server)
-  t.equal(errorCalled, true)
+  t.equal(okCalled, true)
 })
 
 t.test('/config error handling', async t => {
@@ -744,7 +841,7 @@ t.test('/config error handling', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 'registry' }
+        return { which: 'project', pairs: [{ key: 'registry' }] }
       },
       error: (
         res: ServerResponse,
@@ -771,14 +868,15 @@ t.test('/config/set', async t => {
 
   // Mock server config
   ;(context.server as any).config = {
-    set: async (key: string, value: string) => {
+    setPairs: async (
+      pairs: { key: string; value: string }[],
+      which?: 'user' | 'project',
+    ) => {
       configSetCalled = true
-      t.equal(key, 'registry', 'should call set with correct key')
-      t.equal(
-        value,
-        'https://custom.registry.com/',
-        'should call set with correct value',
-      )
+      t.same(pairs, [
+        { key: 'registry', value: 'https://custom.registry.com/' },
+      ])
+      t.equal(which, 'project')
     },
   }
 
@@ -789,13 +887,18 @@ t.test('/config/set', async t => {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
         return {
-          key: 'registry',
-          value: 'https://custom.registry.com/',
+          which: 'project',
+          pairs: [
+            {
+              key: 'registry',
+              value: 'https://custom.registry.com/',
+            },
+          ],
         }
       },
       ok: (res: ServerResponse, data: string) => {
         t.equal(res, context.res)
-        t.equal(data, 'Config value set successfully')
+        t.equal(data, 'Config values set successfully')
         okCalled = true
       },
     },
@@ -815,7 +918,10 @@ t.test('/config/set key not string', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 123, value: 'some-value' }
+        return {
+          which: 'project',
+          pairs: [{ key: 123, value: 'some-value' }],
+        }
       },
       error: (
         res: ServerResponse,
@@ -825,7 +931,7 @@ t.test('/config/set key not string', async t => {
       ) => {
         t.equal(res, context.res)
         t.equal(errType, 'Bad request')
-        t.equal(error, 'Config key must be a string')
+        t.equal(error, 'Each pair must have string key and value')
         t.equal(code, 400)
         errorCalled = true
       },
@@ -845,7 +951,10 @@ t.test('/config/set value not string', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 'registry', value: 123 }
+        return {
+          which: 'project',
+          pairs: [{ key: 'registry', value: 123 }],
+        }
       },
       error: (
         res: ServerResponse,
@@ -855,7 +964,7 @@ t.test('/config/set value not string', async t => {
       ) => {
         t.equal(res, context.res)
         t.equal(errType, 'Bad request')
-        t.equal(error, 'Config value must be a string')
+        t.equal(error, 'Each pair must have string key and value')
         t.equal(code, 400)
         errorCalled = true
       },
@@ -865,13 +974,42 @@ t.test('/config/set value not string', async t => {
   t.equal(errorCalled, true)
 })
 
-t.test('/config/set error handling', async t => {
+t.test('/config/set empty pairs', async t => {
   const context = getContext(t)
   let errorCalled = false
 
-  // Mock server config
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { which: 'project', pairs: [] }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'Config set requires a non-empty pairs array')
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/set throws', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
   ;(context.server as any).config = {
-    set: async (_key: string, _value: string) => {
+    setPairs: async () => {
       throw new Error('Set operation failed')
     },
   }
@@ -883,8 +1021,13 @@ t.test('/config/set error handling', async t => {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
         return {
-          key: 'registry',
-          value: 'https://custom.registry.com/',
+          which: 'project',
+          pairs: [
+            {
+              key: 'registry',
+              value: 'https://custom.registry.com/',
+            },
+          ],
         }
       },
       error: (
@@ -905,16 +1048,14 @@ t.test('/config/set error handling', async t => {
   t.equal(errorCalled, true)
 })
 
-t.test('/config/delete', async t => {
+t.test('/config/set error handling', async t => {
   const context = getContext(t)
-  let okCalled = false
-  let configDeleteCalled = false
+  let errorCalled = false
 
   // Mock server config
   ;(context.server as any).config = {
-    delete: async (key: string) => {
-      configDeleteCalled = true
-      t.equal(key, 'registry', 'should call delete with correct key')
+    setPairs: async (_pairs: { key: string; value: string }[]) => {
+      throw new Error('Set operation failed')
     },
   }
 
@@ -924,11 +1065,62 @@ t.test('/config/delete', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 'registry' }
+        // Cause failure by omitting which so the handler hits the which validation
+        return {
+          pairs: [
+            {
+              key: 'registry',
+              value: 'https://custom.registry.com/',
+            },
+          ],
+        } as any
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'which must be "user" or "project"')
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/delete', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  let configDeleteCalled = false
+
+  // Mock server config
+  ;(context.server as any).config = {
+    deleteMany: async (
+      keys: string[],
+      which?: 'user' | 'project',
+    ) => {
+      configDeleteCalled = true
+      t.same(keys, ['registry'])
+      t.equal(which, 'project')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { which: 'project', pairs: [{ key: 'registry' }] }
       },
       ok: (res: ServerResponse, data: string) => {
         t.equal(res, context.res)
-        t.equal(data, 'Config value deleted successfully')
+        t.equal(data, 'Config values deleted successfully')
         okCalled = true
       },
     },
@@ -948,7 +1140,7 @@ t.test('/config/delete key not string', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 123 }
+        return { which: 'project', pairs: [{ key: 123 }] as any }
       },
       error: (
         res: ServerResponse,
@@ -958,8 +1150,77 @@ t.test('/config/delete key not string', async t => {
       ) => {
         t.equal(res, context.res)
         t.equal(errType, 'Bad request')
-        t.equal(error, 'Config key must be a string')
+        t.equal(error, 'All keys must be strings')
         t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/delete empty keys', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { which: 'project', pairs: [] }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(
+          error,
+          'Config delete requires a non-empty keys array',
+        )
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/config/delete throws', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  ;(context.server as any).config = {
+    deleteMany: async () => {
+      throw new Error('Delete operation failed')
+    },
+  }
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { which: 'project', pairs: [{ key: 'registry' }] }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Config delete failed')
+        t.equal(error, 'Delete operation failed')
+        t.equal(code, 500)
         errorCalled = true
       },
     },
@@ -974,7 +1235,7 @@ t.test('/config/delete error handling', async t => {
 
   // Mock server config
   ;(context.server as any).config = {
-    delete: async (_key: string) => {
+    deleteMany: async (_keys: string[]) => {
       throw new Error('Delete operation failed')
     },
   }
@@ -985,7 +1246,8 @@ t.test('/config/delete error handling', async t => {
     '../src/json.ts': {
       read: async (req: IncomingMessage) => {
         t.equal(req, context.req)
-        return { key: 'registry' }
+        // Cause failure by omitting which so the handler hits the which validation
+        return { pairs: [{ key: 'registry' }] } as any
       },
       error: (
         res: ServerResponse,
@@ -994,9 +1256,9 @@ t.test('/config/delete error handling', async t => {
         code: number,
       ) => {
         t.equal(res, context.res)
-        t.equal(errType, 'Config delete failed')
-        t.equal(error, 'Delete operation failed')
-        t.equal(code, 500)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'which must be "user" or "project"')
+        t.equal(code, 400)
         errorCalled = true
       },
     },
