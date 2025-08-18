@@ -1,14 +1,18 @@
 import React from 'react'
+import { cn } from '@/lib/utils.ts'
 
 interface KbdProps {
   children: React.ReactNode
   className?: string
 }
 
-export const Kbd = ({ children, className = '' }: KbdProps) => {
+export const Kbd = ({ children, className }: KbdProps) => {
   return (
     <kbd
-      className={`flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-muted font-mono text-xs text-muted-foreground ${className}`}>
+      className={cn(
+        'flex size-6 items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 font-mono text-xs text-muted-foreground dark:border-neutral-700 dark:bg-muted',
+        className,
+      )}>
       {children}
     </kbd>
   )
