@@ -1,10 +1,7 @@
 import t from 'tap'
 import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
-import type {
-  CommandResultSingle,
-  CommandResult,
-} from '../../src/commands/publish.ts'
+import type { CommandResultSingle } from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -30,6 +27,10 @@ interface TestConfig {
     tag?: string
     access?: string
   }
+  monorepo?: {
+    name: string
+    fullpath: string
+  }[]
   positionals: string[]
   values?: Record<string, unknown>
   get?: (key: string) => unknown
@@ -532,23 +533,6 @@ t.test('publish command with scope', async t => {
       search: async () => ({ nodes: mockNodes }),
     }
 
-    // Store original request
-    const tempRequest = RegistryClient.prototype.request
-
-    // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
-      return {
-        statusCode: 201,
-        text: () => '{"ok":true}',
-        json: () => ({ ok: true }),
-        getHeader: () => undefined,
-      } as MockCacheEntry
-    }
-
-    t.teardown(() => {
-      RegistryClient.prototype.request = tempRequest
-    })
-
     const cmd = await t.mockImport<
       typeof import('../../src/commands/publish.ts')
     >('../../src/commands/publish.ts', {
@@ -561,8 +545,19 @@ t.test('publish command with scope', async t => {
       },
       '@vltpkg/query': {
         Query: class {
-          constructor() {}
           search = mockQuery.search
+        },
+      },
+      '@vltpkg/registry-client': {
+        RegistryClient: class {
+          async request() {
+            return {
+              statusCode: 201,
+              text: () => '{"ok":true}',
+              json: () => ({ ok: true }),
+              getHeader: () => undefined,
+            } as MockCacheEntry
+          }
         },
       },
     })
@@ -586,12 +581,12 @@ t.test('publish command with scope', async t => {
       positionals: ['publish'],
       values: { scope: ':workspace' },
     })
-    config.get = (key: string) => {
+    config.get = (key: keyof typeof config.values) => {
       if (key === 'scope') return ':workspace'
       return config.values?.[key]
     }
 
-    const result = await cmd.command(config as LoadedConfig)
+    const result = await cmd.command(config)
 
     t.ok(Array.isArray(result), 'should return array of results')
     const results = result as CommandResultSingle[]
@@ -612,23 +607,6 @@ t.test('publish command with scope', async t => {
       'vlt.json': JSON.stringify({ workspaces: [] }),
     })
 
-    // Store original request
-    const tempRequest = RegistryClient.prototype.request
-
-    // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
-      return {
-        statusCode: 201,
-        text: () => '{"ok":true}',
-        json: () => ({ ok: true }),
-        getHeader: () => undefined,
-      } as MockCacheEntry
-    }
-
-    t.teardown(() => {
-      RegistryClient.prototype.request = tempRequest
-    })
-
     const cmd = await t.mockImport<
       typeof import('../../src/commands/publish.ts')
     >('../../src/commands/publish.ts', {
@@ -641,8 +619,19 @@ t.test('publish command with scope', async t => {
       },
       '@vltpkg/query': {
         Query: class {
-          constructor() {}
           search = async () => ({ nodes: [] })
+        },
+      },
+      '@vltpkg/registry-client': {
+        RegistryClient: class {
+          async request() {
+            return {
+              statusCode: 201,
+              text: () => '{"ok":true}',
+              json: () => ({ ok: true }),
+              getHeader: () => undefined,
+            } as MockCacheEntry
+          }
         },
       },
     })
@@ -662,7 +651,7 @@ t.test('publish command with scope', async t => {
       return config.values?.[key]
     }
 
-    const result = await cmd.command(config as LoadedConfig)
+    const result = await cmd.command(config)
 
     t.ok(Array.isArray(result), 'should return empty array')
     const results = result as CommandResultSingle[]
@@ -735,7 +724,7 @@ t.test('publish command with workspace paths', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
+    const result = await command(config)
 
     t.ok(Array.isArray(result), 'should return array of results')
     const results = result as CommandResultSingle[]
@@ -819,7 +808,7 @@ t.test('publish command with workspace-group', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
+    const result = await command(config)
 
     t.ok(Array.isArray(result), 'should return array of results')
     const results = result as CommandResultSingle[]
@@ -905,7 +894,7 @@ t.test('publish command with recursive', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
+    const result = await command(config)
 
     t.ok(Array.isArray(result), 'should return array of results')
     const results = result as CommandResultSingle[]
@@ -958,7 +947,7 @@ t.test('publish command with recursive', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
+    const result = await command(config)
 
     t.ok(Array.isArray(result), 'should return array')
     const results = result as CommandResultSingle[]
@@ -1006,7 +995,7 @@ t.test('publish command with recursive', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
+    const result = await command(config)
 
     t.ok(Array.isArray(result), 'should return array')
     const results = result as CommandResultSingle[]
@@ -1073,7 +1062,7 @@ t.test('publish command fallback to projectRoot', async t => {
         positionals: ['publish'],
       })
 
-      const result = await command(config as LoadedConfig)
+      const result = await command(config)
 
       t.notOk(Array.isArray(result), 'should return single result')
       const singleResult = result as CommandResultSingle

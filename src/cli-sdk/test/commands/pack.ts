@@ -2,10 +2,7 @@ import t from 'tap'
 import { resolve } from 'node:path'
 import { readFile, access } from 'node:fs/promises'
 import { command, views, usage } from '../../src/commands/pack.ts'
-import type {
-  CommandResultSingle,
-  CommandResult,
-} from '../../src/commands/pack.ts'
+import type { CommandResultSingle } from '../../src/commands/pack.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -323,7 +320,6 @@ t.test('pack command with scope', async t => {
       },
       '@vltpkg/query': {
         Query: class {
-          constructor() {}
           search = mockQuery.search
         },
       },
@@ -385,7 +381,6 @@ t.test('pack command with scope', async t => {
       },
       '@vltpkg/query': {
         Query: class {
-          constructor() {}
           search = async () => ({ nodes: [] })
         },
       },

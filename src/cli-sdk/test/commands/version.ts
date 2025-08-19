@@ -589,7 +589,6 @@ t.test('version command with scope', async t => {
       },
       '@vltpkg/query': {
         Query: class {
-          constructor() {}
           search = mockQuery.search
         },
       },
@@ -670,7 +669,6 @@ t.test('version command with scope', async t => {
       },
       '@vltpkg/query': {
         Query: class {
-          constructor() {}
           search = async () => ({ nodes: [] })
         },
       },
@@ -993,7 +991,7 @@ t.test('version command fallback to projectRoot', async t => {
       }
 
       // Override packageJson.read
-      conf.values.packageJson.read = (cwd: string) => {
+      conf.values.packageJson.read = (_cwd: string) => {
         return { name: 'root', version: '1.0.0' }
       }
 
