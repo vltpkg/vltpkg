@@ -2,6 +2,7 @@ import { PathScurry } from 'path-scurry'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import * as actualGitModule from '@vltpkg/git'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../../src/commands/version.ts')>(
@@ -15,6 +16,7 @@ let gitIsCleanResult = true
 let gitSpawnCalls: { args: string[] }[] = []
 
 const mockGit = {
+  ...actualGitModule, // Include all real exports from the git module
   is: async () => gitIsResult,
   isClean: async () => gitIsCleanResult,
   spawn: async (args: string[]) => {
@@ -39,6 +41,7 @@ class MockConfig {
   positionals: string[]
   packageJsonContent: Record<string, any>
   writtenManifests: { cwd: string; data: any }[] = []
+  projectRoot: string
 
   constructor(
     positionals: string[],
@@ -48,18 +51,50 @@ class MockConfig {
     this.positionals = positionals
     this.values = values
     this.packageJsonContent = packageJsonContent
+    this.projectRoot = process.cwd()
     this.values.packageJson = {
       read: (_cwd: string) => ({ ...this.packageJsonContent }),
-      find: (cwd: string) => cwd + '/package.json',
+      find: (cwd: string) => {
+        // If cwd is already a package.json path, check if it should exist
+        if (cwd.endsWith('/package.json')) {
+          const dir = cwd.replace('/package.json', '')
+          if (dir === process.cwd() || dir === this.projectRoot) {
+            return cwd
+          }
+          // Otherwise return null
+          return null
+        }
+        // If cwd is a directory that should have a package.json
+        if (cwd === process.cwd() || cwd === this.projectRoot) {
+          return cwd + '/package.json'
+        }
+        // Otherwise return null to simulate no package.json found
+        return null
+      },
       write: (cwd: string, data: any) => {
         this.writtenManifests.push({ cwd, data })
       },
     }
     this.values.scurry = new PathScurry(t.testdirName)
+    this.values.projectRoot = this.projectRoot
+    this.values.monorepo = values.monorepo || null
   }
 
   get options() {
     return this.values
+  }
+
+  get(key: string) {
+    // Return undefined for these flags by default
+    if (
+      key === 'scope' ||
+      key === 'workspace' ||
+      key === 'workspace-group' ||
+      key === 'recursive'
+    ) {
+      return this.values[key] || undefined
+    }
+    return this.values[key]
   }
 }
 
@@ -169,7 +204,7 @@ t.test('version command - no version in package.json', async t => {
   await t.rejects(run(t, ['patch'], {}, {}), {
     message: 'No version field found in package.json',
     cause: {
-      path: process.cwd(),
+      path: process.cwd() + '/package.json',
     },
   })
 })
