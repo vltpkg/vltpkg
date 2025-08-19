@@ -48,7 +48,10 @@ class MockConfig {
   constructor(
     positionals: string[],
     values: Record<string, any>,
-    packageJsonContent: Record<string, any> = { version: '1.0.0' },
+    packageJsonContent: Record<string, any> = {
+      name: 'a',
+      version: '1.0.0',
+    },
   ) {
     this.positionals = positionals
     this.values = values
@@ -135,6 +138,7 @@ t.test('views', async t => {
 
   t.test('json view', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
@@ -144,42 +148,46 @@ t.test('views', async t => {
 
   t.test('human view - basic', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
     }
-    t.equal(cmd.views.human(result), 'v1.0.1')
+    t.equal(cmd.views.human(result), 'a: v1.0.1')
   })
 
   t.test('human view - with commit', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
       committed: ['package.json'],
     }
-    t.equal(cmd.views.human(result), 'v1.0.1 +commit')
+    t.equal(cmd.views.human(result), 'a: v1.0.1 +commit')
   })
 
   t.test('human view - with tag', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
       tag: 'v1.0.1',
     }
-    t.equal(cmd.views.human(result), 'v1.0.1 +tag')
+    t.equal(cmd.views.human(result), 'a: v1.0.1 +tag')
   })
 
   t.test('human view - with commit and tag', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
       committed: ['package.json'],
       tag: 'v1.0.1',
     }
-    t.equal(cmd.views.human(result), 'v1.0.1 +commit +tag')
+    t.equal(cmd.views.human(result), 'a: v1.0.1 +commit +tag')
   })
 })
 
@@ -203,7 +211,7 @@ t.test('version command - no increment provided', async t => {
 })
 
 t.test('version command - no version in package.json', async t => {
-  await t.rejects(run(t, ['patch'], {}, {}), {
+  await t.rejects(run(t, ['patch'], {}, { name: 'a' }), {
     message: 'No version field found in package.json',
     cause: {
       path: process.cwd() + '/package.json',
@@ -215,6 +223,7 @@ t.test('version command - patch increment', async t => {
   const { result, conf } = await run(t, ['patch'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.0.1',
     dir: process.cwd(),
@@ -228,6 +237,7 @@ t.test('version command - minor increment', async t => {
   const { result } = await run(t, ['minor'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.1.0',
     dir: process.cwd(),
@@ -238,6 +248,7 @@ t.test('version command - major increment', async t => {
   const { result } = await run(t, ['major'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '2.0.0',
     dir: process.cwd(),
@@ -248,6 +259,7 @@ t.test('version command - premajor increment', async t => {
   const { result } = await run(t, ['premajor'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '2.0.0-pre',
     dir: process.cwd(),
@@ -258,6 +270,7 @@ t.test('version command - preminor increment', async t => {
   const { result } = await run(t, ['preminor'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.1.0-pre',
     dir: process.cwd(),
@@ -268,6 +281,7 @@ t.test('version command - prepatch increment', async t => {
   const { result } = await run(t, ['prepatch'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.0.1-pre',
     dir: process.cwd(),
@@ -279,10 +293,11 @@ t.test('version command - prerelease increment', async t => {
     t,
     ['prerelease'],
     {},
-    { version: '1.0.0-pre' },
+    { name: 'a', version: '1.0.0-pre' },
   )
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0-pre',
     newVersion: '1.0.0-pre.0',
     dir: process.cwd(),
@@ -293,6 +308,7 @@ t.test('version command - explicit semver version', async t => {
   const { result } = await run(t, ['2.3.4'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '2.3.4',
     dir: process.cwd(),
@@ -305,6 +321,7 @@ t.test(
     const { result } = await run(t, ['2.3.4-beta.1'])
 
     t.strictSame(result, {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '2.3.4-beta.1',
       dir: process.cwd(),
@@ -371,6 +388,7 @@ t.test('git operations', async t => {
     )
 
     t.strictSame(result, {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: process.cwd(),
@@ -410,6 +428,7 @@ t.test('git operations', async t => {
       })
 
       t.strictSame(result, {
+        name: 'a',
         oldVersion: '1.0.0',
         newVersion: '1.0.1',
         dir: process.cwd(),
@@ -528,6 +547,7 @@ t.test('git operations', async t => {
     )
 
     t.strictSame(result, {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: process.cwd(),
@@ -939,11 +959,13 @@ t.test('human view with arrays', async t => {
   t.test('formats multiple results', async t => {
     const results = [
       {
+        name: 'a',
         oldVersion: '1.0.0',
         newVersion: '1.0.1',
         dir: '/test/a',
       },
       {
+        name: 'b',
         oldVersion: '2.0.0',
         newVersion: '2.0.1',
         dir: '/test/b',
@@ -955,8 +977,8 @@ t.test('human view with arrays', async t => {
     const output = cmd.views.human(results)
     const lines = output.split('\n').filter(Boolean)
     t.equal(lines.length, 2)
-    t.equal(lines[0], 'v1.0.1')
-    t.equal(lines[1], 'v2.0.1 +commit +tag')
+    t.equal(lines[0], 'a: v1.0.1')
+    t.equal(lines[1], 'b: v2.0.1 +commit +tag')
   })
 })
 

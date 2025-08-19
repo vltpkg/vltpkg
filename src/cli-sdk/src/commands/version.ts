@@ -26,6 +26,7 @@ export type VersionOptions = {
 }
 
 export type CommandResultSingle = {
+  name: string
   oldVersion: string
   newVersion: string
   dir: string
@@ -80,6 +81,12 @@ const version = async (
   const manifest = conf.options.packageJson.read(manifestDir)
 
   assert(
+    manifest.name,
+    error('No name field found in package.json', {
+      path: manifestPath,
+    }),
+  )
+  assert(
     manifest.version,
     error('No version field found in package.json', {
       path: manifestPath,
@@ -120,6 +127,7 @@ const version = async (
   conf.options.packageJson.write(manifestDir, manifest)
 
   const result: CommandResultSingle = {
+    name: manifest.name,
     oldVersion,
     newVersion,
     dir: manifestDir,
@@ -218,7 +226,7 @@ export const views = {
   json: result => result,
   human: results => {
     const item = (result: CommandResultSingle) => {
-      let output = `v${result.newVersion}`
+      let output = `${result.name}: v${result.newVersion}`
       if (result.committed) {
         output += ` +commit`
       }
@@ -228,7 +236,7 @@ export const views = {
       return output
     }
     return Array.isArray(results) ?
-        results.map(item).join('\n\n')
+        results.map(item).join('\n')
       : item(results)
   },
 } as const satisfies Views<CommandResult>
