@@ -73,9 +73,7 @@ export const getView = <T>(
   return viewFn ?? identity
 }
 
-export type OnDone<T> =
-  | ((result: T) => Promise<unknown>)
-  | ((result: T) => unknown)
+export type OnDone<T> = (result: T) => Promise<unknown>
 
 /**
  * If the view is a View class, then instantiate and start it.
@@ -96,7 +94,7 @@ const startView = <T>(
     const view = new View(opts, conf)
     view.start()
     return {
-      onDone(r) {
+      async onDone(r) {
         return view.done(r, { time: Date.now() - start })
       },
       onError(err) {
