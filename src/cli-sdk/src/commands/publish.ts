@@ -79,7 +79,7 @@ export const views = {
       return lines.join('\n')
     }
     return Array.isArray(results) ?
-        results.map(item).join('\n')
+        results.map(item).join('\n\n')
       : item(results)
   },
   json: r => r,

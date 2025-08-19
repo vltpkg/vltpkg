@@ -953,7 +953,7 @@ t.test('human view with arrays', async t => {
     ]
 
     const output = cmd.views.human(results)
-    const lines = output.split('\n')
+    const lines = output.split('\n').filter(Boolean)
     t.equal(lines.length, 2)
     t.equal(lines[0], 'v1.0.1')
     t.equal(lines[1], 'v2.0.1 +commit +tag')

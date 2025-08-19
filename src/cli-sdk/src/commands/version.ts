@@ -228,7 +228,7 @@ export const views = {
       return output
     }
     return Array.isArray(results) ?
-        results.map(item).join('\n')
+        results.map(item).join('\n\n')
       : item(results)
   },
 } as const satisfies Views<CommandResult>
