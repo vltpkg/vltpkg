@@ -1,6 +1,6 @@
 import t from 'tap'
 import { command, views, usage } from '../../src/commands/publish.ts'
-import type { CommandResult } from '../../src/commands/publish.ts'
+import type { CommandResultSingle } from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -99,7 +99,7 @@ t.test('command', async t => {
       positionals: ['publish'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, '@test/package')
     t.equal(result.version, '1.2.3')
@@ -259,7 +259,7 @@ t.test('command', async t => {
       values: { tag: 'beta' },
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
     t.equal(result.tag, 'beta')
   })
 
@@ -284,7 +284,7 @@ t.test('command', async t => {
       positionals: ['publish'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
     t.equal(
       result.tag,
       'latest',
@@ -313,7 +313,7 @@ t.test('command', async t => {
       positionals: ['publish'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
     // The shasum and integrity should be computed from the actual tarball
     t.ok(result.shasum, 'should have computed shasum')
     t.ok(result.integrity, 'should have computed integrity')
@@ -386,7 +386,7 @@ t.test('command', async t => {
       values: { 'dry-run': true },
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'dry-run-package')
     t.equal(result.version, '1.0.0')
@@ -429,7 +429,7 @@ t.test('command', async t => {
       values: { access: 'public' },
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
     t.equal(result.access, 'public')
   })
 
@@ -446,7 +446,7 @@ t.test('command', async t => {
       access: 'public',
       unpackedSize: 4096,
       files: ['package.json', 'index.js', 'README.md'],
-    } as CommandResult
+    } as CommandResultSingle
 
     t.test('human view', async t => {
       const output = views.human(result)
@@ -471,7 +471,7 @@ t.test('command', async t => {
         ...result,
         shasum: undefined,
         integrity: undefined,
-      } as CommandResult
+      } as CommandResultSingle
       const output = views.human(minResult)
       t.notMatch(output, /🔒 Shasum/)
       t.notMatch(output, /🔐 Integrity/)

@@ -2,6 +2,7 @@ import t from 'tap'
 import { resolve } from 'node:path'
 import { readFile, access } from 'node:fs/promises'
 import { command, views, usage } from '../../src/commands/pack.ts'
+import type { CommandResultSingle } from '../../src/commands/pack.ts'
 import { PackageJson } from '@vltpkg/package-json'
 
 const makeTestConfig = (config: any) => ({
@@ -34,7 +35,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, '@test/package')
     t.equal(result.version, '1.2.3')
@@ -82,7 +83,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'current-package')
     t.equal(result.version, '2.0.0')
@@ -114,7 +115,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.ok(result.shasum, 'should have computed shasum')
     t.ok(result.integrity, 'should have computed integrity')
@@ -154,7 +155,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'minimal-package')
     t.equal(result.version, '1.0.0')
@@ -194,7 +195,7 @@ t.test('command', async t => {
       values: { 'dry-run': true },
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'dry-run-package')
     t.equal(result.version, '3.0.0')

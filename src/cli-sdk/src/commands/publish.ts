@@ -38,7 +38,7 @@ export const usage: CommandUsage = () =>
     },
   })
 
-type CommandResultSingle = {
+export type CommandResultSingle = {
   id: string
   name: string
   version: string
