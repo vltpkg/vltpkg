@@ -1,0 +1,51 @@
+---
+title: vlt publish
+sidebar:
+  label: publish
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt publish" title="Terminal" lang="bash" />
+
+Create a tarball from a package and publish it to the configured
+registry. This command will pack the package in the current directory
+or specified folder, and then upload it to the configured registry.
+
+## Options
+
+### tag
+
+Publish the package with the given tag
+
+<Code code="$ vlt publish --tag=<tag>" title="Terminal" lang="bash" />
+
+### access
+
+Set access level (public or restricted)
+
+<Code
+  code="$ vlt publish --access=<level>"
+  title="Terminal"
+  lang="bash"
+/>
+
+### otp
+
+Provide an OTP to use when publishing a package.
+
+<Code code="$ vlt publish --otp=<otp>" title="Terminal" lang="bash" />
+
+### publish-directory
+
+Directory to use for pack and publish operations instead of the
+current directory. Similar to pnpm's publishConfig.directory feature.
+The directory must exist and nothing will be copied to it.
+
+<Code
+  code="$ vlt publish --publish-directory=<path>"
+  title="Terminal"
+  lang="bash"
+/>
