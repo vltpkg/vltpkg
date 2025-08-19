@@ -1,5 +1,5 @@
 import { PathScurry } from 'path-scurry'
-import { resolve } from 'node:path'
+import { resolve, basename, dirname, join } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -58,8 +58,8 @@ class MockConfig {
       read: (_cwd: string) => ({ ...this.packageJsonContent }),
       find: (cwd: string) => {
         // If cwd is already a package.json path, check if it should exist
-        if (cwd.endsWith('/package.json')) {
-          const dir = cwd.replace('/package.json', '')
+        if (basename(cwd) === 'package.json') {
+          const dir = dirname(cwd)
           if (dir === process.cwd() || dir === this.projectRoot) {
             return cwd
           }
@@ -68,7 +68,7 @@ class MockConfig {
         }
         // If cwd is a directory that should have a package.json
         if (cwd === process.cwd() || cwd === this.projectRoot) {
-          return cwd + '/package.json'
+          return join(cwd, 'package.json')
         }
         // Otherwise return null to simulate no package.json found
         return null
