@@ -26,7 +26,7 @@ export class ViewClass<T = unknown> {
   // run the command", for example to have the gui just open a web browser
   // to the page relevant to a given thing, rather than computing it twice
   start() {}
-  done(_result: T, _opts: { time: number }): unknown {
+  async done(_result: T, _opts: { time: number }): Promise<unknown> {
     return
   }
   error(_err: unknown) {}

@@ -6,7 +6,7 @@ import Spinner from 'ink-spinner'
 import {
   createElement as $,
   Fragment,
-  useLayoutEffect,
+  useEffect,
   useState,
 } from 'react'
 import { stdout } from '../../output.ts'
@@ -25,7 +25,7 @@ const GraphStep = ({ text, step }: { text: string; step: Step }) => {
     return $(
       Text,
       { color: 'yellow' },
-      text,
+      text + ' ',
       $(Spinner, { type: 'dots' }),
     )
   }
@@ -49,13 +49,13 @@ const App = () => {
     },
   })
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const update = () => setRequests(p => p + 1)
     emitter.on('request', update)
     return () => emitter.off('request', update)
   }, [])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const update = ({ step, state }: Events['graphStep']) => {
       setSteps(p => ({
         ...p,
@@ -98,8 +98,8 @@ export class InstallReporter extends ViewClass {
     this.#instance = render($(App))
   }
 
-  done(_result: unknown, { time }: { time: number }) {
-    this.#instance?.unmount()
+  async done(_result: unknown, { time }: { time: number }) {
+    await this.#instance?.waitUntilExit()
     stdout(`Done in ${time}ms`)
     return undefined
   }
