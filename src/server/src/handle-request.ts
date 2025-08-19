@@ -1,5 +1,11 @@
-import { mkdirSync } from 'node:fs'
-import { resolve } from 'node:path'
+import {
+  readdirSync,
+  mkdirSync,
+  statSync,
+  realpathSync,
+} from 'node:fs'
+import { homedir } from 'node:os'
+import { resolve, extname, join } from 'node:path'
 import { install, uninstall } from '@vltpkg/graph'
 import { init } from '@vltpkg/init'
 import { asError } from '@vltpkg/types'
@@ -246,6 +252,90 @@ export const handleRequest = async (
           asError(err).message,
           500,
         )
+      }
+    }
+
+    case '/fs/ls': {
+      try {
+        const { path } = await json.read<{ path?: string }>(req)
+        const ROOT = homedir()
+
+        const targetPath = realpathSync(
+          path ? resolve(ROOT, path) : ROOT,
+        )
+
+        if (!targetPath.startsWith(ROOT)) {
+          return json.error(
+            res,
+            'Forbidden',
+            'Path traversal detected',
+            403,
+          )
+        }
+
+        const stats = statSync(targetPath)
+        if (!stats.isDirectory()) {
+          return json.error(
+            res,
+            'Bad request',
+            'Path must be a directory',
+            400,
+          )
+        }
+
+        const entries = readdirSync(targetPath, {
+          withFileTypes: true,
+        })
+
+        const list = entries.map(dirent => {
+          const fullPath = join(targetPath, dirent.name)
+
+          let size: number | null = null
+          let mtime: Date | null = null
+          try {
+            const s = statSync(fullPath)
+            size = s.isFile() ? s.size : null
+            mtime = s.mtime
+            /* c8 ignore next */
+          } catch {}
+
+          return {
+            name: dirent.name,
+            path: fullPath,
+            type:
+              dirent.isDirectory() ? 'directory'
+              : dirent.isFile() ? 'file'
+              : 'other',
+            fileType:
+              dirent.isFile() ?
+                extname(dirent.name).slice(1) || null
+              : null,
+            size,
+            mtime,
+          }
+        })
+
+        return json.ok(res, JSON.stringify(list))
+      } catch (err: unknown) {
+        const e = asError(err)
+        const code = (e as Partial<NodeJS.ErrnoException>).code
+        if (code === 'ENOENT') {
+          return json.error(
+            res,
+            'Not Found',
+            'Directory does not exist',
+            404,
+          )
+        }
+        if (code === 'EACCES') {
+          return json.error(
+            res,
+            'Forbidden',
+            'Permission denied',
+            403,
+          )
+        }
+        return json.error(res, 'Server error', e.message, 500)
       }
     }
 
