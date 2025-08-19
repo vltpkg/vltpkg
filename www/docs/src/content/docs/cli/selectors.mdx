@@ -123,6 +123,12 @@ e.g: `#foo` is the same as `[name=foo]`
   property to use for the comparison, e.g:
   `:semver(^22, satisfies, :attr(engines, [node]))` for comparing the
   value of `engines.node`.
+- `:spec(<specifier>)` Matches edges where the package specifier
+  (bareSpec) equals the provided value. This selector allows filtering
+  dependencies by their exact specification string. Examples:
+  - `:spec(^1.0.0)` - Matches edges with semver range `^1.0.0`
+  - `:spec("*")` - Matches edges with wildcard specifier `*`
+  - `:spec("catalog:")` - Matches catalog protocol dependencies
 - `:path("<glob>")` Matches workspace & file packages based on their
   file path relative to the project root using glob patterns. Path
   patterns must be quoted strings. Examples:
