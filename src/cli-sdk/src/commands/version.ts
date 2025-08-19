@@ -12,8 +12,10 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import type { ParsedConfig } from '../config/index.ts'
-import { dirname } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import assert from 'node:assert'
+import { actual } from '@vltpkg/graph'
+import { Query } from '@vltpkg/query'
 
 export type VersionOptions = {
   prereleaseId?: string
@@ -23,13 +25,17 @@ export type VersionOptions = {
   tagMessage?: string
 }
 
-export type VersionResult = {
+export type VersionResultSingle = {
   oldVersion: string
   newVersion: string
   dir: string
   committed?: string[]
   tag?: string
 }
+
+export type CommandResult =
+  | VersionResultSingle
+  | VersionResultSingle[]
 
 const isValidVersionIncrement = (
   value: string,
@@ -49,7 +55,7 @@ const version = async (
     message = 'v%s',
     tagMessage = 'v%s',
   }: VersionOptions = {},
-): Promise<VersionResult> => {
+): Promise<VersionResultSingle> => {
   assert(
     increment,
     error('Version increment argument is required', {
@@ -113,7 +119,7 @@ const version = async (
   manifest.version = newVersion
   conf.options.packageJson.write(manifestDir, manifest)
 
-  const result: VersionResult = {
+  const result: VersionResultSingle = {
     oldVersion,
     newVersion,
     dir: manifestDir,
@@ -210,19 +216,71 @@ export const usage: CommandUsage = () => {
 
 export const views = {
   json: result => result,
-  human: result => {
-    let output = `v${result.newVersion}`
-    if (result.committed) {
-      output += ` +commit`
+  human: results => {
+    const item = (result: VersionResultSingle) => {
+      let output = `v${result.newVersion}`
+      if (result.committed) {
+        output += ` +commit`
+      }
+      if (result.tag) {
+        output += ` +tag`
+      }
+      return output
     }
-    if (result.tag) {
-      output += ` +tag`
-    }
-    return output
+    return Array.isArray(results) ?
+        results.map(item).join('\n')
+      : item(results)
   },
-} as const satisfies Views<VersionResult>
+} as const satisfies Views<CommandResult>
 
-export const command: CommandFn<VersionResult> = async conf => {
-  const { positionals } = conf
-  return version(conf, positionals[0], process.cwd())
+export const command: CommandFn<CommandResult> = async conf => {
+  const { positionals, options, projectRoot } = conf
+  const queryString = conf.get('scope')
+  const paths = conf.get('workspace')
+  const groups = conf.get('workspace-group')
+  const recursive = conf.get('recursive')
+
+  const locations: string[] = []
+  let single: string | null = null
+
+  if (queryString) {
+    const graph = actual.load({
+      ...options,
+      mainManifest: options.packageJson.read(projectRoot),
+      monorepo: options.monorepo,
+      loadManifests: false,
+    })
+    const query = new Query({
+      graph,
+      specOptions: conf.options,
+      securityArchive: undefined,
+    })
+    const { nodes } = await query.search(queryString, {
+      signal: new AbortController().signal,
+    })
+    for (const node of nodes) {
+      const { location } = node.toJSON()
+      assert(
+        location,
+        error(`node ${node.id} has no location`, {
+          found: node,
+        }),
+      )
+      locations.push(resolve(projectRoot, location))
+    }
+  } else if (paths?.length || groups?.length || recursive) {
+    for (const workspace of options.monorepo ?? []) {
+      locations.push(workspace.fullpath)
+    }
+  } else {
+    single = options.packageJson.find(process.cwd()) ?? projectRoot
+  }
+
+  return single ?
+      version(conf, positionals[0], single)
+    : Promise.all(
+        locations.map(location =>
+          version(conf, positionals[0], location),
+        ),
+      )
 }
