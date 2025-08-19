@@ -25,7 +25,7 @@ export type VersionOptions = {
   tagMessage?: string
 }
 
-export type VersionResultSingle = {
+export type CommandResultSingle = {
   oldVersion: string
   newVersion: string
   dir: string
@@ -34,8 +34,8 @@ export type VersionResultSingle = {
 }
 
 export type CommandResult =
-  | VersionResultSingle
-  | VersionResultSingle[]
+  | CommandResultSingle
+  | CommandResultSingle[]
 
 const isValidVersionIncrement = (
   value: string,
@@ -55,7 +55,7 @@ const version = async (
     message = 'v%s',
     tagMessage = 'v%s',
   }: VersionOptions = {},
-): Promise<VersionResultSingle> => {
+): Promise<CommandResultSingle> => {
   assert(
     increment,
     error('Version increment argument is required', {
@@ -119,7 +119,7 @@ const version = async (
   manifest.version = newVersion
   conf.options.packageJson.write(manifestDir, manifest)
 
-  const result: VersionResultSingle = {
+  const result: CommandResultSingle = {
     oldVersion,
     newVersion,
     dir: manifestDir,
@@ -217,7 +217,7 @@ export const usage: CommandUsage = () => {
 export const views = {
   json: result => result,
   human: results => {
-    const item = (result: VersionResultSingle) => {
+    const item = (result: CommandResultSingle) => {
       let output = `v${result.newVersion}`
       if (result.committed) {
         output += ` +commit`

@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { VersionResultSingle } from '../../src/commands/version.ts'
+import type { CommandResultSingle } from '../../src/commands/version.ts'
 import * as actualGitModule from '@vltpkg/git'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
@@ -639,7 +639,7 @@ t.test('version command with scope', async t => {
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array of results')
-    const results = result as VersionResultSingle[]
+    const results = result as CommandResultSingle[]
     t.equal(results.length, 2, 'should update both workspaces')
 
     const [resultA, resultB] = results
@@ -683,7 +683,7 @@ t.test('version command with scope', async t => {
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return empty array')
-    const results = result as VersionResultSingle[]
+    const results = result as CommandResultSingle[]
     t.equal(results.length, 0, 'should have no results')
   })
 })
@@ -750,7 +750,7 @@ t.test('version command with workspace paths', async t => {
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array of results')
-    const results = result as VersionResultSingle[]
+    const results = result as CommandResultSingle[]
     t.equal(
       results.length,
       1,
@@ -835,7 +835,7 @@ t.test('version command with workspace-group', async t => {
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array of results')
-    const results = result as VersionResultSingle[]
+    const results = result as CommandResultSingle[]
     t.equal(
       results.length,
       2,
@@ -922,7 +922,7 @@ t.test('version command with recursive', async t => {
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array of results')
-    const results = result as VersionResultSingle[]
+    const results = result as CommandResultSingle[]
     t.equal(results.length, 2, 'should update all workspaces')
 
     const [resultA, resultB] = results
@@ -1000,7 +1000,7 @@ t.test('version command fallback to projectRoot', async t => {
       )
 
       t.notOk(Array.isArray(result), 'should return single result')
-      const singleResult = result as VersionResultSingle
+      const singleResult = result as CommandResultSingle
       t.equal(singleResult.oldVersion, '1.0.0')
       t.equal(singleResult.newVersion, '1.0.1')
       t.equal(singleResult.dir, dir)
@@ -1038,7 +1038,7 @@ t.test('version command with empty monorepo', async t => {
       )
 
       t.ok(Array.isArray(result), 'should return array')
-      const results = result as VersionResultSingle[]
+      const results = result as CommandResultSingle[]
       t.equal(results.length, 0, 'should have no results')
     },
   )
@@ -1068,7 +1068,7 @@ t.test('version command with empty monorepo', async t => {
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array')
-    const results = result as VersionResultSingle[]
+    const results = result as CommandResultSingle[]
     t.equal(
       results.length,
       0,
