@@ -1,10 +1,13 @@
+import * as realFs from 'node:fs'
+import * as realOs from 'node:os'
+import { resolve } from 'node:path'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import * as GRAPH from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import type { IncomingMessage, ServerResponse } from 'http'
-import { resolve } from 'node:path'
-import type { Test } from 'tap'
 import t from 'tap'
+
+import type { IncomingMessage, ServerResponse } from 'http'
+import type { Test } from 'tap'
 import type { HandleStaticOptions } from '../src/handle-static.ts'
 import type { VltServerListening } from '../src/index.ts'
 
@@ -1263,6 +1266,342 @@ t.test('/config/delete error handling', async t => {
       },
     },
   })
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/fs/ls edge cases: other type and null fileType', async t => {
+  const context = getContext(t)
+  let okCalled = false
+
+  const root = t.testdir({})
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    'node:path': {
+      ...(await import('node:path')),
+      // Return a value whose slice() returns undefined, exercising ?? null
+      extname: () =>
+        ({ slice: () => undefined }) as unknown as string,
+      join: (...parts: string[]) => resolve(...parts),
+    },
+    'node:fs': {
+      ...realFs,
+      realpathSync: (p: string) => p,
+      statSync: (p: string) => ({
+        isDirectory: () => p === root,
+        isFile: () => p !== root && !p.endsWith('/sock'),
+        size: 0,
+        mtime: new Date(),
+      }),
+      readdirSync: () => [
+        {
+          name: 'sock',
+          isDirectory: () => false,
+          isFile: () => false,
+        },
+        {
+          name: 'nofileext',
+          isDirectory: () => false,
+          isFile: () => true,
+        },
+      ],
+    },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {}
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        const list = JSON.parse(data) as {
+          name: string
+          type: string
+          fileType: string | null
+        }[]
+        const byName = Object.fromEntries(
+          list.map(e => [e.name, e]),
+        ) as Record<string, (typeof list)[number]>
+        t.same(byName.sock?.type, 'other')
+        t.same(byName.sock?.fileType, null)
+        t.same(byName.nofileext?.type, 'file')
+        t.same(byName.nofileext?.fileType, null)
+        okCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+})
+
+t.test('/fs/ls success (root listing)', async t => {
+  const context = getContext(t)
+  let okCalled = false
+
+  const root = t.testdir({
+    a: {},
+    'b.txt': 'hello',
+    c: 'x',
+  })
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {}
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        const list = JSON.parse(data) as {
+          name: string
+          path: string
+          type: string
+          fileType: string | null
+          size: number | null
+          mtime: string | null
+        }[]
+        t.ok(Array.isArray(list))
+        const byName = Object.fromEntries(
+          list.map(e => [e.name, e]),
+        ) as Record<string, (typeof list)[number]>
+        t.ok(byName.a)
+        t.equal(byName.a?.type, 'directory')
+        t.equal(byName.a?.fileType, null)
+        t.equal(byName.a?.size, null)
+        t.equal(byName.a?.path, resolve(root, 'a'))
+        t.type(byName.a?.mtime, 'string')
+
+        t.ok(byName['b.txt'])
+        t.equal(byName['b.txt']?.type, 'file')
+        t.equal(byName['b.txt']?.fileType, 'txt')
+        t.equal(byName['b.txt']?.size, 5)
+        t.equal(byName['b.txt']?.path, resolve(root, 'b.txt'))
+        t.type(byName['b.txt']?.mtime, 'string')
+
+        t.ok(byName.c)
+        t.equal(byName.c?.type, 'file')
+        t.equal(byName.c?.fileType, null)
+        t.equal(byName.c?.size, 1)
+        t.equal(byName.c?.path, resolve(root, 'c'))
+        t.type(byName.c?.mtime, 'string')
+        okCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
+})
+
+t.test('/fs/ls path is a file (400)', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const root = t.testdir({
+    'b.txt': 'hello',
+  })
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { path: 'b.txt' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Bad request')
+        t.equal(error, 'Path must be a directory')
+        t.equal(code, 400)
+        errorCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/fs/ls path traversal forbidden (403)', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const root = t.testdir({ a: {} })
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { path: '..' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Forbidden')
+        t.equal(error, 'Path traversal detected')
+        t.equal(code, 403)
+        errorCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/fs/ls non-existent dir (404)', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const root = t.testdir({})
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { path: 'does-not-exist' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Not Found')
+        t.equal(error, 'Directory does not exist')
+        t.equal(code, 404)
+        errorCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/fs/ls EACCES (403 Permission denied)', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const root = t.testdir({ a: {} })
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    'node:fs': {
+      ...realFs,
+      // Override only what we need for this test path
+      readdirSync: () => [],
+      readdir: async () => [],
+      mkdirSync: () => {},
+      realpathSync: (p: string) => p,
+      lstatSync: () => ({
+        isDirectory: () => true,
+        isFile: () => false,
+      }),
+      statSync: () => {
+        const e: any = new Error('Permission denied')
+        e.code = 'EACCES'
+        throw e
+      },
+      readFileSync: realFs.readFileSync,
+      writeFileSync: realFs.writeFileSync,
+    },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { path: 'a' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Forbidden')
+        t.equal(error, 'Permission denied')
+        t.equal(code, 403)
+        errorCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
+
+t.test('/fs/ls generic server error (500)', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const root = t.testdir({ a: {} })
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => root, tmpdir: () => root },
+    'node:fs': {
+      ...realFs,
+      readdirSync: () => [],
+      readdir: async () => [],
+      mkdirSync: () => {},
+      realpathSync: (p: string) => p,
+      lstatSync: () => ({
+        isDirectory: () => true,
+        isFile: () => false,
+      }),
+      statSync: () => {
+        throw new Error('kaboom')
+      },
+      readFileSync: realFs.readFileSync,
+      writeFileSync: realFs.writeFileSync,
+    },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return { path: 'a' }
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(errType, 'Server error')
+        t.equal(error, 'kaboom')
+        t.equal(code, 500)
+        errorCalled = true
+      },
+    },
+  })
+
   await handleRequest(context.req, context.res, context.server)
   t.equal(errorCalled, true)
 })
