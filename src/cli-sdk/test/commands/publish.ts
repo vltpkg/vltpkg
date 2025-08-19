@@ -23,14 +23,16 @@ interface TestConfig {
   projectRoot?: string
   options: {
     packageJson: PackageJson
+    monorepo?:
+      | {
+          name: string
+          fullpath: string
+        }[]
+      | null
     registry: string
     tag?: string
     access?: string
   }
-  monorepo?: {
-    name: string
-    fullpath: string
-  }[]
   positionals: string[]
   values?: Record<string, unknown>
   get?: (key: string) => unknown
@@ -581,10 +583,10 @@ t.test('publish command with scope', async t => {
       positionals: ['publish'],
       values: { scope: ':workspace' },
     })
-    config.get = (key: keyof typeof config.values) => {
+    config.get = ((key: unknown) => {
       if (key === 'scope') return ':workspace'
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await cmd.command(config)
 
@@ -646,10 +648,10 @@ t.test('publish command with scope', async t => {
       positionals: ['publish'],
       values: { scope: ':workspace#nonexistent' },
     })
-    config.get = (key: string) => {
+    config.get = ((key: unknown) => {
       if (key === 'scope') return ':workspace#nonexistent'
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await cmd.command(config)
 
@@ -665,14 +667,14 @@ t.test('publish command with workspace paths', async t => {
     const tempRequest = RegistryClient.prototype.request
 
     // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
+    RegistryClient.prototype.request = (async () => {
       return {
         statusCode: 201,
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
       } as MockCacheEntry
-    }
+    }) as unknown as typeof tempRequest
 
     t.teardown(() => {
       RegistryClient.prototype.request = tempRequest
@@ -719,10 +721,10 @@ t.test('publish command with workspace paths', async t => {
       positionals: ['publish'],
       values: { workspace: ['packages/a'] },
     })
-    config.get = (key: string) => {
+    config.get = ((key: unknown) => {
       if (key === 'workspace') return ['packages/a']
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await command(config)
 
@@ -745,14 +747,14 @@ t.test('publish command with workspace-group', async t => {
     const tempRequest = RegistryClient.prototype.request
 
     // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
+    RegistryClient.prototype.request = (async () => {
       return {
         statusCode: 201,
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
       } as MockCacheEntry
-    }
+    }) as unknown as typeof tempRequest
 
     t.teardown(() => {
       RegistryClient.prototype.request = tempRequest
@@ -803,10 +805,10 @@ t.test('publish command with workspace-group', async t => {
       positionals: ['publish'],
       values: { 'workspace-group': ['packages'] },
     })
-    config.get = (key: string) => {
+    config.get = ((key: unknown) => {
       if (key === 'workspace-group') return ['packages']
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await command(config)
 
@@ -831,14 +833,14 @@ t.test('publish command with recursive', async t => {
     const tempRequest = RegistryClient.prototype.request
 
     // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
+    RegistryClient.prototype.request = (async () => {
       return {
         statusCode: 201,
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
       } as MockCacheEntry
-    }
+    }) as unknown as typeof tempRequest
 
     t.teardown(() => {
       RegistryClient.prototype.request = tempRequest
@@ -889,10 +891,10 @@ t.test('publish command with recursive', async t => {
       positionals: ['publish'],
       values: { recursive: true },
     })
-    config.get = (key: string) => {
+    config.get = ((key: unknown) => {
       if (key === 'recursive') return true
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await command(config)
 
@@ -911,14 +913,14 @@ t.test('publish command with recursive', async t => {
     const tempRequest = RegistryClient.prototype.request
 
     // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
+    RegistryClient.prototype.request = (async () => {
       return {
         statusCode: 201,
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
       } as MockCacheEntry
-    }
+    }) as unknown as typeof tempRequest
 
     t.teardown(() => {
       RegistryClient.prototype.request = tempRequest
@@ -942,10 +944,10 @@ t.test('publish command with recursive', async t => {
       positionals: ['publish'],
       values: { recursive: true },
     })
-    config.get = (key: string) => {
+    config.get = ((key: unknown) => {
       if (key === 'recursive') return true
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await command(config)
 
@@ -959,14 +961,14 @@ t.test('publish command with recursive', async t => {
     const tempRequest = RegistryClient.prototype.request
 
     // Override registry client request to mock success
-    RegistryClient.prototype.request = async () => {
+    RegistryClient.prototype.request = (async () => {
       return {
         statusCode: 201,
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
       } as MockCacheEntry
-    }
+    }) as unknown as typeof tempRequest
 
     t.teardown(() => {
       RegistryClient.prototype.request = tempRequest
@@ -990,10 +992,10 @@ t.test('publish command with recursive', async t => {
       positionals: ['publish'],
       values: { recursive: true },
     })
-    config.get = (key: string) => {
+    config.get = ((key: unknown) => {
       if (key === 'recursive') return true
-      return config.values?.[key]
-    }
+      return undefined
+    }) as LoadedConfig['get']
 
     const result = await command(config)
 
@@ -1015,14 +1017,14 @@ t.test('publish command fallback to projectRoot', async t => {
       const tempRequest = RegistryClient.prototype.request
 
       // Override registry client request to mock success
-      RegistryClient.prototype.request = async () => {
+      RegistryClient.prototype.request = (async () => {
         return {
           statusCode: 201,
           text: () => '{"ok":true}',
           json: () => ({ ok: true }),
           getHeader: () => undefined,
         } as MockCacheEntry
-      }
+      }) as unknown as typeof tempRequest
 
       t.teardown(() => {
         RegistryClient.prototype.request = tempRequest
