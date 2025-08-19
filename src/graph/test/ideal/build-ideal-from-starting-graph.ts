@@ -538,21 +538,35 @@ t.test('build from an actual graph', async t => {
     graph: actual,
     scurry: new PathScurry(projectRoot),
     add: new Map([
+      // adding an already present version of baz from the custom registry
       [
         joinDepIDTuple(['file', '.']),
         new Map([
           [
             'baz',
-            { type: 'prod', spec: Spec.parse('baz', '^1.0.0') },
+            {
+              type: 'prod',
+              spec: Spec.parse(
+                'baz',
+                'custom:baz@^1.0.0',
+                configData,
+              ),
+            },
           ],
         ]),
       ],
+      // this version of baz being added to workspace-b is going to
+      // use the default registry, unlike the other versions that
+      // were using the custom registry origin/protocol named `custom`
       [
         joinDepIDTuple(['workspace', 'packages/workspace-b']),
         new Map([
           [
             'baz',
-            { type: 'prod', spec: Spec.parse('baz', '^1.0.0') },
+            {
+              type: 'prod',
+              spec: Spec.parse('baz', '^1.0.0', configData),
+            },
           ],
         ]),
       ],

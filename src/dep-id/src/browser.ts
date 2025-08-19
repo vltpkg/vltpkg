@@ -187,7 +187,7 @@ export const hydrateTuple = (
         throw error('no remoteURL found on remote id', {
           found: tuple,
         })
-      return Spec.parse(name ?? '(unknown)', first)
+      return Spec.parse(name ?? '(unknown)', first, options)
     }
     case 'file': {
       if (!first) {
@@ -210,9 +210,9 @@ export const hydrateTuple = (
       }
       if (!first) {
         // just a normal name@version on the default registry
-        const s = Spec.parse(second)
+        const s = Spec.parseArgs(second, options)
         if (name && s.name !== name) {
-          return Spec.parse(`${name}@npm:${second}`)
+          return Spec.parse(name, `npm:${second}`, options)
         } else {
           return s
         }
@@ -237,7 +237,7 @@ export const hydrateTuple = (
         options,
       )
       return name && s.final.name !== name ?
-          Spec.parse(s.final.name + '@' + s.bareSpec)
+          Spec.parse(s.final.name, s.bareSpec, options)
         : s
     }
     case 'git': {

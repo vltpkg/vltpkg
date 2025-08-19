@@ -52,12 +52,17 @@ export const buildIdealFromStartingGraph = async (
     }
   }
 
-  // add nodes, fetching remote manifests for each dependency to be added
-  await addNodes(options)
+  // hydrate the resolution cache
+  if (options.add.modifiedDependencies) {
+    options.graph.resetResolution()
 
-  // move things into their default locations, if possible
-  for (const node of options.graph.nodes.values()) {
-    node.setDefaultLocation()
+    // add nodes, fetching remote manifests for each dependency to be added
+    await addNodes(options)
+
+    // move things into their default locations, if possible
+    for (const node of options.graph.nodes.values()) {
+      node.setDefaultLocation()
+    }
   }
 
   // removes any dependencies that are listed in the `remove` option
