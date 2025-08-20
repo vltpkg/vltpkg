@@ -78,10 +78,8 @@ const version = async (
     }),
   )
 
-  const spawn = (args: string[], opts?: GitOptions) => (
-    console.log(args.join(' ')),
+  const spawn = (args: string[], opts?: GitOptions) =>
     spawn_(args, { cwd: manifestDir, ...opts })
-  )
 
   const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)
@@ -317,7 +315,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   for (const location of locations) {
     results.push(
       await version(conf, positionals[0], location, {
-        includeNameInCommit: false,
+        includeNameInCommit: true,
         includeNameInTag: true,
       }),
     )

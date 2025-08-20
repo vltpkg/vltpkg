@@ -13,7 +13,7 @@ const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   )
 
 // Mock git operations
-let gitIsResult = false
+let gitIsResult = true
 let gitIsCleanResult = true
 let gitSpawnCalls: { args: string[] }[] = []
 
@@ -111,7 +111,7 @@ const run = async (
   gitMocks?: Partial<typeof mockGit>,
 ) => {
   // Reset git state
-  gitIsResult = false
+  gitIsResult = true
   gitIsCleanResult = true
   gitSpawnCalls = []
 
@@ -227,6 +227,8 @@ t.test('version command - patch increment', async t => {
     oldVersion: '1.0.0',
     newVersion: '1.0.1',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.0.1',
   })
 
   t.equal(conf.writtenManifests.length, 1)
@@ -241,6 +243,8 @@ t.test('version command - minor increment', async t => {
     oldVersion: '1.0.0',
     newVersion: '1.1.0',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.1.0',
   })
 })
 
@@ -252,6 +256,8 @@ t.test('version command - major increment', async t => {
     oldVersion: '1.0.0',
     newVersion: '2.0.0',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v2.0.0',
   })
 })
 
@@ -263,6 +269,8 @@ t.test('version command - premajor increment', async t => {
     oldVersion: '1.0.0',
     newVersion: '2.0.0-pre',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v2.0.0-pre',
   })
 })
 
@@ -274,6 +282,8 @@ t.test('version command - preminor increment', async t => {
     oldVersion: '1.0.0',
     newVersion: '1.1.0-pre',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.1.0-pre',
   })
 })
 
@@ -285,6 +295,8 @@ t.test('version command - prepatch increment', async t => {
     oldVersion: '1.0.0',
     newVersion: '1.0.1-pre',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.0.1-pre',
   })
 })
 
@@ -301,6 +313,8 @@ t.test('version command - prerelease increment', async t => {
     oldVersion: '1.0.0-pre',
     newVersion: '1.0.0-pre.0',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.0.0-pre.0',
   })
 })
 
@@ -312,6 +326,8 @@ t.test('version command - explicit semver version', async t => {
     oldVersion: '1.0.0',
     newVersion: '2.3.4',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v2.3.4',
   })
 })
 
@@ -325,6 +341,8 @@ t.test(
       oldVersion: '1.0.0',
       newVersion: '2.3.4-beta.1',
       dir: process.cwd(),
+      committed: ['package.json'].map(f => join(process.cwd(), f)),
+      tag: 'v2.3.4-beta.1',
     })
   },
 )
@@ -392,7 +410,7 @@ t.test('git operations', async t => {
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: process.cwd(),
-      committed: ['package.json'],
+      committed: ['package.json'].map(f => join(process.cwd(), f)),
       tag: 'v1.0.1',
     })
 
@@ -432,7 +450,7 @@ t.test('git operations', async t => {
         oldVersion: '1.0.0',
         newVersion: '1.0.1',
         dir: process.cwd(),
-        committed: ['package.json'],
+        committed: ['package.json'].map(f => join(process.cwd(), f)),
         tag: 'v1.0.1',
       })
     },
