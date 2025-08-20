@@ -680,7 +680,9 @@ t.test('version command with scope', async t => {
     const results = result as CommandResultSingle[]
     t.equal(results.length, 2, 'should update both workspaces')
 
-    const [resultA, resultB] = results
+    const [resultA, resultB] = results.sort((a, b) =>
+      a!.name.localeCompare(b!.name),
+    )
     t.equal(resultA!.oldVersion, '1.0.0')
     t.equal(resultA!.newVersion, '1.0.1')
     t.equal(resultB!.oldVersion, '2.0.0')
@@ -878,7 +880,9 @@ t.test('version command with workspace-group', async t => {
       'should update all workspaces in group',
     )
 
-    const [resultA, resultB] = results
+    const [resultA, resultB] = results.sort((a, b) =>
+      a!.name.localeCompare(b!.name),
+    )
     t.equal(resultA!.oldVersion, '1.0.0')
     t.equal(resultA!.newVersion, '2.0.0')
     t.equal(resultB!.oldVersion, '2.0.0')
@@ -961,7 +965,9 @@ t.test('version command with recursive', async t => {
     const results = result as CommandResultSingle[]
     t.equal(results.length, 2, 'should update all workspaces')
 
-    const [resultA, resultB] = results
+    const [resultA, resultB] = results.sort((a, b) =>
+      a!.name.localeCompare(b!.name),
+    )
     t.equal(resultA!.oldVersion, '1.0.0')
     t.equal(resultA!.newVersion, '1.0.1-pre')
     t.equal(resultB!.oldVersion, '2.0.0')
