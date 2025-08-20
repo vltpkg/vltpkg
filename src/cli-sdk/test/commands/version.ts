@@ -654,10 +654,10 @@ t.test('version command with scope', async t => {
 
     // Override packageJson.find to work with test directories
     conf.values.packageJson.find = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
-      if (cwd.includes('packages/b')) {
+      if (cwd.includes(join('packages', 'b'))) {
         return resolve(dir, 'packages/b/package.json')
       }
       return resolve(dir, 'package.json')
@@ -665,10 +665,10 @@ t.test('version command with scope', async t => {
 
     // Override packageJson.read to return correct versions
     conf.values.packageJson.read = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return { name: '@test/a', version: '1.0.0' }
       }
-      if (cwd.includes('packages/b')) {
+      if (cwd.includes(join('packages', 'b'))) {
         return { name: '@test/b', version: '2.0.0' }
       }
       return { name: 'root', version: '1.0.0' }
@@ -771,7 +771,7 @@ t.test('version command with workspace paths', async t => {
 
     // Override packageJson.find to work with test directories
     conf.values.packageJson.find = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
       return null
@@ -779,7 +779,7 @@ t.test('version command with workspace paths', async t => {
 
     // Override packageJson.read to return correct versions
     conf.values.packageJson.read = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return { name: '@test/a', version: '1.0.0' }
       }
       return { name: 'root', version: '1.0.0' }
@@ -850,10 +850,10 @@ t.test('version command with workspace-group', async t => {
 
     // Override packageJson.find to work with test directories
     conf.values.packageJson.find = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
-      if (cwd.includes('packages/b')) {
+      if (cwd.includes(join('packages', 'b'))) {
         return resolve(dir, 'packages/b/package.json')
       }
       return null
@@ -861,10 +861,10 @@ t.test('version command with workspace-group', async t => {
 
     // Override packageJson.read to return correct versions
     conf.values.packageJson.read = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return { name: '@test/a', version: '1.0.0' }
       }
-      if (cwd.includes('packages/b')) {
+      if (cwd.includes(join('packages', 'b'))) {
         return { name: '@test/b', version: '2.0.0' }
       }
       return { name: 'root', version: '1.0.0' }
@@ -939,10 +939,10 @@ t.test('version command with recursive', async t => {
 
     // Override packageJson.find to work with test directories
     conf.values.packageJson.find = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
-      if (cwd.includes('packages/b')) {
+      if (cwd.includes(join('packages', 'b'))) {
         return resolve(dir, 'packages/b/package.json')
       }
       return null
@@ -950,10 +950,10 @@ t.test('version command with recursive', async t => {
 
     // Override packageJson.read to return correct versions
     conf.values.packageJson.read = (cwd: string) => {
-      if (cwd.includes('packages/a')) {
+      if (cwd.includes(join('packages', 'a'))) {
         return { name: '@test/a', version: '1.0.0' }
       }
-      if (cwd.includes('packages/b')) {
+      if (cwd.includes(join('packages', 'b'))) {
         return { name: '@test/b', version: '2.0.0' }
       }
       return { name: 'root', version: '1.0.0' }
