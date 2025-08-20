@@ -118,9 +118,11 @@ export const command: CommandFn<CommandResult> = async conf => {
     error('No workspaces or query results found'),
   )
 
-  return Promise.all(
-    locations.map(location => commandSingle(location, conf)),
-  )
+  const results: CommandResultSingle[] = []
+  for (const location of locations) {
+    results.push(await commandSingle(location, conf))
+  }
+  return results
 }
 
 export const commandSingle = async (

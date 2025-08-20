@@ -17,7 +17,7 @@ t.test('throw matching error for missing pathspec', t => {
   const missingPathspec = makeError(
     "error: pathspec 'foo' did not match any file(s) known to git",
   )
-  t.match(missingPathspec, {
+  t.match(missingPathspec[1], {
     message: 'The git reference could not be found',
     cause: {
       stderr:
@@ -30,15 +30,15 @@ t.test('throw matching error for missing pathspec', t => {
 
 t.test('only transient connection errors are retried', t => {
   const sslError = makeError('SSL_ERROR_SYSCALL')
-  t.ok(sslError.shouldRetry(1), 'transient error, not beyond max')
-  t.match(sslError, {
+  t.ok(sslError[0]?.(1), 'transient error, not beyond max')
+  t.match(sslError[1], {
     message: 'A git connection error occurred',
     cause: { stderr: 'SSL_ERROR_SYSCALL' },
   })
 
   const unknownError = makeError('asdf')
-  t.notOk(unknownError.shouldRetry(1), 'unknown error, do not retry')
-  t.match(unknownError, {
+  t.notOk(unknownError[0]?.(1), 'unknown error, do not retry')
+  t.match(unknownError[1], {
     message: 'An unknown git error occurred',
     cause: { stderr: 'asdf' },
   })
@@ -46,11 +46,8 @@ t.test('only transient connection errors are retried', t => {
   const connectError = makeError(
     'Failed to connect to fooblz Timed out',
   )
-  t.notOk(
-    connectError.shouldRetry(69),
-    'beyond max retries, do not retry',
-  )
-  t.match(connectError, {
+  t.notOk(connectError[0]?.(69), 'beyond max retries, do not retry')
+  t.match(connectError[1], {
     message: 'A git connection error occurred',
     cause: { stderr: 'Failed to connect to fooblz Timed out' },
   })

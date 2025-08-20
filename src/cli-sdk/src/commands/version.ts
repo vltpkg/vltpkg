@@ -23,6 +23,8 @@ export type VersionOptions = {
   tag?: boolean
   message?: string
   tagMessage?: string
+  includeNameInCommit?: boolean
+  includeNameInTag?: boolean
 }
 
 export type CommandResultSingle = {
@@ -55,6 +57,8 @@ const version = async (
     tag = true,
     message = 'v%s',
     tagMessage = 'v%s',
+    includeNameInCommit = false,
+    includeNameInTag = false,
   }: VersionOptions = {},
 ): Promise<CommandResultSingle> => {
   assert(
@@ -74,8 +78,10 @@ const version = async (
     }),
   )
 
-  const spawn = (args: string[], opts?: GitOptions) =>
+  const spawn = (args: string[], opts?: GitOptions) => (
+    console.log(args.join(' ')),
     spawn_(args, { cwd: manifestDir, ...opts })
+  )
 
   const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)
@@ -143,13 +149,20 @@ const version = async (
     if (!(await isClean({ cwd: conf.options.projectRoot }))) {
       try {
         // Check if there are changes other than package.json
-        const gitResult = await spawn(['diff', '--name-only', 'HEAD'])
+        const gitResult = await spawn([
+          'diff',
+          '--name-only',
+          'HEAD',
+          '--',
+          '.',
+        ])
         const changedFiles = gitResult.stdout
           .trim()
           .split('\n')
           .filter(Boolean)
+          .map(f => resolve(conf.options.projectRoot, f))
         const nonPackageJsonChanges = changedFiles.filter(
-          file => file !== 'package.json',
+          file => file !== resolve(manifestDir, 'package.json'),
         )
         assert(
           nonPackageJsonChanges.length === 0,
@@ -174,9 +187,12 @@ const version = async (
         await spawn([
           'commit',
           '-m',
-          message.replace('%s', newVersion),
+          `${includeNameInCommit ? `${manifest.name}: ` : ''}${message.replace(
+            '%s',
+            newVersion,
+          )}`,
         ])
-        result.committed = files
+        result.committed = files.map(f => resolve(manifestDir, f))
       } catch (err) {
         throw error('Failed to commit version changes', {
           version: newVersion,
@@ -187,12 +203,16 @@ const version = async (
 
     if (tag) {
       try {
-        const tagName = `v${newVersion}`
+        const tagName =
+          (includeNameInTag ?
+            `${manifest.name.replace('/', '-').replace('@', '')}-`
+          : '') + `v${newVersion}`
         await spawn([
           'tag',
           tagName,
           '-m',
-          tagMessage.replace('%s', newVersion),
+          (includeNameInTag ? `${manifest.name}: ` : '') +
+            tagMessage.replace('%s', newVersion),
         ])
         result.tag = tagName
       } catch (err) {
@@ -293,9 +313,14 @@ export const command: CommandFn<CommandResult> = async conf => {
     error('No workspaces or query results found'),
   )
 
-  return Promise.all(
-    locations.map(location =>
-      version(conf, positionals[0], location),
-    ),
-  )
+  const results: CommandResultSingle[] = []
+  for (const location of locations) {
+    results.push(
+      await version(conf, positionals[0], location, {
+        includeNameInCommit: false,
+        includeNameInTag: true,
+      }),
+    )
+  }
+  return results
 }
