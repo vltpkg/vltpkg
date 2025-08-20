@@ -128,11 +128,18 @@ export const command: CommandFn<CommandResult> = async conf => {
     single = options.packageJson.find(process.cwd()) ?? projectRoot
   }
 
-  return single ?
-      commandSingle(single, conf)
-    : Promise.all(
-        locations.map(location => commandSingle(location, conf)),
-      )
+  if (single) {
+    return commandSingle(single, conf)
+  }
+
+  assert(
+    locations.length > 0,
+    error('No workspaces or query results found'),
+  )
+
+  return Promise.all(
+    locations.map(location => commandSingle(location, conf)),
+  )
 }
 
 const commandSingle = async (

@@ -284,11 +284,18 @@ export const command: CommandFn<CommandResult> = async conf => {
     single = options.packageJson.find(process.cwd()) ?? projectRoot
   }
 
-  return single ?
-      version(conf, positionals[0], single)
-    : Promise.all(
-        locations.map(location =>
-          version(conf, positionals[0], location),
-        ),
-      )
+  if (single) {
+    return version(conf, positionals[0], single)
+  }
+
+  assert(
+    locations.length > 0,
+    error('No workspaces or query results found'),
+  )
+
+  return Promise.all(
+    locations.map(location =>
+      version(conf, positionals[0], location),
+    ),
+  )
 }

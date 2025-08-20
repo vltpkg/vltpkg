@@ -700,11 +700,9 @@ t.test('version command with scope', async t => {
     })
     conf.projectRoot = dir
 
-    const result = await cmd.command(conf as unknown as LoadedConfig)
-
-    t.ok(Array.isArray(result), 'should return empty array')
-    const results = result as CommandResultSingle[]
-    t.equal(results.length, 0, 'should have no results')
+    await t.rejects(cmd.command(conf as unknown as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
   })
 })
 
@@ -1055,13 +1053,9 @@ t.test('version command with empty monorepo', async t => {
       conf.projectRoot = dir
       conf.writtenManifests = []
 
-      const result = await cmd.command(
-        conf as unknown as LoadedConfig,
-      )
-
-      t.ok(Array.isArray(result), 'should return array')
-      const results = result as CommandResultSingle[]
-      t.equal(results.length, 0, 'should have no results')
+      await t.rejects(cmd.command(conf as unknown as LoadedConfig), {
+        message: 'No workspaces or query results found',
+      })
     },
   )
 
@@ -1087,14 +1081,8 @@ t.test('version command with empty monorepo', async t => {
     conf.projectRoot = dir
     conf.writtenManifests = []
 
-    const result = await cmd.command(conf as unknown as LoadedConfig)
-
-    t.ok(Array.isArray(result), 'should return array')
-    const results = result as CommandResultSingle[]
-    t.equal(
-      results.length,
-      0,
-      'should have no results when monorepo is null',
-    )
+    await t.rejects(cmd.command(conf as unknown as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
   })
 })

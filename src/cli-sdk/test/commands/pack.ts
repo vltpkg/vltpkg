@@ -400,11 +400,9 @@ t.test('pack command with scope', async t => {
       return config.values?.[key]
     }
 
-    const result = await cmd.command(config as LoadedConfig)
-
-    t.ok(Array.isArray(result), 'should return empty array')
-    const results = result as CommandResultSingle[]
-    t.equal(results.length, 0, 'should have no results')
+    await t.rejects(cmd.command(config as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
   })
 })
 
@@ -616,11 +614,9 @@ t.test('pack command with recursive', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
-
-    t.ok(Array.isArray(result), 'should return array')
-    const results = result as CommandResultSingle[]
-    t.equal(results.length, 0, 'should have no results')
+    await t.rejects(command(config as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
   })
 
   t.test('handles null monorepo', async t => {
@@ -646,15 +642,9 @@ t.test('pack command with recursive', async t => {
       return config.values?.[key]
     }
 
-    const result = await command(config as LoadedConfig)
-
-    t.ok(Array.isArray(result), 'should return array')
-    const results = result as CommandResultSingle[]
-    t.equal(
-      results.length,
-      0,
-      'should have no results when monorepo is null',
-    )
+    await t.rejects(command(config as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
   })
 })
 
