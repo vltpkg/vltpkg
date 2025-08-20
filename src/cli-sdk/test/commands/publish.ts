@@ -653,7 +653,7 @@ t.test('publish command with scope', async t => {
       return undefined
     }) as LoadedConfig['get']
 
-    await t.rejects(cmd.command(config as LoadedConfig), {
+    await t.rejects(cmd.command(config), {
       message: 'No workspaces or query results found',
     })
   })
@@ -947,7 +947,7 @@ t.test('publish command with recursive', async t => {
       return undefined
     }) as LoadedConfig['get']
 
-    await t.rejects(command(config as LoadedConfig), {
+    await t.rejects(command(config), {
       message: 'No workspaces or query results found',
     })
   })
@@ -993,7 +993,7 @@ t.test('publish command with recursive', async t => {
       return undefined
     }) as LoadedConfig['get']
 
-    await t.rejects(command(config as LoadedConfig), {
+    await t.rejects(command(config), {
       message: 'No workspaces or query results found',
     })
   })
