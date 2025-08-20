@@ -4,7 +4,6 @@ import { error } from '@vltpkg/error-cause'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { NormalizedManifest } from '@vltpkg/types'
 import assert from 'node:assert'
-import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { init } from '@vltpkg/init'
@@ -14,7 +13,6 @@ import { views as initViews } from './init.ts'
 import { actual, GraphModifier } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
-import type { Monorepo as _Monorepo } from '@vltpkg/workspaces'
 import type { QueryResponseNode } from '@vltpkg/query'
 
 type ManifestWithLocation = {
@@ -27,8 +25,8 @@ const json = (
 ) => JSON.stringify(results, null, 2)
 
 export const views = {
-  human: (_results, _options, config) => {
-    const results = _results as
+  human: (results_, _, config) => {
+    const results = results_ as
       | ManifestWithLocation[]
       | ManifestWithLocation
     // `vlt pkg init` is an alias for `vlt init`
@@ -165,12 +163,12 @@ export const command: CommandFn = async conf => {
     case 'pick':
       return pick(manifests, args)
     case 'set':
-      return set(conf, manifests, pkg, args)
+      return set(manifests, pkg, args)
     case 'rm':
     case 'remove':
     case 'unset':
     case 'delete':
-      return rm(conf, manifests, pkg, args)
+      return rm(manifests, pkg, args)
     default: {
       throw error('Unrecognized pkg command', {
         code: 'EUSAGE',
@@ -254,7 +252,6 @@ const pick = (manifests: ManifestWithLocation[], args: string[]) => {
 }
 
 const set = (
-  _conf: LoadedConfig,
   manifests: ManifestWithLocation[],
   pkg: PackageJson,
   args: string[],
@@ -283,7 +280,6 @@ const set = (
 }
 
 const rm = (
-  _conf: LoadedConfig,
   manifests: ManifestWithLocation[],
   pkg: PackageJson,
   args: string[],

@@ -1,0 +1,23 @@
+---
+title: vlt pack
+sidebar:
+  label: pack
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt pack" title="Terminal" lang="bash" />
+
+Create a tarball from a package in the current directory or specified
+folder. The tarball will be saved to the current directory with the
+name `<name>-<version>.tgz`.
+
+## Options
+
+### dry-run
+
+Show what would be packed without creating a tarball
+
+<Code code="$ vlt pack --dry-run" title="Terminal" lang="bash" />

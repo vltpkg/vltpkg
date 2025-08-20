@@ -12,8 +12,10 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import type { ParsedConfig } from '../config/index.ts'
-import { dirname } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import assert from 'node:assert'
+import { actual } from '@vltpkg/graph'
+import { Query } from '@vltpkg/query'
 
 export type VersionOptions = {
   prereleaseId?: string
@@ -21,15 +23,22 @@ export type VersionOptions = {
   tag?: boolean
   message?: string
   tagMessage?: string
+  includeNameInCommit?: boolean
+  includeNameInTag?: boolean
 }
 
-export type VersionResult = {
+export type CommandResultSingle = {
+  name: string
   oldVersion: string
   newVersion: string
   dir: string
   committed?: string[]
   tag?: string
 }
+
+export type CommandResult =
+  | CommandResultSingle
+  | CommandResultSingle[]
 
 const isValidVersionIncrement = (
   value: string,
@@ -48,8 +57,10 @@ const version = async (
     tag = true,
     message = 'v%s',
     tagMessage = 'v%s',
+    includeNameInCommit = false,
+    includeNameInTag = false,
   }: VersionOptions = {},
-): Promise<VersionResult> => {
+): Promise<CommandResultSingle> => {
   assert(
     increment,
     error('Version increment argument is required', {
@@ -73,6 +84,12 @@ const version = async (
   const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)
 
+  assert(
+    manifest.name,
+    error('No name field found in package.json', {
+      path: manifestPath,
+    }),
+  )
   assert(
     manifest.version,
     error('No version field found in package.json', {
@@ -113,7 +130,8 @@ const version = async (
   manifest.version = newVersion
   conf.options.packageJson.write(manifestDir, manifest)
 
-  const result: VersionResult = {
+  const result: CommandResultSingle = {
+    name: manifest.name,
     oldVersion,
     newVersion,
     dir: manifestDir,
@@ -129,13 +147,20 @@ const version = async (
     if (!(await isClean({ cwd: conf.options.projectRoot }))) {
       try {
         // Check if there are changes other than package.json
-        const gitResult = await spawn(['diff', '--name-only', 'HEAD'])
+        const gitResult = await spawn([
+          'diff',
+          '--name-only',
+          'HEAD',
+          '--',
+          '.',
+        ])
         const changedFiles = gitResult.stdout
           .trim()
           .split('\n')
           .filter(Boolean)
+          .map(f => resolve(conf.options.projectRoot, f))
         const nonPackageJsonChanges = changedFiles.filter(
-          file => file !== 'package.json',
+          file => file !== resolve(manifestDir, 'package.json'),
         )
         assert(
           nonPackageJsonChanges.length === 0,
@@ -160,9 +185,12 @@ const version = async (
         await spawn([
           'commit',
           '-m',
-          message.replace('%s', newVersion),
+          `${includeNameInCommit ? `${manifest.name}: ` : ''}${message.replace(
+            '%s',
+            newVersion,
+          )}`,
         ])
-        result.committed = files
+        result.committed = files.map(f => resolve(manifestDir, f))
       } catch (err) {
         throw error('Failed to commit version changes', {
           version: newVersion,
@@ -173,12 +201,16 @@ const version = async (
 
     if (tag) {
       try {
-        const tagName = `v${newVersion}`
+        const tagName =
+          (includeNameInTag ?
+            `${manifest.name.replace('/', '-').replace('@', '')}-`
+          : '') + `v${newVersion}`
         await spawn([
           'tag',
           tagName,
           '-m',
-          tagMessage.replace('%s', newVersion),
+          (includeNameInTag ? `${manifest.name}: ` : '') +
+            tagMessage.replace('%s', newVersion),
         ])
         result.tag = tagName
       } catch (err) {
@@ -210,19 +242,83 @@ export const usage: CommandUsage = () => {
 
 export const views = {
   json: result => result,
-  human: result => {
-    let output = `v${result.newVersion}`
-    if (result.committed) {
-      output += ` +commit`
+  human: results => {
+    const item = (result: CommandResultSingle) => {
+      let output = `${result.name}: v${result.newVersion}`
+      if (result.committed) {
+        output += ` +commit`
+      }
+      if (result.tag) {
+        output += ` +tag`
+      }
+      return output
     }
-    if (result.tag) {
-      output += ` +tag`
-    }
-    return output
+    return Array.isArray(results) ?
+        results.map(item).join('\n')
+      : item(results)
   },
-} as const satisfies Views<VersionResult>
+} as const satisfies Views<CommandResult>
 
-export const command: CommandFn<VersionResult> = async conf => {
-  const { positionals } = conf
-  return version(conf, positionals[0], process.cwd())
+export const command: CommandFn<CommandResult> = async conf => {
+  const { positionals, options, projectRoot } = conf
+  const queryString = conf.get('scope')
+  const paths = conf.get('workspace')
+  const groups = conf.get('workspace-group')
+  const recursive = conf.get('recursive')
+
+  const locations: string[] = []
+  let single: string | null = null
+
+  if (queryString) {
+    const graph = actual.load({
+      ...options,
+      mainManifest: options.packageJson.read(projectRoot),
+      monorepo: options.monorepo,
+      loadManifests: false,
+    })
+    const query = new Query({
+      graph,
+      specOptions: conf.options,
+      securityArchive: undefined,
+    })
+    const { nodes } = await query.search(queryString, {
+      signal: new AbortController().signal,
+    })
+    for (const node of nodes) {
+      const { location } = node.toJSON()
+      assert(
+        location,
+        error(`node ${node.id} has no location`, {
+          found: node,
+        }),
+      )
+      locations.push(resolve(projectRoot, location))
+    }
+  } else if (paths?.length || groups?.length || recursive) {
+    for (const workspace of options.monorepo ?? []) {
+      locations.push(workspace.fullpath)
+    }
+  } else {
+    single = options.packageJson.find(process.cwd()) ?? projectRoot
+  }
+
+  if (single) {
+    return version(conf, positionals[0], single)
+  }
+
+  assert(
+    locations.length > 0,
+    error('No workspaces or query results found'),
+  )
+
+  const results: CommandResultSingle[] = []
+  for (const location of locations) {
+    results.push(
+      await version(conf, positionals[0], location, {
+        includeNameInCommit: true,
+        includeNameInTag: true,
+      }),
+    )
+  }
+  return results
 }

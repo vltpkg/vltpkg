@@ -2,7 +2,9 @@ import t from 'tap'
 import { resolve } from 'node:path'
 import { readFile, access } from 'node:fs/promises'
 import { command, views, usage } from '../../src/commands/pack.ts'
+import type { CommandResultSingle } from '../../src/commands/pack.ts'
 import { PackageJson } from '@vltpkg/package-json'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
 const makeTestConfig = (config: any) => ({
   ...config,
@@ -34,7 +36,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, '@test/package')
     t.equal(result.version, '1.2.3')
@@ -82,7 +84,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'current-package')
     t.equal(result.version, '2.0.0')
@@ -114,7 +116,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.ok(result.shasum, 'should have computed shasum')
     t.ok(result.integrity, 'should have computed integrity')
@@ -154,7 +156,7 @@ t.test('command', async t => {
       positionals: ['pack'],
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'minimal-package')
     t.equal(result.version, '1.0.0')
@@ -194,7 +196,7 @@ t.test('command', async t => {
       values: { 'dry-run': true },
     })
 
-    const result = await command(config)
+    const result = (await command(config)) as CommandResultSingle
 
     t.equal(result.name, 'dry-run-package')
     t.equal(result.version, '3.0.0')
@@ -259,5 +261,469 @@ t.test('command', async t => {
       const output = views.json(result)
       t.same(output, result)
     })
+  })
+})
+
+t.test('pack command with scope', async t => {
+  t.test('packs packages matching scope query', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+          'index.js': 'console.log("a")',
+          'vlt.json': '{}',
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+          'index.js': 'console.log("b")',
+          'vlt.json': '{}',
+        },
+      },
+    })
+
+    // Mock the graph search to return workspace nodes
+    const mockNodes = [
+      {
+        id: 'file:packages/a',
+        toJSON: () => ({ location: 'packages/a' }),
+      },
+      {
+        id: 'file:packages/b',
+        toJSON: () => ({ location: 'packages/b' }),
+      },
+    ]
+
+    const mockQuery = {
+      search: async () => ({ nodes: mockNodes }),
+    }
+
+    const cmd = await t.mockImport<
+      typeof import('../../src/commands/pack.ts')
+    >('../../src/commands/pack.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({
+            nodes: new Map(),
+          }),
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          search = mockQuery.search
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { scope: ':workspace' },
+    })
+    config.get = (key: string) => {
+      if (key === 'scope') return ':workspace'
+      return config.values?.[key]
+    }
+
+    const result = await cmd.command(config as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2, 'should pack both workspaces')
+
+    t.equal(results[0]!.name, '@test/a')
+    t.equal(results[0]!.version, '1.0.0')
+    t.equal(results[1]!.name, '@test/b')
+    t.equal(results[1]!.version, '2.0.0')
+  })
+
+  t.test('handles empty scope query results', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: [] }),
+    })
+
+    const cmd = await t.mockImport<
+      typeof import('../../src/commands/pack.ts')
+    >('../../src/commands/pack.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({
+            nodes: new Map(),
+          }),
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          search = async () => ({ nodes: [] })
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [],
+      },
+      positionals: ['pack'],
+      values: { scope: ':workspace#nonexistent' },
+    })
+    config.get = (key: string) => {
+      if (key === 'scope') return ':workspace#nonexistent'
+      return config.values?.[key]
+    }
+
+    await t.rejects(cmd.command(config as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
+  })
+})
+
+t.test('pack command with workspace paths', async t => {
+  t.test('packs specific workspace paths', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+          'index.js': 'console.log("a")',
+          'vlt.json': '{}',
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+          'index.js': 'console.log("b")',
+          'vlt.json': '{}',
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { workspace: ['packages/a'] },
+    })
+    config.get = (key: string) => {
+      if (key === 'workspace') return ['packages/a']
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1, 'should pack only specified workspace')
+
+    t.equal(results[0]!.name, '@test/a')
+    t.equal(results[0]!.version, '1.0.0')
+  })
+})
+
+t.test('pack command with workspace-group', async t => {
+  t.test('packs all workspaces in group', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+          'index.js': 'console.log("a")',
+          'vlt.json': '{}',
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+          'index.js': 'console.log("b")',
+          'vlt.json': '{}',
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { 'workspace-group': ['packages'] },
+    })
+    config.get = (key: string) => {
+      if (key === 'workspace-group') return ['packages']
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2, 'should pack all workspaces in group')
+
+    t.equal(results[0]!.name, '@test/a')
+    t.equal(results[0]!.version, '1.0.0')
+    t.equal(results[1]!.name, '@test/b')
+    t.equal(results[1]!.version, '2.0.0')
+  })
+})
+
+t.test('pack command with recursive', async t => {
+  t.test('packs all workspaces recursively', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+          'index.js': 'console.log("a")',
+          'vlt.json': '{}',
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+          'index.js': 'console.log("b")',
+          'vlt.json': '{}',
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { recursive: true },
+    })
+    config.get = (key: string) => {
+      if (key === 'recursive') return true
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2, 'should pack all workspaces')
+
+    t.equal(results[0]!.name, '@test/a')
+    t.equal(results[0]!.version, '1.0.0')
+    t.equal(results[1]!.name, '@test/b')
+    t.equal(results[1]!.version, '2.0.0')
+  })
+
+  t.test('handles empty monorepo array', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: [] }),
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [],
+      },
+      positionals: ['pack'],
+      values: { recursive: true },
+    })
+    config.get = (key: string) => {
+      if (key === 'recursive') return true
+      return config.values?.[key]
+    }
+
+    await t.rejects(command(config as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
+  })
+
+  t.test('handles null monorepo', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: [] }),
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: null,
+      },
+      positionals: ['pack'],
+      values: { recursive: true },
+    })
+    config.get = (key: string) => {
+      if (key === 'recursive') return true
+      return config.values?.[key]
+    }
+
+    await t.rejects(command(config as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
+  })
+})
+
+t.test('pack command fallback to projectRoot', async t => {
+  t.test(
+    'uses projectRoot when package.json.find returns null',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'root',
+          version: '1.0.0',
+        }),
+        'index.js': 'console.log("root")',
+        'vlt.json': '{}',
+      })
+
+      // Override process.cwd to return a different path
+      const originalCwd = process.cwd
+      process.cwd = () => '/fake/path'
+      t.teardown(() => {
+        process.cwd = originalCwd
+      })
+
+      const packageJson = new PackageJson()
+      // Override find to return null for process.cwd(), projectRoot for dir
+      const originalFind = packageJson.find.bind(packageJson)
+      packageJson.find = (cwd?: string) => {
+        if (cwd === '/fake/path') return undefined
+        if (cwd === dir) return resolve(dir, 'package.json')
+        return originalFind(cwd)
+      }
+
+      const config = makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson,
+        },
+        positionals: ['pack'],
+      })
+
+      const result = await command(config as LoadedConfig)
+
+      t.notOk(Array.isArray(result), 'should return single result')
+      const singleResult = result as CommandResultSingle
+      t.equal(singleResult.name, 'root')
+      t.equal(singleResult.version, '1.0.0')
+    },
+  )
+})
+
+t.test('human view with arrays', async t => {
+  t.test('formats multiple results', async t => {
+    const results = [
+      {
+        id: 'test-a@1.0.0',
+        name: 'test-a',
+        version: '1.0.0',
+        filename: 'test-a-1.0.0.tgz',
+        files: ['package.json', 'index.js'],
+        size: 1024,
+        unpackedSize: 2048,
+        shasum: 'abc123',
+        integrity: 'sha512-xyz',
+      },
+      {
+        id: 'test-b@2.0.0',
+        name: 'test-b',
+        version: '2.0.0',
+        filename: 'test-b-2.0.0.tgz',
+        files: ['package.json', 'index.js'],
+        size: 2048,
+        unpackedSize: 4096,
+      },
+    ] as CommandResultSingle[]
+
+    const output = views.human(results)
+    t.match(output, /test-a@1\.0\.0/)
+    t.match(output, /test-b@2\.0\.0/)
+    t.match(output, /test-a-1\.0\.0\.tgz/)
+    t.match(output, /test-b-2\.0\.0\.tgz/)
   })
 })

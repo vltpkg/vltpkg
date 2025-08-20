@@ -23,16 +23,12 @@ const missingPathspecRe =
 
 export const makeError = (
   result: SpawnResultStderr & SpawnResultString,
-): Error & { shouldRetry: (n: number) => boolean } =>
+): [null | ((n: number) => boolean), Error] =>
   connectionErrorRe.test(result.stderr) ?
-    Object.assign(error('A git connection error occurred', result), {
-      shouldRetry: (n: number) => n < 3,
-    })
-  : Object.assign(
-      missingPathspecRe.test(result.stderr) ?
-        error('The git reference could not be found', result)
-      : error('An unknown git error occurred', result),
-      {
-        shouldRetry: () => false,
-      },
-    )
+    [
+      (n: number) => n < 3,
+      error('A git connection error occurred', result),
+    ]
+  : missingPathspecRe.test(result.stderr) ?
+    [null, error('The git reference could not be found', result)]
+  : [null, error('An unknown git error occurred', result)]

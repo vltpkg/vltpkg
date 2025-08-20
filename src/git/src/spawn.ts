@@ -39,8 +39,8 @@ export const spawn = async (
   return promiseRetry(async (retryFn, num) => {
     const result = await promiseSpawn(gitPath, args, makeOpts(opts))
     if (result.status || result.signal) {
-      const gitError = makeError(result)
-      if (!gitError.shouldRetry(num)) {
+      const [shouldRetry, gitError] = makeError(result)
+      if (!shouldRetry?.(num)) {
         throw gitError
       }
       retryFn(gitError)
