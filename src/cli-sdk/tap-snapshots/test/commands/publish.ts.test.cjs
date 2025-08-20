@@ -30,4 +30,10 @@ and then upload it to the configured registry.
 
       ​--otp=<otp>
 
+    publish-directory
+      Directory to use for pack and publish operations instead of the current
+      directory. The directory must exist and nothing will be copied to it.
+
+      ​--publish-directory=<path>
+
 `

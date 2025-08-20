@@ -1,7 +1,10 @@
 import { PathScurry } from 'path-scurry'
+import { resolve, basename, dirname, join } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import type { CommandResultSingle } from '../../src/commands/version.ts'
+import * as actualGitModule from '@vltpkg/git'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../../src/commands/version.ts')>(
@@ -10,11 +13,12 @@ const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   )
 
 // Mock git operations
-let gitIsResult = false
+let gitIsResult = true
 let gitIsCleanResult = true
 let gitSpawnCalls: { args: string[] }[] = []
 
 const mockGit = {
+  ...actualGitModule, // Include all real exports from the git module
   is: async () => gitIsResult,
   isClean: async () => gitIsCleanResult,
   spawn: async (args: string[]) => {
@@ -39,27 +43,63 @@ class MockConfig {
   positionals: string[]
   packageJsonContent: Record<string, any>
   writtenManifests: { cwd: string; data: any }[] = []
+  projectRoot: string
 
   constructor(
     positionals: string[],
     values: Record<string, any>,
-    packageJsonContent: Record<string, any> = { version: '1.0.0' },
+    packageJsonContent: Record<string, any> = {
+      name: 'a',
+      version: '1.0.0',
+    },
   ) {
     this.positionals = positionals
     this.values = values
     this.packageJsonContent = packageJsonContent
+    this.projectRoot = process.cwd()
     this.values.packageJson = {
       read: (_cwd: string) => ({ ...this.packageJsonContent }),
-      find: (cwd: string) => cwd + '/package.json',
+      find: (cwd: string) => {
+        // If cwd is already a package.json path, check if it should exist
+        if (basename(cwd) === 'package.json') {
+          const dir = dirname(cwd)
+          if (dir === process.cwd() || dir === this.projectRoot) {
+            return cwd
+          }
+          // Otherwise return null
+          return null
+        }
+        // If cwd is a directory that should have a package.json
+        if (cwd === process.cwd() || cwd === this.projectRoot) {
+          return join(cwd, 'package.json')
+        }
+        // Otherwise return null to simulate no package.json found
+        return null
+      },
       write: (cwd: string, data: any) => {
         this.writtenManifests.push({ cwd, data })
       },
     }
     this.values.scurry = new PathScurry(t.testdirName)
+    this.values.projectRoot = this.projectRoot
+    this.values.monorepo = values.monorepo || null
   }
 
   get options() {
     return this.values
+  }
+
+  get(key: string) {
+    // Return undefined for these flags by default
+    if (
+      key === 'scope' ||
+      key === 'workspace' ||
+      key === 'workspace-group' ||
+      key === 'recursive'
+    ) {
+      return this.values[key] || undefined
+    }
+    return this.values[key]
   }
 }
 
@@ -71,7 +111,7 @@ const run = async (
   gitMocks?: Partial<typeof mockGit>,
 ) => {
   // Reset git state
-  gitIsResult = false
+  gitIsResult = true
   gitIsCleanResult = true
   gitSpawnCalls = []
 
@@ -98,6 +138,7 @@ t.test('views', async t => {
 
   t.test('json view', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
@@ -107,42 +148,46 @@ t.test('views', async t => {
 
   t.test('human view - basic', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
     }
-    t.equal(cmd.views.human(result), 'v1.0.1')
+    t.equal(cmd.views.human(result), 'a: v1.0.1')
   })
 
   t.test('human view - with commit', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
       committed: ['package.json'],
     }
-    t.equal(cmd.views.human(result), 'v1.0.1 +commit')
+    t.equal(cmd.views.human(result), 'a: v1.0.1 +commit')
   })
 
   t.test('human view - with tag', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
       tag: 'v1.0.1',
     }
-    t.equal(cmd.views.human(result), 'v1.0.1 +tag')
+    t.equal(cmd.views.human(result), 'a: v1.0.1 +tag')
   })
 
   t.test('human view - with commit and tag', async t => {
     const result = {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: '/test',
       committed: ['package.json'],
       tag: 'v1.0.1',
     }
-    t.equal(cmd.views.human(result), 'v1.0.1 +commit +tag')
+    t.equal(cmd.views.human(result), 'a: v1.0.1 +commit +tag')
   })
 })
 
@@ -166,10 +211,10 @@ t.test('version command - no increment provided', async t => {
 })
 
 t.test('version command - no version in package.json', async t => {
-  await t.rejects(run(t, ['patch'], {}, {}), {
+  await t.rejects(run(t, ['patch'], {}, { name: 'a' }), {
     message: 'No version field found in package.json',
     cause: {
-      path: process.cwd(),
+      path: join(process.cwd(), 'package.json'),
     },
   })
 })
@@ -178,9 +223,12 @@ t.test('version command - patch increment', async t => {
   const { result, conf } = await run(t, ['patch'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.0.1',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.0.1',
   })
 
   t.equal(conf.writtenManifests.length, 1)
@@ -191,9 +239,12 @@ t.test('version command - minor increment', async t => {
   const { result } = await run(t, ['minor'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.1.0',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.1.0',
   })
 })
 
@@ -201,9 +252,12 @@ t.test('version command - major increment', async t => {
   const { result } = await run(t, ['major'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '2.0.0',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v2.0.0',
   })
 })
 
@@ -211,9 +265,12 @@ t.test('version command - premajor increment', async t => {
   const { result } = await run(t, ['premajor'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '2.0.0-pre',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v2.0.0-pre',
   })
 })
 
@@ -221,9 +278,12 @@ t.test('version command - preminor increment', async t => {
   const { result } = await run(t, ['preminor'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.1.0-pre',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.1.0-pre',
   })
 })
 
@@ -231,9 +291,12 @@ t.test('version command - prepatch increment', async t => {
   const { result } = await run(t, ['prepatch'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '1.0.1-pre',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.0.1-pre',
   })
 })
 
@@ -242,13 +305,16 @@ t.test('version command - prerelease increment', async t => {
     t,
     ['prerelease'],
     {},
-    { version: '1.0.0-pre' },
+    { name: 'a', version: '1.0.0-pre' },
   )
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0-pre',
     newVersion: '1.0.0-pre.0',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v1.0.0-pre.0',
   })
 })
 
@@ -256,9 +322,12 @@ t.test('version command - explicit semver version', async t => {
   const { result } = await run(t, ['2.3.4'])
 
   t.strictSame(result, {
+    name: 'a',
     oldVersion: '1.0.0',
     newVersion: '2.3.4',
     dir: process.cwd(),
+    committed: ['package.json'].map(f => join(process.cwd(), f)),
+    tag: 'v2.3.4',
   })
 })
 
@@ -268,9 +337,12 @@ t.test(
     const { result } = await run(t, ['2.3.4-beta.1'])
 
     t.strictSame(result, {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '2.3.4-beta.1',
       dir: process.cwd(),
+      committed: ['package.json'].map(f => join(process.cwd(), f)),
+      tag: 'v2.3.4-beta.1',
     })
   },
 )
@@ -334,10 +406,11 @@ t.test('git operations', async t => {
     )
 
     t.strictSame(result, {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: process.cwd(),
-      committed: ['package.json'],
+      committed: ['package.json'].map(f => join(process.cwd(), f)),
       tag: 'v1.0.1',
     })
 
@@ -373,10 +446,11 @@ t.test('git operations', async t => {
       })
 
       t.strictSame(result, {
+        name: 'a',
         oldVersion: '1.0.0',
         newVersion: '1.0.1',
         dir: process.cwd(),
-        committed: ['package.json'],
+        committed: ['package.json'].map(f => join(process.cwd(), f)),
         tag: 'v1.0.1',
       })
     },
@@ -491,6 +565,7 @@ t.test('git operations', async t => {
     )
 
     t.strictSame(result, {
+      name: 'a',
       oldVersion: '1.0.0',
       newVersion: '1.0.1',
       dir: process.cwd(),
@@ -498,5 +573,540 @@ t.test('git operations', async t => {
 
     // Should not have made any git calls
     t.equal(gitSpawnCalls.length, 0)
+  })
+})
+
+t.test('version command with scope', async t => {
+  t.test('updates packages matching scope query', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    // Mock the graph search to return workspace nodes
+    const mockNodes = [
+      {
+        id: 'file:packages/a',
+        toJSON: () => ({ location: 'packages/a' }),
+      },
+      {
+        id: 'file:packages/b',
+        toJSON: () => ({ location: 'packages/b' }),
+      },
+    ]
+
+    const mockQuery = {
+      search: async () => ({ nodes: mockNodes }),
+    }
+
+    const cmd = await mockCommand(t, {
+      '@vltpkg/git': mockGit,
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({
+            nodes: new Map(),
+          }),
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          search = mockQuery.search
+        },
+      },
+    })
+
+    const conf = new MockConfig(
+      ['patch'],
+      {
+        scope: ':workspace',
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      { version: '1.0.0' },
+    )
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+
+    // Override packageJson.find to work with test directories
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return resolve(dir, 'packages/a/package.json')
+      }
+      if (cwd.includes(join('packages', 'b'))) {
+        return resolve(dir, 'packages/b/package.json')
+      }
+      return resolve(dir, 'package.json')
+    }
+
+    // Override packageJson.read to return correct versions
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return { name: '@test/a', version: '1.0.0' }
+      }
+      if (cwd.includes(join('packages', 'b'))) {
+        return { name: '@test/b', version: '2.0.0' }
+      }
+      return { name: 'root', version: '1.0.0' }
+    }
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2, 'should update both workspaces')
+
+    const [resultA, resultB] = results.sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )
+    t.equal(resultA!.oldVersion, '1.0.0')
+    t.equal(resultA!.newVersion, '1.0.1')
+    t.equal(resultB!.oldVersion, '2.0.0')
+    t.equal(resultB!.newVersion, '2.0.1')
+  })
+
+  t.test('handles empty scope query results', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: [] }),
+    })
+
+    const cmd = await mockCommand(t, {
+      '@vltpkg/git': mockGit,
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({
+            nodes: new Map(),
+          }),
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          search = async () => ({ nodes: [] })
+        },
+      },
+    })
+
+    const conf = new MockConfig(['patch'], {
+      scope: ':workspace#nonexistent',
+      monorepo: [],
+    })
+    conf.projectRoot = dir
+
+    await t.rejects(cmd.command(conf as unknown as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
+  })
+})
+
+t.test('version command with workspace paths', async t => {
+  t.test('updates specific workspace paths', async t => {
+    const semverModule = await import('@vltpkg/semver')
+
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const conf = new MockConfig(['minor'], {
+      workspace: ['packages/a'],
+      monorepo: [
+        {
+          name: '@test/a',
+          fullpath: resolve(dir, 'packages/a'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+
+    // Override packageJson.find to work with test directories
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return resolve(dir, 'packages/a/package.json')
+      }
+      return null
+    }
+
+    // Override packageJson.read to return correct versions
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return { name: '@test/a', version: '1.0.0' }
+      }
+      return { name: 'root', version: '1.0.0' }
+    }
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(
+      results.length,
+      1,
+      'should update only specified workspace',
+    )
+
+    const [resultA] = results
+    t.equal(resultA!.oldVersion, '1.0.0')
+    t.equal(resultA!.newVersion, '1.1.0')
+  })
+})
+
+t.test('version command with workspace-group', async t => {
+  t.test('updates all workspaces in group', async t => {
+    const semverModule = await import('@vltpkg/semver')
+
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const conf = new MockConfig(['major'], {
+      'workspace-group': ['packages'],
+      monorepo: [
+        {
+          name: '@test/a',
+          fullpath: resolve(dir, 'packages/a'),
+        },
+        {
+          name: '@test/b',
+          fullpath: resolve(dir, 'packages/b'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+
+    // Override packageJson.find to work with test directories
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return resolve(dir, 'packages/a/package.json')
+      }
+      if (cwd.includes(join('packages', 'b'))) {
+        return resolve(dir, 'packages/b/package.json')
+      }
+      return null
+    }
+
+    // Override packageJson.read to return correct versions
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return { name: '@test/a', version: '1.0.0' }
+      }
+      if (cwd.includes(join('packages', 'b'))) {
+        return { name: '@test/b', version: '2.0.0' }
+      }
+      return { name: 'root', version: '1.0.0' }
+    }
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(
+      results.length,
+      2,
+      'should update all workspaces in group',
+    )
+
+    const [resultA, resultB] = results.sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )
+    t.equal(resultA!.oldVersion, '1.0.0')
+    t.equal(resultA!.newVersion, '2.0.0')
+    t.equal(resultB!.oldVersion, '2.0.0')
+    t.equal(resultB!.newVersion, '3.0.0')
+  })
+})
+
+t.test('version command with recursive', async t => {
+  t.test('updates all workspaces recursively', async t => {
+    const semverModule = await import('@vltpkg/semver')
+
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const conf = new MockConfig(['prerelease'], {
+      recursive: true,
+      monorepo: [
+        {
+          name: '@test/a',
+          fullpath: resolve(dir, 'packages/a'),
+        },
+        {
+          name: '@test/b',
+          fullpath: resolve(dir, 'packages/b'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+
+    // Override packageJson.find to work with test directories
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return resolve(dir, 'packages/a/package.json')
+      }
+      if (cwd.includes(join('packages', 'b'))) {
+        return resolve(dir, 'packages/b/package.json')
+      }
+      return null
+    }
+
+    // Override packageJson.read to return correct versions
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a'))) {
+        return { name: '@test/a', version: '1.0.0' }
+      }
+      if (cwd.includes(join('packages', 'b'))) {
+        return { name: '@test/b', version: '2.0.0' }
+      }
+      return { name: 'root', version: '1.0.0' }
+    }
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+
+    t.ok(Array.isArray(result), 'should return array of results')
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2, 'should update all workspaces')
+
+    const [resultA, resultB] = results.sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )
+    t.equal(resultA!.oldVersion, '1.0.0')
+    t.equal(resultA!.newVersion, '1.0.1-pre')
+    t.equal(resultB!.oldVersion, '2.0.0')
+    t.equal(resultB!.newVersion, '2.0.1-pre')
+  })
+})
+
+t.test('human view with arrays', async t => {
+  const cmd = await mockCommand(t)
+
+  t.test('formats multiple results', async t => {
+    const results = [
+      {
+        name: 'a',
+        oldVersion: '1.0.0',
+        newVersion: '1.0.1',
+        dir: '/test/a',
+      },
+      {
+        name: 'b',
+        oldVersion: '2.0.0',
+        newVersion: '2.0.1',
+        dir: '/test/b',
+        committed: ['package.json'],
+        tag: 'v2.0.1',
+      },
+    ]
+
+    const output = cmd.views.human(results)
+    const lines = output.split('\n').filter(Boolean)
+    t.equal(lines.length, 2)
+    t.equal(lines[0], 'a: v1.0.1')
+    t.equal(lines[1], 'b: v2.0.1 +commit +tag')
+  })
+})
+
+t.test('version command fallback to projectRoot', async t => {
+  t.test(
+    'uses projectRoot when package.json.find returns null',
+    async t => {
+      const semverModule = await import('@vltpkg/semver')
+
+      const cmd = await mockCommand(t, {
+        '@vltpkg/semver': semverModule,
+        '@vltpkg/git': mockGit,
+      })
+
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'root',
+          version: '1.0.0',
+        }),
+      })
+
+      const conf = new MockConfig(['patch'], {})
+      conf.projectRoot = dir
+      conf.writtenManifests = []
+
+      // Override packageJson.find to return null for process.cwd()
+      conf.values.packageJson.find = (cwd: string) => {
+        if (cwd === dir) {
+          return resolve(dir, 'package.json')
+        }
+        return null // This will trigger the fallback to projectRoot
+      }
+
+      // Override packageJson.read
+      conf.values.packageJson.read = (_cwd: string) => {
+        return { name: 'root', version: '1.0.0' }
+      }
+
+      const result = await cmd.command(
+        conf as unknown as LoadedConfig,
+      )
+
+      t.notOk(Array.isArray(result), 'should return single result')
+      const singleResult = result as CommandResultSingle
+      t.equal(singleResult.oldVersion, '1.0.0')
+      t.equal(singleResult.newVersion, '1.0.1')
+      t.equal(singleResult.dir, dir)
+    },
+  )
+})
+
+t.test('version command with empty monorepo', async t => {
+  t.test(
+    'returns empty array when recursive with no workspaces',
+    async t => {
+      const semverModule = await import('@vltpkg/semver')
+
+      const cmd = await mockCommand(t, {
+        '@vltpkg/semver': semverModule,
+        '@vltpkg/git': mockGit,
+      })
+
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'root',
+          version: '1.0.0',
+        }),
+      })
+
+      const conf = new MockConfig(['patch'], {
+        recursive: true,
+        monorepo: [], // Empty monorepo array
+      })
+      conf.projectRoot = dir
+      conf.writtenManifests = []
+
+      await t.rejects(cmd.command(conf as unknown as LoadedConfig), {
+        message: 'No workspaces or query results found',
+      })
+    },
+  )
+
+  t.test('handles null monorepo with recursive flag', async t => {
+    const semverModule = await import('@vltpkg/semver')
+
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+    })
+
+    const conf = new MockConfig(['patch'], {
+      recursive: true,
+      monorepo: null, // Null monorepo (undefined)
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+
+    await t.rejects(cmd.command(conf as unknown as LoadedConfig), {
+      message: 'No workspaces or query results found',
+    })
   })
 })
