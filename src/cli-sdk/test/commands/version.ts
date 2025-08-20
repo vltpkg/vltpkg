@@ -214,7 +214,7 @@ t.test('version command - no version in package.json', async t => {
   await t.rejects(run(t, ['patch'], {}, { name: 'a' }), {
     message: 'No version field found in package.json',
     cause: {
-      path: process.cwd() + '/package.json',
+      path: join(process.cwd(), 'package.json'),
     },
   })
 })
