@@ -56,10 +56,16 @@ body:
       label: 🌍 Environment
       description: Please provide information about your environment
       placeholder: |
-        - OS: [e.g. macOS 14.1, Windows 11, Ubuntu 22.04]
-        - Browser: [e.g. Chrome 120, Firefox 121, Safari 17]
-        - Node.js version: [e.g. 18.17.0]
-        - Package version: [e.g. 1.2.3]
+        - OS + version: [e.g. macOS 14.1, Windows 11, Ubuntu 22.04]
+        - Node version: [e.g. 18.17.0]
+        - vlt version: [e.g. 1.2.3]
+      value: |
+        Run the following in your terminal then copy+paste the output: 
+          node -p "[
+            '- OS: ' + process.platform + ' ' + process.version,
+            '- Node: ' + process.version,
+            '- vlt: ' + require('child_process').execSync('vlt -v').toString().trim()
+          ].join('\n')"
     validations:
       required: true
 
