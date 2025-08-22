@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FileExplorerDialog > renders open snapshot 1`] = `
+
+<gui-button classname="rounded-lg font-normal w-full px-2 transition-colors duration-250 min-w-36 text-foreground h-10 border bg-transparent hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900">
+  <gui-icon-folder-search>
+  </gui-icon-folder-search>
+  <span>
+    Select Directory
+  </span>
+</gui-button>
+
+`;
