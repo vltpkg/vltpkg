@@ -19,8 +19,6 @@ exports[`AppSidebar renders with the correct structure 1`] = `
     <gui-sidebar-menu>
       <gui-sidebar-menu-link items="[object Object],[object Object]">
       </gui-sidebar-menu-link>
-      <gui-sidebar-theme-switcher>
-      </gui-sidebar-theme-switcher>
       <gui-sidebar-toggle>
       </gui-sidebar-toggle>
     </gui-sidebar-menu>

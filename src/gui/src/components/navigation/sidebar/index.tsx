@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/sidebar.tsx'
 
 /* sidebar components */
-import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.tsx'
 import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
 import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.tsx'
 
@@ -51,7 +50,6 @@ export const AppSidebar = () => {
       <SidebarFooter className="mb-[0.875px]">
         <SidebarMenu>
           <SidebarMenuLink items={footerMenuItems} />
-          <SidebarThemeSwitcher />
           <SidebarToggle />
         </SidebarMenu>
       </SidebarFooter>

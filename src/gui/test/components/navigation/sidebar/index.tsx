@@ -13,12 +13,6 @@ vi.mock('@/components/ui/sidebar.tsx', () => ({
 }))
 
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-theme-switcher.tsx',
-  () => ({
-    SidebarThemeSwitcher: 'gui-sidebar-theme-switcher',
-  }),
-)
-vi.mock(
   '@/components/navigation/sidebar/sidebar-menu-link.tsx',
   () => ({
     SidebarMenuLink: 'gui-sidebar-menu-link',
