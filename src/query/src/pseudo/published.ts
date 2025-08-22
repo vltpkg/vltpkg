@@ -57,7 +57,7 @@ export const retrieveRemoteDate = async (
   }
   if (!response.ok) {
     throw error('Failed to fetch packument', {
-      name: String(node.name),
+      name: node.name,
       spec,
       response,
     })
@@ -136,7 +136,7 @@ export const queueNode = async (
     // eslint-disable-next-line no-console
     console.warn(
       error('Could not retrieve registry publish date', {
-        name: String(node.name),
+        name: node.name,
         cause: err,
       }),
     )

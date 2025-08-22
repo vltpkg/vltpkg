@@ -469,8 +469,8 @@ export const FilterListEmptyState = () => {
     ...fillerDependencies.slice(0, 3 - dependencies.length),
     ...dependencies.map(dep => ({
       name: dep.name,
-      spec: String(dep.spec?.semver ?? '^1.0.0'),
-      version: String(dep.version),
+      spec: dep.spec?.semver ?? '^1.0.0',
+      version: dep.version,
     })),
   ].splice(0, 3)
 

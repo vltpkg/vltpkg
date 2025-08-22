@@ -12,7 +12,7 @@ export * from './version.ts'
 export const parse = (version: Version | string) => {
   if (version instanceof Version) return version
   try {
-    return Version.parse(String(version))
+    return Version.parse(version)
   } catch {
     return undefined
   }

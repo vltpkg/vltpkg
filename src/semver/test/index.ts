@@ -45,11 +45,6 @@ t.test('parse, valid', t => {
   t.equal(valid('1.2.3'), true)
   t.equal(parse('adsfhasoe'), undefined)
   t.equal(valid('adsfhasoe'), false)
-
-  //@ts-expect-error
-  t.strictSame(parse({ toString: () => '1.2.3' }), v)
-  //@ts-expect-error
-  t.equal(valid({ toString: () => '1.2.3' }), true)
   t.end()
 })
 
