@@ -9,7 +9,6 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { stdout } from '../../output.ts'
 import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 
@@ -32,7 +31,7 @@ const GraphStep = ({ text, step }: { text: string; step: Step }) => {
   return $(Text, { color: 'green' }, text, ' ✓')
 }
 
-const App = () => {
+const App = ({ trailer }: { trailer?: string }) => {
   const [requests, setRequests] = useState(0)
 
   const [steps, setSteps] = useState<
@@ -88,6 +87,7 @@ const App = () => {
       ),
     ),
     requests > 0 ? $(Text, null, `${requests} requests`) : null,
+    trailer ? $(Text, null, trailer) : null,
   )
 }
 
@@ -99,8 +99,7 @@ export class InstallReporter extends ViewClass {
   }
 
   async done(_result: unknown, { time }: { time: number }) {
-    await this.#instance?.waitUntilExit()
-    stdout(`Done in ${time}ms`)
+    this.#instance?.rerender($(App, { trailer: `Done in ${time}ms` }))
     return undefined
   }
 

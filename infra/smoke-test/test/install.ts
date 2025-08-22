@@ -26,7 +26,7 @@ t.test('install a package', async t => {
 })
 
 t.test('tty', { skip: process.platform === 'win32' }, async t => {
-  const { output } = await runMultiple(t, ['i', 'abbrev'], {
+  const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
     tty: true,
     match: ['status'],
     cleanOutput: v =>
@@ -39,4 +39,5 @@ t.test('tty', { skip: process.platform === 'win32' }, async t => {
   t.match(output, 'build')
   t.match(output, 'actual')
   t.match(output, 'reify')
+  t.equal(status, 0)
 })
