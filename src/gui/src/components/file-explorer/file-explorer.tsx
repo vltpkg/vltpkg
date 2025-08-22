@@ -651,7 +651,7 @@ const FileExplorerGridItem = ({
       )}
       onClick={onClick}
       onDoubleClick={onDoubleClick}>
-      <div className="duration-250 duration-250 flex items-center justify-center rounded-lg p-1 transition-colors group-hover:bg-neutral-200 dark:group-hover:bg-neutral-900 [&>svg]:size-20">
+      <div className="duration-250 flex items-center justify-center rounded-lg p-1 transition-colors group-hover:bg-neutral-200 dark:group-hover:bg-neutral-900 [&>svg]:size-20">
         <Icon
           className={cn(
             '',

@@ -126,7 +126,6 @@ const NameCellInner = ({
   canExpand: boolean
   isExpanded: boolean
   onToggle: (item: FileExplorerItem) => void
-  highlightSelectionInText?: boolean
 }) => {
   const Icon = getIcon(item.type, isExpanded)
 
@@ -233,7 +232,6 @@ const NestedRows = ({
                     canExpand={canExpand}
                     isExpanded={isExpanded}
                     onToggle={onToggle}
-                    highlightSelectionInText={true}
                   />
                 </div>
               </TableCell>
@@ -406,7 +404,6 @@ export const TableList = ({
               canExpand={canExpand}
               isExpanded={isExpanded}
               onToggle={toggleExpand}
-              highlightSelectionInText={false}
             />
           </div>
         )
