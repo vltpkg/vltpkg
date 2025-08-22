@@ -1,9 +1,14 @@
 import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import type { Stats } from 'node:fs'
-import { lstatSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
 import { homedir } from 'node:os'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { walkUp } from 'walk-up-path'
 
 import {
@@ -231,6 +236,9 @@ export const save = (
   if (!extraStringifyOptions[kNewline]) {
     extraStringifyOptions[kNewline] = '\n'
   }
+
+  // Ensure the directory exists before writing the file
+  mkdirSync(dirname(path), { recursive: true })
 
   writeFileSync(
     path,
