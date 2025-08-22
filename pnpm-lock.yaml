@@ -91,6 +91,10 @@ catalogs:
       specifier: ^4.0.0
       version: 4.0.0
 
+overrides:
+  '@types/react': ^18.3.23
+  '@types/react-dom': ^18.3.7
+
 patchedDependencies:
   tshy:
     hash: bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e
@@ -202,7 +206,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -233,7 +237,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -329,7 +333,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -373,7 +377,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -413,7 +417,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -509,10 +513,10 @@ importers:
         version: 1.1.0
       ink:
         specifier: ^6.0.0
-        version: 6.2.0(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@19.1.1)
+        version: 6.2.0(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@19.1.1)
       ink-spinner:
         specifier: ^5.0.0
-        version: 5.0.0(ink@6.2.0(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@19.1.1))(react@19.1.1)
+        version: 5.0.0(ink@6.2.0(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@19.1.1))(react@19.1.1)
       jackspeak:
         specifier: ^4.1.1
         version: 4.1.1
@@ -537,9 +541,6 @@ importers:
       react-devtools-core:
         specifier: ^4.28.5
         version: 4.28.5
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.1.1(react@19.1.1)
       ssri:
         specifier: 'catalog:'
         version: 12.0.0
@@ -557,8 +558,8 @@ importers:
         specifier: 'catalog:'
         version: 22.15.29
       '@types/react':
-        specifier: ^19.0.0
-        version: 19.1.10
+        specifier: ^18.3.23
+        version: 18.3.23
       '@types/ssri':
         specifier: 'catalog:'
         version: 7.1.5
@@ -570,7 +571,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -607,7 +608,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -659,7 +660,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -699,7 +700,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -729,7 +730,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -766,7 +767,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -803,7 +804,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -833,7 +834,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -863,7 +864,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -933,7 +934,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -963,7 +964,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1054,7 +1055,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tar:
         specifier: 'catalog:'
         version: 7.4.3
@@ -1302,7 +1303,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1336,7 +1337,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1370,7 +1371,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1449,7 +1450,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1492,7 +1493,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1541,7 +1542,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1578,7 +1579,7 @@ importers:
         version: 1.8.2
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1642,7 +1643,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1706,7 +1707,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1740,7 +1741,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1789,7 +1790,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1835,7 +1836,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1893,7 +1894,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -1942,7 +1943,7 @@ importers:
         version: 7.7.2
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2033,7 +2034,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2079,7 +2080,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2131,7 +2132,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2168,7 +2169,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2205,7 +2206,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2248,7 +2249,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2312,7 +2313,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2346,7 +2347,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2404,7 +2405,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2434,7 +2435,7 @@ importers:
         version: 3.6.0
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
@@ -2646,8 +2647,8 @@ packages:
     resolution: {integrity: sha512-N02aj52Iezn69qHyx5+XvPqgsPMEnel9mI5JMbGiRMTzzLMuNaxRVoQTaq2024Dpr7BLsxCjqMkNvelqMDhaHA==}
     engines: {node: 18.20.8 || ^20.3.0 || >=22.0.0}
     peerDependencies:
-      '@types/react': ^17.0.50 || ^18.0.21 || ^19.0.0
-      '@types/react-dom': ^17.0.17 || ^18.0.6 || ^19.0.0
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^17.0.2 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.2 || ^18.0.0 || ^19.0.0
 
@@ -3770,8 +3771,8 @@ packages:
   '@radix-ui/react-arrow@1.1.7':
     resolution: {integrity: sha512-F+M1tLhO+mlQaOWspE8Wstg+z6PwxwRd8oQ8IXceWz92kfAmalTRf0EjrouQeo7QssEPfCn05B4Ihs1K9WQ/7w==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3783,8 +3784,8 @@ packages:
   '@radix-ui/react-avatar@1.1.10':
     resolution: {integrity: sha512-V8piFfWapM5OmNCXTzVQY+E1rDa53zY+MQ4Y7356v4fFz6vqCyUtIz2rUD44ZEdwg78/jKmMJHj07+C/Z/rcog==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3796,8 +3797,8 @@ packages:
   '@radix-ui/react-checkbox@1.3.2':
     resolution: {integrity: sha512-yd+dI56KZqawxKZrJ31eENUwqc1QSqg4OZ15rybGjF2ZNwMO+wCyHzAVLRp9qoYJf7kYy0YpZ2b0JCzJ42HZpA==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3809,8 +3810,8 @@ packages:
   '@radix-ui/react-collapsible@1.1.11':
     resolution: {integrity: sha512-2qrRsVGSCYasSz1RFOorXwl0H7g7J1frQtgpQgYrt+MOidtPAINHn9CPovQXb83r8ahapdx3Tu0fa/pdFFSdPg==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3822,8 +3823,8 @@ packages:
   '@radix-ui/react-collection@1.1.7':
     resolution: {integrity: sha512-Fh9rGN0MoI4ZFUNyfFVNU4y9LUz93u9/0K+yLgA2bwRojxM8JU1DyvvMBabnZPBgMWREAJvU2jjVzq+LrFUglw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3835,7 +3836,7 @@ packages:
   '@radix-ui/react-compose-refs@1.1.2':
     resolution: {integrity: sha512-z4eqJvfiNnFMHIIvXP3CY57y2WJs5g2v3X0zm9mEJkrkNv4rDxu+sg9Jh8EkXyeqBkB7SOcboo9dMVqhyrACIg==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -3844,8 +3845,8 @@ packages:
   '@radix-ui/react-context-menu@2.2.15':
     resolution: {integrity: sha512-UsQUMjcYTsBjTSXw0P3GO0werEQvUY2plgRQuKoCTtkNr45q1DiL51j4m7gxhABzZ0BadoXNsIbg7F3KwiUBbw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3857,7 +3858,7 @@ packages:
   '@radix-ui/react-context@1.1.2':
     resolution: {integrity: sha512-jCi/QKUM2r1Ju5a3J64TH2A5SpKAgh0LpknyqdQ4m6DCV0xJ2HG1xARRwNGPQfi1SLdLWZ1OJz6F4OMBBNiGJA==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -3866,8 +3867,8 @@ packages:
   '@radix-ui/react-dialog@1.1.14':
     resolution: {integrity: sha512-+CpweKjqpzTmwRwcYECQcNYbI8V9VSQt0SNFKeEBLgfucbsLssU6Ppq7wUdNXEGb573bMjFhVjKVll8rmV6zMw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3879,7 +3880,7 @@ packages:
   '@radix-ui/react-direction@1.1.1':
     resolution: {integrity: sha512-1UEWRX6jnOA2y4H5WczZ44gOOjTEmlqv1uNW4GAJEO5+bauCBhv8snY65Iw5/VOS/ghKN9gr2KjnLKxrsvoMVw==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -3888,8 +3889,8 @@ packages:
   '@radix-ui/react-dismissable-layer@1.1.10':
     resolution: {integrity: sha512-IM1zzRV4W3HtVgftdQiiOmA0AdJlCtMLe00FXaHwgt3rAnNsIyDqshvkIW3hj/iu5hu8ERP7KIYki6NkqDxAwQ==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3901,8 +3902,8 @@ packages:
   '@radix-ui/react-dropdown-menu@2.1.15':
     resolution: {integrity: sha512-mIBnOjgwo9AH3FyKaSWoSu/dYj6VdhJ7frEPiGTeXCdUFHjl9h3mFh2wwhEtINOmYXWhdpf1rY2minFsmaNgVQ==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3914,7 +3915,7 @@ packages:
   '@radix-ui/react-focus-guards@1.1.2':
     resolution: {integrity: sha512-fyjAACV62oPV925xFCrH8DR5xWhg9KYtJT4s3u54jxp+L/hbpTY2kIeEFFbFe+a/HCE94zGQMZLIpVTPVZDhaA==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -3923,8 +3924,8 @@ packages:
   '@radix-ui/react-focus-scope@1.1.7':
     resolution: {integrity: sha512-t2ODlkXBQyn7jkl6TNaw/MtVEVvIGelJDCG41Okq/KwUsJBwQ4XVZsHAVUkK4mBv3ewiAS3PGuUWuY2BoK4ZUw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3936,7 +3937,7 @@ packages:
   '@radix-ui/react-id@1.1.1':
     resolution: {integrity: sha512-kGkGegYIdQsOb4XjsfM97rXsiHaBwco+hFI66oO4s9LU+PLAC5oJ7khdOVFxkhsmlbpUqDAvXw11CluXP+jkHg==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -3945,8 +3946,8 @@ packages:
   '@radix-ui/react-label@2.1.7':
     resolution: {integrity: sha512-YT1GqPSL8kJn20djelMX7/cTRp/Y9w5IZHvfxQTVHrOqa2yMl7i/UfMqKRU5V7mEyKTrUVgJXhNQPVCG8PBLoQ==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3958,8 +3959,8 @@ packages:
   '@radix-ui/react-menu@2.1.15':
     resolution: {integrity: sha512-tVlmA3Vb9n8SZSd+YSbuFR66l87Wiy4du+YE+0hzKQEANA+7cWKH1WgqcEX4pXqxUFQKrWQGHdvEfw00TjFiew==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3971,8 +3972,8 @@ packages:
   '@radix-ui/react-popover@1.1.14':
     resolution: {integrity: sha512-ODz16+1iIbGUfFEfKx2HTPKizg2MN39uIOV8MXeHnmdd3i/N9Wt7vU46wbHsqA0xoaQyXVcs0KIlBdOA2Y95bw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3984,8 +3985,8 @@ packages:
   '@radix-ui/react-popper@1.2.7':
     resolution: {integrity: sha512-IUFAccz1JyKcf/RjB552PlWwxjeCJB8/4KxT7EhBHOJM+mN7LdW+B3kacJXILm32xawcMMjb2i0cIZpo+f9kiQ==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -3997,8 +3998,8 @@ packages:
   '@radix-ui/react-portal@1.1.9':
     resolution: {integrity: sha512-bpIxvq03if6UNwXZ+HTK71JLh4APvnXntDc6XOX8UVq4XQOVl7lwok0AvIl+b8zgCw3fSaVTZMpAPPagXbKmHQ==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4010,8 +4011,8 @@ packages:
   '@radix-ui/react-presence@1.1.4':
     resolution: {integrity: sha512-ueDqRbdc4/bkaQT3GIpLQssRlFgWaL/U2z/S31qRwwLWoxHLgry3SIfCwhxeQNbirEUXFa+lq3RL3oBYXtcmIA==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4023,8 +4024,8 @@ packages:
   '@radix-ui/react-primitive@2.0.3':
     resolution: {integrity: sha512-Pf/t/GkndH7CQ8wE2hbkXA+WyZ83fhQQn5DDmwDiDo6AwN/fhaH8oqZ0jRjMrO2iaMhDi6P1HRx6AZwyMinY1g==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4036,8 +4037,8 @@ packages:
   '@radix-ui/react-primitive@2.1.3':
     resolution: {integrity: sha512-m9gTwRkhy2lvCPe6QJp4d3G1TYEUHn/FzJUtq9MjH46an1wJU+GdoGC5VLof8RX8Ft/DlpshApkhswDLZzHIcQ==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4049,8 +4050,8 @@ packages:
   '@radix-ui/react-roving-focus@1.1.10':
     resolution: {integrity: sha512-dT9aOXUen9JSsxnMPv/0VqySQf5eDQ6LCk5Sw28kamz8wSOW2bJdlX2Bg5VUIIcV+6XlHpWTIuTPCf/UNIyq8Q==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4062,8 +4063,8 @@ packages:
   '@radix-ui/react-scroll-area@1.2.9':
     resolution: {integrity: sha512-YSjEfBXnhUELsO2VzjdtYYD4CfQjvao+lhhrX5XsHD7/cyUNzljF1FHEbgTPN7LH2MClfwRMIsYlqTYpKTTe2A==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4075,8 +4076,8 @@ packages:
   '@radix-ui/react-select@2.2.5':
     resolution: {integrity: sha512-HnMTdXEVuuyzx63ME0ut4+sEMYW6oouHWNGUZc7ddvUWIcfCva/AMoqEW/3wnEllriMWBa0RHspCYnfCWJQYmA==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4088,8 +4089,8 @@ packages:
   '@radix-ui/react-separator@1.1.7':
     resolution: {integrity: sha512-0HEb8R9E8A+jZjvmFCy/J4xhbXy3TV+9XSnGJ3KvTtjlIUy/YQ/p6UYZvi7YbeoeXdyU9+Y3scizK6hkY37baA==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4101,7 +4102,7 @@ packages:
   '@radix-ui/react-slot@1.2.0':
     resolution: {integrity: sha512-ujc+V6r0HNDviYqIK3rW4ffgYiZ8g5DEHrGJVk4x7kTlLXRDILnKX9vAUYeIsLOoDpDJ0ujpqMkjH4w2ofuo6w==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4110,7 +4111,7 @@ packages:
   '@radix-ui/react-slot@1.2.3':
     resolution: {integrity: sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4119,8 +4120,8 @@ packages:
   '@radix-ui/react-tabs@1.1.12':
     resolution: {integrity: sha512-GTVAlRVrQrSw3cEARM0nAx73ixrWDPNZAruETn3oHCNP6SbZ/hNxdxp+u7VkIEv3/sFoLq1PfcHrl7Pnp0CDpw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4132,8 +4133,8 @@ packages:
   '@radix-ui/react-toast@1.2.14':
     resolution: {integrity: sha512-nAP5FBxBJGQ/YfUB+r+O6USFVkWq3gAInkxyEnmvEV5jtSbfDhfa4hwX8CraCnbjMLsE7XSf/K75l9xXY7joWg==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4145,8 +4146,8 @@ packages:
   '@radix-ui/react-tooltip@1.2.7':
     resolution: {integrity: sha512-Ap+fNYwKTYJ9pzqW+Xe2HtMRbQ/EeWkj2qykZ6SuEV4iS/o1bZI5ssJbk4D2r8XuDuOBVz/tIx2JObtuqU+5Zw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4158,7 +4159,7 @@ packages:
   '@radix-ui/react-use-callback-ref@1.1.1':
     resolution: {integrity: sha512-FkBMwD+qbGQeMu1cOHnuGB6x4yzPjho8ap5WtbEJ26umhgqVXbhekKUQO+hZEL1vU92a3wHwdp0HAcqAUF5iDg==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4167,7 +4168,7 @@ packages:
   '@radix-ui/react-use-controllable-state@1.2.2':
     resolution: {integrity: sha512-BjasUjixPFdS+NKkypcyyN5Pmg83Olst0+c6vGov0diwTEo6mgdqVR6hxcEgFuh4QrAs7Rc+9KuGJ9TVCj0Zzg==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4176,7 +4177,7 @@ packages:
   '@radix-ui/react-use-effect-event@0.0.2':
     resolution: {integrity: sha512-Qp8WbZOBe+blgpuUT+lw2xheLP8q0oatc9UpmiemEICxGvFLYmHm9QowVZGHtJlGbS6A6yJ3iViad/2cVjnOiA==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4185,7 +4186,7 @@ packages:
   '@radix-ui/react-use-escape-keydown@1.1.1':
     resolution: {integrity: sha512-Il0+boE7w/XebUHyBjroE+DbByORGR9KKmITzbR7MyQ4akpORYP/ZmbhAr0DG7RmmBqoOnZdy2QlvajJ2QA59g==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4194,7 +4195,7 @@ packages:
   '@radix-ui/react-use-is-hydrated@0.1.0':
     resolution: {integrity: sha512-U+UORVEq+cTnRIaostJv9AGdV3G6Y+zbVd+12e18jQ5A3c0xL03IhnHuiU4UV69wolOQp5GfR58NW/EgdQhwOA==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4203,7 +4204,7 @@ packages:
   '@radix-ui/react-use-layout-effect@1.1.1':
     resolution: {integrity: sha512-RbJRS4UWQFkzHTTwVymMTUv8EqYhOp8dOOviLj2ugtTiXRaRQS7GLGxZTLL1jWhMeoSCf5zmcZkqTl9IiYfXcQ==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4212,7 +4213,7 @@ packages:
   '@radix-ui/react-use-previous@1.1.1':
     resolution: {integrity: sha512-2dHfToCj/pzca2Ck724OZ5L0EVrr3eHRNsG/b3xQJLA2hZpVCS99bLAX+hm1IHXDEnzU6by5z/5MIY794/a8NQ==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4221,7 +4222,7 @@ packages:
   '@radix-ui/react-use-rect@1.1.1':
     resolution: {integrity: sha512-QTYuDesS0VtuHNNvMh+CjlKJ4LJickCMUAqjlE3+j8w+RlRpwyX3apEQKGFzbZGdo7XNG1tXa+bQqIE7HIXT2w==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4230,7 +4231,7 @@ packages:
   '@radix-ui/react-use-size@1.1.1':
     resolution: {integrity: sha512-ewrXRDTAqAXlkl6t/fkXWNAhFX9I+CkKlw6zjEwk86RSPKwZr3xpBRso655aqYafwtnbpHLj6toFzmd6xdVptQ==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -4239,8 +4240,8 @@ packages:
   '@radix-ui/react-visually-hidden@1.2.3':
     resolution: {integrity: sha512-pzJq12tEaaIhqjbzpCuv/OypJY/BPavOofm+dbab+MHLajy277+1lLm6JFcGgF5eskJ6mquGirhXY2GD/8u8Ug==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -4624,8 +4625,8 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@testing-library/dom': ^10.0.0
-      '@types/react': ^18.0.0 || ^19.0.0
-      '@types/react-dom': ^18.0.0 || ^19.0.0
+      '@types/react': ^18.3.23
+      '@types/react-dom': ^18.3.7
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
@@ -4793,13 +4794,10 @@ packages:
   '@types/react-dom@18.3.7':
     resolution: {integrity: sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==}
     peerDependencies:
-      '@types/react': ^18.0.0
+      '@types/react': ^18.3.23
 
   '@types/react@18.3.23':
     resolution: {integrity: sha512-/LDXMQh55EzZQ0uVAZmKKhfENivEvWz6E+EYzh+/MCjMhNsotd+ZHhBGIjFDTi6+fz0OhQQQLbTgdQIxxCsC0w==}
-
-  '@types/react@19.1.10':
-    resolution: {integrity: sha512-EhBeSYX0Y6ye8pNebpKrwFJq7BoQ8J5SO6NlvNwwHjSj6adXJViPQrKlsyPw7hLBLvckEMO1yxeGdR82YBBlDg==}
 
   '@types/retry@0.12.2':
     resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
@@ -6484,7 +6482,7 @@ packages:
     resolution: {integrity: sha512-BqcUyWrG9zq5HIwW6JcfFHsIYebJkWWb4fczNah1goUO0vv5vneIlfwuS85twyJ5hYR/y18FlAYUxrO9ChIWVg==}
     engines: {node: '>=18'}
     peerDependencies:
-      '@types/react': '>=18.0.0'
+      '@types/react': ^18.3.23
       react: '>=18.0.0'
       react-devtools-core: ^4.19.1
     peerDependenciesMeta:
@@ -6497,7 +6495,7 @@ packages:
     resolution: {integrity: sha512-NQbNokT11cuxlIcCDfBMk1vEwaqc/cjTSqc4R4JugBO4BpWVe2B2A6ElC2koZQ9Vj91z0C40zid/jxOF2hJL9A==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@types/react': '>=19.0.0'
+      '@types/react': ^18.3.23
       react: '>=19.0.0'
       react-devtools-core: ^4.19.1
     peerDependenciesMeta:
@@ -7829,7 +7827,7 @@ packages:
   react-markdown@10.1.0:
     resolution: {integrity: sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==}
     peerDependencies:
-      '@types/react': '>=18'
+      '@types/react': ^18.3.23
       react: '>=18'
 
   react-reconciler@0.29.2:
@@ -7852,7 +7850,7 @@ packages:
     resolution: {integrity: sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==}
     engines: {node: '>=10'}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
       '@types/react':
@@ -7862,7 +7860,7 @@ packages:
     resolution: {integrity: sha512-pnAi91oOk8g8ABQKGF5/M9qxmmOPxaAnopyTHYfqYEwJhyFrbbBtHuSgtKEoH0jpcxx5o3hXqH1mNd9/Oi+8iQ==}
     engines: {node: '>=10'}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -7888,7 +7886,7 @@ packages:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
     engines: {node: '>=10'}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -8840,7 +8838,7 @@ packages:
     resolution: {integrity: sha512-jQL3lRnocaFtu3V00JToYz/4QkNWswxijDaCVNZRiRTO3HQDLsdu1ZtmIUvV4yPp+rvWm5j0y0TG/S61cuijTg==}
     engines: {node: '>=10'}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -8850,7 +8848,7 @@ packages:
     resolution: {integrity: sha512-Fedw0aZvkhynoPYlA5WXrMCAMm+nSWdZt6lzJQ7Ok8S6Q+VsHmHpRWndVRJ8Be0ZbkfPc5LRYH+5XrzXcEeLRQ==}
     engines: {node: '>=10'}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.3.23
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
@@ -9352,7 +9350,7 @@ packages:
     resolution: {integrity: sha512-mILtRfKW9xM47hqxGIxCv12gXusoY/xTSHBYApXozR0HmQv299whhBeeAcRy+KrPPybzosvJBCOmVjq6x12fCg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': '>=18.0.0'
+      '@types/react': ^18.3.23
       immer: '>=9.0.6'
       react: '>=18.0.0'
       use-sync-external-store: '>=1.2.0'
@@ -11554,13 +11552,13 @@ snapshots:
       signal-exit: 4.1.0
       uuid: 8.3.2
 
-  '@tapjs/reporter@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))':
+  '@tapjs/reporter@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))':
     dependencies:
       '@tapjs/config': 5.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/core': 4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@tapjs/stack': 4.0.0
       chalk: 5.4.1
-      ink: 5.2.1(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@18.3.1)
+      ink: 5.2.1(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@18.3.1)
       minipass: 7.1.2
       ms: 2.1.3
       patch-console: 2.0.0
@@ -11578,13 +11576,13 @@ snapshots:
       - react-dom
       - utf-8-validate
 
-  '@tapjs/reporter@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))':
+  '@tapjs/reporter@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))':
     dependencies:
       '@tapjs/config': 5.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/core': 4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tapjs/stack': 4.0.0
       chalk: 5.4.1
-      ink: 5.2.1(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@18.3.1)
+      ink: 5.2.1(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@18.3.1)
       minipass: 7.1.2
       ms: 2.1.3
       patch-console: 2.0.0
@@ -11602,14 +11600,14 @@ snapshots:
       - react-dom
       - utf-8-validate
 
-  '@tapjs/run@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)':
+  '@tapjs/run@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@tapjs/after': 3.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/before': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/config': 5.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/core': 4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@tapjs/processinfo': 3.1.8
-      '@tapjs/reporter': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))
+      '@tapjs/reporter': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))
       '@tapjs/spawn': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/stdin': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/test': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
@@ -11646,14 +11644,14 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tapjs/run@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tapjs/run@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@tapjs/after': 3.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/before': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/config': 5.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/core': 4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tapjs/processinfo': 3.1.8
-      '@tapjs/reporter': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))
+      '@tapjs/reporter': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))
       '@tapjs/spawn': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/stdin': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/test': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -11690,14 +11688,14 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tapjs/run@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)':
+  '@tapjs/run@4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)':
     dependencies:
       '@tapjs/after': 3.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/before': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/config': 5.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/core': 4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tapjs/processinfo': 3.1.8
-      '@tapjs/reporter': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))
+      '@tapjs/reporter': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tapjs/test@4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))
       '@tapjs/spawn': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/stdin': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/test': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -12094,10 +12092,6 @@ snapshots:
   '@types/react@18.3.23':
     dependencies:
       '@types/prop-types': 15.7.13
-      csstype: 3.1.3
-
-  '@types/react@19.1.10':
-    dependencies:
       csstype: 3.1.3
 
   '@types/retry@0.12.2': {}
@@ -14258,13 +14252,13 @@ snapshots:
 
   ini@5.0.0: {}
 
-  ink-spinner@5.0.0(ink@6.2.0(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@19.1.1))(react@19.1.1):
+  ink-spinner@5.0.0(ink@6.2.0(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@19.1.1))(react@19.1.1):
     dependencies:
       cli-spinners: 2.9.2
-      ink: 6.2.0(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@19.1.1)
+      ink: 6.2.0(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@19.1.1)
       react: 19.1.1
 
-  ink@5.2.1(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@18.3.1):
+  ink@5.2.1(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@18.3.1):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.1.3
       ansi-escapes: 7.0.0
@@ -14292,13 +14286,13 @@ snapshots:
       ws: 8.18.0
       yoga-layout: 3.2.1
     optionalDependencies:
-      '@types/react': 19.1.10
+      '@types/react': 18.3.23
       react-devtools-core: 4.28.5
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  ink@6.2.0(@types/react@19.1.10)(react-devtools-core@4.28.5)(react@19.1.1):
+  ink@6.2.0(@types/react@18.3.23)(react-devtools-core@4.28.5)(react@19.1.1):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.1.3
       ansi-escapes: 7.0.0
@@ -14326,7 +14320,7 @@ snapshots:
       ws: 8.18.0
       yoga-layout: 3.2.1
     optionalDependencies:
-      '@types/react': 19.1.10
+      '@types/react': 18.3.23
       react-devtools-core: 4.28.5
     transitivePeerDependencies:
       - bufferutil
@@ -16847,7 +16841,7 @@ snapshots:
       yaml: 2.7.1
       yaml-types: 0.4.0(yaml@2.7.1)
 
-  tap@21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3):
+  tap@21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3):
     dependencies:
       '@tapjs/after': 3.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/after-each': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
@@ -16861,7 +16855,7 @@ snapshots:
       '@tapjs/intercept': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/mock': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/node-serialize': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
-      '@tapjs/run': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
+      '@tapjs/run': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@tapjs/snapshot': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@tapjs/spawn': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
       '@tapjs/stdin': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@18.3.1))(react@18.3.1))
@@ -16884,7 +16878,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  tap@21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)(typescript@5.7.3):
+  tap@21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)(typescript@5.7.3):
     dependencies:
       '@tapjs/after': 3.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/after-each': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
@@ -16898,7 +16892,7 @@ snapshots:
       '@tapjs/intercept': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/mock': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/node-serialize': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
-      '@tapjs/run': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)
+      '@tapjs/run': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(supports-color@10.0.0)
       '@tapjs/snapshot': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tapjs/spawn': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/stdin': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
@@ -16921,7 +16915,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  tap@21.1.0(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3):
+  tap@21.1.0(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3):
     dependencies:
       '@tapjs/after': 3.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/after-each': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
@@ -16935,7 +16929,7 @@ snapshots:
       '@tapjs/intercept': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/mock': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/node-serialize': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
-      '@tapjs/run': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@19.1.10)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tapjs/run': 4.0.2(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/node@22.15.29)(@types/react@18.3.23)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tapjs/snapshot': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tapjs/spawn': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@tapjs/stdin': 4.0.1(@tapjs/core@4.0.1(@types/node@22.15.29)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
