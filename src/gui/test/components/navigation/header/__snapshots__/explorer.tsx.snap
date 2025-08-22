@@ -8,7 +8,8 @@ exports[`ExplorerHeader renders correctly 1`] = `
   <gui-query-bar
     tabindex="0"
     startcontent="[object Object]"
-    classname="grow rounded-xl"
+    wrapperclassname
+    classname="relative"
     endcontent="[object Object]"
   >
   </gui-query-bar>

@@ -12,6 +12,12 @@ import type {
   ClassName,
   Attribute,
   Universal,
+  tag,
+  id,
+  combinator,
+  string,
+  attribute,
+  pseudo,
 } from 'postcss-selector-parser'
 
 export type PostcssNode =
@@ -27,6 +33,14 @@ export type PostcssNode =
   | ClassName
   | Attribute
   | Universal
+
+export type PostCSSLeaf =
+  | ReturnType<typeof tag>
+  | ReturnType<typeof id>
+  | ReturnType<typeof attribute>
+  | ReturnType<typeof combinator>
+  | ReturnType<typeof pseudo>
+  | ReturnType<typeof string>
 
 export type PostcssNodeWithChildren = Selector | Root | Pseudo
 
