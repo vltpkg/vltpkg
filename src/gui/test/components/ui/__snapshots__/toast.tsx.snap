@@ -10,7 +10,6 @@ exports[`toaster render default 1`] = `
     style
   >
     <span
-      aria-hidden="true"
       tabindex="0"
       style="position: fixed; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
     >
@@ -20,9 +19,6 @@ exports[`toaster render default 1`] = `
       class="fixed top-0 z-[10001] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
     >
       <li
-        role="status"
-        aria-live="off"
-        aria-atomic="true"
         tabindex="0"
         data-state="open"
         data-swipe-direction="right"
@@ -39,7 +35,6 @@ exports[`toaster render default 1`] = `
       </li>
     </ol>
     <span
-      aria-hidden="true"
       tabindex="0"
       style="position: fixed; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
     >
@@ -49,7 +44,6 @@ exports[`toaster render default 1`] = `
 <span
   role="status"
   aria-live="assertive"
-  aria-atomic="true"
   style="position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
 >
 </span>

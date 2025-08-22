@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils.ts'
 import { tv } from 'tailwind-variants'
 
 import type { LucideIcon } from 'lucide-react'
-import type { Transition, Variants } from 'framer-motion'
 import type { VariantProps } from 'tailwind-variants'
 import type { CSSProperties } from 'react'
 
@@ -81,11 +80,15 @@ export interface DataBadgeProps
 }
 
 const CopyIcon = ({ copied }: { copied: boolean }) => {
-  const iconMotion: Variants & Transition = {
+  const iconMotion = {
     initial: { opacity: 0, scale: 0.8 },
     animate: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 0.8 },
-    transition: { type: 'spring', duration: 0.175, bounce: 0.2 },
+    transition: {
+      type: 'spring' as const,
+      duration: 0.175,
+      bounce: 0.2,
+    },
   }
 
   return (
