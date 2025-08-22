@@ -9,23 +9,23 @@ packages:
   - infra/*
   - www/*
 catalog:
-  '@eslint/js': ^9.28.0
-  '@types/node': ^22.15.29
+  '@eslint/js': ^9.34.0
+  '@types/node': ^22.17.2
   '@types/pacote': '^11.1.8'
   '@types/semver': '^7.7.0'
   '@types/ssri': '^7.1.5'
-  eslint: ^9.28.0
+  eslint: ^9.34.0
   graph-run: ^1.1.0
   lru-cache: ^11.1.0
   lz-string: ^1.5.0
-  minimatch: ^10.0.1
+  minimatch: ^10.0.3
   p-retry: ^6.2.1
   package-json-from-dist: ^1.0.1
   pacote: ^21.0.0
   path-scurry: ^2.0.0
   polite-json: ^5.0.0
   postcss-selector-parser: ^7.1.0
-  prettier: ^3.6.0
+  prettier: ^3.6.2
   promise-call-limit: ^3.0.2
   rimraf: ^6.0.1
   semver: ^7.7.2
@@ -34,6 +34,6 @@ catalog:
   tar: ^7.4.3
   tshy: ^3.0.2
   typedoc: ~0.27.9
-  typescript-eslint: ^8.33.1
+  typescript-eslint: ^8.40.0
   typescript: 5.7.3
   walk-up-path: ^4.0.0
