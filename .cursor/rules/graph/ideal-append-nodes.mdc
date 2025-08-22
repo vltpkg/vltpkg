@@ -1,0 +1,327 @@
+# Graph Ideal Append Nodes Architecture
+
+Detailed guide for understanding and working with the `append-nodes.ts` module in `@vltpkg/graph`, which implements breadth-first dependency graph building with deterministic ordering.
+
+<rule>
+name: graph_ideal_append_nodes
+description: Architecture and implementation guide for the append-nodes module that builds dependency graphs in breadth-first order
+filters:
+  # Target the append-nodes module specifically
+  - type: path
+    pattern: "^src/graph/src/ideal/append-nodes\\.ts$"
+  # Target files that import or use appendNodes
+  - type: content
+    pattern: "import.*appendNodes|from.*append-nodes"
+  # Target files working with graph ideal building
+  - type: path
+    pattern: "^src/graph/src/ideal/"
+
+actions:
+  - type: guide
+    message: |
+      ## Overview
+
+      The `append-nodes.ts` module implements the core dependency graph building logic for the Ideal Graph construction phase. It processes dependencies in **breadth-first order** with **deterministic ordering** to ensure reproducible graph builds.
+
+      ### Key Responsibilities
+      - Fetch manifests for dependencies in parallel
+      - Place nodes in the graph with proper edges
+      - Handle modifiers, optional dependencies, and error conditions
+      - Process child dependencies level by level
+      - Maintain deterministic ordering for reproducible builds
+
+  - type: architecture_guide
+    message: |
+      ## Core Architecture
+
+      The module uses a **3-phase approach** for breadth-first processing:
+
+      ### Phase 1: Manifest Fetching (`fetchManifestsForDeps`)
+      ```typescript
+      // Fetches manifests for all dependencies at a level in parallel
+      const placementTasks = await fetchManifestsForDeps(
+        packageInfo, graph, fromNode, sortedDeps, scurry, modifierRefs, depth
+      )
+      ```
+      - Processes existing node resolution via `graph.findResolution()`
+      - Handles modifier spec swapping for edge modifiers
+      - Fetches manifests in parallel using `Promise.all()`
+      - Creates `ManifestFetchTask` and `NodePlacementTask` structures
+
+      ### Phase 2: Node Placement (`processPlacementTasks`)
+      ```typescript
+      // Places nodes in the graph and collects child dependencies
+      const { childDepsToProcess } = await processPlacementTasks(
+        add, graph, options, placementTasks, modifiers
+      )
+      ```
+      - Handles nameless dependencies (e.g., `github:foo/bar`)
+      - Places nodes using `graph.placePackage()`
+      - Processes optional dependency failures with `removeOptionalSubgraph()`
+      - Collects child dependencies for next level processing
+
+      ### Phase 3: Level Coordination (`appendNodes`)
+      ```typescript
+      // Orchestrates breadth-first processing across levels
+      let currentLevelDeps: AppendNodeEntry[] = [{ node: fromNode, deps, modifierRefs, depth: 0 }]
+      while (currentLevelDeps.length > 0) {
+        // Process all nodes at current level in parallel
+        // Collect child dependencies for next level
+        currentLevelDeps = nextLevelDeps
+      }
+      ```
+      - Manages level-by-level processing queue
+      - Ensures `seen` set consistency to prevent cycles
+      - Maintains deterministic ordering with `spec.name.localeCompare()`
+
+  - type: data_structures_guide
+    message: |
+      ## Key Data Structures
+
+      ### `AppendNodeEntry`
+      ```typescript
+      type AppendNodeEntry = {
+        node: Node              // The node whose dependencies to process
+        deps: Dependency[]      // Dependencies to fetch and place
+        modifierRefs?: Map<string, ModifierActiveEntry>  // Active modifiers
+        depth: number           // Current processing depth
+      }
+      ```
+
+      ### `ManifestFetchTask`
+      ```typescript
+      type ManifestFetchTask = {
+        spec: Spec                                    // Dependency spec
+        type: DependencySaveType                      // Dependency type (prod, dev, etc.)
+        fromNode: Node                                // Parent node
+        fileTypeInfo?: FileTypeInfo                   // File spec info
+        activeModifier?: ModifierActiveEntry          // Active modifier
+        queryModifier?: string                        // Modifier query
+        edgeOptional: boolean                         // Is optional dependency
+        manifestPromise: Promise<Manifest | undefined> // Async manifest fetch
+        depth: number                                 // Processing depth
+      }
+      ```
+
+      ### `NodePlacementTask`
+      ```typescript
+      type NodePlacementTask = {
+        fetchTask: ManifestFetchTask      // Original fetch context
+        manifest: Manifest | undefined   // Resolved manifest
+        node?: Node                       // Created node (set during processing)
+        childDeps?: Dependency[]          // Child dependencies to process
+        childModifierRefs?: Map<string, ModifierActiveEntry> // Child modifier refs
+      }
+      ```
+
+  - type: processing_flow_guide
+    message: |
+      ## Processing Flow
+
+      ### 1. Entry Point
+      ```typescript
+      appendNodes(add, packageInfo, graph, fromNode, deps, scurry, options, seen, modifiers, modifierRefs)
+      ```
+      - **Input**: Node and its dependencies to process
+      - **Output**: Fully built graph with all transitive dependencies
+
+      ### 2. Level Processing Loop
+      ```typescript
+      while (currentLevelDeps.length > 0) {
+        // Step 2a: Process all nodes at current level in parallel
+        const levelResults = await Promise.all(currentLevelDeps.map(async ({ node, deps, ... }) => {
+          seen.add(node.id)  // Mark as seen to prevent cycles
+          
+          // Step 2b: Fetch manifests for this node's dependencies
+          const placementTasks = await fetchManifestsForDeps(...)
+          
+          // Step 2c: Place nodes and collect child dependencies
+          return await processPlacementTasks(...)
+        }))
+        
+        // Step 2d: Collect all child dependencies for next level
+        currentLevelDeps = collectChildDependencies(levelResults)
+      }
+      ```
+
+      ### 3. Deterministic Ordering
+      Dependencies are sorted by `spec.name` using `localeCompare()` before processing:
+      ```typescript
+      nodeDeps.sort((a, b) => a.spec.name.localeCompare(b.spec.name, 'en'))
+      ```
+
+  - type: error_handling_guide
+    message: |
+      ## Error Handling Patterns
+
+      ### Optional Dependency Failures
+      ```typescript
+      if (!manifest) {
+        if (!edgeOptional && fromNode.isOptional()) {
+          // Remove the entire optional subgraph
+          removeOptionalSubgraph(graph, fromNode)
+          continue
+        } else if (edgeOptional) {
+          // Ignore failed optional deps
+          continue
+        } else {
+          // Hard failure for required dependencies
+          throw error('failed to resolve dependency', { spec, from: fromNode.location })
+        }
+      }
+      ```
+
+      ### Cycle Prevention
+      ```typescript
+      // Mark nodes as seen when processing starts (not when complete)
+      seen.add(node.id)
+      
+      // Check before adding to next level
+      if (!seen.has(childDep.node.id)) {
+        nextLevelDeps.push(childDep)
+      }
+      ```
+
+      ### Nameless Dependencies
+      ```typescript
+      // Handle specs like 'github:foo/bar' that don't specify a name
+      if (manifest?.name && spec.name === '(unknown)') {
+        // Update the add map with the correct name from manifest
+        add.delete(String(spec))
+        spec = Spec.parse(manifest.name, spec.bareSpec, options)
+        add.set(manifest.name, asDependency({ ...s, spec }))
+      }
+      ```
+
+  - type: modifier_integration_guide
+    message: |
+      ## Modifier System Integration
+
+      ### Spec Swapping
+      ```typescript
+      // Check if a modifier should replace the spec
+      const queryModifier = activeModifier?.modifier.query
+      const completeModifier = activeModifier?.interactiveBreadcrumb.current === 
+                               activeModifier.modifier.breadcrumb.last
+      
+      if (queryModifier && completeModifier && 'spec' in activeModifier.modifier) {
+        spec = activeModifier.modifier.spec
+        if (spec.bareSpec === '-') {
+          continue  // Skip this dependency
+        }
+      }
+      ```
+
+      ### Modifier Updates
+      ```typescript
+      // Update modifier state after node placement
+      if (activeModifier) {
+        modifiers?.updateActiveEntry(node, activeModifier)
+      }
+      
+      // Generate modifier refs for child dependencies
+      childModifierRefs = modifiers?.tryDependencies(node, nextDeps)
+      ```
+
+  - type: performance_optimization_guide
+    message: |
+      ## Performance Characteristics
+
+      ### Parallel Processing
+      - **Level Parallelism**: All nodes at the same depth processed simultaneously
+      - **Manifest Fetching**: All manifests for a level fetched in parallel
+      - **I/O Batching**: Reduces network round trips compared to depth-first
+
+      ### Memory Efficiency
+      - **Streaming Processing**: Processes level by level, not all at once
+      - **Seen Set**: Prevents duplicate processing and infinite cycles
+      - **Shared References**: Reuses existing nodes via `graph.findResolution()`
+
+      ### Deterministic Ordering
+      - **Reproducible Builds**: Same input always produces same graph structure
+      - **Consistent Output**: Sorting by `spec.name` ensures predictable order
+      - **Debug Friendly**: Deterministic processing aids in debugging
+
+  - type: integration_patterns
+    message: |
+      ## Integration with Graph System
+
+      ### Used By
+      - `src/graph/src/ideal/add-nodes.ts` - High-level dependency addition
+      - `src/graph/src/ideal/build-ideal-from-starting-graph.ts` - Ideal graph construction
+
+      ### Dependencies
+      - `graph.findResolution()` - Find existing satisfying nodes
+      - `graph.placePackage()` - Place new nodes with edges
+      - `graph.addEdge()` - Create edges to existing nodes
+      - `removeOptionalSubgraph()` - Handle optional failures
+
+      ### Data Flow
+      ```
+      Ideal Build → Add Nodes → Append Nodes → Graph Updates
+                                      ↓
+                               Manifest Fetching → Node Placement → Child Collection
+      ```
+
+  - type: testing_considerations
+    message: |
+      ## Testing and Debugging
+
+      ### Test Coverage Requirements
+      - **100% Coverage**: All paths must be tested including error conditions
+      - **Edge Cases**: Optional failures, cycles, nameless deps, modifiers
+      - **Deterministic Output**: Tests verify consistent ordering
+
+      ### Common Issues
+      1. **Cycle Detection**: Ensure `seen` set is managed correctly
+      2. **Optional Handling**: Verify optional subgraph removal works
+      3. **Manifest Errors**: Test both network and parsing failures
+      4. **Modifier State**: Ensure modifiers are updated correctly
+
+      ### Debugging Tips
+      - Check `seen` set state for cycle issues
+      - Verify deterministic ordering with different input orders
+      - Trace level-by-level processing for dependency issues
+      - Monitor `graph.nodes` and `graph.edges` growth
+
+examples:
+  - input: |
+      // Example: Adding a new dependency to the graph
+      await appendNodes(
+        new Map(),           // add map
+        packageInfo,         // manifest fetcher
+        graph,              // target graph
+        importerNode,       // starting node
+        [{ spec: lodashSpec, type: 'prod' }], // dependencies
+        scurry,             // path resolver
+        options,            // spec options
+        new Set(),          // seen set
+        modifiers,          // modifier system
+        modifierRefs        // active modifier refs
+      )
+    output: "Breadth-first processing with deterministic ordering and parallel manifest fetching"
+
+  - input: |
+      // Example: Processing with modifiers
+      const modifierRefs = modifiers?.tryDependencies(node, deps)
+      await appendNodes(add, packageInfo, graph, node, deps, scurry, options, seen, modifiers, modifierRefs)
+    output: "Modifier integration for spec swapping and query tracking"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - graph
+    - ideal
+    - append-nodes
+    - breadth-first
+    - dependencies
+    - modifiers
+    - deterministic
+    - parallel
+  related_rules:
+    - graph_data_structure
+    - graph_ideal
+    - graph_modifiers
+    - monorepo_structure
+</rule>

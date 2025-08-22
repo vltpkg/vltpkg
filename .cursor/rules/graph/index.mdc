@@ -81,6 +81,7 @@ actions:
         - Starts from either a Virtual Graph (preferred) or falls back to an Actual Graph.
         - Merges explicit `add`/`remove` requests with importer manifests via `get-importer-specs.ts`.
         - Resolves new nodes by fetching manifests/artifacts using `@vltpkg/package-info`, recursively expanding the graph.
+        - Uses breadth-first processing with deterministic ordering in `append-nodes.ts` for reproducible builds.
         - Reuses existing nodes that satisfy specs to avoid unnecessary network calls.
 
       After building the Ideal and loading the Actual, the installer computes a `Diff` and applies it using the `reify/` subsystem to minimize work.
@@ -130,6 +131,7 @@ metadata:
     - workspaces
   related_rules:
     - graph_ideal
+    - graph_ideal_append_nodes
     - graph_data_structure
     - graph_load_actual
     - graph_lockfiles
