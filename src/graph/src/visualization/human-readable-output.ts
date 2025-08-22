@@ -45,10 +45,8 @@ const isSelected = (
   edge?: EdgeLike,
   node?: NodeLike,
 ) =>
-  !!(
-    (!node || options.nodes.includes(node)) &&
-    (!edge || options.edges.includes(edge))
-  )
+  (!node || options.nodes.includes(node)) &&
+  (!edge || options.edges.includes(edge))
 
 /**
  * Returns a map of tree items to be printed.
