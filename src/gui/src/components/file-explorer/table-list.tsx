@@ -264,7 +264,7 @@ const NestedRows = ({
                 <TableCell className="px-2 py-1 text-sm text-muted-foreground">
                   {item.size === 0 ?
                     '-'
-                  : formatDownloadSize(Number(item.size))}
+                  : formatDownloadSize(item.size)}
                 </TableCell>
               )}
               {visible('kind') && (
@@ -453,7 +453,7 @@ export const TableList = ({
       cell: ({ row }) => {
         const { size } = row.original
         const formattedSize =
-          size === 0 || !size ? '-' : formatDownloadSize(Number(size))
+          size === 0 || !size ? '-' : formatDownloadSize(size)
         return (
           <p className="text-muted-foreground">{formattedSize}</p>
         )

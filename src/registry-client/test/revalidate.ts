@@ -50,7 +50,7 @@ t.test('revalidate a url', async t => {
     res.setHeader('connection', 'close')
     res.end('ok')
   })
-  const PORT = Number(8080 + Number(process.env.TAP_CHILD_ID ?? '0'))
+  const PORT = 8080 + Number(process.env.TAP_CHILD_ID ?? '0')
   const reg = `http://localhost:${PORT}`
   await new Promise<void>(res => server.listen(PORT, () => res()))
 

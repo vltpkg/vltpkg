@@ -62,7 +62,7 @@ const SpecOrigin = ({
                   wrapperClassName: 'truncate overflow-hidden',
                 }}
                 tooltip={{
-                  content: String(scopeValue),
+                  content: scopeValue,
                 }}
               />
             )
@@ -78,8 +78,8 @@ const SpecOrigin = ({
             tooltip={{
               content:
                 ref && specOptions.registries[ref] ?
-                  String(specOptions.registries[ref])
-                : String(specOptions.registry || defaultRegistry),
+                  specOptions.registries[ref]
+                : specOptions.registry || defaultRegistry,
             }}
           />
         )

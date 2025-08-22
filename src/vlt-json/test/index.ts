@@ -32,7 +32,7 @@ t.test('create new project file if not found', async t => {
   const foo = load('foo', (x): x is { foo: boolean } => {
     validatorRan = true
     return (
-      !!x && t.strictSame(x, { foo: !!(x as { foo: boolean }).foo })
+      !!x && t.strictSame(x, { foo: (x as { foo: boolean }).foo })
     )
   })
   t.equal(foo, undefined)
@@ -64,7 +64,7 @@ t.test('load, edit, save existing project file', async t => {
   let validatorRan = false
   const foo = load('foo', (x): x is { foo: boolean } => {
     validatorRan = true
-    return t.strictSame(x, { foo: !!(x as { foo: boolean }).foo })
+    return t.strictSame(x, { foo: (x as { foo: boolean }).foo })
   })
   t.equal(validatorRan, true)
   t.strictSame(foo, { foo: true })
@@ -158,7 +158,7 @@ t.test('do not clobber file if edited out of band', async t => {
   const validator = (x: unknown): x is { foo: boolean } => {
     validatorRan = true
     return (
-      !!x && t.strictSame(x, { foo: !!(x as { foo: boolean }).foo })
+      !!x && t.strictSame(x, { foo: (x as { foo: boolean }).foo })
     )
   }
   const foo = load('foo', validator)
