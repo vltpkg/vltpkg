@@ -5,6 +5,10 @@ export * from './vsr.tsx'
 export * from './vlt-client.tsx'
 
 // general
+export * from './sidebar.tsx'
+export * from './view-options.tsx'
+
+// socials
 export * from './github.tsx'
 export * from './discord.tsx'
 export * from './linkedin.tsx'

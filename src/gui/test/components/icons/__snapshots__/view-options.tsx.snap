@@ -1,0 +1,91 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`viewOptions icon render custom class 1`] = `
+
+<div>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-view-options lucide-ViewOptions custom-class"
+    aria-hidden="true"
+  >
+    <path
+      d="M17 16V18H7V16H17ZM20 13V11C20 9.34315 18.6569 8 17 8H7C5.34315 8 4 9.34315 4 11V13C4 14.6569 5.34315 16 7 16V18C4.23858 18 2 15.7614 2 13V11C2 8.32472 4.10111 6.14053 6.74316 6.00684L7 6H17L17.2568 6.00684C19.8989 6.14053 22 8.32472 22 11V13L21.9932 13.2568C21.8595 15.8989 19.6753 18 17 18V16C18.6569 16 20 14.6569 20 13Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M8 12C8 12.5523 7.55228 13 7 13C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11C7.55228 11 8 11.4477 8 12Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M18 12C18 12.5523 17.5523 13 17 13C16.4477 13 16 12.5523 16 12C16 11.4477 16.4477 11 17 11C17.5523 11 18 11.4477 18 12Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+  </svg>
+</div>
+
+`;
+
+exports[`viewOptions icon render default 1`] = `
+
+<div>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-view-options lucide-ViewOptions"
+    aria-hidden="true"
+  >
+    <path
+      d="M17 16V18H7V16H17ZM20 13V11C20 9.34315 18.6569 8 17 8H7C5.34315 8 4 9.34315 4 11V13C4 14.6569 5.34315 16 7 16V18C4.23858 18 2 15.7614 2 13V11C2 8.32472 4.10111 6.14053 6.74316 6.00684L7 6H17L17.2568 6.00684C19.8989 6.14053 22 8.32472 22 11V13L21.9932 13.2568C21.8595 15.8989 19.6753 18 17 18V16C18.6569 16 20 14.6569 20 13Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M8 12C8 12.5523 7.55228 13 7 13C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11C7.55228 11 8 11.4477 8 12Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M18 12C18 12.5523 17.5523 13 17 13C16.4477 13 16 12.5523 16 12C16 11.4477 16.4477 11 17 11C17.5523 11 18 11.4477 18 12Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
+    </path>
+  </svg>
+</div>
+
+`;
