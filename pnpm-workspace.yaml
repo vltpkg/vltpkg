@@ -19,7 +19,7 @@ catalog:
   lru-cache: ^11.1.0
   lz-string: ^1.5.0
   minimatch: ^10.0.3
-  p-retry: ^6.2.1
+  p-retry: ^7.0.0
   package-json-from-dist: ^1.0.1
   pacote: ^21.0.0
   path-scurry: ^2.0.0
