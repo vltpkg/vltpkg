@@ -1,66 +1,49 @@
-import { useState } from 'react'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
 import {
   SettingWrapper,
-  SettingSplit,
   SettingSection,
   SettingField,
 } from '@/components/settings/setting.tsx'
+import { Sun, Moon, LaptopMinimal } from 'lucide-react'
+
+const themeIconClassNames =
+  '[&>svg]:stroke-neutral-500 [&>svg]:transition-all [&>svg]:duration-250 [&>svg]:fill-neutral-500'
 
 export const SettingsView = () => {
-  const [value, setValue] = useState<string>('')
+  const { theme, setTheme } = useTheme()
 
   return (
     <SettingWrapper>
       <SettingSection title="General">
         <SettingField
-          name="Input option"
-          description="This is an input option"
+          name="Theme"
+          description="The current theme of the vlt gui"
           field={{
-            placeholder: 'placeholder',
-            type: 'input',
-            value: value,
-            onValueChange: setValue,
-          }}
-        />
-        <SettingSplit />
-        <SettingField
-          name="Dropdown option"
-          description="This is a dropdown option"
-          field={{
-            placeholder: 'Select an option',
             type: 'dropdown',
+            className:
+              '[&>.default-icon]:stroke-neutral-500 [&>.default-icon]:transition-all [&>.default-icon]:duration-250 [&>.default-icon]:fill-neutral-500',
+            optionClassName: themeIconClassNames,
+            placeholder: 'Select theme',
             options: [
               {
-                label: 'Option 1',
-                onSelect: () => console.log('Selected Option 1'),
-                defaultValue: true,
+                label: 'Light',
+                icon: Sun,
+                onSelect: () => setTheme('light'),
+                defaultValue: theme === 'light',
               },
-            ],
-          }}
-        />
-        <SettingField
-          name="Dropdown option"
-          description="This is a dropdown option"
-          field={{
-            placeholder: 'Select an option',
-            type: 'dropdown',
-            options: [
               {
-                label: 'Option 1',
-                onSelect: () => console.log('Selected Option 1'),
+                label: 'Dark',
+                icon: Moon,
+                onSelect: () => setTheme('dark'),
+                defaultValue: theme === 'dark',
+              },
+              {
+                label: 'System',
+                icon: LaptopMinimal,
+                onSelect: () => setTheme('system'),
+                defaultValue: theme === 'system',
               },
             ],
-          }}
-        />
-        <SettingSplit />
-        <SettingField
-          name="Toggle option"
-          description="This is a toggle option"
-          field={{
-            type: 'toggle',
-            defaultValue: false,
-            onActive: () => console.log('Toggle activated'),
-            onInactive: () => console.log('Toggle deactivated'),
           }}
         />
       </SettingSection>
