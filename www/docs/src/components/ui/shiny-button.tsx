@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils.ts'
-import type { MotionProps, AnimationProps } from 'framer-motion'
+import type { MotionProps } from 'framer-motion'
 import { motion } from 'framer-motion'
 import React from 'react'
 
@@ -15,7 +15,7 @@ const animationProps = {
     damping: 15,
     mass: 2,
   },
-} as AnimationProps
+} as const
 
 interface ShinyButtonProps
   extends Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps>,

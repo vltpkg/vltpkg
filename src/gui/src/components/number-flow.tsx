@@ -7,8 +7,6 @@ import {
 import { useEffect, useState, forwardRef } from 'react'
 import { cn } from '@/lib/utils.ts'
 import { tv } from 'tailwind-variants'
-
-import type { Variants, Transition } from 'framer-motion'
 import type { VariantProps } from 'tailwind-variants'
 
 const numberFlowVariants = tv({
@@ -77,7 +75,7 @@ const NumberFlow = forwardRef<HTMLDivElement, NumberFlowProps>(
       blurValue = 1,
     } = motionConfig ?? {}
 
-    const digitVariants: Variants & Transition = {
+    const digitVariants = {
       initial: (dir: 'up' | 'down') => ({
         y: dir === 'up' ? yValue : -yValue,
         filter: `blur(${blurValue}px)`,
