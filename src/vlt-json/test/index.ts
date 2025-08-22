@@ -337,3 +337,60 @@ t.test('do not walk up past a .git folder', async t => {
   unload()
   t.equal(load('root', assertBool), false)
 })
+
+t.test(
+  'create directories when saving user config to non-existent path',
+  async t => {
+    class MockXDG extends XDG {
+      config() {
+        return resolve(dir, 'a/d/vlt.json')
+      }
+    }
+
+    const dir = t.testdir({
+      a: {
+        b: {
+          'package.json': JSON.stringify({}),
+          c: {},
+        },
+      },
+    })
+    t.chdir(resolve(dir, 'a/b/c'))
+
+    const { load, save, find } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      '@vltpkg/xdg': { XDG: MockXDG },
+      'node:os': t.createMock(await import('node:os'), {
+        homedir: () => resolve(dir, 'a/d'),
+      }),
+    })
+
+    // The find function should return a path to a vlt.json file that doesn't exist yet
+    const configPath = find('user')
+    t.equal(configPath, resolve(dir, 'a/d/vlt.json'))
+
+    // Directory doesn't exist initially
+    t.equal(
+      await lstat(resolve(dir, 'a/d')).catch(() => false),
+      false,
+    )
+
+    const assertBool = (b: unknown): asserts b is boolean => {
+      if (b !== !!b) throw new Error('expected boolean')
+    }
+
+    // Load should return undefined since file doesn't exist
+    t.equal(load('testField', assertBool, 'user'), undefined)
+
+    // Save should create the directory and file
+    save('testField', true, 'user')
+
+    // File should now exist and contain the saved data
+    const content = readFileSync(configPath, 'utf8')
+    t.equal(
+      content,
+      JSON.stringify({ testField: true }, null, 2) + '\n',
+    )
+  },
+)
