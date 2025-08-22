@@ -1,0 +1,8 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`get entire config for project by default > should return entire config object 1`] = `
+{
+  "alpha": "a",
+  "beta": "b",
+}
+`;
