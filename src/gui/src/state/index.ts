@@ -56,6 +56,11 @@ const getInitialQuery = (): string => {
 
 const initialState: State = {
   appData: undefined,
+  queryBuilderOpen: JSON.parse(
+    localStorage.getItem('query-builder-open') ?? 'true',
+  ) as State['queryBuilderOpen'],
+  queryInputFocused: false,
+  queryBuilderDisplay: false,
   dashboard: undefined,
   graph: undefined,
   edges: [],
@@ -126,6 +131,21 @@ export const useGraphStore = create<Action & State>((set, get) => {
       localStorage.setItem('focused', JSON.stringify(focused))
     },
     reset: () => set(initialState),
+    updateQueryBuilderOpen: (
+      queryBuilderOpen: State['queryBuilderOpen'],
+    ) => {
+      set({ queryBuilderOpen })
+      localStorage.setItem(
+        'query-builder-open',
+        JSON.stringify(queryBuilderOpen),
+      )
+    },
+    updateQueryInputFocused: (
+      queryInputFocused: State['queryInputFocused'],
+    ) => set(() => ({ queryInputFocused })),
+    updateQueryBuilderDisplay: (
+      queryBuilderDisplay: State['queryBuilderDisplay'],
+    ) => set(() => ({ queryBuilderDisplay })),
     updateSavedQuery: (updatedItem: SavedQuery) => {
       const savedQueries = get().savedQueries ?? []
 

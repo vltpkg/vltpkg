@@ -16,6 +16,7 @@ vi.mock('@/components/ui/tooltip.tsx', () => ({
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipPortal: 'gui-tooltip-portal',
 }))
 
 vi.mock('@/components/ui/button.tsx', () => ({

@@ -29,11 +29,13 @@ exports[`save-query > should render correctly 1`] = `
             </svg>
           </div>
         </gui-tooltip-trigger>
-        <gui-tooltip-content>
-          <p>
-            Save query
-          </p>
-        </gui-tooltip-content>
+        <gui-tooltip-portal>
+          <gui-tooltip-content>
+            <p>
+              Save query
+            </p>
+          </gui-tooltip-content>
+        </gui-tooltip-portal>
       </gui-tooltip>
     </gui-tooltip-provider>
   </gui-popover-trigger>

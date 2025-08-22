@@ -3,7 +3,7 @@
 exports[`ResultItem render missing version and labels 1`] = `
 
 <div>
-  <div class="group relative z-10">
+  <div class="group relative">
     <a
       href="#"
       class="block rounded-lg border bg-card text-card-foreground shadow-sm duration-250 relative cursor-default transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
@@ -31,7 +31,7 @@ exports[`ResultItem render missing version and labels 1`] = `
 exports[`ResultItem render stacked many 1`] = `
 
 <div>
-  <div class="group relative z-10">
+  <div class="group relative">
     <div class="absolute left-2 top-2 h-full w-[97.5%] rounded-lg border bg-card transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <div class="absolute left-1 top-1 h-full w-[99%] rounded-lg border bg-card transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
@@ -78,7 +78,7 @@ exports[`ResultItem render stacked many 1`] = `
 exports[`ResultItem render stacked two 1`] = `
 
 <div>
-  <div class="group relative z-10">
+  <div class="group relative">
     <div class="absolute left-1 top-1 h-full w-[99%] rounded-lg border bg-card transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <a
@@ -123,7 +123,7 @@ exports[`ResultItem render stacked two 1`] = `
 exports[`ResultItem render with item 1`] = `
 
 <div>
-  <div class="group relative z-10">
+  <div class="group relative">
     <a
       href="#"
       class="block rounded-lg border bg-card text-card-foreground shadow-sm duration-250 relative cursor-default transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
@@ -166,7 +166,7 @@ exports[`ResultItem render with item 1`] = `
 exports[`ResultItem render with type 1`] = `
 
 <div>
-  <div class="group relative z-10">
+  <div class="group relative">
     <a
       href="#"
       class="block rounded-lg border bg-card text-card-foreground shadow-sm duration-250 relative cursor-default transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"

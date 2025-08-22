@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`QueryBuilder > opens UI when store flag is set 1`] = `
+
+<div>
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <gui-button classname="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+          <gui-unfold-vertical>
+          </gui-unfold-vertical>
+        </gui-button>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Toggle query builder
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+</div>
+
+`;
+
+exports[`QueryBuilder > renders nodes for a simple query 1`] = `
+
+<div>
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <gui-button classname="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+          <gui-unfold-vertical>
+          </gui-unfold-vertical>
+        </gui-button>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Toggle query builder
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+</div>
+
+`;
+
+exports[`QueryBuilder > renders toggle button (closed state) 1`] = `
+
+<div>
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <gui-button classname="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+          <gui-unfold-vertical>
+          </gui-unfold-vertical>
+        </gui-button>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Toggle query builder
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+</div>
+
+`;

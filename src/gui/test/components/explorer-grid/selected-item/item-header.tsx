@@ -13,8 +13,8 @@ import {
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
+import type { SocketSecurityDetails } from '@/lib/constants/selectors.ts'
 
 const MOCK_PACKAGE_SCORE: PackageScore = {
   overall: 0.8,

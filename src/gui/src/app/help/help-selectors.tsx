@@ -1,17 +1,12 @@
 import { useState } from 'react'
-import type { Table, VisibilityState } from '@tanstack/react-table'
-import type {
-  SocketSecurityDetails,
-  SocketSecurityRecord,
-  Selector,
-} from '@/lib/constants/index.ts'
 import {
-  SOCKET_SECURITY_DETAILS,
-  ATTRIBUTE_SELECTORS,
-  CLASS_SELECTORS,
+  PSEUDO_SECURITY_SELECTORS,
+  PSEUDO_STATE_SELECTORS,
+  PSEUDO_ATTRIBUTE_SELECTOR,
+  PSEUDO_PROJECT_SELECTORS,
+  PSEUDO_FUNCTIONAL_CLASSES,
+  PSEUDO_RELATIONSHIP_SELECTORS,
   COMBINATOR_SELECTORS,
-  PSEUDO_CLASS_SELECTORS,
-  PSEUDO_ELEMENT_SELECTORS,
   ID_SELECTORS,
 } from '@/lib/constants/index.ts'
 import { DataTable } from '@/components/data-table/data-table.tsx'
@@ -23,10 +18,13 @@ import { markdownComponents } from '@/components/markdown-components.tsx'
 import { selectorsContent } from '@/components/help-selectors/content.ts'
 import { cn } from '@/lib/utils.ts'
 
-export type SelectorInTable = Omit<Selector, 'category'> & {
-  category: Selector['category'] | SocketSecurityDetails['category']
-  severity: SocketSecurityDetails['severity'] | null
-}
+import type { Table, VisibilityState } from '@tanstack/react-table'
+import type { Selector } from '@/lib/constants/index.ts'
+
+export type SelectorInTable = Omit<
+  Selector,
+  'label' | 'securityCategory' | 'severity'
+>
 
 export const HelpSelectors = () => {
   return (
@@ -43,45 +41,6 @@ export const HelpSelectors = () => {
   )
 }
 
-const isSecurityDetails = (
-  value: SocketSecurityRecord | SocketSecurityDetails,
-): value is SocketSecurityDetails => {
-  return (
-    'selector' in value &&
-    'description' in value &&
-    'category' in value &&
-    'severity' in value
-  )
-}
-
-const flattenSelectors = (): SelectorInTable[] => {
-  const regularSelectorGroups = [
-    ATTRIBUTE_SELECTORS,
-    CLASS_SELECTORS,
-    COMBINATOR_SELECTORS,
-    PSEUDO_CLASS_SELECTORS,
-    PSEUDO_ELEMENT_SELECTORS,
-    ID_SELECTORS,
-  ]
-
-  const flattenNested = (
-    record: SocketSecurityRecord,
-  ): SelectorInTable[] =>
-    Object.values(record).flatMap(value =>
-      isSecurityDetails(value) ? [value] : flattenNested(value),
-    )
-
-  return [
-    ...flattenNested(SOCKET_SECURITY_DETAILS),
-    ...regularSelectorGroups.flatMap(group =>
-      Object.values(group).map(selector => ({
-        ...selector,
-        severity: null,
-      })),
-    ),
-  ]
-}
-
 const SelectorsTable = ({ className }: { className?: string }) => {
   const [table, setTable] = useState<
     Table<SelectorInTable> | undefined
@@ -90,7 +49,39 @@ const SelectorsTable = ({ className }: { className?: string }) => {
     useState<VisibilityState>({})
   const [search, setSearch] = useState<string>('')
 
-  const tableData: SelectorInTable[] = flattenSelectors()
+  const transformSelector = (selector: Selector): SelectorInTable => {
+    const result: SelectorInTable = {
+      selector: selector.selector,
+      category: selector.category,
+      description: selector.description,
+    }
+
+    if ('arguments' in selector && selector.arguments) {
+      result.arguments = selector.arguments
+    }
+
+    return result
+  }
+
+  const tableData: SelectorInTable[] = [
+    // Flatten all selector objects and remove excluded properties
+    ...Object.values(PSEUDO_SECURITY_SELECTORS).map(
+      transformSelector,
+    ),
+    ...Object.values(PSEUDO_STATE_SELECTORS).map(transformSelector),
+    ...Object.values(PSEUDO_ATTRIBUTE_SELECTOR).map(
+      transformSelector,
+    ),
+    ...Object.values(PSEUDO_PROJECT_SELECTORS).map(transformSelector),
+    ...Object.values(PSEUDO_FUNCTIONAL_CLASSES).map(
+      transformSelector,
+    ),
+    ...Object.values(PSEUDO_RELATIONSHIP_SELECTORS).map(
+      transformSelector,
+    ),
+    ...Object.values(COMBINATOR_SELECTORS).map(transformSelector),
+    ...Object.values(ID_SELECTORS).map(transformSelector),
+  ]
 
   return (
     <div className={cn('flex flex-col gap-8 px-8', className)}>
@@ -106,7 +97,7 @@ const SelectorsTable = ({ className }: { className?: string }) => {
           table={table}
         />
       </div>
-      <DataTable
+      <DataTable<SelectorInTable, string>
         data={tableData}
         setTable={setTable}
         filterValue={search}

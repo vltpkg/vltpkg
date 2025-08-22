@@ -1,0 +1,2199 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BuilderCombobox > opens popover on plus click 1`] = `
+
+<gui-popover open="false">
+  <gui-tooltip-provider>
+    <gui-tooltip delayduration="150">
+      <gui-tooltip-trigger aschild="true">
+        <gui-popover-trigger aschild="true">
+          <gui-button
+            data-testid="query-builder-open"
+            variant="default"
+            classname="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
+          >
+            <gui-plus-icon>
+            </gui-plus-icon>
+          </gui-button>
+        </gui-popover-trigger>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Add query selector
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+  <gui-popover-content
+    align="start"
+    classname="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none"
+  >
+    <div class="rounded-lg border border-muted bg-popover shadow-lg">
+      <gui-command>
+        <div class="relative">
+          <gui-command-input
+            placeholder="Search selectors..."
+            wrapperclassname="border-b-[1px] border-muted"
+            classname="h-9"
+          >
+          </gui-command-input>
+          <div
+            tabindex="-1"
+            class="absolute right-2 top-2"
+          >
+            <gui-grip-vertical-icon classname="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground">
+            </gui-grip-vertical-icon>
+          </div>
+        </div>
+        <gui-command-list>
+          <gui-command-empty>
+            No results found
+          </gui-command-empty>
+          <gui-command-group heading="Relationship">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Production dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Development dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Optional dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Peer dependencies
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Connection Type">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Direct children
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                All descendants
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Siblings
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Project">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Matches workspaces in \`vlt.json\`
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Root project / all workspaces
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Root package
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="State">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                The scope of the current selector
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Packages with no dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Outdated on any level,Only major versions,Only minor versions,Only patch versions,Out of range,In range"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Packages that are outdated
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Outdated on any level
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only major versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only minor versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only patch versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Out of range
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    In range
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Packages that are private
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Version"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Packages matching a semver value
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Version
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Registry,File,Git,Remote,Workspace"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package type
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Registry
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    File
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Git
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Remote
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Workspace
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Date"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package publish date
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Date
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Overall,Maintenance,Quality,Supply Chain,License,Vulnerability"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package insight score
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Overall
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Maintenance
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Quality
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Supply Chain
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    License
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Vulnerability
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Insights">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Abandoned packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Manifest confusion
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Debugging features
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Deprecated packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dynamic imports
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Entropic strings
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Environment variables
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dynamic code execution
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                File system access
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Ambiguous,Copyleft,Exception,Miscellaneous,No License Found,Restricted,Unknown License,Unlicensed"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  License
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Ambiguous
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Copyleft
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Exception
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Miscellaneous
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    No License Found
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Restricted
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Unknown License
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Unlicensed
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Low severity,Medium severity,High severity,Critical severity"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Has malware
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Low severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Medium severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    High severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Critical severity
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Minified code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Native code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Network access
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Obfuscated code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Install scripts
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Shell access
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Shrinkwrap packages
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Medium severity,Critical severity"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Typosquats
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Medium severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Critical severity
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Suspicious packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Telemetry
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Trivial packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Undesirable packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                New npm collaborator
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unmaintained packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unpopular packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unstable ownership
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Attributes">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package name
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package version
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package description
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Homepage URL
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                License
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Author
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Main entry point
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Development dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Peer dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Optional dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Private package
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Module type
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Contributor name,Contributor email,Write access,Is publisher"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Contributors
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Contributors Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Contributor name
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Contributor email
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Write access
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Is publisher
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Funding type,Funding URL"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Funding
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Funding Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Funding type
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Funding URL
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Bug tracker URL,Bug tracker email"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Bug tracker
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Bug tracker Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Bug tracker URL
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Bug tracker email
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Keyword value"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Keywords
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Keywords Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Keyword value
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+          </gui-command-group>
+        </gui-command-list>
+      </gui-command>
+    </div>
+  </gui-popover-content>
+</gui-popover>
+
+`;
+
+exports[`BuilderCombobox > renders default (closed) 1`] = `
+
+<gui-popover open="false">
+  <gui-tooltip-provider>
+    <gui-tooltip delayduration="150">
+      <gui-tooltip-trigger aschild="true">
+        <gui-popover-trigger aschild="true">
+          <gui-button
+            data-testid="query-builder-open"
+            variant="default"
+            classname="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
+          >
+            <gui-plus-icon>
+            </gui-plus-icon>
+          </gui-button>
+        </gui-popover-trigger>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Add query selector
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+  <gui-popover-content
+    align="start"
+    classname="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none"
+  >
+    <div class="rounded-lg border border-muted bg-popover shadow-lg">
+      <gui-command>
+        <div class="relative">
+          <gui-command-input
+            placeholder="Search selectors..."
+            wrapperclassname="border-b-[1px] border-muted"
+            classname="h-9"
+          >
+          </gui-command-input>
+          <div
+            tabindex="-1"
+            class="absolute right-2 top-2"
+          >
+            <gui-grip-vertical-icon classname="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground">
+            </gui-grip-vertical-icon>
+          </div>
+        </div>
+        <gui-command-list>
+          <gui-command-empty>
+            No results found
+          </gui-command-empty>
+          <gui-command-group heading="Relationship">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Production dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Development dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Optional dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Peer dependencies
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Connection Type">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Direct children
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                All descendants
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Siblings
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Project">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Matches workspaces in \`vlt.json\`
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Root project / all workspaces
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Root package
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="State">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                The scope of the current selector
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Packages with no dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Outdated on any level,Only major versions,Only minor versions,Only patch versions,Out of range,In range"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Packages that are outdated
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Outdated on any level
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only major versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only minor versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only patch versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Out of range
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    In range
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Packages that are private
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Version"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Packages matching a semver value
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Version
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Registry,File,Git,Remote,Workspace"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package type
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Registry
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    File
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Git
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Remote
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Workspace
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Date"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package publish date
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Date
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Overall,Maintenance,Quality,Supply Chain,License,Vulnerability"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package insight score
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Overall
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Maintenance
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Quality
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Supply Chain
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    License
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Vulnerability
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Insights">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Abandoned packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Manifest confusion
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Debugging features
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Deprecated packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dynamic imports
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Entropic strings
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Environment variables
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dynamic code execution
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                File system access
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Ambiguous,Copyleft,Exception,Miscellaneous,No License Found,Restricted,Unknown License,Unlicensed"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  License
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Ambiguous
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Copyleft
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Exception
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Miscellaneous
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    No License Found
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Restricted
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Unknown License
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Unlicensed
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Low severity,Medium severity,High severity,Critical severity"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Has malware
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Low severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Medium severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    High severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Critical severity
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Minified code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Native code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Network access
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Obfuscated code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Install scripts
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Shell access
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Shrinkwrap packages
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Medium severity,Critical severity"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Typosquats
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Medium severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Critical severity
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Suspicious packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Telemetry
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Trivial packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Undesirable packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                New npm collaborator
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unmaintained packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unpopular packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unstable ownership
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Attributes">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package name
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package version
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package description
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Homepage URL
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                License
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Author
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Main entry point
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Development dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Peer dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Optional dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Private package
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Module type
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Contributor name,Contributor email,Write access,Is publisher"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Contributors
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Contributors Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Contributor name
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Contributor email
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Write access
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Is publisher
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Funding type,Funding URL"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Funding
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Funding Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Funding type
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Funding URL
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Bug tracker URL,Bug tracker email"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Bug tracker
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Bug tracker Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Bug tracker URL
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Bug tracker email
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Keyword value"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Keywords
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Keywords Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Keyword value
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+          </gui-command-group>
+        </gui-command-list>
+      </gui-command>
+    </div>
+  </gui-popover-content>
+</gui-popover>
+
+`;
+
+exports[`BuilderCombobox > shows hovered item description 1`] = `
+
+<gui-popover open="false">
+  <gui-tooltip-provider>
+    <gui-tooltip delayduration="150">
+      <gui-tooltip-trigger aschild="true">
+        <gui-popover-trigger aschild="true">
+          <gui-button
+            data-testid="query-builder-open"
+            variant="default"
+            classname="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
+          >
+            <gui-plus-icon>
+            </gui-plus-icon>
+          </gui-button>
+        </gui-popover-trigger>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Add query selector
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+  <gui-popover-content
+    align="start"
+    classname="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none"
+  >
+    <div class="rounded-lg border border-muted bg-popover shadow-lg">
+      <gui-command>
+        <div class="relative">
+          <gui-command-input
+            placeholder="Search selectors..."
+            wrapperclassname="border-b-[1px] border-muted"
+            classname="h-9"
+          >
+          </gui-command-input>
+          <div
+            tabindex="-1"
+            class="absolute right-2 top-2"
+          >
+            <gui-grip-vertical-icon classname="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground">
+            </gui-grip-vertical-icon>
+          </div>
+        </div>
+        <gui-command-list>
+          <gui-command-empty>
+            No results found
+          </gui-command-empty>
+          <gui-command-group heading="Relationship">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Production dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Development dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Optional dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Peer dependencies
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Connection Type">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Direct children
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                All descendants
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Siblings
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Project">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Matches workspaces in \`vlt.json\`
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Root project / all workspaces
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Root package
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="State">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                The scope of the current selector
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Packages with no dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Outdated on any level,Only major versions,Only minor versions,Only patch versions,Out of range,In range"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Packages that are outdated
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Outdated on any level
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only major versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only minor versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Only patch versions
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Out of range
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    In range
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Packages that are private
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Version"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Packages matching a semver value
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Version
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Registry,File,Git,Remote,Workspace"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package type
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Registry
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    File
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Git
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Remote
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Workspace
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Date"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package publish date
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Date
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Overall,Maintenance,Quality,Supply Chain,License,Vulnerability"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Package insight score
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Overall
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Maintenance
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Quality
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Supply Chain
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    License
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Vulnerability
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Insights">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Abandoned packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Manifest confusion
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Debugging features
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Deprecated packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dynamic imports
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Entropic strings
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Environment variables
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dynamic code execution
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                File system access
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Ambiguous,Copyleft,Exception,Miscellaneous,No License Found,Restricted,Unknown License,Unlicensed"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  License
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Ambiguous
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Copyleft
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Exception
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Miscellaneous
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    No License Found
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Restricted
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Unknown License
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Unlicensed
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Low severity,Medium severity,High severity,Critical severity"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Has malware
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Low severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Medium severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    High severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Critical severity
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Minified code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Native code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Network access
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Obfuscated code
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Install scripts
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Shell access
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Shrinkwrap packages
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Medium severity,Critical severity"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Typosquats
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Medium severity
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Critical severity
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Suspicious packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Telemetry
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Trivial packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Undesirable packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                New npm collaborator
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unmaintained packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unpopular packages
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Unstable ownership
+              </span>
+            </gui-command-item>
+          </gui-command-group>
+          <gui-command-separator>
+          </gui-command-separator>
+          <gui-command-group heading="Attributes">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package name
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package version
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Package description
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Homepage URL
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                License
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Author
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Main entry point
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Development dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Peer dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Optional dependencies
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Private package
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                Module type
+              </span>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Contributor name,Contributor email,Write access,Is publisher"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Contributors
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Contributors Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Contributor name
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Contributor email
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Write access
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Is publisher
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Funding type,Funding URL"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Funding
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Funding Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Funding type
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Funding URL
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Bug tracker URL,Bug tracker email"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Bug tracker
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Bug tracker Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Bug tracker URL
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Bug tracker email
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+            <gui-command-item
+              keywords="Keyword value"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  Keywords
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Keywords Properties
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    Keyword value
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </gui-command-item>
+          </gui-command-group>
+        </gui-command-list>
+      </gui-command>
+      <div class="border-t-[1px] border-muted px-3 py-2">
+        <p class="text-sm text-muted-foreground">
+          Matches prod dependencies to your current project.
+        </p>
+      </div>
+    </div>
+  </gui-popover-content>
+</gui-popover>
+
+`;

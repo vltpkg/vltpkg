@@ -37,11 +37,19 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & {
+    wrapperClassName?: string
+  }
 >(
-  ({ className, ...props }, ref): React.JSX.Element => (
+  (
+    { className, wrapperClassName, ...props },
+    ref,
+  ): React.JSX.Element => (
     <div
-      className="flex items-center border-b px-3"
+      className={cn(
+        'flex items-center border-b px-3',
+        wrapperClassName,
+      )}
       cmdk-input-wrapper="">
       <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input

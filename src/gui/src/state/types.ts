@@ -21,6 +21,15 @@ export type Action = {
   updateSpecOptions: (specOptions: State['specOptions']) => void
   updateStamp: () => void
   updateTheme: (theme: State['theme']) => void
+  updateQueryBuilderDisplay: (
+    queryBuilderDisplay: State['queryBuilderDisplay'],
+  ) => void
+  updateQueryBuilderOpen: (
+    queryBuilderOpen: State['queryBuilderOpen'],
+  ) => void
+  updateQueryInputFocused: (
+    queryInputFocused: State['queryInputFocused'],
+  ) => void
   updateFocused: (focused: State['focused']) => void
   reset: () => void
   saveQuery: (item: SavedQuery) => void
@@ -143,6 +152,19 @@ export type State = {
    * Saved labels used for query tags in localStorage.
    */
   savedQueryLabels?: QueryLabel[]
+  /**
+   * A toggle state for the query builder, if it is open or not.
+   * (this does not mean the query builder is displayed)
+   */
+  queryBuilderOpen: boolean
+  /**
+   * Whether the query input is focused.
+   */
+  queryInputFocused: boolean
+  /**
+   * Whether the query builder is displayed.
+   */
+  queryBuilderDisplay: boolean
 }
 
 export type DashboardTools =
