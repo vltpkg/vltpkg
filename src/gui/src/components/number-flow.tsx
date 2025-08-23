@@ -75,29 +75,6 @@ const NumberFlow = forwardRef<HTMLDivElement, NumberFlowProps>(
       blurValue = 1,
     } = motionConfig ?? {}
 
-    const digitVariants = {
-      initial: (dir: 'up' | 'down') => ({
-        y: dir === 'up' ? yValue : -yValue,
-        filter: `blur(${blurValue}px)`,
-        opacity: 0,
-      }),
-      animate: {
-        y: '0px',
-        filter: 'blur(0px)',
-        opacity: 1,
-      },
-      exit: (dir: 'up' | 'down') => ({
-        y: dir === 'up' ? -yValue : yValue,
-        filter: `blur(${blurValue}px)`,
-        opacity: 0,
-      }),
-      transition: {
-        type: 'spring',
-        bounce: 0.35,
-        duration: 0.3,
-      },
-    }
-
     useEffect(() => {
       setDir(end > start ? 'up' : 'down')
 
@@ -133,7 +110,28 @@ const NumberFlow = forwardRef<HTMLDivElement, NumberFlowProps>(
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                variants={digitVariants}
+                variants={{
+                  initial: (dir: 'up' | 'down') => ({
+                    y: dir === 'up' ? yValue : -yValue,
+                    filter: `blur(${blurValue}px)`,
+                    opacity: 0,
+                  }),
+                  animate: {
+                    y: '0px',
+                    filter: 'blur(0px)',
+                    opacity: 1,
+                  },
+                  exit: (dir: 'up' | 'down') => ({
+                    y: dir === 'up' ? -yValue : yValue,
+                    filter: `blur(${blurValue}px)`,
+                    opacity: 0,
+                  }),
+                }}
+                transition={{
+                  type: 'spring',
+                  bounce: 0.35,
+                  duration: 0.3,
+                }}
                 className={cn(span(), classNames?.span)}
                 style={{
                   originY: '0px',
