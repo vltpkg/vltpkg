@@ -80,23 +80,21 @@ export interface DataBadgeProps
 }
 
 const CopyIcon = ({ copied }: { copied: boolean }) => {
-  const iconMotion = {
-    initial: { opacity: 0, scale: 0.8 },
-    animate: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.8 },
-    transition: {
-      type: 'spring' as const,
-      duration: 0.175,
-      bounce: 0.2,
-    },
-  }
-
   return (
     <span
       data-id="info-badge-copy-icon"
       className="flex w-4 items-center justify-center">
       <AnimatePresence mode="wait" initial={false}>
-        <motion.span key={copied ? 'check' : 'copy'} {...iconMotion}>
+        <motion.span
+          key={copied ? 'check' : 'copy'}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{
+            type: 'spring',
+            duration: 0.175,
+            bounce: 0.2,
+          }}>
           {copied ?
             <Check size={14} className="my-auto" />
           : <Copy size={14} className="my-auto" />}
