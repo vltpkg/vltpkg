@@ -52,7 +52,7 @@ If the response is `content-type: application/octet-stream` and starts
 with the gzip header, then we return the raw body as we received it,
 but as a best-effort background job, unzip it and update the cache
 entry to be an unzipped response body. This is done in the
-`@vltpkg/cache-unzip` worker.
+`@vltpkg/cache-unzip` child process.
 
 So,
 
