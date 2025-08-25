@@ -1,96 +1,83 @@
 import { error } from '@vltpkg/error-cause'
-import { asError } from '@vltpkg/types'
 import os from 'node:os'
-import { UnpackRequest } from './unpack-request.ts'
-import { isResponseOK, Worker } from './worker.ts'
-import type { ResponseError, ResponseOK } from './worker.ts'
-
-export * from './worker.ts'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import Piscina from 'piscina'
+import type { WorkerInput } from './worker-thread.ts'
 
 /**
  * Automatically expanding/contracting set of workers to maximize parallelism
  * of unpack operations up to 1 less than the number of CPUs (or 1).
  *
  * `pool.unpack(tarData, target)` will perform the unpack operation
- * synchronously, in one of these workers, and returns a promise when the
+ * in one of these workers, and returns a promise when the
  * worker has confirmed completion of the task.
  */
 export class Pool {
   /**
-   * Number of workers to emplly. Defaults to 1 less than the number of
-   * CPUs, or 1.
+   * Piscina instance for managing worker threads
    */
-  /* c8 ignore next */
-  jobs: number = 8 * (Math.max(os.availableParallelism(), 2) - 1)
-  /**
-   * Set of currently active worker threads
-   */
-  workers = new Set<Worker>()
-  /**
-   * Queue of requests awaiting an available worker
-   */
-  queue: UnpackRequest[] = []
-  /**
-   * Requests that have been assigned to a worker, but have not yet
-   * been confirmed completed.
-   */
-  pending = new Map<number, UnpackRequest>()
+  private piscina: Piscina
 
-  // handle a message from the worker
-  #onMessage(w: Worker, m: ResponseError | ResponseOK) {
-    const { id } = m
-    // a request has been met or failed, report and either
-    // pick up the next item in the queue, or terminate worker
-    const ur = this.pending.get(id)
+  constructor() {
     /* c8 ignore next */
-    if (!ur) return
-    if (isResponseOK(m)) {
-      ur.resolve()
-      /* c8 ignore start - nearly impossible in normal circumstances */
-    } else {
-      ur.reject(
-        error(
-          asError(m.error, 'failed without error message').message,
-          {
-            found: m,
-            cause: m.error,
-          },
-        ),
-      )
-    }
-    /* c8 ignore stop */
-    const next = this.queue.shift()
-    if (!next) {
-      this.workers.delete(w)
-    } else {
-      void w.process(next)
-    }
-  }
-
-  // create a new worker
-  #createWorker(req: UnpackRequest) {
-    const w: Worker = new Worker((m: ResponseError | ResponseOK) =>
-      this.#onMessage(w, m),
-    )
-    this.workers.add(w)
-    void w.process(req)
+    const jobs = 8 * (Math.max(os.availableParallelism(), 2) - 1)
+    
+    // Get the current module directory
+    const __filename = fileURLToPath(import.meta.url)
+    const __dirname = resolve(__filename, '..')
+    
+    this.piscina = new Piscina({
+      filename: resolve(__dirname, 'worker-thread.js'),
+      maxThreads: jobs,
+      minThreads: 1,
+      idleTimeout: 60000, // 60 seconds
+    })
   }
 
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
-   * placed. Will create a new worker up to the `jobs` value, and then start
-   * pushing in the queue for workers to pick up as they become available.
+   * placed. Will use Piscina to manage worker threads and transfer the buffer
+   * efficiently.
    *
    * Returned promise resolves when the provided tarball has been extracted.
    */
-  async unpack(tarData: Buffer, target: string) {
-    const ur = new UnpackRequest(tarData, target)
-    this.pending.set(ur.id, ur)
-    if (this.workers.size < this.jobs) {
-      this.#createWorker(ur)
-    } else {
-      this.queue.push(ur)
+  async unpack(tarData: Buffer, target: string): Promise<void> {
+    try {
+      // Create a transferable buffer from the input
+      // First, we need to ensure the buffer is backed by an ArrayBuffer we can transfer
+      const arrayBuffer = tarData.buffer.slice(
+        tarData.byteOffset,
+        tarData.byteOffset + tarData.byteLength
+      )
+      
+      // Create a new Buffer from the ArrayBuffer that we'll pass to the worker
+      const transferableBuffer = Buffer.from(arrayBuffer)
+      
+      const input: WorkerInput = {
+        tarData: transferableBuffer,
+        target,
+      }
+      
+      // Run the task in a worker thread with buffer transfer
+      await this.piscina.run(input, {
+        transferList: [arrayBuffer],
+      })
+    } catch (err) {
+      throw error(
+        'Failed to unpack tarball',
+        {
+          cause: err,
+          target,
+        },
+      )
     }
-    return ur.promise
+  }
+
+  /**
+   * Destroy the pool and terminate all workers
+   */
+  async destroy(): Promise<void> {
+    await this.piscina.destroy()
   }
 }

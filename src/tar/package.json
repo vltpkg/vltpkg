@@ -17,13 +17,13 @@
       "./package.json": "./package.json",
       ".": "./src/index.ts",
       "./pool": "./src/pool.ts",
-      "./unpack": "./src/unpack.ts",
-      "./unpack-request": "./src/unpack-request.ts"
+      "./unpack": "./src/unpack.ts"
     }
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "piscina": "^4.8.0",
     "rimraf": "catalog:",
     "tar": "catalog:"
   },
@@ -80,11 +80,6 @@
     "./unpack": {
       "import": {
         "default": "./src/unpack.ts"
-      }
-    },
-    "./unpack-request": {
-      "import": {
-        "default": "./src/unpack-request.ts"
       }
     }
   },
