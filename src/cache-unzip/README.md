@@ -31,9 +31,9 @@ if (response.isGzip) {
 
 On process exit, these registered keys will be passed as arguments to
 a detached deref'ed `vlt-cache-unzip` process. So, the main program
-exits normally, but the worker ignores the `SIGHUP` and keeps going
-until it's done. The next time that cache entry is read, it won't have
-to be unzipped.
+exits normally, but the child process ignores the `SIGHUP` and keeps
+going until it's done. The next time that cache entry is read, it
+won't have to be unzipped.
 
 ## Why Do This
 
