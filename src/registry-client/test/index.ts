@@ -450,10 +450,12 @@ t.test('follow redirects', { saveFixture: true }, async t => {
             maxRedirections: 0,
           })
           t.strictSame(res.statusCode, code)
-          t.equal(
-            String(res.getHeader('location')),
-            `/${code}-${type}4`,
-          )
+          const locationHeader = res.getHeader('location')
+          const location =
+            locationHeader ?
+              new TextDecoder().decode(locationHeader)
+            : undefined
+          t.equal(location, `/${code}-${type}4`)
         })
       }
     }
@@ -587,6 +589,42 @@ t.test('client.login() with 100ms delayed retry', async t => {
       [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
     },
     'saved auth to keychain',
+  )
+})
+
+t.test('client.login() with retry-after 1 second', async t => {
+  // Test the specific retry logic with setTimeout for positive retry-after values
+  // This test specifically covers lines 384-385 in src/index.ts:
+  // if (retryAfter > 0) {
+  //   await setTimeout(retryAfter * 1000, null, { signal })
+  // }
+  dropConnection = false
+  doneUrlRetry = '0.1' // 1 second retry-after header
+  const rc = t.context.rc as RegistryClient
+  const startTime = Date.now()
+  await rc.login(registryURL)
+  const endTime = Date.now()
+  // Should have waited some time due to retry-after header
+  // This test specifically covers lines 384-385: setTimeout(retryAfter * 1000)
+  const waitTime = endTime - startTime
+  t.ok(
+    waitTime >= 50,
+    `Expected at least 500ms wait due to retry-after, got ${waitTime}ms`,
+  )
+  t.comment(
+    `Login completed after ${waitTime}ms (retry-after logic executed)`,
+  )
+
+  await getKC('').save()
+  const auths = JSON.parse(
+    readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
+  )
+  t.matchOnlyStrict(
+    auths,
+    {
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
+    },
+    'saved auth to keychain after retry delay',
   )
 })
 

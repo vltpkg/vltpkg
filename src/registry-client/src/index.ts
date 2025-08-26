@@ -33,6 +33,7 @@ import type { TokenResponse } from './token-response.ts'
 import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
+import { getEncondedValue } from './string-encoding.ts'
 export {
   CacheEntry,
   deleteToken,
@@ -377,8 +378,8 @@ export class RegistryClient {
     })
     const { signal } = options as { signal?: AbortSignal }
     if (response.statusCode === 202) {
-      const rt = response.getHeader('retry-after')
-      const retryAfter = rt ? Number(rt.toString()) : -1
+      const rt = response.getHeaderString('retry-after')
+      const retryAfter = rt ? Number(rt) : -1
       if (retryAfter > 0) {
         await setTimeout(retryAfter * 1000, null, { signal })
       }
@@ -505,9 +506,19 @@ export class RegistryClient {
       result.checkIntegrity({ url })
     }
     if (useCache) {
-      this.cache.set(key, result.encode(), {
-        integrity: result.integrity,
-      })
+      // Get the encoded buffer from the cache entry
+      const buffer = result.encode()
+      this.cache.set(
+        key,
+        Buffer.from(
+          buffer.buffer,
+          buffer.byteOffset,
+          buffer.byteLength,
+        ),
+        {
+          integrity: result.integrity,
+        },
+      )
     }
     return result
   }
@@ -525,14 +536,17 @@ export class RegistryClient {
       if (repeatRequest) return await this.request(url, repeatRequest)
     }
 
-    const h: Buffer[] = []
+    const h: Uint8Array[] = []
     for (const [key, value] of Object.entries(response.headers)) {
       /* c8 ignore start - theoretical */
       if (Array.isArray(value)) {
-        h.push(Buffer.from(key), Buffer.from(value.join(', ')))
+        h.push(
+          getEncondedValue(key),
+          getEncondedValue(value.join(', ')),
+        )
         /* c8 ignore stop */
       } else if (typeof value === 'string') {
-        h.push(Buffer.from(key), Buffer.from(value))
+        h.push(getEncondedValue(key), getEncondedValue(value))
       }
     }
 
@@ -546,6 +560,10 @@ export class RegistryClient {
         trustIntegrity,
         'stale-while-revalidate-factor':
           this.staleWhileRevalidateFactor,
+        contentLength:
+          response.headers['content-length'] ?
+            Number(response.headers['content-length'])
+          : /* c8 ignore next */ undefined,
       },
     )
 
@@ -558,7 +576,9 @@ export class RegistryClient {
       return result
     }
 
-    response.body.on('data', (chunk: Buffer) => result.addBody(chunk))
+    response.body.on('data', (chunk: Uint8Array) =>
+      result.addBody(chunk),
+    )
     return await new Promise<CacheEntry>((res, rej) => {
       response.body.on('error', rej)
       response.body.on('end', () => res(result))
