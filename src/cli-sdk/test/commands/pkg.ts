@@ -1086,10 +1086,10 @@ t.test(
         },
       },
       '@vltpkg/query': {
-        Query: class {
-          static hasSecuritySelectors() {
+        Query: {
+          hasSecuritySelectors() {
             return false
-          }
+          },
         },
       },
       '@vltpkg/security-archive': {
@@ -1167,10 +1167,10 @@ t.test(
         },
       },
       '@vltpkg/query': {
-        Query: class {
-          static hasSecuritySelectors() {
+        Query: {
+          hasSecuritySelectors() {
             return false
-          }
+          },
         },
       },
       '@vltpkg/security-archive': {
@@ -1248,10 +1248,10 @@ t.test(
         },
       },
       '@vltpkg/query': {
-        Query: class {
-          static hasSecuritySelectors() {
+        Query: {
+          hasSecuritySelectors() {
             return false
-          }
+          },
         },
       },
       '@vltpkg/security-archive': {
@@ -1312,10 +1312,10 @@ t.test(
         },
       },
       '@vltpkg/query': {
-        Query: class {
-          static hasSecuritySelectors() {
+        Query: {
+          hasSecuritySelectors() {
             return false
-          }
+          },
         },
       },
       '@vltpkg/security-archive': {
@@ -1366,10 +1366,10 @@ t.test(
         },
       },
       '@vltpkg/query': {
-        Query: class {
-          static hasSecuritySelectors() {
+        Query: {
+          hasSecuritySelectors() {
             return false
-          }
+          },
         },
       },
       '@vltpkg/security-archive': {
