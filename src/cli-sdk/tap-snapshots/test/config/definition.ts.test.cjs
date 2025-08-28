@@ -244,6 +244,14 @@ Object {
     "type": "string",
     "validate": Function validate(v),
   },
+  "if-present": Object {
+    "description": String(
+      When running scripts across multiple packages, only include packages that have the script.
+      
+      If this is not set, then the run will fail if any packages do not have the script.
+    ),
+    "type": "boolean",
+  },
   "jsr-registries": Object {
     "description": String(
       Map alias names to JSR.io registry urls.
@@ -483,6 +491,7 @@ Array [
   "--git-shallow",
   "--help",
   "--identity=<name>",
+  "--if-present",
   "--jsr-registries=<name=url>",
   "--no-bail",
   "--no-color",
@@ -537,6 +546,7 @@ Array [
   "git-shallow",
   "help",
   "identity",
+  "if-present",
   "jsr-registries",
   "no-bail",
   "no-color",

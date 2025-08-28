@@ -443,7 +443,6 @@ export const definition = j
 
                     If this is not set, then the run will fail if any
                     packages do not have the script.`,
-      default: false,
     },
   })
 
