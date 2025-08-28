@@ -249,6 +249,9 @@ Object {
       When running scripts across multiple packages, only include packages that have the script.
       
       If this is not set, then the run will fail if any packages do not have the script.
+      
+      This will default to true if --scope, --workspace,
+      --workspace-group, or --recursive is set. Otherwise, it will default to false.
     ),
     "type": "boolean",
   },
