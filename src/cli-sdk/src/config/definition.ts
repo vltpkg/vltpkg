@@ -437,6 +437,17 @@ export const definition = j
   })
 
   .flag({
+    'if-present': {
+      description: `When running scripts across multiple packages,
+                    only include packages that have the script.
+
+                    If this is not set, then the run will fail if any
+                    packages do not have the script.`,
+      default: false,
+    },
+  })
+
+  .flag({
     recursive: {
       short: 'r',
       description: `Run an operation across multiple workspaces.
