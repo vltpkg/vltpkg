@@ -31,7 +31,7 @@ export const defaultGitHosts = {
 }
 
 export const defaultGitHostArchives = {
-  github: 'https://codeload.github.com/$1/$2/tar.gz/$committish',
+  github: 'https://api.github.com/repos/$1/$2/tarball/$committish',
   bitbucket: 'https://bitbucket.org/$1/$2/get/$committish.tar.gz',
   gist: 'https://codeload.github.com/gist/$1/tar.gz/$committish',
   gitlab:
@@ -663,6 +663,13 @@ export class Spec implements SpecLike<Spec> {
       this.#parseGitSelector(t)
       if (this.gitCommittish && !this.gitSelectorParsed?.path) {
         const archiveHost = this.options['git-host-archives'][name]
+        if (
+          name === 'github' &&
+          this.gitCommittish.startsWith('pull/') &&
+          this.gitCommittish.match(/\//g)?.length === 1
+        ) {
+          this.gitCommittish += '/head'
+        }
         if (archiveHost) {
           this.type = 'remote'
           let t = archiveHost

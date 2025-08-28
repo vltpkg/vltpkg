@@ -3376,7 +3376,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   gitCommittish: '1.2.3',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
-  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3',
+  remoteURL: 'https://api.github.com/repos/user/foo/tarball/1.2.3',
   overridden: false
 }
 `
@@ -3393,7 +3393,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   gitCommittish: '1.2.3',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
-  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3',
+  remoteURL: 'https://api.github.com/repos/user/foo/tarball/1.2.3',
   overridden: false
 }
 `
@@ -3410,7 +3410,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   gitCommittish: [32m'1.2.3'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo'[39m,
-  remoteURL: [32m'https://codeload.github.com/user/foo/tar.gz/1.2.3'[39m,
+  remoteURL: [32m'https://api.github.com/repos/user/foo/tarball/1.2.3'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -5118,7 +5118,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       namedGitHost: 'github',
       namedGitHostPath: 'a/x',
       namedRegistry: 'npm',
-      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch',
+      remoteURL: 'https://api.github.com/repos/a/x/tarball/branch',
       overridden: false
     },
     overridden: false
@@ -5154,7 +5154,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       namedGitHost: 'github',
       namedGitHostPath: 'a/x',
       namedRegistry: 'npm',
-      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch',
+      remoteURL: 'https://api.github.com/repos/a/x/tarball/branch',
       overridden: false
     },
     overridden: false
@@ -5190,7 +5190,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       namedGitHost: [32m'github'[39m,
       namedGitHostPath: [32m'a/x'[39m,
       namedRegistry: [32m'npm'[39m,
-      remoteURL: [32m'https://codeload.github.com/a/x/tar.gz/branch'[39m,
+      remoteURL: [32m'https://api.github.com/repos/a/x/tarball/branch'[39m,
       overridden: [33mfalse[39m
     },
     overridden: [33mfalse[39m
@@ -5285,7 +5285,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'github',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /',
+  remoteURL: 'https://api.github.com/repos/user..blerg--/..foo-js/tarball/ . . . . . some . tags / / /',
   overridden: false
 }
 `
@@ -5302,7 +5302,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'github',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /',
+  remoteURL: 'https://api.github.com/repos/user..blerg--/..foo-js/tarball/ . . . . . some . tags / / /',
   overridden: false
 }
 `
@@ -5319,7 +5319,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
   gitCommittish: [32m' . . . . . some . tags / / /'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
-  remoteURL: [32m'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'[39m,
+  remoteURL: [32m'https://api.github.com/repos/user..blerg--/..foo-js/tarball/ . . . . . some . tags / / /'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -5383,7 +5383,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
   gitCommittish: 'bar/baz',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz',
+  remoteURL: 'https://api.github.com/repos/user/foo-js/tarball/bar/baz',
   overridden: false
 }
 `
@@ -5400,7 +5400,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
   gitCommittish: 'bar/baz',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz',
+  remoteURL: 'https://api.github.com/repos/user/foo-js/tarball/bar/baz',
   overridden: false
 }
 `
@@ -5417,7 +5417,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
   gitCommittish: [32m'bar/baz'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'[39m,
+  remoteURL: [32m'https://api.github.com/repos/user/foo-js/tarball/bar/baz'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -5438,7 +5438,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin',
+  remoteURL: 'https://api.github.com/repos/user/foo-js/tarball/bar/baz/bin',
   overridden: false
 }
 `
@@ -5455,7 +5455,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin',
+  remoteURL: 'https://api.github.com/repos/user/foo-js/tarball/bar/baz/bin',
   overridden: false
 }
 `
@@ -5472,7 +5472,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
   gitCommittish: [32m'bar/baz/bin'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
-  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'[39m,
+  remoteURL: [32m'https://api.github.com/repos/user/foo-js/tarball/bar/baz/bin'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -8355,7 +8355,7 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com:user/foo#
   gitCommittish: '1.2.3',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
-  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3',
+  remoteURL: 'https://api.github.com/repos/user/foo/tarball/1.2.3',
   overridden: false
 }
 `
@@ -8851,7 +8851,7 @@ exports[`test/index.ts > TAP > parse args > x@npm:y@npm:z@github:a/x#branch > in
       namedGitHost: 'github',
       namedGitHostPath: 'a/x',
       namedRegistry: 'npm',
-      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch',
+      remoteURL: 'https://api.github.com/repos/a/x/tarball/branch',
       overridden: false
     },
     overridden: false
@@ -8894,7 +8894,7 @@ exports[`test/index.ts > TAP > parse args > x@user..blerg--/..foo-js# . . . . . 
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'github',
   namedGitHostPath: 'user..blerg--/..foo-js',
-  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /',
+  remoteURL: 'https://api.github.com/repos/user..blerg--/..foo-js/tarball/ . . . . . some . tags / / /',
   overridden: false
 }
 `
@@ -8924,7 +8924,7 @@ exports[`test/index.ts > TAP > parse args > x@user/foo-js#bar/baz > inspect defa
   gitCommittish: 'bar/baz',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz',
+  remoteURL: 'https://api.github.com/repos/user/foo-js/tarball/bar/baz',
   overridden: false
 }
 `
@@ -8941,7 +8941,7 @@ exports[`test/index.ts > TAP > parse args > x@user/foo-js#bar/baz/bin > inspect 
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
-  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin',
+  remoteURL: 'https://api.github.com/repos/user/foo-js/tarball/bar/baz/bin',
   overridden: false
 }
 `
