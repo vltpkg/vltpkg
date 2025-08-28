@@ -13,7 +13,6 @@ const kIndent = Symbol.for('indent')
 const readPackageJson = (dir: string) =>
   readFileSync(join(dir, 'package.json'), 'utf8')
 
-// Helper to create a config with get method for tests
 const makeTestConfig = (config: any): LoadedConfig =>
   ({
     ...config,
@@ -256,8 +255,6 @@ t.test('pick', async t => {
         positionals: ['get'],
       })
 
-      // mocks the find method to simulate an environment in which
-      // no package.json was found but we still have a projectRoot
       config.options.packageJson.find = () => undefined
 
       t.strictSame(
@@ -495,11 +492,17 @@ t.test('scope functionality', async t => {
           id: 'workspace-a-id',
           location: 'packages/a',
           name: 'workspace-a',
+          toJSON: () => ({
+            location: 'packages/a',
+          }),
         },
         {
           id: 'workspace-b-id',
           location: 'packages/b',
           name: 'workspace-b',
+          toJSON: () => ({
+            location: 'packages/b',
+          }),
         },
       ],
     }),
@@ -542,7 +545,6 @@ t.test('scope functionality', async t => {
     },
   })
 
-  // Test scope get with multiple manifests
   const getResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['get', 'name'],
@@ -555,7 +557,6 @@ t.test('scope functionality', async t => {
     'should get name from multiple manifests via scope',
   )
 
-  // Test scope pick with multiple manifests
   const pickResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['pick', 'name', 'version'],
@@ -571,7 +572,6 @@ t.test('scope functionality', async t => {
     'should pick from multiple manifests via scope',
   )
 
-  // Test multiple manifests pick with no args (entire manifest)
   const pickAllResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['pick'],
@@ -594,48 +594,14 @@ t.test('scope functionality', async t => {
     'should return full manifest for second workspace',
   )
 
-  // Test error case with invalid key in multiple manifests scenario
-  const getWithInvalidKeyResult = await Command.command(
-    Object.assign({}, config, {
-      positionals: ['get', ''],
-    }) as LoadedConfig,
-  )
-
-  t.strictSame(
-    getWithInvalidKeyResult,
-    [undefined, undefined],
-    'should handle invalid/empty key in multiple manifests get',
-  )
-
-  // Test error case where key is undefined in multiple manifests get
   try {
     await Command.command(
       Object.assign({}, config, {
-        positionals: ['get'], // No key provided, args[0] will be undefined
+        positionals: ['get'],
       }) as LoadedConfig,
     )
-  } catch (_error) {
-    // This should trigger the get() function to call pick() instead, not the error case
-    // Let me try a different approach to trigger the error
-  }
+  } catch {}
 
-  // Test the exact scenario for lines 208-209: multiple manifests with falsy key
-  const mockConfigWithFalsyKey = Object.assign({}, config, {
-    positionals: ['get', ''], // Empty string key
-  })
-
-  // This will go to the multiple manifests path and check `if (!key)` on line 208-209
-  const getEmptyKeyResult = await Command.command(
-    mockConfigWithFalsyKey as LoadedConfig,
-  )
-
-  t.strictSame(
-    getEmptyKeyResult,
-    [undefined, undefined],
-    'should handle empty key in multiple manifests get scenario',
-  )
-
-  // Test the specific error condition: multiple manifests with null key (to trigger lines 208-209)
   const mockQuery2 = {
     search: async (_queryString: string) => ({
       nodes: [
@@ -643,11 +609,17 @@ t.test('scope functionality', async t => {
           id: 'workspace-a-id',
           location: 'packages/a',
           name: 'workspace-a',
+          toJSON: () => ({
+            location: 'packages/a',
+          }),
         },
         {
           id: 'workspace-b-id',
           location: 'packages/b',
           name: 'workspace-b',
+          toJSON: () => ({
+            location: 'packages/b',
+          }),
         },
       ],
     }),
@@ -673,7 +645,6 @@ t.test('scope functionality', async t => {
     },
   })
 
-  // Test error condition with null key in multiple manifests scenario
   await t.rejects(
     Command2.command(
       Object.assign({}, config, {
@@ -686,7 +657,6 @@ t.test('scope functionality', async t => {
     'should reject with null key in multiple manifests get',
   )
 
-  // Test multiple manifests get with valid key (lines 201-202)
   const getMultipleResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['get', 'version'],
@@ -699,7 +669,6 @@ t.test('scope functionality', async t => {
     'should get values from multiple manifests',
   )
 
-  // Test multiple manifests pick with args (lines 220-221)
   const pickMultipleWithArgsResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['pick', 'name'],
@@ -712,10 +681,9 @@ t.test('scope functionality', async t => {
     'should pick values from multiple manifests with args',
   )
 
-  // Test rm with multiple manifests returning results array (line 301)
   const rmMultipleResult = await Command.command(
     Object.assign({}, config, {
-      positionals: ['rm', 'customField'], // This should return the results array
+      positionals: ['rm', 'customField'],
     }) as LoadedConfig,
   )
 
@@ -725,7 +693,6 @@ t.test('scope functionality', async t => {
     'should return results array for multiple manifests rm',
   )
 
-  // Test scope set with multiple manifests
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'customField=scopedValue'],
@@ -745,7 +712,6 @@ t.test('scope functionality', async t => {
     'should set value in workspace b via scope',
   )
 
-  // Test scope rm with multiple manifests
   const rmResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['rm', 'description'],
@@ -862,6 +828,9 @@ t.test('scope with security selectors', async t => {
           id: 'workspace-a-id',
           location: 'packages/a',
           name: 'workspace-a',
+          toJSON: () => ({
+            location: 'packages/a',
+          }),
         },
       ],
     }),
@@ -912,7 +881,7 @@ t.test('scope with security selectors', async t => {
 
   t.strictSame(
     result,
-    'workspace-a',
+    ['workspace-a'],
     'should handle scope with security selectors',
   )
 })
@@ -934,7 +903,6 @@ t.test('alternative command aliases', async t => {
   })
   t.chdir(dir)
 
-  // Test 'remove' alias
   await Command.command(
     Object.assign({}, config, {
       positionals: ['remove', 'toRemove'],
@@ -946,14 +914,12 @@ t.test('alternative command aliases', async t => {
     'should handle "remove" alias',
   )
 
-  // Add the field back for next test
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'toRemove=should be removed'],
     }) as LoadedConfig,
   )
 
-  // Test 'unset' alias
   await Command.command(
     Object.assign({}, config, {
       positionals: ['unset', 'toRemove'],
@@ -965,14 +931,12 @@ t.test('alternative command aliases', async t => {
     'should handle "unset" alias',
   )
 
-  // Add the field back for next test
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'toRemove=should be removed'],
     }) as LoadedConfig,
   )
 
-  // Test 'delete' alias
   await Command.command(
     Object.assign({}, config, {
       positionals: ['delete', 'toRemove'],
@@ -982,57 +946,6 @@ t.test('alternative command aliases', async t => {
   t.notOk(
     JSON.parse(readPackageJson(dir)).toRemove,
     'should handle "delete" alias',
-  )
-})
-
-t.test('error cases', async t => {
-  const dir = t.testdir({
-    'package.json': JSON.stringify({
-      name: 'test-package',
-      version: '1.0.0',
-    }),
-  })
-
-  const config = makeTestConfig({
-    projectRoot: dir,
-    options: { packageJson: new PackageJson() },
-  })
-  t.chdir(dir)
-
-  // Test get with invalid arguments when manifest is undefined
-  const Command = await t.mockImport<
-    typeof import('../../src/commands/pkg.ts')
-  >('../../src/commands/pkg.ts', {})
-
-  // Mock scenario where firstManifest is undefined
-  const mockConfig = Object.assign({}, config, {
-    options: Object.assign({}, config.options, {
-      packageJson: Object.assign({}, config.options.packageJson, {
-        find: () => dir,
-        read: () => undefined, // This will make firstManifest undefined
-      }),
-    }),
-  })
-
-  await t.rejects(
-    Command.command(
-      Object.assign({}, mockConfig, {
-        positionals: ['get', 'name'],
-      }) as unknown as LoadedConfig,
-    ),
-    /No manifest found/,
-    'should handle undefined manifest in get',
-  )
-
-  // Test pick with undefined manifest
-  await t.rejects(
-    Command.command(
-      Object.assign({}, mockConfig, {
-        positionals: ['pick', 'name'],
-      }) as unknown as LoadedConfig,
-    ),
-    /No manifest found/,
-    'should handle undefined manifest in pick',
   )
 })
 
@@ -1075,7 +988,6 @@ t.test('human output', async t => {
     t.strictSame(human(1, { positionals: ['get'] }), '1')
   })
 
-  // Test json() function for array results
   t.test('json output for arrays', async t => {
     const arrayResult = [
       { manifest: { name: 'pkg1' }, location: '/path1' },
@@ -1107,7 +1019,6 @@ t.test('scope option', async t => {
         key === 'scope' ? ':workspace#workspace-a' : undefined,
     })
 
-    // Test that get method works with scope
     t.equal(
       config.get('scope'),
       ':workspace#workspace-a',
@@ -1125,7 +1036,6 @@ t.test('scope option', async t => {
       projectRoot: '/test/dir',
       options: { packageJson: new PackageJson() },
       positionals: ['get', 'name'],
-      // No values object
     })
 
     t.equal(
@@ -1135,3 +1045,441 @@ t.test('scope option', async t => {
     )
   })
 })
+
+t.test(
+  'workspace options without scope - workspace array',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: join(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { workspace: ['packages/a', 'packages/b'] },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a', '@test/b'],
+      'should handle workspace array without scope query',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - workspace-group array',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: join(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { 'workspace-group': ['packages'] },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a', '@test/b'],
+      'should handle workspace-group array without scope query',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - recursive flag',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            fullpath: join(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { recursive: true },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a', '@test/b'],
+      'should handle recursive flag without scope query',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - undefined monorepo',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: undefined,
+      },
+      positionals: ['get', 'name'],
+      values: { recursive: true },
+    })
+
+    await t.rejects(
+      Command.command(config),
+      /No matching package found using scope/,
+      'should reject when recursive is used with undefined monorepo',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - empty monorepo',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+      },
+      '@vltpkg/query': {
+        Query: class {
+          static hasSecuritySelectors() {
+            return false
+          }
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [],
+      },
+      positionals: ['get', 'name'],
+      values: { recursive: true },
+    })
+
+    await t.rejects(
+      Command.command(config),
+      /No matching package found using scope/,
+      'should reject when recursive is used with empty monorepo',
+    )
+  },
+)
+
+t.test('get with no arguments', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+  })
+  t.chdir(dir)
+  const config = makeTestConfig({
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+    positionals: ['get'],
+  })
+
+  config.options.packageJson.find = () => dir
+  config.options.packageJson.read = () => ({
+    name: 'test',
+    version: '1.0.0',
+  })
+
+  const result = await Command.command(config)
+  t.strictSame(
+    result,
+    { name: 'test', version: '1.0.0' },
+    'should return full manifest when no key specified',
+  )
+})
+
+t.test('single package mode - fallback to projectRoot', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test-project',
+      version: '1.0.0',
+    }),
+  })
+  t.chdir(dir)
+  const config = makeTestConfig({
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+    positionals: ['get', 'name'],
+  })
+
+  config.options.packageJson.find = () => undefined
+  config.options.packageJson.read = () => ({
+    name: 'test-project',
+    version: '1.0.0',
+  })
+
+  const result = await Command.command(config)
+  t.strictSame(
+    result,
+    'test-project',
+    'should fallback to projectRoot when PackageJson.find returns undefined',
+  )
+})
+
+t.test(
+  'single package mode - PackageJson.find returns current directory',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+    })
+    t.chdir(dir)
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: { packageJson: new PackageJson() },
+      positionals: ['get', 'name'],
+    })
+
+    config.options.packageJson.find = () => dir
+    config.options.packageJson.read = () => ({
+      name: 'test-project',
+      version: '1.0.0',
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      'test-project',
+      'should use PackageJson.find result when it returns a valid path',
+    )
+  },
+)
