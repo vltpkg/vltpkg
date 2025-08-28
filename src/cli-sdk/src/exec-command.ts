@@ -96,6 +96,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   args: string[]
   #monorepo?: Monorepo
   #nodes?: string[]
+  #defaultIgnoreMissing = false
   conf: LoadedConfig
   projectRoot: string
   view: ViewValues
@@ -139,6 +140,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     // scope takes precedence over workspaces or groups
     if (queryString) {
+      this.#defaultIgnoreMissing = true
       const graph = actual.load({
         ...conf.options,
         mainManifest: conf.options.packageJson.read(this.projectRoot),
@@ -165,6 +167,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         this.#nodes.push(location)
       }
     } else if (paths?.length || groups?.length || recursive) {
+      this.#defaultIgnoreMissing = true
       this.#monorepo = Monorepo.load(this.projectRoot, {
         load: { paths, groups },
       })
@@ -314,17 +317,11 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   bgArg(this: this & { arg0: string }, cwd: string): RunnerOptions {
-    const impliedIgnoreMissing = !!(
-      this.conf.get('scope') ||
-      this.conf.get('workspace') ||
-      this.conf.get('workspace-group') ||
-      this.conf.get('recursive')
-    )
     return {
       cwd,
       acceptFail: !this.conf.get('bail'),
       ignoreMissing:
-        this.conf.get('if-present') ?? impliedIgnoreMissing,
+        this.conf.get('if-present') ?? this.#defaultIgnoreMissing,
       arg0: this.arg0,
       args: this.args,
       projectRoot: this.projectRoot,
