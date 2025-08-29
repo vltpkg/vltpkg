@@ -590,7 +590,7 @@ export class CacheEntry {
     // header chunks: [len, bytes] for each header item
     const headerChunks: Uint8Array[] = []
     for (const h of this.#headers) {
-      const l = 4 + h.byteLength
+      const l = headLenBytes.byteLength + h.byteLength
       const lb = new Uint8Array(4)
       lb[0] = (l >> 24) & 0xff
       lb[1] = (l >> 16) & 0xff
@@ -606,7 +606,9 @@ export class CacheEntry {
       headerChunks.reduce((n, b) => n + b.byteLength, 0) +
       this._body.byteLength
 
-    const out = new Uint8Array(total)
+    // returns the concatenate buffer with all the pieces
+    const outBuffer = new ArrayBuffer(total)
+    const out = Buffer.from(outBuffer, 0, total)
     let off = 0
     out.set(headLenBytes, off)
     off += headLenBytes.byteLength
@@ -617,7 +619,7 @@ export class CacheEntry {
       off += chunk.byteLength
     }
     out.set(this._body, off)
-    return Buffer.from(out)
+    return out
   }
 }
 
