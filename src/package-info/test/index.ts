@@ -1016,7 +1016,10 @@ t.test('path git selector', async t => {
     const target = t.testdir()
     const pool = new Pool()
     const tarData = await tarball(spec, options)
-    await pool.unpack(tarData, target)
+    // Convert Buffer to Uint8Array for Pool.unpack with proper transferable buffer
+    const uint8Array = new Uint8Array(tarData.length)
+    uint8Array.set(tarData)
+    await pool.unpack(uint8Array, target)
     const found = JSON.parse(
       readFileSync(target + '/package.json', 'utf8'),
     )
@@ -1028,6 +1031,7 @@ t.test('path git selector', async t => {
       },
       pkg,
     )
+    await pool.destroy()
   })
 
   await t.test('extract', async t => {

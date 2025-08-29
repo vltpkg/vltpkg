@@ -1,96 +1,75 @@
-import { error } from '@vltpkg/error-cause'
-import { asError } from '@vltpkg/types'
-import os from 'node:os'
-import { UnpackRequest } from './unpack-request.ts'
-import { isResponseOK, Worker } from './worker.ts'
-import type { ResponseError, ResponseOK } from './worker.ts'
-
-export * from './worker.ts'
+import {
+  FixedQueue,
+  Piscina,
+  transferableSymbol,
+  valueSymbol,
+} from 'piscina'
+import type { UnpackTask } from './piscina-worker.ts'
 
 /**
- * Automatically expanding/contracting set of workers to maximize parallelism
- * of unpack operations up to 1 less than the number of CPUs (or 1).
- *
- * `pool.unpack(tarData, target)` will perform the unpack operation
- * synchronously, in one of these workers, and returns a promise when the
- * worker has confirmed completion of the task.
+ * Transferable wrapper for unpack input that implements the Transferable interface
+ * to ensure zero-copy buffer transfer to worker threads using Piscina.move()
  */
-export class Pool {
-  /**
-   * Number of workers to emplly. Defaults to 1 less than the number of
-   * CPUs, or 1.
-   */
-  /* c8 ignore next */
-  jobs: number = 8 * (Math.max(os.availableParallelism(), 2) - 1)
-  /**
-   * Set of currently active worker threads
-   */
-  workers = new Set<Worker>()
-  /**
-   * Queue of requests awaiting an available worker
-   */
-  queue: UnpackRequest[] = []
-  /**
-   * Requests that have been assigned to a worker, but have not yet
-   * been confirmed completed.
-   */
-  pending = new Map<number, UnpackRequest>()
+class TransferableUnpackInput implements UnpackTask {
+  public tarData: Uint8Array
+  public target: string
 
-  // handle a message from the worker
-  #onMessage(w: Worker, m: ResponseError | ResponseOK) {
-    const { id } = m
-    // a request has been met or failed, report and either
-    // pick up the next item in the queue, or terminate worker
-    const ur = this.pending.get(id)
-    /* c8 ignore next */
-    if (!ur) return
-    if (isResponseOK(m)) {
-      ur.resolve()
-      /* c8 ignore start - nearly impossible in normal circumstances */
-    } else {
-      ur.reject(
-        error(
-          asError(m.error, 'failed without error message').message,
-          {
-            found: m,
-            cause: m.error,
-          },
-        ),
-      )
-    }
-    /* c8 ignore stop */
-    const next = this.queue.shift()
-    if (!next) {
-      this.workers.delete(w)
-    } else {
-      void w.process(next)
-    }
+  constructor(tarData: Uint8Array, target: string) {
+    this.tarData = tarData
+    this.target = target
   }
 
-  // create a new worker
-  #createWorker(req: UnpackRequest) {
-    const w: Worker = new Worker((m: ResponseError | ResponseOK) =>
-      this.#onMessage(w, m),
-    )
-    this.workers.add(w)
-    void w.process(req)
+  /**
+   * Transferable interface implementation using Piscina's symbols
+   * Returns the list of transferable objects (ArrayBuffers) to be transferred
+   */
+  get [transferableSymbol](): ArrayBuffer[] {
+    return [this.tarData.buffer]
+  }
+
+  /**
+   * Value symbol implementation for Piscina's Transferable interface
+   * Returns the actual value to be transferred
+   */
+  get [valueSymbol](): UnpackTask {
+    return {
+      tarData: this.tarData,
+      target: this.target,
+    }
+  }
+}
+
+/**
+ * Pool of workers using Piscina to maximize parallelism
+ * of unpack operations with SharedArrayBuffer for zero-copy memory transfer.
+ */
+export class Pool {
+  private piscina: Piscina<UnpackTask>
+
+  constructor() {
+    this.piscina = new Piscina<UnpackTask>({
+      filename: new URL('./piscina-worker.ts', import.meta.url).href,
+      taskQueue: new FixedQueue(),
+      idleTimeout: 60000,
+      atomics: 'async',
+    })
   }
 
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
-   * placed. Will create a new worker up to the `jobs` value, and then start
-   * pushing in the queue for workers to pick up as they become available.
-   *
-   * Returned promise resolves when the provided tarball has been extracted.
+   * placed. Uses Transferable objects for zero-copy transfer to workers.
    */
-  async unpack(tarData: Buffer, target: string) {
-    const ur = new UnpackRequest(tarData, target)
-    this.pending.set(ur.id, ur)
-    if (this.workers.size < this.jobs) {
-      this.#createWorker(ur)
-    } else {
-      this.queue.push(ur)
-    }
-    return ur.promise
+  async unpack(tarData: Uint8Array, target: string): Promise<void> {
+    const task = new TransferableUnpackInput(tarData, target)
+    await this.piscina.run(
+      Piscina.move(task) as unknown as UnpackTask,
+    )
+  }
+
+  /**
+   * Terminate all workers in the pool
+   */
+  async destroy(): Promise<void> {
+    await this.piscina.destroy()
   }
 }

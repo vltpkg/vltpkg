@@ -41,8 +41,15 @@ const test = async (
 console.log(`extracting ${artifacts.length} artifacts`)
 
 const p = new Pool()
-await test('@vltpkg/tar', async (tgz, target) =>
-  await p.unpack(readFileSync(tgz), target))
+await test('@vltpkg/tar', async (tgz, target) => {
+  const buffer = readFileSync(tgz)
+  const uint8Array = new Uint8Array(
+    buffer.buffer,
+    buffer.byteOffset,
+    buffer.byteLength,
+  )
+  await p.unpack(uint8Array, target)
+})
 
 await test('direct unpack', async (tgz, target) =>
   unpack(readFileSync(tgz), target))
