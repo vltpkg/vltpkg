@@ -110,11 +110,18 @@ export type CacheEntryOptions = {
 
 export class CacheEntry {
   #statusCode: number
+  /** The raw headers as an array of buffers */
   #headers: Uint8Array[]
+  /** The body buffer, used if the content length is known. */
   #body?: Uint8Array
+  /**
+   * If the content length is unknown we save the body in multiple parts
+   * in order to only concatenate once at the end and save extra memory copies.
+   */
   #bodyParts: Uint8Array[] = []
   /** Used to track the length of the body while reading chunks */
   #bodyLength = 0
+  /** The total length of the body, if known */
   #contentLength?: number
   #integrity?: Integrity
   #integrityActual?: Integrity
@@ -298,9 +305,10 @@ export class CacheEntry {
    * Add contents to the entry body.
    */
   addBody(b: Uint8Array) {
-    // when the content length is uknown we copy memory and concatenate
-    // it into a new buffer, otherwise we just append the new chunk of
-    // bytes to the already allocated buffer.
+    // when the content length is uknown we store each chunk in an array that
+    // later on is concatenate into a single buffer, otherwise we just append
+    // the new chunk of bytes to the already allocated buffer keeping track
+    // of the current offset in the `this.#bodyLength` property.
     if (!this.#body) {
       this.#bodyParts.push(b)
       this.#bodyLength += b.byteLength
@@ -317,8 +325,13 @@ export class CacheEntry {
     return this.#headers
   }
 
+  /**
+   * Returns the body as a single Uint8Array, concatenating parts if needed.
+   */
   get _body(): Uint8Array {
+    // if the body is known we'll just use that
     if (this.#body) return this.#body
+    // otherwise we concatenate the body parts into a single buffer
     const buffer = new ArrayBuffer(this.#bodyLength)
     const b = new Uint8Array(buffer, 0, this.#bodyLength)
     let off = 0
