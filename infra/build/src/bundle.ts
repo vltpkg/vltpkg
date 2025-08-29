@@ -1,4 +1,10 @@
-import { mkdirSync, cpSync, existsSync, readdirSync } from 'node:fs'
+import {
+  mkdirSync,
+  cpSync,
+  existsSync,
+  readdirSync,
+  realpathSync,
+} from 'node:fs'
 import {
   join,
   relative,
@@ -22,7 +28,6 @@ export const CLI = dirname(
     '@vltpkg/cli-sdk/package.json',
   ),
 )
-
 const WORKSPACE_DIR = resolve(CLI, '..')
 
 const filterRegex = (...parts: string[]) =>
@@ -56,6 +61,41 @@ const nodeImports: esbuild.Plugin = {
         }
       }
     })
+  },
+}
+
+const piscinaBundle: {
+  main: string
+  worker: string
+  path: string
+  importPlugin: esbuild.Plugin
+  replaceWorkerPlugin: esbuild.Plugin
+} = {
+  main: 'piscina-main.js',
+  worker: 'piscina-worker.js',
+  path: realpathSync(
+    join(WORKSPACE_DIR, 'tar', 'node_modules', 'piscina'),
+  ),
+  importPlugin: {
+    name: 'piscina-bundle-import',
+    setup({ onResolve }) {
+      onResolve({ filter: /()/, namespace: 'file' }, args => {
+        if (args.path === 'piscina') {
+          return { path: `./${piscinaBundle.main}`, external: true }
+        }
+      })
+    },
+  },
+  replaceWorkerPlugin: {
+    name: 'piscina-replace-worker',
+    setup({ onLoad }) {
+      onLoad({ filter: /\.js$/, namespace: 'file' }, async args => ({
+        contents: (await readFile(args.path, 'utf8')).replaceAll(
+          /(['"])worker\.js(['"])/g,
+          `$1${piscinaBundle.worker}.js$2`,
+        ),
+      }))
+    },
   },
 }
 
@@ -155,8 +195,10 @@ type CreateBundleOptions = {
 }
 
 type BundleOptions = {
+  external?: Exclude<esbuild.BuildOptions['external'], undefined>
   entryPoints: Exclude<esbuild.BuildOptions['entryPoints'], undefined>
   plugins?: esbuild.BuildOptions['plugins']
+  define?: esbuild.BuildOptions['define']
 }
 
 const bundleEntryPoints = async (
@@ -169,6 +211,7 @@ const bundleEntryPoints = async (
     minify: o.minify,
     outdir: o.outdir,
     splitting: o.splitting,
+    external: o.external,
     format: 'esm',
     bundle: true,
     platform: 'node',
@@ -206,7 +249,14 @@ const bundleEntryPoints = async (
 
 const createBundler =
   (o: CreateBundleOptions) => (b: BundleOptions) =>
-    bundleEntryPoints({ ...o, ...b })
+    bundleEntryPoints({
+      ...o,
+      ...b,
+      define: {
+        ...o.define,
+        ...b.define,
+      },
+    })
 
 export type Options = {
   outdir: string
@@ -264,6 +314,7 @@ export const bundle = async ({
       out: basenameWithoutExtension(file),
     })),
     plugins: [
+      piscinaBundle.importPlugin,
       codeSplit.plugin,
       hashbang ? addBinHashbangs : null,
     ].filter(v => v !== null),
@@ -277,6 +328,7 @@ export const bundle = async ({
   for (const { source, out } of codeSplit.paths()) {
     await esbuildBundle({
       entryPoints: [{ in: source, out }],
+      plugins: [piscinaBundle.importPlugin],
     })
   }
 
@@ -296,6 +348,37 @@ export const bundle = async ({
     join(outdir, define.GUI_ASSETS_DIR),
     { recursive: true },
   )
+
+  // Similar to our own code splitting, we need to bundle piscina in the same
+  // way and manually move the main and worker scripts into the bundle. This
+  // assumes some implementation details of piscina which is not ideal. But they
+  // should break very loudly in our smoke-tests if they change. Also we can't
+  // bundle the native addon because it's a `.node` file, which is why
+  // `@napi-rs/nice` is marked as external. This means it won't be bundled but
+  // also that we can't use any piscina features that require the native addon
+  // like thread priority.
+  await esbuildBundle({
+    external: ['@napi-rs/nice'],
+    entryPoints: [
+      {
+        in: join(piscinaBundle.path, 'dist/esm-wrapper.mjs'),
+        out: 'piscina-main',
+      },
+    ],
+    define: {
+      __dirname: 'import.meta.dirname',
+    },
+    plugins: [piscinaBundle.replaceWorkerPlugin],
+  })
+  await esbuildBundle({
+    external: ['@napi-rs/nice'],
+    entryPoints: [
+      {
+        in: join(piscinaBundle.path, 'dist/worker.js'),
+        out: piscinaBundle.worker,
+      },
+    ],
+  })
 
   return { outdir }
 }

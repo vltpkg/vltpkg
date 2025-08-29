@@ -4,6 +4,7 @@ import {
   transferableSymbol,
   valueSymbol,
 } from 'piscina'
+import { __CODE_SPLIT_SCRIPT_NAME } from './piscina-worker.ts'
 import type { UnpackTask } from './piscina-worker.ts'
 
 /**
@@ -48,7 +49,7 @@ export class Pool {
 
   constructor() {
     this.piscina = new Piscina<UnpackTask>({
-      filename: new URL('./piscina-worker.ts', import.meta.url).href,
+      filename: __CODE_SPLIT_SCRIPT_NAME,
       taskQueue: new FixedQueue(),
       idleTimeout: 60000,
       atomics: 'async',

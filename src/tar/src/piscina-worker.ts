@@ -4,6 +4,9 @@ export interface UnpackTask {
   tarData: Uint8Array
   target: string
 }
+
+export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
+
 export default async function unpackWorker(
   task: UnpackTask,
 ): Promise<void> {
