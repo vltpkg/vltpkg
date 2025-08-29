@@ -171,6 +171,74 @@ t.test('run script across several workspaces', async t => {
   })
 })
 
+t.test('run script across workspaces with some missing', async t => {
+  const runTest = async (t: Test, { args }: { args: string[] }) => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': '{}',
+      src: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            scripts: {
+              hello: pass,
+            },
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            scripts: {
+              missing: pass,
+            },
+          }),
+        },
+      },
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+    const conf = await Config.load(t.testdirName, [
+      'hello',
+      ...args,
+      '--view=human',
+    ])
+    t.equal(conf.projectRoot, dir)
+    const logs = t.capture(console, 'log').args
+    const errs = t.capture(console, 'error').args
+
+    const result = await command(conf)
+    t.strictSame(result, {
+      'src/a': {
+        command: pass,
+        args: [],
+        cwd: resolve(dir, 'src/a'),
+        status: 0,
+        signal: null,
+        stdout: '',
+        stderr: '',
+        pre: undefined,
+      },
+    })
+    t.strictSame(new Set(logs()), new Set([['src/a', 'ok']]))
+    t.strictSame(new Set(errs()), new Set())
+  }
+
+  t.test('with workspaces', async t => {
+    await runTest(t, { args: ['-w', 'src/a', '-w', 'src/b'] })
+  })
+
+  t.test('with scope', async t => {
+    await runTest(t, {
+      args: ['--scope', ':workspace#a, :workspace#b'],
+    })
+  })
+})
+
 t.test('run script across no workspaces', async t => {
   const runTest = async (t: Test, { args }: { args: string[] }) => {
     const dir = t.testdir({

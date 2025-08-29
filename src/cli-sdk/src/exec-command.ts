@@ -67,7 +67,7 @@ const isSingleSuccess = (
 
 const setExitCode = (result: RunResult) => {
   /* c8 ignore next */
-  process.exitCode = process.exitCode || (result.status ?? 1)
+  process.exitCode ||= result.status ?? 1
 }
 
 export const views = {
@@ -96,6 +96,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   args: string[]
   #monorepo?: Monorepo
   #nodes?: string[]
+  #defaultIgnoreMissing = false
   conf: LoadedConfig
   projectRoot: string
   view: ViewValues
@@ -133,8 +134,13 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     const { conf } = this
 
     const queryString = conf.get('scope')
+    const paths = conf.get('workspace')
+    const groups = conf.get('workspace-group')
+    const recursive = conf.get('recursive')
+
     // scope takes precedence over workspaces or groups
     if (queryString) {
+      this.#defaultIgnoreMissing = true
       const graph = actual.load({
         ...conf.options,
         mainManifest: conf.options.packageJson.read(this.projectRoot),
@@ -160,16 +166,11 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         )
         this.#nodes.push(location)
       }
-    } else {
-      const paths = conf.get('workspace')
-      const groups = conf.get('workspace-group')
-      const recursive = conf.get('recursive')
-      this.#monorepo =
-        paths?.length || groups?.length || recursive ?
-          Monorepo.load(this.projectRoot, {
-            load: { paths, groups },
-          })
-        : undefined
+    } else if (paths?.length || groups?.length || recursive) {
+      this.#defaultIgnoreMissing = true
+      this.#monorepo = Monorepo.load(this.projectRoot, {
+        load: { paths, groups },
+      })
     }
 
     if (this.#targetCount() === 1) {
@@ -211,6 +212,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
           throw er
         },
       )
+      // If we are allowed to ignore missing commands, then command might be
+      // an emptry string. If so, we don't print anything and return null to
+      // be filtered out later.
+      if (!result.command) return null
       if (!failed) this.printResult(label, result)
       return result
     }
@@ -219,14 +224,14 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     if (this.#nodes) {
       for (const { label, cwd } of this.getTargets()) {
         const result = await runInDir(cwd, label)
-        resultMap.set(label, result)
+        if (result) resultMap.set(label, result)
       }
     } else if (this.#monorepo) {
-      const wsResultMap = await this.#monorepo.run(async ws => {
-        return runInDir(ws.fullpath, ws.path)
-      })
+      const wsResultMap = await this.#monorepo.run(ws =>
+        runInDir(ws.fullpath, ws.path),
+      )
       for (const [ws, result] of wsResultMap) {
-        resultMap.set(ws.path, result)
+        if (result) resultMap.set(ws.path, result)
       }
     }
 
@@ -302,7 +307,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     return {
       cwd,
-      /* c8 ignore next - already guarded */
       arg0,
       args: this.args,
       projectRoot: this.projectRoot,
@@ -316,7 +320,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     return {
       cwd,
       acceptFail: !this.conf.get('bail'),
-      ignoreMissing: true,
+      ignoreMissing:
+        this.conf.get('if-present') ?? this.#defaultIgnoreMissing,
       arg0: this.arg0,
       args: this.args,
       projectRoot: this.projectRoot,
