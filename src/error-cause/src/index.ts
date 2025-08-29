@@ -114,7 +114,7 @@ export type ErrorCauseOptions = {
     | {
         statusCode: number
         headers?:
-          | Buffer[]
+          | Uint8Array[]
           | Record<string, string[] | string>
           | IncomingHttpHeaders
         text?: () => string

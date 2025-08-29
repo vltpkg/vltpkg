@@ -1,25 +1,31 @@
+import {
+  getDecodedValue,
+  getEncondedValue,
+} from './string-encoding.ts'
+
 /**
  * Given a rawHeaders array of [key, value, key2, value2, ...],
  * overwrite the current value of a header, or if not found, append
  */
 export const setRawHeader = (
-  headers: Buffer[],
+  headers: Uint8Array[],
   key: string,
-  value: Buffer | string,
-) => {
+  value: Uint8Array | string,
+): Uint8Array[] => {
   key = key.toLowerCase()
-  const keyBuf = Buffer.from(key)
-  const valBuf = Buffer.isBuffer(value) ? value : Buffer.from(value)
+  const keyBuf = getEncondedValue(key)
+  const valBuf = getEncondedValue(value)
   for (let i = 0; i < headers.length; i += 2) {
     const k = headers[i]
     if (
       k &&
       k.length === keyBuf.length &&
-      String(k).toLowerCase() === key
+      getDecodedValue(k).toLowerCase() === key
     ) {
       headers[i + 1] = valBuf
-      return
+      return headers
     }
   }
   headers.push(keyBuf, valBuf)
+  return headers
 }
