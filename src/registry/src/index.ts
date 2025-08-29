@@ -354,17 +354,11 @@ app.get('/:upstream/:pkg/-/:tarball', async (c: Context) => {
   return handlePackageRoute(c as any)
 })
 
-// Handle security audit endpoints
 app.post('/:upstream/-/npm/v1/security/advisories/bulk', async (c: Context) => {
-  // Return empty audit results - no vulnerabilities found
-  // This satisfies npm's security audit without requiring upstream forwarding
-  return c.json({})
+  return c.redirect('/-/npm/audit', 308)
 })
-
-// Handle security audit endpoints without upstream (fall back to default)
 app.post('/-/npm/v1/security/advisories/bulk', async (c: Context) => {
-  // Return empty audit results - no vulnerabilities found
-  return c.json({})
+  return c.redirect('/-/npm/audit', 308)
 })
 
 // Handle package publishing

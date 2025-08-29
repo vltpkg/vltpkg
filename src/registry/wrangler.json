@@ -1,7 +1,7 @@
 {
   "name": "vsr",
   "main": "src/index.ts",
-  "compatibility_date": "2024-01-01",
+  "compatibility_date": "2024-09-23",
   "d1_databases": [
     {
       "binding": "DB",
