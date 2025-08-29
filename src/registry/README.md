@@ -395,6 +395,22 @@ registry=http://localhost:1337
 |   🕤   | plugins/middleware                        |
 |   🕤   | variants/distributions                    |
 
+### Notable Features
+
+- Backwards compatible with npm & npm clients
+- Granular access control
+- Proxying upstream registries when configured
+- Package integrity validation for enhanced security
+- Minimized JSON responses when header set
+- Accept: application/vnd.npm.install-v1+json
+- Manifest slimming for performance
+- Manifest confusion checks on published packages
+- Semver range resolution for package manifests
+- Support for URL-encoded complex semver ranges
+- Dist-tag management for package versions
+- Protected "latest" dist-tag which cannot be deleted
+- Dist-tag operations restricted on proxied packages
+
 ### License
 
 This project is licensed under the

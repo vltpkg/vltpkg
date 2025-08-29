@@ -38,7 +38,7 @@
     ]
   },
   "assets": {
-    "directory": "./src/assets/",
+    "directory": "./dist/assets/",
     "binding": "ASSETS"
   },
   "dev": {

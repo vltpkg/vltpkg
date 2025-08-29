@@ -1,4 +1,5 @@
 #!/usr/bin/env NODE_OPTIONS=--no-warnings node
+import type { Args, MinArgs } from '../../types.ts'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
@@ -8,26 +9,41 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { createServer } from '@vltpkg/server'
 import { existsSync } from 'node:fs'
 import type { VltServerOptions } from '@vltpkg/server'
-import { DAEMON_PORT, DAEMON_URL, URL } from '../../config.ts'
+import { DAEMON_PORT, DAEMON_URL, URL, DEV_CONFIG } from '../../config.ts'
 import { minargs } from 'minargs'
 
-const usage = `USAGE: 
+const usage = `USAGE:
 
   $ vsr [<options>]
   
-OPTIONS:      DESCRIPTION:
+OPTIONS:                   DESCRIPTION:
 
--d, --debug   Run in debug mode
--h, --help    Print usage information
+--daemon=<boolean>         Run filesystem daemon (default: true)
+-t, --telemetry=<boolean>  Share telemetry reporting (default: true)
+-p, --port=<number>        Run on a specific port (default: ${DAEMON_PORT})
+-d, --debug                Run in debug mode
+-h, --help                 Print usage information
 `
 const opts = {
   alias: {
+    p: 'port',
+    t: 'telemetry',
     d: 'debug',
     h: 'help',
   },
 }
-const { args } = minargs(opts) as {
-  args: { debug?: boolean; help?: boolean }
+
+const defaults: Args = {
+  daemon: true,
+  telemetry: true,
+  debug: false,
+  help: false,
+  port: DEV_CONFIG.port
+}
+
+const args = {
+  ...defaults,
+  ...(minargs(opts) as MinArgs).args
 }
 
 // Print usage information
@@ -74,18 +90,22 @@ const serverOptions = {
 
 void (async () => {
   try {
-    const server = createServer({
-      ...serverOptions,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      packageInfo: new PackageInfoClient() as any,
-    })
 
-    await server.start({
-      port: DAEMON_PORT,
-    })
+    if (args.daemon ?? true) {
+      const server = createServer({
+        ...serverOptions,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        packageInfo: new PackageInfoClient() as any,
+      })
 
-    // eslint-disable-next-line no-console
-    console.log(`Daemon: ${DAEMON_URL}`)
+      await server.start({
+        port: DAEMON_PORT,
+      })
+
+      // eslint-disable-next-line no-console
+      console.log(`Daemon: ${DAEMON_URL}`)
+    }
+  
     // eslint-disable-next-line no-console
     console.log(`VSR: ${URL}`)
 
@@ -98,6 +118,8 @@ void (async () => {
         '--local',
         '--persist-to=local-store',
         '--no-remote',
+        `--port=${args.port ?? DEV_CONFIG.port}`,
+        `--var=telemetry:${args.telemetry ? 'true' : 'false'}`,
       ],
       {
         cwd: registryRoot, // Set working directory to registry root

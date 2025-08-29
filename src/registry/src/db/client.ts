@@ -3,16 +3,12 @@ import { drizzle } from 'drizzle-orm/d1'
 import { sql } from 'drizzle-orm'
 import * as schema from './schema.ts'
 
-// Note: Logger should be passed in from the Hono context rather than imported here
-// This is a fallback for cases where logger is not available
 const fallbackLogger = {
   error: (_message: string, _error?: unknown) => {
-    // Fallback - in production this would be handled by Hono logger
     // eslint-disable-next-line no-console
     console.error(_message, _error)
   },
   info: (_message: string) => {
-    // Fallback - in production this would be handled by Hono logger
     // eslint-disable-next-line no-console
     console.info(_message)
   },
@@ -20,12 +16,10 @@ const fallbackLogger = {
 
 export type Database = ReturnType<typeof drizzle<typeof schema>>
 
-// Helper function to create a database client
 export function createDatabase(d1: D1Database): Database {
   return drizzle(d1, { schema })
 }
 
-// Helper functions for JSON handling
 export function parseJSON(value: string | null): any {
   if (!value) return null
   try {
@@ -40,17 +34,13 @@ export function stringifyJSON(value: unknown): string {
   return JSON.stringify(value)
 }
 
-// Type-safe database operations
 export function createDatabaseOperations(
   d1: D1Database,
   logger = fallbackLogger,
 ) {
-  // Create drizzle instance properly
   const db = createDatabase(d1)
-  // Log to monitoring system instead of console
 
   return {
-    // Package operations
     async getPackage(name: string) {
       try {
         const result = await db
@@ -65,50 +55,10 @@ export function createDatabaseOperations(
           lastUpdated: result.lastUpdated,
         }
       } catch (_error) {
-        // Fallback for test environment
-        // Log to monitoring system instead of console
-
-        // Mock content for common test packages
-        const testPackages: Record<
-          string,
-          {
-            name: string
-            tags: Record<string, string>
-            lastUpdated: string
-          }
-        > = {
-          lodash: {
-            name: 'lodash',
-            tags: { latest: '4.17.21' },
-            lastUpdated: new Date().toISOString(),
-          },
-          typescript: {
-            name: 'typescript',
-            tags: { latest: '5.3.3' },
-            lastUpdated: new Date().toISOString(),
-          },
-        }
-
-        if (testPackages[name]) {
-          return testPackages[name] as {
-            name: string
-            tags: any
-            lastUpdated: string
-          }
-        }
-
-        // Handle scoped packages
-        if (name.includes('/')) {
-          const [scope, packageName] = name.split('/')
-          if (scope && packageName && testPackages[packageName]) {
-            return {
-              name: name,
-              tags: testPackages[packageName].tags,
-              lastUpdated: testPackages[packageName].lastUpdated,
-            }
-          }
-        }
-
+        logger.error(
+          `[DB ERROR] Failed to get package ${name}`,
+          _error,
+        )
         return null
       }
     },
@@ -135,9 +85,11 @@ export function createDatabaseOperations(
           })
         return result
       } catch (_error: unknown) {
-        // Fallback for test environment
-        // Log to monitoring system instead of console
-        return { success: true } // Mock successful operation
+        logger.error(
+          `[DB ERROR] Failed to upsert package ${name}`,
+          _error,
+        )
+        return null
       }
     },
 
@@ -169,8 +121,11 @@ export function createDatabaseOperations(
         // Log to monitoring system instead of console
         return result
       } catch (_error: unknown) {
-        // Log to monitoring system instead of console
-        return { success: true }
+        logger.error(
+          `[DB ERROR] Failed to upsert cached package ${name}`,
+          _error,
+        )
+        return null
       }
     },
 
@@ -241,24 +196,10 @@ export function createDatabaseOperations(
           }[],
         }
       } catch (_error: unknown) {
-        // Fallback for test environment
-        // Using fallback getToken implementation
-        if (token === 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx') {
-          return {
-            token: token,
-            uuid: 'admin',
-            scope: [
-              {
-                values: ['*'],
-                types: { pkg: { read: true, write: true } },
-              },
-              {
-                values: ['*'],
-                types: { user: { read: true, write: true } },
-              },
-            ],
-          }
-        }
+        logger.error(
+          `[DB ERROR] Failed to get token ${token}`,
+          _error,
+        )
         return null
       }
     },
@@ -408,55 +349,10 @@ export function createDatabaseOperations(
           published_at: result.publishedAt,
         }
       } catch (_error: unknown) {
-        // Fallback for test environment
-        // Using fallback getVersion implementation for: ${spec}
-
-        // Mock content for common test versions
-        const parts = spec.split('@')
-        let packageName = parts[0]
-        const version = parts.slice(1).join('@') // Handle scoped packages correctly
-
-        // Handle scoped packages
-        if (packageName?.includes('/')) {
-          const scopeParts = packageName.split('/')
-          if (scopeParts.length === 2) {
-            packageName = scopeParts[1]
-          }
-        }
-
-        const testVersions: Record<string, Record<string, any>> = {
-          lodash: {
-            '4.17.21': {
-              name: 'lodash',
-              version: '4.17.21',
-              description: 'Medium package test',
-              dist: {
-                tarball: `http://localhost:1337/lodash/-/lodash-4.17.21.tgz`,
-              },
-            },
-          },
-          typescript: {
-            '5.3.3': {
-              name: 'typescript',
-              version: '5.3.3',
-              description: 'Large package test',
-              dist: {
-                tarball: `http://localhost:1337/typescript/-/typescript-5.3.3.tgz`,
-              },
-            },
-          },
-        }
-
-        const packageVersions =
-          packageName ? testVersions[packageName] : undefined
-        if (packageVersions?.[version]) {
-          return {
-            spec,
-            manifest: packageVersions[version] as Record<string, any>,
-            published_at: new Date().toISOString(),
-          }
-        }
-
+        logger.error(
+          `[DB ERROR] Failed to get version ${spec}`,
+          _error,
+        )
         return null
       }
     },
@@ -468,7 +364,6 @@ export function createDatabaseOperations(
     ) {
       try {
         // Attempting to upsert version: ${spec}
-
         // Make sure manifest is an object
         if (typeof manifest !== 'object') {
           // Invalid manifest for ${spec}, received: ${typeof manifest}

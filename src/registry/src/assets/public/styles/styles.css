@@ -191,7 +191,8 @@
 }
 
 .scalar-app .markdown [alt='license'] summary:after {
-  top: 2px;
+  top: 11px;
+  left: 10px;
 }
 
 .sidebar-heading-link {
@@ -208,13 +209,13 @@
 }
 
 [alt='license'] {
-  padding: 5px 20px !important;
+  padding: 0 !important;
   font-family: courier !important;
 }
 
 [alt='license'] summary {
-  padding: 0 0 0 20px !important;
-  margin: 0 0 0 -20px !important;
+  padding: 9px 10px 10px 30px !important;
+  margin: 0 !important;
   font-family:
     Inter,
     -apple-system,

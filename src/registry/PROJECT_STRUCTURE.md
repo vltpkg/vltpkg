@@ -1,6 +1,8 @@
 # VSR (vlt serverless registry) - Project Directory Structure
 
-**VSR** is a minimal "npm-compatible" registry that replicates core features of `registry.npmjs.org` while adding new capabilities. It's built to run on Cloudflare Workers with D1 database and R2 storage.
+**VSR** is a minimal "npm-compatible" registry that replicates core
+features of `registry.npmjs.org` while adding new capabilities. It's
+built to run on Cloudflare Workers with D1 database and R2 storage.
 
 ## 📁 Root Directory
 
@@ -241,7 +243,8 @@ bin/
 ### Command Line Interface
 
 - **`vsr.ts`** - Development server orchestration:
-  - Spawns both the vlt daemon (port 3000) and wrangler dev (port 1337)
+  - Spawns both the vlt daemon (port 3000) and wrangler dev
+    (port 1337)
   - Manages local development environment
   - Debug mode for verbose logging
   - Automatic path resolution for monorepo structure
@@ -258,24 +261,31 @@ schemas/
 └── [Currently empty - reserved for future validation schemas]
 ```
 
-**Purpose**: Reserved directory for request/response validation schemas, likely to be populated with Zod or similar validation libraries.
+**Purpose**: Reserved directory for request/response validation
+schemas, likely to be populated with Zod or similar validation
+libraries.
 
 ## 🏗️ Architecture Overview
 
 ### Request Flow
+
 1. **Static Assets** → Direct serving via Cloudflare Workers
 2. **Package Requests** → Local DB check → Upstream fallback if needed
 3. **Authentication** → Bearer token validation → Scope checking
 4. **Publishing** → Validation → R2 storage → DB metadata update
 
 ### Data Flow
+
 - **Local Packages**: Stored in D1 (metadata) + R2 (tarballs)
 - **Upstream Packages**: Cached in D1 with TTL, proxied from npm
 - **Background Jobs**: Queue-based cache refresh for popular packages
 
 ### Security Model
+
 - **Granular Access Tokens**: Scoped permissions per package/user
 - **Origin Tracking**: Distinguish local vs upstream packages
 - **Scope Validation**: Package-level and user-level access control
 
-This architecture provides a scalable, serverless npm registry that can serve as both a private registry and an intelligent proxy to upstream registries like npmjs.org. 
+This architecture provides a scalable, serverless npm registry that
+can serve as both a private registry and an intelligent proxy to
+upstream registries like npmjs.org.

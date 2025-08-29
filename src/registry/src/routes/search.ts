@@ -1,52 +1,26 @@
-import type { HonoContext, SearchResult } from '../../types.ts'
+import type { HonoContext } from '../../types.ts'
 
+/**
+ * Search for packages by text query
+ */
 export async function searchPackages(c: HonoContext) {
   try {
-    const query = c.req.query('text') || ''
-    const scope = c.req.query('scope')
-
-    if (!query.trim()) {
-      return c.json({ objects: [], total: 0 }, 200)
+    const text = c.req.query('text')
+    
+    if (!text) {
+      return c.json({
+        error: 'Missing required parameter "text"'
+      }, 400)
     }
 
-    const results = await c.db.searchPackages(query, scope)
+    // Use the existing database search function
+    const results = await c.get('db').searchPackages(text)
 
+    return c.json(results)
+  } catch (error) {
+    console.error('Search error:', error)
     return c.json({
-      objects: results.map((pkg: SearchResult) => ({
-        package: {
-          name: pkg.name,
-          scope:
-            pkg.name.startsWith('@') ?
-              (pkg.name.split('/')[0] ?? 'unscoped')
-            : 'unscoped',
-          version: pkg.version ?? '1.0.0',
-          description: pkg.description ?? '',
-          keywords: pkg.keywords ?? [],
-          date: pkg.lastUpdated ?? new Date().toISOString(),
-          links: {
-            homepage: pkg.homepage,
-            repository: pkg.repository,
-            bugs: pkg.bugs,
-          },
-          author: pkg.author,
-          publisher: pkg.publisher,
-          maintainers: pkg.maintainers ?? [],
-        },
-        score: {
-          final: 1.0,
-          detail: {
-            quality: 1.0,
-            popularity: 1.0,
-            maintenance: 1.0,
-          },
-        },
-        searchScore: 1.0,
-      })),
-      total: results.length,
-      time: new Date().toISOString(),
-    })
-  } catch (_error) {
-    // Log error to monitoring system instead of console
-    return c.json({ error: 'Search failed' }, 500)
+      error: 'Internal server error'
+    }, 500)
   }
 }

@@ -1,4 +1,5 @@
 import * as semver from 'semver'
+import validate from 'validate-npm-package-name'
 import { DOMAIN, PROXY, PROXY_URL } from '../../config.ts'
 import {
   getUpstreamConfig,
@@ -335,10 +336,56 @@ export async function getPackageTarball(c: HonoContext) {
       return c.json({ error: 'Invalid package name' }, 400)
     }
 
-    const tarball = c.req.path.split('/').pop()
+    let tarball = c.req.path.split('/').pop()
     if (!tarball?.endsWith('.tgz')) {
       // Hono middleware logs error information
       return c.json({ error: 'Invalid tarball name' }, 400)
+    }
+
+    // Check if the tarball filename contains a dist-tag like "latest" instead of a version
+    // and resolve it to the actual version number
+    const packageFileName = pkg.includes('/') ? pkg.split('/').pop() : pkg
+    const prefix = `${packageFileName}-`
+    const suffix = '.tgz'
+    
+    if (tarball.startsWith(prefix) && tarball.endsWith(suffix)) {
+      const versionFromTarball = tarball.slice(prefix.length, -suffix.length)
+      
+      // If version looks like a dist-tag (not a semver), try to resolve it
+      if (versionFromTarball && !semver.valid(versionFromTarball) && !semver.validRange(versionFromTarball)) {
+        // This might be a dist-tag like "latest", try to resolve it
+        try {
+          const upstream = c.get('upstream') as string
+          if (upstream) {
+            // Get packument data to find the actual version for this dist-tag
+            const upstreamConfig = getUpstreamConfig(upstream)
+            if (upstreamConfig) {
+              const packumentUrl = buildUpstreamUrl(upstreamConfig, pkg)
+              const packumentResponse = await fetch(packumentUrl, {
+                method: 'GET',
+                headers: {
+                  'User-Agent': 'vlt-serverless-registry',
+                  Accept: 'application/json',
+                },
+              })
+              
+              if (packumentResponse.ok) {
+                const packumentData = await packumentResponse.json() as any
+                const distTags = packumentData['dist-tags'] || {}
+                const actualVersion = distTags[versionFromTarball]
+                
+                if (actualVersion) {
+                  // Update the tarball filename with the actual version
+                  tarball = `${packageFileName}-${actualVersion}.tgz`
+                }
+              }
+            }
+          }
+        } catch (error) {
+          // If dist-tag resolution fails, continue with original tarball name
+          // and let the upstream handle it (which will likely 404)
+        }
+      }
     }
 
     const filename = `${pkg}/${tarball}`
@@ -650,23 +697,24 @@ export async function getPackageManifest(c: HonoContext) {
         }
       }
     } else {
-      // Handle scoped packages correctly with URL decoding
+      // Handle scoped packages correctly
       try {
-        const packageName = decodePackageName(scope, pkg)
+        if (scope && pkg) {
+          // Scoped package
+          const packageName = scope.startsWith('@') ? `${scope}/${pkg}` : `@${scope}/${pkg}`
+          pkg = packageName
+        } else if (scope) {
+          // Unscoped package (scope is actually the package name)
+          pkg = scope
+        }
 
-        if (!packageName) {
+        if (!pkg) {
           throw new Error('Invalid package name')
         }
-        pkg = packageName
       } catch (_err) {
         // Hono middleware logs error information
         return c.json({ error: 'Invalid package name' }, 400)
       }
-    }
-
-    // Ensure we have a package name
-    if (!pkg) {
-      return c.json({ error: 'Invalid package name' }, 400)
     }
 
     // Extract version from URL path
@@ -684,9 +732,9 @@ export async function getPackageManifest(c: HonoContext) {
     if (semver.validRange(version) && !semver.valid(version)) {
       // This is a range, try to find the best matching version
       try {
-        const packageData = await c.db.getPackage(pkg)
+        const packageData = await c.get('db').getPackage(pkg)
         if (packageData) {
-          const versions = await c.db.getVersionsByPackage(pkg)
+          const versions = await c.get('db').getVersionsByPackage(pkg)
 
           if (versions && versions.length > 0) {
             const availableVersions = versions.map(
@@ -710,7 +758,7 @@ export async function getPackageManifest(c: HonoContext) {
     }
 
     // Get the version from our database
-    const versionData = await c.db.getVersion(
+    const versionData = await c.get('db').getVersion(
       `${pkg}@${resolvedVersion}`,
     )
 
@@ -1085,6 +1133,75 @@ export async function handlePackageRoute(c: HonoContext) {
   }
 }
 
+/**
+ * Publish a package (create or update)
+ */
+export async function publishPackage(c: HonoContext) {
+  try {
+    const pkg = decodeURIComponent(c.req.param('pkg'))
+    
+    // Validate package name
+    const validation = validate(pkg)
+    if (!validation.validForNewPackages) {
+      return c.json({
+        error: 'Invalid package name',
+        reason: validation.errors?.join(', ') || 'Package name is not valid'
+      }, 400)
+    }
+
+    // Get package data from request body
+    const packageData = await c.req.json() as any
+    
+    if (!packageData || typeof packageData !== 'object') {
+      return c.json({ error: 'Invalid package data' }, 400)
+    }
+
+    // Extract version information
+    const versions = packageData.versions || {}
+    const distTags = packageData['dist-tags'] || { latest: packageData.version }
+    
+    if (!packageData.version && !Object.keys(versions).length) {
+      return c.json({ error: 'Package must have at least one version' }, 400)
+    }
+
+    // If this is a single version publish, structure it properly
+    if (packageData.version && !versions[packageData.version]) {
+      versions[packageData.version] = {
+        ...packageData,
+        name: pkg,
+        version: packageData.version,
+        dist: {
+          ...packageData.dist,
+          tarball: packageData.dist?.tarball || `${c.req.url.split('/').slice(0, 3).join('/')}/${pkg}/-/${pkg.split('/').pop()}-${packageData.version}.tgz`
+        }
+      }
+    }
+
+    // Store package metadata
+    await c.get('db').upsertPackage(
+      pkg,
+      distTags,
+      new Date().toISOString()
+    )
+
+    // Store each version
+    const versionPromises = Object.entries(versions).map(([version, manifest]) => 
+      c.get('db').upsertVersion(
+        `${pkg}@${version}`,
+        manifest as Record<string, any>,
+        (manifest as any).publishedAt || new Date().toISOString()
+      )
+    )
+
+    await Promise.all(versionPromises)
+
+    return c.json({ success: true }, 201)
+  } catch (error) {
+    console.error('Package publish error:', error)
+    return c.json({ error: 'Failed to publish package' }, 500)
+  }
+}
+
 export async function getPackagePackument(c: HonoContext) {
   try {
     // Try to get name from route parameters first (for direct routes)
@@ -1163,17 +1280,13 @@ export async function getPackagePackument(c: HonoContext) {
       // Hono middleware logs racing cache strategy information
 
       const fetchUpstreamFn = async () => {
-        // Hono middleware logs upstream fetch information
-
         // Get the appropriate upstream configuration
-
         const upstreamConfig = getUpstreamConfig(upstream)
         if (!upstreamConfig) {
           throw new Error(`Unknown upstream: ${upstream}`)
         }
 
         const upstreamUrl = buildUpstreamUrl(upstreamConfig, name)
-        // Hono middleware logs upstream URL
 
         const response = await fetch(upstreamUrl, {
           method: 'GET',
@@ -1191,7 +1304,6 @@ export async function getPackagePackument(c: HonoContext) {
         }
 
         const upstreamData: _UpstreamData = await response.json()
-        // Hono middleware logs successful upstream fetch
 
         // Prepare data for storage with consistent structure
         const packageData: PackageData = {
@@ -1218,7 +1330,7 @@ export async function getPackagePackument(c: HonoContext) {
           )
         }
 
-        // Process versions and apply version range filter if needed
+        // For fast response, only process essential versions synchronously
         if (upstreamData.versions) {
           const protocol = new URL(c.req.url).protocol.slice(0, -1) // Remove trailing ':'
           const host = c.req.header('host') || 'localhost:1337'
@@ -1228,69 +1340,92 @@ export async function getPackagePackument(c: HonoContext) {
             upstream: upstream as string,
           }
 
-          // Store each version in the database for proper mirroring
-          const versionStoragePromises: Promise<unknown>[] = []
+          // Get essential versions (latest, plus any matching the version range if specified)
+          const distTags = upstreamData['dist-tags'] || {}
+          const latestVersion = distTags.latest
+          const essentialVersions = new Set<string>()
+          
+          // Always include latest
+          if (latestVersion) {
+            essentialVersions.add(latestVersion)
+          }
+          
+          // If version range specified, include only matching versions (up to 10 for performance)
+          if (isValidRange) {
+            const matchingVersions = Object.keys(upstreamData.versions)
+              .filter(v => semver.satisfies(v, versionRange))
+              .slice(0, 10) // Limit to 10 versions for performance
+            matchingVersions.forEach(v => essentialVersions.add(v))
+          } else {
+            // For packument requests without version range, include only the 5 most recent versions
+            const sortedVersions = Object.keys(upstreamData.versions)
+              .sort((a, b) => semver.rcompare(a, b))
+              .slice(0, 5)
+            sortedVersions.forEach(v => essentialVersions.add(v))
+          }
 
-          Object.entries(upstreamData.versions).forEach(
-            ([version, manifest]) => {
-              // Skip versions that don't satisfy the range if a valid range is provided
-              if (
-                isValidRange &&
-                !semver.satisfies(version, versionRange)
-              ) {
-                return
-              }
-
-              // Create a slimmed version of the manifest for the response with context for URL rewriting
+          // Process only essential versions synchronously for fast response
+          for (const version of essentialVersions) {
+            const manifest = upstreamData.versions[version]
+            if (manifest) {
               const slimmedManifest = slimManifest(
                 manifest as PackageManifest,
                 context,
               )
-
               packageData.versions[version] = slimmedManifest
+            }
+          }
 
-              // Store this version in the database for proper mirroring
-              const versionSpec = `${name}@${version}`
-              // Ensure the manifest has required properties
-              const manifestForStorage = {
-                name: name,
-                version: version,
-                ...slimmedManifest,
-              } as PackageManifest
-              versionStoragePromises.push(
-                c.db
-                  .upsertCachedVersion(
-                    versionSpec,
-                    manifestForStorage,
-                    upstream as string,
-                    upstreamData.time?.[version] ??
-                      new Date().toISOString(),
-                  )
-                  .catch(_err => {
-                    // Log error but don't fail the request - this is background storage
-                  }),
-              )
-            },
-          )
-
-          // Store all versions asynchronously
+          // Process all other versions in background for complete caching
           c.executionCtx?.waitUntil(
-            Promise.all([
-              ...versionStoragePromises,
-              // Also store the package metadata for proper mirroring
-              c.db
-                .upsertCachedPackage(
-                  name,
-                  packageData['dist-tags'],
-                  upstream as string,
-                  packageData.time.modified,
+            (async () => {
+              try {
+                const allVersionStoragePromises: Promise<unknown>[] = []
+                
+                // Process all versions for complete database storage
+                Object.entries(upstreamData.versions).forEach(
+                  ([version, manifest]) => {
+                    const versionSpec = `${name}@${version}`
+                    const manifestForStorage = {
+                      name: name,
+                      version: version,
+                      ...slimManifest(manifest as PackageManifest, context),
+                    } as PackageManifest
+                    
+                    allVersionStoragePromises.push(
+                      c.get('db')
+                        .upsertCachedVersion(
+                          versionSpec,
+                          manifestForStorage,
+                          upstream as string,
+                          upstreamData.time?.[version] ??
+                            new Date().toISOString(),
+                        )
+                        .catch(_err => {
+                          // Log error but don't fail the background task
+                        }),
+                    )
+                  },
                 )
-                .catch(_err => {
-                  // Log error but don't fail the request - this is background storage
-                }),
-            ]).catch(_err => {
-              // Log error but don't fail the request
-            }),
+
+                // Store package metadata and all versions
+                await Promise.all([
+                  ...allVersionStoragePromises,
+                  c.get('db')
+                    .upsertCachedPackage(
+                      name,
+                      packageData['dist-tags'],
+                      upstream as string,
+                      packageData.time.modified,
+                    )
+                    .catch(_err => {
+                      // Log error but don't fail the background task
+                    }),
+                ])
+              } catch (_err) {
+                // Log error but don't fail the request
+              }
+            })(),
           )
         }
 
@@ -1304,7 +1439,8 @@ export async function getPackagePackument(c: HonoContext) {
           name,
           fetchUpstreamFn,
           {
-            packumentTtlMinutes: 5,
+            packumentTtlMinutes: 60, // Cache packuments for 1 hour
+            staleWhileRevalidateMinutes: 240, // Allow stale data for 4 hours while refreshing
             upstream: upstream as string,
           },
         )
@@ -1332,8 +1468,6 @@ export async function getPackagePackument(c: HonoContext) {
           return c.json({ error: 'Package data not available' }, 500)
         }
       } catch (error) {
-        // Hono middleware logs racing error
-
         // Return more specific error codes
         if ((error as Error).message.includes('Package not found')) {
           return c.json({ error: `Package '${name}' not found` }, 404)

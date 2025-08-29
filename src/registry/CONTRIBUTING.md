@@ -26,5 +26,7 @@
 #### Serving
 
 - `pnpm serve:build` - will build & start the services
-- `pnpm serve:death` - will kill any hanging `wrangler` processes (which can happen if you're developing with agents a lot)
-- Post-build you can also directly link/run the bin from `./dist/bin/vsr.js`
+- `pnpm serve:death` - will kill any hanging `wrangler` processes
+  (which can happen if you're developing with agents a lot)
+- Post-build you can also directly link/run the bin from
+  `./dist/bin/vsr.js`

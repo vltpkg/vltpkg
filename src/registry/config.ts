@@ -11,6 +11,8 @@ export const YEAR = new Date().getFullYear()
 
 export const DEV_CONFIG = wranglerJson.dev
 
+export const DOCS_ENABLED = true as boolean
+
 export const DAEMON_ENABLED = true as boolean
 
 export const DAEMON_PORT = 3000 as number
@@ -78,18 +80,19 @@ export const COOKIE_OPTIONS: CookieOptions = {
 }
 
 // OpenAPI Docs
-export const OPEN_API_DOCS = { 
+export const OPEN_API_CONFIG = {
   openapi: '3.1.0',
-  info: { 
-    title: 'vlt serverless registry', 
-    version: VERSION
-  }
+  info: {
+    title: 'vlt serverless registry',
+    version: VERSION,
+    description: 'The vlt serverless registry API',
+  },
 }
 
 // the docs configuration for the API reference
-export const SCALAR_API_DOCS: ApiDocsConfig = {
+export const SCALAR_API_CONFIG: ApiDocsConfig = {
   metaData: {
-    title:  OPEN_API_DOCS.info.title,
+    title: 'vlt serverless registry',
   },
   hideModels: false,
   hideDownloadButton: false,
@@ -133,13 +136,15 @@ export const SCALAR_API_DOCS: ApiDocsConfig = {
   },
   spec: {
     content: {
-      openapi: OPEN_API_DOCS.openapi,
-      servers: [{
-        url: `http://localhost:${DEV_CONFIG.port}`,
-        description: 'localhost',
-      }],
+      openapi: OPEN_API_CONFIG.openapi,
+      servers: [
+        {
+          url: `http://localhost:${DEV_CONFIG.port}`,
+          description: 'localhost',
+        },
+      ],
       info: {
-        title: `vlt serverless registry`,
+        title: 'vlt serverless registry',
         version: VERSION,
         license: {
           identifier: 'FSL-1.1-MIT',
@@ -162,23 +167,6 @@ export const SCALAR_API_DOCS: ApiDocsConfig = {
     </tr>
   </tbody>
 </table>
-
-### Features
-
-<ul alt="features">
-  <li>Backwards compatible with npm & npm clients</li>
-  <li>Granular access control</li>
-  <li>Proxying upstream registries when configured</li>
-  <li>Package integrity validation for enhanced security</li>
-  <li>Minimized JSON responses when header set<br><code>Accept: application/vnd.npm.install-v1+json</code></li>
-  <li>Manifest slimming for performance</li>
-  <li>Manifest confusion checks on published packages</li>
-  <li>Semver range resolution for package manifests</li>
-  <li>Support for URL-encoded complex semver ranges<br><code>%3E%3D1.0.0%20%3C2.0.0</code> for <code>>=1.0.0 &lt;2.0.0</code></li>
-  <li>Dist-tag management for package versions</li>
-  <li>Protected "latest" dist-tag which cannot be deleted</li>
-  <li>Dist-tag operations restricted on proxied packages</li>
-</ul>
 
 ### Resources
 
@@ -307,9 +295,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 </dialog>`,
-      }
-    }
+      },
+    },
   },
   customCss: `@import '${DOMAIN}/public/styles/styles.css';`,
 }
-

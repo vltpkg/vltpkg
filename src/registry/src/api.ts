@@ -450,18 +450,6 @@ npm notice PONG 13ms
       },
     },
 
-    '/': {
-      get: {
-        tags: ['Misc.'],
-        summary: 'Documentation',
-        description: 'Get the registry docs',
-        responses: {
-          '200': {
-            description: 'Retrieves the registry docs',
-          },
-        },
-      },
-    },
     '/-/whoami': {
       get: {
         tags: ['Users'],
