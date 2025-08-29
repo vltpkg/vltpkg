@@ -5,9 +5,10 @@ import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
-const toLenBuf = (b: Buffer): Buffer => {
+const encoder = new TextEncoder()
+const toLenBuf = (b: Uint8Array): Uint8Array => {
   const bl = b.byteLength + 4
-  const blBuf = Buffer.allocUnsafe(4)
+  const blBuf = new Uint8Array(4)
   blBuf.set(
     [
       (bl >> 24) & 0xff,
@@ -17,22 +18,35 @@ const toLenBuf = (b: Buffer): Buffer => {
     ],
     0,
   )
-  return Buffer.concat([blBuf, b])
+  const res = new Uint8Array(blBuf.byteLength + b.byteLength)
+  res.set(blBuf, 0)
+  res.set(b, blBuf.byteLength)
+  return res
 }
+
+const concatUint8Arrays = (arr: Uint8Array[]): Uint8Array =>
+  arr.reduce((acc, i) => {
+    const next = new Uint8Array(acc.byteLength + i.byteLength)
+    next.set(acc, 0)
+    next.set(i, acc.byteLength)
+    return next
+  }, new Uint8Array(0))
 
 const toRawEntry = (
   status: number,
   headers: Record<string, string>,
-  body: Buffer,
-): Buffer => {
-  const headerChunks: Buffer[] = [Buffer.from(String(status))]
+  body: Uint8Array,
+): Uint8Array => {
+  const headerChunks: Uint8Array[] = [encoder.encode(String(status))]
   const rawh = toRawHeaders(headers)
   for (const h of rawh) {
     headerChunks.push(toLenBuf(h))
   }
-  const chunks: Buffer[] = [toLenBuf(Buffer.concat(headerChunks))]
+  const chunks: Uint8Array[] = [
+    toLenBuf(concatUint8Arrays(headerChunks)),
+  ]
   chunks.push(toLenBuf(body))
-  return Buffer.concat(chunks)
+  return concatUint8Arrays(chunks)
 }
 
 const z = gzipSync(Buffer.from('{"hello":"world"}'))
@@ -70,8 +84,8 @@ t.matchSnapshot(
 )
 
 t.equal(ce.statusCode, 200)
-t.equal(ce.getHeader('x')?.toString(), 'y')
-t.equal(ce.getHeader('key')?.toString(), 'value')
+t.equal(ce.getHeaderString('x'), 'y')
+t.equal(ce.getHeaderString('key'), 'value')
 t.equal(ce.isGzip, false, 'not gzip without content')
 t.equal(
   CacheEntry.isGzipEntry(Buffer.alloc(1)),
@@ -122,18 +136,18 @@ t.strictSame(
   Buffer.from(JSON.stringify({ hello: 'world' })),
 )
 t.strictSame(ce.headers, [
-  Buffer.from('key'),
-  Buffer.from('value'),
-  Buffer.from('x'),
-  Buffer.from('y'),
-  Buffer.from('integrity'),
-  Buffer.from(ce.integrityActual),
-  Buffer.from('content-encoding'),
-  Buffer.from('identity'),
-  Buffer.from('content-length'),
-  Buffer.from(String(ce.buffer().byteLength)),
-  Buffer.from('content-type'),
-  Buffer.from('text/json'),
+  encoder.encode('key'),
+  encoder.encode('value'),
+  encoder.encode('x'),
+  encoder.encode('y'),
+  encoder.encode('integrity'),
+  encoder.encode(ce.integrityActual),
+  encoder.encode('content-encoding'),
+  encoder.encode('identity'),
+  encoder.encode('content-length'),
+  encoder.encode(String(ce.buffer().byteLength)),
+  encoder.encode('content-type'),
+  encoder.encode('text/json'),
 ])
 
 t.strictSame(CacheEntry.decode(enc), ce)

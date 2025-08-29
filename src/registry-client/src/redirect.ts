@@ -10,7 +10,7 @@ const redirectStatuses = new Set([301, 302, 303, 307, 308])
 
 export type RedirectResponse = CacheEntry & {
   statusCode: RedirectStatus
-  getHeader(key: 'location'): Buffer
+  getHeader(key: 'location'): Uint8Array | undefined
 }
 
 export const isRedirect = (
@@ -47,7 +47,11 @@ export const redirect = (
       url: from,
     })
   }
-  const location = String(response.getHeader('location'))
+  const location = response.getHeaderString('location')
+  /* c8 ignore start */
+  if (!location)
+    throw error('Location header missing from redirect response')
+  /* c8 ignore stop */
   const nextURL = new URL(location, from)
   if (redirections.has(String(nextURL))) {
     throw error('Redirection cycle detected', {

@@ -1,14 +1,22 @@
+import {
+  getDecodedValue,
+  getEncondedValue,
+} from './string-encoding.ts'
+
 /**
- * Give it a key, and it'll return the buffer of that header value
+ * Give it a key, and it'll return the value of that header as a Uint8Array
  */
-export const getRawHeader = (headers: Buffer[], k: string) => {
-  k = k.toLowerCase()
+export const getRawHeader = (
+  headers: Uint8Array[],
+  key: string,
+): Uint8Array | undefined => {
+  const k = key.toLowerCase()
   for (let i = 0; i < headers.length; i += 2) {
     const name = headers[i]
     if (
       name &&
-      name.length === k.length &&
-      name.toString().toLowerCase() === k
+      name.length === key.length &&
+      getDecodedValue(name).toLowerCase() === k
     ) {
       return headers[i + 1]
     }
@@ -19,25 +27,26 @@ export const getRawHeader = (headers: Buffer[], k: string) => {
  * Give it a key and value, and it'll overwrite or add the header entry
  */
 export const setRawHeader = (
-  headers: Buffer[],
-  k: string,
-  v: Buffer | string,
-): Buffer[] => {
-  k = k.toLowerCase()
-  const value = typeof v === 'string' ? Buffer.from(v) : v
+  headers: Uint8Array[],
+  key: string,
+  value: Uint8Array | string,
+): Uint8Array[] => {
+  const k = key.toLowerCase()
+  const encVal =
+    typeof value === 'string' ? getEncondedValue(value) : value
   for (let i = 0; i < headers.length; i += 2) {
     const name = headers[i]
     if (
       name &&
       name.length === k.length &&
-      name.toString().toLowerCase() === k
+      getDecodedValue(name).toLowerCase() === k
     ) {
       return [
         ...headers.slice(0, i + 1),
-        value,
+        encVal,
         ...headers.slice(i + 2),
       ]
     }
   }
-  return [...headers, Buffer.from(k), value]
+  return [...headers, getEncondedValue(k), encVal]
 }
