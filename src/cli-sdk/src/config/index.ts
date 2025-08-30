@@ -24,6 +24,7 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import { resetCaches } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import {
   assertRecordStringString,
@@ -291,6 +292,7 @@ export class Config {
   resetOptions(projectRoot: string = process.cwd()) {
     this.projectRoot = projectRoot
     this.#options = undefined
+    resetCaches()
   }
 
   // memoized options() getter value
