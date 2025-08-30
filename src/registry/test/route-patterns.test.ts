@@ -24,9 +24,18 @@ describe('Route Pattern Analysis', () => {
 
     it('should correctly parse regular package version paths', () => {
       const testCases = [
-        { path: '/npm/lodash/4.17.21', expected: ['npm', 'lodash', '4.17.21'] },
-        { path: '/npm/express/4.18.2', expected: ['npm', 'express', '4.18.2'] },
-        { path: '/yarn/react/18.2.0', expected: ['yarn', 'react', '18.2.0'] },
+        {
+          path: '/npm/lodash/4.17.21',
+          expected: ['npm', 'lodash', '4.17.21'],
+        },
+        {
+          path: '/npm/express/4.18.2',
+          expected: ['npm', 'express', '4.18.2'],
+        },
+        {
+          path: '/yarn/react/18.2.0',
+          expected: ['yarn', 'react', '18.2.0'],
+        },
       ]
 
       testCases.forEach(({ path, expected }) => {
@@ -40,8 +49,14 @@ describe('Route Pattern Analysis', () => {
 
     it('should correctly parse scoped package paths', () => {
       const testCases = [
-        { path: '/npm/@types/node', expected: ['npm', '@types', 'node'] },
-        { path: '/npm/@babel/core', expected: ['npm', '@babel', 'core'] },
+        {
+          path: '/npm/@types/node',
+          expected: ['npm', '@types', 'node'],
+        },
+        {
+          path: '/npm/@babel/core',
+          expected: ['npm', '@babel', 'core'],
+        },
         { path: '/yarn/@vue/cli', expected: ['yarn', '@vue', 'cli'] },
       ]
 
@@ -57,9 +72,18 @@ describe('Route Pattern Analysis', () => {
 
     it('should correctly parse scoped package version paths', () => {
       const testCases = [
-        { path: '/npm/@types/node/20.0.0', expected: ['npm', '@types', 'node', '20.0.0'] },
-        { path: '/npm/@babel/core/7.25.0', expected: ['npm', '@babel', 'core', '7.25.0'] },
-        { path: '/yarn/@vue/cli/5.0.0', expected: ['yarn', '@vue', 'cli', '5.0.0'] },
+        {
+          path: '/npm/@types/node/20.0.0',
+          expected: ['npm', '@types', 'node', '20.0.0'],
+        },
+        {
+          path: '/npm/@babel/core/7.25.0',
+          expected: ['npm', '@babel', 'core', '7.25.0'],
+        },
+        {
+          path: '/yarn/@vue/cli/5.0.0',
+          expected: ['yarn', '@vue', 'cli', '5.0.0'],
+        },
       ]
 
       testCases.forEach(({ path, expected }) => {
@@ -77,7 +101,7 @@ describe('Route Pattern Analysis', () => {
   describe('Route Type Detection', () => {
     it('should detect regular package packument requests (2 segments)', () => {
       const paths = ['/npm/lodash', '/yarn/express', '/pnpm/react']
-      
+
       paths.forEach(path => {
         const segments = path.split('/').filter(Boolean)
         expect(segments.length).toBe(2)
@@ -87,8 +111,12 @@ describe('Route Pattern Analysis', () => {
     })
 
     it('should detect scoped package packument requests (3 segments with @)', () => {
-      const paths = ['/npm/@types/node', '/yarn/@babel/core', '/pnpm/@vue/cli']
-      
+      const paths = [
+        '/npm/@types/node',
+        '/yarn/@babel/core',
+        '/pnpm/@vue/cli',
+      ]
+
       paths.forEach(path => {
         const segments = path.split('/').filter(Boolean)
         expect(segments.length).toBe(3)
@@ -98,8 +126,12 @@ describe('Route Pattern Analysis', () => {
     })
 
     it('should detect regular package manifest requests (3 segments without @)', () => {
-      const paths = ['/npm/lodash/4.17.21', '/yarn/express/4.18.2', '/pnpm/react/18.2.0']
-      
+      const paths = [
+        '/npm/lodash/4.17.21',
+        '/yarn/express/4.18.2',
+        '/pnpm/react/18.2.0',
+      ]
+
       paths.forEach(path => {
         const segments = path.split('/').filter(Boolean)
         expect(segments.length).toBe(3)
@@ -109,8 +141,12 @@ describe('Route Pattern Analysis', () => {
     })
 
     it('should detect scoped package manifest requests (4 segments)', () => {
-      const paths = ['/npm/@types/node/20.0.0', '/yarn/@babel/core/7.25.0', '/pnpm/@vue/cli/5.0.0']
-      
+      const paths = [
+        '/npm/@types/node/20.0.0',
+        '/yarn/@babel/core/7.25.0',
+        '/pnpm/@vue/cli/5.0.0',
+      ]
+
       paths.forEach(path => {
         const segments = path.split('/').filter(Boolean)
         expect(segments.length).toBe(4)
@@ -125,19 +161,19 @@ describe('Route Pattern Analysis', () => {
       const encodedPaths = [
         '/npm/@types%2Fnode',
         '/npm/@babel%2Fcore',
-        '/yarn/@vue%2Fcli'
+        '/yarn/@vue%2Fcli',
       ]
-      
+
       const expectedPaths = [
         '/npm/@types/node',
         '/npm/@babel/core',
-        '/yarn/@vue/cli'
+        '/yarn/@vue/cli',
       ]
 
       encodedPaths.forEach((encoded, index) => {
         const decoded = decodeURIComponent(encoded)
         expect(decoded).toBe(expectedPaths[index])
-        
+
         const segments = decoded.split('/').filter(Boolean)
         expect(segments[1].startsWith('@')).toBe(true)
         expect(segments.length).toBe(3)
@@ -147,13 +183,13 @@ describe('Route Pattern Analysis', () => {
     it('should handle encoded version paths', () => {
       const encodedPaths = [
         '/npm/@types%2Fnode/20.0.0',
-        '/npm/lodash/4.17.21'
+        '/npm/lodash/4.17.21',
       ]
 
       encodedPaths.forEach(encoded => {
         const decoded = decodeURIComponent(encoded)
         const segments = decoded.split('/').filter(Boolean)
-        
+
         if (segments[1].startsWith('@')) {
           expect(segments.length).toBe(4) // Scoped package with version
         } else {
@@ -171,38 +207,40 @@ describe('Route Pattern Analysis', () => {
           param2: '@types',
           param3: 'node',
           expectedType: 'scoped-packument',
-          reason: 'param2 starts with @'
+          reason: 'param2 starts with @',
         },
         {
           path: '/npm/lodash/4.17.21',
-          param2: 'lodash', 
+          param2: 'lodash',
           param3: '4.17.21',
           expectedType: 'regular-manifest',
-          reason: 'param2 does not start with @'
+          reason: 'param2 does not start with @',
         },
         {
           path: '/npm/express/latest',
           param2: 'express',
           param3: 'latest',
           expectedType: 'regular-manifest',
-          reason: 'param2 does not start with @'
-        }
+          reason: 'param2 does not start with @',
+        },
       ]
 
-      testCases.forEach(({ path, param2, param3, expectedType, reason }) => {
-        const segments = path.split('/').filter(Boolean)
-        const [upstream, actualParam2, actualParam3] = segments
+      testCases.forEach(
+        ({ path, param2, param3, expectedType, reason }) => {
+          const segments = path.split('/').filter(Boolean)
+          const [upstream, actualParam2, actualParam3] = segments
 
-        expect(actualParam2).toBe(param2)
-        expect(actualParam3).toBe(param3)
+          expect(actualParam2).toBe(param2)
+          expect(actualParam3).toBe(param3)
 
-        // The core disambiguation logic
-        if (actualParam2.startsWith('@')) {
-          expect(expectedType).toBe('scoped-packument')
-        } else {
-          expect(expectedType).toBe('regular-manifest')
-        }
-      })
+          // The core disambiguation logic
+          if (actualParam2.startsWith('@')) {
+            expect(expectedType).toBe('scoped-packument')
+          } else {
+            expect(expectedType).toBe('regular-manifest')
+          }
+        },
+      )
     })
   })
 
@@ -229,7 +267,7 @@ describe('Route Pattern Analysis', () => {
       const regularParams = {
         scope: undefined,
         pkg: 'lodash',
-        version: '4.17.21'
+        version: '4.17.21',
       }
       expect(regularParams.scope).toBeUndefined()
       expect(regularParams.pkg).toBe('lodash')
@@ -237,7 +275,7 @@ describe('Route Pattern Analysis', () => {
       // Scoped package packument: scope=full-name, pkg=full-name
       const scopedPackumentParams = {
         scope: '@types/node',
-        pkg: '@types/node'
+        pkg: '@types/node',
       }
       expect(scopedPackumentParams.scope).toBe('@types/node')
       expect(scopedPackumentParams.pkg).toBe('@types/node')
@@ -246,7 +284,7 @@ describe('Route Pattern Analysis', () => {
       const scopedManifestParams = {
         scope: '@types/node',
         pkg: undefined,
-        version: '20.0.0'
+        version: '20.0.0',
       }
       expect(scopedManifestParams.scope).toBe('@types/node')
       expect(scopedManifestParams.pkg).toBeUndefined()
@@ -259,7 +297,7 @@ describe('Route Pattern Analysis', () => {
       const paths = [
         '/npm/lodash.merge',
         '/npm/@babel/plugin-transform-runtime',
-        '/npm/@types/node-fetch'
+        '/npm/@types/node-fetch',
       ]
 
       paths.forEach(path => {
@@ -270,8 +308,15 @@ describe('Route Pattern Analysis', () => {
     })
 
     it('should handle version ranges and special versions', () => {
-      const versions = ['4.17.21', 'latest', 'next', 'beta', '1.0.0-alpha.1', '^4.0.0']
-      
+      const versions = [
+        '4.17.21',
+        'latest',
+        'next',
+        'beta',
+        '1.0.0-alpha.1',
+        '^4.0.0',
+      ]
+
       versions.forEach(version => {
         expect(typeof version).toBe('string')
         expect(version.length).toBeGreaterThan(0)
@@ -279,8 +324,18 @@ describe('Route Pattern Analysis', () => {
     })
 
     it('should validate upstream names', () => {
-      const validUpstreams = ['npm', 'yarn', 'pnpm', 'custom-registry']
-      const invalidUpstreams = ['', 'with spaces', 'with/slash', '@scoped']
+      const validUpstreams = [
+        'npm',
+        'yarn',
+        'pnpm',
+        'custom-registry',
+      ]
+      const invalidUpstreams = [
+        '',
+        'with spaces',
+        'with/slash',
+        '@scoped',
+      ]
 
       validUpstreams.forEach(upstream => {
         expect(upstream).toMatch(/^[a-z0-9-]+$/)
@@ -291,7 +346,7 @@ describe('Route Pattern Analysis', () => {
         if (upstream === '') {
           expect(upstream.length).toBe(0)
         } else {
-          expect(!upstream.match(/^[a-z0-9-]+$/)).toBe(true)
+          expect(!(/^[a-z0-9-]+$/.exec(upstream))).toBe(true)
         }
       })
     })

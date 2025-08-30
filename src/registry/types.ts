@@ -535,14 +535,14 @@ export interface Environment {
 }
 
 export interface Args {
-  daemon: boolean;
-  telemetry: boolean;
-  debug: boolean;
-  help: boolean;
-  port: number;
+  daemon: boolean
+  telemetry: boolean
+  debug: boolean
+  help: boolean
+  port: number
 }
 
 export interface MinArgs {
-  args: Args,
+  args: Args
   positionals: string[]
 }

@@ -1,8 +1,8 @@
 import {
-  DOCS_ENABLED,
-  OPEN_API_CONFIG,
-  DAEMON_URL,
+  API_DOCS_ENABLED,
   DAEMON_ENABLED,
+  DAEMON_URL,
+  OPEN_API_CONFIG,
 } from '../config.ts'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { requestId } from 'hono/request-id'
@@ -94,7 +94,7 @@ app.get('/', async c => c.html(await getApp(c.env.ASSETS)))
 // Documentation
 // ---------------------------------------------------------
 
-if (DOCS_ENABLED) {
+if (API_DOCS_ENABLED) {
   app.doc('/-/api', OPEN_API_CONFIG)
   app.get('/-/docs', getDocs)
 }
@@ -125,13 +125,13 @@ app.get('/-/user', getUserProfile)
 if (DAEMON_ENABLED) {
   app.get('/dashboard.json', async (c: Context) => {
     const data = await fetch(`${DAEMON_URL}/dashboard.json`)
-    const jsonData = await data.json() as Record<string, unknown>
+    const jsonData = (await data.json()) as Record<string, unknown>
     return c.json(jsonData)
   })
 
   app.get('/app-data.json', async (c: Context) => {
     const data = await fetch(`${DAEMON_URL}/app-data.json`)
-    const jsonData = await data.json() as Record<string, unknown>
+    const jsonData = (await data.json()) as Record<string, unknown>
     return c.json(jsonData)
   })
 }
@@ -239,7 +239,10 @@ app.get('/:upstream/:pkg', async (c: Context) => {
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {
-    return c.json({ error: `Invalid or reserved upstream name: ${upstream}` }, 400)
+    return c.json(
+      { error: `Invalid or reserved upstream name: ${upstream}` },
+      400,
+    )
   }
 
   // Check if upstream is configured
@@ -260,7 +263,10 @@ app.get('/:upstream/:scope/:pkg/-/:tarball', async (c: Context) => {
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {
-    return c.json({ error: `Invalid or reserved upstream name: ${upstream}` }, 400)
+    return c.json(
+      { error: `Invalid or reserved upstream name: ${upstream}` },
+      400,
+    )
   }
 
   // Check if upstream is configured
@@ -280,7 +286,10 @@ app.get('/:upstream/:scope/:pkg/:version', async (c: Context) => {
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {
-    return c.json({ error: `Invalid or reserved upstream name: ${upstream}` }, 400)
+    return c.json(
+      { error: `Invalid or reserved upstream name: ${upstream}` },
+      400,
+    )
   }
 
   // Check if upstream is configured
@@ -300,7 +309,10 @@ app.get('/:upstream/:scope%2f:pkg', async (c: Context) => {
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {
-    return c.json({ error: `Invalid or reserved upstream name: ${upstream}` }, 400)
+    return c.json(
+      { error: `Invalid or reserved upstream name: ${upstream}` },
+      400,
+    )
   }
 
   // Check if upstream is configured
@@ -320,7 +332,10 @@ app.get('/:upstream/:param2/:param3', async (c: Context) => {
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {
-    return c.json({ error: `Invalid or reserved upstream name: ${upstream}` }, 400)
+    return c.json(
+      { error: `Invalid or reserved upstream name: ${upstream}` },
+      400,
+    )
   }
 
   // Check if upstream is configured
@@ -340,7 +355,10 @@ app.get('/:upstream/:pkg/-/:tarball', async (c: Context) => {
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {
-    return c.json({ error: `Invalid or reserved upstream name: ${upstream}` }, 400)
+    return c.json(
+      { error: `Invalid or reserved upstream name: ${upstream}` },
+      400,
+    )
   }
 
   // Check if upstream is configured
@@ -354,41 +372,59 @@ app.get('/:upstream/:pkg/-/:tarball', async (c: Context) => {
   return handlePackageRoute(c as any)
 })
 
-app.post('/:upstream/-/npm/v1/security/advisories/bulk', async (c: Context) => {
-  return c.redirect('/-/npm/audit', 308)
-})
+app.post(
+  '/:upstream/-/npm/v1/security/advisories/bulk',
+  async (c: Context) => {
+    return c.redirect('/-/npm/audit', 308)
+  },
+)
 app.post('/-/npm/v1/security/advisories/bulk', async (c: Context) => {
   return c.redirect('/-/npm/audit', 308)
 })
 
 // Handle package publishing
 app.put('/:pkg', async (c: Context) => {
-  const authHeader = c.req.header('authorization') || c.req.header('Authorization')
+  const authHeader =
+    c.req.header('authorization') || c.req.header('Authorization')
 
   // Check for authentication
   if (!authHeader) {
-    return c.json({
-      error: 'Authentication required',
-      reason: 'You must be logged in to publish packages. Run "npm adduser" first.'
-    }, 401)
+    return c.json(
+      {
+        error: 'Authentication required',
+        reason:
+          'You must be logged in to publish packages. Run "npm adduser" first.',
+      },
+      401,
+    )
   }
 
   // Extract token and verify
-  const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : null
+  const token =
+    authHeader.startsWith('Bearer ') ?
+      authHeader.substring(7).trim()
+    : null
   if (!token) {
-    return c.json({
-      error: 'Invalid authentication format',
-      reason: 'Authorization header must be in "Bearer <token>" format'
-    }, 401)
+    return c.json(
+      {
+        error: 'Invalid authentication format',
+        reason:
+          'Authorization header must be in "Bearer <token>" format',
+      },
+      401,
+    )
   }
 
   // Verify token has package publishing permissions
   const isValid = await verifyToken(token, c as any)
   if (!isValid) {
-    return c.json({
-      error: 'Invalid or insufficient permissions',
-      reason: 'Token does not have permission to publish packages'
-    }, 403)
+    return c.json(
+      {
+        error: 'Invalid or insufficient permissions',
+        reason: 'Token does not have permission to publish packages',
+      },
+      403,
+    )
   }
 
   // Delegate to publishPackage function
@@ -401,7 +437,11 @@ app.get('/:pkg/:version', async (c: Context) => {
   const version = c.req.param('version')
 
   // Skip if this looks like a static asset or internal route
-  if (pkg.includes('.') || pkg.startsWith('-') || pkg.startsWith('_')) {
+  if (
+    pkg.includes('.') ||
+    pkg.startsWith('-') ||
+    pkg.startsWith('_')
+  ) {
     return new Response(null, { status: 404 })
   }
 
@@ -427,7 +467,11 @@ app.get('/:pkg/-/:tarball', async (c: Context) => {
   const pkg = decodeURIComponent(c.req.param('pkg'))
 
   // Skip if this looks like a static asset or internal route
-  if (pkg.includes('.') || pkg.startsWith('-') || pkg.startsWith('_')) {
+  if (
+    pkg.includes('.') ||
+    pkg.startsWith('-') ||
+    pkg.startsWith('_')
+  ) {
     return new Response(null, { status: 404 })
   }
 
@@ -454,7 +498,11 @@ app.get('/:pkg', async (c: Context) => {
   const pkg = decodeURIComponent(c.req.param('pkg'))
 
   // Skip if this looks like a static asset or internal route
-  if (pkg.includes('.') || pkg.startsWith('-') || pkg.startsWith('_')) {
+  if (
+    pkg.includes('.') ||
+    pkg.startsWith('-') ||
+    pkg.startsWith('_')
+  ) {
     // For static assets, let other routes handle this
     return new Response(null, { status: 404 })
   }
@@ -487,51 +535,59 @@ app.get('/manifest.json', handleManifest)
 app.get('/*', handleStaticAssets)
 
 // Queue handler for background cache refresh jobs
-export async function queue(batch: import('../../types.ts').QueueBatch, env: any) {
+export async function queue(
+  batch: import('../../types.ts').QueueBatch,
+  env: any,
+) {
   const db = createDatabaseOperations(env.DB)
-  
+
   for (const message of batch.messages) {
     try {
-      const { type, packageName, spec, upstream, options } = message.body
-      
+      const { type, packageName, spec, upstream, options } =
+        message.body
+
       if (type === 'package_refresh' && packageName) {
         // Handle package refresh - refetch from upstream and cache
         const upstreamConfig = getUpstreamConfig(upstream)
         if (upstreamConfig) {
-          const upstreamUrl = buildUpstreamUrl(upstreamConfig, packageName)
+          const upstreamUrl = buildUpstreamUrl(
+            upstreamConfig,
+            packageName,
+          )
           const response = await fetch(upstreamUrl, {
-            headers: { 'Accept': 'application/json' }
+            headers: { Accept: 'application/json' },
           })
-          
+
           if (response.ok) {
-            const upstreamData = await response.json() as any
-            
+            const upstreamData = (await response.json())
+
             // Cache the package metadata
             if (upstreamData['dist-tags']) {
               await db.upsertCachedPackage(
                 packageName,
                 upstreamData['dist-tags'],
                 upstream,
-                new Date().toISOString()
+                new Date().toISOString(),
               )
             }
-            
+
             // Cache all versions
             if (upstreamData.versions) {
-              const versionPromises = Object.entries(upstreamData.versions).map(
-                async ([version, manifest]) => {
-                  try {
-                    await db.upsertCachedVersion(
-                      `${packageName}@${version}`,
-                      manifest as any,
-                      upstream,
-                      (manifest as any)?.publishedAt || new Date().toISOString()
-                    )
-                  } catch (_error) {
-                    // Silently fail individual versions
-                  }
+              const versionPromises = Object.entries(
+                upstreamData.versions,
+              ).map(async ([version, manifest]) => {
+                try {
+                  await db.upsertCachedVersion(
+                    `${packageName}@${version}`,
+                    manifest as any,
+                    upstream,
+                    (manifest as any)?.publishedAt ||
+                      new Date().toISOString(),
+                  )
+                } catch (_error) {
+                  // Silently fail individual versions
                 }
-              )
+              })
               await Promise.allSettled(versionPromises)
             }
           }
@@ -540,7 +596,7 @@ export async function queue(batch: import('../../types.ts').QueueBatch, env: any
         // Handle version refresh - similar logic for individual versions
         // (This would be implemented if needed)
       }
-      
+
       // Acknowledge successful processing
       message.ack()
     } catch (error) {

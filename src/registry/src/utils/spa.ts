@@ -1,10 +1,14 @@
 // This function now takes the ASSETS environment binding as a parameter
 // to avoid the circular dependency issue
-export const getApp = async (assetsBinding?: any): Promise<string> => {
+export const getApp = async (
+  assetsBinding?: any,
+): Promise<string> => {
   if (assetsBinding) {
     try {
       // Use the ASSETS binding to fetch the index.html file
-      const response = await assetsBinding.fetch(new Request('http://localhost/public/dist/index.html'))
+      const response = await assetsBinding.fetch(
+        new Request('http://localhost/public/dist/index.html'),
+      )
       if (response.ok) {
         const html = await response.text()
         return changeSourceReferences(html)

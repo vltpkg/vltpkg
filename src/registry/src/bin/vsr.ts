@@ -9,7 +9,12 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { createServer } from '@vltpkg/server'
 import { existsSync } from 'node:fs'
 import type { VltServerOptions } from '@vltpkg/server'
-import { DAEMON_PORT, DAEMON_URL, URL, DEV_CONFIG } from '../../config.ts'
+import {
+  DAEMON_PORT,
+  DAEMON_URL,
+  URL,
+  WRANGLER_CONFIG,
+} from '../../config.ts'
 import { minargs } from 'minargs'
 
 const usage = `USAGE:
@@ -38,13 +43,18 @@ const defaults: Args = {
   telemetry: true,
   debug: false,
   help: false,
-  port: DEV_CONFIG.port
+  port: WRANGLER_CONFIG.port,
 }
 
 const args = {
   ...defaults,
-  ...(minargs(opts) as MinArgs).args
+  ...(minargs(opts) as MinArgs).args,
 }
+
+const PORT = args.port || WRANGLER_CONFIG.port
+const TELEMETRY_ENABLED = Boolean(args.telemetry)
+const DAEMON_ENABLED = Boolean(args.daemon)
+const DEBUG_ENABLED = Boolean(args.debug)
 
 // Print usage information
 function printUsage(): void {
@@ -90,8 +100,7 @@ const serverOptions = {
 
 void (async () => {
   try {
-
-    if (args.daemon ?? true) {
+    if (DAEMON_ENABLED) {
       const server = createServer({
         ...serverOptions,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -105,7 +114,7 @@ void (async () => {
       // eslint-disable-next-line no-console
       console.log(`Daemon: ${DAEMON_URL}`)
     }
-  
+
     // eslint-disable-next-line no-console
     console.log(`VSR: ${URL}`)
 
@@ -118,15 +127,17 @@ void (async () => {
         '--local',
         '--persist-to=local-store',
         '--no-remote',
-        `--port=${args.port ?? DEV_CONFIG.port}`,
-        `--var=telemetry:${args.telemetry ? 'true' : 'false'}`,
+        `--port=${PORT}`,
+        `--var=TELEMETRY:${TELEMETRY_ENABLED}`,
+        `--var=DEBUG:${DEBUG_ENABLED}`,
+        `--var=DAEMON:${DAEMON_ENABLED}`,
       ],
       {
         cwd: registryRoot, // Set working directory to registry root
       },
     )
 
-    if (args.debug) {
+    if (DEBUG_ENABLED) {
       stdout.on('data', (data: Buffer) => {
         // eslint-disable-next-line no-console
         console.log(data.toString())

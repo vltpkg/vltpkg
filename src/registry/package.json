@@ -1,6 +1,6 @@
 {
   "name": "@vltpkg/vsr",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "license": "FSL-1.1-MIT",
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "type": "module",
@@ -25,7 +25,7 @@
     "db:setup": "pnpx wrangler d1 execute vsr-local-database --file=src/db/migrations/0000_initial.sql --local --persist-to=local-store --no-remote && pnpx wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote",
     "db:drop": "pnpx wrangler d1 execute vsr-local-database --file=src/db/migrations/drop.sql --local --persist-to=local-store --no-remote && rm -rf local-store && rm -rf .wrangler",
     "serve:watch": "chokidar './src/**/*' -c 'pnpm serve:death && pnpm serve:build'",
-    "serve:build": "pnpm build && ./dist/bin/vsr.js --debug",
+    "serve:build": "pnpm build && ./dist/bin/vsr.js --debug --daemon=false",
     "serve:death": "echo \"Killing wrangler dev processes...\" && (pkill -f 'wrangler.*dev' || true) && sleep 1 && (pids=$(lsof -ti :1337 2>/dev/null; lsof -ti :3000 2>/dev/null) && [ -n \"$pids\" ] && echo \"Force killing remaining processes: $pids\" && kill -9 $pids || echo \"No remaining processes found\") && echo \"Done.\"",
     "build:dist": "rm -rf ./dist && mkdir -p ./dist/assets/public",
     "build:assets": "cp -r ./src/assets ./dist/ && cp -r ./node_modules/@vltpkg/gui/dist ./dist/assets/public",

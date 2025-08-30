@@ -344,15 +344,23 @@ export async function getPackageTarball(c: HonoContext) {
 
     // Check if the tarball filename contains a dist-tag like "latest" instead of a version
     // and resolve it to the actual version number
-    const packageFileName = pkg.includes('/') ? pkg.split('/').pop() : pkg
+    const packageFileName =
+      pkg.includes('/') ? pkg.split('/').pop() : pkg
     const prefix = `${packageFileName}-`
     const suffix = '.tgz'
-    
+
     if (tarball.startsWith(prefix) && tarball.endsWith(suffix)) {
-      const versionFromTarball = tarball.slice(prefix.length, -suffix.length)
-      
+      const versionFromTarball = tarball.slice(
+        prefix.length,
+        -suffix.length,
+      )
+
       // If version looks like a dist-tag (not a semver), try to resolve it
-      if (versionFromTarball && !semver.valid(versionFromTarball) && !semver.validRange(versionFromTarball)) {
+      if (
+        versionFromTarball &&
+        !semver.valid(versionFromTarball) &&
+        !semver.validRange(versionFromTarball)
+      ) {
         // This might be a dist-tag like "latest", try to resolve it
         try {
           const upstream = c.get('upstream') as string
@@ -360,7 +368,10 @@ export async function getPackageTarball(c: HonoContext) {
             // Get packument data to find the actual version for this dist-tag
             const upstreamConfig = getUpstreamConfig(upstream)
             if (upstreamConfig) {
-              const packumentUrl = buildUpstreamUrl(upstreamConfig, pkg)
+              const packumentUrl = buildUpstreamUrl(
+                upstreamConfig,
+                pkg,
+              )
               const packumentResponse = await fetch(packumentUrl, {
                 method: 'GET',
                 headers: {
@@ -368,12 +379,13 @@ export async function getPackageTarball(c: HonoContext) {
                   Accept: 'application/json',
                 },
               })
-              
+
               if (packumentResponse.ok) {
-                const packumentData = await packumentResponse.json() as any
+                const packumentData =
+                  (await packumentResponse.json())
                 const distTags = packumentData['dist-tags'] || {}
                 const actualVersion = distTags[versionFromTarball]
-                
+
                 if (actualVersion) {
                   // Update the tarball filename with the actual version
                   tarball = `${packageFileName}-${actualVersion}.tgz`
@@ -701,7 +713,10 @@ export async function getPackageManifest(c: HonoContext) {
       try {
         if (scope && pkg) {
           // Scoped package
-          const packageName = scope.startsWith('@') ? `${scope}/${pkg}` : `@${scope}/${pkg}`
+          const packageName =
+            scope.startsWith('@') ?
+              `${scope}/${pkg}`
+            : `@${scope}/${pkg}`
           pkg = packageName
         } else if (scope) {
           // Unscoped package (scope is actually the package name)
@@ -758,9 +773,9 @@ export async function getPackageManifest(c: HonoContext) {
     }
 
     // Get the version from our database
-    const versionData = await c.get('db').getVersion(
-      `${pkg}@${resolvedVersion}`,
-    )
+    const versionData = await c
+      .get('db')
+      .getVersion(`${pkg}@${resolvedVersion}`)
 
     if (versionData) {
       // Convert the full manifest to a slimmed version for the response
@@ -1139,29 +1154,39 @@ export async function handlePackageRoute(c: HonoContext) {
 export async function publishPackage(c: HonoContext) {
   try {
     const pkg = decodeURIComponent(c.req.param('pkg'))
-    
+
     // Validate package name
     const validation = validate(pkg)
     if (!validation.validForNewPackages) {
-      return c.json({
-        error: 'Invalid package name',
-        reason: validation.errors?.join(', ') || 'Package name is not valid'
-      }, 400)
+      return c.json(
+        {
+          error: 'Invalid package name',
+          reason:
+            validation.errors?.join(', ') ||
+            'Package name is not valid',
+        },
+        400,
+      )
     }
 
     // Get package data from request body
-    const packageData = await c.req.json() as any
-    
+    const packageData = (await c.req.json())
+
     if (!packageData || typeof packageData !== 'object') {
       return c.json({ error: 'Invalid package data' }, 400)
     }
 
     // Extract version information
     const versions = packageData.versions || {}
-    const distTags = packageData['dist-tags'] || { latest: packageData.version }
-    
+    const distTags = packageData['dist-tags'] || {
+      latest: packageData.version,
+    }
+
     if (!packageData.version && !Object.keys(versions).length) {
-      return c.json({ error: 'Package must have at least one version' }, 400)
+      return c.json(
+        { error: 'Package must have at least one version' },
+        400,
+      )
     }
 
     // If this is a single version publish, structure it properly
@@ -1172,25 +1197,28 @@ export async function publishPackage(c: HonoContext) {
         version: packageData.version,
         dist: {
           ...packageData.dist,
-          tarball: packageData.dist?.tarball || `${c.req.url.split('/').slice(0, 3).join('/')}/${pkg}/-/${pkg.split('/').pop()}-${packageData.version}.tgz`
-        }
+          tarball:
+            packageData.dist?.tarball ||
+            `${c.req.url.split('/').slice(0, 3).join('/')}/${pkg}/-/${pkg.split('/').pop()}-${packageData.version}.tgz`,
+        },
       }
     }
 
     // Store package metadata
-    await c.get('db').upsertPackage(
-      pkg,
-      distTags,
-      new Date().toISOString()
-    )
+    await c
+      .get('db')
+      .upsertPackage(pkg, distTags, new Date().toISOString())
 
     // Store each version
-    const versionPromises = Object.entries(versions).map(([version, manifest]) => 
-      c.get('db').upsertVersion(
-        `${pkg}@${version}`,
-        manifest as Record<string, any>,
-        (manifest as any).publishedAt || new Date().toISOString()
-      )
+    const versionPromises = Object.entries(versions).map(
+      ([version, manifest]) =>
+        c
+          .get('db')
+          .upsertVersion(
+            `${pkg}@${version}`,
+            manifest as Record<string, any>,
+            (manifest as any).publishedAt || new Date().toISOString(),
+          ),
     )
 
     await Promise.all(versionPromises)
@@ -1344,15 +1372,17 @@ export async function getPackagePackument(c: HonoContext) {
           const distTags = upstreamData['dist-tags'] || {}
           const latestVersion = distTags.latest
           const essentialVersions = new Set<string>()
-          
+
           // Always include latest
           if (latestVersion) {
             essentialVersions.add(latestVersion)
           }
-          
+
           // If version range specified, include only matching versions (up to 10 for performance)
           if (isValidRange) {
-            const matchingVersions = Object.keys(upstreamData.versions)
+            const matchingVersions = Object.keys(
+              upstreamData.versions,
+            )
               .filter(v => semver.satisfies(v, versionRange))
               .slice(0, 10) // Limit to 10 versions for performance
             matchingVersions.forEach(v => essentialVersions.add(v))
@@ -1380,8 +1410,9 @@ export async function getPackagePackument(c: HonoContext) {
           c.executionCtx?.waitUntil(
             (async () => {
               try {
-                const allVersionStoragePromises: Promise<unknown>[] = []
-                
+                const allVersionStoragePromises: Promise<unknown>[] =
+                  []
+
                 // Process all versions for complete database storage
                 Object.entries(upstreamData.versions).forEach(
                   ([version, manifest]) => {
@@ -1389,11 +1420,15 @@ export async function getPackagePackument(c: HonoContext) {
                     const manifestForStorage = {
                       name: name,
                       version: version,
-                      ...slimManifest(manifest as PackageManifest, context),
+                      ...slimManifest(
+                        manifest as PackageManifest,
+                        context,
+                      ),
                     } as PackageManifest
-                    
+
                     allVersionStoragePromises.push(
-                      c.get('db')
+                      c
+                        .get('db')
                         .upsertCachedVersion(
                           versionSpec,
                           manifestForStorage,
@@ -1411,7 +1446,8 @@ export async function getPackagePackument(c: HonoContext) {
                 // Store package metadata and all versions
                 await Promise.all([
                   ...allVersionStoragePromises,
-                  c.get('db')
+                  c
+                    .get('db')
                     .upsertCachedPackage(
                       name,
                       packageData['dist-tags'],

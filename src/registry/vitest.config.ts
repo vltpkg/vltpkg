@@ -12,11 +12,11 @@ export default defineConfig({
       'test/route-patterns.test.ts',
       'test/upstream-routes-simple.test.ts',
       'test/route-coverage.test.ts',
-      'test/tarball-disttag-resolution.test.ts'
+      'test/tarball-disttag-resolution.test.ts',
       // 'test/api-compliance.test.ts' // Disabled due to env requirements
-    ]
+    ],
   },
   esbuild: {
-    target: 'es2022'
-  }
+    target: 'es2022',
+  },
 })

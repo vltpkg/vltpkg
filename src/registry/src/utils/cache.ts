@@ -168,18 +168,20 @@ async function refreshPackageInBackground<T>(
 async function reconstructPackumentFromCache(
   c: HonoContext,
   packageName: string,
-  cachedPackage: any
+  cachedPackage: any,
 ): Promise<any> {
   try {
     // Get all versions for this package
-    const versions = await c.get('db').getVersionsByPackage(packageName)
-    
+    const versions = await c
+      .get('db')
+      .getVersionsByPackage(packageName)
+
     // Build the versions object
     const versionsObject: Record<string, any> = {}
     const timeObject: Record<string, string> = {
       modified: cachedPackage.lastUpdated || new Date().toISOString(),
     }
-    
+
     versions.forEach((versionData: any) => {
       if (versionData.version && versionData.manifest) {
         versionsObject[versionData.version] = versionData.manifest
@@ -188,12 +190,13 @@ async function reconstructPackumentFromCache(
         }
       }
     })
-    
+
     // Parse tags from the cached package
-    const distTags = typeof cachedPackage.tags === 'string' 
-      ? JSON.parse(cachedPackage.tags || '{}')
+    const distTags =
+      typeof cachedPackage.tags === 'string' ?
+        JSON.parse(cachedPackage.tags || '{}')
       : cachedPackage.tags || {}
-    
+
     // Construct the packument structure
     return {
       name: packageName,
@@ -202,7 +205,10 @@ async function reconstructPackumentFromCache(
       time: timeObject,
     }
   } catch (error) {
-    console.error('Failed to reconstruct packument from cache:', error)
+    console.error(
+      'Failed to reconstruct packument from cache:',
+      error,
+    )
     return null
   }
 }
@@ -217,7 +223,9 @@ async function getCachedPackageData(
   staleWhileRevalidateMinutes: number,
 ): Promise<CacheValidation> {
   try {
-    const cachedPackage = await c.get('db').getCachedPackage(packageName)
+    const cachedPackage = await c
+      .get('db')
+      .getCachedPackage(packageName)
 
     if (
       !cachedPackage?.cachedAt ||
@@ -236,8 +244,13 @@ async function getCachedPackageData(
     const isStale = age < staleMs // Still usable even if stale
 
     // Reconstruct the full packument from cached data
-    const reconstructedPackument = await reconstructPackumentFromCache(c, packageName, cachedPackage)
-    
+    const reconstructedPackument =
+      await reconstructPackumentFromCache(
+        c,
+        packageName,
+        cachedPackage,
+      )
+
     return {
       valid: isValid,
       stale: isStale && !isValid, // Stale means expired but within stale window
@@ -470,12 +483,14 @@ async function cacheVersionData(
     if (versionData && typeof versionData === 'object') {
       const manifest = versionData as unknown as PackageManifest
       const publishedAt = new Date().toISOString()
-      await c.get('db').upsertCachedVersion(
-        spec,
-        manifest,
-        options.upstream || 'npm',
-        publishedAt,
-      )
+      await c
+        .get('db')
+        .upsertCachedVersion(
+          spec,
+          manifest,
+          options.upstream || 'npm',
+          publishedAt,
+        )
     }
   } catch (_error) {
     // Log error to monitoring system instead of console

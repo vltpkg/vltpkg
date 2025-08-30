@@ -6,18 +6,18 @@ import type { HonoContext } from '../../types.ts'
 export const handleStaticAssets = async (c: HonoContext) => {
   try {
     const response = await c.env.ASSETS.fetch(c.req.raw)
-    
+
     // If the ASSETS binding returns a 404, return a proper 404 response
     // with mutable headers to avoid the secure headers middleware conflict
     if (response.status === 404) {
       return c.notFound()
     }
-    
+
     // For other non-200 responses, create a new response to avoid header conflicts
     if (!response.ok) {
       return c.text('Asset not available', response.status)
     }
-    
+
     return response
   } catch (error) {
     console.error('Error serving static asset:', error)
