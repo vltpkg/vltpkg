@@ -13,6 +13,37 @@ import type {
   LockfileEdgeValue,
 } from './types.ts'
 
+export type ProcessingEdge = {
+  fromNode: NodeLike
+  toNode: NodeLike | undefined
+  depType: DependencyTypeShort
+  spec: Spec
+}
+
+const retrieveNodeFromGraph = (
+  key: string,
+  value: string,
+  graph: GraphLike,
+  fromId: string,
+  seenNodes?: Map<string, NodeLike>,
+): NodeLike => {
+  const foundNode = graph.nodes.get(asDepID(fromId))
+  if (!foundNode) {
+    throw error('Edge info missing its `from` node', {
+      found: {
+        nodes: [...graph.nodes].map(([id]) => id),
+        from: foundNode,
+        fromId,
+        edge: { [key]: value },
+      },
+    })
+  }
+  if (seenNodes) {
+    seenNodes.set(fromId, foundNode)
+  }
+  return foundNode
+}
+
 export const loadEdges = (
   graph: GraphLike,
   edges: LockfileData['edges'],
@@ -24,19 +55,13 @@ export const loadEdges = (
   ][]
 
   const edgeCount = entries.length
-  const useOptimizations = edgeCount > 50 // Only use optimizations for larger graphs
-
-  // For large graphs, use batch processing and caching
-  const edgeProcessingQueue: {
-    fromNode: NodeLike
-    toNode: NodeLike | undefined
-    depType: DependencyTypeShort
-    spec: Spec
-  }[] = []
+  // Only use optimizations for non-trivial graphs
+  const useOptimizations = edgeCount > 50
+  const edgeProcessingQueue: ProcessingEdge[] = []
 
   // Cache for frequently accessed nodes to avoid repeated Map lookups
-  const nodeCache =
-    useOptimizations ? new Map<string, NodeLike>() : null
+  const seenNodes =
+    useOptimizations ? new Map<string, NodeLike>() : undefined
 
   for (const [key, value] of entries) {
     const [fromId, specName] = fastSplit(key, ' ', 2)
@@ -59,53 +84,37 @@ export const loadEdges = (
 
     // Use cached node lookup for large graphs, direct lookup for small ones
     let fromNode: NodeLike
-    if (useOptimizations && nodeCache) {
-      fromNode =
-        nodeCache.get(fromId) ??
-        (() => {
-          const foundNode = graph.nodes.get(asDepID(fromId))
-          if (!foundNode) {
-            throw error('Edge info missing its `from` node', {
-              found: {
-                nodes: [...graph.nodes].map(([id]) => id),
-                from: foundNode,
-                fromId,
-                edge: { [key]: value },
-              },
-            })
-          }
-          nodeCache.set(fromId, foundNode)
-          return foundNode
-        })()
-    } else {
-      const foundNode = graph.nodes.get(asDepID(fromId))
-      if (!foundNode) {
-        throw error('Edge info missing its `from` node', {
-          found: {
-            nodes: [...graph.nodes].map(([id]) => id),
-            from: foundNode,
-            fromId,
-            edge: { [key]: value },
-          },
-        })
+    if (seenNodes) {
+      const seen = seenNodes.get(fromId)
+      if (seen) {
+        fromNode = seen
+      } else {
+        fromNode = retrieveNodeFromGraph(
+          key,
+          value,
+          graph,
+          fromId,
+          seenNodes,
+        )
       }
-      fromNode = foundNode
+    } else {
+      fromNode = retrieveNodeFromGraph(key, value, graph, fromId)
     }
 
     const toId = valRest.substring(vrSplit + 1)
     let toNode: NodeLike | undefined = undefined
 
     if (toId !== 'MISSING') {
-      if (useOptimizations && nodeCache) {
-        toNode =
-          nodeCache.get(toId) ??
-          (() => {
-            const foundToNode = graph.nodes.get(asDepID(toId))
-            if (foundToNode) {
-              nodeCache.set(toId, foundToNode)
-            }
-            return foundToNode
-          })()
+      if (seenNodes) {
+        const seen = seenNodes.get(toId)
+        if (seen) {
+          toNode = seen
+        } else {
+          toNode = graph.nodes.get(asDepID(toId))
+          if (toNode) {
+            seenNodes.set(toId, toNode)
+          }
+        }
       } else {
         toNode = graph.nodes.get(asDepID(toId))
       }
@@ -125,7 +134,7 @@ export const loadEdges = (
       edgeProcessingQueue.push({
         fromNode,
         toNode,
-        depType: depType,
+        depType,
         spec,
       })
     } else {
@@ -134,7 +143,7 @@ export const loadEdges = (
     }
   }
 
-  // Batch process all edges (only for large graphs)
+  // Batch process all edges (only for non-trivial graphs)
   if (useOptimizations) {
     for (const {
       fromNode,

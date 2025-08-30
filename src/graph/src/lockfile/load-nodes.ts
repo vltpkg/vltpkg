@@ -11,24 +11,13 @@ export const loadNodes = (
 ) => {
   const entries = Object.entries(nodes) as [DepID, LockfileNode][]
   const nodeCount = entries.length
-  const useOptimizations = nodeCount > 50 // Only use optimizations for larger graphs
-
-  // Pre-filter existing nodes to avoid unnecessary work
-  const nodesToProcess = entries.filter(
-    ([id]) => !graph.nodes.has(id),
-  )
-
-  // Cache for splitDepID results to avoid repeated parsing (only for large graphs)
-  const depIdCache =
-    useOptimizations ?
-      new Map<DepID, ReturnType<typeof splitDepID>>()
-    : null
 
   // Batch process registry spec parsing (only for large graphs)
+  // Only used for non-trivial graphs
   const registryVersionCache =
-    useOptimizations ? new Map<string, string>() : null
+    nodeCount > 50 ? new Map<string, string>() : null
 
-  for (const [id, lockfileNode] of nodesToProcess) {
+  for (const [id, lockfileNode] of entries) {
     const [
       flags,
       name,
@@ -38,22 +27,11 @@ export const loadNodes = (
       manifest,
       rawManifest,
     ] = lockfileNode
+    // workspace nodes and the project root node are already part of the
+    // graph and it should not create new nodes if an existing one is there
+    if (graph.nodes.has(id)) continue
 
-    // Cache splitDepID results for large graphs, compute directly for small ones
-    let depIdParts: ReturnType<typeof splitDepID>
-    if (useOptimizations && depIdCache) {
-      depIdParts =
-        depIdCache.get(id) ??
-        (() => {
-          const parts = splitDepID(id)
-          depIdCache.set(id, parts)
-          return parts
-        })()
-    } else {
-      depIdParts = splitDepID(id)
-    }
-
-    const [type, filepath, maybeExtra, lastExtra] = depIdParts
+    const [type, filepath, maybeExtra, lastExtra] = splitDepID(id)
     const extra =
       type === 'registry' || type === 'git' ? lastExtra : maybeExtra
     const registrySpec = maybeExtra
@@ -72,17 +50,18 @@ export const loadNodes = (
       registrySpec &&
       registrySpec.indexOf('@') > 0
     ) {
-      if (useOptimizations && registryVersionCache) {
-        version =
-          registryVersionCache.get(registrySpec) ??
-          (() => {
-            const v =
-              registrySpec.split('@').slice(-1)[0] || undefined
-            if (v) {
-              registryVersionCache.set(registrySpec, v)
-            }
-            return v
-          })()
+      if (registryVersionCache) {
+        const seenVersion = registryVersionCache.get(registrySpec)
+        /* c8 ignore start */
+        if (seenVersion) {
+          version = seenVersion
+        } else {
+          version = registrySpec.split('@').slice(-1)[0] || undefined
+          /* c8 ignore stop */
+          if (version) {
+            registryVersionCache.set(registrySpec, version)
+          }
+        }
       } else {
         version = registrySpec.split('@').slice(-1)[0] || undefined
       }

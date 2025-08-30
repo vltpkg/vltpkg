@@ -154,19 +154,6 @@ export const loadObject = (
   if (shouldLoadDependencies) {
     loadNodes(graph, lockfileData.nodes, options.actual)
     loadEdges(graph, lockfileData.edges, mergedOptions)
-
-    // Pre-populate nodesByName cache for faster subsequent lookups
-    // Only do this for larger graphs where the overhead is worth it
-    if (Object.keys(lockfileData.nodes).length > 100) {
-      for (const node of graph.nodes.values()) {
-        let nameSet = graph.nodesByName.get(node.name)
-        if (!nameSet) {
-          nameSet = new Set()
-          graph.nodesByName.set(node.name, nameSet)
-        }
-        nameSet.add(node)
-      }
-    }
   }
 
   // hydrate missing node-level registry data
