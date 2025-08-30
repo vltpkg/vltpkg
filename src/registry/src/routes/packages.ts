@@ -1,6 +1,6 @@
 import * as semver from 'semver'
 import validate from 'validate-npm-package-name'
-import { DOMAIN, PROXY, PROXY_URL } from '../../config.ts'
+import { URL, PROXY, PROXY_URL } from '../../config.ts'
 import {
   getUpstreamConfig,
   buildUpstreamUrl,
@@ -179,7 +179,7 @@ export async function rewriteTarballUrlIfNeeded(
 
     if (!upstream || !protocol || !host) {
       // If no context, create a local tarball URL
-      return `${DOMAIN}/${createFile({ pkg: packageName, version })}`
+      return `${URL}/${createFile({ pkg: packageName, version })}`
     }
 
     // Create a proper upstream tarball URL that points to our registry
@@ -193,7 +193,7 @@ export async function rewriteTarballUrlIfNeeded(
     return `${protocol}://${host}/${upstream}/${packageName}/-/${packageFileName}-${version}.tgz`
   } catch (_err) {
     // Fallback to local URL format
-    return `${DOMAIN}/${createFile({ pkg: packageName, version })}`
+    return `${URL}/${createFile({ pkg: packageName, version })}`
   }
 }
 
@@ -792,7 +792,7 @@ export async function getPackageManifest(c: HonoContext) {
 
         dist: {
           ...slimmedManifest.dist,
-          tarball: `${DOMAIN}/${createFile({ pkg, version: resolvedVersion })}`,
+          tarball: `${URL}/${createFile({ pkg, version: resolvedVersion })}`,
         },
       }
 
@@ -1598,7 +1598,7 @@ export async function getPackagePackument(c: HonoContext) {
               version: latestVersion,
               description: `Mock package for ${name}`,
               dist: {
-                tarball: `${DOMAIN}/${name}/-/${name}-${latestVersion}.tgz`,
+                tarball: `${URL}/${name}/-/${name}-${latestVersion}.tgz`,
               },
             }
             packageData.versions[latestVersion] = mockManifest
@@ -1616,7 +1616,7 @@ export async function getPackagePackument(c: HonoContext) {
           version: latestVersion,
           description: `Package ${name}`,
           dist: {
-            tarball: `${DOMAIN}/${name}/-/${name}-${latestVersion}.tgz`,
+            tarball: `${URL}/${name}/-/${name}-${latestVersion}.tgz`,
           },
         }
         packageData.versions[latestVersion] = mockManifest

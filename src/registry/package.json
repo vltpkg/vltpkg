@@ -30,7 +30,7 @@
     "build:dist": "rm -rf ./dist && mkdir -p ./dist/assets/public",
     "build:assets": "cp -r ./src/assets ./dist/ && cp -r ./node_modules/@vltpkg/gui/dist ./dist/assets/public",
     "build:bin": "mkdir -p ./dist/bin/demo && cp -r ./src/bin/demo ./dist/bin/ && esbuild ./src/bin/vsr.ts --outfile=./dist/bin/vsr.js --packages=external --platform=node --format=esm --log-level=silent",
-    "build:worker": "pnpx wrangler deploy --dry-run --outdir dist &> /dev/null",
+    "build:worker": "pnpx wrangler deploy --dry-run --outdir dist",
     "build": "pnpm build:dist && pnpm build:assets && pnpm build:worker && pnpm build:bin",
     "typecheck:worker": "tsc -p tsconfig.worker.json --noEmit",
     "typecheck": "pnpm typecheck:bin && pnpm typecheck:worker",
