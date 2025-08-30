@@ -2,13 +2,16 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
+import { PackageJson } from '@vltpkg/package-json'
 import t from 'tap'
 import type { LockfileNode } from '../../src/index.ts'
+import { Graph } from '../../src/graph.ts'
 import {
   load,
   loadHidden,
   loadObject,
 } from '../../src/lockfile/load.ts'
+import { loadEdges } from '../../src/lockfile/load-edges.ts'
 import type {
   LockfileData,
   LockfileEdgeKey,
@@ -931,3 +934,146 @@ t.test('skipLoadingNodesOnModifiersChange behavior', async t => {
     },
   )
 })
+
+t.test('load with optimization path for large graphs', async t => {
+  const nodes: LockfileData['nodes'] = {}
+  const edges: LockfileData['edges'] = {}
+
+  // Add root
+  const mainDepId = joinDepIDTuple(['file', '.'])
+  nodes[mainDepId] = [
+    0,
+    'my-project',
+    null,
+    null,
+    null,
+    {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {},
+    },
+  ]
+
+  // Add many nodes and edges to trigger optimization code paths (>50)
+  for (let i = 0; i < 60; i++) {
+    const packageName = `opt-pkg-${i}`
+    const depId = joinDepIDTuple([
+      'registry',
+      '',
+      `${packageName}@1.0.${i}`,
+    ])
+
+    nodes[depId] = [
+      0,
+      packageName,
+      null,
+      null,
+      null,
+      {
+        name: packageName,
+        version: `1.0.${i}`,
+        dependencies: {},
+      },
+    ]
+
+    edges[`${mainDepId} ${packageName}`] = `prod ^1.0.${i} ${depId}`
+  }
+
+  const lockfileData: LockfileData = {
+    lockfileVersion: 0,
+    options: { registry: 'https://registry.npmjs.org/' },
+    nodes,
+    edges,
+  }
+
+  const graph = loadObject(
+    {
+      projectRoot: t.testdirName,
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      packageJson: new PackageJson(),
+    },
+    lockfileData,
+  )
+
+  t.equal(
+    graph.nodes.size,
+    61,
+    'should load all nodes using optimization path',
+  )
+  t.equal(
+    graph.edges.size,
+    60,
+    'should load all edges using optimization path',
+  )
+
+  // Verify optimization was used by checking some nodes exist
+  t.ok(graph.nodes.has(mainDepId), 'root node exists')
+  t.ok(
+    graph.nodes.has(
+      joinDepIDTuple(['registry', '', 'opt-pkg-0@1.0.0']),
+    ),
+    'first optimized node exists',
+  )
+})
+
+t.test(
+  'loadEdges with optimization path for large graphs',
+  async t => {
+    const edges: LockfileData['edges'] = {}
+
+    // Create a graph with pre-existing nodes
+    const graph = new Graph({
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      projectRoot: t.testdirName,
+    })
+
+    const mainDepId = joinDepIDTuple(['file', '.'])
+
+    // Add many edges to trigger optimization code paths (>50)
+    for (let i = 0; i < 60; i++) {
+      const packageName = `edge-pkg-${i}`
+      const depId = joinDepIDTuple([
+        'registry',
+        '',
+        `${packageName}@1.0.${i}`,
+      ])
+
+      // Add nodes to graph first
+      graph.addNode(depId, {
+        name: packageName,
+        version: `1.0.${i}`,
+        dependencies: {},
+      })
+
+      edges[`${mainDepId} ${packageName}`] = `prod ^1.0.${i} ${depId}`
+    }
+
+    // Test direct loadEdges call
+    loadEdges(graph, edges, {
+      registry: 'https://registry.npmjs.org/',
+    })
+
+    t.equal(
+      graph.edges.size,
+      60,
+      'should load all edges using optimization path',
+    )
+
+    // Verify some edges exist
+    const firstEdge = [...graph.edges][0]
+    t.ok(firstEdge, 'first edge exists')
+    if (firstEdge) {
+      t.equal(
+        firstEdge.spec.name,
+        'edge-pkg-0',
+        'edge has correct spec name',
+      )
+    }
+  },
+)
