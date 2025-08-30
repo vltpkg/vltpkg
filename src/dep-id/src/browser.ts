@@ -111,10 +111,16 @@ const decode = (s?: string) =>
     )
   : s
 
+const seenSplitDepIDs = new Map<string, DepIDTuple>()
 /**
  * turn a {@link DepID} into a {@link DepIDTuple}
  */
 export const splitDepID = (id: string): DepIDTuple => {
+  // memoized entries return early
+  const seen = seenSplitDepIDs.get(id)
+  if (seen) return seen
+
+  let res: DepIDTuple
   const [type, first = '', second, extra] = id
     .replaceAll('§', '/')
     .split(delimiter, 4)
@@ -125,19 +131,19 @@ export const splitDepID = (id: string): DepIDTuple => {
       if (second === undefined) {
         throw error(`invalid ${type} id`, { found: id })
       }
-      const t: DepIDTuple = [
+      res = [
         type || 'registry',
         f,
         decodeURIComponent(second),
         decode(extra),
       ]
-      return t
+      break
     }
     case 'file':
     case 'remote':
     case 'workspace': {
-      const t: DepIDTuple = [type, f, decode(second)]
-      return t
+      res = [type, f, decode(second)]
+      break
     }
     default: {
       throw error('invalid DepID type', {
@@ -146,6 +152,8 @@ export const splitDepID = (id: string): DepIDTuple => {
       })
     }
   }
+  seenSplitDepIDs.set(id, res)
+  return res
 }
 
 /**
@@ -163,6 +171,7 @@ export const baseDepID = (id: string): DepID => {
   }
 }
 
+const seenHydrated = new Map<string, Spec>()
 /**
  * Turn a {@link DepID} into a {@link Spec} object
  */
@@ -170,8 +179,18 @@ export const hydrate = (
   id: DepID,
   name?: string,
   options: SpecOptions = {},
-): Spec => hydrateTuple(splitDepID(id), name, options)
+): Spec => {
+  // memozied entries return early
+  const cacheKey = (name ?? '') + id
+  const seen = seenHydrated.get(cacheKey)
+  if (seen) return seen
 
+  const res = hydrateTuple(splitDepID(id), name, options)
+  seenHydrated.set(cacheKey, res)
+  return res
+}
+
+const seenHydratedTuples = new Map<string, Spec>()
 /**
  * Turn a {@link DepIDTuple} into a {@link Spec} object
  */
@@ -181,13 +200,21 @@ export const hydrateTuple = (
   options: SpecOptions = {},
 ) => {
   const [type, first, second] = tuple
+
+  // memoized entries return early
+  const cacheKey = (name ?? '') + type + first + (second ?? '')
+  const seen = seenHydratedTuples.get(cacheKey)
+  if (seen) return seen
+
+  let res: Spec
   switch (type) {
     case 'remote': {
       if (!first)
         throw error('no remoteURL found on remote id', {
           found: tuple,
         })
-      return Spec.parse(name ?? '(unknown)', first, options)
+      res = Spec.parse(name ?? '(unknown)', first, options)
+      break
     }
     case 'file': {
       if (!first) {
@@ -195,7 +222,8 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      return Spec.parse(name ?? '(unknown)', `file:${first}`, options)
+      res = Spec.parse(name ?? '(unknown)', `file:${first}`, options)
+      break
     }
     case 'registry': {
       if (typeof first !== 'string') {
@@ -212,10 +240,11 @@ export const hydrateTuple = (
         // just a normal name@version on the default registry
         const s = Spec.parseArgs(second, options)
         if (name && s.name !== name) {
-          return Spec.parse(name, `npm:${second}`, options)
+          res = Spec.parse(name, `npm:${second}`, options)
         } else {
-          return s
+          res = s
         }
+        break
       }
       if (!/^https?:\/\//.test(first)) {
         const reg = options.registries?.[first]
@@ -225,20 +254,23 @@ export const hydrateTuple = (
             found: tuple,
           })
         }
-        return Spec.parse(
+        res = Spec.parse(
           name ?? '(unknown)',
           `${first}:${second}`,
           options,
         )
+        break
       }
       const s = Spec.parse(
         name ?? '(unknown)',
         `registry:${first}#${second}`,
         options,
       )
-      return name && s.final.name !== name ?
+      res =
+        name && s.final.name !== name ?
           Spec.parse(s.final.name, s.bareSpec, options)
         : s
+      break
     }
     case 'git': {
       if (!first) {
@@ -246,21 +278,26 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      return Spec.parse(
+      res = Spec.parse(
         name ?? '(unknown)',
         first + '#' + second,
         options,
       )
+      break
     }
     case 'workspace': {
       if (!first) {
         throw error('no name/path on workspace id', { found: tuple })
       }
-      return name && name !== first ?
+      res =
+        name && name !== first ?
           Spec.parse(name, `workspace:${first}@*`, options)
         : Spec.parse(first, `workspace:*`, options)
+      break
     }
   }
+  seenHydratedTuples.set(cacheKey, res)
+  return res
 }
 
 // Strip out the default registry, there's no need to store that
@@ -273,6 +310,7 @@ const omitDefReg = (s?: string): string =>
     ''
   : s
 
+const seenTuples = new Map<string, DepIDTuple>()
 /**
  * Get the {@link DepIDTuple} for a given {@link Spec} and {@link Manifest}.
  * The Manifest is used to get the name and version, if possible. If not found
@@ -284,6 +322,16 @@ export const getTuple = (
   mani: Pick<Manifest, 'name' | 'version'>,
   extra?: string,
 ): DepIDTuple => {
+  // memoized entries return early
+  const cacheKey =
+    String(spec) +
+    (mani.name ?? '') +
+    (mani.version ?? '') +
+    (extra ?? '')
+  const seen = seenTuples.get(cacheKey)
+  if (seen) return seen
+
+  let res: DepIDTuple
   const f = spec.final
   switch (f.type) {
     case 'registry': {
@@ -305,12 +353,13 @@ export const getTuple = (
             mani.version.slice(1)
           : mani.version
         : f.bareSpec
-      return [
+      res = [
         f.type,
         f.namedRegistry ?? reg,
         `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
         extra,
       ]
+      break
     }
     case 'git': {
       const {
@@ -327,26 +376,31 @@ export const getTuple = (
             spec,
           })
         }
-        return [
+        res = [
           f.type,
           `${namedGitHost}:${namedGitHostPath}`,
           gitSelector,
           extra,
         ]
+        break
       } else {
-        return [f.type, gitRemote, gitSelector, extra]
+        res = [f.type, gitRemote, gitSelector, extra]
       }
+      break
     }
     case 'remote': {
       const { remoteURL } = f
       if (!remoteURL)
         throw error('no URL on remote specifier', { spec })
-      return [f.type, remoteURL, extra]
+      res = [f.type, remoteURL, extra]
+      break
     }
     case 'file':
     case 'workspace':
       throw error('Path-based dep ids are not supported', { spec })
   }
+  seenTuples.set(cacheKey, res)
+  return res
 }
 
 /**
@@ -370,3 +424,14 @@ export const getId = (
   mani: Pick<Manifest, 'name' | 'version'>,
   extra?: string,
 ): DepID => joinDepIDTuple(getTuple(spec, mani, extra))
+
+/**
+ * Reset internal caches. This should be used when options change since
+ * they're not take into account in the memoization keys.
+ */
+export const resetCaches = () => {
+  seenHydrated.clear()
+  seenHydratedTuples.clear()
+  seenSplitDepIDs.clear()
+  seenTuples.clear()
+}
