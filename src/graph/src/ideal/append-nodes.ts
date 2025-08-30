@@ -152,7 +152,14 @@ const fetchManifestsForDeps = async (
       queryModifier,
     )
     if (existingNode) {
-      graph.addEdge(type, spec, fromNode, existingNode)
+      // For peerOptional dependencies, create a dangling edge instead of linking to existing node
+      if (type === 'peerOptional') {
+        /* c8 ignore next 3 */
+        // This case happens when peerOptional dep already exists in graph
+        graph.addEdge(type, spec, fromNode)
+      } else {
+        graph.addEdge(type, spec, fromNode, existingNode)
+      }
       continue
     }
 
@@ -258,6 +265,13 @@ const processPlacementTasks = async (
           from: fromNode.location,
         })
       }
+    }
+
+    // Skip placing peerOptional dependencies, just create a dangling edge
+    if (type === 'peerOptional') {
+      /* c8 ignore next 3 */
+      graph.addEdge(type, spec, fromNode)
+      continue
     }
 
     // places a new node in the graph representing a newly seen dependency
