@@ -624,3 +624,345 @@ t.test('hasChanges method', async t => {
     t.end()
   })
 })
+
+t.test('optionalOnly method', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
+    }),
+  })
+
+  // Test 1: Empty diff (no added nodes) should return true
+  t.test('returns true when no nodes are added', t => {
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+            0,
+            'foo',
+            'sha512-foofoofoo==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.optionalOnly(),
+      true,
+      'diff with no added nodes should return true',
+    )
+    t.end()
+  })
+
+  // Test 2: Diff with only optional nodes should return true
+  t.test('returns true when all added nodes are optional', t => {
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'optional-pkg@1.0.0'])]: [
+            0,
+            'optional-pkg',
+            'sha512-optionalpkg==',
+          ],
+          [joinDepIDTuple([
+            'registry',
+            '',
+            'another-optional@1.0.0',
+          ])]: [0, 'another-optional', 'sha512-anotheroptional=='],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    // Mark the added nodes as optional
+    const optionalNode1 = graph2.nodes.get(
+      joinDepIDTuple(['registry', '', 'optional-pkg@1.0.0']),
+    )!
+    const optionalNode2 = graph2.nodes.get(
+      joinDepIDTuple(['registry', '', 'another-optional@1.0.0']),
+    )!
+    optionalNode1.optional = true
+    optionalNode2.optional = true
+
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.optionalOnly(),
+      true,
+      'diff with only optional nodes should return true',
+    )
+    t.ok(diff.nodes.add.size > 0, 'should have nodes to add')
+    t.end()
+  })
+
+  // Test 3: Diff with only non-optional nodes should return false
+  t.test('returns false when added nodes include non-optional', t => {
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'required-pkg@1.0.0'])]: [
+            0,
+            'required-pkg',
+            'sha512-requiredpkg==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {} as LockfileEdges,
+      },
+    )
+
+    // The added node remains non-optional (default is false)
+    const diff = new Diff(graph1, graph2)
+    t.equal(
+      diff.optionalOnly(),
+      false,
+      'diff with non-optional nodes should return false',
+    )
+    t.ok(diff.nodes.add.size > 0, 'should have nodes to add')
+    t.end()
+  })
+
+  // Test 4: Diff with mixed optional and non-optional nodes should return false
+  t.test(
+    'returns false when added nodes are mixed optional and non-optional',
+    t => {
+      const graph1 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 0,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          } as Record<DepID, LockfileNode>,
+          edges: {} as LockfileEdges,
+        },
+      )
+
+      const graph2 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 0,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+            [joinDepIDTuple(['registry', '', 'optional-pkg@1.0.0'])]:
+              [0, 'optional-pkg', 'sha512-optionalpkg=='],
+            [joinDepIDTuple(['registry', '', 'required-pkg@1.0.0'])]:
+              [0, 'required-pkg', 'sha512-requiredpkg=='],
+          } as Record<DepID, LockfileNode>,
+          edges: {} as LockfileEdges,
+        },
+      )
+
+      // Mark one node as optional, leave the other as non-optional
+      const optionalNode = graph2.nodes.get(
+        joinDepIDTuple(['registry', '', 'optional-pkg@1.0.0']),
+      )!
+      optionalNode.optional = true
+
+      const diff = new Diff(graph1, graph2)
+      t.equal(
+        diff.optionalOnly(),
+        false,
+        'diff with mixed optional and non-optional nodes should return false',
+      )
+      t.ok(diff.nodes.add.size > 0, 'should have nodes to add')
+      t.end()
+    },
+  )
+
+  // Test 5: Diff with only deletions (no additions) should return true
+  t.test(
+    'returns true when only deleting nodes (no additions)',
+    t => {
+      const graph1 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 0,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+            [joinDepIDTuple(['registry', '', 'to-delete@1.0.0'])]: [
+              0,
+              'to-delete',
+              'sha512-todelete==',
+            ],
+          } as Record<DepID, LockfileNode>,
+          edges: {} as LockfileEdges,
+        },
+      )
+
+      const graph2 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 0,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          } as Record<DepID, LockfileNode>,
+          edges: {} as LockfileEdges,
+        },
+      )
+
+      const diff = new Diff(graph1, graph2)
+      t.equal(
+        diff.optionalOnly(),
+        true,
+        'diff with only deletions should return true (no additions)',
+      )
+      t.equal(diff.nodes.add.size, 0, 'should have no nodes to add')
+      t.ok(diff.nodes.delete.size > 0, 'should have nodes to delete')
+      t.end()
+    },
+  )
+})
