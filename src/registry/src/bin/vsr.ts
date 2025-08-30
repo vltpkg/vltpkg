@@ -1,5 +1,6 @@
 #!/usr/bin/env NODE_OPTIONS=--no-warnings node
-import type { Args, MinArgs } from '../../types.ts'
+import type { Args } from '../../types.ts'
+import type { MinArgsResult } from 'minargs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
@@ -15,7 +16,7 @@ import {
   URL,
   WRANGLER_CONFIG,
 } from '../../config.ts'
-import { minargs } from 'minargs'
+import { minArgs } from 'minargs'
 
 const usage = `USAGE:
 
@@ -24,19 +25,11 @@ const usage = `USAGE:
 OPTIONS:                   DESCRIPTION:
 
 --daemon=<boolean>         Run filesystem daemon (default: true)
--t, --telemetry=<boolean>  Share telemetry reporting (default: true)
+--telemetry=<boolean>      Run with telemetry reporting (default: true)
 -p, --port=<number>        Run on a specific port (default: ${DAEMON_PORT})
 -d, --debug                Run in debug mode
 -h, --help                 Print usage information
 `
-const opts = {
-  alias: {
-    p: 'port',
-    t: 'telemetry',
-    d: 'debug',
-    h: 'help',
-  },
-}
 
 const defaults: Args = {
   daemon: true,
@@ -46,15 +39,22 @@ const defaults: Args = {
   port: WRANGLER_CONFIG.port,
 }
 
-const args = {
-  ...defaults,
-  ...(minargs(opts) as MinArgs).args,
+const opts = {
+  alias: {
+    p: 'port',
+    d: 'debug',
+    h: 'help',
+  },
 }
 
-const PORT = args.port || WRANGLER_CONFIG.port
-const TELEMETRY_ENABLED = Boolean(args.telemetry)
-const DAEMON_ENABLED = Boolean(args.daemon)
-const DEBUG_ENABLED = Boolean(args.debug)
+//  parse args
+const { args } = minArgs(opts)
+
+// typecast/validate args
+const PORT = Number(args.port ? args.port[0] : defaults.port)
+const TELEMETRY = (args.telemetry ? args.telemetry[0] === 'false' ? false : true : defaults.telemetry)
+const DAEMON = (args.daemon ? args.daemon[0] === 'false' ? false : true : defaults.daemon)
+const DEBUG = (args.debug ? args.debug[0] : defaults.debug) as boolean
 
 // Print usage information
 function printUsage(): void {
@@ -100,7 +100,7 @@ const serverOptions = {
 
 void (async () => {
   try {
-    if (DAEMON_ENABLED) {
+    if (DAEMON) {
       const server = createServer({
         ...serverOptions,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -128,16 +128,16 @@ void (async () => {
         '--persist-to=local-store',
         '--no-remote',
         `--port=${PORT}`,
-        `--var=TELEMETRY:${TELEMETRY_ENABLED}`,
-        `--var=DEBUG:${DEBUG_ENABLED}`,
-        `--var=DAEMON:${DAEMON_ENABLED}`,
+        `--var=ARG_DEBUG:${DEBUG}`,
+        `--var=ARG_TELEMETRY:${TELEMETRY}`,
+        `--var=ARG_DAEMON:${DAEMON}`,
       ],
       {
         cwd: registryRoot, // Set working directory to registry root
       },
     )
 
-    if (DEBUG_ENABLED) {
+    if (DEBUG) {
       stdout.on('data', (data: Buffer) => {
         // eslint-disable-next-line no-console
         console.log(data.toString())

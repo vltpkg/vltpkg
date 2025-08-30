@@ -542,7 +542,7 @@ export interface Args {
   port: number
 }
 
-export interface MinArgs {
+export interface MinArgsResult {
   args: Args
   positionals: string[]
 }

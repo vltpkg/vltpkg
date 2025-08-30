@@ -85,10 +85,18 @@ app.use('*', sessionMonitor)
 
 // ---------------------------------------------------------
 // Home
-// (Single Page Application)
+// (Single Page Application or API Docs)
 // ---------------------------------------------------------
 
-app.get('/', async c => c.html(await getApp(c.env.ASSETS)))
+app.get('/', async c => {
+  console.log('API_DOCS_ENABLED', API_DOCS_ENABLED)
+  console.log('DAEMON_ENABLED', DAEMON_ENABLED)
+  if (API_DOCS_ENABLED && !DAEMON_ENABLED) {
+    return c.redirect('/-/docs', 302)
+  } else {
+    return c.html(await getApp(c.env.ASSETS))
+  }
+})
 
 // ---------------------------------------------------------
 // Documentation
