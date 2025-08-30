@@ -74,66 +74,34 @@ export class Diff {
       })
     }
 
-    // Optimized single-pass node diff - O(n) instead of O(2n)
-    const allNodeIds = new Set([
-      ...this.from.nodes.keys(),
-      ...this.to.nodes.keys(),
-    ])
-    for (const id of allNodeIds) {
-      const fromNode = this.from.nodes.get(id)
-      const toNode = this.to.nodes.get(id)
-
-      if (!fromNode && toNode) {
-        // Node was added
-        this.nodes.add.add(toNode)
-        if (!toNode.optional) this.optionalOnly = false
-      } else if (fromNode && !toNode) {
-        // Node was deleted
-        this.nodes.delete.add(fromNode)
-      } else if (fromNode && toNode && !fromNode.equals(toNode)) {
-        // Node was modified (delete old, add new)
-        this.nodes.delete.add(fromNode)
-        this.nodes.add.add(toNode)
-        if (!toNode.optional) this.optionalOnly = false
+    for (const [id, node] of this.from.nodes) {
+      if (!this.to.nodes.get(id)?.equals(node)) {
+        this.nodes.delete.add(node)
       }
     }
 
-    // Optimized single-pass edge diff - O(m) instead of O(2m)
-    // Build edge lookup maps once to avoid repeated traversals
-    const fromEdgeMap = new Map<string, Edge>()
-    const toEdgeMap = new Map<string, Edge>()
-
-    for (const edge of this.from.edges) {
-      fromEdgeMap.set(`${edge.from.id}:${edge.spec.name}`, edge)
+    for (const [id, node] of this.to.nodes) {
+      if (!this.from.nodes.get(id)?.equals(node)) {
+        this.nodes.add.add(node)
+        if (!node.optional) this.optionalOnly = false
+      }
     }
+
     for (const edge of this.to.edges) {
-      toEdgeMap.set(`${edge.from.id}:${edge.spec.name}`, edge)
+      // the node with this dep, in the from  graph
+      const fromNode = this.from.nodes.get(edge.from.id)
+      const fromEdge = fromNode?.edgesOut.get(edge.spec.name)
+      if (fromEdge?.to?.id === edge.to?.id) continue
+      if (fromEdge?.to) this.edges.delete.add(fromEdge)
+      if (edge.to) this.edges.add.add(edge)
     }
-
-    // Single pass through unique edge keys
-    const allEdgeKeys = new Set([
-      ...fromEdgeMap.keys(),
-      ...toEdgeMap.keys(),
-    ])
-    for (const key of allEdgeKeys) {
-      const fromEdge = fromEdgeMap.get(key)
-      const toEdge = toEdgeMap.get(key)
-
-      if (!fromEdge && toEdge) {
-        // Edge was added
-        if (toEdge.to) this.edges.add.add(toEdge)
-      } else if (fromEdge && !toEdge) {
-        // Edge was deleted
-        if (fromEdge.to) this.edges.delete.add(fromEdge)
-      } else if (
-        fromEdge &&
-        toEdge &&
-        fromEdge.to?.id !== toEdge.to?.id
-      ) {
-        // Edge target changed
-        if (fromEdge.to) this.edges.delete.add(fromEdge)
-        if (toEdge.to) this.edges.add.add(toEdge)
-      }
+    for (const edge of this.from.edges) {
+      // the node with this dep, in the to graph
+      const toNode = this.to.nodes.get(edge.from.id)
+      const toEdge = toNode?.edgesOut.get(edge.spec.name)
+      if (toEdge?.to?.id === edge.to?.id) continue
+      if (edge.to) this.edges.delete.add(edge)
+      if (toEdge?.to) this.edges.add.add(toEdge)
     }
   }
 
