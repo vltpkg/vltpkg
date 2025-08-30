@@ -58,7 +58,9 @@ export const reify = async (options: ReifyOptions) => {
     })
 
   const diff = new Diff(actual, graph)
-  if (!diff.hasChanges()) {
+  const skipOptionalOnly =
+    options.add?.modifiedDependencies && diff.optionalOnly()
+  if (!diff.hasChanges() || skipOptionalOnly) {
     // nothing to do, so just return the diff
     done()
     return diff
