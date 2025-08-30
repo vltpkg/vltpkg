@@ -1056,7 +1056,9 @@ t.test('skip peerOptional dependencies', async t => {
     })
 
     // Check that has-peer-optional was installed
-    const hasPeerOptional = graph.nodes.get('··has-peer-optional@1.0.0')
+    const hasPeerOptional = graph.nodes.get(
+      '··has-peer-optional@1.0.0',
+    )
     t.ok(hasPeerOptional, 'has-peer-optional should be installed')
 
     // Check that regular peer dependency was installed
@@ -1064,7 +1066,9 @@ t.test('skip peerOptional dependencies', async t => {
     t.ok(peerDep, 'peer-dep should be installed')
 
     // Check that peerOptional dependency was NOT installed
-    const peerOptionalDep = graph.nodes.get('··peer-optional-dep@1.0.0')
+    const peerOptionalDep = graph.nodes.get(
+      '··peer-optional-dep@1.0.0',
+    )
     t.notOk(
       peerOptionalDep,
       'peer-optional-dep should NOT be installed',
@@ -1097,43 +1101,65 @@ t.test('skip peerOptional dependencies', async t => {
     )
   })
 
-  t.test('skip linking to existing node for peerOptional dependencies', async t => {
-    const projectRoot = t.testdir({
-      'package.json': JSON.stringify({
-        name: 'my-project',
-        version: '1.0.0',
-        dependencies: {
-          // First install a regular dependency
-          'peer-optional-dep': '^1.0.0',
-          // Then install something that has it as peerOptional
-          'has-peer-optional': '^1.0.0',
-        },
-      }),
-    })
+  t.test(
+    'skip linking to existing node for peerOptional dependencies',
+    async t => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: {
+            // First install a regular dependency
+            'peer-optional-dep': '^1.0.0',
+            // Then install something that has it as peerOptional
+            'has-peer-optional': '^1.0.0',
+          },
+        }),
+      })
 
-    const graph = await build({
-      scurry: new PathScurry(projectRoot),
-      monorepo: Monorepo.maybeLoad(projectRoot),
-      packageJson: new PackageJson(),
-      packageInfo,
-      projectRoot,
-    })
+      const graph = await build({
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        projectRoot,
+      })
 
-    // Check that peer-optional-dep was installed as a regular dependency
-    const peerOptionalDep = graph.nodes.get('··peer-optional-dep@1.0.0')
-    t.ok(peerOptionalDep, 'peer-optional-dep should be installed as regular dep')
+      // Check that peer-optional-dep was installed as a regular dependency
+      const peerOptionalDep = graph.nodes.get(
+        '··peer-optional-dep@1.0.0',
+      )
+      t.ok(
+        peerOptionalDep,
+        'peer-optional-dep should be installed as regular dep',
+      )
 
-    // Check that has-peer-optional was installed
-    const hasPeerOptional = graph.nodes.get('··has-peer-optional@1.0.0')
-    t.ok(hasPeerOptional, 'has-peer-optional should be installed')
+      // Check that has-peer-optional was installed
+      const hasPeerOptional = graph.nodes.get(
+        '··has-peer-optional@1.0.0',
+      )
+      t.ok(hasPeerOptional, 'has-peer-optional should be installed')
 
-    // Check that has-peer-optional has a dangling edge to peer-optional-dep
-    // even though peer-optional-dep exists in the graph
-    const peerOptionalEdge = hasPeerOptional?.edgesOut.get('peer-optional-dep')
-    t.ok(peerOptionalEdge, 'edge for peer-optional-dep should exist')
-    t.equal(peerOptionalEdge?.type, 'peerOptional', 'edge type should be peerOptional')
-    t.notOk(peerOptionalEdge?.to, 'peerOptional edge should not have a "to" node even when node exists')
-  })
+      // Check that has-peer-optional has a dangling edge to peer-optional-dep
+      // even though peer-optional-dep exists in the graph
+      const peerOptionalEdge = hasPeerOptional?.edgesOut.get(
+        'peer-optional-dep',
+      )
+      t.ok(
+        peerOptionalEdge,
+        'edge for peer-optional-dep should exist',
+      )
+      t.equal(
+        peerOptionalEdge?.type,
+        'peerOptional',
+        'edge type should be peerOptional',
+      )
+      t.notOk(
+        peerOptionalEdge?.to,
+        'peerOptional edge should not have a "to" node even when node exists',
+      )
+    },
+  )
 
   t.test(
     'skip peerOptional dependencies even when they already exist in graph',
