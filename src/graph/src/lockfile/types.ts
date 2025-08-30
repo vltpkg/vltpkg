@@ -8,6 +8,15 @@ import type {
 import type { Graph } from '../graph.ts'
 
 /**
+ * Platform requirements for a lockfile node
+ */
+export type LockfilePlatform = {
+  engines?: Record<string, string>
+  os?: string[] | string
+  cpu?: string[] | string
+}
+
+/**
  * This is the main type definition for the contents of the
  * `vlt-lock.json` file.
  *
@@ -58,6 +67,7 @@ export type LockfileNode = [
   location?: string | null,
   manifest?: NormalizedManifest | null,
   rawManifest?: NormalizedManifest | null,
+  platform?: LockfilePlatform | null,
 ]
 
 /**

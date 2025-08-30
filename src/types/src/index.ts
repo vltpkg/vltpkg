@@ -1266,6 +1266,11 @@ export type NodeLike = {
   optional: boolean
   modifier?: string | undefined
   registry?: string
+  platform?: {
+    engines?: Record<string, string>
+    os?: string[] | string
+    cpu?: string[] | string
+  }
   options: SpecOptions
   toJSON: () => Pick<
     NodeLike,
@@ -1281,6 +1286,7 @@ export type NodeLike = {
     | 'dev'
     | 'optional'
     | 'confused'
+    | 'platform'
   > & {
     rawManifest?: NodeLike['manifest']
   }

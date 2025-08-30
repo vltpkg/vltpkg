@@ -122,6 +122,7 @@ Set {
       "version": "1.0.0",
     },
     "modifier": undefined,
+    "platform": undefined,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
@@ -235,6 +236,7 @@ Set {
             "version": "1.0.0",
           },
           "modifier": undefined,
+          "platform": undefined,
           "projectRoot": #
           "registry": undefined,
           "resolved": undefined,
@@ -351,6 +353,7 @@ Set {
             "version": "1.0.0",
           },
           "modifier": undefined,
+          "platform": undefined,
           "projectRoot": #
           "registry": undefined,
           "resolved": undefined,
@@ -377,6 +380,7 @@ Set {
       "version": "1.0.0",
     },
     "modifier": undefined,
+    "platform": undefined,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
@@ -399,6 +403,7 @@ Set {
       "version": "1.0.0",
     },
     "modifier": undefined,
+    "platform": undefined,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
