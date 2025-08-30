@@ -10,11 +10,25 @@ export const loadNodes = (
   actual?: GraphLike,
 ) => {
   const entries = Object.entries(nodes) as [DepID, LockfileNode][]
-  for (const [id, lockfileNode] of entries) {
-    // workspace nodes and the project root node are already part of the
-    // graph and it should not create new nodes if an existing one is there
-    if (graph.nodes.has(id)) continue
+  const nodeCount = entries.length
+  const useOptimizations = nodeCount > 50 // Only use optimizations for larger graphs
 
+  // Pre-filter existing nodes to avoid unnecessary work
+  const nodesToProcess = entries.filter(
+    ([id]) => !graph.nodes.has(id),
+  )
+
+  // Cache for splitDepID results to avoid repeated parsing (only for large graphs)
+  const depIdCache =
+    useOptimizations ?
+      new Map<DepID, ReturnType<typeof splitDepID>>()
+    : null
+
+  // Batch process registry spec parsing (only for large graphs)
+  const registryVersionCache =
+    useOptimizations ? new Map<string, string>() : null
+
+  for (const [id, lockfileNode] of nodesToProcess) {
     const [
       flags,
       name,
@@ -24,7 +38,22 @@ export const loadNodes = (
       manifest,
       rawManifest,
     ] = lockfileNode
-    const [type, filepath, maybeExtra, lastExtra] = splitDepID(id)
+
+    // Cache splitDepID results for large graphs, compute directly for small ones
+    let depIdParts: ReturnType<typeof splitDepID>
+    if (useOptimizations && depIdCache) {
+      depIdParts =
+        depIdCache.get(id) ??
+        (() => {
+          const parts = splitDepID(id)
+          depIdCache.set(id, parts)
+          return parts
+        })()
+    } else {
+      depIdParts = splitDepID(id)
+    }
+
+    const [type, filepath, maybeExtra, lastExtra] = depIdParts
     const extra =
       type === 'registry' || type === 'git' ? lastExtra : maybeExtra
     const registrySpec = maybeExtra
@@ -36,6 +65,29 @@ export const loadNodes = (
     const referenceNode = actual?.nodes.get(id)
     const mani = manifest ?? referenceNode?.manifest
 
+    // Optimize registry version extraction with caching for large graphs
+    let version: string | undefined
+    if (
+      type === 'registry' &&
+      registrySpec &&
+      registrySpec.indexOf('@') > 0
+    ) {
+      if (useOptimizations && registryVersionCache) {
+        version =
+          registryVersionCache.get(registrySpec) ??
+          (() => {
+            const v =
+              registrySpec.split('@').slice(-1)[0] || undefined
+            if (v) {
+              registryVersionCache.set(registrySpec, v)
+            }
+            return v
+          })()
+      } else {
+        version = registrySpec.split('@').slice(-1)[0] || undefined
+      }
+    }
+
     // if the lockfile has manifest data then it should just use that
     // otherwise tries to infer name / version value from the lockfile node
     const node =
@@ -46,14 +98,9 @@ export const loadNodes = (
           undefined,
           undefined,
           name ?? undefined,
-          (
-            type === 'registry' &&
-              registrySpec &&
-              registrySpec.indexOf('@') > 0
-          ) ?
-            registrySpec.split('@').slice(-1)[0]
-          : undefined,
+          version,
         )
+
     if (extra) {
       node.modifier = extra
     }

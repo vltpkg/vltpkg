@@ -94,27 +94,29 @@ export const loadObject = (
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
   } = lockfileData.options ?? {}
+
+  // Optimize options merging - only create new objects when needed
   const mergedOptions = {
     ...options,
     catalog,
     catalogs,
-    'scope-registries': {
-      ...options['scope-registries'],
-      ...scopeRegistries,
-    },
+    'scope-registries':
+      scopeRegistries ?
+        { ...options['scope-registries'], ...scopeRegistries }
+      : options['scope-registries'],
     registry: registry ?? options.registry,
-    registries: {
-      ...options.registries,
-      ...registries,
-    },
-    'git-hosts': {
-      ...options['git-hosts'],
-      ...gitHosts,
-    },
-    'git-host-archives': {
-      ...options['git-host-archives'],
-      ...gitHostArchives,
-    },
+    registries:
+      registries ?
+        { ...options.registries, ...registries }
+      : options.registries,
+    'git-hosts':
+      gitHosts ?
+        { ...options['git-hosts'], ...gitHosts }
+      : options['git-hosts'],
+    'git-host-archives':
+      gitHostArchives ?
+        { ...options['git-host-archives'], ...gitHostArchives }
+      : options['git-host-archives'],
   }
   const graph = new Graph({
     ...mergedOptions,
@@ -126,17 +128,45 @@ export const loadObject = (
   // dependencies in case the modifiers have changed since we'll need to
   // recalculate the graph - useful for refreshing an ideal graph when
   // modifiers are swapped.
-  const lockfileModifiers = JSON.stringify(
-    modifiersLockfileConfig ?? {},
-  )
-  const optionsModifiers = JSON.stringify(modifiers?.config)
-  const modifiersChanged = lockfileModifiers !== optionsModifiers
+
+  // Optimize modifier comparison - avoid JSON.stringify for simple cases
+  let modifiersChanged = false
+  if (skipLoadingNodesOnModifiersChange) {
+    const lockfileConfig = modifiersLockfileConfig ?? {}
+    const optionsConfig = modifiers?.config ?? {}
+
+    // Quick check for obvious differences
+    const lockfileKeys = Object.keys(lockfileConfig)
+    const optionsKeys = Object.keys(optionsConfig)
+
+    if (lockfileKeys.length !== optionsKeys.length) {
+      modifiersChanged = true
+    } else {
+      // Only use JSON.stringify if we need deep comparison
+      const lockfileModifiers = JSON.stringify(lockfileConfig)
+      const optionsModifiers = JSON.stringify(optionsConfig)
+      modifiersChanged = lockfileModifiers !== optionsModifiers
+    }
+  }
   const shouldLoadDependencies = !(
     skipLoadingNodesOnModifiersChange && modifiersChanged
   )
   if (shouldLoadDependencies) {
     loadNodes(graph, lockfileData.nodes, options.actual)
     loadEdges(graph, lockfileData.edges, mergedOptions)
+
+    // Pre-populate nodesByName cache for faster subsequent lookups
+    // Only do this for larger graphs where the overhead is worth it
+    if (Object.keys(lockfileData.nodes).length > 100) {
+      for (const node of graph.nodes.values()) {
+        let nameSet = graph.nodesByName.get(node.name)
+        if (!nameSet) {
+          nameSet = new Set()
+          graph.nodesByName.set(node.name, nameSet)
+        }
+        nameSet.add(node)
+      }
+    }
   }
 
   // hydrate missing node-level registry data

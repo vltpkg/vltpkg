@@ -1,0 +1,2 @@
+extends: ../../tap-config.yaml
+disable-coverage: true

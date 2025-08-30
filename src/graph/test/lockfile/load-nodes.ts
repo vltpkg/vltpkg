@@ -26,6 +26,12 @@ t.test('load nodes', async t => {
       'foo',
       'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
     ],
+    // Test edge case for registrySpec with trailing @
+    [joinDepIDTuple(['registry', '', 'edge-case@'])]: [
+      0,
+      'edge-case',
+      null,
+    ],
     [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
       0,
       'bar',
@@ -490,3 +496,70 @@ t.test('load nodes with no actual graph provided', async t => {
     'should load nodes without hydration from actual graph',
   )
 })
+
+t.test(
+  'load nodes with optimization path for large graphs',
+  async t => {
+    const graph = new Graph({
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      projectRoot: t.testdirName,
+    })
+
+    // Create a large node set to trigger optimizations (>50 nodes)
+    const nodes: LockfileData['nodes'] = {}
+
+    // Add root
+    nodes[joinDepIDTuple(['file', '.'])] = [0, 'my-project']
+
+    // Add many registry nodes to trigger optimization code paths
+    for (let i = 0; i < 60; i++) {
+      const packageName = `opt-pkg-${i}`
+      const depId = joinDepIDTuple([
+        'registry',
+        '',
+        `${packageName}@1.0.${i}`,
+      ])
+
+      nodes[depId] = [
+        0,
+        packageName,
+        `sha512-${i.toString().padStart(40, '0')}`,
+        null,
+        null,
+        {
+          name: packageName,
+          version: `1.0.${i}`,
+          dependencies: {},
+        },
+      ]
+    }
+
+    loadNodes(graph, nodes)
+    t.equal(
+      graph.nodes.size,
+      61,
+      'should load all nodes using optimization path',
+    )
+
+    // Verify some specific nodes exist
+    t.ok(
+      graph.nodes.has(joinDepIDTuple(['file', '.'])),
+      'root node exists',
+    )
+    t.ok(
+      graph.nodes.has(
+        joinDepIDTuple(['registry', '', 'opt-pkg-0@1.0.0']),
+      ),
+      'first optimized node exists',
+    )
+    t.ok(
+      graph.nodes.has(
+        joinDepIDTuple(['registry', '', 'opt-pkg-59@1.0.59']),
+      ),
+      'last optimized node exists',
+    )
+  },
+)
