@@ -147,4 +147,14 @@ ${lines
       this.edges.delete.size > 0
     )
   }
+
+  /**
+   * Return true if the diff only contains optional nodes.
+   */
+  optionalOnly(): boolean {
+    for (const node of this.nodes.add) {
+      if (!node.optional) return false
+    }
+    return true
+  }
 }
