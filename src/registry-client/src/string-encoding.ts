@@ -1,5 +1,4 @@
 const decoder = new TextDecoder()
-const encoder = new TextEncoder()
 
 /**
  * Decodes a string from a Uint8Array
@@ -21,7 +20,7 @@ export const getEncondedValue = (
 ): Uint8Array => {
   if (value == undefined) return new Uint8Array(0)
   if (typeof value === 'string') {
-    const res = encoder.encode(value)
+    const res = Buffer.from(value)
     return res
   }
   return value
