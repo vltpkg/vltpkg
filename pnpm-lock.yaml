@@ -1040,9 +1040,6 @@ importers:
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.0
-      promise-call-limit:
-        specifier: 'catalog:'
-        version: 3.0.2
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'

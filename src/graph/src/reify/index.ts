@@ -1,8 +1,6 @@
 import { graphStep } from '@vltpkg/output'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { availableParallelism } from 'node:os'
-import { callLimit } from 'promise-call-limit'
 import type { LoadOptions } from '../actual/load.ts'
 import { load as loadActual } from '../actual/load.ts'
 import type {
@@ -27,8 +25,6 @@ import { internalHoist } from './internal-hoist.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
-
-const limit = Math.max(availableParallelism() - 1, 1) * 8
 
 // - [ ] depid's with peer resolutions
 // - [ ] depid shortening
@@ -113,7 +109,7 @@ const reify_ = async (
   ).concat(deleteEdges(diff, scurry, remover))
 
   // need to wait, so that the nodes exist to link to
-  if (actions.length) await callLimit(actions, { limit })
+  if (actions.length) await Promise.all(actions.map(a => a()))
 
   // create all node_modules symlinks, and link bins to nm/.bin
   const edgeActions: Promise<unknown>[] = addEdges(
