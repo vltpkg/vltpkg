@@ -5,7 +5,6 @@ import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
-const encoder = new TextEncoder()
 const toLenBuf = (b: Uint8Array): Uint8Array => {
   const bl = b.byteLength + 4
   const blBuf = new Uint8Array(4)
@@ -37,7 +36,7 @@ const toRawEntry = (
   headers: Record<string, string>,
   body: Uint8Array,
 ): Uint8Array => {
-  const headerChunks: Uint8Array[] = [encoder.encode(String(status))]
+  const headerChunks: Uint8Array[] = [Buffer.from(String(status))]
   const rawh = toRawHeaders(headers)
   for (const h of rawh) {
     headerChunks.push(toLenBuf(h))
@@ -136,18 +135,18 @@ t.strictSame(
   Buffer.from(JSON.stringify({ hello: 'world' })),
 )
 t.strictSame(ce.headers, [
-  encoder.encode('key'),
-  encoder.encode('value'),
-  encoder.encode('x'),
-  encoder.encode('y'),
-  encoder.encode('integrity'),
-  encoder.encode(ce.integrityActual),
-  encoder.encode('content-encoding'),
-  encoder.encode('identity'),
-  encoder.encode('content-length'),
-  encoder.encode(String(ce.buffer().byteLength)),
-  encoder.encode('content-type'),
-  encoder.encode('text/json'),
+  Buffer.from('key'),
+  Buffer.from('value'),
+  Buffer.from('x'),
+  Buffer.from('y'),
+  Buffer.from('integrity'),
+  Buffer.from(ce.integrityActual),
+  Buffer.from('content-encoding'),
+  Buffer.from('identity'),
+  Buffer.from('content-length'),
+  Buffer.from(String(ce.buffer().byteLength)),
+  Buffer.from('content-type'),
+  Buffer.from('text/json'),
 ])
 
 t.strictSame(CacheEntry.decode(enc), ce)
