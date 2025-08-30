@@ -9,8 +9,8 @@ import { Pax } from 'tar/pax'
 import { unzip as unzipCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
 
-const unzip = async (input: Buffer) =>
-  new Promise<Buffer>(
+const unzip = async (input: Uint8Array) =>
+  new Promise<Uint8Array>(
     (res, rej) =>
       /* c8 ignore start */
       unzipCB(input, (er, result) => (er ? rej(er) : res(result))),
@@ -29,6 +29,7 @@ const exists = async (path: string): Promise<boolean> => {
 let id = 1
 const tmp = randomBytes(6).toString('hex') + '.'
 const tmpSuffix = () => tmp + String(id++)
+const decoder = new TextDecoder()
 
 const checkFs = (
   h: Header,
@@ -51,7 +52,7 @@ const checkFs = (
 
 const write = async (
   path: string,
-  body: Buffer,
+  body: Uint8Array,
   executable = false,
 ) => {
   await mkdirp(dirname(path))
@@ -79,7 +80,7 @@ const mkdirp = async (d: string) => {
 }
 
 export const unpack = async (
-  tarData: Buffer,
+  tarData: Uint8Array,
   target: string,
 ): Promise<void> => {
   const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
@@ -90,7 +91,7 @@ export const unpack = async (
 }
 
 const unpackUnzipped = async (
-  buffer: Buffer,
+  buffer: Uint8Array,
   target: string,
 ): Promise<void> => {
   /* c8 ignore start */
@@ -137,9 +138,15 @@ const unpackUnzipped = async (
     let h: Header
     let ex: HeaderData | undefined = undefined
     let gex: HeaderData | undefined = undefined
+    // need to convert to a node buffer to pass to the tar.Header constructor
+    const headerSourceBuffer = Buffer.from(
+      buffer,
+      buffer.byteOffset,
+      buffer.byteLength,
+    )
     while (
       offset < buffer.length &&
-      !(h = new Header(buffer, offset, ex, gex)).nullBlock
+      !(h = new Header(headerSourceBuffer, offset, ex, gex)).nullBlock
     ) {
       offset += 512
       ex = undefined
@@ -176,18 +183,18 @@ const unpackUnzipped = async (
           break
 
         case 'GlobalExtendedHeader':
-          gex = Pax.parse(body.toString(), gex, true)
+          gex = Pax.parse(decoder.decode(body), gex, true)
           break
 
         case 'ExtendedHeader':
         case 'OldExtendedHeader':
-          ex = Pax.parse(body.toString(), ex, false)
+          ex = Pax.parse(decoder.decode(body), ex, false)
           break
 
         case 'NextFileHasLongPath':
         case 'OldGnuLongPath':
           ex ??= Object.create(null) as HeaderData
-          ex.path = body.toString().replace(/\0.*/, '')
+          ex.path = decoder.decode(body).replace(/\0.*/, '')
           break
       }
     }
