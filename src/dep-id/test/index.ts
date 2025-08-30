@@ -13,6 +13,7 @@ import {
   joinDepIDTuple,
   splitDepID,
   baseDepID,
+  resetCaches,
 } from '../src/index.ts'
 import type { DepID } from '../src/index.ts'
 
@@ -136,6 +137,14 @@ t.test('hydrate only', t => {
     })
   }
 
+  t.end()
+})
+
+t.test('hydrate from memoized entry', t => {
+  const options = {}
+  const id = `${delimiter}${delimiter}x@1.2.3` as DepID
+  t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
+  t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
   t.end()
 })
 
@@ -319,6 +328,81 @@ t.test('isPackageNameConfused', t => {
     )
     t.end()
   })
+
+  t.end()
+})
+
+t.test('resetCaches', t => {
+  const spec = Spec.parse('test-package@1.2.3')
+  const manifest = { name: 'test-package', version: '1.2.3' }
+  const options = {
+    registries: { custom: 'https://custom.registry.com/' },
+  }
+
+  // First, populate caches by calling functions that use them
+  const id1 = getId(spec, manifest)
+  const tuple1 = getTuple(spec, manifest)
+  const hydrated1 = hydrate(id1, 'test-package', options)
+  const hydratedTuple1 = hydrateTuple(tuple1, 'test-package', options)
+  const split1 = splitDepID(id1)
+
+  // Call resetCaches - should not throw
+  t.doesNotThrow(() => resetCaches(), 'resetCaches should not throw')
+
+  // Verify functions still work correctly after cache reset
+  const id2 = getId(spec, manifest)
+  const tuple2 = getTuple(spec, manifest)
+  const hydrated2 = hydrate(id1, 'test-package', options)
+  const hydratedTuple2 = hydrateTuple(tuple1, 'test-package', options)
+  const split2 = splitDepID(id1)
+
+  // Results should be the same even after cache reset
+  t.equal(
+    id1,
+    id2,
+    'getId should return same result after resetCaches',
+  )
+  t.strictSame(
+    tuple1,
+    tuple2,
+    'getTuple should return same result after resetCaches',
+  )
+  t.strictSame(
+    hydrated1,
+    hydrated2,
+    'hydrate should return same result after resetCaches',
+  )
+  t.strictSame(
+    hydratedTuple1,
+    hydratedTuple2,
+    'hydrateTuple should return same result after resetCaches',
+  )
+  t.strictSame(
+    split1,
+    split2,
+    'splitDepID should return same result after resetCaches',
+  )
+
+  // Test calling resetCaches multiple times doesn't cause issues
+  t.doesNotThrow(() => {
+    resetCaches()
+    resetCaches()
+    resetCaches()
+  }, 'multiple resetCaches calls should not throw')
+
+  // Verify functions still work after multiple resets
+  const id3 = getId(spec, manifest)
+  const hydrated3 = hydrate(id1, 'test-package', options)
+  t.equal(
+    id1,
+    id3,
+    'getId should work after multiple resetCaches calls',
+  )
+  t.strictSame(
+    hydrated1,
+    hydrated3,
+    'hydrate should work after multiple resetCaches calls',
+  )
 
   t.end()
 })
