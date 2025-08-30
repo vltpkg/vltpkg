@@ -15,6 +15,9 @@ import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { Node } from '../../src/node.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
 import { reload } from '@vltpkg/vlt-json'
+import { build } from '../../src/ideal/build.ts'
+import { Monorepo } from '@vltpkg/workspaces'
+import { PackageJson } from '@vltpkg/package-json'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -972,3 +975,246 @@ t.test(
     )
   },
 )
+
+t.test('skip peerOptional dependencies', async t => {
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'has-peer-optional':
+          return {
+            name: 'has-peer-optional',
+            version: '1.0.0',
+            peerDependencies: {
+              'peer-dep': '^1.0.0',
+              'peer-optional-dep': '^1.0.0',
+            },
+            peerDependenciesMeta: {
+              'peer-optional-dep': {
+                optional: true,
+              },
+            },
+          } as Manifest
+        case 'peer-dep':
+          return {
+            name: 'peer-dep',
+            version: '1.0.0',
+          } as Manifest
+        case 'peer-optional-dep':
+          return {
+            name: 'peer-optional-dep',
+            version: '1.0.0',
+          } as Manifest
+        case 'lib-a':
+          return {
+            name: 'lib-a',
+            version: '1.0.0',
+            dependencies: {
+              'shared-dep': '^1.0.0',
+            },
+          } as Manifest
+        case 'lib-b':
+          return {
+            name: 'lib-b',
+            version: '1.0.0',
+            peerDependencies: {
+              'shared-dep': '^1.0.0',
+            },
+            peerDependenciesMeta: {
+              'shared-dep': {
+                optional: true,
+              },
+            },
+          } as Manifest
+        case 'shared-dep':
+          return {
+            name: 'shared-dep',
+            version: '1.0.0',
+          } as Manifest
+        default:
+          throw new Error('404 - ' + spec.name, { cause: { spec } })
+      }
+    },
+  } as PackageInfoClient
+
+  t.test('skip peerOptional dependencies in ideal graph', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          'has-peer-optional': '^1.0.0',
+        },
+      }),
+    })
+
+    const graph = await build({
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+    })
+
+    // Check that has-peer-optional was installed
+    const hasPeerOptional = graph.nodes.get(
+      '··has-peer-optional@1.0.0',
+    )
+    t.ok(hasPeerOptional, 'has-peer-optional should be installed')
+
+    // Check that regular peer dependency was installed
+    const peerDep = graph.nodes.get('··peer-dep@1.0.0')
+    t.ok(peerDep, 'peer-dep should be installed')
+
+    // Check that peerOptional dependency was NOT installed
+    const peerOptionalDep = graph.nodes.get(
+      '··peer-optional-dep@1.0.0',
+    )
+    t.notOk(
+      peerOptionalDep,
+      'peer-optional-dep should NOT be installed',
+    )
+
+    // Check that the edge exists but is dangling (no 'to' node)
+    const peerOptionalEdge = hasPeerOptional?.edgesOut.get(
+      'peer-optional-dep',
+    )
+    t.ok(peerOptionalEdge, 'edge for peer-optional-dep should exist')
+    t.equal(
+      peerOptionalEdge?.type,
+      'peerOptional',
+      'edge type should be peerOptional',
+    )
+    t.notOk(
+      peerOptionalEdge?.to,
+      'edge should not have a "to" node (dangling edge)',
+    )
+
+    // Check that the regular peer edge has a 'to' node
+    const peerEdge = hasPeerOptional?.edgesOut.get('peer-dep')
+    t.ok(peerEdge, 'edge for peer-dep should exist')
+    t.equal(peerEdge?.type, 'peer', 'edge type should be peer')
+    t.ok(peerEdge?.to, 'peer edge should have a "to" node')
+    t.equal(
+      peerEdge?.to?.name,
+      'peer-dep',
+      'peer edge should point to peer-dep node',
+    )
+  })
+
+  t.test(
+    'skip linking to existing node for peerOptional dependencies',
+    async t => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: {
+            // First install a regular dependency
+            'peer-optional-dep': '^1.0.0',
+            // Then install something that has it as peerOptional
+            'has-peer-optional': '^1.0.0',
+          },
+        }),
+      })
+
+      const graph = await build({
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        projectRoot,
+      })
+
+      // Check that peer-optional-dep was installed as a regular dependency
+      const peerOptionalDep = graph.nodes.get(
+        '··peer-optional-dep@1.0.0',
+      )
+      t.ok(
+        peerOptionalDep,
+        'peer-optional-dep should be installed as regular dep',
+      )
+
+      // Check that has-peer-optional was installed
+      const hasPeerOptional = graph.nodes.get(
+        '··has-peer-optional@1.0.0',
+      )
+      t.ok(hasPeerOptional, 'has-peer-optional should be installed')
+
+      // Check that has-peer-optional has a dangling edge to peer-optional-dep
+      // even though peer-optional-dep exists in the graph
+      const peerOptionalEdge = hasPeerOptional?.edgesOut.get(
+        'peer-optional-dep',
+      )
+      t.ok(
+        peerOptionalEdge,
+        'edge for peer-optional-dep should exist',
+      )
+      t.equal(
+        peerOptionalEdge?.type,
+        'peerOptional',
+        'edge type should be peerOptional',
+      )
+      t.notOk(
+        peerOptionalEdge?.to,
+        'peerOptional edge should not have a "to" node even when node exists',
+      )
+    },
+  )
+
+  t.test(
+    'skip peerOptional dependencies even when they already exist in graph',
+    async t => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: {
+            'lib-a': '^1.0.0',
+            'lib-b': '^1.0.0',
+          },
+        }),
+      })
+
+      const graph = await build({
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        projectRoot,
+      })
+
+      // Check that shared-dep was installed as a regular dependency of lib-a
+      const sharedDep = graph.nodes.get('··shared-dep@1.0.0')
+      t.ok(sharedDep, 'shared-dep should be installed (from lib-a)')
+
+      // Check that lib-b has a dangling edge to shared-dep for its peerOptional dependency
+      const libB = graph.nodes.get('··lib-b@1.0.0')
+      const peerOptionalEdge = libB?.edgesOut.get('shared-dep')
+      t.ok(
+        peerOptionalEdge,
+        'edge for shared-dep from lib-b should exist',
+      )
+      t.equal(
+        peerOptionalEdge?.type,
+        'peerOptional',
+        'edge type should be peerOptional',
+      )
+      t.notOk(
+        peerOptionalEdge?.to,
+        'peerOptional edge should not have a "to" node',
+      )
+
+      // Check that lib-a has a proper edge to shared-dep
+      const libA = graph.nodes.get('··lib-a@1.0.0')
+      const regularEdge = libA?.edgesOut.get('shared-dep')
+      t.ok(regularEdge, 'edge for shared-dep from lib-a should exist')
+      t.equal(regularEdge?.type, 'prod', 'edge type should be prod')
+      t.ok(regularEdge?.to, 'regular edge should have a "to" node')
+      t.equal(
+        regularEdge?.to?.name,
+        'shared-dep',
+        'regular edge should point to shared-dep',
+      )
+    },
+  )
+})
