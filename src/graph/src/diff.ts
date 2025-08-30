@@ -54,6 +54,11 @@ export class Diff {
     delete: new Set<Edge>(),
   }
 
+  /**
+   * True if the diff only contains optional nodes (computed during construction)
+   */
+  optionalOnly = true
+
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Diff'
   }
@@ -78,6 +83,7 @@ export class Diff {
     for (const [id, node] of this.to.nodes) {
       if (!this.from.nodes.get(id)?.equals(node)) {
         this.nodes.add.add(node)
+        if (!node.optional) this.optionalOnly = false
       }
     }
 
@@ -146,15 +152,5 @@ ${lines
       this.edges.add.size > 0 ||
       this.edges.delete.size > 0
     )
-  }
-
-  /**
-   * Return true if the diff only contains optional nodes.
-   */
-  optionalOnly(): boolean {
-    for (const node of this.nodes.add) {
-      if (!node.optional) return false
-    }
-    return true
   }
 }

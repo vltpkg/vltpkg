@@ -687,7 +687,7 @@ t.test('optionalOnly method', async t => {
 
     const diff = new Diff(graph1, graph2)
     t.equal(
-      diff.optionalOnly(),
+      diff.optionalOnly,
       true,
       'diff with no added nodes should return true',
     )
@@ -762,7 +762,7 @@ t.test('optionalOnly method', async t => {
 
     const diff = new Diff(graph1, graph2)
     t.equal(
-      diff.optionalOnly(),
+      diff.optionalOnly,
       true,
       'diff with only optional nodes should return true',
     )
@@ -824,7 +824,7 @@ t.test('optionalOnly method', async t => {
     // The added node remains non-optional (default is false)
     const diff = new Diff(graph1, graph2)
     t.equal(
-      diff.optionalOnly(),
+      diff.optionalOnly,
       false,
       'diff with non-optional nodes should return false',
     )
@@ -892,7 +892,7 @@ t.test('optionalOnly method', async t => {
 
       const diff = new Diff(graph1, graph2)
       t.equal(
-        diff.optionalOnly(),
+        diff.optionalOnly,
         false,
         'diff with mixed optional and non-optional nodes should return false',
       )
@@ -956,7 +956,7 @@ t.test('optionalOnly method', async t => {
 
       const diff = new Diff(graph1, graph2)
       t.equal(
-        diff.optionalOnly(),
+        diff.optionalOnly,
         true,
         'diff with only deletions should return true (no additions)',
       )
