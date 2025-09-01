@@ -1,7 +1,16 @@
 // import { v4 as uuidv4 } from 'uuid' // Removed unused import
 import { getTokenFromHeader } from '../utils/auth.ts'
-import type { HonoContext } from '../../types.ts'
+import type {
+  HonoContext,
+  DatabaseOperations,
+  TokenScope,
+} from '../../types.ts'
 import { createRoute, z } from '@hono/zod-openapi'
+
+// Helper function to get typed database from context
+function getDb(c: HonoContext): DatabaseOperations {
+  return c.get('db')
+}
 
 export async function getToken(c: HonoContext) {
   const token = c.req.param('token')
@@ -9,7 +18,7 @@ export async function getToken(c: HonoContext) {
     return c.json({ error: 'Token parameter required' }, 400)
   }
 
-  const tokenData = await c.db.getToken(token)
+  const tokenData = await getDb(c).getToken(token)
   if (!tokenData) {
     return c.json({ error: 'Token not found' }, 404)
   }
@@ -32,14 +41,14 @@ export async function postToken(c: HonoContext) {
     }
 
     // Use the enhanced database operation that includes validation
-    await c.db.upsertToken(
+    await getDb(c).upsertToken(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      body.token,
+      body.token as string,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      body.uuid,
+      body.uuid as string,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      body.scope,
-      authToken || undefined,
+      body.scope as TokenScope[],
+      authToken ?? undefined,
     )
     return c.json({ success: true })
   } catch (error) {
@@ -77,13 +86,13 @@ export async function putToken(c: HonoContext) {
     }
 
     // Use the enhanced database operation that includes validation
-    await c.db.upsertToken(
+    await getDb(c).upsertToken(
       token,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      body.uuid,
+      body.uuid as string,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      body.scope,
-      authToken || undefined,
+      body.scope as TokenScope[],
+      authToken ?? undefined,
     )
     return c.json({ success: true })
   } catch (error) {
@@ -110,7 +119,7 @@ export async function deleteToken(c: HonoContext) {
     }
 
     // Use the enhanced database operation that includes validation
-    await c.db.deleteToken(token, authToken || undefined)
+    await getDb(c).deleteToken(token, authToken ?? undefined)
     return c.json({ success: true })
   } catch (error) {
     const err = error as Error

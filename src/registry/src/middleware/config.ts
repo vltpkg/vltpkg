@@ -70,6 +70,9 @@ export async function configMiddleware(
   initializeGlobalConfig(c.env)
 
   // Enrich the context environment with computed values
+  // Ensure c.env exists (it might be undefined in test environments)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  c.env = c.env || {}
   Object.assign(c.env, runtimeConfig)
 
   await next()

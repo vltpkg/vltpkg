@@ -4,7 +4,13 @@ import type {
   TokenScope,
   TokenAccess,
   AuthUser,
+  DatabaseOperations,
 } from '../../types.ts'
+
+// Helper function to get typed database from context
+function getDb(c: HonoContext): DatabaseOperations {
+  return c.get('db')
+}
 
 export function getTokenFromHeader(c: HonoContext): string | null {
   const auth = c.req.header('Authorization')
@@ -104,7 +110,7 @@ export async function getUserFromToken({
   c: HonoContext
   token: string
 }): Promise<AuthUser> {
-  const result = await c.db.getToken(token)
+  const result = await getDb(c).getToken(token)
   if (!result) return { uuid: null, scope: null, token }
 
   // Handle the case when scope is already an object (for tests)
@@ -120,7 +126,7 @@ export async function getUserFromToken({
 
   return {
     uuid: result.uuid,
-    scope: scope,
+    scope,
     token,
   }
 }

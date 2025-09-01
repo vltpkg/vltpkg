@@ -1,20 +1,18 @@
-import { defineConfig } from 'vitest/config'
+import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config'
 
-export default defineConfig({
+export default defineWorkersConfig({
   test: {
     globals: true,
-    environment: 'node',
     testTimeout: 30000, // 30 seconds timeout for upstream requests
     hookTimeout: 10000, // 10 seconds for setup/teardown
     setupFiles: ['./test/setup.ts'],
-    // Separate configuration for different test types
-    include: [
-      'test/route-patterns.test.ts',
-      'test/upstream-routes-simple.test.ts',
-      'test/route-coverage.test.ts',
-      'test/tarball-disttag-resolution.test.ts',
-      // 'test/api-compliance.test.ts' // Disabled due to env requirements
-    ],
+    poolOptions: {
+      workers: {
+        wrangler: {
+          configPath: './wrangler.json',
+        },
+      },
+    },
   },
   esbuild: {
     target: 'es2022',

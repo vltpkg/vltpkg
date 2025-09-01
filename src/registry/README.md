@@ -12,6 +12,8 @@ edge network.
 
 ## 🚀 Quick Start
 
+### Local Development
+
 Get up and running in seconds:
 
 ```bash
@@ -24,6 +26,21 @@ vsr
 ```
 
 **Boom!** 💥 Your registry is live at `http://localhost:1337`
+
+### Deploy to Production
+
+Deploy to Cloudflare Workers with one command:
+
+```bash
+# Deploy to production
+vsr deploy --env=prod
+
+# Or preview what would be deployed
+vsr deploy --dry-run --env=prod
+```
+
+**That's it!** 🎉 Your registry is now running globally on
+Cloudflare's edge network.
 
 ## ✨ Why Choose VSR?
 
@@ -51,6 +68,9 @@ vsr
 # Start with defaults (port 1337)
 vsr
 
+# Or explicitly use dev command
+vsr dev
+
 # Custom port
 vsr --port 3000
 
@@ -65,6 +85,26 @@ vsr --config ./vlt.json
 
 Deploy to Cloudflare Workers in under 5 minutes:
 
+#### Option 1: Using VSR Deploy Command (Recommended)
+
+```bash
+# Clone and setup
+git clone https://github.com/vltpkg/vsr.git
+cd vsr
+vlt install
+
+# Deploy to development environment
+vsr deploy
+
+# Deploy to production
+vsr deploy --env=prod
+
+# Preview deployment configuration
+vsr deploy --dry-run --env=prod
+```
+
+#### Option 2: Using Wrangler Directly
+
 ```bash
 # Clone and setup
 git clone https://github.com/vltpkg/vsr.git
@@ -75,6 +115,10 @@ vlt install
 wrangler deploy
 ```
 
+The VSR deploy command offers better configuration management,
+environment-specific settings, and integration with your `vlt.json`
+configuration.
+
 **Coming Soon**: One-click Cloudflare deployment button! 🎉
 
 <img src="https://github.com/user-attachments/assets/528deda2-4c20-44c9-b057-f07c2e2e3c71" alt="Deploy to Cloudflare Workers" width="200" />
@@ -84,7 +128,14 @@ wrangler deploy
 VSR is designed to work with zero configuration, but when you need
 more control:
 
-### Quick CLI Options
+### Commands
+
+| Command  | Description                        |
+| -------- | ---------------------------------- |
+| `dev`    | Start development server (default) |
+| `deploy` | Deploy to Cloudflare Workers       |
+
+### CLI Options
 
 | Option     | Alias | Default | Description             |
 | ---------- | ----- | ------- | ----------------------- |
@@ -93,6 +144,16 @@ more control:
 | `--debug`  | `-d`  | `false` | Debug mode              |
 | `--daemon` | -     | `true`  | Local filesystem daemon |
 | `--help`   | `-h`  | -       | Show help               |
+
+### Deploy Options
+
+| Option          | Default | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `--env`         | `dev`   | Environment (dev/staging/prod) |
+| `--db-name`     | -       | Override D1 database name      |
+| `--bucket-name` | -       | Override R2 bucket name        |
+| `--queue-name`  | -       | Override queue name            |
+| `--dry-run`     | `false` | Preview deployment             |
 
 ### Advanced Configuration
 
@@ -103,12 +164,28 @@ Create a `vlt.json` file for shared configuration between VLT and VSR:
   "registry": {
     "port": 4000,
     "debug": true,
-    "telemetry": false
+    "telemetry": false,
+    "deploy": {
+      "sentry": {
+        "dsn": "https://your-sentry-dsn@sentry.io/project-id"
+      },
+      "environments": {
+        "prod": {
+          "databaseName": "vsr-prod-database",
+          "bucketName": "vsr-prod-bucket",
+          "queueName": "vsr-prod-cache-refresh-queue",
+          "sentry": {
+            "environment": "production"
+          }
+        }
+      }
+    }
   }
 }
 ```
 
-📚 **[Learn More About Configuration →](info/CONFIGURATION.md)**
+📚 **[Learn More About Configuration →](info/CONFIGURATION.md)**  
+🚀 **[Deployment Guide →](DEPLOY.md)**
 
 ## 🌟 Key Features
 
@@ -204,6 +281,7 @@ best practices:
 
 - **[Configuration Guide](info/CONFIGURATION.md)** - Advanced setup
   and options
+- **[Deployment Guide](DEPLOY.md)** - Deploy to Cloudflare Workers
 - **[Access Control](info/GRANULAR_ACCESS_TOKENS.md)** - Security and
   permissions
 - **[Testing Guide](info/TESTING.md)** - Running and writing tests

@@ -60,18 +60,21 @@ requirements.
 
 ### Getting started with VSR
 
-For this example we're going to use a local-running vsr instance.
+For this example we're going to use a local-running VSR instance.
 Here's how to start one:
 
 <Code code="$ npx -y vltpkg/vsr" title="Terminal" lang="bash" />
 
-You can consult the
-[VSR Quickstart](https://github.com/vltpkg/vsr?tab=readme-ov-file#quick-starts)
-for more information on how to get started.
+For production deployment, use the new `vsr deploy` command:
+
+<Code code="$ vsr deploy --env=prod" title="Terminal" lang="bash" />
+
+See our [Deployment Guide](/registry/deployment) for complete
+deployment instructions.
 
 Please note, in the rest of this guide you may need to replace
-`http://localhost:1337` with the correct url in case you decide to use
-your VSR instance from an environment other than local-run.
+`http://localhost:1337` with the correct URL of your VSR instance
+(local or deployed).
 
 Log in to your VSR instance. In case you already have a custom user
 token configured than you should just use that. If you're just getting

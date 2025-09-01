@@ -28,6 +28,7 @@ tsconfig.tsbuildinfo
 /infra/*/.tshy-build
 /infra/*/.turbo
 /infra/*/dist
+/infra/*/outdir
 /infra/*/docs
 /infra/*/node_modules
 /infra/*/scripts/fixtures/

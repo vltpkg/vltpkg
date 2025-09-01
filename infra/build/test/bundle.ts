@@ -1,5 +1,5 @@
 import { bundle } from '../src/bundle.ts'
-import t from 'tap'
+import t from './tap-import.ts'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 

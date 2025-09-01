@@ -1,4 +1,4 @@
-import t from 'tap'
+import t from '../tap-import.ts'
 
 t.test('basic', async t => {
   const run = t.captureFn(() => {})

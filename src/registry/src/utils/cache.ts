@@ -15,7 +15,14 @@ import type {
   CacheValidation,
   QueueMessage,
   PackageManifest,
+  DatabaseOperations,
+  ParsedPackage,
 } from '../../types.ts'
+
+// Helper function to get typed database from context
+function getDb(c: HonoContext): DatabaseOperations {
+  return c.get('db')
+}
 
 /**
  * Stale-while-revalidate cache strategy for package data
@@ -168,22 +175,26 @@ async function refreshPackageInBackground<T>(
 async function reconstructPackumentFromCache(
   c: HonoContext,
   packageName: string,
-  cachedPackage: any,
+  cachedPackage: ParsedPackage,
 ): Promise<any> {
   try {
     // Get all versions for this package
-    const versions = await c
-      .get('db')
-      .getVersionsByPackage(packageName)
+    const versions = await getDb(c).getVersionsByPackage(packageName)
 
     // Build the versions object
+
     const versionsObject: Record<string, any> = {}
+
     const timeObject: Record<string, string> = {
-      modified: cachedPackage.lastUpdated || new Date().toISOString(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      modified:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        (cachedPackage as any).lastUpdated ||
+        new Date().toISOString(),
     }
 
-    versions.forEach((versionData: any) => {
-      if (versionData.version && versionData.manifest) {
+    versions.forEach(versionData => {
+      if (versionData.version) {
         versionsObject[versionData.version] = versionData.manifest
         if (versionData.published_at) {
           timeObject[versionData.version] = versionData.published_at
@@ -193,9 +204,15 @@ async function reconstructPackumentFromCache(
 
     // Parse tags from the cached package
     const distTags =
-      typeof cachedPackage.tags === 'string' ?
-        JSON.parse(cachedPackage.tags || '{}')
-      : cachedPackage.tags || {}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      typeof (cachedPackage as any).tags === 'string' ?
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        (JSON.parse((cachedPackage as any).tags || '{}') as Record<
+          string,
+          string
+        >)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      : ((cachedPackage as any).tags as Record<string, string>)
 
     // Construct the packument structure
     return {
@@ -205,6 +222,8 @@ async function reconstructPackumentFromCache(
       time: timeObject,
     }
   } catch (error) {
+    // TODO: Replace with proper logging system
+    // eslint-disable-next-line no-console
     console.error(
       'Failed to reconstruct packument from cache:',
       error,
@@ -223,9 +242,7 @@ async function getCachedPackageData(
   staleWhileRevalidateMinutes: number,
 ): Promise<CacheValidation> {
   try {
-    const cachedPackage = await c
-      .get('db')
-      .getCachedPackage(packageName)
+    const cachedPackage = await getDb(c).getCachedPackage(packageName)
 
     if (
       !cachedPackage?.cachedAt ||
@@ -244,6 +261,7 @@ async function getCachedPackageData(
     const isStale = age < staleMs // Still usable even if stale
 
     // Reconstruct the full packument from cached data
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const reconstructedPackument =
       await reconstructPackumentFromCache(
         c,
@@ -254,6 +272,7 @@ async function getCachedPackageData(
     return {
       valid: isValid,
       stale: isStale && !isValid, // Stale means expired but within stale window
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       data: reconstructedPackument,
     }
   } catch (_error) {
@@ -412,7 +431,7 @@ async function getCachedVersionData(
   staleWhileRevalidateMinutes: number,
 ): Promise<CacheValidation> {
   try {
-    const cachedVersion = await c.get('db').getCachedVersion(spec)
+    const cachedVersion = await getDb(c).getCachedVersion(spec)
 
     if (
       !cachedVersion?.cachedAt ||
@@ -456,13 +475,16 @@ async function cachePackageData(
       typeof packageData === 'object' &&
       'dist-tags' in packageData
     ) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const tags = (packageData as any)['dist-tags'] || {}
-      await c.get('db').upsertCachedPackage(
+      const tags =
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-member-access
+        ((packageData as any)['dist-tags'] as Record<
+          string,
+          string
+        >) || {}
+      await getDb(c).upsertCachedPackage(
         packageName,
-
         tags,
-        options.upstream || 'npm',
+        options.upstream ?? 'npm',
       )
     }
   } catch (_error) {
@@ -483,14 +505,12 @@ async function cacheVersionData(
     if (versionData && typeof versionData === 'object') {
       const manifest = versionData as unknown as PackageManifest
       const publishedAt = new Date().toISOString()
-      await c
-        .get('db')
-        .upsertCachedVersion(
-          spec,
-          manifest,
-          options.upstream || 'npm',
-          publishedAt,
-        )
+      await getDb(c).upsertCachedVersion(
+        spec,
+        manifest,
+        options.upstream ?? 'npm',
+        publishedAt,
+      )
     }
   } catch (_error) {
     // Log error to monitoring system instead of console

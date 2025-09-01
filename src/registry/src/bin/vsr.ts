@@ -20,7 +20,12 @@ import { load } from '@vltpkg/vlt-json'
 
 const usage = `USAGE:
 
-  $ vsr [<options>]
+  $ vsr [<command>] [<options>]
+  
+COMMANDS:
+
+  dev                        Start development server (default)
+  deploy                     Deploy to Cloudflare Workers
   
 OPTIONS:                   DESCRIPTION:
 
@@ -31,14 +36,22 @@ OPTIONS:                   DESCRIPTION:
 -d, --debug                Run in debug mode
 -h, --help                 Print usage information
 
+DEPLOY OPTIONS:
+
+--env=<string>             Environment to deploy to (dev, staging, prod)
+--db-name=<string>         Override D1 database name
+--bucket-name=<string>     Override R2 bucket name
+--queue-name=<string>      Override queue name
+--dry-run                  Show what would be deployed without deploying
+
 EXAMPLES:
 
-  $ vsr                               # Run with all defaults
-  $ vsr --port=3000 --debug           # Custom port with debug
-  $ vsr -p 4000 --daemon=false        # Port via alias, disable daemon
-  $ vsr -d --telemetry=false          # Debug mode, no telemetry
+  $ vsr                               # Run dev server with all defaults
+  $ vsr dev --port=3000 --debug       # Custom port with debug
+  $ vsr deploy                        # Deploy to default environment
+  $ vsr deploy --env=prod             # Deploy to production
+  $ vsr deploy --dry-run              # Preview deployment
   $ vsr --config=/path/to/vlt.json    # Use specific config file
-  $ vsr -c ./custom-vlt.json          # Use config file via alias
 `
 
 const defaults: Args = {
@@ -48,6 +61,11 @@ const defaults: Args = {
   help: false,
   port: WRANGLER_CONFIG.port,
   config: undefined,
+  env: undefined,
+  'db-name': undefined,
+  'bucket-name': undefined,
+  'queue-name': undefined,
+  'dry-run': false,
 }
 
 const opts = {
@@ -57,14 +75,24 @@ const opts = {
     d: 'debug',
     h: 'help',
   },
-  boolean: ['debug', 'help', 'daemon', 'telemetry'],
-  string: ['port', 'config'],
+  boolean: ['debug', 'help', 'daemon', 'telemetry', 'dry-run'],
+  string: [
+    'port',
+    'config',
+    'env',
+    'db-name',
+    'bucket-name',
+    'queue-name',
+  ],
   default: defaults,
   positionalValues: true, // Allow space-separated values like -p 3000
 }
 
 //  parse args
-const { args } = minArgs(opts)
+const { args, positionals } = minArgs(opts)
+
+// Extract command (default to 'dev' if not specified)
+const command = positionals[0] || 'dev'
 
 // Helper functions to extract values from minArgs array format
 function getBooleanValue(
@@ -101,11 +129,35 @@ interface VsrConfig {
     telemetry?: boolean
     debug?: boolean
     port?: number
+    deploy?: {
+      environments?: {
+        [key: string]: DeployEnvironment
+      }
+      sentry?: {
+        dsn?: string
+        environment?: string
+        sampleRate?: number
+        tracesSampleRate?: number
+      }
+    }
   }
   daemon?: boolean
   telemetry?: boolean
   debug?: boolean
   port?: number
+}
+
+interface DeployEnvironment {
+  databaseName?: string
+  bucketName?: string
+  queueName?: string
+  vars?: Record<string, any>
+  sentry?: {
+    dsn?: string
+    environment?: string
+    sampleRate?: number
+    tracesSampleRate?: number
+  }
 }
 
 // Load configuration from vlt.json
@@ -182,16 +234,148 @@ const DEBUG = getBooleanValue(
   registryConfig.debug ?? vltConfig.debug ?? defaults.debug,
 )
 
+// Deploy-specific configuration
+const ENV = getStringValue(args.env, 'dev')
+const DRY_RUN = getBooleanValue(
+  args['dry-run'],
+  defaults['dry-run'] ?? false,
+)
+const DB_NAME_OVERRIDE = getStringValue(args['db-name'])
+const BUCKET_NAME_OVERRIDE = getStringValue(args['bucket-name'])
+const QUEUE_NAME_OVERRIDE = getStringValue(args['queue-name'])
+
 // Print usage information
 function printUsage(): void {
   // eslint-disable-next-line no-console
   console.log(usage)
 }
 
+// Deploy function
+async function deployToCloudflare(): Promise<void> {
+  const deployConfig = registryConfig.deploy
+  const envConfig = deployConfig?.environments?.[ENV ?? 'dev'] ?? {}
+
+  // Determine resource names with precedence: CLI args > env config > defaults
+  const databaseName =
+    DB_NAME_OVERRIDE ?? envConfig.databaseName ?? 'vsr-database'
+  const bucketName =
+    BUCKET_NAME_OVERRIDE ?? envConfig.bucketName ?? 'vsr-bucket'
+  const queueName =
+    QUEUE_NAME_OVERRIDE ??
+    envConfig.queueName ??
+    'cache-refresh-queue'
+
+  // Build Sentry configuration
+  const sentryConfig = envConfig.sentry ?? deployConfig?.sentry ?? {}
+  const sentryDsn =
+    sentryConfig.dsn ??
+    'https://909b085eb764c00250ad312660c2fdf1@o4506397716054016.ingest.us.sentry.io/4509492612300800'
+  const sentryEnv = sentryConfig.environment ?? ENV
+
+  // Build wrangler deploy arguments
+  const wranglerArgs = [
+    'deploy',
+    indexPath,
+    '--name',
+    `vsr-${ENV}`,
+    '--compatibility-date',
+    '2024-09-23',
+    '--var',
+    `SENTRY_DSN:${sentryDsn}`,
+    '--var',
+    `SENTRY_ENVIRONMENT:${sentryEnv}`,
+    '--var',
+    `ARG_DEBUG:${DEBUG}`,
+    '--var',
+    `ARG_TELEMETRY:${TELEMETRY}`,
+    '--var',
+    `ARG_DAEMON:${DAEMON}`,
+  ]
+
+  // Add D1 database binding
+  wranglerArgs.push('--d1', `DB=${databaseName}`)
+
+  // Add R2 bucket binding
+  wranglerArgs.push('--r2', `BUCKET=${bucketName}`)
+
+  // Add queue bindings
+  wranglerArgs.push(
+    '--queue-producer',
+    `CACHE_REFRESH_QUEUE=${queueName}`,
+  )
+  wranglerArgs.push('--queue-consumer', queueName)
+
+  // Add custom environment variables from config
+  if (envConfig.vars) {
+    for (const [key, value] of Object.entries(envConfig.vars)) {
+      wranglerArgs.push('--var', `${key}:${value}`)
+    }
+  }
+
+  if (DRY_RUN) {
+    wranglerArgs.push('--dry-run')
+    // eslint-disable-next-line no-console
+    console.log(
+      '🔍 Dry run - would execute:',
+      wranglerBin,
+      wranglerArgs.join(' '),
+    )
+    // eslint-disable-next-line no-console
+    console.log('\n📋 Deployment configuration:')
+    // eslint-disable-next-line no-console
+    console.log(`  Environment: ${ENV}`)
+    // eslint-disable-next-line no-console
+    console.log(`  Database: ${databaseName}`)
+    // eslint-disable-next-line no-console
+    console.log(`  Bucket: ${bucketName}`)
+    // eslint-disable-next-line no-console
+    console.log(`  Queue: ${queueName}`)
+    // eslint-disable-next-line no-console
+    console.log(`  Sentry DSN: ${sentryDsn}`)
+    // eslint-disable-next-line no-console
+    console.log(`  Sentry Environment: ${sentryEnv}`)
+    return
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(`🚀 Deploying VSR to ${ENV} environment...`)
+
+  return new Promise((resolve, reject) => {
+    const deployProcess = spawn(wranglerBin, wranglerArgs, {
+      cwd: registryRoot,
+      stdio: 'inherit',
+    })
+
+    deployProcess.on('close', code => {
+      if (code === 0) {
+        // eslint-disable-next-line no-console
+        console.log(`✅ Successfully deployed VSR to ${ENV}`)
+        resolve()
+      } else {
+        reject(new Error(`Deployment failed with exit code ${code}`))
+      }
+    })
+
+    deployProcess.on('error', error => {
+      reject(
+        new Error(`Failed to start deployment: ${error.message}`),
+      )
+    })
+  })
+}
+
 // Check if the help flag was passed
 if (args.help) {
   printUsage()
   process.exit(0)
+}
+
+// Validate command
+if (!['dev', 'deploy'].includes(command)) {
+  // eslint-disable-next-line no-console
+  console.error(`❌ Unknown command: ${command}`)
+  printUsage()
+  process.exit(1)
 }
 
 // TODO: Remove the demo/dummy project once server doesn't need one
@@ -226,19 +410,37 @@ const serverOptions = {
 
 void (async () => {
   try {
+    if (command === 'deploy') {
+      await deployToCloudflare()
+      return
+    }
+
+    // Default 'dev' command
     if (DAEMON) {
-      const server = createServer({
-        ...serverOptions,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        packageInfo: new PackageInfoClient() as any,
-      })
+      // Save original process.argv to restore later
+      const originalArgv = process.argv.slice()
 
-      await server.start({
-        port: DAEMON_PORT,
-      })
+      // Temporarily modify process.argv to remove VSR-specific flags that daemon doesn't understand
+      // Keep only the basic node command and script path
+      process.argv = [process.argv[0], process.argv[1]]
 
-      // eslint-disable-next-line no-console
-      console.log(`Daemon: ${DAEMON_URL}`)
+      try {
+        const server = createServer({
+          ...serverOptions,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          packageInfo: new PackageInfoClient() as any,
+        })
+
+        await server.start({
+          port: DAEMON_PORT,
+        })
+
+        // eslint-disable-next-line no-console
+        console.log(`Daemon: ${DAEMON_URL}`)
+      } finally {
+        // Restore original process.argv
+        process.argv = originalArgv
+      }
     }
 
     // eslint-disable-next-line no-console
@@ -275,7 +477,7 @@ void (async () => {
     }
   } catch (error: unknown) {
     // eslint-disable-next-line no-console
-    console.error('Failed to start server:', error)
+    console.error('Failed to start:', error)
     process.exit(1)
   }
 })()

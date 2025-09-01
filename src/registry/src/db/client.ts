@@ -2,6 +2,11 @@ import type { D1Database } from '@cloudflare/workers-types'
 import { drizzle } from 'drizzle-orm/d1'
 import { sql } from 'drizzle-orm'
 import * as schema from './schema.ts'
+import type {
+  ParsedPackage,
+  ParsedVersion,
+  ParsedToken,
+} from '../../types.ts'
 
 const fallbackLogger = {
   error: (_message: string, _error?: unknown) => {
@@ -41,7 +46,7 @@ export function createDatabaseOperations(
   const db = createDatabase(d1)
 
   return {
-    async getPackage(name: string) {
+    async getPackage(name: string): Promise<ParsedPackage | null> {
       try {
         const result = await db
           .select()
@@ -52,8 +57,11 @@ export function createDatabaseOperations(
         return {
           name: result.name,
           tags: parseJSON(result.tags) as Record<string, string>,
-          lastUpdated: result.lastUpdated,
-        }
+          lastUpdated: result.lastUpdated || null,
+          origin: result.origin || null,
+          upstream: result.upstream || null,
+          cachedAt: result.cachedAt || null,
+        } as ParsedPackage
       } catch (_error) {
         logger.error(
           `[DB ERROR] Failed to get package ${name}`,
@@ -140,10 +148,10 @@ export function createDatabaseOperations(
         return {
           name: result.name,
           tags: parseJSON(result.tags) as Record<string, string>,
-          lastUpdated: result.lastUpdated,
-          origin: result.origin,
-          upstream: result.upstream,
-          cachedAt: result.cachedAt,
+          lastUpdated: result.lastUpdated || null,
+          origin: result.origin || null,
+          upstream: result.upstream || null,
+          cachedAt: result.cachedAt || null,
         }
       } catch (error) {
         logger.error(
@@ -176,7 +184,7 @@ export function createDatabaseOperations(
     },
 
     // Token operations
-    async getToken(token: string) {
+    async getToken(token: string): Promise<ParsedToken | null> {
       try {
         const result = await db
           .select()
@@ -194,7 +202,7 @@ export function createDatabaseOperations(
               user?: { read: boolean; write: boolean }
             }
           }[],
-        }
+        } as ParsedToken
       } catch (_error: unknown) {
         logger.error(
           `[DB ERROR] Failed to get token ${token}`,
@@ -334,7 +342,7 @@ export function createDatabaseOperations(
     },
 
     // Version operations
-    async getVersion(spec: string) {
+    async getVersion(spec: string): Promise<ParsedVersion | null> {
       try {
         const result = await db
           .select()
@@ -344,9 +352,13 @@ export function createDatabaseOperations(
         if (!result) return null
         return {
           spec: result.spec,
+          version: result.spec.split('@')[1] ?? '',
           manifest: parseJSON(result.manifest) as Record<string, any>,
-          published_at: result.publishedAt,
-        }
+          published_at: result.publishedAt || null,
+          origin: result.origin || null,
+          upstream: result.upstream || null,
+          cachedAt: result.cachedAt || null,
+        } as ParsedVersion
       } catch (_error: unknown) {
         logger.error(
           `[DB ERROR] Failed to get version ${spec}`,
@@ -452,13 +464,25 @@ export function createDatabaseOperations(
           .where(sql`spec = ${spec}`)
           .get()
         if (!result) return null
+
+        // Extract version from spec, handling scoped packages correctly
+        let version
+        const lastAtIndex = result.spec.lastIndexOf('@')
+        if (lastAtIndex > 0) {
+          version = result.spec.substring(lastAtIndex + 1)
+        } else {
+          // Fallback: assume everything after first @ is version
+          version = result.spec.split('@').slice(1).join('@')
+        }
+
         return {
           spec: result.spec,
+          version,
           manifest: parseJSON(result.manifest) as Record<string, any>,
-          publishedAt: result.publishedAt,
-          origin: result.origin,
-          upstream: result.upstream,
-          cachedAt: result.cachedAt,
+          published_at: result.publishedAt || null,
+          origin: result.origin || null,
+          upstream: result.upstream || null,
+          cachedAt: result.cachedAt || null,
         }
       } catch (error) {
         logger.error(
@@ -510,7 +534,9 @@ export function createDatabaseOperations(
     },
 
     // Get all versions for a specific package
-    async getVersionsByPackage(packageName: string) {
+    async getVersionsByPackage(
+      packageName: string,
+    ): Promise<ParsedVersion[]> {
       try {
         // Retrieving all versions for package: ${packageName}
         const results = await db
@@ -546,8 +572,11 @@ export function createDatabaseOperations(
             spec: result.spec,
             version,
             manifest,
-            published_at: result.publishedAt,
-          }
+            published_at: result.publishedAt || null,
+            origin: result.origin || null,
+            upstream: result.upstream || null,
+            cachedAt: result.cachedAt || null,
+          } as ParsedVersion
         })
       } catch (error) {
         logger.error(

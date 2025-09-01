@@ -72,3 +72,78 @@ Once running, access your registry:
 **Production:**
 
 - Cloudflare Account (free tier available)
+
+## 🚀 Production Deployment
+
+Deploy VSR to Cloudflare Workers with the new `vsr deploy` command:
+
+<Code code="# Deploy to default environment (dev)
+vsr deploy
+
+# Deploy to production
+
+vsr deploy --env=prod
+
+# Preview deployment without actually deploying
+
+vsr deploy --dry-run
+
+# Override specific resource names
+
+vsr deploy --env=staging --db-name=my-custom-db
+--bucket-name=my-custom-bucket" lang="bash" />
+
+### Deploy Options
+
+| Option          | Default | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `--env`         | `dev`   | Environment (dev/staging/prod) |
+| `--db-name`     | -       | Override D1 database name      |
+| `--bucket-name` | -       | Override R2 bucket name        |
+| `--queue-name`  | -       | Override queue name            |
+| `--dry-run`     | `false` | Preview deployment             |
+
+### Configuration
+
+Add deployment configuration to your `vlt.json` file:
+
+<Code
+  code={`{
+  "registry": {
+    "deploy": {
+      "sentry": {
+        "dsn": "https://your-sentry-dsn@sentry.io/project-id",
+        "sampleRate": 1.0,
+        "tracesSampleRate": 0.1
+      },
+      "environments": {
+        "dev": {
+          "databaseName": "vsr-dev-database",
+          "bucketName": "vsr-dev-bucket",
+          "queueName": "vsr-dev-cache-refresh-queue",
+          "sentry": {
+            "environment": "development"
+          }
+        },
+        "prod": {
+          "databaseName": "vsr-prod-database",
+          "bucketName": "vsr-prod-bucket",
+          "queueName": "vsr-prod-cache-refresh-queue",
+          "sentry": {
+            "environment": "production",
+            "dsn": "https://your-prod-sentry-dsn@sentry.io/project-id",
+            "sampleRate": 0.1
+          }
+        }
+      }
+    }
+  }
+}`}
+  lang="json"
+/>
+
+**That's it!** 🎉 Your registry is now running globally on
+Cloudflare's edge network.
+
+For detailed deployment configuration, see our
+[Deployment Guide](/registry/deployment).

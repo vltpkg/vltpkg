@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import type { Context } from 'hono'
-import type { HonoContext } from '../../types.ts'
+import type { Environment } from '../../types.ts'
 
 // Route definitions for miscellaneous endpoints
 
@@ -367,21 +367,90 @@ export const webManifestRoute = createRoute({
   },
 })
 
-// Dashboard route handlers (daemon-only)
+// Dashboard route handlers
 export async function handleDashboardData(
   c: Context,
 ): Promise<Response> {
-  const DAEMON_URL = 'http://localhost:3000'
-  const data = await fetch(`${DAEMON_URL}/dashboard.json`)
-  const jsonData = await data.json()
-  return c.json(jsonData)
+  const env = c.env as Environment
+
+  // If daemon is enabled, proxy to daemon service
+
+  if (env.DAEMON_ENABLED) {
+    try {
+      const DAEMON_URL = 'http://localhost:3000'
+      const data = await fetch(`${DAEMON_URL}/dashboard.json`)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const jsonData = (await data.json()) as Record<string, any>
+      return c.json(jsonData)
+    } catch (_error) {
+      // Fall through to standalone mode if daemon is unreachable
+    }
+  }
+
+  // Standalone mode: provide dashboard data directly
+  const dashboardData = {
+    registry: {
+      url: env.URL || 'http://localhost:1337',
+      name: 'vlt serverless registry',
+    },
+    features: {
+      search: true,
+      publish: true,
+      access: true,
+    },
+  }
+
+  return c.json(dashboardData)
 }
 
 export async function handleAppData(c: Context): Promise<Response> {
-  const DAEMON_URL = 'http://localhost:3000'
-  const data = await fetch(`${DAEMON_URL}/app-data.json`)
-  const jsonData = await data.json()
-  return c.json(jsonData)
+  const env = c.env as Environment
+
+  // If daemon is enabled, proxy to daemon service
+
+  if (env.DAEMON_ENABLED) {
+    try {
+      const DAEMON_URL = 'http://localhost:3000'
+      const data = await fetch(`${DAEMON_URL}/app-data.json`)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const jsonData = (await data.json()) as Record<string, any>
+      return c.json(jsonData)
+    } catch (_error) {
+      // Fall through to standalone mode if daemon is unreachable
+    }
+  }
+
+  // Standalone mode: provide app data directly from the registry database
+  try {
+    // For now, return empty data structure - in a full implementation,
+    // we would query the database for actual package data
+    const packages: {
+      name: string
+      version: string
+      description?: string
+    }[] = []
+
+    const appData = {
+      packages,
+      stats: {
+        totalPackages: packages.length,
+        totalDownloads: 0, // This would need to be tracked separately
+      },
+    }
+
+    return c.json(appData)
+  } catch (_error) {
+    // If database is not available, return empty data
+    const appData = {
+      packages: [],
+      stats: {
+        totalPackages: 0,
+        totalDownloads: 0,
+      },
+    }
+
+    return c.json(appData)
+  }
 }
 
 // Security audit handler (not implemented)

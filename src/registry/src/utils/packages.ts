@@ -299,7 +299,7 @@ export function validatePackageName(
   return {
     valid: result.validForNewPackages || result.validForOldPackages,
 
-    errors: result.errors || [],
+    errors: result.errors ?? [],
   }
 }
 

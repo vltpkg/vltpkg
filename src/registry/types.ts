@@ -64,10 +64,10 @@ export interface Package {
 export interface ParsedPackage {
   name: string
   tags: Record<string, string>
-  lastUpdated?: string | null
-  origin?: string
-  upstream?: string | null
-  cachedAt?: string | null
+  lastUpdated: string | null
+  origin: string | null
+  upstream: string | null
+  cachedAt: string | null
 }
 
 export interface Version {
@@ -83,10 +83,10 @@ export interface ParsedVersion {
   spec: string
   version: string
   manifest: Record<string, any>
-  published_at?: string | null
-  origin?: string
-  upstream?: string
-  cachedAt?: string
+  published_at: string | null
+  origin: string | null
+  upstream: string | null
+  cachedAt: string | null
 }
 
 export interface Token {
@@ -342,8 +342,14 @@ export type HonoContext = Context<{
   Bindings: Environment
   Variables: {
     db: DatabaseOperations
+    upstream?: string
   }
-}>
+}> & {
+  waitUntil?: (promise: Promise<any>) => void
+  executionCtx?: {
+    waitUntil: (promise: Promise<any>) => void
+  }
+}
 
 // ---------------------------------------------------------
 // API Response Types
@@ -471,6 +477,7 @@ export interface WorkOSAuthResult {
 
 export interface SearchResult {
   name: string
+  tags: Record<string, string>
   version?: string
   description?: string
   keywords?: string[]
@@ -521,20 +528,53 @@ export interface SearchResponse {
 // ---------------------------------------------------------
 
 export interface Environment {
+  // Database
   D1_DATABASE?: D1Database
+  DB?: D1Database
+
+  // Queue and Storage
   CACHE_REFRESH_QUEUE?: any
+  BUCKET?: any
+  ASSETS?: any
+
+  // Authentication
   WORKOS_API_KEY?: string
   WORKOS_CLIENT_ID?: string
   WORKOS_PROVIDER?: string
   WORKOS_REDIRECT_URI?: string
   WORKOS_COOKIE_PASSWORD?: string
+
+  // Configuration flags (enriched by configMiddleware)
+  DAEMON_ENABLED?: boolean
+  TELEMETRY_ENABLED?: boolean
+  API_DOCS_ENABLED?: boolean
+  DEBUG_ENABLED?: boolean
+
+  // Telemetry
   SENTRY?: {
     dsn: string
     environment?: string
   }
+  SENTRY_CONFIG?: {
+    dsn: string
+    environment?: string
+    sendDefaultPii?: boolean
+    sampleRate?: number
+    tracesSampleRate?: number
+  }
+
+  // Cloudflare specific
   CF?: {
     connecting_ip?: string
   }
+
+  // Other config values
+  DAEMON_PORT?: number
+  DAEMON_URL?: string
+  PORT?: number
+  VERSION?: string
+  URL?: string
+
   [key: string]: any
 }
 
@@ -545,6 +585,11 @@ export interface Args {
   help: boolean
   port: number
   config?: string
+  env?: string
+  'db-name'?: string
+  'bucket-name'?: string
+  'queue-name'?: string
+  'dry-run'?: boolean
 }
 
 export interface MinArgsResult {

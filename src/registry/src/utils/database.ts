@@ -39,13 +39,29 @@ export async function mountDatabase(
   c: HonoContext,
   next: () => Promise<void>,
 ): Promise<void> {
+  // Check if this is a utility route that doesn't need database
+  const path = c.req.path
+  const isUtilityRoute =
+    path === '/-/ping' ||
+    path === '/-/docs' ||
+    /^\/[^/]+\/-\/(ping|docs)$/.test(path)
+
+  // Note: whoami and user endpoints DO need database access for authentication
+  // but we need to handle the case where DB is not available in tests
+
+  if (isUtilityRoute) {
+    // Skip database mounting for utility routes
+    await next()
+    return
+  }
+
   if (!c.env.DB) {
     throw new Error('Database not found in environment')
   }
 
   // Reuse existing database operations if available
   cachedDbOperations ??= createDatabaseOperations(
-    c.env.DB as D1Database,
+    c.env.DB,
   ) as DatabaseOperations
 
   c.set('db', cachedDbOperations)

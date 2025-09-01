@@ -12,6 +12,24 @@ export function requiresToken(c: HonoContext): boolean {
     '/',
   ]
 
+  // Check for upstream utility routes that are public (ping and docs only)
+  const upstreamPublicPattern = /^\/[^/]+\/-\/(ping|docs)$/
+  if (upstreamPublicPattern.test(path)) {
+    return false // These are public, no token required
+  }
+
+  // Check standard public routes
+  const isStandardPublicRoute = publicRoutes.some(route => {
+    if (route.endsWith('/*')) {
+      return path.startsWith(route.slice(0, -2))
+    }
+    return path === route || path.startsWith(route)
+  })
+
+  if (isStandardPublicRoute) {
+    return false // No token required
+  }
+
   // Package routes should be public for downloads
   // This includes hash-based routes, upstream routes, and legacy redirects
   const isPackageRoute =
@@ -24,14 +42,12 @@ export function requiresToken(c: HonoContext): boolean {
   const isPutRequest = c.req.method === 'PUT'
   const isPublicPackageRoute = isPackageRoute && !isPutRequest
 
-  return (
-    publicRoutes.some(route => {
-      if (route.endsWith('/*')) {
-        return path.startsWith(route.slice(0, -2))
-      }
-      return path === route || path.startsWith(route)
-    }) || isPublicPackageRoute
-  )
+  if (isPublicPackageRoute) {
+    return false // No token required
+  }
+
+  // All other routes require authentication
+  return true
 }
 
 // Catch-all for non-GET methods

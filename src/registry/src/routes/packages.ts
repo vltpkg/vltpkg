@@ -13,7 +13,13 @@ import type {
   SlimmedManifest,
   ParsedPackage,
   PackageManifest,
+  DatabaseOperations,
 } from '../../types.ts'
+
+// Helper function to get typed database from context
+function getDb(c: HonoContext): DatabaseOperations {
+  return c.get('db')
+}
 
 interface SlimPackumentContext {
   protocol?: string
@@ -81,40 +87,39 @@ export async function slimPackumentVersion(
 
     // Parse manifest if it's a string
 
-    let parsed: any
+    let parsed: Record<string, any>
     if (typeof manifest === 'string') {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        parsed = JSON.parse(manifest)
+        parsed = JSON.parse(manifest) as Record<string, any>
       } catch (_e) {
-        parsed = manifest
+        parsed = manifest as unknown as Record<string, any>
       }
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      parsed = manifest
+      parsed = manifest as Record<string, any>
     }
 
     // For packuments, only include the most essential fields
     const slimmed: _SlimmedManifest = {
       name: parsed.name as string,
       version: parsed.version as string,
-      dependencies: (parsed.dependencies || {}) as Record<
+      dependencies: (parsed.dependencies ?? {}) as Record<
         string,
         string
       >,
-      peerDependencies: (parsed.peerDependencies || {}) as Record<
+      peerDependencies: (parsed.peerDependencies ?? {}) as Record<
         string,
         string
       >,
-      optionalDependencies: (parsed.optionalDependencies ||
+      optionalDependencies: (parsed.optionalDependencies ??
         {}) as Record<string, string>,
-      peerDependenciesMeta: (parsed.peerDependenciesMeta ||
+      peerDependenciesMeta: (parsed.peerDependenciesMeta ??
         {}) as Record<string, string>,
-      bin: (parsed.bin || {}) as Record<string, string>,
-      engines: (parsed.engines || {}) as Record<string, string>,
+      bin: (parsed.bin ?? {}) as Record<string, string>,
+      engines: (parsed.engines ?? {}) as Record<string, string>,
       dist: {
         tarball: await rewriteTarballUrlIfNeeded(
-          (parsed.dist?.tarball || '') as string,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          (parsed.dist?.tarball ?? '') as string,
           parsed.name as string,
           parsed.version as string,
           context,
@@ -136,25 +141,25 @@ export async function slimPackumentVersion(
 
     // Remove empty objects
 
-    if (Object.keys(slimmed.dependencies || {}).length === 0) {
+    if (Object.keys(slimmed.dependencies ?? {}).length === 0) {
       delete slimmed.dependencies
     }
 
-    if (Object.keys(slimmed.peerDependencies || {}).length === 0) {
+    if (Object.keys(slimmed.peerDependencies ?? {}).length === 0) {
       delete slimmed.peerDependencies
     }
     if (
-      Object.keys(slimmed.peerDependenciesMeta || {}).length === 0
+      Object.keys(slimmed.peerDependenciesMeta ?? {}).length === 0
     ) {
       delete slimmed.peerDependenciesMeta
     }
     if (
-      Object.keys(slimmed.optionalDependencies || {}).length === 0
+      Object.keys(slimmed.optionalDependencies ?? {}).length === 0
     ) {
       delete slimmed.optionalDependencies
     }
 
-    if (Object.keys(slimmed.engines || {}).length === 0) {
+    if (Object.keys(slimmed.engines ?? {}).length === 0) {
       delete slimmed.engines
     }
 
@@ -269,7 +274,7 @@ export async function getPackageTarball(c: HonoContext) {
       const pathSegments = path.split('/').filter(Boolean)
 
       // For upstream routes like /npm/lodash/-/lodash-4.17.21.tgz
-      const upstream = c.get('upstream') as string | undefined
+      const upstream = c.get('upstream')
       if (upstream && pathSegments.length > 1) {
         // Find the /-/ segment
         const tarballIndex = pathSegments.findIndex(
@@ -364,7 +369,7 @@ export async function getPackageTarball(c: HonoContext) {
       ) {
         // This might be a dist-tag like "latest", try to resolve it
         try {
-          const upstream = c.get('upstream') as string
+          const upstream = c.get('upstream')
           if (upstream) {
             // Get packument data to find the actual version for this dist-tag
             const upstreamConfig = getUpstreamConfig(upstream)
@@ -383,7 +388,11 @@ export async function getPackageTarball(c: HonoContext) {
 
               if (packumentResponse.ok) {
                 const packumentData = await packumentResponse.json()
-                const distTags = packumentData['dist-tags'] || {}
+                const distTags =
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                  ((packumentData as Record<string, any>)[
+                    'dist-tags'
+                  ] as Record<string, string>) || {}
                 const actualVersion = distTags[versionFromTarball]
 
                 if (actualVersion) {
@@ -393,7 +402,7 @@ export async function getPackageTarball(c: HonoContext) {
               }
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // If dist-tag resolution fails, continue with original tarball name
           // and let the upstream handle it (which will likely 404)
         }
@@ -415,7 +424,7 @@ export async function getPackageTarball(c: HonoContext) {
           const spec = `${pkg}@${version}`
 
           // Get the version from DB
-          const versionData = await c.db.getVersion(spec)
+          const versionData = await getDb(c).getVersion(spec)
 
           if (versionData?.manifest) {
             let manifest: any
@@ -504,7 +513,7 @@ export async function getPackageTarball(c: HonoContext) {
           : `${pkg}/-/${tarball}`
 
         // Get the upstream configuration
-        const upstream = c.get('upstream') as string
+        const upstream = c.get('upstream')
         let source: string
 
         if (upstream) {
@@ -680,7 +689,7 @@ export async function getPackageManifest(c: HonoContext) {
       const pathSegments = path.split('/').filter(Boolean)
 
       // For upstream routes like /npm/express/4.18.2
-      const upstream = c.get('upstream') as string | undefined
+      const upstream = c.get('upstream')
       if (upstream && pathSegments.length > 2) {
         // Package name starts after upstream, version is last segment
         const packageSegments = pathSegments.slice(1, -1) // Remove upstream and version
@@ -747,15 +756,12 @@ export async function getPackageManifest(c: HonoContext) {
     if (semver.validRange(version) && !semver.valid(version)) {
       // This is a range, try to find the best matching version
       try {
-        const packageData = await c.get('db').getPackage(pkg)
+        const packageData = await getDb(c).getPackage(pkg)
         if (packageData) {
-          const versions = await c.get('db').getVersionsByPackage(pkg)
+          const versions = await getDb(c).getVersionsByPackage(pkg)
 
-          if (versions && versions.length > 0) {
-            const availableVersions = versions.map(
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-              (v: any) => v.version,
-            )
+          if (versions.length > 0) {
+            const availableVersions = versions.map(v => v.version)
 
             const bestMatch = semver.maxSatisfying(
               availableVersions,
@@ -804,7 +810,7 @@ export async function getPackageManifest(c: HonoContext) {
     }
 
     // If not found locally and we have an upstream, try to fetch from upstream
-    const upstream = c.get('upstream') as string
+    const upstream = c.get('upstream')
     if (upstream && PROXY) {
       try {
         // Get the upstream configuration
@@ -843,19 +849,23 @@ export async function getPackageManifest(c: HonoContext) {
         if (
           upstreamManifest &&
           typeof upstreamManifest === 'object' &&
-          upstreamManifest.dist?.tarball
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          (upstreamManifest as any).dist?.tarball
         ) {
-          const protocol = new URL(c.req.url).protocol.slice(0, -1) // Remove trailing ':'
-          const host = c.req.header('host') || 'localhost:1337'
+          const requestUrl = new globalThis.URL(c.req.url)
+          const protocol = requestUrl.protocol.slice(0, -1) // Remove trailing ':'
+          const host = c.req.header('host') ?? 'localhost:1337'
           const context = {
             protocol,
             host,
             upstream,
           }
 
-          upstreamManifest.dist.tarball =
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          ;(upstreamManifest as any).dist.tarball =
             await rewriteTarballUrlIfNeeded(
-              String(upstreamManifest.dist.tarball),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              String((upstreamManifest as any).dist.tarball),
               pkg,
               resolvedVersion,
               context,
@@ -866,7 +876,7 @@ export async function getPackageManifest(c: HonoContext) {
         c.header('Content-Type', 'application/json')
         c.header('Cache-Control', 'public, max-age=300') // 5 minute cache
 
-        return c.json(upstreamManifest, 200)
+        return c.json(upstreamManifest as Record<string, any>, 200)
       } catch (_err) {
         // Fall through to 404
       }
@@ -906,13 +916,14 @@ export async function getPackageDistTags(c: HonoContext) {
     c.header('Content-Type', 'application/json')
     c.header('Cache-Control', 'no-cache, no-store, must-revalidate')
 
-    const packageData = await c.db.getPackage(packageName)
+    const packageData = await getDb(c).getPackage(packageName)
 
     if (!packageData) {
       return c.json({ error: 'Package not found' }, 404)
     }
 
     // Check if this package is proxied and should not allow dist-tag operations
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if ((packageData as any).source === 'proxy') {
       return c.json(
         {
@@ -923,7 +934,8 @@ export async function getPackageDistTags(c: HonoContext) {
       )
     }
 
-    const distTags = packageData.tags || {}
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const distTags = packageData.tags ?? {}
 
     // If no tag specified, return all tags
     if (!tag) {
@@ -985,13 +997,14 @@ export async function putPackageDistTag(c: HonoContext) {
       )
     }
 
-    const packageData = await c.db.getPackage(packageName)
+    const packageData = await getDb(c).getPackage(packageName)
 
     if (!packageData) {
       return c.json({ error: 'Package not found' }, 404)
     }
 
     // Check if this package is proxied and should not allow dist-tag operations
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if ((packageData as any).source === 'proxy') {
       return c.json(
         {
@@ -1004,7 +1017,7 @@ export async function putPackageDistTag(c: HonoContext) {
 
     // Validate that the version exists
     const versionSpec = `${packageName}@${version}`
-    const versionData = await c.db.getVersion(versionSpec)
+    const versionData = await getDb(c).getVersion(versionSpec)
     if (!versionData) {
       return c.json(
         {
@@ -1014,10 +1027,11 @@ export async function putPackageDistTag(c: HonoContext) {
       )
     }
 
-    const distTags = packageData.tags || {}
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const distTags = packageData.tags ?? {}
     distTags[tag] = version
 
-    await c.db.upsertPackage(packageName, distTags)
+    await getDb(c).upsertPackage(packageName, distTags)
 
     return c.json(distTags, 201)
   } catch (_err) {
@@ -1058,13 +1072,14 @@ export async function deletePackageDistTag(c: HonoContext) {
       return c.json({ error: 'Cannot delete the "latest" tag' }, 400)
     }
 
-    const packageData = await c.db.getPackage(packageName)
+    const packageData = await getDb(c).getPackage(packageName)
 
     if (!packageData) {
       return c.json({ error: 'Package not found' }, 404)
     }
 
     // Check if this package is proxied and should not allow dist-tag operations
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if ((packageData as any).source === 'proxy') {
       return c.json(
         {
@@ -1075,7 +1090,8 @@ export async function deletePackageDistTag(c: HonoContext) {
       )
     }
 
-    const distTags = packageData.tags || {}
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const distTags = packageData.tags ?? {}
 
     const tagValue = distTags[tag]
     if (tagValue === undefined) {
@@ -1084,7 +1100,7 @@ export async function deletePackageDistTag(c: HonoContext) {
 
     delete distTags[tag]
 
-    await c.db.upsertPackage(packageName, distTags)
+    await getDb(c).upsertPackage(packageName, distTags)
 
     return c.json(distTags)
   } catch (_err) {
@@ -1170,6 +1186,7 @@ export async function publishPackage(c: HonoContext) {
     }
 
     // Get package data from request body
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const packageData = await c.req.json()
 
     if (!packageData || typeof packageData !== 'object') {
@@ -1177,11 +1194,20 @@ export async function publishPackage(c: HonoContext) {
     }
 
     // Extract version information
-    const versions = packageData.versions || {}
-    const distTags = packageData['dist-tags'] || {
-      latest: packageData.version,
+
+    const versions =
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-member-access
+      (packageData.versions as Record<string, any>) || {}
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-member-access
+    const distTags = (packageData['dist-tags'] as Record<
+      string,
+      string
+    >) || {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      latest: packageData.version as string,
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!packageData.version && !Object.keys(versions).length) {
       return c.json(
         { error: 'Package must have at least one version' },
@@ -1190,41 +1216,56 @@ export async function publishPackage(c: HonoContext) {
     }
 
     // If this is a single version publish, structure it properly
-    if (packageData.version && !versions[packageData.version]) {
-      versions[packageData.version] = {
+    if (
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      packageData.version &&
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      !versions[packageData.version as string]
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const version = packageData.version as string
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      versions[version] = {
         ...packageData,
         name: pkg,
-        version: packageData.version,
+        version,
         dist: {
-          ...packageData.dist,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          ...(packageData.dist as Record<string, any>),
           tarball:
-            packageData.dist?.tarball ||
-            `${c.req.url.split('/').slice(0, 3).join('/')}/${pkg}/-/${pkg.split('/').pop()}-${packageData.version}.tgz`,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            (packageData.dist?.tarball as string) ||
+            `${c.req.url.split('/').slice(0, 3).join('/')}/${pkg}/-/${pkg.split('/').pop()}-${version}.tgz`,
         },
       }
     }
 
     // Store package metadata
-    await c
-      .get('db')
-      .upsertPackage(pkg, distTags, new Date().toISOString())
+    await getDb(c).upsertPackage(
+      pkg,
+      distTags,
+      new Date().toISOString(),
+    )
 
     // Store each version
     const versionPromises = Object.entries(versions).map(
-      ([version, manifest]) =>
-        c
-          .get('db')
-          .upsertVersion(
-            `${pkg}@${version}`,
-            manifest as Record<string, any>,
-            (manifest as any).publishedAt || new Date().toISOString(),
-          ),
+      ([version, manifest]) => {
+        const typedManifest = manifest as Record<string, any>
+        return getDb(c).upsertVersion(
+          `${pkg}@${version}`,
+          typedManifest as PackageManifest,
+          (typedManifest.publishedAt as string) ||
+            new Date().toISOString(),
+        )
+      },
     )
 
     await Promise.all(versionPromises)
 
     return c.json({ success: true }, 201)
   } catch (error) {
+    // TODO: Replace with proper logging system
+    // eslint-disable-next-line no-console
     console.error('Package publish error:', error)
     return c.json({ error: 'Failed to publish package' }, 500)
   }
@@ -1296,7 +1337,7 @@ export async function getPackagePackument(c: HonoContext) {
     // For other routes, check if package exists locally first
     let localPkg = null
     if (!explicitUpstream) {
-      localPkg = await c.db.getPackage(name)
+      localPkg = await getDb(c).getPackage(name)
     }
 
     // Use racing cache strategy when:
@@ -1360,16 +1401,17 @@ export async function getPackagePackument(c: HonoContext) {
 
         // For fast response, only process essential versions synchronously
         if (upstreamData.versions) {
-          const protocol = new URL(c.req.url).protocol.slice(0, -1) // Remove trailing ':'
-          const host = c.req.header('host') || 'localhost:1337'
+          const requestUrl = new globalThis.URL(c.req.url)
+          const protocol = requestUrl.protocol.slice(0, -1) // Remove trailing ':'
+          const host = c.req.header('host') ?? 'localhost:1337'
           const context = {
             protocol,
             host,
-            upstream: upstream as string,
+            upstream: upstream,
           }
 
           // Get essential versions (latest, plus any matching the version range if specified)
-          const distTags = upstreamData['dist-tags'] || {}
+          const distTags = upstreamData['dist-tags'] ?? {}
           const latestVersion = distTags.latest
           const essentialVersions = new Set<string>()
 
@@ -1402,19 +1444,22 @@ export async function getPackagePackument(c: HonoContext) {
                 manifest as PackageManifest,
                 context,
               )
-              packageData.versions[version] = slimmedManifest
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              if (slimmedManifest) {
+                packageData.versions[version] = slimmedManifest
+              }
             }
           }
 
           // Process all other versions in background for complete caching
-          c.executionCtx?.waitUntil(
+          c.executionCtx.waitUntil(
             (async () => {
               try {
                 const allVersionStoragePromises: Promise<unknown>[] =
                   []
 
                 // Process all versions for complete database storage
-                Object.entries(upstreamData.versions).forEach(
+                Object.entries(upstreamData.versions ?? {}).forEach(
                   ([version, manifest]) => {
                     const versionSpec = `${name}@${version}`
                     const manifestForStorage = {
@@ -1427,16 +1472,15 @@ export async function getPackagePackument(c: HonoContext) {
                     } as PackageManifest
 
                     allVersionStoragePromises.push(
-                      c
-                        .get('db')
+                      getDb(c)
                         .upsertCachedVersion(
                           versionSpec,
                           manifestForStorage,
-                          upstream as string,
+                          upstream,
                           upstreamData.time?.[version] ??
                             new Date().toISOString(),
                         )
-                        .catch(_err => {
+                        .catch((_err: unknown) => {
                           // Log error but don't fail the background task
                         }),
                     )
@@ -1446,15 +1490,14 @@ export async function getPackagePackument(c: HonoContext) {
                 // Store package metadata and all versions
                 await Promise.all([
                   ...allVersionStoragePromises,
-                  c
-                    .get('db')
+                  getDb(c)
                     .upsertCachedPackage(
                       name,
                       packageData['dist-tags'],
-                      upstream as string,
+                      upstream,
                       packageData.time.modified,
                     )
-                    .catch(_err => {
+                    .catch((_err: unknown) => {
                       // Log error but don't fail the background task
                     }),
                 ])
@@ -1477,7 +1520,7 @@ export async function getPackagePackument(c: HonoContext) {
           {
             packumentTtlMinutes: 60, // Cache packuments for 1 hour
             staleWhileRevalidateMinutes: 240, // Allow stale data for 4 hours while refreshing
-            upstream: upstream as string,
+            upstream: upstream,
           },
         )
 
@@ -1485,12 +1528,12 @@ export async function getPackagePackument(c: HonoContext) {
           // Hono middleware logs cached data usage
 
           // If we have cached data, still need to check if we need to filter by version range
-          if (isValidRange && result.package) {
+          if (isValidRange) {
             const filteredVersions: Record<string, unknown> = {}
             Object.keys(result.package.versions).forEach(version => {
               if (semver.satisfies(version, versionRange)) {
                 filteredVersions[version] =
-                  result.package!.versions[version]
+                  result.package?.versions[version]
               }
             })
             result.package.versions = filteredVersions
@@ -1514,7 +1557,7 @@ export async function getPackagePackument(c: HonoContext) {
     }
 
     // Fallback to original logic when PROXY is disabled
-    const pkg = await c.db.getPackage(name)
+    const pkg = await getDb(c).getPackage(name)
     const now = new Date()
 
     // Initialize the consistent packument response structure
@@ -1539,9 +1582,9 @@ export async function getPackagePackument(c: HonoContext) {
 
     // Get all versions for this package
     try {
-      const allVersions = await c.db.getVersionsByPackage(name)
+      const allVersions = await getDb(c).getVersionsByPackage(name)
 
-      if (allVersions.length) {
+      if (allVersions.length > 0) {
         // Hono middleware logs version count information
 
         // Add all versions to the packument, use slimmed manifests
@@ -1564,11 +1607,15 @@ export async function getPackagePackument(c: HonoContext) {
           }
 
           // Use slimManifest to create a smaller response
-          packageData.versions[version] = slimManifest(
-            versionData.manifest,
+          const slimmedManifest = slimManifest(
+            versionData.manifest as PackageManifest,
           )
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (slimmedManifest) {
+            packageData.versions[version] = slimmedManifest
+          }
           packageData.time[version] =
-            versionData.publishedAt || new Date().toISOString()
+            versionData.published_at ?? new Date().toISOString()
         }
       } else {
         // Hono middleware logs no versions found
@@ -1582,15 +1629,19 @@ export async function getPackagePackument(c: HonoContext) {
             semver.satisfies(latestVersion, versionRange)
           : false)
         if (latestVersion && satisfiesRange) {
-          const versionData = await c.db.getVersion(
+          const versionData = await getDb(c).getVersion(
             `${name}@${latestVersion}`,
           )
           if (versionData) {
-            packageData.versions[latestVersion] = slimManifest(
-              versionData.manifest,
+            const slimmedManifest = slimManifest(
+              versionData.manifest as PackageManifest,
             )
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (slimmedManifest) {
+              packageData.versions[latestVersion] = slimmedManifest
+            }
             packageData.time[latestVersion] =
-              versionData.publishedAt || new Date().toISOString()
+              versionData.published_at ?? new Date().toISOString()
           } else {
             // Create a mock version for testing
             const mockManifest: PackageManifest = {
@@ -1649,10 +1700,10 @@ export async function handleRootPackageRoute(c: HonoContext) {
 
   // Check if this package exists locally first
   try {
-    const localPackage = await c.get('db').getPackage(pkg)
+    const localPackage = await getDb(c).getPackage(pkg)
     if (localPackage) {
       // Package exists locally, handle it with the local package route handler
-      return handlePackageRoute(c)
+      return await handlePackageRoute(c)
     }
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -1738,10 +1789,10 @@ export async function handlePackageVersion(c: HonoContext) {
 
   // Check if this package exists locally first
   try {
-    const localPackage = await c.get('db').getPackage(pkg)
+    const localPackage = await getDb(c).getPackage(pkg)
     if (localPackage) {
       // Package exists locally, handle it with the local package route handler
-      return handlePackageRoute(c)
+      return await handlePackageRoute(c)
     }
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -1773,10 +1824,10 @@ export async function handlePackageTarball(c: HonoContext) {
 
   // Check if this package exists locally first
   try {
-    const localPackage = await c.get('db').getPackage(pkg)
+    const localPackage = await getDb(c).getPackage(pkg)
     if (localPackage) {
       // Package exists locally, handle it with the local package route handler
-      return handlePackageRoute(c)
+      return await handlePackageRoute(c)
     }
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -1821,7 +1872,7 @@ async function validateUpstreamAndDelegate(
 
   // Set upstream context and delegate to handlePackageRoute
   c.set('upstream', upstream)
-  return handlePackageRoute(c)
+  return await handlePackageRoute(c)
 }
 
 /**

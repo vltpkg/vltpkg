@@ -21,6 +21,7 @@
 
 /infra/*/.*/
 /infra/*/dist
+/infra/*/outdir
 /infra/*/docs
 /infra/*/example
 /infra/*/node_modules

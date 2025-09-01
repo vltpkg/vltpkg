@@ -27,12 +27,18 @@ export function jsonResponseHandler() {
       }
 
       // For other requests, return pretty-printed JSON
+      // Preserve existing headers that were set via c.header()
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+      const existingHeaders = new Headers(c.res?.headers || {})
+      existingHeaders.set(
+        'Content-Type',
+        'application/json; charset=UTF-8',
+      )
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       c.res = new Response(JSON.stringify(data, null, 2), {
         status: status || 200,
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: existingHeaders,
       })
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return c.res

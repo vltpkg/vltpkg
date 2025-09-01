@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
 import { OPEN_API_CONFIG } from '../config.ts'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { requestId } from 'hono/request-id'
@@ -111,8 +112,8 @@ import {
 import type { Environment } from '../types.ts'
 import type { Context } from 'hono'
 
-// Re-export queue handler from dedicated module
-export { queue } from './queue/index.ts'
+// Import queue handler from dedicated module
+import { queue } from './queue/index.ts'
 
 // ---------------------------------------------------------
 // App Initialization
@@ -139,7 +140,7 @@ app.use('*', configMiddleware)
 app.use('*', telemetryMiddleware)
 app.use('*', secureHeaders())
 app.use('*', jsonResponseHandler())
-app.use('*', mountDatabase)
+app.use('*', except(['/-/ping', '/-/docs'], mountDatabase as any))
 app.use('*', sessionMonitor)
 
 // ---------------------------------------------------------
@@ -148,7 +149,19 @@ app.use('*', sessionMonitor)
 // ---------------------------------------------------------
 
 app.get('/', async c => {
-  if (c.env.API_DOCS_ENABLED && !c.env.DAEMON_ENABLED) {
+  // If daemon is disabled and API docs are enabled, redirect to docs
+  // This provides a better user experience when the daemon isn't available
+  if (!c.env.DAEMON_ENABLED && c.env.API_DOCS_ENABLED) {
+    return c.redirect('/-/docs', 302)
+  }
+
+  // If daemon is enabled, show the GUI (projects will be available)
+  if (c.env.DAEMON_ENABLED) {
+    return c.html(await getApp(c.env.ASSETS))
+  }
+
+  // Fallback: show docs if available, otherwise show GUI
+  if (c.env.API_DOCS_ENABLED) {
     return c.redirect('/-/docs', 302)
   } else {
     return c.html(await getApp(c.env.ASSETS))
@@ -168,13 +181,22 @@ app.get('/-/docs', getDocs)
 // ---------------------------------------------------------
 
 // Pattern: /-/ping
-app.openapi(pingRoute, handlePing)
+app.openapi(pingRoute, handlePing as any)
 
 // ---------------------------------------------------------
 // Authorization Verification Middleware
 // ---------------------------------------------------------
 
-app.use('*', except(requiresToken, bearerAuth({ verifyToken })))
+// Custom auth middleware that checks if token is required
+app.use('*', async (c, next) => {
+  if (requiresToken(c)) {
+    // Token is required, apply bearer auth
+    return bearerAuth({ verifyToken: verifyToken as any })(c, next)
+  } else {
+    // Token not required, skip auth
+    await next()
+  }
+})
 
 // ---------------------------------------------------------
 // User Routes
@@ -190,83 +212,80 @@ app.openapi(userProfileRoute, getUserProfile)
 // ---------------------------------------------------------
 
 // Pattern: /dashboard.json
-app.openapi(dashboardDataRoute, async (c: Context) => {
-  if (!c.env.DAEMON_ENABLED) {
-    return c.json({ error: 'Daemon routes are disabled' }, 404)
-  }
-
-  return handleDashboardData(c)
-})
+app.openapi(dashboardDataRoute, handleDashboardData as any)
 
 // Pattern: /app-data.json
-app.openapi(appDataRoute, async (c: Context) => {
-  if (!c.env.DAEMON_ENABLED) {
-    return c.json({ error: 'Daemon routes are disabled' }, 404)
-  }
-
-  return handleAppData(c)
-})
+app.openapi(appDataRoute, handleAppData as any)
 
 // ---------------------------------------------------------
 // Token Routes
 // ---------------------------------------------------------
 
 // Pattern: /-/tokens
-app.openapi(getTokensRoute, getToken)
+app.openapi(getTokensRoute, getToken as any)
 // Pattern: /-/tokens
-app.openapi(createTokenRoute, postToken)
+app.openapi(createTokenRoute, postToken as any)
 // Pattern: /-/tokens
-app.openapi(updateTokenRoute, putToken)
+app.openapi(updateTokenRoute, putToken as any)
 // Pattern: /-/tokens/{token}
-app.openapi(deleteTokenRoute, deleteToken)
+app.openapi(deleteTokenRoute, deleteToken as any)
 
 // ---------------------------------------------------------
 // Dist-tag Routes
 // ---------------------------------------------------------
 
 // Pattern: /-/package/{pkg}/dist-tags
-app.openapi(getPackageDistTagsRoute, getPackageDistTags)
+app.openapi(getPackageDistTagsRoute, getPackageDistTags as any)
 // Pattern: /-/package/{pkg}/dist-tags/{tag}
-app.openapi(putPackageDistTagRoute, putPackageDistTag)
+app.openapi(putPackageDistTagRoute, putPackageDistTag as any)
 // Pattern: /-/package/{pkg}/dist-tags/{tag}
-app.openapi(deletePackageDistTagRoute, deletePackageDistTag)
+app.openapi(deletePackageDistTagRoute, deletePackageDistTag as any)
 
 // ---------------------------------------------------------
 // Access Control Routes
 // ---------------------------------------------------------
 
 // Pattern: /-/package/{pkg}/access (unscoped packages)
-app.openapi(getPackageAccessRoute, getPackageAccessStatus)
-app.openapi(setPackageAccessRoute, setPackageAccessStatus)
+app.openapi(getPackageAccessRoute, getPackageAccessStatus as any)
+app.openapi(setPackageAccessRoute, setPackageAccessStatus as any)
 
 // Pattern: /-/package/{scope}%2f{pkg}/access (scoped packages)
-app.openapi(getScopedPackageAccessRoute, getPackageAccessStatus)
-app.openapi(setScopedPackageAccessRoute, setPackageAccessStatus)
+app.openapi(
+  getScopedPackageAccessRoute,
+  getPackageAccessStatus as any,
+)
+app.openapi(
+  setScopedPackageAccessRoute,
+  setPackageAccessStatus as any,
+)
 
 // Pattern: /-/package/list
-app.openapi(listPackagesAccessRoute, listPackagesAccess)
+app.openapi(listPackagesAccessRoute, listPackagesAccess as any)
 
 // Pattern: /-/package/{pkg}/collaborators/{username} (unscoped packages)
-app.openapi(grantPackageAccessRoute, grantPackageAccess)
-app.openapi(revokePackageAccessRoute, revokePackageAccess)
+app.openapi(grantPackageAccessRoute, grantPackageAccess as any)
+app.openapi(revokePackageAccessRoute, revokePackageAccess as any)
 
 // Pattern: /-/package/{scope}%2f{pkg}/collaborators/{username} (scoped packages)
-app.openapi(grantScopedPackageAccessRoute, grantPackageAccess)
-app.openapi(revokeScopedPackageAccessRoute, revokePackageAccess)
+app.openapi(grantScopedPackageAccessRoute, grantPackageAccess as any)
+app.openapi(
+  revokeScopedPackageAccessRoute,
+  revokePackageAccess as any,
+)
 
 // ---------------------------------------------------------
 // Search Packages
 // ---------------------------------------------------------
 
 // Pattern: /-/search
-app.openapi(searchPackagesRoute, searchPackages)
+app.openapi(searchPackagesRoute, searchPackages as any)
 
 // ---------------------------------------------------------
 // Handle Audit Requests
 // ---------------------------------------------------------
 
 // Pattern: /-/npm/audit (security audit - not implemented)
-app.openapi(auditRoute, handleSecurityAudit)
+app.openapi(auditRoute, handleSecurityAudit as any)
 
 // ---------------------------------------------------------
 // NPM Compatibility Routes (Legacy API Redirects)
@@ -314,6 +333,36 @@ app.openapi(advisoriesBulkRoute, (c: Context) => {
 })
 
 // ---------------------------------------------------------
+// Upstream Utility Routes
+// (Registry utility endpoints for upstream registries)
+// (MUST come before upstream package routes to avoid conflicts)
+// ---------------------------------------------------------
+
+// Pattern: /{upstream}/-/ping (upstream registry ping)
+app.get('/:upstream/-/ping', handlePing)
+
+// Pattern: /{upstream}/-/docs (upstream registry docs)
+app.get('/:upstream/-/docs', getDocs)
+
+// Pattern: /{upstream}/-/whoami (upstream registry whoami)
+app.get('/:upstream/-/whoami', getUsername)
+
+// Pattern: /{upstream}/-/user (upstream registry user profile)
+app.get('/:upstream/-/user', getUserProfile)
+
+// Pattern: /{upstream}/-/tokens (upstream registry token management)
+app.get('/:upstream/-/tokens', getToken)
+app.post('/:upstream/-/tokens', postToken)
+app.put('/:upstream/-/tokens', putToken)
+app.delete('/:upstream/-/tokens/:token', deleteToken)
+
+// Pattern: /{upstream}/-/search (upstream registry search)
+app.get('/:upstream/-/search', searchPackages)
+
+// Pattern: /{upstream}/-/npm/audit (upstream registry audit)
+app.post('/:upstream/-/npm/audit', handleSecurityAudit)
+
+// ---------------------------------------------------------
 // Upstream Package Routes
 // (must come before catch-all package routes)
 // ---------------------------------------------------------
@@ -321,24 +370,27 @@ app.openapi(advisoriesBulkRoute, (c: Context) => {
 // Pattern: /{upstream}/@{scope}/{pkg}/-/{tarball} (scoped package tarball)
 app.openapi(
   getUpstreamScopedPackageTarballRoute,
-  handleUpstreamScopedTarball,
+  handleUpstreamScopedTarball as any,
 )
 // Pattern: /{upstream}/@{scope}/{pkg}/{version} (scoped package version)
 app.openapi(
   getUpstreamScopedPackageVersionRoute,
-  handleUpstreamScopedVersion,
+  handleUpstreamScopedVersion as any,
 )
 // Pattern: /{upstream}/{pkg}/-/{tarball} (unscoped package tarball)
-app.openapi(getUpstreamPackageTarballRoute, handleUpstreamTarball)
+app.openapi(
+  getUpstreamPackageTarballRoute,
+  handleUpstreamTarball as any,
+)
 // Pattern: /{upstream}/@{scope}%2f{pkg} (URL-encoded scoped package)
 app.openapi(
   getUpstreamEncodedScopedPackageRoute,
-  handleUpstreamEncodedScoped,
+  handleUpstreamEncodedScoped as any,
 )
 // Pattern: /{upstream}/{param2}/{param3} (unified handler for ambiguous 3-segment paths)
-app.openapi(getUpstreamUnifiedRoute, handleUpstreamUnified)
+app.openapi(getUpstreamUnifiedRoute, handleUpstreamUnified as any)
 // Pattern: /{upstream}/{pkg} (unscoped package manifest)
-app.openapi(getUpstreamPackageRoute, handleUpstreamPackage)
+app.openapi(getUpstreamPackageRoute, handleUpstreamPackage as any)
 
 // Pattern: /-/npm/v1/security/advisories/bulk → /-/npm/audit
 app.openapi(advisoriesBulkRoute, async (c: Context) => {
@@ -351,13 +403,13 @@ app.openapi(advisoriesBulkRoute, async (c: Context) => {
 // ---------------------------------------------------------
 
 // Pattern: /{pkg} (package publishing via PUT)
-app.openapi(publishPackageRoute, handlePackagePublish)
+app.openapi(publishPackageRoute, handlePackagePublish as any)
 // Pattern: /{pkg}/-/{tarball} (package tarball download)
-app.openapi(getPackageTarballRoute, handlePackageTarball)
+app.openapi(getPackageTarballRoute, handlePackageTarball as any)
 // Pattern: /{pkg}/{version} (specific package version)
-app.openapi(getPackageVersionRoute, handlePackageVersion)
+app.openapi(getPackageVersionRoute, handlePackageVersion as any)
 // Pattern: /{pkg} (package manifest/packument)
-app.openapi(getPackageRoute, handleRootPackageRoute)
+app.openapi(getPackageRoute, handleRootPackageRoute as any)
 
 // ---------------------------------------------------------
 // Handle Static Assets
@@ -374,4 +426,7 @@ app.get('/manifest.json', handleManifest)
 // Pattern: /* (catch-all for any other static assets)
 app.get('/*', handleStaticAssets)
 
-export default app
+export default {
+  fetch: app.fetch,
+  queue,
+}

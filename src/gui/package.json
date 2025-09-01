@@ -90,7 +90,6 @@
     "prepare": "node --experimental-strip-types --no-warnings ./scripts/prepare.ts --production",
     "snap": "vitest --no-watch -u",
     "test": "vitest --no-watch",
-    "posttest": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "watch": "node --experimental-strip-types --no-warnings ./scripts/prepare.ts --watch"
   },

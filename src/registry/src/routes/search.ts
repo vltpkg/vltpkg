@@ -22,6 +22,8 @@ export async function searchPackages(c: HonoContext) {
 
     return c.json(results)
   } catch (error) {
+    // TODO: Replace with proper logging system
+    // eslint-disable-next-line no-console
     console.error('Search error:', error)
     return c.json(
       {

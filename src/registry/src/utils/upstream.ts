@@ -79,7 +79,7 @@ export function parsePackageSpec(path: string): ParsedPackageInfo {
 
   // Check if first segment is an upstream name
   const firstSegment = segments[0]
-  if (ORIGIN_CONFIG.upstreams[firstSegment]) {
+  if (firstSegment && ORIGIN_CONFIG.upstreams[firstSegment]) {
     // Path starts with upstream name: /upstream/package/version
     const upstream = firstSegment
     const packageSegments = segments.slice(1)
@@ -105,7 +105,7 @@ export function parsePackageSpec(path: string): ParsedPackageInfo {
     }
 
     // Handle regular packages
-    const packageName = packageSegments[0]
+    const packageName = packageSegments[0] || ''
     const version = packageSegments[1]
     const remainingSegments = packageSegments.slice(1)
     return {
@@ -119,14 +119,14 @@ export function parsePackageSpec(path: string): ParsedPackageInfo {
   // No upstream in path, treat as package name
   if (firstSegment?.startsWith('@') && segments.length > 1) {
     // Scoped package: @scope/package/version
-    const packageName = `${segments[0]}/${segments[1]}`
+    const packageName = `${segments[0]}/${segments[1] || ''}`
     const version = segments[2]
     const remainingSegments = segments.slice(2)
     return { packageName, version, segments: remainingSegments }
   }
 
   // Regular package: package/version
-  const packageName = segments[0]
+  const packageName = segments[0] || ''
   const version = segments[1]
   const remainingSegments = segments.slice(1)
   return { packageName, version, segments: remainingSegments }

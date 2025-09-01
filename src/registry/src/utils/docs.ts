@@ -1,4 +1,4 @@
-export const apiBody = ({ YEAR }) => {
+export const apiBody = ({ YEAR }: { YEAR: number }) => {
   return `The **vlt serverless registry** is the modern JavaScript package registry.
         
 ### Compatible Clients

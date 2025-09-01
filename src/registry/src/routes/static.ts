@@ -5,21 +5,24 @@ import type { HonoContext } from '../../types.ts'
  */
 export const handleStaticAssets = async (c: HonoContext) => {
   try {
-    const response = await c.env.ASSETS.fetch(c.req.raw)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    const response = (await c.env.ASSETS.fetch(c.req.raw)) as Response
 
     // If the ASSETS binding returns a 404, return a proper 404 response
     // with mutable headers to avoid the secure headers middleware conflict
     if (response.status === 404) {
-      return c.notFound()
+      return await c.notFound()
     }
 
     // For other non-200 responses, create a new response to avoid header conflicts
     if (!response.ok) {
-      return c.text('Asset not available', response.status)
+      return c.text('Asset not available', response.status as any)
     }
 
     return response
   } catch (error) {
+    // TODO: Replace with proper logging system
+    // eslint-disable-next-line no-console
     console.error('Error serving static asset:', error)
     return c.text('Internal Server Error', 500)
   }

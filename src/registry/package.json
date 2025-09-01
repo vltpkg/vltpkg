@@ -1,41 +1,23 @@
 {
   "name": "@vltpkg/vsr",
   "version": "0.3.0",
-  "license": "FSL-1.1-MIT",
-  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/vsr"
+    "directory": "src/registry"
   },
   "bin": "./dist/bin/vsr.js",
-  "engines": {
-    "node": ">=24"
-  },
-  "scripts": {
-    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint .",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio --port 4985",
-    "db:setup": "npx wrangler d1 execute vsr-local-database --file=src/db/migrations/0000_initial.sql --local --persist-to=local-store --no-remote && npx wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote",
-    "db:drop": "npx wrangler d1 execute vsr-local-database --file=src/db/migrations/drop.sql --local --persist-to=local-store --no-remote && rm -rf local-store && rm -rf .wrangler",
-    "serve:watch": "chokidar './src/**/*' -c 'pnpm serve:death && pnpm serve:build'",
-    "serve:build": "pnpm build &> /dev/null && ./dist/bin/vsr.js --debug --daemon=false",
-    "serve:death": "echo \"Killing wrangler dev processes...\" && (pkill -f 'wrangler.*dev' || true) && sleep 1 && (pids=$(lsof -ti :1337 2>/dev/null; lsof -ti :3000 2>/dev/null) && [ -n \"$pids\" ] && echo \"Force killing remaining processes: $pids\" && kill -9 $pids || echo \"No remaining processes found\") && echo \"Done.\"",
-    "build:dist": "rm -rf ./dist && mkdir -p ./dist/assets/public",
-    "build:assets": "cp -r ./src/assets ./dist/ && cp -r ./node_modules/@vltpkg/gui/dist ./dist/assets/public",
-    "build:bin": "mkdir -p ./dist/bin/demo && cp -r ./src/bin/demo ./dist/bin/ && esbuild ./src/bin/vsr.ts --outfile=./dist/bin/vsr.js --packages=external --platform=node --format=esm --log-level=silent",
-    "build:worker": "npx wrangler deploy --dry-run --outdir dist",
-    "build": "pnpm build:dist && pnpm build:assets && pnpm build:worker && pnpm build:bin",
-    "typecheck:worker": "tsc -p tsconfig.worker.json --noEmit",
-    "typecheck": "pnpm typecheck:bin && pnpm typecheck:worker",
-    "deploy": "pnpm build && npx wrangler deploy",
-    "test": "vitest"
+  "dependencies": {
+    "@hono/sentry": "^1.2.2",
+    "@hono/zod-openapi": "^0.19.10",
+    "@vltpkg/package-info": "workspace:*",
+    "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/server": "workspace:*",
+    "@vltpkg/vlt-json": "workspace:*",
+    "minargs": "^2.1.0",
+    "path-scurry": "catalog:",
+    "wrangler": "^4.33.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.68",
@@ -71,25 +53,50 @@
     "open": "^10.2.0",
     "schemes": "^1.4.0",
     "semver": "catalog:",
-    "ssri": "^12.0.0",
+    "ssri": "catalog:",
     "streaming-tarball": "^1.0.3",
     "tailwindcss": "^4.1.12",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
     "tsx": "^4.20.5",
     "undici": "^7.15.0",
     "uuid": "^11.1.0",
     "validate-npm-package-name": "6.0.2",
     "vitest": "^3.2.4"
   },
-  "dependencies": {
-    "@hono/sentry": "^1.2.2",
-    "@hono/zod-openapi": "^0.19.10",
-    "@vltpkg/package-info": "workspace:*",
-    "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/server": "workspace:*",
-    "@vltpkg/vlt-json": "workspace:*",
-    "minargs": "^2.1.0",
-    "path-scurry": "^2.0.0",
-    "wrangler": "^4.33.1",
-    "zod": "^3.25.76"
-  }
+  "license": "FSL-1.1-MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm build:dist && pnpm build:assets && pnpm build:worker && pnpm build:bin",
+    "build:assets": "node scripts/build-assets.js",
+    "build:bin": "node scripts/build-bin.js",
+    "build:dist": "node -e \"const fs=require('fs'); fs.rmSync('./dist', {recursive: true, force: true}); fs.mkdirSync('./dist/assets/public', {recursive: true});\"",
+    "build:worker": "npx wrangler deploy --dry-run --outdir dist",
+    "db:drop": "npx wrangler d1 execute vsr-local-database --file=src/db/migrations/drop.sql --local --persist-to=local-store --no-remote && node -e \"const fs=require('fs'); fs.rmSync('local-store',{recursive:true,force:true}); fs.rmSync('.wrangler',{recursive:true,force:true});\"",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:setup": "npx wrangler d1 execute vsr-local-database --file=src/db/migrations/0000_initial.sql --local --persist-to=local-store --no-remote && npx wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote",
+    "db:studio": "drizzle-kit studio --port 4985",
+    "deploy": "pnpm build && npx wrangler deploy",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "serve:build": "pnpm --silent build && node ./dist/bin/vsr.js --debug --daemon=false",
+    "serve:build:daemon": "pnpm --silent build && node ./dist/bin/vsr.js --debug --daemon=true",
+    "serve:death": "echo \"Killing wrangler dev processes...\" && (pkill -f 'wrangler.*dev' || true) && sleep 1 && (pids=$(lsof -ti :1337 2>/dev/null; lsof -ti :3000 2>/dev/null) && [ -n \"$pids\" ] && echo \"Force killing remaining processes: $pids\" && kill -9 $pids || echo \"No remaining processes found\") && echo \"Done.\"",
+    "serve:watch": "chokidar './src/**/*' -c 'pnpm serve:death && pnpm serve:build'",
+    "snap": "vitest --no-watch -u",
+    "pretest": "node scripts/pretest.js",
+    "test": "vitest --no-watch",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "typecheck:worker": "tsc -p tsconfig.worker.json --noEmit"
+  },
+  "type": "module",
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)"
 }
