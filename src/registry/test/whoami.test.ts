@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 // eslint-disable-next-line import/no-unresolved
 import { env } from 'cloudflare:test'
-import app from '../src/index.ts'
+import { app } from '../src/index.ts'
 
 // Default admin token from the database schema (unused in current tests)
 // const ADMIN_TOKEN = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'

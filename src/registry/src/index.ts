@@ -426,6 +426,8 @@ app.get('/manifest.json', handleManifest)
 // Pattern: /* (catch-all for any other static assets)
 app.get('/*', handleStaticAssets)
 
+export { app }
+
 export default {
   fetch: app.fetch,
   queue,

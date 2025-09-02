@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 // eslint-disable-next-line import/no-unresolved
 import { env } from 'cloudflare:test'
-import app from '../src/index.ts'
+import { app } from '../src/index.ts'
 
 describe('Search Endpoints', () => {
   describe('Root Registry Search', () => {

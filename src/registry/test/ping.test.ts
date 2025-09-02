@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import app from '../src/index.ts'
+import { app } from '../src/index.ts'
 
 describe('Ping Endpoint', () => {
   describe('Root Registry', () => {
