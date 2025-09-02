@@ -1,5 +1,5 @@
-import t from './tap-import.ts'
-import type { Test } from './tap-import.ts'
+import t from 'tap'
+import type { Test } from 'tap'
 import { resolve } from 'node:path'
 import * as Bundle from '../src/bundle.ts'
 import * as Compile from '../src/compile.ts'
