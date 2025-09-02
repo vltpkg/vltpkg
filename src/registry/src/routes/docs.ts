@@ -13,6 +13,7 @@ export const getDocs = Scalar(async c => {
       )
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const result = (await api.json()) as Record<string, any>
 
     // Merge dynamic API spec with static config, with static config taking precedence
@@ -23,6 +24,7 @@ export const getDocs = Scalar(async c => {
     } = SCALAR_API_CONFIG
 
     // Fix hardcoded localhost URLs in static config
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const staticContent = {
       ...SCALAR_API_CONFIG.spec.content,
       servers: [
@@ -54,6 +56,7 @@ export const getDocs = Scalar(async c => {
     return options as any
   } catch (error) {
     // Fallback to static config if API fetch fails
+    // eslint-disable-next-line no-console
     console.error('Failed to fetch API spec:', error)
     return SCALAR_API_CONFIG
   }
