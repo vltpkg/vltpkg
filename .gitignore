@@ -2,7 +2,7 @@
 .env
 .env.production
 .build-*/
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 
 /.turbo
 /docs
