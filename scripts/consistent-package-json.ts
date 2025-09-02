@@ -156,7 +156,7 @@ const fixScripts = async (ws: Workspace) => {
       }
     : {}),
   }
-  // always run typecheck after tests (except for GUI which has type issues)
+  // always run typecheck after tests
   if (scripts.typecheck) {
     scripts.posttest = scripts.typecheck
   }

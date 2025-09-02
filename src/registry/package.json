@@ -91,7 +91,7 @@
     "serve:death": "echo \"Killing wrangler dev processes...\" && (pkill -f 'wrangler.*dev' || true) && sleep 1 && (pids=$(lsof -ti :1337 2>/dev/null; lsof -ti :3000 2>/dev/null) && [ -n \"$pids\" ] && echo \"Force killing remaining processes: $pids\" && kill -9 $pids || echo \"No remaining processes found\") && echo \"Done.\"",
     "serve:watch": "chokidar './src/**/*' -c 'pnpm serve:death && pnpm serve:build'",
     "snap": "vitest --no-watch -u",
-    "pretest": "node scripts/pretest.js",
+    "pretest": "pnpm build",
     "test": "vitest --no-watch",
     "posttest": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
