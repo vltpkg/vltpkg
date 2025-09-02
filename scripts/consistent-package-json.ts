@@ -157,7 +157,7 @@ const fixScripts = async (ws: Workspace) => {
     : {}),
   }
   // always run typecheck after tests (except for GUI which has type issues)
-  if (scripts.typecheck && ws.pj.name !== '@vltpkg/gui') {
+  if (scripts.typecheck) {
     scripts.posttest = scripts.typecheck
   }
   ws.pj.scripts = sortObject(scripts, (a: string, b: string) => {

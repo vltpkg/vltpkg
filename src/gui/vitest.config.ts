@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'node:path'
 
 export default defineConfig({
-  // @ts-expect-error - React plugin type compatibility with Vitest
   plugins: [react()],
   resolve: {
     alias: {
