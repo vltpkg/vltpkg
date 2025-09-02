@@ -27,6 +27,14 @@ vi.mock('lucide-react', () => ({
   ChevronRight: 'gui-chevron-right',
 }))
 
+vi.mock('@/components/ui/input.tsx', () => ({
+  Input: 'gui-input',
+}))
+
+vi.mock('@/components/file-explorer/index.tsx', () => ({
+  FileExplorerView: 'gui-file-explorer-view',
+}))
+
 afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
@@ -144,6 +152,24 @@ test('SettingField renders as an input', () => {
       type: 'input',
       value: 'test',
       onValueChange: noop,
+    },
+  } satisfies SettingFieldProps
+
+  const Container = () => {
+    return <SettingField {...mockField} />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('SettingField renders as a file explorer', () => {
+  const mockField = {
+    name: 'File explorer option',
+    description: 'This is a file explorer option',
+    field: {
+      type: 'directory',
+      onSelect: noop,
     },
   } satisfies SettingFieldProps
 

@@ -4,31 +4,62 @@ exports[`SettingField renders as a dropdown 1`] = `
 
 <div
   data-setting="field"
-  class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
-  <div class="flex flex-col gap-1">
-    <p class="text-sm font-medium text-foreground">
-      Dropdown option
-    </p>
-    <p class="text-xs font-medium text-muted-foreground">
-      This is a dropdown option
-    </p>
+  <div class="flex justify-between">
+    <div class="flex flex-col gap-1">
+      <p class="text-sm font-medium text-foreground">
+        Dropdown option
+      </p>
+      <p class="text-xs font-medium text-muted-foreground">
+        This is a dropdown option
+      </p>
+    </div>
+    <div class="flex">
+      <gui-dropdown-menu>
+        <gui-dropdown-menu-trigger aschild="true">
+          <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+            <span>
+              Select an option
+            </span>
+            <gui-chevron-right classname="ml-auto size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
+            </gui-chevron-right>
+          </button>
+        </gui-dropdown-menu-trigger>
+        <gui-dropdown-menu-content
+          align="end"
+          classname="rounded-lg"
+        >
+          <gui-dropdown-menu-item classname="rounded-[7px]">
+            Option 1
+          </gui-dropdown-menu-item>
+        </gui-dropdown-menu-content>
+      </gui-dropdown-menu>
+    </div>
   </div>
-  <div class="flex">
-    <gui-dropdown-menu>
-      <gui-dropdown-menu-trigger aschild="true">
-        <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center justify-between gap-4 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900">
-          Select an option
-          <gui-chevron-right classname="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
-          </gui-chevron-right>
-        </button>
-      </gui-dropdown-menu-trigger>
-      <gui-dropdown-menu-content>
-        <gui-dropdown-menu-item>
-          Option 1
-        </gui-dropdown-menu-item>
-      </gui-dropdown-menu-content>
-    </gui-dropdown-menu>
+</div>
+
+`;
+
+exports[`SettingField renders as a file explorer 1`] = `
+
+<div
+  data-setting="field"
+  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+>
+  <div class="flex justify-between">
+    <div class="flex flex-col gap-1">
+      <p class="text-sm font-medium text-foreground">
+        File explorer option
+      </p>
+      <p class="text-xs font-medium text-muted-foreground">
+        This is a file explorer option
+      </p>
+    </div>
+    <div class="flex">
+      <gui-file-explorer-view>
+      </gui-file-explorer-view>
+    </div>
   </div>
 </div>
 
@@ -38,19 +69,21 @@ exports[`SettingField renders as a toggle 1`] = `
 
 <div
   data-setting="field"
-  class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
-  <div class="flex flex-col gap-1">
-    <p class="text-sm font-medium text-foreground">
-      Toggle option
-    </p>
-    <p class="text-xs font-medium text-muted-foreground">
-      This is a toggle option
-    </p>
-  </div>
-  <div class="flex">
-    <div class="duration-250 grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors border-muted-foreground/25 bg-secondary">
-      <div class="size-4 self-center justify-self-start rounded-full bg-muted-foreground/50">
+  <div class="flex justify-between">
+    <div class="flex flex-col gap-1">
+      <p class="text-sm font-medium text-foreground">
+        Toggle option
+      </p>
+      <p class="text-xs font-medium text-muted-foreground">
+        This is a toggle option
+      </p>
+    </div>
+    <div class="flex">
+      <div class="duration-250 grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors border-muted-foreground/25 bg-secondary">
+        <div class="size-4 self-center justify-self-start rounded-full bg-muted-foreground/50">
+        </div>
       </div>
     </div>
   </div>
@@ -62,21 +95,24 @@ exports[`SettingField renders as an input 1`] = `
 
 <div
   data-setting="field"
-  class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
-  <div class="flex flex-col gap-1">
-    <p class="text-sm font-medium text-foreground">
-      input option
-    </p>
-    <p class="text-xs font-medium text-muted-foreground">
-      This is an input option
-    </p>
-  </div>
-  <div class="flex">
-    <input
-      class="clear-none flex w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-900 h-10 min-w-48 rounded-lg"
-      value="test"
-    >
+  <div class="flex justify-between">
+    <div class="flex flex-col gap-1">
+      <p class="text-sm font-medium text-foreground">
+        input option
+      </p>
+      <p class="text-xs font-medium text-muted-foreground">
+        This is an input option
+      </p>
+    </div>
+    <div class="flex">
+      <gui-input
+        classname="h-10 min-w-48 rounded-lg"
+        value="test"
+      >
+      </gui-input>
+    </div>
   </div>
 </div>
 
@@ -105,98 +141,119 @@ exports[`SettingSplit correctly splits the section 1`] = `
       <fieldset class="group">
         <div
           data-setting="field"
-          class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
-          <div class="flex flex-col gap-1">
-            <p class="text-sm font-medium text-foreground">
-              Mock field
-            </p>
-            <p class="text-xs font-medium text-muted-foreground">
-              This is a mock field for testing
-            </p>
-          </div>
-          <div class="flex">
-            <gui-dropdown-menu>
-              <gui-dropdown-menu-trigger aschild="true">
-                <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center justify-between gap-4 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900">
-                  Option 1
-                  <gui-chevron-right classname="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
-                  </gui-chevron-right>
-                </button>
-              </gui-dropdown-menu-trigger>
-              <gui-dropdown-menu-content>
-                <gui-dropdown-menu-item>
-                  Option 1
-                </gui-dropdown-menu-item>
-                <gui-dropdown-menu-item>
-                  Option 2
-                </gui-dropdown-menu-item>
-              </gui-dropdown-menu-content>
-            </gui-dropdown-menu>
+          <div class="flex justify-between">
+            <div class="flex flex-col gap-1">
+              <p class="text-sm font-medium text-foreground">
+                Mock field
+              </p>
+              <p class="text-xs font-medium text-muted-foreground">
+                This is a mock field for testing
+              </p>
+            </div>
+            <div class="flex">
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger aschild="true">
+                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                    <span>
+                      Option 1
+                    </span>
+                    <gui-chevron-right classname="ml-auto size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
+                    </gui-chevron-right>
+                  </button>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  align="end"
+                  classname="rounded-lg"
+                >
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 1
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 2
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </div>
           </div>
         </div>
         <div
           data-setting="field"
-          class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
-          <div class="flex flex-col gap-1">
-            <p class="text-sm font-medium text-foreground">
-              Mock field
-            </p>
-            <p class="text-xs font-medium text-muted-foreground">
-              This is a mock field for testing
-            </p>
-          </div>
-          <div class="flex">
-            <gui-dropdown-menu>
-              <gui-dropdown-menu-trigger aschild="true">
-                <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center justify-between gap-4 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900">
-                  Option 1
-                  <gui-chevron-right classname="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
-                  </gui-chevron-right>
-                </button>
-              </gui-dropdown-menu-trigger>
-              <gui-dropdown-menu-content>
-                <gui-dropdown-menu-item>
-                  Option 1
-                </gui-dropdown-menu-item>
-                <gui-dropdown-menu-item>
-                  Option 2
-                </gui-dropdown-menu-item>
-              </gui-dropdown-menu-content>
-            </gui-dropdown-menu>
+          <div class="flex justify-between">
+            <div class="flex flex-col gap-1">
+              <p class="text-sm font-medium text-foreground">
+                Mock field
+              </p>
+              <p class="text-xs font-medium text-muted-foreground">
+                This is a mock field for testing
+              </p>
+            </div>
+            <div class="flex">
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger aschild="true">
+                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                    <span>
+                      Option 1
+                    </span>
+                    <gui-chevron-right classname="ml-auto size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
+                    </gui-chevron-right>
+                  </button>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  align="end"
+                  classname="rounded-lg"
+                >
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 1
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 2
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </div>
           </div>
         </div>
         <div
           data-setting="field"
-          class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
-          <div class="flex flex-col gap-1">
-            <p class="text-sm font-medium text-foreground">
-              Mock field
-            </p>
-            <p class="text-xs font-medium text-muted-foreground">
-              This is a mock field for testing
-            </p>
-          </div>
-          <div class="flex">
-            <gui-dropdown-menu>
-              <gui-dropdown-menu-trigger aschild="true">
-                <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center justify-between gap-4 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900">
-                  Option 1
-                  <gui-chevron-right classname="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
-                  </gui-chevron-right>
-                </button>
-              </gui-dropdown-menu-trigger>
-              <gui-dropdown-menu-content>
-                <gui-dropdown-menu-item>
-                  Option 1
-                </gui-dropdown-menu-item>
-                <gui-dropdown-menu-item>
-                  Option 2
-                </gui-dropdown-menu-item>
-              </gui-dropdown-menu-content>
-            </gui-dropdown-menu>
+          <div class="flex justify-between">
+            <div class="flex flex-col gap-1">
+              <p class="text-sm font-medium text-foreground">
+                Mock field
+              </p>
+              <p class="text-xs font-medium text-muted-foreground">
+                This is a mock field for testing
+              </p>
+            </div>
+            <div class="flex">
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger aschild="true">
+                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                    <span>
+                      Option 1
+                    </span>
+                    <gui-chevron-right classname="ml-auto size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
+                    </gui-chevron-right>
+                  </button>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  align="end"
+                  classname="rounded-lg"
+                >
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 1
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 2
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </div>
           </div>
         </div>
         <div
@@ -206,34 +263,41 @@ exports[`SettingSplit correctly splits the section 1`] = `
         </div>
         <div
           data-setting="field"
-          class="flex justify-between border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
-          <div class="flex flex-col gap-1">
-            <p class="text-sm font-medium text-foreground">
-              Mock field
-            </p>
-            <p class="text-xs font-medium text-muted-foreground">
-              This is a mock field for testing
-            </p>
-          </div>
-          <div class="flex">
-            <gui-dropdown-menu>
-              <gui-dropdown-menu-trigger aschild="true">
-                <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center justify-between gap-4 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900">
-                  Option 1
-                  <gui-chevron-right classname="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
-                  </gui-chevron-right>
-                </button>
-              </gui-dropdown-menu-trigger>
-              <gui-dropdown-menu-content>
-                <gui-dropdown-menu-item>
-                  Option 1
-                </gui-dropdown-menu-item>
-                <gui-dropdown-menu-item>
-                  Option 2
-                </gui-dropdown-menu-item>
-              </gui-dropdown-menu-content>
-            </gui-dropdown-menu>
+          <div class="flex justify-between">
+            <div class="flex flex-col gap-1">
+              <p class="text-sm font-medium text-foreground">
+                Mock field
+              </p>
+              <p class="text-xs font-medium text-muted-foreground">
+                This is a mock field for testing
+              </p>
+            </div>
+            <div class="flex">
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger aschild="true">
+                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                    <span>
+                      Option 1
+                    </span>
+                    <gui-chevron-right classname="ml-auto size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-90">
+                    </gui-chevron-right>
+                  </button>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  align="end"
+                  classname="rounded-lg"
+                >
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 1
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="rounded-[7px]">
+                    Option 2
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
+            </div>
           </div>
         </div>
       </fieldset>

@@ -9,9 +9,11 @@ import {
 } from '@/components/ui/dropdown-menu.tsx'
 import { ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input.tsx'
+import { FileExplorerView } from '@/components/file-explorer/index.tsx'
 
-import type { PropsWithChildren } from 'react'
+import type { ReactNode, PropsWithChildren } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import type { FileExplorerItem } from '@/components/file-explorer/file-explorer.tsx'
 
 /**
  * COMPONENT USAGE:
@@ -72,11 +74,16 @@ export const SettingSection = ({
   )
 }
 
-type SettingType = 'dropdown' | 'toggle' | 'input'
+type SettingType = 'dropdown' | 'toggle' | 'input' | 'directory'
 
 interface BaseField {
   type: SettingType
   className?: string
+}
+
+export interface DirectoryFieldProps extends BaseField {
+  type: 'directory'
+  onSelect?: (item: FileExplorerItem) => void
 }
 
 export interface DropdownOption {
@@ -115,7 +122,9 @@ export interface SettingFieldProps {
     | DropdownFieldProps
     | ToggleFieldProps
     | InputFieldProps
+    | DirectoryFieldProps
   className?: string
+  content?: ReactNode
 }
 
 export const SettingField = ({
@@ -123,6 +132,7 @@ export const SettingField = ({
   description,
   field,
   className,
+  content,
 }: SettingFieldProps) => {
   const styles = `
     first:rounded-t-xl
@@ -145,6 +155,8 @@ export const SettingField = ({
         return <ToggleField {...field} />
       case 'input':
         return <InputField {...field} />
+      case 'directory':
+        return <DirectoryField {...field} />
     }
   }
 
@@ -152,19 +164,28 @@ export const SettingField = ({
     <div
       data-setting="field"
       className={cn(
-        'flex justify-between border-[1px] bg-card p-4',
+        'flex flex-col border-[1px] bg-card p-4',
         styles,
         className,
       )}>
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium text-foreground">{name}</p>
-        <p className="text-xs font-medium text-muted-foreground">
-          {description}
-        </p>
+      <div className="flex justify-between">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium text-foreground">
+            {name}
+          </p>
+          <p className="text-xs font-medium text-muted-foreground">
+            {description}
+          </p>
+        </div>
+        <div className="flex">{renderField()}</div>
       </div>
-      <div className="flex">{renderField()}</div>
+      {content && content}
     </div>
   )
+}
+
+const DirectoryField = ({ onSelect }: DirectoryFieldProps) => {
+  return <FileExplorerView onSelect={onSelect} />
 }
 
 const InputField = ({
