@@ -117,4 +117,80 @@ t.test('start listening', async t => {
       message: 'failed to start server',
     })
   })
+
+  t.test(
+    'update() respects config dashboard-root fallbacks',
+    async t => {
+      const { VltServer } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        ...MOCKS,
+        '../src/config-data.ts': {
+          ConfigManager: class {
+            async get(
+              key?: string,
+              which?: 'user' | 'project',
+            ): Promise<unknown> {
+              if (key === 'dashboard-root' && which === 'project') {
+                return ['from-project']
+              }
+              if (key === 'dashboard-root' && which === 'user') {
+                return ['from-user']
+              }
+              return undefined
+            }
+          },
+        },
+      })
+
+      const s = new VltServer({
+        ...opts,
+        'dashboard-root': [],
+        publicDir: resolve(t.testdirName, 's3/public'),
+      })
+
+      await s.start()
+      // project root should win
+      t.same(s.dashboardRoot, ['from-project'])
+      await s.close()
+    },
+  )
+
+  t.test(
+    'update() falls back to user dashboard-root when project empty',
+    async t => {
+      const { VltServer } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        ...MOCKS,
+        '../src/config-data.ts': {
+          ConfigManager: class {
+            async get(
+              key?: string,
+              which?: 'user' | 'project',
+            ): Promise<unknown> {
+              if (key === 'dashboard-root' && which === 'project') {
+                return []
+              }
+              if (key === 'dashboard-root' && which === 'user') {
+                return ['from-user']
+              }
+              return undefined
+            }
+          },
+        },
+      })
+
+      const s = new VltServer({
+        ...opts,
+        'dashboard-root': [],
+        publicDir: resolve(t.testdirName, 's4/public'),
+      })
+
+      await s.start()
+      // user root should win if project is empty
+      t.same(s.dashboardRoot, ['from-user'])
+      await s.close()
+    },
+  )
 })

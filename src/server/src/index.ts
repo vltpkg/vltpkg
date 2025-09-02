@@ -158,6 +158,10 @@ export class VltServer extends EventEmitter<{
 
   updateOptions(options: VltServerOptions) {
     this.options = options
+    // keep dashboard root in sync with the provided options
+    if (options['dashboard-root']) {
+      this.dashboardRoot = options['dashboard-root']
+    }
   }
 
   async update(this: VltServerListening) {
@@ -167,8 +171,40 @@ export class VltServer extends EventEmitter<{
     })
     await this.appData.update()
 
+    // Initialize the config early so we can respect dashboard-root from config
+    const conf = this.options.loadedConfig ?? (await Config.load())
+    this.config = new ConfigManager({ config: conf })
+
     // dashboard data is optional since the GUI might be started from a
     // project in order to just explore its graph data
+    // prefer latest dashboard-root from options (reflects reloaded config)
+    if (this.options['dashboard-root']?.length) {
+      const dashRoot = this.options['dashboard-root']
+      if (Array.isArray(dashRoot)) {
+        this.dashboardRoot = dashRoot
+      }
+    } else {
+      // otherwise fall back to explicit lookups
+      try {
+        const projectRoot = (await this.config.get(
+          'dashboard-root',
+          'project',
+        )) as undefined | string[]
+        const userRoot = (await this.config.get(
+          'dashboard-root',
+          'user',
+        )) as undefined | string[]
+        if (Array.isArray(projectRoot) && projectRoot.length) {
+          this.dashboardRoot = projectRoot
+        } else if (Array.isArray(userRoot) && userRoot.length) {
+          this.dashboardRoot = userRoot
+        }
+        /* c8 ignore next 3 */
+      } catch {
+        // ignore config read errors and keep existing dashboardRoot
+      }
+    }
+
     this.dashboard = new Dashboard({
       ...this.options,
       'dashboard-root': this.dashboardRoot,
@@ -176,10 +212,6 @@ export class VltServer extends EventEmitter<{
     })
     this.hasDashboard = await this.dashboard.update()
     await this.updateGraph()
-
-    // Initialize the config
-    const conf = this.options.loadedConfig ?? (await Config.load())
-    this.config = new ConfigManager({ config: conf })
   }
 
   async close() {
