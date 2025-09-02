@@ -8,15 +8,20 @@ export const getDocs = Scalar(async c => {
     const api = await fetch(`${origin}/-/api`)
 
     if (!api.ok) {
-      throw new Error(`API fetch failed: ${api.status} ${api.statusText}`)
+      throw new Error(
+        `API fetch failed: ${api.status} ${api.statusText}`,
+      )
     }
 
     const result = (await api.json()) as Record<string, any>
 
     // Merge dynamic API spec with static config, with static config taking precedence
-    const { authentication, defaultHttpClient, ...configWithoutAuth } =
-      SCALAR_API_CONFIG
-    
+    const {
+      authentication,
+      defaultHttpClient,
+      ...configWithoutAuth
+    } = SCALAR_API_CONFIG
+
     // Fix hardcoded localhost URLs in static config
     const staticContent = {
       ...SCALAR_API_CONFIG.spec.content,
@@ -27,7 +32,7 @@ export const getDocs = Scalar(async c => {
         },
       ],
     }
-    
+
     const options = {
       // Start with static config to preserve ALL your settings
       ...configWithoutAuth,
