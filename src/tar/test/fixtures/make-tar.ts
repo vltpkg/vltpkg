@@ -1,16 +1,25 @@
 import { Header } from 'tar'
 import type { HeaderData } from 'tar'
-export const makeTar = (chunks: (string | Buffer | HeaderData)[]) => {
-  let dataLen = 0
-  return Buffer.concat(
-    chunks.concat([Buffer.alloc(1024)]).map(chunk => {
-      if (Buffer.isBuffer(chunk)) {
-        if (chunk.length % 512 !== 0) {
-          const size = 512 * Math.ceil(chunk.length / 512)
-          const c = Buffer.alloc(size - chunk.length)
-          chunk = Buffer.concat([chunk, c])
+
+const concatUint8Arrays = (arr: Uint8Array[]): Uint8Array =>
+  arr.reduce((acc, i) => {
+    const next = new Uint8Array(acc.byteLength + i.byteLength)
+    next.set(acc, 0)
+    next.set(i, acc.byteLength)
+    return next
+  }, new Uint8Array(0))
+
+export const makeTar = (
+  chunks: (string | Uint8Array | HeaderData)[],
+): Uint8Array => {
+  return concatUint8Arrays(
+    chunks.concat([new Uint8Array(1024)]).map(chunk => {
+      if (chunk && typeof chunk !== 'string' && 'buffer' in chunk) {
+        if (chunk.byteLength % 512 !== 0) {
+          const size = 512 * Math.ceil(chunk.byteLength / 512)
+          const c = new Uint8Array(size - chunk.byteLength)
+          chunk = concatUint8Arrays([chunk, c])
         }
-        dataLen += chunk.length
         return chunk
       }
       const size = Math.max(
@@ -18,15 +27,19 @@ export const makeTar = (chunks: (string | Buffer | HeaderData)[]) => {
           512 * Math.ceil(chunk.length / 512)
         : 512,
       )
-      dataLen += size
-      const buf = Buffer.alloc(size)
+      const buf = new Uint8Array(size)
       if (typeof chunk === 'string') {
-        buf.write(chunk)
+        buf.set(new TextEncoder().encode(chunk), 0)
       } else {
-        new Header({ type: 'File', ...chunk }).encode(buf, 0)
+        // Create a Buffer that shares the same memory as the Uint8Array
+        const buffer = Buffer.from(
+          buf.buffer,
+          buf.byteOffset,
+          buf.byteLength,
+        )
+        new Header({ type: 'File', ...chunk }).encode(buffer, 0)
       }
       return buf
     }),
-    dataLen,
   )
 }

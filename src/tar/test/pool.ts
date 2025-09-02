@@ -1,19 +1,13 @@
 import t from 'tap'
-import { isResponseOK } from '../src/worker.ts'
 import { Pool } from '../src/pool.ts'
 
 import { lstatSync } from 'node:fs'
-import { availableParallelism } from 'node:os'
 import { resolve } from 'node:path'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
-t.equal(p.jobs, 8 * (Math.max(availableParallelism(), 2) - 1))
 
-// make it smaller so we can cover the contention cases
-p.jobs = 2
-
-const makePkg = (name: string, version: string): Buffer => {
+const makePkg = (name: string, version: string): Uint8Array => {
   const pj = { name, version }
   const json = JSON.stringify(pj)
   return makeTar([
@@ -26,9 +20,9 @@ const makePkg = (name: string, version: string): Buffer => {
   ])
 }
 
-const makePkgFlat = (name: string, version: string): Buffer => {
+const makePkgFlat = (name: string, version: string): Uint8Array => {
   const p = makePkg(name, version)
-  const b = Buffer.allocUnsafeSlow(p.length)
+  const b = new Uint8Array(p.length)
   for (let i = 0; i < p.length; i++) b[i] = p[i]!
   if (b.byteOffset !== 0)
     throw new Error('got an offset of not zero??')
@@ -39,7 +33,7 @@ const makeJob = (
   name: string,
   version: string,
   flat = false,
-): [string, Buffer] => {
+): [string, Uint8Array] => {
   return [
     `node_modules/.vlt/registry.npmjs.org/${name}/${version}/node_modules/${name}`,
     (flat ? makePkgFlat : makePkg)(name, version),
@@ -59,8 +53,8 @@ const versions = [
   '1.2.2',
 ]
 
-const reqs: [string, Buffer][] = []
-const flatReqs: [string, Buffer][] = []
+const reqs: [string, Uint8Array][] = []
+const flatReqs: [string, Uint8Array][] = []
 for (const name of names) {
   for (const version of versions) {
     reqs.push(makeJob(name, version))
@@ -73,9 +67,16 @@ t.same(reqs, flatReqs, 'reqs and flatreqs the same', { bail: true })
 t.test('unpack all the things!', async t => {
   const d = t.testdir()
   const results = await Promise.all(
-    reqs.map(async ([target, tarData]) =>
-      p.unpack(tarData, resolve(d, target)),
-    ),
+    reqs.map(async ([target, tarData]) => {
+      const uint8Array = new Uint8Array(
+        tarData.buffer,
+        tarData.byteOffset,
+        tarData.byteLength,
+      )
+      return p.unpack(uint8Array, resolve(d, target)).catch(er => {
+        t.fail({ target, error: er })
+      })
+    }),
   )
   t.strictSame(
     results,
@@ -93,9 +94,14 @@ t.test('unpack all the things!', async t => {
 t.test('unpack all the things, but flattened', async t => {
   const d = t.testdir()
   const results = await Promise.all(
-    flatReqs.map(async ([target, tarData]) =>
-      p.unpack(tarData, resolve(d, target)),
-    ),
+    flatReqs.map(async ([target, tarData]) => {
+      const uint8Array = new Uint8Array(
+        tarData.buffer,
+        tarData.byteOffset,
+        tarData.byteLength,
+      )
+      return p.unpack(uint8Array, resolve(d, target))
+    }),
   )
   t.strictSame(
     results,
@@ -111,9 +117,6 @@ t.test('unpack all the things, but flattened', async t => {
   t.end()
 })
 
-t.test('response ok/error checking', t => {
-  t.equal(isResponseOK({ id: 1, ok: true }), true)
-  t.equal(isResponseOK({ id: 1, error: 'x' }), false)
-  t.equal(isResponseOK({ ok: true }), false, 'id required')
-  t.end()
+t.test('destroy pool', async () => {
+  await p.destroy()
 })
