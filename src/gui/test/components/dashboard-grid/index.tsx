@@ -3,10 +3,23 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { DashboardGrid } from '@/components/dashboard-grid/index.tsx'
+
 import type { DashboardTools } from '@/state/types.ts'
+
+vi.mock('@/components/hooks/use-dashboard-root-check.tsx', () => {
+  const useDashboardRootCheck = vi.fn(() => ({
+    hasDashboard: true,
+    isLoading: false,
+    dashboardRoots: ['/user/project-foo', '/user/project-bar'],
+  }))
+  return { useDashboardRootCheck }
+})
+
+import { useDashboardRootCheck } from '@/components/hooks/use-dashboard-root-check.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
+  NavLink: 'gui-nav-link',
 }))
 
 vi.mock('@/utils/dashboard-tools.tsx', () => ({
@@ -75,10 +88,15 @@ vi.mock(
 
 vi.mock('lucide-react', () => ({
   Plus: 'gui-plus-icon',
+  Settings2: 'gui-settings-icon',
 }))
 
 vi.mock('@/components/dashboard-grid/dashboard-item.tsx', () => ({
   DashboardItem: 'gui-dashboard-item',
+}))
+
+vi.mock('@/components/ui/loading-spinner.tsx', () => ({
+  LoadingSpinner: 'gui-loading-spinner',
 }))
 
 expect.addSnapshotSerializer({
@@ -90,6 +108,7 @@ afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
+  vi.clearAllMocks()
 })
 
 test('dashboard-grid render default', async () => {
@@ -128,5 +147,25 @@ test('dashboard-grid with results', async () => {
     return <DashboardGrid />
   }
   render(<Container />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('dashboard-grid when loading and no dashboard', async () => {
+  ;(useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+    hasDashboard: false,
+    isLoading: true,
+    dashboardRoots: [],
+  })
+  render(<DashboardGrid />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('dashboard-grid when dashboard present with empty roots', async () => {
+  ;(useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+    hasDashboard: true,
+    isLoading: false,
+    dashboardRoots: [],
+  })
+  render(<DashboardGrid />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })

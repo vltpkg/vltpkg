@@ -1,12 +1,16 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate } from 'react-router'
 import { useState } from 'react'
+import { NavLink, useNavigate } from 'react-router'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useGraphStore } from '@/state/index.ts'
-import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.tsx'
 import { requestRouteTransition } from '@/lib/request-route-transition.ts'
-import { LoadingSpinner } from '@/components/ui/loading-spinner.tsx'
 import { useDashboardStore } from '@/state/dashboard.ts'
+import { useDashboardRootCheck } from '@/components/hooks/use-dashboard-root-check.tsx'
+import { Plus, Settings2 } from 'lucide-react'
 import { DashboardItem } from '@/components/dashboard-grid/dashboard-item.tsx'
+import { LoadingSpinner } from '@/components/ui/loading-spinner.tsx'
+import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.tsx'
+import { InlineCode } from '@/components/ui/inline-code.tsx'
+import { Button } from '@/components/ui/button.tsx'
 
 import type { DashboardDataProject } from '@/state/types.ts'
 
@@ -62,6 +66,10 @@ export const DashboardGrid = () => {
     )
   }
 
+  if (!dashboard?.projects || dashboard.projects.length === 0) {
+    return <DashboardEmptyState />
+  }
+
   return (
     <div className="flex h-full flex-col px-8 py-4">
       <AnimatePresence initial={false} mode="wait">
@@ -99,19 +107,64 @@ export const DashboardGrid = () => {
             className="flex w-full max-w-8xl flex-col">
             <p className="mb-4 text-sm font-semibold">Projects</p>
             <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {dashboard?.projects ?
-                filteredProjects.map((item, index) => (
-                  <DashboardItem
-                    key={index}
-                    item={item}
-                    onItemClick={onItemClick}
-                  />
-                ))
-              : <p>No projects found</p>}
+              {filteredProjects.map((item, index) => (
+                <DashboardItem
+                  key={index}
+                  item={item}
+                  onItemClick={onItemClick}
+                />
+              ))}
             </div>
           </motion.div>
         }
       </AnimatePresence>
+    </div>
+  )
+}
+
+const DashboardEmptyState = () => {
+  const { dashboardRoots } = useDashboardRootCheck()
+
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-2 text-center">
+        <h2 className="text-2xl font-medium tracking-tight">
+          No projects found
+        </h2>
+        {dashboardRoots && dashboardRoots.length > 0 && (
+          <div className="flex flex-col items-center justify-center gap-2">
+            <p className="text-sm font-medium text-muted-foreground">
+              We couldn't find any projects in the following
+              configured dashboard roots:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {dashboardRoots.map((path, idx) => (
+                <InlineCode className="mx-0" key={`${path}-${idx}`}>
+                  {path}
+                </InlineCode>
+              ))}
+            </div>
+            <div className="mt-4 flex gap-2">
+              <Button
+                asChild
+                variant="secondary"
+                size="sm"
+                className="rounded-xl">
+                <NavLink to="/settings">
+                  <Settings2 size={24} />
+                  <span>Settings</span>
+                </NavLink>
+              </Button>
+              <Button asChild size="sm" className="rounded-xl">
+                <NavLink to="/create-new-project">
+                  <Plus size={24} />
+                  <span>Create New Project</span>
+                </NavLink>
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
