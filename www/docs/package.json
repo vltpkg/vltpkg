@@ -19,6 +19,8 @@
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-slot": "^1.2.3",
+    "@scalar/api-reference-react": "^0.7.42",
+    "@scalar/openapi-to-markdown": "^0.2.30",
     "astro": "^5.13.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

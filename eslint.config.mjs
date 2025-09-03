@@ -304,6 +304,19 @@ export default [
     },
   },
   {
+    name: `${NAME}/registry`,
+    files: [`src/registry/**/*${extGlobs.ts}`],
+    rules: {
+      'import/no-unresolved': [
+        'error',
+        {
+          // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
+          ignore: ['cloudflare:test'],
+        },
+      ],
+    },
+  },
+  {
     name: `${NAME}/docs`,
     files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {

@@ -29,23 +29,11 @@ const defaultList: SidebarDefaultListItem[] = [
     ),
     className: 'text-primary',
   },
-  {
-    slug: 'Serverless Registry',
-    href: 'https://www.vlt.sh/serverless-registry',
-    external: true,
-    className: '',
-    icon: () => (
-      <img
-        src="/icons/vsr.svg"
-        className="size-5 dark:invert dark:filter"
-      />
-    ),
-  },
 ]
 
 const DefaultSublist = () => {
   return (
-    <div className="mb-4 flex flex-col gap-1">
+    <div className="mb-1 flex flex-col gap-1">
       {defaultList.map((item, idx) => (
         <Button
           className="group"

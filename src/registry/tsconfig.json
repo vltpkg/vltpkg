@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "config.ts", "types.ts"],
+  "exclude": [
+    "src/bin/**/*",
+    "node_modules",
+    "dist",
+    "bin",
+    "test/**/*",
+    "../gui/**/*",
+    "../../www/**/*",
+    "../../node_modules/**/*"
+  ]
+}

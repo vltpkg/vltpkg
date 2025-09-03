@@ -1,0 +1,56 @@
+{
+  "registry": {
+    "daemon": true,
+    "telemetry": true,
+    "debug": false,
+    "port": 1337,
+    "deploy": {
+      "sentry": {
+        "dsn": "https://your-sentry-dsn@sentry.io/project-id",
+        "sampleRate": 1.0,
+        "tracesSampleRate": 0.1
+      },
+      "environments": {
+        "dev": {
+          "databaseName": "vsr-dev-database",
+          "bucketName": "vsr-dev-bucket",
+          "queueName": "vsr-dev-cache-refresh-queue",
+          "sentry": {
+            "environment": "development"
+          },
+          "vars": {
+            "CUSTOM_VAR": "dev-value",
+            "API_BASE_URL": "https://dev-api.example.com"
+          }
+        },
+        "staging": {
+          "databaseName": "vsr-staging-database",
+          "bucketName": "vsr-staging-bucket",
+          "queueName": "vsr-staging-cache-refresh-queue",
+          "sentry": {
+            "environment": "staging"
+          },
+          "vars": {
+            "CUSTOM_VAR": "staging-value",
+            "API_BASE_URL": "https://staging-api.example.com"
+          }
+        },
+        "prod": {
+          "databaseName": "vsr-prod-database",
+          "bucketName": "vsr-prod-bucket",
+          "queueName": "vsr-prod-cache-refresh-queue",
+          "sentry": {
+            "environment": "production",
+            "dsn": "https://your-prod-sentry-dsn@sentry.io/project-id",
+            "sampleRate": 0.1,
+            "tracesSampleRate": 0.01
+          },
+          "vars": {
+            "CUSTOM_VAR": "prod-value",
+            "API_BASE_URL": "https://api.example.com"
+          }
+        }
+      }
+    }
+  }
+}

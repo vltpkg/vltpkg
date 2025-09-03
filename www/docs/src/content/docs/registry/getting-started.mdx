@@ -1,0 +1,149 @@
+---
+title: Getting Started
+description:
+  Get up and running with vlt's Serverless Registry (VSR) in minutes
+sidebar:
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Get up and running with vlt's Serverless Registry (VSR) in minutes.
+VSR is a modern, npm-compatible registry that runs seamlessly on
+Cloudflare's global edge network.
+
+## 🚀 Quick Start
+
+Get up and running in seconds:
+
+<Code code="# Try it locally
+npx @vltpkg/vsr
+
+# Or install globally
+
+npm install -g @vltpkg/vsr vsr" lang="bash" />
+
+**Boom!** 💥 Your registry is live at `http://localhost:1337`
+
+## 🏃‍♂️ Local Development
+
+### Basic Usage
+
+<Code code="# Start with defaults (port 1337)
+vsr
+
+# Custom port
+
+vsr --port 3000
+
+# Enable debug mode
+
+vsr --debug
+
+# Use config file
+
+vsr --config ./vlt.json" lang="bash" />
+
+### CLI Options
+
+| Option     | Alias | Default | Description             |
+| ---------- | ----- | ------- | ----------------------- |
+| `--port`   | `-p`  | `1337`  | Server port             |
+| `--config` | `-c`  | -       | Config file path        |
+| `--debug`  | `-d`  | `false` | Debug mode              |
+| `--daemon` | -     | `true`  | Local filesystem daemon |
+| `--help`   | `-h`  | -       | Show help               |
+
+## 🔗 API Access
+
+Once running, access your registry:
+
+- **Registry API**: `http://localhost:1337`
+- **Interactive Docs**: `http://localhost:1337/-/docs`
+- **Filesystem Daemon**: `http://localhost:3000` (if enabled)
+
+## Requirements
+
+**Development:**
+
+- Node.js (latest LTS)
+- VLT package manager
+
+**Production:**
+
+- Cloudflare Account (free tier available)
+
+## 🚀 Production Deployment
+
+Deploy VSR to Cloudflare Workers with the new `vsr deploy` command:
+
+<Code code="# Deploy to default environment (dev)
+vsr deploy
+
+# Deploy to production
+
+vsr deploy --env=prod
+
+# Preview deployment without actually deploying
+
+vsr deploy --dry-run
+
+# Override specific resource names
+
+vsr deploy --env=staging --db-name=my-custom-db
+--bucket-name=my-custom-bucket" lang="bash" />
+
+### Deploy Options
+
+| Option          | Default | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `--env`         | `dev`   | Environment (dev/staging/prod) |
+| `--db-name`     | -       | Override D1 database name      |
+| `--bucket-name` | -       | Override R2 bucket name        |
+| `--queue-name`  | -       | Override queue name            |
+| `--dry-run`     | `false` | Preview deployment             |
+
+### Configuration
+
+Add deployment configuration to your `vlt.json` file:
+
+<Code
+  code={`{
+  "registry": {
+    "deploy": {
+      "sentry": {
+        "dsn": "https://your-sentry-dsn@sentry.io/project-id",
+        "sampleRate": 1.0,
+        "tracesSampleRate": 0.1
+      },
+      "environments": {
+        "dev": {
+          "databaseName": "vsr-dev-database",
+          "bucketName": "vsr-dev-bucket",
+          "queueName": "vsr-dev-cache-refresh-queue",
+          "sentry": {
+            "environment": "development"
+          }
+        },
+        "prod": {
+          "databaseName": "vsr-prod-database",
+          "bucketName": "vsr-prod-bucket",
+          "queueName": "vsr-prod-cache-refresh-queue",
+          "sentry": {
+            "environment": "production",
+            "dsn": "https://your-prod-sentry-dsn@sentry.io/project-id",
+            "sampleRate": 0.1
+          }
+        }
+      }
+    }
+  }
+}`}
+  lang="json"
+/>
+
+**That's it!** 🎉 Your registry is now running globally on
+Cloudflare's edge network.
+
+For detailed deployment configuration, see our
+[Deployment Guide](/registry/deployment).

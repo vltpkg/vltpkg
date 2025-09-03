@@ -232,7 +232,7 @@ const fixLicense = async (ws: Workspace) => {
   const license = await readFile(licenseFile, 'utf8').catch(() => '')
 
   const containsVlt = () => {
-    if (!/Copyright (.*)? vlt technology, Inc\./.test(license)) {
+    if (!/Copyright (.*)? vlt technology,? Inc\./i.test(license)) {
       throw new Error(
         `${ws.pj.name} license should contain vlt company name`,
       )
@@ -271,7 +271,8 @@ const fixLicense = async (ws: Workspace) => {
       containsVlt()
       break
     }
-    case '@vltpkg/gui': {
+    case '@vltpkg/gui':
+    case '@vltpkg/vsr': {
       ws.pj.license = 'FSL-1.1-MIT'
       containsText(ws.pj.license)
       containsVlt()

@@ -1,0 +1,79 @@
+/* Custom Scalar theming following official guidelines */
+/* https://guides.scalar.com/scalar/scalar-api-references/themes */
+
+:root {
+  /* Use Starlight fonts */
+  --scalar-font: var(--sl-font);
+  --scalar-font-code: var(--sl-font-mono);
+}
+
+/* Light mode theming */
+.light-mode {
+  --scalar-color-1: hsl(var(--sl-color-text));
+  --scalar-color-2: hsl(var(--sl-color-text-accent));
+  --scalar-color-3: hsl(var(--sl-color-gray-3));
+  --scalar-color-accent: hsl(var(--sl-color-accent));
+  --scalar-background-1: hsl(var(--sl-color-bg));
+  --scalar-background-2: hsl(var(--sl-color-bg-nav));
+  --scalar-background-3: hsl(var(--sl-color-bg-sidebar));
+  --scalar-background-accent: hsl(var(--sl-color-accent-low));
+  --scalar-border-color: hsl(var(--sl-color-hairline));
+}
+
+/* Dark mode theming */
+.dark-mode {
+  --scalar-color-1: hsl(var(--sl-color-text));
+  --scalar-color-2: hsl(var(--sl-color-text-accent));
+  --scalar-color-3: hsl(var(--sl-color-gray-3));
+  --scalar-color-accent: hsl(var(--sl-color-accent));
+  --scalar-background-1: hsl(var(--sl-color-bg));
+  --scalar-background-2: hsl(var(--sl-color-bg-nav));
+  --scalar-background-3: hsl(var(--sl-color-bg-sidebar));
+  --scalar-background-accent: hsl(var(--sl-color-accent-low));
+  --scalar-border-color: hsl(var(--sl-color-hairline));
+}
+
+/* Sidebar theming for better integration */
+.light-mode .sidebar {
+  --scalar-sidebar-background-1: var(--scalar-background-1);
+  --scalar-sidebar-item-hover-color: currentColor;
+  --scalar-sidebar-item-hover-background: var(--scalar-background-2);
+  --scalar-sidebar-item-active-background: var(--scalar-background-2);
+  --scalar-sidebar-border-color: var(--scalar-border-color);
+  --scalar-sidebar-color-1: var(--scalar-color-1);
+  --scalar-sidebar-color-2: var(--scalar-color-2);
+  --scalar-sidebar-color-active: var(--scalar-color-2);
+  --scalar-sidebar-search-background: var(--scalar-background-2);
+  --scalar-sidebar-search-border-color: var(--scalar-border-color);
+  --scalar-sidebar-search-color: var(--scalar-color-3);
+}
+
+.dark-mode .sidebar {
+  --scalar-sidebar-background-1: var(--scalar-background-1);
+  --scalar-sidebar-item-hover-color: currentColor;
+  --scalar-sidebar-item-hover-background: var(--scalar-background-2);
+  --scalar-sidebar-item-active-background: var(--scalar-background-2);
+  --scalar-sidebar-border-color: var(--scalar-border-color);
+  --scalar-sidebar-color-1: var(--scalar-color-1);
+  --scalar-sidebar-color-2: var(--scalar-color-2);
+  --scalar-sidebar-color-active: var(--scalar-color-2);
+  --scalar-sidebar-search-background: var(--scalar-background-2);
+  --scalar-sidebar-search-border-color: var(--scalar-border-color);
+  --scalar-sidebar-search-color: var(--scalar-color-3);
+}
+
+/* Container styling */
+.scalar-api-reference {
+  width: 100%;
+  min-height: 600px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--scalar-background-1);
+  color: var(--scalar-color-1);
+}
+
+/* Ensure proper integration with Starlight's responsive design */
+.scalar-api-reference .scalar-app {
+  max-width: 100%;
+  overflow-x: auto;
+}

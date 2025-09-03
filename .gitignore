@@ -2,7 +2,7 @@
 .env
 .env.production
 .build-*/
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 
 /.turbo
 /docs
@@ -19,11 +19,16 @@ tsconfig.tsbuildinfo
 /src/*/node_modules
 /src/*/scripts/fixtures/
 /src/*/vltpkg-*.tgz
+/src/*/local-store
+/src/*/.wrangler
+/src/*/.dev.vars
+/src/*/*.log
 
 /infra/*/.tap
 /infra/*/.tshy-build
 /infra/*/.turbo
 /infra/*/dist
+/infra/*/outdir
 /infra/*/docs
 /infra/*/node_modules
 /infra/*/scripts/fixtures/

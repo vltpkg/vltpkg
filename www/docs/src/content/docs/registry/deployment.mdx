@@ -1,0 +1,354 @@
+---
+title: Deployment
+description:
+  Deploy VSR to Cloudflare Workers with the vsr deploy command
+sidebar:
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Deploy your VSR instance to Cloudflare Workers in minutes using the
+new `vsr deploy` command. This guide covers everything from basic
+deployment to advanced configuration and environment management.
+
+## 🚀 Quick Deployment
+
+Deploy to Cloudflare Workers with one command:
+
+<Code code="# Deploy to default environment (dev)
+vsr deploy
+
+# Deploy to production
+
+vsr deploy --env=prod
+
+# Preview what would be deployed
+
+vsr deploy --dry-run --env=prod" lang="bash" />
+
+## Prerequisites
+
+Before deploying, ensure you have:
+
+- **Cloudflare Account** with Workers enabled (free tier available)
+- **Wrangler CLI** installed and authenticated
+  (`npm install -g wrangler`)
+- **VSR source code** cloned locally
+
+<Code code="# Install Wrangler and authenticate
+npm install -g wrangler
+wrangler login
+
+# Clone VSR
+
+git clone https://github.com/vltpkg/vltpkg.git cd vltpkg/src/registry
+vlt install" lang="bash" />
+
+## Basic Deployment
+
+### Default Environment
+
+The simplest deployment uses the default `dev` environment:
+
+<Code code="vsr deploy" lang="bash" />
+
+This creates:
+
+- D1 database: `vsr-database`
+- R2 bucket: `vsr-bucket`
+- Queue: `cache-refresh-queue`
+- Worker name: `vsr-dev`
+
+### Production Environment
+
+Deploy to production with optimized settings:
+
+<Code code="vsr deploy --env=prod" lang="bash" />
+
+This creates production-optimized resources with the `prod`
+environment configuration.
+
+## Configuration
+
+### vlt.json Configuration
+
+Configure deployment environments in your `vlt.json` file:
+
+<Code
+  code={`{
+  "registry": {
+    "deploy": {
+      "sentry": {
+        "dsn": "https://your-default-sentry-dsn@sentry.io/project-id",
+        "sampleRate": 1.0,
+        "tracesSampleRate": 0.1
+      },
+      "environments": {
+        "dev": {
+          "databaseName": "vsr-dev-database",
+          "bucketName": "vsr-dev-bucket",
+          "queueName": "vsr-dev-cache-refresh-queue",
+          "sentry": {
+            "environment": "development"
+          },
+          "vars": {
+            "CUSTOM_VAR": "dev-value"
+          }
+        },
+        "staging": {
+          "databaseName": "vsr-staging-database",
+          "bucketName": "vsr-staging-bucket",
+          "queueName": "vsr-staging-cache-refresh-queue",
+          "sentry": {
+            "environment": "staging"
+          }
+        },
+        "prod": {
+          "databaseName": "vsr-prod-database",
+          "bucketName": "vsr-prod-bucket",
+          "queueName": "vsr-prod-cache-refresh-queue",
+          "sentry": {
+            "environment": "production",
+            "dsn": "https://your-prod-sentry-dsn@sentry.io/project-id",
+            "sampleRate": 0.1,
+            "tracesSampleRate": 0.01
+          },
+          "vars": {
+            "API_BASE_URL": "https://api.example.com"
+          }
+        }
+      }
+    }
+  }
+}`}
+  lang="json"
+/>
+
+### Configuration Options
+
+#### Global Deploy Settings
+
+- `sentry.dsn`: Default Sentry DSN for error reporting
+- `sentry.sampleRate`: Default error sample rate (0.0 to 1.0)
+- `sentry.tracesSampleRate`: Default performance traces sample rate
+  (0.0 to 1.0)
+
+#### Environment-Specific Settings
+
+Each environment can override global settings and specify:
+
+- `databaseName`: D1 database name for this environment
+- `bucketName`: R2 bucket name for this environment
+- `queueName`: Queue name for cache refresh operations
+- `sentry`: Environment-specific Sentry configuration
+- `vars`: Custom environment variables to pass to the Worker
+
+## CLI Options
+
+### Deploy Command Options
+
+| Option          | Default | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `--env`         | `dev`   | Environment (dev/staging/prod) |
+| `--db-name`     | -       | Override D1 database name      |
+| `--bucket-name` | -       | Override R2 bucket name        |
+| `--queue-name`  | -       | Override queue name            |
+| `--dry-run`     | `false` | Preview deployment             |
+
+### Configuration Precedence
+
+Configuration values are resolved in the following order (highest
+precedence first):
+
+1. CLI arguments (`--db-name`, `--bucket-name`, etc.)
+2. Environment-specific config (`environments.prod.databaseName`)
+3. Default values
+
+## Deployment Examples
+
+### Basic Production Deployment
+
+<Code
+  code="# Deploy to production environment
+vsr deploy --env=prod"
+  lang="bash"
+/>
+
+### Custom Resource Names
+
+<Code
+  code="# Override database and bucket names
+vsr deploy --env=staging --db-name=my-staging-db --bucket-name=my-staging-bucket"
+  lang="bash"
+/>
+
+### Preview Deployment
+
+<Code
+  code="# See what would be deployed without actually deploying
+vsr deploy --env=prod --dry-run"
+  lang="bash"
+/>
+
+### Using Custom Config File
+
+<Code
+  code="# Use a specific vlt.json file
+vsr deploy --config=/path/to/custom-vlt.json --env=prod"
+  lang="bash"
+/>
+
+## Generated Wrangler Command
+
+The deploy command generates a `wrangler deploy` command with the
+appropriate bindings and variables. For example:
+
+<Code
+  code="wrangler deploy dist/index.js \\
+  --name vsr-prod \\
+  --compatibility-date 2024-09-23 \\
+  --var SENTRY_DSN:https://your-sentry-dsn@sentry.io/project-id \\
+  --var SENTRY_ENVIRONMENT:production \\
+  --var ARG_DEBUG:false \\
+  --var ARG_TELEMETRY:true \\
+  --var ARG_DAEMON:true \\
+  --d1 DB=vsr-prod-database \\
+  --r2 BUCKET=vsr-prod-bucket \\
+  --queue-producer CACHE_REFRESH_QUEUE=vsr-prod-cache-refresh-queue \\
+  --queue-consumer vsr-prod-cache-refresh-queue"
+  lang="bash"
+/>
+
+## Cloudflare Resources
+
+VSR requires the following Cloudflare resources:
+
+### D1 Database
+
+- Stores package metadata, versions, and access tokens
+- SQLite-compatible serverless database
+- **Free tier**: 5GB storage + 5M reads/day
+
+### R2 Storage
+
+- Stores package tarballs and static assets
+- S3-compatible object storage
+- **Free tier**: 10GB storage + 10M reads/day
+
+### Workers
+
+- Runs the VSR application code
+- Global edge compute platform
+- **Free tier**: 100k requests/day
+
+### Queues (Optional)
+
+- Background processing for cache refresh
+- **Free tier**: 1M operations/month
+
+## Environment Management
+
+### Development Environment
+
+Perfect for testing and development:
+
+<Code code="vsr deploy --env=dev" lang="bash" />
+
+- Uses development Sentry environment
+- Higher error sampling rates for debugging
+- Separate resources to avoid conflicts
+
+### Staging Environment
+
+For pre-production testing:
+
+<Code code="vsr deploy --env=staging" lang="bash" />
+
+- Production-like configuration
+- Separate resources for safe testing
+- Can be used for integration testing
+
+### Production Environment
+
+For live production use:
+
+<Code code="vsr deploy --env=prod" lang="bash" />
+
+- Optimized error sampling rates
+- Production Sentry configuration
+- Production resource names
+
+## Troubleshooting
+
+### Common Issues
+
+**Authentication Error:**
+
+```
+Error: Not authenticated. Please run `wrangler login`
+```
+
+Solution: Run `wrangler login` to authenticate with Cloudflare.
+
+**Resource Already Exists:**
+
+```
+Error: Database already exists
+```
+
+Solution: Use different resource names or delete existing resources.
+
+**Build Errors:**
+
+```
+Error: Build failed
+```
+
+Solution: Ensure you're in the correct directory and dependencies are
+installed:
+
+<Code
+  code="cd src/registry
+vlt install
+pnpm build"
+  lang="bash"
+/>
+
+### Debug Mode
+
+Enable debug mode for detailed deployment information:
+
+<Code code="vsr deploy --env=prod --dry-run" lang="bash" />
+
+This shows exactly what would be deployed without making changes.
+
+## Alternative: Direct Wrangler Deployment
+
+You can also deploy directly with Wrangler if you prefer manual
+control:
+
+<Code code="# Build the project
+pnpm build
+
+# Deploy with wrangler
+
+wrangler deploy" lang="bash" />
+
+However, the `vsr deploy` command offers better:
+
+- Configuration management
+- Environment-specific settings
+- Integration with `vlt.json` configuration
+
+## Next Steps
+
+After deployment:
+
+1. **Configure your package manager** to use your deployed registry
+2. **Set up access tokens** for authentication
+3. **Test package publishing** and installation
+4. **Monitor performance** via Cloudflare dashboard
+
+See our [Configuration Guide](/registry/configuring) for setting up
+package managers to use your deployed VSR instance.
