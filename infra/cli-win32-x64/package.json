@@ -8,6 +8,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "infra/cli-win32-x64"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "devDependencies": {
     "@vltpkg/infra-build": "workspace:*"
   },

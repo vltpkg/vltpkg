@@ -7,6 +7,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "www/docs"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^4.3.4",

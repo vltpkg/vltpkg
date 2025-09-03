@@ -8,6 +8,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "infra/build"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "bin": {
     "vlt-build": "./src/cli.ts",
     "vlt-build-prepack": "./src/prepack.ts"

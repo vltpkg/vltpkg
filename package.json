@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",

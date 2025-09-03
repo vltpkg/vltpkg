@@ -12,15 +12,5 @@
     "sourceMap": true,
     "noEmit": true
   },
-  "include": ["src/**/*", "config.ts", "types.ts"],
-  "exclude": [
-    "src/bin/**/*",
-    "node_modules",
-    "dist",
-    "bin",
-    "test/**/*",
-    "../gui/**/*",
-    "../../www/**/*",
-    "../../node_modules/**/*"
-  ]
+  "include": ["src/**/*", "config.ts", "types.ts"]
 }

@@ -7,6 +7,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "src/url-open"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "tshy": {
     "selfLink": false,
     "liveDev": true,

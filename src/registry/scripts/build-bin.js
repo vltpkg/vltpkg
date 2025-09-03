@@ -47,7 +47,6 @@ async function main() {
       '--packages=external',
       '--platform=node',
       '--format=esm',
-      '--log-level=silent',
     ],
   )
 }
