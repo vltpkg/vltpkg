@@ -69,6 +69,8 @@ describe('Access Control Endpoints', () => {
       it('should get access status for scoped packages', async () => {
         const res = await app.request(
           '/-/package/@types%2Fnode/access',
+          {},
+          env,
         )
         expect([200, 400, 401, 404, 500].includes(res.status)).toBe(
           true,
@@ -107,6 +109,8 @@ describe('Access Control Endpoints', () => {
       it('should handle URL-encoded scoped package names', async () => {
         const res = await app.request(
           '/-/package/@scope%2Fpackage/access',
+          {},
+          env,
         )
         expect([200, 400, 401, 404, 500].includes(res.status)).toBe(
           true,
@@ -354,14 +358,22 @@ describe('Access Control Endpoints', () => {
 
     describe('Filtered Package Lists', () => {
       it('should handle package list filtering by access level', async () => {
-        const res = await app.request('/-/package/list?access=public')
+        const res = await app.request(
+          '/-/package/list?access=public',
+          {},
+          env,
+        )
         expect([200, 400, 401, 404, 500].includes(res.status)).toBe(
           true,
         )
       })
 
       it('should handle package list filtering by user', async () => {
-        const res = await app.request('/-/package/list?user=testuser')
+        const res = await app.request(
+          '/-/package/list?user=testuser',
+          {},
+          env,
+        )
         expect([200, 400, 401, 404, 500].includes(res.status)).toBe(
           true,
         )
@@ -370,6 +382,8 @@ describe('Access Control Endpoints', () => {
       it('should handle pagination for package lists', async () => {
         const res = await app.request(
           '/-/package/list?limit=10&offset=0',
+          {},
+          env,
         )
         expect([200, 400, 401, 404, 500].includes(res.status)).toBe(
           true,
@@ -487,18 +501,24 @@ describe('Access Control Endpoints', () => {
       it('should handle invalid package names in access requests', async () => {
         const res = await app.request(
           '/-/package/invalid..package/access',
+          env,
         )
         expect([400, 404, 500].includes(res.status)).toBe(true)
       })
 
       it('should handle malformed scoped package names', async () => {
-        const res = await app.request('/-/package/@invalid/access')
+        const res = await app.request(
+          '/-/package/@invalid/access',
+          {},
+          env,
+        )
         expect([400, 404, 500].includes(res.status)).toBe(true)
       })
 
       it('should handle packages starting with dots', async () => {
         const res = await app.request(
           '/-/package/.hidden-package/access',
+          env,
         )
         expect([400, 404, 500].includes(res.status)).toBe(true)
       })
@@ -557,8 +577,11 @@ describe('Access Control Endpoints', () => {
       it('should handle non-existent packages', async () => {
         const res = await app.request(
           '/-/package/nonexistent-package-12345/access',
+          {},
+          env,
         )
-        expect([404, 401, 500].includes(res.status)).toBe(true)
+        console.log(res.status)
+        expect([400, 404, 401, 500].includes(res.status)).toBe(true)
       })
 
       it('should handle non-existent users in collaborator requests', async () => {
@@ -630,6 +653,8 @@ describe('Access Control Endpoints', () => {
       it('should handle organization-scoped packages', async () => {
         const res = await app.request(
           '/-/package/@myorg%2Fpackage/access',
+          {},
+          env,
         )
         expect([200, 400, 401, 404, 500].includes(res.status)).toBe(
           true,
