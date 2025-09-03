@@ -1,6 +1,5 @@
 // Cloudflare Workers test setup using @cloudflare/vitest-pool-workers
 import { beforeEach, afterEach, afterAll } from 'vitest'
-// eslint-disable-next-line import/no-unresolved
 import { env } from 'cloudflare:test'
 
 beforeEach(async () => {

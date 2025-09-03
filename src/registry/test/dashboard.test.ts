@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-// eslint-disable-next-line import/no-unresolved
 import { env } from 'cloudflare:test'
 import { app } from '../src/index.ts'
 
@@ -525,7 +524,8 @@ describe('Dashboard Endpoints', () => {
 
   describe('Dashboard Performance', () => {
     describe('Response Time', () => {
-      it('should respond quickly for dashboard data', async () => {
+      const factor = env.REAL_PLATFORM === 'win32' ? 10 : 1
+      it(`should respond quickly for dashboard data`, async () => {
         const startTime = Date.now()
         const res = await app.request('/dashboard.json', {}, env)
         const endTime = Date.now()
@@ -534,10 +534,10 @@ describe('Dashboard Endpoints', () => {
 
         // Skip JSON parsing tests if endpoint returns 500 (external service unavailable)
         if (res.status === 500) return
-        expect(endTime - startTime).toBeLessThan(1000) // 1 second
+        expect(endTime - startTime).toBeLessThan(factor * 1000) // 1 second
       })
 
-      it('should respond quickly for app data', async () => {
+      it(`should respond quickly for app data`, async () => {
         const startTime = Date.now()
         const res = await app.request('/app-data.json', {}, env)
         const endTime = Date.now()
@@ -546,7 +546,7 @@ describe('Dashboard Endpoints', () => {
 
         // Skip JSON parsing tests if endpoint returns 500 (external service unavailable)
         if (res.status === 500) return
-        expect(endTime - startTime).toBeLessThan(2000) // 2 seconds (might query database)
+        expect(endTime - startTime).toBeLessThan(factor * 2000) // 2 seconds (might query database)
       })
     })
 

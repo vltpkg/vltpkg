@@ -11,6 +11,11 @@ export default defineWorkersConfig({
         wrangler: {
           configPath: './wrangler.json',
         },
+        miniflare: {
+          bindings: {
+            REAL_PLATFORM: process.platform,
+          },
+        },
       },
     },
   },
