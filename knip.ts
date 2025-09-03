@@ -52,7 +52,10 @@ export default {
   // from each individual workspaces but that capability to not
   // exercised anywhere yet.
   ignoreDependencies: ['@eslint/js', 'typescript-eslint', 'typedoc'],
-  ignore: ['**/tap-snapshots/**/*.cjs'],
+  ignore: [
+    '**/tap-snapshots/**/*.cjs',
+    './infra/cli-benchmarks/fixtures/**',
+  ],
   ignoreBinaries: ['hyperfine', 'vlt', 'sleep'],
   eslint: ['eslint.config.mjs'],
   workspaces: Object.fromEntries(
