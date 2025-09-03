@@ -297,7 +297,7 @@ Need help? We've got you covered:
 - 🐛 **Issues** - Report bugs and request features
 - 💬 **Discussions** - Community support and questions
 
-🆘 **[Get Support →](info/SUPPORT.md)**
+🆘 **[Get Support →](info/USER_SUPPORT.md)**
 
 ## 📄 License
 
@@ -311,4 +311,4 @@ restrictions that convert to MIT after two years.
 **Ready to revolutionize your package management?** 🚀  
 [Get started](#-quick-start) •
 [Deploy to production](#production-deployment) •
-[Join the community](info/SUPPORT.md)
+[Join the community](info/USER_SUPPORT.md)
