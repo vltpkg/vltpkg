@@ -4,6 +4,7 @@ import { existsSync, readdirSync } from 'fs'
 
 // Find the actual SQLite database file in the miniflare-D1DatabaseObject directory
 const miniflareDir = join(
+  import.meta.dirname,
   './local-store',
   'v3',
   'd1',

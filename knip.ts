@@ -25,6 +25,10 @@ const workspaces: KnipConfig['workspaces'] = {
     // Used within a resolve-import call
     ignoreDependencies: ['@vltpkg/gui'],
   },
+  'src/registry': {
+    entry: [...entry, 'src/bin/**/*.ts'],
+    ignoreDependencies: ['@vltpkg/gui', 'esbuild'],
+  },
   'www/docs': {
     entry: [
       ...entry,
@@ -49,7 +53,7 @@ export default {
   // exercised anywhere yet.
   ignoreDependencies: ['@eslint/js', 'typescript-eslint', 'typedoc'],
   ignore: ['**/tap-snapshots/**/*.cjs'],
-  ignoreBinaries: ['hyperfine'],
+  ignoreBinaries: ['hyperfine', 'vlt', 'sleep'],
   eslint: ['eslint.config.mjs'],
   workspaces: Object.fromEntries(
     getWorkspaces().map(ws => {
