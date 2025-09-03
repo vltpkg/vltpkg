@@ -8,6 +8,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "infra/smoke-test"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
     "@vltpkg/infra-build": "workspace:*",

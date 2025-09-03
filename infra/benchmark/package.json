@@ -8,6 +8,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "infra/benchmark"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "bin": {
     "vlt-benchmark-download-fixtures": "./src/download.ts"
   },
