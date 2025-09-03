@@ -368,6 +368,9 @@ const fixPackage = async (
     ...(relDirToWorkspace ? { directory: relDirToWorkspace } : {}),
   }
 
+  ws.pj.author =
+    'vlt technology inc. <support@vlt.sh> (http://vlt.sh)'
+
   await fixCatalogs(ws, config)
   await fixScripts(ws)
   await fixTools(ws)
@@ -379,6 +382,7 @@ const fixPackage = async (
     'version',
     'private',
     'repository',
+    'author',
     'tshy',
     'bin',
     'dependencies',

@@ -3,7 +3,6 @@ import { join } from 'path'
 import { existsSync, readdirSync } from 'fs'
 
 // Find the actual SQLite database file in the miniflare-D1DatabaseObject directory
-let dbPath = './local.db' // Fallback
 const miniflareDir = join(
   './local-store',
   'v3',
@@ -11,20 +10,22 @@ const miniflareDir = join(
   'miniflare-D1DatabaseObject',
 )
 
-if (existsSync(miniflareDir)) {
-  // Look for the most recently modified SQLite file
-  const files = readdirSync(miniflareDir)
-    .filter(file => file.endsWith('.sqlite'))
-    .map(file => {
-      const fullPath = join(miniflareDir, file)
-      return { file, fullPath }
-    })
+if (!existsSync(miniflareDir)) {
+  throw new Error(
+    `Miniflare directory not found at ${miniflareDir}. Make sure to run \`pnpm run db:setup\` first.`,
+  )
+}
+// Look for the most recently modified SQLite file
+const file = readdirSync(miniflareDir, { withFileTypes: true })
+  .filter(file => file.isFile() && file.name.endsWith('.sqlite'))
+  .sort((a, b) => b.mtime.getTime() - a.mtime.getTime())
+  .map(file => join(file.parentPath, file.name))
+  .find(file => existsSync(file))
 
-  if (files.length > 0) {
-    // Just use the first file if there's only one
-    dbPath = files[0].fullPath
-    console.log('Using D1 database at:', dbPath)
-  }
+if (!file) {
+  throw new Error(
+    `No SQLite file found in ${miniflareDir}. Make sure to run \`pnpm run db:setup\` first.`,
+  )
 }
 
 // For Drizzle Kit
@@ -33,6 +34,6 @@ export default defineConfig({
   out: './src/db/migrations',
   dialect: 'sqlite',
   dbCredentials: {
-    url: dbPath,
+    url: file,
   },
 })

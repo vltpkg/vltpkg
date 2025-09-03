@@ -6,6 +6,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "src/registry"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "bin": "./dist/bin/vsr.js",
   "dependencies": {
     "@hono/sentry": "^1.2.2",
@@ -97,6 +98,5 @@
     "typecheck": "tsc --noEmit",
     "typecheck:worker": "tsc -p tsconfig.worker.json --noEmit"
   },
-  "type": "module",
-  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)"
+  "type": "module"
 }
