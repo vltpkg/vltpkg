@@ -1,0 +1,2900 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "vlt serverless registry",
+    "version": "0.3.0",
+    "description": "The vlt serverless registry API"
+  },
+  "tags": [
+    {
+      "name": "Health Check",
+      "description": "Registry health and status endpoints"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and token management"
+    },
+    {
+      "name": "Packages",
+      "description": "Package publishing, downloading, and management"
+    },
+    {
+      "name": "Dist-Tags",
+      "description": "Package version tagging and lifecycle management"
+    },
+    {
+      "name": "Access Control",
+      "description": "Package access permissions and collaborator management"
+    },
+    {
+      "name": "Search",
+      "description": "Package discovery and search functionality"
+    },
+    {
+      "name": "Security",
+      "description": "Security auditing and vulnerability scanning"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Registry dashboard and administration"
+    },
+    {
+      "name": "Static Assets",
+      "description": "Static file serving and web assets"
+    },
+    {
+      "name": "NPM Compatibility",
+      "description": "Legacy npm client compatibility redirects"
+    }
+  ],
+  "components": {
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/-/ping": {
+      "get": {
+        "tags": ["Health Check"],
+        "summary": "Ping",
+        "description": "Check if the server is alive\n```bash\n$ npm ping\nnpm notice PING http://localhost:1337\nnpm notice PONG 13ms\n```",
+        "responses": {
+          "200": {
+            "description": "Server is alive",
+            "headers": {
+              "npm-notice": {
+                "schema": {
+                  "type": "string",
+                  "description": "Contains \"PONG\" for npm client compatibility",
+                  "example": "PONG"
+                },
+                "required": true
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/whoami": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Who Am I",
+        "description": "Returns the username of the authenticated user\n```bash\n$ npm whoami\njohnsmith\n```",
+        "responses": {
+          "200": {
+            "description": "Username",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["username"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/user": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get User Profile",
+        "description": "Returns profile object associated with auth token\n```bash\n$ npm profile\nname: johnsmith\ncreated: 2015-02-26T01:26:01.124Z\nupdated: 2023-01-10T21:55:32.118Z\n```",
+        "responses": {
+          "200": {
+            "description": "User Profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard.json": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Dashboard Data",
+        "description": "Get dashboard configuration data for the VSR web interface",
+        "responses": {
+          "200": {
+            "description": "Dashboard configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "registry": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["url", "name"]
+                    },
+                    "features": {
+                      "type": "object",
+                      "properties": {
+                        "search": {
+                          "type": "boolean"
+                        },
+                        "publish": {
+                          "type": "boolean"
+                        },
+                        "access": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": ["search", "publish", "access"]
+                    }
+                  },
+                  "required": ["registry", "features"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app-data.json": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "App Data",
+        "description": "Get application data for the VSR web interface",
+        "responses": {
+          "200": {
+            "description": "Application data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "packages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["name", "version"]
+                      }
+                    },
+                    "stats": {
+                      "type": "object",
+                      "properties": {
+                        "totalPackages": {
+                          "type": "number"
+                        },
+                        "totalDownloads": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["totalPackages", "totalDownloads"]
+                    }
+                  },
+                  "required": ["packages", "stats"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/tokens": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "List Tokens",
+        "description": "List all authentication tokens for the authenticated user\n```bash\n$ npm token list\n```",
+        "responses": {
+          "200": {
+            "description": "List of tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      },
+                      "key": {
+                        "type": "string"
+                      },
+                      "cidr_whitelist": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "readonly": {
+                        "type": "boolean"
+                      },
+                      "automation": {
+                        "type": "boolean"
+                      },
+                      "created": {
+                        "type": "string"
+                      },
+                      "updated": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "token",
+                      "key",
+                      "readonly",
+                      "automation",
+                      "created",
+                      "updated"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Create Token",
+        "description": "Create a new authentication token\n```bash\n$ npm token create\n```",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "uuid": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token", "uuid", "scope"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Token created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["token", "key"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Authentication"],
+        "summary": "Update Token",
+        "description": "Update an existing authentication token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "uuid": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token", "uuid", "scope"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["token", "key"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/tokens/token/{token}": {
+      "delete": {
+        "tags": ["Authentication"],
+        "summary": "Delete Token",
+        "description": "Delete an authentication token\n```bash\n$ npm token revoke <token>\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Token deleted successfully"
+          }
+        }
+      }
+    },
+    "/-/package/{pkg}/dist-tags": {
+      "get": {
+        "tags": ["Dist-Tags"],
+        "summary": "Get Package Dist Tags",
+        "description": "Get all dist-tags for a package\n```bash\n$ npm dist-tag ls mypackage\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package dist-tags",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/package/{pkg}/dist-tags/{tag}": {
+      "put": {
+        "tags": ["Dist-Tags"],
+        "summary": "Set Package Dist Tag",
+        "description": "Set or update a dist-tag for a package version\n```bash\n$ npm dist-tag add mypackage@1.0.0 beta\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "tag",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dist-tag set successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "rev": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["ok", "id", "rev"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid version or tag",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cannot modify dist-tags on proxied packages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Dist-Tags"],
+        "summary": "Delete Package Dist Tag",
+        "description": "Delete a dist-tag from a package\n```bash\n$ npm dist-tag rm mypackage beta\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "tag",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dist-tag deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "rev": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["ok", "id", "rev"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot delete latest tag or invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cannot modify dist-tags on proxied packages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package or tag not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/package/{pkg}/access": {
+      "get": {
+        "tags": ["Access Control"],
+        "summary": "Get Package Access",
+        "description": "Get access control information for a package",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package access information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Access Control"],
+        "summary": "Set Package Access",
+        "description": "Set access control information for a package",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "collaborators": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": ["read-only", "read-write"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Package access updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/package/{scope}%2f{pkg}/access": {
+      "get": {
+        "tags": ["Access Control"],
+        "summary": "Get Scoped Package Access",
+        "description": "Get access control information for a scoped package",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "scope",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package access information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Access Control"],
+        "summary": "Set Scoped Package Access",
+        "description": "Set access control information for a scoped package",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "scope",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "collaborators": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": ["read-only", "read-write"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Package access updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/package/list": {
+      "get": {
+        "tags": ["Access Control"],
+        "summary": "List Package Access",
+        "description": "List all packages the authenticated user has access to",
+        "responses": {
+          "200": {
+            "description": "List of packages with access information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "packages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "collaborators": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string",
+                              "enum": ["read-only", "read-write"]
+                            }
+                          }
+                        },
+                        "required": ["name", "collaborators"]
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["packages", "total"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/package/{pkg}/collaborators/{username}": {
+      "put": {
+        "tags": ["Access Control"],
+        "summary": "Grant Package Access",
+        "description": "Grant access to a package for a specific user",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "username",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "permission": {
+                    "type": "string",
+                    "enum": ["read-only", "read-write"]
+                  }
+                },
+                "required": ["permission"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access granted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["name", "collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Access Control"],
+        "summary": "Revoke Package Access",
+        "description": "Revoke access to a package for a specific user",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "username",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access revoked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["name", "collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/package/{scope}%2f{pkg}/collaborators/{username}": {
+      "put": {
+        "tags": ["Access Control"],
+        "summary": "Grant Scoped Package Access",
+        "description": "Grant access to a scoped package for a specific user",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "scope",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "username",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "permission": {
+                    "type": "string",
+                    "enum": ["read-only", "read-write"]
+                  }
+                },
+                "required": ["permission"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access granted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["name", "collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Access Control"],
+        "summary": "Revoke Scoped Package Access",
+        "description": "Revoke access to a scoped package for a specific user",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "scope",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "username",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access revoked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "collaborators": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": ["read-only", "read-write"]
+                      }
+                    }
+                  },
+                  "required": ["name", "collaborators"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search Packages",
+        "description": "Search for packages by text query\n```bash\n$ npm search react\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Search query string"
+            },
+            "required": true,
+            "description": "Search query string",
+            "name": "text",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Number of results to return (default: 20)"
+            },
+            "required": false,
+            "description": "Number of results to return (default: 20)",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Offset for pagination (default: 0)"
+            },
+            "required": false,
+            "description": "Offset for pagination (default: 0)",
+            "name": "from",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "objects": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "package": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "version": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "keywords": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "date": {
+                                "type": "string"
+                              },
+                              "links": {
+                                "type": "object",
+                                "properties": {
+                                  "npm": {
+                                    "type": "string"
+                                  },
+                                  "homepage": {
+                                    "type": "string"
+                                  },
+                                  "repository": {
+                                    "type": "string"
+                                  },
+                                  "bugs": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "author": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": ["name"]
+                              },
+                              "publisher": {
+                                "type": "object",
+                                "properties": {
+                                  "username": {
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": ["username"]
+                              },
+                              "maintainers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "username": {
+                                      "type": "string"
+                                    },
+                                    "email": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["username"]
+                                }
+                              }
+                            },
+                            "required": ["name", "version"]
+                          },
+                          "score": {
+                            "type": "object",
+                            "properties": {
+                              "final": {
+                                "type": "number"
+                              },
+                              "detail": {
+                                "type": "object",
+                                "properties": {
+                                  "quality": {
+                                    "type": "number"
+                                  },
+                                  "popularity": {
+                                    "type": "number"
+                                  },
+                                  "maintenance": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "quality",
+                                  "popularity",
+                                  "maintenance"
+                                ]
+                              }
+                            },
+                            "required": ["final", "detail"]
+                          },
+                          "searchScore": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "package",
+                          "score",
+                          "searchScore"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["objects", "total", "time"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing text parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/npm/audit": {
+      "post": {
+        "tags": ["Security"],
+        "summary": "Security Audit (Not Implemented)",
+        "description": "⚠️ **NOT IMPLEMENTED** - This endpoint is planned for future implementation.\n\nCurrently returns a placeholder response indicating the feature is not available.\n  \nFor actual security auditing, use:\n- `npm audit` with the official npm registry\n- Third-party security scanning tools\n- Socket.dev integration (planned for v1.x)\n\n```bash\n$ npm audit  # Will hit this endpoint but get \"not implemented\" response\n```",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "requires": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "dependencies": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid request format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Feature not implemented - security auditing is planned for future release",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "feature": {
+                      "type": "string",
+                      "enum": ["security_audit"]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["not_implemented"]
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "feature",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/-/v1/search": {
+      "get": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Search",
+        "description": "Redirect to current search endpoint for npm v1 compatibility",
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/search"
+          }
+        }
+      }
+    },
+    "/-/npm/v1/user": {
+      "get": {
+        "tags": ["NPM Compatibility"],
+        "summary": "User Profile",
+        "description": "Redirect to current user endpoint for npm v1 compatibility",
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/user"
+          }
+        }
+      }
+    },
+    "/-/npm/v1/tokens": {
+      "get": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Get Tokens",
+        "description": "Redirect to current tokens endpoint for npm v1 compatibility",
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/tokens"
+          }
+        }
+      },
+      "post": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Create Token",
+        "description": "Redirect to current create token endpoint for npm v1 compatibility",
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/tokens"
+          }
+        }
+      },
+      "put": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Update Token",
+        "description": "Redirect to current update token endpoint for npm v1 compatibility",
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/tokens"
+          }
+        }
+      }
+    },
+    "/-/npm/v1/tokens/token/{token}": {
+      "delete": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Delete Token",
+        "description": "Redirect to current delete token endpoint for npm v1 compatibility",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/tokens/:token"
+          }
+        }
+      }
+    },
+    "/-/npm/v1/security/audits/quick": {
+      "post": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Quick Security Audit",
+        "description": "⚠️ **REDIRECTS TO /-/npm/audit** - This endpoint redirects to the main audit endpoint with a 308 status.\n\nThe main audit endpoint is currently not implemented and returns a \"not implemented\" response.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "requires": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "dependencies": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/npm/audit (which returns 501 Not Implemented)"
+          }
+        }
+      }
+    },
+    "/-/npm/v1/security/advisories/bulk": {
+      "post": {
+        "tags": ["NPM Compatibility"],
+        "summary": "Bulk Security Advisories",
+        "description": "⚠️ **REDIRECTS TO /-/npm/audit** - This endpoint redirects to the main audit endpoint with a 308 status.\n\nThe main audit endpoint is currently not implemented and returns a \"not implemented\" response.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "308": {
+            "description": "Permanent redirect to /-/npm/audit (which returns 501 Not Implemented)"
+          }
+        }
+      }
+    },
+    "/{upstream}/{scope}/{pkg}/-/{tarball}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Download upstream scoped package tarball",
+        "description": "Download scoped package tarball from upstream registry",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream registry name"
+            },
+            "required": true,
+            "name": "upstream",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package scope"
+            },
+            "required": true,
+            "name": "scope",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package name"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Tarball filename"
+            },
+            "required": true,
+            "name": "tarball",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped package tarball downloaded successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Scoped package tarball not found in upstream registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{upstream}/{scope}/{pkg}/{version}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Get upstream scoped package version manifest",
+        "description": "Retrieve specific version manifest for scoped package from upstream registry",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream registry name"
+            },
+            "required": true,
+            "name": "upstream",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package scope"
+            },
+            "required": true,
+            "name": "scope",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package name"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package version"
+            },
+            "required": true,
+            "name": "version",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped package version manifest retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "dependencies": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "peerDependencies": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "optionalDependencies": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "peerDependenciesMeta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "bin": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "engines": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "dist": {
+                      "type": "object",
+                      "properties": {
+                        "tarball": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["tarball"]
+                    }
+                  },
+                  "required": ["name", "version", "dist"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Scoped package version not found in upstream registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{upstream}/{pkg}/-/{tarball}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Download upstream package tarball",
+        "description": "Download package tarball from upstream registry",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream registry name"
+            },
+            "required": true,
+            "name": "upstream",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package name"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Tarball filename"
+            },
+            "required": true,
+            "name": "tarball",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package tarball downloaded successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package tarball not found in upstream registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{upstream}/{scope%2f:pkg}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Get upstream URL-encoded scoped package",
+        "description": "Retrieve scoped package manifest using URL-encoded scope format",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream registry name"
+            },
+            "required": true,
+            "name": "upstream",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "URL-encoded scoped package name (e.g., @babel%2Fcore)"
+            },
+            "required": true,
+            "name": "scope%2f:pkg",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL-encoded scoped package manifest retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "dist-tags": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "versions": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    },
+                    "time": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "dist-tags",
+                    "versions",
+                    "time"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "URL-encoded scoped package not found in upstream registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{upstream}/{param2}/{param3}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Unified upstream route handler",
+        "description": "Handles both /upstream/@scope/package and /upstream/package/version patterns",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream registry name"
+            },
+            "required": true,
+            "name": "upstream",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Either package name or scope"
+            },
+            "required": true,
+            "name": "param2",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Either version or package name"
+            },
+            "required": true,
+            "name": "param3",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package manifest or version data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "dist-tags": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "versions": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "nullable": true
+                          }
+                        },
+                        "time": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "dist-tags",
+                        "versions",
+                        "time"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "dependencies": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "peerDependencies": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "optionalDependencies": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "peerDependenciesMeta": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "bin": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "engines": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "dist": {
+                          "type": "object",
+                          "properties": {
+                            "tarball": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["tarball"]
+                        }
+                      },
+                      "required": ["name", "version", "dist"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found in upstream registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{upstream}/{pkg}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Get upstream package manifest",
+        "description": "Retrieve package manifest from upstream registry (e.g., npm, jsr)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream registry name (e.g., npm, jsr)"
+            },
+            "required": true,
+            "name": "upstream",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package name"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package manifest retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "dist-tags": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "versions": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    },
+                    "time": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "dist-tags",
+                    "versions",
+                    "time"
+                  ],
+                  "description": "Package manifest data"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found in upstream registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{pkg}": {
+      "put": {
+        "tags": ["Packages"],
+        "summary": "Publish Package",
+        "description": "Publish a new version of a package\n```bash\n$ npm publish\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "versions": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  },
+                  "dist-tags": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "_attachments": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                },
+                "required": ["name", "versions", "dist-tags"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Package published successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "rev": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["ok", "id", "rev"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Get Package Manifest",
+        "description": "Get the full package manifest (packument) for a package\n```bash\n$ npm view lodash\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "dist-tags": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "versions": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["name", "dist-tags", "versions"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{pkg}/-/{tarball}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Download Package Tarball",
+        "description": "Download the tarball for a specific version of a package",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "tarball",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package tarball",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tarball not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{pkg}/{version}": {
+      "get": {
+        "tags": ["Packages"],
+        "summary": "Get Package Version Manifest",
+        "description": "Get the manifest for a specific version of a package\n```bash\n$ npm view lodash@4.17.21\n```",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "pkg",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "version",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package version manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "dist": {
+                      "type": "object",
+                      "properties": {
+                        "tarball": {
+                          "type": "string"
+                        },
+                        "shasum": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["tarball", "shasum"]
+                    }
+                  },
+                  "required": ["name", "version", "dist"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Package version not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

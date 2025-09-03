@@ -86,6 +86,7 @@ this repository and its corresponding license:
 | [@vltpkg/url-open](./src/url-open)                 | [BSD-2-Clause-Patent](./src/url-open/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/url-open?logo=npm)         |
 | [@vltpkg/vlt-json](./src/vlt-json)                 | [BSD-2-Clause-Patent](./src/vlt-json/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/vlt-json?logo=npm)         |
 | [@vltpkg/vlx](./src/vlx)                           | [BSD-2-Clause-Patent](./src/vlx/LICENSE)              | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/vlx?logo=npm)              |
+| [@vltpkg/vsr](./src/registry)                      | [FSL-1.1-MIT](./src/registry/LICENSE)                 | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/vsr?logo=npm)              |
 | [@vltpkg/which](./src/which)                       | [ISC](./src/which/LICENSE)                            | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/which?logo=npm)            |
 | [@vltpkg/workspaces](./src/workspaces)             | [BSD-2-Clause-Patent](./src/workspaces/LICENSE)       | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/workspaces?logo=npm)       |
 | [@vltpkg/xdg](./src/xdg)                           | [BSD-2-Clause-Patent](./src/xdg/LICENSE)              | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/xdg?logo=npm)              |

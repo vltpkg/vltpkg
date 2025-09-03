@@ -1,0 +1,195 @@
+---
+title: Comparisons
+description:
+  How vlt's Serverless Registry (VSR) compares to other npm registry
+  solutions
+sidebar:
+  order: 5
+---
+
+This comparison shows how vlt's Serverless Registry (VSR) stacks up
+against other popular npm registry solutions in the market.
+
+## Core Features
+
+<style>
+  {`
+  .comparison-tables table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(209, 213, 219, 0.3);
+  }
+  
+  .comparison-tables th {
+    background-color: rgba(249, 250, 251, 0.8);
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(209, 213, 219, 0.3);
+  }
+  
+  .comparison-tables th:first-child {
+    text-align: left;
+    min-width: 180px;
+  }
+  
+  .comparison-tables td {
+    padding: 10px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+  }
+  
+  .comparison-tables td:first-child {
+    text-align: left;
+    font-weight: 500;
+  }
+  
+  .comparison-tables tbody tr:nth-child(even) {
+    background-color: rgba(249, 250, 251, 0.4);
+  }
+  
+  .comparison-tables tbody tr:hover {
+    background-color: rgba(243, 244, 246, 0.6);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .comparison-tables table {
+      border-color: rgba(75, 85, 99, 0.3);
+    }
+    
+    .comparison-tables th {
+      background-color: rgba(31, 41, 55, 0.8);
+      border-bottom-color: rgba(75, 85, 99, 0.3);
+    }
+    
+    .comparison-tables td {
+      border-bottom-color: rgba(55, 65, 81, 0.3);
+    }
+    
+    .comparison-tables tbody tr:nth-child(even) {
+      background-color: rgba(31, 41, 55, 0.4);
+    }
+    
+    .comparison-tables tbody tr:hover {
+      background-color: rgba(55, 65, 81, 0.6);
+    }
+  }
+`}
+</style>
+
+<div className="comparison-tables" style={{
+  width: "100%",
+  overflowX: "auto"
+}}>
+
+### Package Management
+
+| Feature               |                    VSR                    |                    npm                    |                  GitHub                   |                 Verdaccio                 |                    JSR                    |
+| --------------------- | :---------------------------------------: | :---------------------------------------: | :---------------------------------------: | :---------------------------------------: | :---------------------------------------: |
+| **Publishing**        | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> |
+| **Installation**      | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#f59e0b"}}>◐</span> |
+| **Search**            | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> |
+| **Scoped Packages**   | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> |
+| **Unscoped Packages** | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#ef4444"}}>○</span> |
+| **Proxying Upstream** | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#f59e0b"}}>◐</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#ef4444"}}>○</span> |
+
+### Deployment & Hosting
+
+| Feature              |                     VSR                      |                     npm                      |                    GitHub                     |                 Verdaccio                 |                    JSR                    |
+| -------------------- | :------------------------------------------: | :------------------------------------------: | :-------------------------------------------: | :---------------------------------------: | :---------------------------------------: |
+| **Hosted Instance**  |  <span style={{color: "#10b981"}}>●</span>   |  <span style={{color: "#10b981"}}>●</span>   |   <span style={{color: "#10b981"}}>●</span>   | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#ef4444"}}>○</span> |
+| **Self-Hosted**      |  <span style={{color: "#10b981"}}>●</span>   |  <span style={{color: "#ef4444"}}>○</span>   |   <span style={{color: "#f59e0b"}}>◐</span>   | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#10b981"}}>●</span> |
+| **Hosted Cost**      |  <span style={{color: "#10b981"}}>$</span>   | <span style={{color: "#10b981"}}>Free</span> | <span style={{color: "#ef4444"}}>$$$$</span>  | <span style={{color: "#6b7280"}}>—</span> | <span style={{color: "#6b7280"}}>—</span> |
+| **Self-Hosted Cost** | <span style={{color: "#10b981"}}>Free</span> |  <span style={{color: "#6b7280"}}>—</span>   | <span style={{color: "#ef4444"}}>$$$$$</span> | <span style={{color: "#f59e0b"}}>$</span> | <span style={{color: "#f59e0b"}}>$</span> |
+
+### Security & Enterprise
+
+| Feature                 |                    VSR                    |                    npm                    |                  GitHub                   |                 Verdaccio                 |                    JSR                    |
+| ----------------------- | :---------------------------------------: | :---------------------------------------: | :---------------------------------------: | :---------------------------------------: | :---------------------------------------: |
+| **Access Controls**     | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#f59e0b"}}>◐</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#ef4444"}}>○</span> |
+| **Manifest Validation** | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#f59e0b"}}>◐</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#f59e0b"}}>◐</span> |
+| **Audit Capabilities**  | <span style={{color: "#8b5cf6"}}>◇</span> | <span style={{color: "#f59e0b"}}>◐</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#f59e0b"}}>◐</span> | <span style={{color: "#f59e0b"}}>◐</span> |
+| **Events/Hooks**        | <span style={{color: "#8b5cf6"}}>◇</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#10b981"}}>●</span> | <span style={{color: "#ef4444"}}>○</span> | <span style={{color: "#ef4444"}}>○</span> |
+
+### Enterprise Solutions Comparison
+
+| Feature             |                     VSR                      |                     jFrog                      |                    Sonatype                    |                   Cloudsmith                   |                   Buildkite                    |
+| ------------------- | :------------------------------------------: | :--------------------------------------------: | :--------------------------------------------: | :--------------------------------------------: | :--------------------------------------------: |
+| **License**         | <span style={{color: "#10b981"}}>Open</span> | <span style={{color: "#ef4444"}}>Closed</span> | <span style={{color: "#ef4444"}}>Closed</span> | <span style={{color: "#ef4444"}}>Closed</span> | <span style={{color: "#ef4444"}}>Closed</span> |
+| **Self-Hosted**     |  <span style={{color: "#10b981"}}>●</span>   |   <span style={{color: "#10b981"}}>●</span>    |   <span style={{color: "#10b981"}}>●</span>    |   <span style={{color: "#ef4444"}}>○</span>    |   <span style={{color: "#ef4444"}}>○</span>    |
+| **Hosted Cost**     |  <span style={{color: "#10b981"}}>$</span>   |  <span style={{color: "#ef4444"}}>$$$$</span>  |  <span style={{color: "#ef4444"}}>$$$$</span>  |  <span style={{color: "#ef4444"}}>$$$$</span>  |  <span style={{color: "#f59e0b"}}>$$$</span>   |
+| **Access Controls** |  <span style={{color: "#10b981"}}>●</span>   |   <span style={{color: "#f59e0b"}}>◐</span>    |   <span style={{color: "#f59e0b"}}>◐</span>    |   <span style={{color: "#f59e0b"}}>◐</span>    |   <span style={{color: "#f59e0b"}}>◐</span>    |
+
+</div>
+
+## Legend
+
+- <span style="color: #10b981;">**●**</span> **Full Support** -
+  Complete feature implementation
+- <span style="color: #f59e0b;">**◐**</span> **Limited Support** -
+  Available with restrictions
+- <span style="color: #8b5cf6;">**◇**</span> **Planned** - Scheduled
+  for future development
+- <span style="color: #ef4444;">**○**</span> **Not Available** -
+  Feature is not supported
+- <span style="color: #6b7280;">**—**</span> **Not Applicable** - Does
+  not apply to this solution
+
+### Cost Indicators
+
+- **Free** - No cost
+- **$** to **$$$$$** - Relative cost scale (low to very high)
+- <span style="color: #10b981;">Green</span> = Low cost,
+  <span style="color: #f59e0b;">Amber</span> = Medium cost,
+  <span style="color: #ef4444;">Red</span> = High cost
+
+## Key Advantages of VSR
+
+### Open Source & Cost Effective
+
+VSR is licensed under FSL-1.1-MIT, providing transparency and eventual
+full open source availability. The serverless architecture
+significantly reduces operational costs compared to traditional
+enterprise solutions.
+
+### Full npm Compatibility
+
+Unlike some alternatives that only support scoped packages or have
+limitations with upstream proxying, VSR provides complete
+compatibility with the npm ecosystem while adding modern features.
+
+### Self-Hosting Freedom
+
+While many enterprise solutions lock you into their hosted platforms,
+VSR gives you the choice to self-host with minimal operational
+overhead, thanks to its serverless design.
+
+### Modern Architecture
+
+Built with modern JavaScript/TypeScript, VSR leverages current best
+practices and tooling, making it easier to customize, extend, and
+maintain compared to legacy solutions.
+
+## Use Cases
+
+### Enterprise Teams
+
+Perfect for organizations that need private package hosting with
+enterprise-grade security and access controls, but want to avoid the
+high costs of traditional enterprise registries.
+
+### Open Source Projects
+
+Ideal for open source maintainers who want more control over their
+package distribution without the complexity of managing traditional
+registry infrastructure.
+
+### Development Teams
+
+Great for teams that need reliable package management with the
+flexibility to customize and extend functionality as their needs
+evolve.

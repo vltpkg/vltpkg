@@ -120,7 +120,9 @@ test('renders Layout for the "/create-new-project" view', () => {
 })
 
 test('renders Layout for the "/explore" view', () => {
-  const { container } = renderWithRouter('/explore')
+  const { container } = renderWithRouter(
+    '/explore/FwJw9mAuQ/overview',
+  )
   expect(container.innerHTML).toMatchSnapshot()
 })
 
@@ -136,11 +138,6 @@ test('renders Layout for the "/labels" view', () => {
 
 test('renders Layout for the "/error" view', () => {
   const { container } = renderWithRouter('/error')
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('renders Layout for the "/help" view', () => {
-  const { container } = renderWithRouter('/help')
   expect(container.innerHTML).toMatchSnapshot()
 })
 

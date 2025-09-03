@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS packages;
+DROP TABLE IF EXISTS tokens;
+DROP TABLE IF EXISTS versions;

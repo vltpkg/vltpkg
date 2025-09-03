@@ -1,0 +1,40 @@
+---
+title: API Reference
+description:
+  Complete API reference for vlt's Serverless Registry (VSR)
+sidebar:
+  order: 6
+  label: API
+---
+
+import { ApiReferenceReact } from '@scalar/api-reference-react'
+import '@scalar/api-reference-react/style.css'
+import '../../../styles/scalar-api.css'
+
+## VSR API Documentation
+
+Complete interactive API reference for vlt's Serverless Registry
+(VSR). This documentation is powered by [Scalar](https://scalar.com)
+and provides live API testing, complete schema documentation, and code
+examples.
+
+<div className="scalar-api-reference">
+  <ApiReferenceReact
+    client:load
+    configuration={{
+      spec: {
+        url: '/api-spec.json',
+      },
+      metaData: {
+        title: 'vlt serverless registry API',
+      },
+      theme: 'none',
+      layout: 'classic',
+      hideModels: true,
+      hiddenClients: true,
+      showSidebar: false,
+      withDefaultFonts: false,
+      searchHotKey: 'k',
+    }}
+  />
+</div>

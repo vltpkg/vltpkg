@@ -1,0 +1,235 @@
+---
+title: Configuring
+description:
+  How to configure package managers to work with VSR and other
+  registries
+sidebar:
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+export const customProtocolJsonExample = JSON.stringify(
+  {
+    registries: {
+      vsr: 'http://localhost:1337',
+    },
+  },
+  null,
+  2,
+)
+export const packageJsonExample = JSON.stringify(
+  {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: 'vsr:foo@^1.0.0',
+    },
+  },
+  null,
+  2,
+)
+export const defaultRegistryJsonExample = JSON.stringify(
+  {
+    registry: 'http://localhost:1337',
+  },
+  null,
+  2,
+)
+
+VSR (vlt's Serverless Registry) is compatible with multiple package
+managers, allowing you to use your preferred tooling while benefiting
+from VSR's features. This guide covers configuration for various
+package managers and deployment scenarios.
+
+## Setting up your VSR instance
+
+VSR can be configured to work with any npm-compatible package manager.
+The configuration approach varies depending on which package manager
+you're using and your specific workflow requirements.
+
+There are two primary configuration methods:
+
+1. **Custom registry protocol** - Recommended for fine-grained control
+   over package sources
+2. **Default registry replacement** - Simpler setup for complete
+   registry switching
+
+Choose the method that best fits your workflow and security
+requirements.
+
+### Getting started with VSR
+
+For this example we're going to use a local-running VSR instance.
+Here's how to start one:
+
+<Code code="$ npx -y vltpkg/vsr" title="Terminal" lang="bash" />
+
+For production deployment, use the new `vsr deploy` command:
+
+<Code code="$ vsr deploy --env=prod" title="Terminal" lang="bash" />
+
+See our [Deployment Guide](/registry/deployment) for complete
+deployment instructions.
+
+Please note, in the rest of this guide you may need to replace
+`http://localhost:1337` with the correct URL of your VSR instance
+(local or deployed).
+
+Log in to your VSR instance. In case you already have a custom user
+token configured than you should just use that. If you're just getting
+started and want to test using the default `admin` profile you may
+just use the default token: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
+
+<Code
+  code="$ vlt token --registry=http://localhost:1337 add"
+  title="Terminal"
+  lang="bash"
+/>
+
+The `token` subcommand is going to open a prompt allowing you to input
+the user token.
+
+Please note that the default admin token is not suitable for regular
+usage, do not use it outside of just a simple experimental test setup.
+
+### Set up a VSR instance using a custom registry protocol
+
+Edit your config file to set the local VSR instance as a valid custom
+registry protocol:
+
+<Code code={customProtocolJsonExample} title="vlt.json" lang="json" />
+
+It's now possible to install specific packages from your VSR instance
+using `vsr:` as a package alias. In the following example we're going
+to install a package named `foo` that was published to our custom VSR
+instance:
+
+<Code
+  code="$ vlt install foo@vsr:foo@latest"
+  title="Terminal"
+  lang="bash"
+/>
+
+Here is how the resulting `package.json` may look like:
+
+<Code code={packageJsonExample} title="package.json" lang="json" />
+
+### Set up a VSR instance as the default registry
+
+Set the local VSR instance as the default registry:
+
+<Code
+  code="$ vlt config set registry=http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+Alternatively, you can also edit your config file:
+
+<Code
+  code={defaultRegistryJsonExample}
+  title="vlt.json"
+  lang="json"
+/>
+
+Using the default registry setup, each `vlt install <pkg>` will fetch
+assets from your VSR instance.
+
+## Configuring Other Package Managers
+
+VSR is fully compatible with the npm registry API, making it easy to
+configure with popular package managers beyond `vlt`.
+
+### npm Configuration
+
+Configure npm to use your VSR instance:
+
+<Code
+  code="$ npm config set registry http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+For scoped packages, you can configure specific registries:
+
+<Code
+  code="$ npm config set @yourscope:registry http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+### pnpm Configuration
+
+Set VSR as the default registry for pnpm:
+
+<Code
+  code="$ pnpm config set registry http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+For project-specific configuration, add to `.npmrc`:
+
+<Code
+  code="registry=http://localhost:1337"
+  title=".npmrc"
+  lang="ini"
+/>
+
+### Yarn Configuration
+
+For Yarn v1 (Classic):
+
+<Code
+  code="$ yarn config set registry http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+For Yarn v2+ (Berry), add to `.yarnrc.yml`:
+
+<Code
+  code="npmRegistryServer: 'http://localhost:1337'"
+  title=".yarnrc.yml"
+  lang="yaml"
+/>
+
+### bun Configuration
+
+Configure bun to use VSR:
+
+<Code
+  code="$ bun config set registry http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+Or add to `bunfig.toml`:
+
+<Code
+  code={`[install]
+registry = "http://localhost:1337"`}
+  title="bunfig.toml"
+  lang="toml"
+/>
+
+## Authentication
+
+VSR supports standard npm authentication tokens. After configuring
+your registry, authenticate using:
+
+<Code
+  code="$ npm login --registry=http://localhost:1337"
+  title="Terminal"
+  lang="bash"
+/>
+
+For automated environments, you can use token-based authentication by
+adding to `.npmrc`:
+
+<Code
+  code="//localhost:1337/:_authToken=your-token-here"
+  title=".npmrc"
+  lang="ini"
+/>

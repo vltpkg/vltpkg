@@ -3,20 +3,6 @@ import type { MotionProps } from 'framer-motion'
 import { motion } from 'framer-motion'
 import React from 'react'
 
-const animationProps = {
-  initial: { '--x': '100%' },
-  animate: { '--x': '-100%' },
-  transition: {
-    repeat: Infinity,
-    repeatType: 'loop',
-    repeatDelay: 10,
-    type: 'spring',
-    stiffness: 20,
-    damping: 15,
-    mass: 2,
-  },
-} as const
-
 interface ShinyButtonProps
   extends Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps>,
     MotionProps {
@@ -35,7 +21,17 @@ export const ShinyButton = React.forwardRef<
         'relative rounded-lg bg-transparent px-6 py-2 font-medium backdrop-blur-xl duration-300 ease-in-out dark:bg-[radial-gradient(circle_at_50%_0%,hsl(var(--foreground)/10%)_0%,transparent_60%)]',
         className,
       )}
-      {...animationProps}
+      initial={{ '--x': '100%' }}
+      animate={{ '--x': '-100%' }}
+      transition={{
+        repeat: Infinity,
+        repeatType: 'loop',
+        repeatDelay: 10,
+        type: 'spring',
+        stiffness: 20,
+        damping: 15,
+        mass: 2,
+      }}
       {...props}>
       <span
         className="relative block size-full text-sm font-medium tracking-wide text-[rgb(0,0,0,65%)] dark:text-[rgb(255,255,255,90%)]"
