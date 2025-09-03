@@ -422,7 +422,8 @@ void (async () => {
 
       // Temporarily modify process.argv to remove VSR-specific flags that daemon doesn't understand
       // Keep only the basic node command and script path
-      process.argv = [process.argv[0], process.argv[1]]
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      process.argv = [process.argv[0]!, process.argv[1]!]
 
       try {
         const server = createServer({
