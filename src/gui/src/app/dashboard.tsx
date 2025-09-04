@@ -12,7 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from '@/components/ui/alert-dialog.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { useDashboardRootCheck } from '@/components/hooks/use-dashboard-root-check.tsx'
 import { setDefaultDashboardRoot } from '@/lib/vlt-config.ts'
@@ -75,8 +75,7 @@ export const Dashboard = () => {
               <AlertDialogAction
                 onClick={() => {
                   void navigate('/settings')
-                }}
-              >
+                }}>
                 Settings
               </AlertDialogAction>
             </AlertDialogFooter>

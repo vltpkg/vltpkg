@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import type { Mock } from 'vitest'
 import {
   deleteFromConfig,
   getFromConfig,
@@ -30,10 +31,10 @@ beforeEach(() => {
         JSON.parse(init.body)
       : {}
     const which = body.which as 'user' | 'project' | undefined
-    const pairs = (body.pairs ?? []) as Array<{
+    const pairs = (body.pairs ?? []) as {
       key: string
       value?: string
-    }>
+    }[]
 
     if (endpoint === '/config' && !pairs.length) {
       const entire = { alpha: 'a', beta: 'b' }
@@ -53,7 +54,7 @@ beforeEach(() => {
     }
 
     if (endpoint === '/config/set') {
-      if (!which || (which !== 'user' && which !== 'project')) {
+      if (!which) {
         return {
           ok: false,
           json: async () =>
@@ -78,7 +79,7 @@ beforeEach(() => {
     }
 
     if (endpoint === '/config/delete') {
-      if (!which || (which !== 'user' && which !== 'project')) {
+      if (!which) {
         return {
           ok: false,
           json: async () =>
@@ -143,7 +144,10 @@ test('deleteFromConfig returns success message', async () => {
 
 test('errors surface as ConfigError with clean message', async () => {
   await expect(
-    setToConfig({ which: 'error' as unknown as 'user', pairs: [] }),
+    setToConfig({
+      which: '' as unknown as 'user',
+      pairs: [{ key: 'foo', value: 'bar' }],
+    }),
   ).rejects.toThrow('which must be "user" or "project"')
 })
 
@@ -155,10 +159,14 @@ test('removeDashboardRoot removes matching path from array and updates config', 
     if (endpoint === '/config') {
       return {
         ok: true,
-        json: async () => JSON.stringify({ 'dashboard-root': ['/a', '/b'] }),
+        json: async () =>
+          JSON.stringify({ 'dashboard-root': ['/a', '/b'] }),
       } as unknown as MockResponse
     }
-    return prevFetch(url as RequestInfo, init as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      init as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
   const updated = await removeDashboardRoot('/a')
@@ -176,7 +184,10 @@ test('removeDashboardRoot handles string value and returns empty when removed', 
         json: async () => JSON.stringify({ 'dashboard-root': '/a' }),
       } as unknown as MockResponse
     }
-    return prevFetch(url as RequestInfo, init as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      init as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
   const updated = await removeDashboardRoot('/a')
@@ -192,10 +203,15 @@ test('removeDashboardRoot ignores non-string values in current array', async () 
       return {
         ok: true,
         json: async () =>
-          JSON.stringify({ 'dashboard-root': ['/a', 123, { x: 1 }, '/b'] }),
+          JSON.stringify({
+            'dashboard-root': ['/a', 123, { x: 1 }, '/b'],
+          }),
       } as unknown as MockResponse
     }
-    return prevFetch(url as RequestInfo, init as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      init as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
   const updated = await removeDashboardRoot('/a')
@@ -210,10 +226,14 @@ test('removeDashboardRoot leaves array unchanged when path not found', async () 
     if (endpoint === '/config') {
       return {
         ok: true,
-        json: async () => JSON.stringify({ 'dashboard-root': ['/a'] }),
+        json: async () =>
+          JSON.stringify({ 'dashboard-root': ['/a'] }),
       } as unknown as MockResponse
     }
-    return prevFetch(url as RequestInfo, init as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      init as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
   const updated = await removeDashboardRoot('/x')
@@ -236,13 +256,17 @@ test('setDefaultDashboardRoot sets homedir in dashboard-root array', async () =>
   expect(setCall).toBeTruthy()
   const body = setCall?.[1]?.body as string
   const parsed = JSON.parse(body)
-  const pair = parsed.pairs.find((p: any) => p.key === 'dashboard-root')
+  const pair = parsed.pairs.find(
+    (p: any) => p.key === 'dashboard-root',
+  )
   expect(pair.value).toBe(JSON.stringify(['/home/user']))
 })
 
 test('setDefaultDashboardRoot logs and does not throw on error', async () => {
   vi.spyOn(fsLib, 'fetchHomedir').mockRejectedValue(new Error('nope'))
-  const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  const errSpy = vi
+    .spyOn(console, 'error')
+    .mockImplementation(() => {})
 
   await expect(setDefaultDashboardRoot()).resolves.toBeUndefined()
   expect(errSpy).toHaveBeenCalled()

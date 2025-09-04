@@ -119,17 +119,21 @@ const AlertDialogTitle = React.forwardRef<
     <AlertDialogPrimitive.Title
       ref={ref}
       data-slot="alert-dialog-title"
-      className={cn('text-lg font-medium tracking-tighter', className)}
+      className={cn(
+        'text-lg font-medium tracking-tighter',
+        className,
+      )}
       {...props}
     />
   )
 })
-AlertDialogTitle.displayName =
-  AlertDialogPrimitive.Title.displayName
+AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
 
 const AlertDialogDescription = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
+  React.ComponentPropsWithoutRef<
+    typeof AlertDialogPrimitive.Description
+  >
 >(({ className, ...props }, ref) => {
   return (
     <AlertDialogPrimitive.Description

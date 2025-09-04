@@ -151,7 +151,9 @@ test('dashboard-grid with results', async () => {
 })
 
 test('dashboard-grid when loading and no dashboard', async () => {
-  ;(useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+  ;(
+    useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>
+  ).mockReturnValueOnce({
     hasDashboard: false,
     isLoading: true,
     dashboardRoots: [],
@@ -161,7 +163,9 @@ test('dashboard-grid when loading and no dashboard', async () => {
 })
 
 test('dashboard-grid when dashboard present with empty roots', async () => {
-  ;(useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+  ;(
+    useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>
+  ).mockReturnValueOnce({
     hasDashboard: true,
     isLoading: false,
     dashboardRoots: [],

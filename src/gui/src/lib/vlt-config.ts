@@ -58,7 +58,7 @@ const fetchConfig = async <T>({
 }: {
   which: WhichConfig
   action: ConfigAction
-  pairs?: Array<ConfigKeyValuePair | ConfigKeyPair>
+  pairs?: (ConfigKeyValuePair | ConfigKeyPair)[]
 }): Promise<T> => {
   try {
     const endpoint = endpointMap[action]

@@ -194,3 +194,54 @@ t.test('start listening', async t => {
     },
   )
 })
+
+t.test(
+  'updateOptions refreshes ConfigManager when loadedConfig provided',
+  async t => {
+    let constructedWith: unknown = undefined
+    const { createServer } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      ...MOCKS,
+      '../src/config-data.ts': {
+        ConfigManager: class {
+          constructor({ config }: { config: unknown }) {
+            constructedWith = config
+          }
+          list() {}
+        },
+      },
+    })
+
+    const dir = t.testdir({
+      projects: {
+        x: {
+          'package.json': JSON.stringify({ name: 'x' }),
+        },
+      },
+      s: { assets: {}, public: {} },
+    })
+
+    const opts = {
+      'dashboard-root': [resolve(dir, 'projects')],
+      packageJson: new PackageJson(),
+      projectRoot: resolve(dir, 'projects/x'),
+      scurry: new PathScurry(dir),
+      packageInfo: new PackageInfoClient(),
+      publicDir: resolve(dir, 's/public'),
+    }
+
+    const s = createServer(opts as unknown as VltServerOptions)
+    const fakeLoadedConfig = { projectRoot: dir } as unknown
+    s.updateOptions({
+      ...(opts as unknown as VltServerOptions),
+      loadedConfig: fakeLoadedConfig as any,
+    })
+
+    t.equal(
+      constructedWith,
+      fakeLoadedConfig,
+      'ConfigManager constructed with provided loadedConfig',
+    )
+  },
+)

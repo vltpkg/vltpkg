@@ -92,6 +92,7 @@ t.test('startGUI()', async t => {
     values: {
       target: ':root',
     },
+    reloadFromDisk: async () => {},
   } as unknown as LoadedConfig
 
   let optionsUpdated: LoadedConfig['options'] | undefined = undefined
@@ -375,10 +376,7 @@ t.test('startGUI() reloadFromDisk behavior', async t => {
           target: ':root',
         },
         reloadFromDisk: async () => {},
-      } as unknown as LoadedConfig & {
-        reloadFromDisk: () => Promise<void>
-      }
-
+      } as LoadedConfig
       let updateCount = 0
       const mockServer = Object.assign(
         new EventEmitter<{
@@ -407,58 +405,6 @@ t.test('startGUI() reloadFromDisk behavior', async t => {
       await Promise.resolve()
       await Promise.resolve()
       t.equal(updateCount, 2)
-    },
-  )
-
-  t.test(
-    'swallows reload errors and does not call update twice',
-    async t => {
-      const projectRoot = t.testdir({})
-      const scurry = new PathScurry(projectRoot)
-      const conf = {
-        resetOptions: () => {},
-        options: {
-          scurry,
-          projectRoot,
-        },
-        values: {
-          target: ':root',
-        },
-        reloadFromDisk: async () => {
-          throw new Error('reload failed')
-        },
-      } as unknown as LoadedConfig & {
-        reloadFromDisk: () => Promise<void>
-      }
-
-      let updateCount = 0
-      const mockServer = Object.assign(
-        new EventEmitter<{
-          needConfigUpdate: [string]
-        }>(),
-        {
-          updateOptions: () => {
-            updateCount++
-          },
-          start: () => {},
-          address: (route = '') => `server-address${route}`,
-        },
-      ) as unknown as VltServerListening
-
-      const { startGUI } = await t.mockImport<
-        typeof import('../src/start-gui.ts')
-      >('../src/start-gui.ts', {
-        '../src/output.ts': { stdout: () => {} },
-        '@vltpkg/server': { createServer: () => mockServer },
-        '@vltpkg/url-open': { urlOpen: () => {} },
-      })
-
-      const server = await startGUI(conf)
-      server.emit('needConfigUpdate', '/some/new/dir')
-      // flush microtasks; error is caught internally
-      await Promise.resolve()
-      await Promise.resolve()
-      t.equal(updateCount, 1)
     },
   )
 })

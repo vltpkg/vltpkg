@@ -15,12 +15,18 @@ afterEach(() => {
 
 beforeEach(() => {
   global.fetch = vi.fn(async (_url, init) => {
-    const body = init && typeof init.body === 'string' ? JSON.parse(init.body) : {}
+    const body =
+      init && typeof init.body === 'string' ?
+        JSON.parse(init.body)
+      : {}
     const path = body.path as string | undefined
 
     switch (path) {
       case 'bad-status': {
-        return { ok: false, json: async () => 'Bad status' } as MockResponse
+        return {
+          ok: false,
+          json: async () => 'Bad status',
+        } as MockResponse
       }
       case 'has-error': {
         return {
@@ -29,7 +35,10 @@ beforeEach(() => {
         } as MockResponse
       }
       case 'empty': {
-        return { ok: true, json: async () => JSON.stringify([]) } as MockResponse
+        return {
+          ok: true,
+          json: async () => JSON.stringify([]),
+        } as MockResponse
       }
       default: {
         return {
@@ -64,7 +73,9 @@ test('lists directory contents for provided path', async () => {
 
 test('lists directory contents when no path provided', async () => {
   const items = await fetchFsLs({})
-  expect(items).toMatchSnapshot('should default to listing current dir')
+  expect(items).toMatchSnapshot(
+    'should default to listing current dir',
+  )
 })
 
 test('returns empty list', async () => {
@@ -86,12 +97,19 @@ test('throws when server returns error field', async () => {
 
 test('returns homedir path string', async () => {
   const prevFetch = global.fetch
-  global.fetch = vi.fn(async (url) => {
-    const endpoint = typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
+  global.fetch = vi.fn(async url => {
+    const endpoint =
+      typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
     if (endpoint === '/fs/homedir') {
-      return { ok: true, json: async () => JSON.stringify('/home/user') } as MockResponse
+      return {
+        ok: true,
+        json: async () => JSON.stringify('/home/user'),
+      } as MockResponse
     }
-    return prevFetch(url as RequestInfo, { method: 'POST', body: '{}' } as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      { method: 'POST', body: '{}' } as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
   const home = await fetchHomedir()
@@ -100,26 +118,44 @@ test('returns homedir path string', async () => {
 
 test('throws on non-ok response for homedir', async () => {
   const prevFetch = global.fetch
-  global.fetch = vi.fn(async (url) => {
-    const endpoint = typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
+  global.fetch = vi.fn(async url => {
+    const endpoint =
+      typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
     if (endpoint === '/fs/homedir') {
-      return { ok: false, json: async () => 'Bad status' } as MockResponse
+      return {
+        ok: false,
+        json: async () => 'Bad status',
+      } as MockResponse
     }
-    return prevFetch(url as RequestInfo, { method: 'POST', body: '{}' } as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      { method: 'POST', body: '{}' } as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
-  await expect(fetchHomedir()).rejects.toThrow('Failed to fetch homedir:')
+  await expect(fetchHomedir()).rejects.toThrow(
+    'Failed to fetch homedir:',
+  )
 })
 
 test('throws when server returns error field for homedir', async () => {
   const prevFetch = global.fetch
-  global.fetch = vi.fn(async (url) => {
-    const endpoint = typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
+  global.fetch = vi.fn(async url => {
+    const endpoint =
+      typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
     if (endpoint === '/fs/homedir') {
-      return { ok: true, json: async () => ({ error: 'Server-side error' }) } as MockResponse
+      return {
+        ok: true,
+        json: async () => ({ error: 'Server-side error' }),
+      } as MockResponse
     }
-    return prevFetch(url as RequestInfo, { method: 'POST', body: '{}' } as RequestInit) as unknown as MockResponse
+    return prevFetch(
+      url as RequestInfo,
+      { method: 'POST', body: '{}' } as RequestInit,
+    ) as unknown as MockResponse
   }) as unknown as typeof global.fetch
 
-  await expect(fetchHomedir()).rejects.toThrow('Failed to fetch homedir:')
+  await expect(fetchHomedir()).rejects.toThrow(
+    'Failed to fetch homedir:',
+  )
 })

@@ -243,9 +243,10 @@ export const handleRequest = async (
             /* c8 ignore next */
           } catch {}
         }
-        // notify and reload server so changes take effect immediately
-        server.emit('needConfigUpdate', server.options.projectRoot)
+        // reload server so changes take effect immediately
         await server.update()
+        // notify after successful reload to let external listeners refresh
+        server.emit('needConfigUpdate', server.options.projectRoot)
         return json.ok(res, 'Config values set successfully')
       } catch (err) {
         return json.error(
@@ -282,9 +283,10 @@ export const handleRequest = async (
             ...server.options.loadedConfig.options,
           })
         }
-        // notify and reload server so changes take effect immediately
-        server.emit('needConfigUpdate', server.options.projectRoot)
+        // reload server so changes take effect immediately
         await server.update()
+        // notify after successful reload to let external listeners refresh
+        server.emit('needConfigUpdate', server.options.projectRoot)
         return json.ok(res, 'Config values deleted successfully')
       } catch (err) {
         return json.error(

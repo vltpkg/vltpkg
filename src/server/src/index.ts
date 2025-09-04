@@ -162,6 +162,12 @@ export class VltServer extends EventEmitter<{
     if (options['dashboard-root']) {
       this.dashboardRoot = options['dashboard-root']
     }
+    // ensure config reference stays consistent if provided
+    if (options.loadedConfig) {
+      this.config = new ConfigManager({
+        config: options.loadedConfig,
+      })
+    }
   }
 
   async update(this: VltServerListening) {

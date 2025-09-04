@@ -9,6 +9,14 @@ export interface FsItem {
   mtime: string
 }
 
+type ErrorResponse = { error: string }
+
+const isErrorResponse = (v: unknown): v is ErrorResponse =>
+  typeof v === 'object' &&
+  v !== null &&
+  'error' in (v as Record<string, unknown>) &&
+  typeof (v as { error?: unknown }).error === 'string'
+
 const fetchFs = async <T>({
   endpoint,
   path,
@@ -16,30 +24,30 @@ const fetchFs = async <T>({
   endpoint: FsEndpoint
   path?: string
 }): Promise<T> => {
-  try {
-    const body = path ? JSON.stringify({ path }) : JSON.stringify({})
-    const res = await fetch(`/fs${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body,
-    })
+  const body = path ? JSON.stringify({ path }) : JSON.stringify({})
+  const res = await fetch(`/fs${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body,
+  })
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch fs`)
-    }
-
-    const data = await res.json()
-
-    if (data.error) {
-      throw new Error(data.error)
-    }
-
-    return JSON.parse(data)
-  } catch (e) {
-    throw e
+  if (!res.ok) {
+    throw new Error(`Failed to fetch fs`)
   }
+
+  const data: unknown = await res.json()
+
+  if (isErrorResponse(data)) {
+    throw new Error(data.error)
+  }
+
+  if (typeof data === 'string') {
+    return JSON.parse(data) as T
+  }
+
+  return data as T
 }
 
 export const fetchFsLs = async ({

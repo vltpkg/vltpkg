@@ -225,7 +225,7 @@ const DropdownField = ({
             'duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&_svg]:size-4',
             className,
           )}>
-          {defaultValue && defaultValue.icon && (
+          {defaultValue?.icon && (
             <defaultValue.icon className="default-icon" />
           )}
           <span>{selected ? selected.label : placeholder}</span>

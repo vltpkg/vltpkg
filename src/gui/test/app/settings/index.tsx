@@ -16,6 +16,14 @@ vi.mock('@/components/settings/setting.tsx', () => ({
   SettingField: 'gui-setting-field',
 }))
 
+vi.mock('@/components/hooks/use-dashboard-root-check.tsx', () => ({
+  useDashboardRootCheck: () => ({
+    hasDashboard: true,
+    isLoading: false,
+    dashboardRoots: [],
+  }),
+}))
+
 afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)

@@ -92,7 +92,9 @@ test('render default', async () => {
 })
 
 test('render when loading and no dashboard', async () => {
-  ;(useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+  ;(
+    useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>
+  ).mockReturnValueOnce({
     hasDashboard: false,
     isLoading: true,
     dashboardRoots: [],
@@ -102,7 +104,9 @@ test('render when loading and no dashboard', async () => {
 })
 
 test('render when dashboard present with empty roots', async () => {
-  ;(useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+  ;(
+    useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>
+  ).mockReturnValueOnce({
     hasDashboard: true,
     isLoading: false,
     dashboardRoots: [],

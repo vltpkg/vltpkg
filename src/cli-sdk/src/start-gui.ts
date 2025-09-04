@@ -46,17 +46,16 @@ export const startGUI = async (
     assetsDir: getAssetsDir(),
     loadedConfig: conf,
   })
-  server.on('needConfigUpdate', dir => {
+  server.on('needConfigUpdate', async dir => {
     conf.resetOptions(dir)
     const listeningServer = server as VltServerListening
     listeningServer.updateOptions(conf.options)
-    const reload = (conf as { reloadFromDisk?: () => Promise<void> })
-      .reloadFromDisk
-    if (reload) {
-      void reload()
-        .then(() => listeningServer.updateOptions(conf.options))
-        .catch(() => {})
-    }
+    await conf
+      .reloadFromDisk()
+      .then(() => {
+        listeningServer.updateOptions(conf.options)
+      })
+      .catch(() => {})
   })
   const { projectRoot, scurry } = conf.options
   await server.start()

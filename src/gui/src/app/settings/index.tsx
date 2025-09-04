@@ -110,7 +110,6 @@ export const SettingsView = () => {
           field={{
             type: 'directory',
             onSelect: item => {
-              if (!item || item.type !== 'directory') return
               void (async () => {
                 await setToConfig({
                   which: 'user',
@@ -121,10 +120,10 @@ export const SettingsView = () => {
                     },
                   ],
                 })
-                // force rerender to show the new root
-                rerender()
                 // reload dashboard.json
                 updateStamp()
+                // force rerender to show the new root
+                rerender()
               })()
             },
           }}

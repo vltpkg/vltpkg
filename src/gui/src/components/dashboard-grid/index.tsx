@@ -81,7 +81,7 @@ export const DashboardGrid = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex w-full max-w-8xl flex-col py-4">
             <DashboardTable
-              data={dashboard?.projects ?? []}
+              data={dashboard.projects}
               setTable={value => {
                 const newValue =
                   typeof value === 'function' ? value(table) : value
