@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cli-darwin-x64",
   "description": "The vlt CLI (darwin-x64)",
-  "version": "0.0.0-28",
+  "version": "0.0.0-29",
   "private": true,
   "repository": {
     "type": "git",
