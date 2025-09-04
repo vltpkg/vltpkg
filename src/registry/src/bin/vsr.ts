@@ -17,6 +17,7 @@ import {
 } from '../../config.ts'
 import { minArgs } from 'minargs'
 import { load } from '@vltpkg/vlt-json'
+import { createRequire } from 'node:module'
 
 const usage = `USAGE:
 
@@ -382,15 +383,21 @@ if (!['dev', 'deploy'].includes(command)) {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const demo = path.resolve(__dirname, './demo')
+const require = createRequire(import.meta.url)
 
 // Resolve paths relative to this script's location
 const registryRoot = path.resolve(__dirname, '../../')
 const indexPath = path.resolve(registryRoot, 'dist/index.js')
 
 // Find the wrangler binary from node_modules
-const wranglerBinPath = path.resolve(
-  registryRoot,
-  'node_modules/.bin/wrangler',
+const wranglerPkgPath = require.resolve('wrangler/package.json')
+const wranglerRelBinPath = (
+  JSON.parse(readFileSync(wranglerPkgPath, 'utf8')) as {
+    bin: { wrangler: string }
+  }
+).bin.wrangler
+const wranglerBinPath = require.resolve(
+  path.join('wrangler', wranglerRelBinPath),
 )
 const wranglerBin =
   existsSync(wranglerBinPath) ? wranglerBinPath : 'wrangler'

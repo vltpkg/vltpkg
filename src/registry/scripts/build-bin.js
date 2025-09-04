@@ -43,6 +43,7 @@ async function main() {
     resolve(process.cwd(), 'node_modules/.bin/esbuild'),
     [
       join('./src/bin/vsr.ts'),
+      '--bundle',
       `--outfile=${join('./dist/bin/vsr.js')}`,
       '--packages=external',
       '--platform=node',
