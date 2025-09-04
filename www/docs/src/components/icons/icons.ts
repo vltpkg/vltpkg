@@ -1,0 +1,21 @@
+// socials
+export * from './discord.tsx'
+export * from './github.tsx'
+export * from './linkedin.tsx'
+export * from './twitter.tsx'
+
+// vlt icons
+export * from './authentication.tsx'
+export * from './cache.tsx'
+export * from './client.tsx'
+export * from './command.tsx'
+export * from './config.tsx'
+export * from './fast-split.tsx'
+export * from './graph.tsx'
+export * from './package-json.tsx'
+export * from './packages.tsx'
+export * from './query.tsx'
+export * from './reproduce.tsx'
+export * from './vlt.tsx'
+export * from './vsr.tsx'
+export * from './xdg.tsx'
