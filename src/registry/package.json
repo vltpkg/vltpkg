@@ -62,6 +62,7 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "prepack": "pnpm build && node scripts/prepack.js",
     "serve:build": "pnpm --silent build && node ./dist/bin/vsr.js --debug --daemon=false",
     "serve:build:daemon": "pnpm --silent build && node ./dist/bin/vsr.js --debug --daemon=true",
     "serve:death": "echo \"Killing wrangler dev processes...\" && (pkill -f 'wrangler.*dev' || true) && sleep 1 && (pids=$(lsof -ti :1337 2>/dev/null; lsof -ti :3000 2>/dev/null) && [ -n \"$pids\" ] && echo \"Force killing remaining processes: $pids\" && kill -9 $pids || echo \"No remaining processes found\") && echo \"Done.\"",
@@ -73,5 +74,8 @@
     "typecheck": "tsc --noEmit",
     "typecheck:worker": "tsc -p tsconfig.worker.json --noEmit"
   },
-  "type": "module"
+  "type": "module",
+  "publishConfig": {
+    "directory": "./.build-publish"
+  }
 }
