@@ -277,6 +277,8 @@ async function deployToCloudflare(): Promise<void> {
   const wranglerArgs = [
     'deploy',
     indexPath,
+    '--config',
+    wranglerConfigPath,
     '--name',
     `vsr-${ENV}`,
     '--compatibility-date',
@@ -388,6 +390,7 @@ const require = createRequire(import.meta.url)
 // Resolve paths relative to this script's location
 const registryRoot = path.resolve(__dirname, '../../')
 const indexPath = path.resolve(registryRoot, 'dist/index.js')
+const wranglerConfigPath = path.resolve(registryRoot, 'wrangler.json')
 
 // Find the wrangler binary from node_modules
 const wranglerPkgPath = require.resolve('wrangler/package.json')
@@ -460,6 +463,8 @@ void (async () => {
       [
         'dev',
         indexPath,
+        '--config',
+        wranglerConfigPath,
         '--local',
         '--persist-to=local-store',
         '--no-remote',
