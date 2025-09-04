@@ -50,7 +50,7 @@ export const iconMap: Partial<Record<string, IconName>> = {
   'exec-cache': 'Activity',
   'exec-local': 'Monitor',
   exec: 'Play',
-  gui: 'Vlt',
+  serve: 'Vlt',
   help: 'HelpCircle',
   init: 'Plus',
   install: 'Download',
