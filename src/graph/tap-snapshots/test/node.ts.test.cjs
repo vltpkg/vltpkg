@@ -20,7 +20,8 @@ Node [@vltpkg/graph.Node] {
   registry: undefined,
   modifier: undefined,
   version: '1.0.0',
-  resolved: undefined
+  resolved: undefined,
+  platform: undefined
 }
 `
 
@@ -101,6 +102,7 @@ Object {
   "modifier": undefined,
   "name": "foo",
   "optional": false,
+  "platform": undefined,
   "projectRoot": "{ROOT}",
   "rawManifest": Object {
     "name": "test",

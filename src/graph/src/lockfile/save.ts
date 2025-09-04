@@ -24,6 +24,7 @@ import type {
   LockfileEdges,
   LockfileEdgeValue,
   LockfileNode,
+  LockfilePlatform,
 } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
 
@@ -88,6 +89,18 @@ const formatNodes = (
         lockfileNode[6] = expandNormalizedManifestSymbols(
           node.rawManifest,
         )
+      }
+    }
+
+    // Always save platform data for optional dependencies if available
+    if (node.optional && node.manifest) {
+      const { engines, os, cpu } = node.manifest
+      if (engines || os || cpu) {
+        const platform: LockfilePlatform = {}
+        if (engines) platform.engines = engines
+        if (os) platform.os = os
+        if (cpu) platform.cpu = cpu
+        lockfileNode[7] = platform
       }
     }
 
