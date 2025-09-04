@@ -501,6 +501,7 @@ describe('Access Control Endpoints', () => {
       it('should handle invalid package names in access requests', async () => {
         const res = await app.request(
           '/-/package/invalid..package/access',
+          {},
           env,
         )
         expect([400, 404, 500].includes(res.status)).toBe(true)
@@ -518,6 +519,7 @@ describe('Access Control Endpoints', () => {
       it('should handle packages starting with dots', async () => {
         const res = await app.request(
           '/-/package/.hidden-package/access',
+          {},
           env,
         )
         expect([400, 404, 500].includes(res.status)).toBe(true)
