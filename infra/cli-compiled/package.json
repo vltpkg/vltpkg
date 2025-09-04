@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cli-compiled",
   "description": "The vlt CLI",
-  "version": "0.0.0-26",
+  "version": "0.0.0-27",
   "private": true,
   "repository": {
     "type": "git",
