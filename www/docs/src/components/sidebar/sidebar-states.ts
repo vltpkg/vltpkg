@@ -67,11 +67,13 @@ sidebar?.addEventListener('click', e => {
   const group = e.target.closest('[data-group]')
   const groupName = group?.getAttribute('data-name')
 
-  if (group && !e.target.matches('button')) {
+  const isButton = Boolean(e.target.closest('button'))
+
+  if (group && !isButton) {
     return
   }
 
-  if (group && e.target.matches('button')) {
+  if (group && isButton) {
     if (groupName) {
       toggleState(groupName)
 
