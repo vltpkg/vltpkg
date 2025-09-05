@@ -3,7 +3,7 @@ import {
   LinkedInIcon,
   TwitterIcon,
   DiscordIcon,
-} from '@/components/icons/icons.tsx'
+} from '@/components/icons/icons.ts'
 
 export interface Content {
   icon?: (props?: React.SVGProps<SVGSVGElement>) => React.ReactNode
