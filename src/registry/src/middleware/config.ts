@@ -1,56 +1,5 @@
 import type { Context } from 'hono'
-import {
-  API_DOCS_ENABLED,
-  DAEMON_ENABLED,
-  DAEMON_PORT,
-  DAEMON_URL,
-  DEBUG_ENABLED,
-  TELEMETRY_ENABLED,
-  SENTRY_CONFIG,
-  PORT,
-  VERSION,
-  URL,
-} from '../../config.ts'
-
-/**
- * Runtime configuration resolver - can be used outside of routes
- * Checks environment variables and falls back to defaults
- */
-export function resolveConfig(env?: any) {
-  const getBooleanFromEnv = (
-    key: string,
-    defaultValue: boolean,
-  ): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const value = env?.[key]
-    return typeof value === 'string' ?
-        value.toLowerCase() === 'true'
-      : defaultValue
-  }
-
-  return {
-    // Daemon configuration
-    DAEMON_ENABLED: getBooleanFromEnv('ARG_DAEMON', DAEMON_ENABLED),
-
-    // Telemetry configuration
-    TELEMETRY_ENABLED: getBooleanFromEnv(
-      'ARG_TELEMETRY',
-      TELEMETRY_ENABLED,
-    ),
-
-    // Debug configuration
-    DEBUG_ENABLED: getBooleanFromEnv('ARG_DEBUG', DEBUG_ENABLED),
-
-    // Static config values (pass through)
-    API_DOCS_ENABLED,
-    DAEMON_PORT,
-    DAEMON_URL,
-    SENTRY_CONFIG,
-    PORT,
-    VERSION,
-    URL,
-  }
-}
+import { resolveConfig } from '../utils/resolve-config.ts'
 
 /**
  * Configuration middleware that enriches the context with computed config values

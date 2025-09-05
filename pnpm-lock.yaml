@@ -544,6 +544,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
+      signal-exit:
+        specifier: ^4.1.0
+        version: 4.1.0
       ssri:
         specifier: 'catalog:'
         version: 12.0.0
