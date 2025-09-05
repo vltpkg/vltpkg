@@ -38,15 +38,9 @@ import { getIcon } from '@/components/file-explorer/utils.ts'
 import type { VariantProps } from 'tailwind-variants'
 import type { LucideIcon } from 'lucide-react'
 import type { VisibilityState } from '@tanstack/react-table'
+import type { FsItem } from '@/lib/fetch-fs.ts'
 
-export type FileType = 'file' | 'directory' | 'other'
-export interface FileExplorerItem {
-  name: string
-  path: string
-  type: FileType
-  size: number
-  mtime: string
-}
+export type FileExplorerItem = FsItem
 
 type FileExplorerView = 'list' | 'grid'
 
@@ -834,7 +828,7 @@ const FileExplorerFooterSelect = ({
 }: {
   onSelect?: (item: FileExplorerItem) => void
 }) => {
-  const { selectedItem } = useFileExplorerContext()
+  const { setIsOpen, selectedItem } = useFileExplorerContext()
   const disabled = !(
     selectedItem && selectedItem.type === 'directory'
   )
@@ -844,6 +838,7 @@ const FileExplorerFooterSelect = ({
       disabled={disabled}
       onClick={() => {
         if (!selectedItem || selectedItem.type !== 'directory') return
+        setIsOpen(false)
         onSelect?.(selectedItem)
       }}>
       Select

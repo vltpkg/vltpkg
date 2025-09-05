@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`lists directory contents for provided path > should list items for path 1`] = `
+[
+  {
+    "mtime": "2024-11-01T00:00:00.000Z",
+    "name": "file.txt",
+    "path": "/some/dir/file.txt",
+    "size": 123,
+    "type": "file",
+  },
+  {
+    "mtime": "2024-11-02T00:00:00.000Z",
+    "name": "nested",
+    "path": "/some/dir/nested",
+    "size": 0,
+    "type": "directory",
+  },
+]
+`;
+
+exports[`lists directory contents when no path provided > should default to listing current dir 1`] = `
+[
+  {
+    "mtime": "2024-11-01T00:00:00.000Z",
+    "name": "file.txt",
+    "path": "/some/dir/file.txt",
+    "size": 123,
+    "type": "file",
+  },
+  {
+    "mtime": "2024-11-02T00:00:00.000Z",
+    "name": "nested",
+    "path": "/some/dir/nested",
+    "size": 0,
+    "type": "directory",
+  },
+]
+`;

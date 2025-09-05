@@ -161,6 +161,12 @@ export const find = (
   cwd = process.cwd(),
   home = homedir(),
 ): string => {
+  // always resolve the user config path to the XDG location
+  // if caches were unloaded, reinitialize it instead of walking the project tree
+  if (which === 'user') {
+    return (paths.user ??= new XDG('vlt').config('vlt.json'))
+  }
+
   if (paths[which]) return paths[which]
   let lastKnownRoot = cwd
   for (const dir of walkUp(cwd)) {

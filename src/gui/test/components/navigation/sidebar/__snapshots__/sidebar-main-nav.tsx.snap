@@ -1,6 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SidebarMainNav render default 1`] = `
+exports[`SidebarMainNav does not render on "/settings" route 1`] = `
+
+
+`;
+
+exports[`SidebarMainNav renders default 1`] = `
 
 <gui-sidebar-group>
   <gui-sidebar-menu>

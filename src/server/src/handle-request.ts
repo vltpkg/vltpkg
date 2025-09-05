@@ -216,6 +216,37 @@ export const handleRequest = async (
         const normRes = normalizeKeyValuePairs(res, data.pairs)
         if (!normRes.ok) return
         await server.config.setPairs(normRes.normalized, data.which)
+        // reload loadedConfig if present and fold new options into server
+        if (server.options.loadedConfig) {
+          await server.options.loadedConfig.reloadFromDisk()
+          server.updateOptions({
+            ...server.options,
+            ...server.options.loadedConfig.options,
+          })
+        }
+        // if dashboard-root was set explicitly, update server options immediately
+        const dr = normRes.normalized.find(
+          p => p.key === 'dashboard-root',
+        )
+        if (dr) {
+          try {
+            const parsed = JSON.parse(dr.value) as unknown
+            if (
+              Array.isArray(parsed) &&
+              parsed.every(v => typeof v === 'string')
+            ) {
+              server.updateOptions({
+                ...server.options,
+                'dashboard-root': parsed,
+              })
+            }
+            /* c8 ignore next */
+          } catch {}
+        }
+        // reload server so changes take effect immediately
+        await server.update()
+        // notify after successful reload to let external listeners refresh
+        server.emit('needConfigUpdate', server.options.projectRoot)
         return json.ok(res, 'Config values set successfully')
       } catch (err) {
         return json.error(
@@ -244,11 +275,38 @@ export const handleRequest = async (
         const keysRes = normalizeKeyPairs(res, data.pairs)
         if (!keysRes.ok) return
         await server.config.deleteMany(keysRes.keys, data.which)
+        // reload loadedConfig if present and fold new options into server
+        if (server.options.loadedConfig) {
+          await server.options.loadedConfig.reloadFromDisk()
+          server.updateOptions({
+            ...server.options,
+            ...server.options.loadedConfig.options,
+          })
+        }
+        // reload server so changes take effect immediately
+        await server.update()
+        // notify after successful reload to let external listeners refresh
+        server.emit('needConfigUpdate', server.options.projectRoot)
         return json.ok(res, 'Config values deleted successfully')
       } catch (err) {
         return json.error(
           res,
           'Config delete failed',
+          asError(err).message,
+          500,
+        )
+      }
+    }
+
+    case '/fs/homedir': {
+      try {
+        const dir = homedir()
+        return json.ok(res, JSON.stringify(dir))
+        /* c8 ignore next 8 */
+      } catch (err) {
+        return json.error(
+          res,
+          'Unable to retrieve home directory',
           asError(err).message,
           500,
         )
