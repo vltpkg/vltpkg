@@ -22,13 +22,17 @@ interface CardGridLinkProps {
   icon: keyof typeof VltIcons
 }
 
+const icons = {
+  ...VltIcons,
+}
+
 export const CardGridLink = ({
   href,
   title,
   description,
   icon,
 }: CardGridLinkProps) => {
-  const Icon = VltIcons[icon]
+  const Icon = icons[icon]
 
   return (
     <a

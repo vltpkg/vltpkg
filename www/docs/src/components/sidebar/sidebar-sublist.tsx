@@ -53,12 +53,12 @@ const Row = ({
   const iconName = iconMap[key]
   const showBig = majorSections.has(key)
   const isGroup = entry.type === 'group'
-  const isCurrent = !isGroup && (entry as Link).isCurrent
+  const isCurrent = !isGroup && entry.isCurrent
 
-return (
+  return (
     <div
       data-name={key}
-      data-group={isGroup ?? undefined}
+      data-group={isGroup || undefined}
       data-link={!isGroup || undefined}
       className={cn(
         isGroup ?
@@ -107,7 +107,7 @@ return (
             />
           </div>
         : <a
-            href={(entry as Link).href}
+            href={entry.href}
             role="link"
             className="flex items-center gap-2">
             {iconName ?
@@ -136,7 +136,7 @@ return (
             entry.label === 'commands' ? 'closed'
             : entry.label === 'Packages' ?
               'open'
-            : (entry as GroupType).collapsed ?
+            : entry.collapsed ?
               'closed'
             : 'open'
           }
