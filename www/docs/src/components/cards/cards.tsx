@@ -1,6 +1,7 @@
+import * as VltIcons from '@/components/icons/icons.ts'
+
 import { Card } from '@/components/ui/card.tsx'
 import { ArrowUpRight } from 'lucide-react'
-import type React from 'react'
 
 export const CardGrid = ({
   children,
@@ -18,15 +19,21 @@ interface CardGridLinkProps {
   href?: string
   title: string
   description: string
-  img: string
+  icon: keyof typeof VltIcons
+}
+
+const icons = {
+  ...VltIcons,
 }
 
 export const CardGridLink = ({
   href,
   title,
   description,
-  img,
+  icon,
 }: CardGridLinkProps) => {
+  const Icon = icons[icon]
+
   return (
     <a
       href={href ?? undefined}
@@ -36,10 +43,7 @@ export const CardGridLink = ({
           className="duration-250 absolute right-3 top-3 text-muted-foreground transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
           size={16}
         />
-        <img
-          className="size-8 text-muted-foreground dark:invert dark:filter"
-          src={img}
-        />
+        <Icon className="size-8 text-muted-foreground dark:invert dark:filter" />
         <div className="flex h-full w-full grow flex-col gap-0.5">
           <h3
             data-card="header"
