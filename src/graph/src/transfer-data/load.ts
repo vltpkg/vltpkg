@@ -1,15 +1,5 @@
-import type { DepID } from '@vltpkg/dep-id/browser'
-import type { LockfileData } from '@vltpkg/graph'
-import type {
-  EdgeLike,
-  GraphLike,
-  NodeLike,
-  DependencyTypeShort,
-  NormalizedManifest,
-} from '@vltpkg/types'
-import { lockfile, stringifyNode } from '@vltpkg/graph/browser'
+import { error } from '@vltpkg/error-cause'
 import { SecurityArchive } from '@vltpkg/security-archive/browser'
-import type { Spec, SpecOptionsFilled } from '@vltpkg/spec/browser'
 import {
   defaultGitHostArchives,
   defaultGitHosts,
@@ -17,8 +7,19 @@ import {
   defaultRegistry,
   defaultScopeRegistries,
 } from '@vltpkg/spec/browser'
-import type { TransferData } from './types.ts'
-import { assert } from '@/lib/utils.ts'
+import { stringifyNode } from '../stringify-node.ts'
+import { loadEdges } from '../lockfile/load-edges.ts'
+import { loadNodes } from '../lockfile/load-nodes.ts'
+import type {
+  EdgeLike,
+  GraphLike,
+  NodeLike,
+  DependencyTypeShort,
+  NormalizedManifest,
+} from '@vltpkg/types'
+import type { LockfileData } from '../lockfile/types.ts'
+import type { DepID } from '@vltpkg/dep-id/browser'
+import type { Spec, SpecOptionsFilled } from '@vltpkg/spec/browser'
 
 const loadSpecOptions = (
   lockfile: LockfileData,
@@ -64,13 +65,44 @@ type MaybeGraphLike = Pick<
   mainImporter?: NodeLike
 }
 
-export type LoadResponse = {
+/**
+ * The returned object when loading a graph from a transfer data structure,
+ * including the graph itself, the spec options used to create it, and
+ * the security archive (if any).
+ */
+export type LoadResult = {
   graph: GraphLike
   specOptions: SpecOptionsFilled
   securityArchive: SecurityArchive | undefined
 }
 
-export const load = (transfered: TransferData): LoadResponse => {
+/**
+ * A data structure defining a complete graph to be transfered, including
+ * extra information to the lockfile such as project info and importers.
+ */
+export type TransferData = {
+  importers: {
+    importer: boolean
+    id: string
+    name: string
+    version: string
+    location: string
+    manifest: NormalizedManifest
+    projectRoot?: string
+    integrity?: string
+    resolved?: string
+    dev?: boolean
+    optional?: boolean
+  }[]
+  lockfile: LockfileData
+  projectInfo: {
+    tools?: string[]
+    vltInstalled?: boolean
+  }
+  securityArchive?: any
+}
+
+export const load = (transfered: TransferData): LoadResult => {
   const [mainImporter] = transfered.importers
   const maybeGraph: MaybeGraphLike = {
     importers: new Set<NodeLike>(),
@@ -113,10 +145,10 @@ export const load = (transfered: TransferData): LoadResponse => {
     },
     addNode(id?: DepID, manifest?: NormalizedManifest) {
       const graph = this as GraphLike
-      assert(id, 'id is required')
-      assert(manifest, 'manifest is required')
+      if (!id) throw error('id is required', { manifest })
+      if (!manifest) throw error('manifest is required')
       const node: NodeLike = {
-        id: id,
+        id,
         name: manifest.name,
         version: manifest.version,
         manifest,
@@ -183,8 +215,9 @@ export const load = (transfered: TransferData): LoadResponse => {
     node.location = importer.location
     node.integrity = importer.integrity
     node.resolved = importer.resolved
-    node.dev = importer.dev
-    node.optional = importer.optional
+    /* c8 ignore next 2 */
+    node.dev = importer.dev ?? false
+    node.optional = importer.optional ?? false
     node.confused = false
     node.toJSON = () => ({
       id: node.id,
@@ -209,8 +242,8 @@ export const load = (transfered: TransferData): LoadResponse => {
   // populate nodes and edges from loaded data
   const graph = maybeGraph as GraphLike
   const specOptions = loadSpecOptions(transfered.lockfile)
-  lockfile.loadNodes(graph, transfered.lockfile.nodes)
-  lockfile.loadEdges(graph, transfered.lockfile.edges, specOptions)
+  loadNodes(graph, transfered.lockfile.nodes)
+  loadEdges(graph, transfered.lockfile.edges, specOptions)
 
   const securityArchive = SecurityArchive.load(
     transfered.securityArchive,
