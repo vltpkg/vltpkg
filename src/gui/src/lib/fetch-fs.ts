@@ -5,7 +5,7 @@ export interface FsItem {
   name: string
   path: string
   type: FileType
-  size: number
+  size: number | null
   mtime: string
 }
 

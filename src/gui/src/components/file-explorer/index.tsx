@@ -55,6 +55,8 @@ export const FileExplorerView = ({
     }
   }
 
+  console.log('items', items)
+
   return (
     <FileExplorerDialog
       items={items}
