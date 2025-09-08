@@ -262,7 +262,7 @@ const NestedRows = ({
               )}
               {visible('size') && (
                 <TableCell className="px-2 py-1 text-sm text-muted-foreground">
-                  {item.size === 0 ?
+                  {item.size === 0 || !item.size ?
                     '-'
                   : formatDownloadSize(item.size)}
                 </TableCell>

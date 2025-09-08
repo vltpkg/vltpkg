@@ -42,8 +42,8 @@ exports[`renders Header for route /help 1`] = `
     </gui-vlt-icon>
   </div>
   <div class="flex w-full">
-    <gui-help-header>
-    </gui-help-header>
+    <gui-breadcrumb-header>
+    </gui-breadcrumb-header>
   </div>
   <gui-linear-menu>
   </gui-linear-menu>
@@ -78,6 +78,23 @@ exports[`renders Header for route /queries 1`] = `
   <div class="flex w-full">
     <gui-queries-header>
     </gui-queries-header>
+  </div>
+  <gui-linear-menu>
+  </gui-linear-menu>
+</div>
+
+`;
+
+exports[`renders Header for route /settings 1`] = `
+
+<div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
+  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+    <gui-vlt-icon>
+    </gui-vlt-icon>
+  </div>
+  <div class="flex w-full">
+    <gui-breadcrumb-header>
+    </gui-breadcrumb-header>
   </div>
   <gui-linear-menu>
   </gui-linear-menu>

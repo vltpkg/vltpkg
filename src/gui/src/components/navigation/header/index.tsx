@@ -5,8 +5,8 @@ import { ExplorerHeader } from '@/components/navigation/header/explorer.tsx'
 import { DashboardHeader } from '@/components/navigation/header/dashboard.tsx'
 import { QueriesHeader } from '@/components/navigation/header/queries.tsx'
 import { LabelsHeader } from '@/components/navigation/header/labels.tsx'
-import { HelpHeader } from '@/components/navigation/header/help.tsx'
 import { LinearMenu } from '@/components/navigation/linear-menu/index.tsx'
+import { BreadcrumbHeader } from '@/components/navigation/header/breadcrumb-header.tsx'
 
 const Header = () => {
   const { pathname } = useLocation()
@@ -25,7 +25,10 @@ const Header = () => {
       return <LabelsHeader />
     }
     if (pathname.includes('/help')) {
-      return <HelpHeader />
+      return <BreadcrumbHeader />
+    }
+    if (pathname.includes('/settings')) {
+      return <BreadcrumbHeader />
     }
   }, [pathname])
 

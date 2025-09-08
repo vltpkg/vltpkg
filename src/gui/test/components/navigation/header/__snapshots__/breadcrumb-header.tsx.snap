@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BreadcrumbHeader renders with a single route 1`] = `
+
+<div class="flex items-center">
+  <button class="duration-250 cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize transition-colors hover:bg-neutral-200 hover:text-foreground dark:hover:bg-neutral-800 text-foreground">
+    settings
+  </button>
+</div>
+
+`;
+
+exports[`BreadcrumbHeader renders with multiple routes 1`] = `
+
+<div class="flex items-center">
+  <button class="duration-250 cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize text-muted-foreground transition-colors hover:bg-neutral-200 hover:text-foreground dark:hover:bg-neutral-800">
+    settings
+  </button>
+  <gui-chevron-right-icon classname="mx-0.5 size-4 text-muted-foreground">
+  </gui-chevron-right-icon>
+  <button class="duration-250 cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize transition-colors hover:bg-neutral-200 hover:text-foreground dark:hover:bg-neutral-800 text-foreground">
+    general
+  </button>
+</div>
+
+`;

@@ -115,7 +115,21 @@ t.test('update projects, no dashboard', async t => {
   })
   t.equal(await d.update(), false)
   const dj = resolve(dir, 'public/dashboard.json')
-  t.throws(() => readFileSync(dj, 'utf8'))
+  const json = JSON.parse(readFileSync(dj, 'utf8'))
+  t.strictSame(json.projects, [], 'projects list is empty')
+  t.strictSame(
+    json.dashboardProjectLocations,
+    [
+      {
+        path: resolve(dir, 'projects'),
+        readablePath: join(
+          '~-update-projects-no-dashboard',
+          'projects',
+        ),
+      },
+    ],
+    'dashboard locations still present',
+  )
 })
 
 t.test(

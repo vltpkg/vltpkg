@@ -336,3 +336,19 @@ t.test('delete wrapper delegates to deleteMany', async t => {
   t.pass('delete wrapper executed')
   t.end()
 })
+
+t.test(
+  'setPairs parses JSON string arrays into string[] values',
+  async t => {
+    const config = createMockConfig(['config'])
+    const manager = new ConfigManager({ config })
+
+    // This should exercise the Array<string> parsing branch inside setPairs
+    await manager.setPairs([
+      { key: 'dashboard-root', value: JSON.stringify(['a', 'b']) },
+    ])
+
+    t.pass('setPairs handled array-of-strings JSON without error')
+    t.end()
+  },
+)

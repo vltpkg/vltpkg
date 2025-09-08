@@ -1,16 +1,16 @@
-import { getUser } from '@vltpkg/git'
-import { getAuthorFromGitUser } from '@vltpkg/init'
-import type { PackageJson } from '@vltpkg/package-json'
-import type { NormalizedManifest } from '@vltpkg/types'
 import { writeFileSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
-import type { PathBase, PathScurry } from 'path-scurry'
+import { getUser } from '@vltpkg/git'
+import { getAuthorFromGitUser } from '@vltpkg/init'
 import { getReadablePath } from './get-readable-path.ts'
-import type { ProjectTools } from './project-tools.ts'
 import { inferTools } from './project-tools.ts'
 import { readProjectFolders } from './read-project-folders.ts'
+
+import type { PathBase, PathScurry } from 'path-scurry'
+import type { PackageJson } from '@vltpkg/package-json'
+import type { NormalizedManifest } from '@vltpkg/types'
+import type { ProjectTools } from './project-tools.ts'
 
 // TODO: rather than writing a dashboard.json file, keep the dashboard
 // info in memory, and make a handle to the Dashboard object persist in
@@ -80,18 +80,13 @@ export class Dashboard {
     )
     const hasDashboard = dashboard.projects.length > 0
 
-    // only need to write the file if we're not about to delete it.
-    if (!hasDashboard) {
-      await rm(resolve(this.publicDir, 'dashboard.json'), {
-        force: true,
-      })
-    } else {
-      const dashboardJson = JSON.stringify(dashboard, null, 2)
-      writeFileSync(
-        resolve(this.publicDir, 'dashboard.json'),
-        dashboardJson,
-      )
-    }
+    // always write dashboard.json so clients can fetch it without 404s
+    // the file may contain an empty projects list when none are found
+    const dashboardJson = JSON.stringify(dashboard, null, 2)
+    writeFileSync(
+      resolve(this.publicDir, 'dashboard.json'),
+      dashboardJson,
+    )
 
     return hasDashboard
   }

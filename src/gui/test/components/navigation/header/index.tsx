@@ -34,13 +34,16 @@ vi.mock('@/components/navigation/header/labels.tsx', () => ({
   LabelsHeader: 'gui-labels-header',
 }))
 
-vi.mock('@/components/navigation/header/help.tsx', () => ({
-  HelpHeader: 'gui-help-header',
-}))
-
 vi.mock('@/components/navigation/linear-menu/index.tsx', () => ({
   LinearMenu: 'gui-linear-menu',
 }))
+
+vi.mock(
+  '@/components/navigation/header/breadcrumb-header.tsx',
+  () => ({
+    BreadcrumbHeader: 'gui-breadcrumb-header',
+  }),
+)
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -54,7 +57,14 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-const testCases = ['/explore', '/', '/queries', '/labels', '/help']
+const testCases = [
+  '/explore',
+  '/',
+  '/queries',
+  '/labels',
+  '/help',
+  '/settings',
+]
 
 test.each(testCases)('renders Header for route %s', routeName => {
   vi.mocked(useLocation).mockReturnValue({

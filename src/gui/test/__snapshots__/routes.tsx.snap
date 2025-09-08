@@ -146,3 +146,24 @@ exports[`renders Layout for the "/queries" view 1`] = `
 </gui-layout>
 
 `;
+
+exports[`renders Layout for the "/settings/general" view 1`] = `
+
+<gui-layout>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-settings-view>
+        </gui-settings-view>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
+</gui-layout>
+
+`;

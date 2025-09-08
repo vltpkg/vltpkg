@@ -58,6 +58,7 @@ test('SidebarQueryNav render default', () => {
   vi.mocked(useViewSidebar).mockReturnValue({
     isOnHelpView: vi.fn().mockReturnValue(false),
     isOnExploreView: vi.fn().mockReturnValue(false),
+    isOnSettingsView: vi.fn().mockReturnValue(false),
   })
 
   const Container = () => {
@@ -72,6 +73,7 @@ test('SidebarQueryNav render with no saved queries', () => {
   vi.mocked(useViewSidebar).mockReturnValue({
     isOnHelpView: vi.fn().mockReturnValue(false),
     isOnExploreView: vi.fn().mockReturnValue(true),
+    isOnSettingsView: vi.fn().mockReturnValue(false),
   })
 
   const Container = () => {
@@ -86,6 +88,7 @@ test('SidebarQueryNav render with saved queries', () => {
   vi.mocked(useViewSidebar).mockReturnValue({
     isOnHelpView: vi.fn().mockReturnValue(false),
     isOnExploreView: vi.fn().mockReturnValue(true),
+    isOnSettingsView: vi.fn().mockReturnValue(false),
   })
 
   const mockGraph = {

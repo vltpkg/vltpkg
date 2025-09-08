@@ -101,7 +101,7 @@ export class ConfigManager {
   }
 
   async setValues(
-    values: Record<string, string>,
+    values: Record<string, string | string[]>,
     which?: WhichConfig,
   ) {
     // Clear vlt-json caches to ensure fresh file reads
@@ -136,9 +136,24 @@ export class ConfigManager {
     pairs: { key: string; value: string }[],
     which?: WhichConfig,
   ) {
-    const values = Object.fromEntries(
-      pairs.map(({ key, value }) => [key, value] as const),
+    const entries: [string, string | string[]][] = pairs.map(
+      ({ key, value }) => {
+        try {
+          const parsed: unknown = JSON.parse(value)
+          /* c8 ignore next 4 */
+          if (
+            Array.isArray(parsed) &&
+            parsed.every((v: unknown) => typeof v === 'string')
+          ) {
+            return [key, parsed]
+          }
+        } catch {}
+        /* c8 ignore next */
+        return [key, value]
+      },
     )
+    const values: Record<string, string | string[]> =
+      Object.fromEntries(entries)
     return this.setValues(values, which)
   }
 

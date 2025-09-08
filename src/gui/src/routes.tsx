@@ -16,6 +16,7 @@ import { ErrorFound } from '@/app/error-found.tsx'
 import { Explorer } from '@/app/explorer.tsx'
 import { Labels } from '@/app/labels.tsx'
 import { Queries } from '@/app/queries.tsx'
+import { SettingsView } from '@/app/settings/index.tsx'
 
 /** Explorer Tabs */
 import { OverviewTabContent } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
@@ -152,6 +153,20 @@ export const routes: RouteObject[] = [
           {
             path: 'selectors',
             element: <HelpSelectors />,
+          },
+        ],
+      },
+      {
+        path: 'settings',
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="general" replace />,
+          },
+          {
+            path: 'general',
+            element: <SettingsView />,
           },
         ],
       },
