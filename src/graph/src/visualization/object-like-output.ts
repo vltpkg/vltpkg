@@ -1,5 +1,5 @@
 import { inspect } from 'node:util'
-import type { EdgeLike, GraphLike, NodeLike } from '../types.ts'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/types'
 
 const addInspect = (o: unknown, fn: () => string) =>
   ((o as { [K in typeof inspect.custom]: () => string })[

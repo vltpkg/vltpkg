@@ -13,9 +13,10 @@ import type {
   Integrity,
   NormalizedManifest,
   DependencyTypeShort,
+  GraphLike,
+  NodeLike,
 } from '@vltpkg/types'
 import { Edge } from './edge.ts'
-import type { GraphLike, NodeLike } from './types.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { GraphModifier } from './modifiers.ts'

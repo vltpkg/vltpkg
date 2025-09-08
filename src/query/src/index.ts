@@ -13,7 +13,7 @@ import { attribute } from './attribute.ts'
 import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo } from './pseudo.ts'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import type {

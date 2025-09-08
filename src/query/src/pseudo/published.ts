@@ -13,9 +13,8 @@ import {
   removeNode,
   removeQuotes,
 } from './helpers.ts'
-import type { NodeLike } from '@vltpkg/graph'
+import type { NodeLike , Packument } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
-import type { Packument } from '@vltpkg/types'
 import type { ParserState } from '../types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 

@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
-import type { GraphLike } from '@vltpkg/graph'
+import type { GraphLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
 
 /**

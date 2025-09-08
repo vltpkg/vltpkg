@@ -1,8 +1,7 @@
 import { asAttributeNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
 import { removeDanglingEdges } from './pseudo/helpers.ts'
-import type { NodeLike } from '@vltpkg/graph'
-import type { JSONField, Manifest } from '@vltpkg/types'
+import type { NodeLike , JSONField, Manifest } from '@vltpkg/types'
 import type { ParserState } from './types.ts'
 
 export type ComparatorFn = (attr: string, value?: string) => boolean

@@ -1,6 +1,6 @@
 import { asCombinatorNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { ParserState, ParserFn } from './types.ts'
 
 /**

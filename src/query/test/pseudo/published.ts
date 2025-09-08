@@ -8,7 +8,7 @@ import {
   retrieveRemoteDate,
 } from '../../src/pseudo/published.ts'
 import { getSemverRichGraph } from '../fixtures/graph.ts'
-import type { NodeLike } from '@vltpkg/graph'
+import type { NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { ParserState } from '../../src/types.ts'
 

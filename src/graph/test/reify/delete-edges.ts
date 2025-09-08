@@ -7,7 +7,7 @@ import t from 'tap'
 import type { Diff } from '../../src/diff.ts'
 import { Edge } from '../../src/edge.ts'
 import { Node } from '../../src/node.ts'
-import type { GraphLike } from '../../src/types.ts'
+import type { GraphLike } from '@vltpkg/types'
 
 // verify that we delete the deleted edges, but skip the ones
 // that are coming from something in the store being deleted,
