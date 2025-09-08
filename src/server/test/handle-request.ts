@@ -29,6 +29,11 @@ class MockServer {
   updateGraph() {
     this.log.push(['updateGraph'])
   }
+
+  updateOptions(opts: any) {
+    this.log.push(['updateOptions', opts])
+    this.options = { ...this.options, ...opts }
+  }
 }
 
 const ms = new MockServer()
@@ -1131,6 +1136,123 @@ t.test('/config/delete', async t => {
   await handleRequest(context.req, context.res, context.server)
   t.equal(okCalled, true)
   t.equal(configDeleteCalled, true)
+})
+
+t.test(
+  '/config/delete reloads loadedConfig and updates options',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+    let reloaded = false
+
+    // provide loadedConfig so the handler exercises reload/updateOptions path
+    ;(context.server as any).options.loadedConfig = {
+      async reloadFromDisk() {
+        reloaded = true
+      },
+      options: { some: 'option', 'dashboard-root': ['from-loaded'] },
+    }
+
+    // server.config.deleteMany should be called successfully
+    ;(context.server as any).config = {
+      async deleteMany(
+        _keys: string[],
+        _which?: 'user' | 'project',
+      ) {},
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return { which: 'project', pairs: [{ key: 'registry' }] }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values deleted successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    t.equal(reloaded, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+  },
+)
+
+t.test(
+  '/config/set updates dashboard-root from JSON array',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+
+    ;(context.server as any).config = {
+      async setPairs() {},
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {
+            which: 'project',
+            pairs: [
+              {
+                key: 'dashboard-root',
+                value: JSON.stringify(['a', 'b']),
+              },
+            ],
+          }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values set successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    // ensure updateOptions was invoked with updated dashboard-root
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.same((last?.[1] as any)['dashboard-root'], ['a', 'b'])
+  },
+)
+
+t.test('/fs/homedir', async t => {
+  const context = getContext(t)
+  let okCalled = false
+  const home = t.testdir({})
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    'node:os': { ...realOs, homedir: () => home },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {}
+      },
+      ok: (res: ServerResponse, data: string) => {
+        t.equal(res, context.res)
+        t.equal(data, JSON.stringify(home))
+        okCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(okCalled, true)
 })
 
 t.test('/config/delete key not string', async t => {

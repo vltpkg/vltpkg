@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SettingsView renders default 1`] = `
+
+<gui-setting-wrapper>
+  <gui-setting-section title="General">
+    <gui-setting-field
+      name="Theme"
+      description="The current theme of the vlt gui"
+      field="[object Object]"
+    >
+    </gui-setting-field>
+    <gui-setting-field
+      name="Dashboard root"
+      description="The root directory for the dashboard"
+      field="[object Object]"
+    >
+    </gui-setting-field>
+  </gui-setting-section>
+</gui-setting-wrapper>
+
+`;

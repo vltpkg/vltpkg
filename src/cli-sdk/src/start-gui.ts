@@ -46,9 +46,16 @@ export const startGUI = async (
     assetsDir: getAssetsDir(),
     loadedConfig: conf,
   })
-  server.on('needConfigUpdate', dir => {
+  server.on('needConfigUpdate', async dir => {
     conf.resetOptions(dir)
-    ;(server as VltServerListening).updateOptions(conf.options)
+    const listeningServer = server as VltServerListening
+    listeningServer.updateOptions(conf.options)
+    await conf
+      .reloadFromDisk()
+      .then(() => {
+        listeningServer.updateOptions(conf.options)
+      })
+      .catch(() => {})
   })
   const { projectRoot, scurry } = conf.options
   await server.start()

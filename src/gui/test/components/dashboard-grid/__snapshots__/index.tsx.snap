@@ -3,19 +3,81 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex h-full flex-col px-8 py-4">
-    <div
-      class="flex w-full max-w-8xl flex-col"
-      style="opacity: 1; transform: none;"
-    >
-      <p class="mb-4 text-sm font-semibold">
-        Projects
-      </p>
-      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <p>
-          No projects found
+  <div class="flex h-full w-full flex-col items-center justify-center">
+    <div class="flex flex-col items-center justify-center gap-2 text-center">
+      <h2 class="text-2xl font-medium tracking-tight">
+        No projects found
+      </h2>
+      <div class="flex flex-col items-center justify-center gap-2">
+        <p class="text-sm font-medium text-muted-foreground">
+          We couldn't find any projects in the following configured dashboard roots:
         </p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span class="rounded-md px-1.5 py-1 pt-1.5 text-xs font-normal text-pink-500 border-[1px] font-mono border-muted bg-white dark:bg-black mx-0">
+            /user/project-foo
+          </span>
+          <span class="rounded-md px-1.5 py-1 pt-1.5 text-xs font-normal text-pink-500 border-[1px] font-mono border-muted bg-white dark:bg-black mx-0">
+            /user/project-bar
+          </span>
+        </div>
+        <div class="mt-4 flex gap-2">
+          <gui-button
+            aschild="true"
+            variant="secondary"
+            size="sm"
+            classname="rounded-xl"
+          >
+            <gui-nav-link to="/settings">
+              <gui-settings-icon size="24">
+              </gui-settings-icon>
+              <span>
+                Settings
+              </span>
+            </gui-nav-link>
+          </gui-button>
+          <gui-button
+            aschild="true"
+            size="sm"
+            classname="rounded-xl"
+          >
+            <gui-nav-link to="/create-new-project">
+              <gui-plus-icon size="24">
+              </gui-plus-icon>
+              <span>
+                Create New Project
+              </span>
+            </gui-nav-link>
+          </gui-button>
+        </div>
       </div>
+    </div>
+  </div>
+</div>
+
+`;
+
+exports[`dashboard-grid when dashboard present with empty roots 1`] = `
+
+<div>
+  <div class="flex h-full w-full flex-col items-center justify-center">
+    <div class="flex flex-col items-center justify-center gap-2 text-center">
+      <h2 class="text-2xl font-medium tracking-tight">
+        No projects found
+      </h2>
+    </div>
+  </div>
+</div>
+
+`;
+
+exports[`dashboard-grid when loading and no dashboard 1`] = `
+
+<div>
+  <div class="flex h-full w-full flex-col items-center justify-center">
+    <div class="flex flex-col items-center justify-center gap-2 text-center">
+      <h2 class="text-2xl font-medium tracking-tight">
+        No projects found
+      </h2>
     </div>
   </div>
 </div>

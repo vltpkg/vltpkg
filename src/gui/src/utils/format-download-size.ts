@@ -1,9 +1,14 @@
-export const formatDownloadSize = (size: number): string => {
-  if (size < 1024) {
-    return `${size.toFixed(0)} B`
+export const formatDownloadSize = (
+  size: number | null | undefined,
+): string => {
+  const n = typeof size === 'number' ? size : Number(size)
+  if (!Number.isFinite(n)) return '-'
+  if (n <= 0) return '0 B'
+  if (n < 1024) {
+    return `${n.toFixed(0)} B`
   }
 
-  const sizeInKB = size / 1024
+  const sizeInKB = n / 1024
   if (sizeInKB < 1024) {
     return `${sizeInKB.toFixed(0)} KB`
   }

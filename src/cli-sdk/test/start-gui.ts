@@ -92,6 +92,7 @@ t.test('startGUI()', async t => {
     values: {
       target: ':root',
     },
+    reloadFromDisk: async () => {},
   } as unknown as LoadedConfig
 
   let optionsUpdated: LoadedConfig['options'] | undefined = undefined
@@ -357,4 +358,53 @@ t.test('startGUI() with --target option', async t => {
     t.equal(urlOpened, true)
     t.equal(openedUrl, 'server-address/custom-route')
   })
+})
+
+t.test('startGUI() reloadFromDisk behavior', async t => {
+  t.test(
+    'calls updateOptions again after successful reload',
+    async t => {
+      const projectRoot = t.testdir({})
+      const scurry = new PathScurry(projectRoot)
+      const conf = {
+        resetOptions: () => {},
+        options: {
+          scurry,
+          projectRoot,
+        },
+        values: {
+          target: ':root',
+        },
+        reloadFromDisk: async () => {},
+      } as LoadedConfig
+      let updateCount = 0
+      const mockServer = Object.assign(
+        new EventEmitter<{
+          needConfigUpdate: [string]
+        }>(),
+        {
+          updateOptions: () => {
+            updateCount++
+          },
+          start: () => {},
+          address: (route = '') => `server-address${route}`,
+        },
+      ) as unknown as VltServerListening
+
+      const { startGUI } = await t.mockImport<
+        typeof import('../src/start-gui.ts')
+      >('../src/start-gui.ts', {
+        '../src/output.ts': { stdout: () => {} },
+        '@vltpkg/server': { createServer: () => mockServer },
+        '@vltpkg/url-open': { urlOpen: () => {} },
+      })
+
+      const server = await startGUI(conf)
+      server.emit('needConfigUpdate', '/some/new/dir')
+      // allow the async reload/update to flush
+      await Promise.resolve()
+      await Promise.resolve()
+      t.equal(updateCount, 2)
+    },
+  )
 })

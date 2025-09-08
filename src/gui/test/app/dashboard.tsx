@@ -20,6 +20,32 @@ vi.mock('@/components/dashboard-grid/index.tsx', () => ({
   DashboardGrid: 'gui-dashboard-grid',
 }))
 
+vi.mock('@/components/ui/alert-dialog.tsx', () => ({
+  AlertDialog: 'gui-alert-dialog',
+  AlertDialogAction: 'gui-alert-dialog-action',
+  AlertDialogCancel: 'gui-alert-dialog-cancel',
+  AlertDialogContent: 'gui-alert-dialog-content',
+  AlertDialogDescription: 'gui-alert-dialog-description',
+  AlertDialogFooter: 'gui-alert-dialog-footer',
+  AlertDialogHeader: 'gui-alert-dialog-header',
+  AlertDialogTitle: 'gui-alert-dialog-title',
+}))
+
+vi.mock('@/components/ui/skeleton.tsx', () => ({
+  Skeleton: 'gui-skeleton',
+}))
+
+vi.mock('@/components/hooks/use-dashboard-root-check.tsx', () => {
+  const useDashboardRootCheck = vi.fn(() => ({
+    hasDashboard: true,
+    isLoading: false,
+    dashboardRoots: ['/user/project-foo', '/user/project-bar'],
+  }))
+  return { useDashboardRootCheck }
+})
+
+import { useDashboardRootCheck } from '@/components/hooks/use-dashboard-root-check.tsx'
+
 export const restHandlers = [
   http.get('/dashboard.json', () => {
     return HttpResponse.json([
@@ -55,11 +81,36 @@ afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
+  vi.clearAllMocks()
 })
 
 afterAll(() => server.close())
 
 test('render default', async () => {
+  render(<Dashboard />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('render when loading and no dashboard', async () => {
+  ;(
+    useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>
+  ).mockReturnValueOnce({
+    hasDashboard: false,
+    isLoading: true,
+    dashboardRoots: [],
+  })
+  render(<Dashboard />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('render when dashboard present with empty roots', async () => {
+  ;(
+    useDashboardRootCheck as unknown as ReturnType<typeof vi.fn>
+  ).mockReturnValueOnce({
+    hasDashboard: true,
+    isLoading: false,
+    dashboardRoots: [],
+  })
   render(<Dashboard />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })

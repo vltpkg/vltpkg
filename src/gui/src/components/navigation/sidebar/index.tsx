@@ -8,13 +8,13 @@ import {
 } from '@/components/ui/sidebar.tsx'
 
 /* sidebar components */
-import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.tsx'
 import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
 import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.tsx'
 
 /* sidebar nav menus */
 import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.tsx'
 import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.tsx'
+import { SidebarSettingsNav } from '@/components/navigation/sidebar/sidebar-settings-nav.tsx'
 
 import { footerMenuItems } from '@/components/navigation/sidebar/menu.ts'
 
@@ -44,12 +44,12 @@ export const AppSidebar = () => {
       variant="inset">
       <SidebarContent>
         <SidebarMainNav />
+        <SidebarSettingsNav />
         <SidebarQueryNav />
       </SidebarContent>
       <SidebarFooter className="mb-[0.875px]">
         <SidebarMenu>
           <SidebarMenuLink items={footerMenuItems} />
-          <SidebarThemeSwitcher />
           <SidebarToggle />
         </SidebarMenu>
       </SidebarFooter>

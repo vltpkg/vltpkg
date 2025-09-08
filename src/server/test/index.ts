@@ -117,4 +117,131 @@ t.test('start listening', async t => {
       message: 'failed to start server',
     })
   })
+
+  t.test(
+    'update() respects config dashboard-root fallbacks',
+    async t => {
+      const { VltServer } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        ...MOCKS,
+        '../src/config-data.ts': {
+          ConfigManager: class {
+            async get(
+              key?: string,
+              which?: 'user' | 'project',
+            ): Promise<unknown> {
+              if (key === 'dashboard-root' && which === 'project') {
+                return ['from-project']
+              }
+              if (key === 'dashboard-root' && which === 'user') {
+                return ['from-user']
+              }
+              return undefined
+            }
+          },
+        },
+      })
+
+      const s = new VltServer({
+        ...opts,
+        'dashboard-root': [],
+        publicDir: resolve(t.testdirName, 's3/public'),
+      })
+
+      await s.start()
+      // project root should win
+      t.same(s.dashboardRoot, ['from-project'])
+      await s.close()
+    },
+  )
+
+  t.test(
+    'update() falls back to user dashboard-root when project empty',
+    async t => {
+      const { VltServer } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        ...MOCKS,
+        '../src/config-data.ts': {
+          ConfigManager: class {
+            async get(
+              key?: string,
+              which?: 'user' | 'project',
+            ): Promise<unknown> {
+              if (key === 'dashboard-root' && which === 'project') {
+                return []
+              }
+              if (key === 'dashboard-root' && which === 'user') {
+                return ['from-user']
+              }
+              return undefined
+            }
+          },
+        },
+      })
+
+      const s = new VltServer({
+        ...opts,
+        'dashboard-root': [],
+        publicDir: resolve(t.testdirName, 's4/public'),
+      })
+
+      await s.start()
+      // user root should win if project is empty
+      t.same(s.dashboardRoot, ['from-user'])
+      await s.close()
+    },
+  )
 })
+
+t.test(
+  'updateOptions refreshes ConfigManager when loadedConfig provided',
+  async t => {
+    let constructedWith: unknown = undefined
+    const { createServer } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      ...MOCKS,
+      '../src/config-data.ts': {
+        ConfigManager: class {
+          constructor({ config }: { config: unknown }) {
+            constructedWith = config
+          }
+          list() {}
+        },
+      },
+    })
+
+    const dir = t.testdir({
+      projects: {
+        x: {
+          'package.json': JSON.stringify({ name: 'x' }),
+        },
+      },
+      s: { assets: {}, public: {} },
+    })
+
+    const opts = {
+      'dashboard-root': [resolve(dir, 'projects')],
+      packageJson: new PackageJson(),
+      projectRoot: resolve(dir, 'projects/x'),
+      scurry: new PathScurry(dir),
+      packageInfo: new PackageInfoClient(),
+      publicDir: resolve(dir, 's/public'),
+    }
+
+    const s = createServer(opts as unknown as VltServerOptions)
+    const fakeLoadedConfig = { projectRoot: dir } as unknown
+    s.updateOptions({
+      ...(opts as unknown as VltServerOptions),
+      loadedConfig: fakeLoadedConfig as any,
+    })
+
+    t.equal(
+      constructedWith,
+      fakeLoadedConfig,
+      'ConfigManager constructed with provided loadedConfig',
+    )
+  },
+)
