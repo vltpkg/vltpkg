@@ -21,7 +21,7 @@ const AppSidebarSublist = ({
   className?: string
 }) => {
   return (
-    <div className="flex h-full flex-col gap-1 overflow-y-auto">
+    <div className="flex h-full flex-col gap-4 overflow-y-auto">
       {renderMenu(sidebar, 0)}
     </div>
   )
@@ -29,6 +29,12 @@ const AppSidebarSublist = ({
 
 const renderMenu = (entries: SidebarEntries, depth: number) => {
   return entries.map((entry, index) => {
+    if (
+      majorSections.has(entry.label.toLowerCase()) &&
+      entry.label.toLowerCase() !== 'packages'
+    ) {
+      return <Section key={index} entry={entry} depth={depth} />
+    }
     if (entry.type === 'group') {
       return (
         <Row key={index} entry={entry} depth={depth}>
@@ -38,6 +44,25 @@ const renderMenu = (entries: SidebarEntries, depth: number) => {
     }
     return <Row key={index} entry={entry} depth={depth} />
   })
+}
+
+const Section = ({
+  entry,
+  depth,
+}: {
+  entry: GroupType | Link
+  depth: number
+}) => {
+  if (entry.type === 'link') return null
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="px-3 text-sm font-medium text-neutral-500">
+        {entry.label}
+      </p>
+      <div>{renderMenu(entry.entries, depth)}</div>
+    </div>
+  )
 }
 
 const Row = ({
@@ -51,7 +76,6 @@ const Row = ({
 }) => {
   const key = entry.label.toLowerCase()
   const iconName = iconMap[key]
-  const showBig = majorSections.has(key)
   const isGroup = entry.type === 'group'
   const isCurrent = !isGroup && entry.isCurrent
 
@@ -67,30 +91,25 @@ const Row = ({
         isGroup && depth === 0 && 'mb-1',
       )}
       style={{
-        paddingLeft: `${depth * 0.5}rem`,
+        paddingLeft: `${depth * 0.75}rem`,
       }}>
       <Button
         asChild={!isGroup}
         size="sidebar"
         variant="sidebar"
         className={cn(
-          'w-full',
+          'w-full text-muted-foreground',
           isGroup &&
-            'bg-background [&_svg[data-id=chevron]]:has-[+div[data-state=open]]:rotate-90',
+            '[&_svg[data-id=chevron]]:has-[+div[data-state=open]]:rotate-90',
           !isGroup && isCurrent && 'bg-secondary text-foreground',
         )}>
         {isGroup ?
           <div className="flex w-full items-center gap-2">
-            {iconName ?
-              showBig ?
-                <span className="flex size-6 items-center justify-center rounded-sm border-[1px] border-border bg-background transition-all duration-200 group-hover:bg-secondary">
-                  <Icon name={iconName} className="size-4" />
-                </span>
-              : <span className="flex size-5 items-center justify-center">
-                  <Icon name={iconName} className="size-4" />
-                </span>
-
-            : null}
+            {iconName && (
+              <span className="flex size-5 items-center justify-center">
+                <Icon name={iconName} className="size-4" />
+              </span>
+            )}
             <span
               className={cn(
                 majorSections.has(key) && 'font-semibold',
@@ -109,17 +128,12 @@ const Row = ({
         : <a
             href={entry.href}
             role="link"
-            className="flex items-center gap-2">
-            {iconName ?
-              showBig ?
-                <span className="flex size-6 items-center justify-center rounded-sm border-[1px] border-border bg-background transition-all duration-200 hover:bg-secondary">
-                  <Icon name={iconName} className="size-4" />
-                </span>
-              : <span className="flex size-5 items-center justify-center">
-                  <Icon name={iconName} className="size-4" />
-                </span>
-
-            : null}
+            className="relative flex items-center gap-2">
+            {depth === 0 && iconName && (
+              <span className="flex size-5 items-center justify-center">
+                <Icon name={iconName} className="size-4" />
+              </span>
+            )}
             <span
               className={cn(
                 majorSections.has(key) && 'font-semibold',
