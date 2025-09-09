@@ -1,6 +1,10 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
-import type { GraphLike, NodeLike , DependencyTypeShort } from '@vltpkg/types'
+import type {
+  GraphLike,
+  NodeLike,
+  DependencyTypeShort,
+} from '@vltpkg/types'
 import type { SpecLike, SpecOptions } from '@vltpkg/spec/browser'
 
 export const specOptions = {

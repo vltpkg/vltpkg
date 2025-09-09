@@ -1,5 +1,4 @@
 import type {
-  EdgeLike,
   HumanReadableOutputGraph,
   JSONOutputGraph,
   MermaidOutputGraph,
@@ -13,6 +12,7 @@ import {
   mermaidOutput,
   GraphModifier,
 } from '@vltpkg/graph'
+import { EdgeLike } from '@vltpkg/types'
 import { error } from '@vltpkg/error-cause'
 import LZString from 'lz-string'
 import { Query } from '@vltpkg/query'
