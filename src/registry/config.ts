@@ -1,11 +1,7 @@
 // get openapi schema
 import packageJson from './package.json' with { type: 'json' }
 import { apiBody } from './src/utils/docs.ts'
-import type {
-  // OriginConfig,
-  CookieOptions,
-  ApiDocsConfig,
-} from './types.ts'
+import type { CookieOptions, ApiDocsConfig } from './types.ts'
 
 export const YEAR = new Date().getFullYear()
 

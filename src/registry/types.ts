@@ -221,13 +221,6 @@ export interface OriginConfig {
   upstreams: Record<string, UpstreamConfig>
 }
 
-// export interface ParsedPackageInfo {
-//   upstream?: string
-//   packageName: string
-//   version?: string
-//   segments: string[]
-// }
-
 // ---------------------------------------------------------
 // Cache Types
 // ---------------------------------------------------------
