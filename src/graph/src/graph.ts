@@ -5,6 +5,8 @@ import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
+  GraphLike,
+  NodeLike,
   NormalizedManifest,
   DependencySaveType,
 } from '@vltpkg/types'
@@ -15,7 +17,6 @@ import type { Edge } from './edge.ts'
 import { lockfileData } from './lockfile/save.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
-import type { GraphLike, NodeLike } from './types.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')

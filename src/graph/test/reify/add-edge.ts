@@ -8,7 +8,7 @@ import t from 'tap'
 import { Edge } from '../../src/edge.ts'
 import { Node } from '../../src/node.ts'
 import { addEdge } from '../../src/reify/add-edge.ts'
-import type { GraphLike } from '../../src/types.ts'
+import type { GraphLike } from '@vltpkg/types'
 
 const mockRemover = {
   rm: (path: string) => rm(path, { recursive: true, force: true }),

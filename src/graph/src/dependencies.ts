@@ -7,13 +7,13 @@ import type {
   DependencyTypeLong,
   DependencyTypeShort,
   Manifest,
+  NodeLike,
 } from '@vltpkg/types'
 import {
   dependencyTypes,
   longDependencyTypes,
   shortDependencyTypes,
 } from '@vltpkg/types'
-import type { NodeLike } from './types.ts'
 
 export const isDependencyTypeShort = (
   obj: unknown,

@@ -4,7 +4,7 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
 import { Node } from '../src/node.ts'
-import type { GraphLike } from '../src/types.ts'
+import type { GraphLike } from '@vltpkg/types'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')

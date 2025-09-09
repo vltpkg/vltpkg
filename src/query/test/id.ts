@@ -8,7 +8,7 @@ import {
 } from './fixtures/selector.ts'
 import type { TestCase } from './fixtures/types.ts'
 import type { GraphSelectionState } from '../src/types.ts'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 
 const testId = selectorFixture(id)
 

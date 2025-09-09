@@ -1,11 +1,15 @@
-import type { LockfileData, GraphLike } from '@vltpkg/graph'
+import type { LockfileData } from '@vltpkg/graph'
+import type {
+  GraphLike,
+  Integrity,
+  NormalizedManifest,
+} from '@vltpkg/types'
 import type {
   Query,
   QueryResponseEdge,
   QueryResponseNode,
 } from '@vltpkg/query'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
-import type { Integrity, NormalizedManifest } from '@vltpkg/types'
 
 export type Action = {
   updateAppData: (appData: State['appData']) => void
