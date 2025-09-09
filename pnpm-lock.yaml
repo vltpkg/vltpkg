@@ -1022,6 +1022,9 @@ importers:
       '@vltpkg/satisfies':
         specifier: workspace:*
         version: link:../satisfies
+      '@vltpkg/security-archive':
+        specifier: workspace:*
+        version: link:../security-archive
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
