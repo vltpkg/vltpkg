@@ -16,11 +16,7 @@ import {
  * from upstream registries. This runs in the background to keep
  * cached data fresh without blocking user requests.
  */
-export async function queue(
-  batch: QueueBatch,
-  env: Environment,
-  c: HonoContext,
-) {
+export async function queue(batch: QueueBatch, env: Environment) {
   if (!env.DB) {
     throw new Error('Database not available')
   }
@@ -38,7 +34,7 @@ export async function queue(
 
       if (type === 'package_refresh' && packageName) {
         // Handle package refresh - refetch from upstream and cache
-        const upstreamConfig = getUpstreamConfig(upstream, c)
+        const upstreamConfig = getUpstreamConfig(upstream, { env })
         if (upstreamConfig) {
           const upstreamUrl = buildUpstreamUrl(
             upstreamConfig,

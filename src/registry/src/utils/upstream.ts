@@ -17,10 +17,10 @@ export function isValidUpstreamName(upstreamName: string): boolean {
  */
 export function getUpstreamConfig(
   upstreamName: string,
-  c: HonoContext,
+  { env }: { env: HonoContext['env'] },
 ): UpstreamConfig | null {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-  return c.env.ORIGIN_CONFIG.upstreams[upstreamName] ?? null
+  return env.ORIGIN_CONFIG.upstreams[upstreamName] ?? null
 }
 
 /**
