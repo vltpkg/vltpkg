@@ -9,12 +9,7 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { createServer } from '@vltpkg/server'
 import { existsSync, readFileSync } from 'node:fs'
 import type { VltServerOptions } from '@vltpkg/server'
-import {
-  DAEMON_PORT,
-  DAEMON_URL,
-  URL,
-  WRANGLER_CONFIG,
-} from '../../config.ts'
+import { DAEMON_PORT, DAEMON_URL } from '../../config.ts'
 import { minArgs } from 'minargs'
 import { load } from '@vltpkg/vlt-json'
 import { createRequire } from 'node:module'
@@ -33,6 +28,7 @@ OPTIONS:                   DESCRIPTION:
 --daemon=<boolean>         Run filesystem daemon (default: true)
 --telemetry=<boolean>      Run with telemetry reporting (default: true)
 -p, --port=<number>        Run on a specific port (default: ${DAEMON_PORT})
+-H, --host=<string>        Bind address for dev server (default: localhost)
 -c, --config=<path>        Load configuration from vlt.json file
 -d, --debug                Run in debug mode
 -h, --help                 Print usage information
@@ -60,7 +56,8 @@ const defaults: Args = {
   telemetry: true,
   debug: false,
   help: false,
-  port: WRANGLER_CONFIG.port,
+  port: 1337,
+  host: 'localhost',
   config: undefined,
   env: undefined,
   'db-name': undefined,
@@ -72,6 +69,7 @@ const defaults: Args = {
 const opts = {
   alias: {
     p: 'port',
+    H: 'host',
     c: 'config',
     d: 'debug',
     h: 'help',
@@ -79,6 +77,7 @@ const opts = {
   boolean: ['debug', 'help', 'daemon', 'telemetry', 'dry-run'],
   string: [
     'port',
+    'host',
     'config',
     'env',
     'db-name',
@@ -130,6 +129,7 @@ interface VsrConfig {
     telemetry?: boolean
     debug?: boolean
     port?: number
+    host?: string
     deploy?: {
       environments?: {
         [key: string]: DeployEnvironment
@@ -146,6 +146,7 @@ interface VsrConfig {
   telemetry?: boolean
   debug?: boolean
   port?: number
+  host?: string
 }
 
 interface DeployEnvironment {
@@ -219,6 +220,10 @@ const registryConfig = vltConfig.registry ?? {}
 const PORT = getNumberValue(
   args.port,
   registryConfig.port ?? vltConfig.port ?? defaults.port,
+)
+const HOST = getStringValue(
+  args.host,
+  registryConfig.host ?? vltConfig.host ?? defaults.host,
 )
 const TELEMETRY = getBooleanValue(
   args.telemetry,
@@ -455,7 +460,7 @@ void (async () => {
     }
 
     // eslint-disable-next-line no-console
-    console.log(`VSR: ${URL}`)
+    console.log(`VSR: http://${HOST}:${PORT}`)
 
     // spawn the wrangler dev process with resolved paths
     const { stdout, stderr } = spawn(
@@ -469,6 +474,10 @@ void (async () => {
         '--persist-to=local-store',
         '--no-remote',
         `--port=${PORT}`,
+        `--ip=${HOST}`,
+        `--var=ARG_HOST:${HOST}`,
+        `--var=ARG_PORT:${PORT}`,
+        `--var=ARG_URL:http://${HOST}:${PORT}`,
         `--var=ARG_DEBUG:${DEBUG}`,
         `--var=ARG_TELEMETRY:${TELEMETRY}`,
         `--var=ARG_DAEMON:${DAEMON}`,

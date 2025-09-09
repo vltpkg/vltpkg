@@ -4,6 +4,7 @@ import {
   getUpstreamConfig,
   buildUpstreamUrl,
 } from '../utils/upstream.ts'
+import type { HonoContext } from '../../types.ts'
 
 /**
  * Queue handler for background cache refresh jobs
@@ -12,7 +13,11 @@ import {
  * from upstream registries. This runs in the background to keep
  * cached data fresh without blocking user requests.
  */
-export async function queue(batch: QueueBatch, env: Environment) {
+export async function queue(
+  batch: QueueBatch,
+  env: Environment,
+  c: HonoContext,
+) {
   if (!env.DB) {
     throw new Error('Database not available')
   }
@@ -30,7 +35,7 @@ export async function queue(batch: QueueBatch, env: Environment) {
 
       if (type === 'package_refresh' && packageName) {
         // Handle package refresh - refetch from upstream and cache
-        const upstreamConfig = getUpstreamConfig(upstream)
+        const upstreamConfig = getUpstreamConfig(upstream, c)
         if (upstreamConfig) {
           const upstreamUrl = buildUpstreamUrl(
             upstreamConfig,

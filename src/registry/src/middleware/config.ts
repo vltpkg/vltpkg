@@ -7,10 +7,11 @@ import {
   DEBUG_ENABLED,
   TELEMETRY_ENABLED,
   SENTRY_CONFIG,
-  PORT,
   VERSION,
-  URL,
 } from '../../config.ts'
+
+const DEFAULT_PORT = 1337
+const DEFAULT_URL = `http://localhost:${DEFAULT_PORT}`
 
 /**
  * Runtime configuration resolver - can be used outside of routes
@@ -27,6 +28,17 @@ export function resolveConfig(env?: any) {
         value.toLowerCase() === 'true'
       : defaultValue
   }
+
+  // Resolve port and base URL from env (injected by vsr) or fallbacks
+  const resolvedPort =
+    typeof env?.ARG_PORT === 'string' ?
+      Number(env.ARG_PORT) || DEFAULT_PORT
+    : DEFAULT_PORT
+  const runtimeUrl =
+    (typeof env?.ARG_URL === 'string' && env.ARG_URL) ||
+    (typeof env?.ARG_HOST === 'string' && env.ARG_HOST ?
+      `http://${env.ARG_HOST}:${resolvedPort}`
+    : DEFAULT_URL)
 
   return {
     // Daemon configuration
@@ -46,9 +58,27 @@ export function resolveConfig(env?: any) {
     DAEMON_PORT,
     DAEMON_URL,
     SENTRY_CONFIG,
-    PORT,
+    // Allow overriding PORT/URL via vars from vsr
+    PORT: resolvedPort,
     VERSION,
-    URL,
+    URL: runtimeUrl,
+    REDIRECT_URI: `${runtimeUrl}/-/auth/callback`,
+    ORIGIN_CONFIG: {
+      default: 'local',
+      upstreams: {
+        local: {
+          type: 'local',
+          url: runtimeUrl,
+          allowPublish: true,
+        },
+        npm: {
+          type: 'npm',
+          url: 'https://registry.npmjs.org',
+        },
+      },
+    },
+    PROXY: true,
+    PROXY_URL: runtimeUrl,
   }
 }
 

@@ -1,4 +1,4 @@
-import { URL } from '../../config.ts'
+import { getRuntimeConfig } from '../utils/config.ts'
 import { createRoute, z } from '@hono/zod-openapi'
 import type { Context } from 'hono'
 
@@ -10,7 +10,7 @@ export const pingRoute = createRoute({
   description: `Check if the server is alive
 \`\`\`bash
 $ npm ping
-npm notice PING ${URL}
+npm notice PING ${getRuntimeConfig().URL}
 npm notice PONG 13ms
 \`\`\``,
   request: {},

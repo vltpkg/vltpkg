@@ -1,6 +1,6 @@
 import * as semver from 'semver'
 import validate from 'validate-npm-package-name'
-import { URL } from '../../config.ts'
+import { getRuntimeConfig } from './config.ts'
 import type {
   HonoContext,
   PackageSpec,
@@ -397,11 +397,13 @@ function rewriteTarballUrlIfNeeded(
       return `${protocol}://${host}/${upstream}/${packageName}/-/${generateTarballFilename(packageName, version)}`
     }
 
-    // Default to local registry format using DOMAIN
-    return `${URL}/${createFile({ pkg: packageName, version })}`
+    // Default to local registry format using runtime URL
+    const runtimeUrl = getRuntimeConfig().URL
+    return `${runtimeUrl}/${createFile({ pkg: packageName, version })}`
   } catch (_err) {
     // Fallback to local registry format
-    return `${URL}/${createFile({ pkg: packageName, version })}`
+    const runtimeUrl = getRuntimeConfig().URL
+    return `${runtimeUrl}/${createFile({ pkg: packageName, version })}`
   }
 }
 
