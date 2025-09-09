@@ -94,12 +94,6 @@ export async function configMiddleware(
   // Use the resolver to get computed config
   const runtimeConfig = resolveConfig(c.env)
 
-  // Initialize global config if not already done
-  const { initializeGlobalConfig } = await import(
-    '../utils/config.ts'
-  )
-  initializeGlobalConfig(c.env)
-
   // Enrich the context environment with computed values
   // Ensure c.env exists (it might be undefined in test environments)
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
