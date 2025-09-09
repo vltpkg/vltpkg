@@ -249,11 +249,11 @@ export async function getPackageTarball(c: HonoContext) {
             packageSegments[0]?.startsWith('@') &&
             packageSegments.length > 1
           ) {
-            // Scoped package: @scope/package
-            pkg = `${packageSegments[0]}/${packageSegments[1]}`
+            // Scoped package: @scope/package - decode to avoid double encoding
+            pkg = `${decodeURIComponent(packageSegments[0])}/${decodeURIComponent(packageSegments[1] || '')}`
           } else {
-            // Regular package
-            pkg = packageSegments[0] || ''
+            // Regular package - decode to avoid double encoding
+            pkg = decodeURIComponent(packageSegments[0] || '')
           }
         }
       } else {
@@ -267,11 +267,11 @@ export async function getPackageTarball(c: HonoContext) {
             packageSegments[0]?.startsWith('@') &&
             packageSegments.length > 1
           ) {
-            // Scoped package: @scope/package
-            pkg = `${packageSegments[0]}/${packageSegments[1]}`
+            // Scoped package: @scope/package - decode to avoid double encoding
+            pkg = `${decodeURIComponent(packageSegments[0])}/${decodeURIComponent(packageSegments[1] || '')}`
           } else {
-            // Regular package
-            pkg = packageSegments[0] || ''
+            // Regular package - decode to avoid double encoding
+            pkg = decodeURIComponent(packageSegments[0] || '')
           }
         }
       }
@@ -1257,9 +1257,11 @@ export async function getPackagePackument(c: HonoContext) {
           pathSegments[1]?.startsWith('@') &&
           pathSegments.length > 2
         ) {
-          name = `${pathSegments[1]}/${pathSegments[2]}`
+          // Decode URL-encoded segments to avoid double encoding
+          name = `${decodeURIComponent(pathSegments[1])}/${decodeURIComponent(pathSegments[2] || '')}`
         } else {
-          name = pathSegments[1] || ''
+          // Decode URL-encoded segment to avoid double encoding
+          name = decodeURIComponent(pathSegments[1] || '')
         }
       } else if (pathSegments.length > 0) {
         // Handle direct package routes
@@ -1267,9 +1269,11 @@ export async function getPackagePackument(c: HonoContext) {
           pathSegments[0]?.startsWith('@') &&
           pathSegments.length > 1
         ) {
-          name = `${pathSegments[0]}/${pathSegments[1] || ''}`
+          // Decode URL-encoded segments to avoid double encoding
+          name = `${decodeURIComponent(pathSegments[0])}/${decodeURIComponent(pathSegments[1] || '')}`
         } else {
-          name = pathSegments[0] || ''
+          // Decode URL-encoded segment to avoid double encoding
+          name = decodeURIComponent(pathSegments[0] || '')
         }
       }
     }
