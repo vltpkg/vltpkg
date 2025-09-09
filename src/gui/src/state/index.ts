@@ -68,6 +68,7 @@ const initialState: State = {
   hasDashboard: false,
   nodes: [],
   projectInfo: {
+    root: '',
     tools: [],
     vltInstalled: undefined,
   },

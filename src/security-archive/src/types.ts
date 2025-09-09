@@ -1,7 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
-import type { GraphLike } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec'
+import type { NodeLike } from '@vltpkg/types'
 
 /**
  * Parameter options for initializing a security archive.
@@ -11,11 +10,7 @@ export type SecurityArchiveRefreshOptions = {
    * A @link{GraphLike} instance to find what packages the
    * security archive should have.
    */
-  graph: GraphLike
-  /**
-   * A @link{SpecOptions} instance to use for resolving dependencies.
-   */
-  specOptions: SpecOptions
+  nodes: NodeLike[]
 }
 
 /**

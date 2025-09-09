@@ -31,6 +31,10 @@ const newGraph = (rootName: string): GraphLike => {
   mainImporter.mainImporter = true
   mainImporter.importer = true
   mainImporter.graph = graph
+
+  // Initialize empty workspaces Map for consistency with NodeLike interface
+  mainImporter.workspaces = new Map()
+
   graph.importers = new Set([mainImporter])
   graph.mainImporter = mainImporter
   graph.nodes = new Map([[mainImporter.id, mainImporter]])
@@ -58,6 +62,8 @@ const newNode =
     resolved: undefined,
     dev: false,
     optional: false,
+    workspaces: undefined,
+    options: specOptions,
     setConfusedManifest() {},
     maybeSetConfusedManifest() {},
     setResolved() {},
@@ -305,16 +311,45 @@ const getMultiWorkspaceGraph = (): GraphLike => {
   graph.nodes.set(a.id, a)
   graph.importers.add(a)
   a.importer = true
+  // Initialize workspaces Map for workspace importer
+  a.workspaces = new Map()
+
   const b = addNode('b')
   b.id = joinDepIDTuple(['workspace', 'b'])
   graph.nodes.set(b.id, b)
   graph.importers.add(b)
   b.importer = true
+  // Initialize workspaces Map for workspace importer
+  b.workspaces = new Map()
+
   const c = addNode('c')
   c.id = joinDepIDTuple(['workspace', 'c'])
   graph.nodes.set(c.id, c)
   graph.importers.add(c)
   c.importer = true
+  // Initialize workspaces Map for workspace importer
+  c.workspaces = new Map()
+
+  // Set up workspaces property on mainImporter
+  graph.mainImporter.workspaces!.set('a', {
+    name: 'a',
+    from: graph.mainImporter,
+    spec: Spec.parse('a', 'workspace:*', specOptions),
+    type: 'prod',
+  } as EdgeLike)
+  graph.mainImporter.workspaces!.set('b', {
+    name: 'b',
+    from: graph.mainImporter,
+    spec: Spec.parse('b', 'workspace:*', specOptions),
+    type: 'prod',
+  } as EdgeLike)
+  graph.mainImporter.workspaces!.set('c', {
+    name: 'c',
+    from: graph.mainImporter,
+    spec: Spec.parse('c', 'workspace:*', specOptions),
+    type: 'prod',
+  } as EdgeLike)
+
   const [d, e, f, y] = ['d', 'e', 'f', '@x/y'].map(i => {
     const n = addNode(i)
     graph.nodes.set(n.id, n)

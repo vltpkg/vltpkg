@@ -55,11 +55,9 @@ const getGraphData = async (
     skipHiddenLockfile: false,
     skipLoadingNodesOnModifiersChange: false,
   })
+  const nodes = [...graph.nodes.values()]
   const importers = [...graph.importers]
-  const securityArchive = await SecurityArchive.start({
-    graph,
-    specOptions: options,
-  })
+  const securityArchive = await SecurityArchive.start({ nodes })
 
   return {
     hasDashboard,
@@ -70,7 +68,7 @@ const getGraphData = async (
   }
 }
 
-const getProjectData = (
+export const getProjectData = (
   {
     packageJson,
     scurry,
@@ -78,6 +76,7 @@ const getProjectData = (
   folder: PathBase,
 ) => {
   return {
+    root: folder.fullpathPosix(),
     tools: inferTools(
       packageJson.read(folder.fullpath()),
       folder,

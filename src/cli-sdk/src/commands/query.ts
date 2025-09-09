@@ -23,6 +23,7 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
 import type { Views } from '../view.ts'
 import type { LoadedConfig } from '../config/index.ts'
+import { createHostContextsMap } from '../query-host-contexts.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -138,6 +139,9 @@ export const views = {
 } as const satisfies Views<QueryResult>
 
 export const command: CommandFn<QueryResult> = async conf => {
+  // TODO: now we can make it so that we skip the cwd graph load if
+  // the target query starts with :host-context() since in that case
+  // we will be loading the graphs from the host context only
   const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.read(
@@ -156,14 +160,9 @@ export const command: CommandFn<QueryResult> = async conf => {
   const targetQueryString = conf.get('target')
   const queryString = targetQueryString || positionalQueryString
   const securityArchive = await SecurityArchive.start({
-    graph,
-    specOptions: conf.options,
+    nodes: [...graph.nodes.values()],
   })
-  const query = new Query({
-    graph,
-    specOptions: conf.options,
-    securityArchive,
-  })
+  const hostContexts = createHostContextsMap(conf)
 
   const importers = new Set<Node>()
   const scopeIDs: DepID[] = []
@@ -174,9 +173,11 @@ export const command: CommandFn<QueryResult> = async conf => {
   if (scopeQueryString) {
     // Run scope query to get all matching nodes
     const scopeQuery = new Query({
-      graph,
-      specOptions: conf.options,
+      edges: graph.edges,
+      nodes: new Set(graph.nodes.values()),
+      importers: graph.importers,
       securityArchive,
+      hostContexts,
     })
     const { nodes } = await scopeQuery.search(scopeQueryString, {
       signal: new AbortController().signal,
@@ -189,7 +190,7 @@ export const command: CommandFn<QueryResult> = async conf => {
     for (const queryNode of scopeNodes) {
       importers.add(asNode(queryNode))
     }
-  } else {
+  } else if ('workspace' in conf.values) {
     // if in a workspace environment, select only the specified
     // workspaces as top-level items
     if (monorepo) {
@@ -201,23 +202,25 @@ export const command: CommandFn<QueryResult> = async conf => {
         }
       }
     }
-    // if no top-level item was set then by default
-    // we just set all importers as top-level items
-    if (importers.size === 0) {
-      for (const importer of graph.importers) {
-        importers.add(importer)
-      }
-    }
   }
 
   // retrieve the selected nodes and edges
-  const { edges, nodes } = await query.search(
-    queryString || defaultQueryString,
-    {
-      signal: new AbortController().signal,
-      scopeIDs: scopeIDs.length > 0 ? scopeIDs : undefined,
-    },
-  )
+  const query = new Query({
+    edges: graph.edges,
+    nodes: new Set(graph.nodes.values()),
+    importers:
+      importers.size > 0 ? importers : new Set([graph.mainImporter]),
+    securityArchive,
+    hostContexts,
+  })
+  const {
+    edges,
+    nodes,
+    importers: queryResultImporters,
+  } = await query.search(queryString || defaultQueryString, {
+    signal: new AbortController().signal,
+    scopeIDs: scopeIDs.length > 0 ? scopeIDs : undefined,
+  })
 
   if (!validateExpectedResult(conf, edges)) {
     throw error('Unexpected number of items', {
@@ -227,7 +230,10 @@ export const command: CommandFn<QueryResult> = async conf => {
   }
 
   return {
-    importers,
+    importers:
+      importers.size === 0 ?
+        new Set(queryResultImporters)
+      : importers,
     edges,
     nodes,
     highlightSelection: !!(

@@ -12,10 +12,11 @@ export const workspace = async (state: ParserState) => {
     }
   }
 
-  // Clears up all edges so that the :workspace pseudo-selector never matches
-  // edges that are possibly coming from other packages, this way we can only
-  // have a single workspace result per workspace name.
-  state.partial.edges.clear()
+  // Clears up any edges that are not pointing to workspace nodes
+  for (const edge of state.partial.edges) {
+    if (edge.to?.importer && !edge.to.mainImporter) continue
+    state.partial.edges.delete(edge)
+  }
 
   return state
 }

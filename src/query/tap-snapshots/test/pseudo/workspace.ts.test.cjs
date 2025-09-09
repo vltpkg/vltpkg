@@ -7,7 +7,9 @@
 'use strict'
 exports[`test/pseudo/workspace.ts > TAP > :workspace pseudo-selector > with multiple workspaces > should match snapshot for multi-workspace graph 1`] = `
 Object {
-  "edges": Array [],
+  "edges": Array [
+    "a",
+  ],
   "nodes": Array [
     "a",
     "b",

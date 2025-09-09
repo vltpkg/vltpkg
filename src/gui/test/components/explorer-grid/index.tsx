@@ -220,14 +220,16 @@ test('ExplorerGrid renders workspace with edges in', async () => {
       } as RawNode,
     ],
     projectInfo: {
+      root: '.',
       tools: ['vlt'],
       vltInstalled: true,
     },
     securityArchive: undefined,
   })
   const q = new Query({
-    graph,
-    specOptions: {},
+    edges: graph.edges,
+    nodes: new Set(graph.nodes.values()),
+    importers: graph.importers,
     securityArchive: undefined,
   })
   const result = await q.search(':project[name=b]', {

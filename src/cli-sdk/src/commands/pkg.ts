@@ -14,6 +14,7 @@ import { views as initViews } from './init.ts'
 import { actual, GraphModifier } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import { createHostContextsMap } from '../query-host-contexts.ts'
 
 export const views = {
   human: (results, _, config) => {
@@ -107,15 +108,17 @@ export const command: CommandFn = async conf => {
     const securityArchive =
       Query.hasSecuritySelectors(queryString) ?
         await SecurityArchive.start({
-          graph,
-          specOptions: options,
+          nodes: [...graph.nodes.values()],
         })
       : undefined
 
+    const hostContexts = createHostContextsMap(conf)
     const query = new Query({
-      graph,
-      specOptions: options,
+      nodes: new Set(graph.nodes.values()),
+      edges: graph.edges,
+      importers: graph.importers,
       securityArchive,
+      hostContexts,
     })
 
     const { nodes } = await query.search(queryString, {

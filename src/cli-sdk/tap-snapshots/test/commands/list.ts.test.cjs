@@ -436,6 +436,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
   },
   {
     "name": "b",
+    "fromID": "file·.",
+    "spec": "b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§b",
       "name": "b",
@@ -458,6 +461,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
   },
   {
     "name": "a",
+    "fromID": "file·.",
+    "spec": "a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§a",
       "name": "a",
@@ -493,8 +499,8 @@ a
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in human readable format 1`] = `
 my-project
-b
-a
+├── a@1.0.0
+└── b@1.0.0
 
 `
 
@@ -524,6 +530,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   },
   {
     "name": "b",
+    "fromID": "file·.",
+    "spec": "b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§b",
       "name": "b",
@@ -546,6 +555,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   },
   {
     "name": "a",
+    "fromID": "file·.",
+    "spec": "a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§a",
       "name": "a",

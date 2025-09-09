@@ -30,6 +30,7 @@ import type { Views } from './view.ts'
 import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
 import assert from 'node:assert'
 import { resolve } from 'node:path'
+import { createHostContextsMap } from './query-host-contexts.ts'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -147,10 +148,13 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         monorepo: Monorepo.load(this.projectRoot),
         loadManifests: false,
       })
+      const hostContexts = createHostContextsMap(conf)
       const query = new Query({
-        graph,
-        specOptions: conf.options,
+        nodes: new Set(graph.nodes.values()),
+        edges: graph.edges,
+        importers: graph.importers,
         securityArchive: undefined,
+        hostContexts,
       })
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,

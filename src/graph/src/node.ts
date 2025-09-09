@@ -103,6 +103,12 @@ export class Node implements NodeLike {
   edgesOut = new Map<string, Edge>()
 
   /**
+   * A `mainImporter` node may have workspace connected to it,
+   * equivalent to its `edgesOut` linked deps.
+   */
+  workspaces: Map<string, Edge> | undefined
+
+  /**
    * A reference to the {@link DepID} this node represents in the graph.
    */
   id: DepID
@@ -272,6 +278,13 @@ export class Node implements NodeLike {
       this.manifest?.dist?.tarball || spec.conventionalRegistryTarball
     this.integrity ??= this.manifest?.dist?.integrity
   }
+
+  get options() {
+    return this.#options
+  }
+
+  /* c8 ignore next */
+  set options(_opts: SpecOptions) {}
 
   equals(other: Node) {
     return this.id === other.id && this.location === other.location

@@ -13,14 +13,14 @@ import { attribute } from './attribute.ts'
 import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo } from './pseudo.ts'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec/browser'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import type {
   PostcssNode,
   PostcssNodeWithChildren,
 } from '@vltpkg/dss-parser'
 import type {
+  HostContextsMap,
   ParsedSelectorToken,
   ParserState,
   ParserFn,
@@ -141,10 +141,12 @@ export const walk = async (
 }
 
 export type QueryOptions = {
-  graph: GraphLike
+  edges: Set<EdgeLike>
+  nodes: Set<NodeLike>
+  importers: Set<NodeLike>
   retries?: number
-  specOptions: SpecOptions
   securityArchive: SecurityArchiveLike | undefined
+  hostContexts?: HostContextsMap
 }
 
 // A list of known security selectors that rely on
@@ -200,10 +202,12 @@ const setMethodToJSON = (node: QueryResponseNode) => {
  */
 export class Query {
   #cache: Map<string, QueryResponse>
-  #graph: GraphLike
+  #edges: Set<EdgeLike>
+  #nodes: Set<NodeLike>
+  #importers: Set<NodeLike>
   #retries: number
-  #specOptions: SpecOptions
   #securityArchive: SecurityArchiveLike | undefined
+  #hostContexts: HostContextsMap | undefined
 
   /**
    * Helper method to determine if a given query string is using any of
@@ -249,16 +253,20 @@ export class Query {
   }
 
   constructor({
-    graph,
+    edges,
+    nodes,
+    importers,
     retries,
-    specOptions,
     securityArchive,
+    hostContexts,
   }: QueryOptions) {
     this.#cache = new Map()
-    this.#graph = graph
+    this.#edges = edges
+    this.#nodes = nodes
+    this.#importers = importers
     this.#retries = retries ?? 3
-    this.#specOptions = specOptions
     this.#securityArchive = securityArchive
+    this.#hostContexts = hostContexts
   }
 
   #getQueryResponseEdges(_edges: Set<EdgeLike>): QueryResponseEdge[] {
@@ -450,6 +458,7 @@ export class Query {
       return {
         edges: [],
         nodes: [],
+        importers: [],
         comment: '',
         specificity: { idCounter: 0, commonCounter: 0 },
       }
@@ -459,10 +468,17 @@ export class Query {
       return cachedResult
     }
 
-    const nodes = new Set<NodeLike>(
-      Array.from(this.#graph.nodes.values()),
-    )
-    const edges = new Set<EdgeLike>(Array.from(this.#graph.edges))
+    const nodes = this.#nodes
+    const edges = this.#edges
+    const importers = this.#importers
+
+    // includes virtual workspace edges in the searched edges
+    for (const importer of importers) {
+      if (!importer.workspaces) continue
+      for (const edge of importer.workspaces.values()) {
+        edges.add(edge)
+      }
+    }
 
     // parse the query string into AST
     const current = parse(query)
@@ -474,7 +490,12 @@ export class Query {
     const loose = asPostcssNodeWithChildren(current).nodes.length > 1
     // builds initial state and walks over it,
     // retrieving the collected result
-    const { collect, comment, specificity } = await walk({
+    const {
+      collect,
+      comment,
+      importers: stateResultImporters,
+      specificity,
+    } = await walk({
       cancellable: async () => {
         await new Promise(resolve => {
           setTimeout(resolve, 0)
@@ -492,19 +513,21 @@ export class Query {
       },
       comment: '',
       loose,
+      importers,
       partial: { nodes, edges },
       retries: this.#retries,
       signal,
       securityArchive: this.#securityArchive,
-      specOptions: this.#specOptions,
       scopeIDs,
       walk,
       specificity: { idCounter: 0, commonCounter: 0 },
+      hostContexts: this.#hostContexts,
     })
 
     const res: QueryResponse = {
       edges: this.#getQueryResponseEdges(collect.edges),
       nodes: this.#getQueryResponseNodes(collect.nodes),
+      importers: this.#getQueryResponseNodes(stateResultImporters),
       comment,
       specificity,
     }

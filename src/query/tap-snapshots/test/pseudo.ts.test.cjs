@@ -954,18 +954,14 @@ Object {
 exports[`test/pseudo.ts > TAP > pseudo > query > ":root" 2`] = `
 Object {
   "edges": Array [],
-  "nodes": Array [
-    "my-project",
-  ],
+  "nodes": Array [],
 }
 `
 
 exports[`test/pseudo.ts > TAP > pseudo > query > ":root" 3`] = `
 Object {
   "edges": Array [],
-  "nodes": Array [
-    "my-project",
-  ],
+  "nodes": Array [],
 }
 `
 

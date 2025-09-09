@@ -84,6 +84,7 @@ const transferData: TransferData = {
     },
   },
   projectInfo: {
+    root: '.',
     tools: ['vlt'],
     vltInstalled: true,
   },

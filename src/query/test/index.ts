@@ -20,13 +20,6 @@ import type { PostcssNode } from '@vltpkg/dss-parser'
 
 type TestCase = [string, string[]]
 
-const specOptions = {
-  registry: 'https://registry.npmjs.org',
-  registries: {
-    custom: 'http://example.com',
-  },
-}
-
 // Create a mock search options for tests
 const mockSearchOptions = {
   signal: { throwIfAborted: () => {} } as AbortSignal,
@@ -49,12 +42,13 @@ const testBrokenState = (): ParserState => {
     current: { type: 'bork' } as unknown as PostcssNode,
     initial: copyGraphSelectionState(initial),
     partial: copyGraphSelectionState(initial),
+    importers: new Set(graph.importers),
+    hostContexts: undefined,
     walk,
     retries: 0,
     scopeIDs: mockSearchOptions.scopeIDs,
     securityArchive: undefined,
     signal: mockSearchOptions.signal,
-    specOptions,
     specificity: { idCounter: 0, commonCounter: 0 },
   }
   return state
@@ -69,7 +63,7 @@ t.test('simple graph', async t => {
     ['* >*', ['a', 'b', 'e', '@x/y', 'c', 'd', 'f']], // dependencies
     [':root', ['my-project']], // select :root
     [':root > *', ['a', 'b', 'e', '@x/y']], // direct deps of :root
-    [':root > :root', ['my-project']], // :root always places a ref to root
+    [':root > :root', []], // :root pseudo-selector can't depend on itself
     [':dev', ['b', '@x/y']], // retrieve deps of dev type
     [':root > :dev', ['b', '@x/y']], // mixed with a combinator
     [':root > :dev[name=b]', ['b']], // specific node
@@ -106,9 +100,10 @@ t.test('simple graph', async t => {
   ])
 
   const query = new Query({
-    graph,
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: undefined,
-    specOptions,
   })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
@@ -160,15 +155,16 @@ t.test('workspace', async t => {
     ['*', ['ws', 'w']], // universal
     [':root', ['ws']], // select :root
     [':root > *', []], // direct deps of :root
-    [':root > :root', ['ws']], // :root always places a ref to root
+    [':root > :root', []], // :root can't depend on itself
     [':project#w', ['w']], // select by project + workspace name
     ['#w:project', ['w']], // should be interchangeable
     ['/* do something */ [name^=w]', ['ws', 'w']], // support comments
   ])
   const query = new Query({
-    graph,
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: undefined,
-    specOptions,
   })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
@@ -200,14 +196,15 @@ t.test('cycle', async t => {
     ['*', ['cycle-project', 'a', 'b']], // universal
     [':root', ['cycle-project']], // select :root
     [':root > *', ['a']], // direct deps of :root
-    [':root > :root', ['cycle-project']], // :root always places a ref to root
+    [':root > :root', []], // :root can depend on itself
     ['/* do something */ [name^=a]', ['a']], // support comments
-    [':root > :root > :prod > *', ['b']], // mixed selectors
+    [':root > :prod > *', ['b']], // mixed selectors
   ])
   const query = new Query({
-    graph,
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: undefined,
-    specOptions,
   })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
@@ -228,7 +225,9 @@ t.test('insights', async t => {
     ['*:cve(CVE-2023-1234)', ['e']], // match cve by id
   ])
   const query = new Query({
-    graph,
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: asSecurityArchiveLike(
       new Map([
         [
@@ -264,7 +263,6 @@ t.test('insights', async t => {
         ],
       ]),
     ),
-    specOptions,
   })
   for (const [q, expected] of queryToExpected) {
     const result = await query.search(q, mockSearchOptions)
@@ -307,11 +305,13 @@ t.test('bad selector type [loose mode]', async t => {
 })
 
 t.test('trying to use tag selectors', async t => {
+  const graph = getSimpleGraph()
   await t.rejects(
     new Query({
-      graph: getSimpleGraph(),
+      nodes: new Set(graph.nodes.values()),
+      edges: graph.edges,
+      importers: graph.importers,
       securityArchive: undefined,
-      specOptions,
     }).search('foo', mockSearchOptions),
     /Unsupported selector/,
     'should throw an unsupported selector error',
@@ -319,11 +319,13 @@ t.test('trying to use tag selectors', async t => {
 })
 
 t.test('trying to use string selectors', async t => {
+  const graph = getSimpleGraph()
   await t.rejects(
     new Query({
-      graph: getSimpleGraph(),
+      nodes: new Set(graph.nodes.values()),
+      edges: graph.edges,
+      importers: graph.importers,
       securityArchive: undefined,
-      specOptions,
     }).search('"foo"', mockSearchOptions),
     /Unsupported selector/,
     'should throw an unsupported selector error',
@@ -333,9 +335,10 @@ t.test('trying to use string selectors', async t => {
 t.test('cancellable search', async t => {
   const graph = getSingleWorkspaceGraph()
   const query = new Query({
-    graph,
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: undefined,
-    specOptions,
   })
   const ac = new AbortController()
   const q = ':root > * > *'
@@ -740,10 +743,12 @@ t.test('getQueryTokens', t => {
 })
 
 t.test(':scope with custom scopeIDs', async t => {
+  const graph = getSimpleGraph()
   const query = new Query({
-    graph: getSimpleGraph(),
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: undefined,
-    specOptions,
   })
   const customScopeID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
   t.strictSame(
@@ -761,9 +766,10 @@ t.test(':scope with custom scopeIDs', async t => {
 t.test('specificity calculation', async t => {
   const graph = getSimpleGraph()
   const query = new Query({
-    graph,
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
     securityArchive: undefined,
-    specOptions,
   })
 
   const specificityTestCases = [
@@ -889,30 +895,35 @@ t.test('specificitySort', async t => {
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'First response (id:0, common:1)',
       specificity: { idCounter: 0, commonCounter: 1 },
     },
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'Second response (id:2, common:0)',
       specificity: { idCounter: 2, commonCounter: 0 },
     },
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'Third response (id:1, common:3)',
       specificity: { idCounter: 1, commonCounter: 3 },
     },
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'Fourth response (id:1, common:2)',
       specificity: { idCounter: 1, commonCounter: 2 },
     },
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'Fifth response (id:0, common:0)',
       specificity: { idCounter: 0, commonCounter: 0 },
     },
@@ -945,18 +956,21 @@ t.test('specificitySort', async t => {
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'First equal response',
       specificity: { idCounter: 1, commonCounter: 1 },
     },
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'Second equal response',
       specificity: { idCounter: 1, commonCounter: 1 },
     },
     {
       edges: [],
       nodes: [],
+      importers: [],
       comment: 'Third equal response',
       specificity: { idCounter: 1, commonCounter: 1 },
     },

@@ -4,6 +4,9 @@ import { getBooleanFlagsFromNum } from './lockfile/types.ts'
 import { stringifyNode } from './stringify-node.ts'
 import { loadEdges } from './lockfile/load-edges.ts'
 import { loadNodes } from './lockfile/load-nodes.ts'
+import { createVirtualRoot } from './virtual-root.ts'
+
+export * from './virtual-root.ts'
 
 const lockfile = {
   loadEdges,
@@ -12,6 +15,7 @@ const lockfile = {
 
 export {
   asDependencyTypeShort,
+  createVirtualRoot,
   getBooleanFlagsFromNum,
   lockfile,
   longDependencyTypes,

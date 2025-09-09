@@ -16,10 +16,31 @@ const MOCKS = {
   },
   '../src/graph-data.ts': {
     updateGraphData: () => {},
+    getProjectData: () => ({
+      root: '/test/project',
+      tools: [],
+      vltInstalled: false,
+    }),
   },
   '../src/dashboard.ts': {
     Dashboard: class {
       update() {}
+    },
+  },
+  '../src/config-data.ts': {
+    reloadConfig: async () => ({
+      options: {
+        projectRoot: '/test/project',
+        scurry: new PathScurry('/test/project'),
+        packageJson: {
+          read: () => ({ name: 'test', version: '1.0.0' }),
+        },
+      },
+    }),
+    ConfigManager: class {
+      async get() {
+        return undefined
+      }
     },
   },
 }
@@ -126,6 +147,15 @@ t.test('start listening', async t => {
       >('../src/index.ts', {
         ...MOCKS,
         '../src/config-data.ts': {
+          reloadConfig: async () => ({
+            options: {
+              projectRoot: '/test/project',
+              scurry: new PathScurry('/test/project'),
+              packageJson: {
+                read: () => ({ name: 'test', version: '1.0.0' }),
+              },
+            },
+          }),
           ConfigManager: class {
             async get(
               key?: string,
@@ -164,6 +194,15 @@ t.test('start listening', async t => {
       >('../src/index.ts', {
         ...MOCKS,
         '../src/config-data.ts': {
+          reloadConfig: async () => ({
+            options: {
+              projectRoot: '/test/project',
+              scurry: new PathScurry('/test/project'),
+              packageJson: {
+                read: () => ({ name: 'test', version: '1.0.0' }),
+              },
+            },
+          }),
           ConfigManager: class {
             async get(
               key?: string,
@@ -204,6 +243,15 @@ t.test(
     >('../src/index.ts', {
       ...MOCKS,
       '../src/config-data.ts': {
+        reloadConfig: async () => ({
+          options: {
+            projectRoot: '/test/project',
+            scurry: new PathScurry('/test/project'),
+            packageJson: {
+              read: () => ({ name: 'test', version: '1.0.0' }),
+            },
+          },
+        }),
         ConfigManager: class {
           constructor({ config }: { config: unknown }) {
             constructedWith = config

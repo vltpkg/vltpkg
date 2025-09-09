@@ -2,17 +2,17 @@
 
 exports[`load graph 1`] = `
 "my-project
-├─┬ foo@1.0.0
-│ └── bar@1.0.0
-└── baz (custom:baz@1.0.0)
+├── baz (custom:baz@1.0.0)
+└─┬ foo@1.0.0
+  └── bar@1.0.0
 "
 `;
 
 exports[`load graph with confused manifest 1`] = `
 "my-project
-├─┬ foo@1.0.0
-│ └── bar@1.0.0
 ├── baz (custom:baz@1.0.0)
-└── confused (confused)
+├── confused (confused)
+└─┬ foo@1.0.0
+  └── bar@1.0.0
 "
 `;

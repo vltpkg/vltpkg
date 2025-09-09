@@ -9,15 +9,7 @@ import {
 } from '../../src/pseudo/published.ts'
 import { getSemverRichGraph } from '../fixtures/graph.ts'
 import type { NodeLike } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { ParserState } from '../../src/types.ts'
-
-const specOptions = {
-  registry: 'https://registry.npmjs.org',
-  registries: {
-    custom: 'http://example.com',
-  },
-} as SpecOptions
 
 global.fetch = (async (url: string) => {
   if (url === 'https://registry.npmjs.org/h') {
@@ -97,8 +89,8 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
     cancellable: async () => {},
     walk: async i => i,
     retries: 0,
+    importers: new Set(graph.importers),
     securityArchive: undefined,
-    specOptions,
     signal: new AbortController().signal,
     specificity: { idCounter: 0, commonCounter: 0 },
   }
@@ -329,7 +321,7 @@ t.test('retrieveRemoteDate', async t => {
     id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
   } as NodeLike
   t.strictSame(
-    await retrieveRemoteDate(missingName, specOptions),
+    await retrieveRemoteDate(missingName),
     undefined,
     'should return undefined if missing essential info',
   )
@@ -341,7 +333,7 @@ t.test('retrieveRemoteDate', async t => {
       id: joinDepIDTuple(['registry', '', 'h@1.0.0']),
     } as NodeLike
     await t.rejects(
-      retrieveRemoteDate(node, specOptions),
+      retrieveRemoteDate(node),
       /Failed to fetch packument/,
       'should throw an internal error so that it may be retried',
     )
@@ -353,7 +345,7 @@ t.test('retrieveRemoteDate', async t => {
       id: joinDepIDTuple(['registry', '', 'i@1.0.0']),
     } as NodeLike
     t.strictSame(
-      await retrieveRemoteDate(node, specOptions),
+      await retrieveRemoteDate(node),
       undefined,
       'should return undefined if fetch throws',
     )
@@ -366,7 +358,7 @@ t.test('retrieveRemoteDate', async t => {
       id: joinDepIDTuple(['registry', '', 'c@1.0.0']),
     } as NodeLike
     await t.rejects(
-      retrieveRemoteDate(node, specOptions),
+      retrieveRemoteDate(node),
       /Missing API/,
       'should throw an internal error that will not be retried',
     )

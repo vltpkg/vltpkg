@@ -13,6 +13,7 @@ import prettyBytes from 'pretty-bytes'
 import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
+import { createHostContextsMap } from '../query-host-contexts.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -101,10 +102,13 @@ export const command: CommandFn<CommandResult> = async conf => {
       monorepo: options.monorepo,
       loadManifests: false,
     })
+    const hostContexts = createHostContextsMap(conf)
     const query = new Query({
-      graph,
-      specOptions: conf.options,
+      nodes: new Set(graph.nodes.values()),
+      edges: graph.edges,
+      importers: graph.importers,
       securityArchive: undefined,
+      hostContexts,
     })
     const { nodes } = await query.search(queryString, {
       signal: new AbortController().signal,

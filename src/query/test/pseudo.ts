@@ -39,8 +39,8 @@ t.test('pseudo', async t => {
   }
   const queryToExpected = new Set<TestCase>([
     [':root', all, ['my-project']], // from initial nodes
-    [':root', empty, ['my-project']], // from empty nodes
-    [':root', b, ['my-project']], // from diff node
+    [':root', empty, []], // from empty nodes
+    [':root', b, []], // from diff node
     [':project /*all*/', all, ['my-project']], // no workspaces in graph
     [':project /*empty*/', empty, []], // from empty nodes
     [':project /*b*/', b, []], // from diff node
@@ -385,14 +385,6 @@ t.test('pseudo', async t => {
       )
     }
   })
-
-  await t.test('missing importers info on nodes', async t => {
-    await t.rejects(
-      testPseudo(':root'),
-      /:root pseudo-element works on local graphs only/,
-      'should throw an local-graph-only error',
-    )
-  })
 })
 
 t.test('bad selector type', async t => {
@@ -419,14 +411,6 @@ t.test('specificity calculation for pseudo selectors', async t => {
   }
   const initial = copyGraphSelectionState(all)
 
-  // Create mock specOptions
-  const mockSpecOptions = {
-    registry: 'https://registry.npmjs.org',
-    registries: {
-      custom: 'http://example.com',
-    },
-  }
-
   // Test normal pseudo selectors (should increment commonCounter)
   const normalState: ParserState = {
     cancellable: async () => {},
@@ -442,13 +426,14 @@ t.test('specificity calculation for pseudo selectors', async t => {
     initial: copyGraphSelectionState(initial),
     loose: false,
     partial: copyGraphSelectionState(initial),
+    importers: new Set(simpleGraph.importers),
+    hostContexts: undefined,
     retries: 0,
     securityArchive: undefined,
     signal: { throwIfAborted: () => {} } as AbortSignal,
     walk: async (state: ParserState) => state,
     specificity: { idCounter: 0, commonCounter: 0 },
     comment: '',
-    specOptions: mockSpecOptions,
   }
 
   const result = await pseudo(normalState)

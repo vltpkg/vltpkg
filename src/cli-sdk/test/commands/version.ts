@@ -624,6 +624,12 @@ t.test('version command with scope', async t => {
             nodes: new Map(),
           }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
       },
       '@vltpkg/query': {
         Query: class {
@@ -706,6 +712,12 @@ t.test('version command with scope', async t => {
             nodes: new Map(),
           }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
       },
       '@vltpkg/query': {
         Query: class {

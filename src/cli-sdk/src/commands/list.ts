@@ -131,13 +131,7 @@ export const command: CommandFn<ListResult> = async conf => {
   const queryString = targetQueryString || positionalQueryString
 
   const securityArchive = await SecurityArchive.start({
-    graph,
-    specOptions: conf.options,
-  })
-  const query = new Query({
-    graph,
-    specOptions: conf.options,
-    securityArchive,
+    nodes: [...graph.nodes.values()],
   })
   const projectQueryString = ':project, :project > *'
   const selectImporters: string[] = []
@@ -151,8 +145,9 @@ export const command: CommandFn<ListResult> = async conf => {
   if (scopeQueryString) {
     // run scope query to get all matching nodes
     const scopeQuery = new Query({
-      graph,
-      specOptions: conf.options,
+      nodes: new Set(graph.nodes.values()),
+      edges: graph.edges,
+      importers: graph.importers,
       securityArchive,
     })
     const { nodes } = await scopeQuery.search(scopeQueryString, {
@@ -183,9 +178,7 @@ export const command: CommandFn<ListResult> = async conf => {
     // if no top-level item was set then by default
     // we just set all importers as top-level items
     if (importers.size === 0) {
-      for (const importer of graph.importers) {
-        importers.add(importer)
-      }
+      importers.add(graph.mainImporter)
     }
   }
 
@@ -200,6 +193,12 @@ export const command: CommandFn<ListResult> = async conf => {
     : projectQueryString
 
   // retrieve the selected nodes and edges
+  const query = new Query({
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers,
+    securityArchive,
+  })
   const { edges, nodes } = await query.search(
     queryString || defaultQueryString,
     {

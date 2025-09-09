@@ -46,6 +46,20 @@ const hasImporterToken = (
 }
 
 /**
+ * Checks if any segment of the query has a :host-context selector.
+ */
+const hasHostContextToken = (
+  queryTokens: ParsedSelectorToken[],
+): boolean => {
+  for (const segment of queryTokens) {
+    if (segment.value === ':host-context') {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Updates the query based on a given result item.
  */
 export const updateResultItem =
@@ -53,14 +67,23 @@ export const updateResultItem =
   (e: React.MouseEvent | MouseEvent) => {
     e.preventDefault()
     if (!item.to) return
-    let newQuery = ''
     const query = q.trim()
+    let newQuery = query
+    // handle :host-context() selector if present
+    const queryTokens = Query.getQueryTokens(query)
+    let prefix = ''
+    if (hasHostContextToken(queryTokens)) {
+      const [, ...rest] = query.split(':host-context(')
+      const [key, ...after] = rest.join('').split(')')
+      newQuery = after.join(')')
+      prefix = `:host-context(${key}) `
+    }
     // if it's a stacked item we make sure we select the unique node so that
     // either we get down to a single item or the user is presented with the
     // list of same items to refine the selection again
     if (item.stacked) {
       newQuery = appendToQuery(
-        query,
+        newQuery,
         `[name="${item.to.name}"]:v(${item.to.version})`,
       )
     } else {
@@ -72,7 +95,10 @@ export const updateResultItem =
       }
       // the item is root
       if (item.to.mainImporter) {
-        newQuery = `:root`
+        if (prefix) {
+          newQuery = `#${item.to.name}`
+        }
+        newQuery += `:root`
         // the item is a workspace
       } else if (item.to.importer) {
         newQuery = `#${item.to.name}:workspace`
@@ -87,7 +113,6 @@ export const updateResultItem =
           useVersion && item.from.version ?
             `:v(${item.from.version})`
           : ''
-        const queryTokens = Query.getQueryTokens(query)
 
         // direct dependency of the root
         if (item.from.mainImporter) {
@@ -103,21 +128,21 @@ export const updateResultItem =
             name !== suffix ?
               `#${appendToQuery(item.name, suffix)}`
             : name
-          newQuery = `${query}:is(${fromName}${fromVersion} > ${dest})`
+          newQuery = `${newQuery}:is(${fromName}${fromVersion} > ${dest})`
         } else {
-          // by default we preppend the parent item to the query
-          const prefix = `${fromName}${fromVersion}`
-          if (query.startsWith(prefix)) {
-            newQuery = `${appendToQuery(query, suffix)}:v(${item.to.version})`
+          // by default we preppend the parent item to the newQuery
+          const start = `${fromName}${fromVersion}`
+          if (newQuery.startsWith(start)) {
+            newQuery = `${appendToQuery(newQuery, suffix)}:v(${item.to.version})`
           } else {
-            newQuery = `${prefix} > ${appendToQuery(query, suffix)}`
+            newQuery = `${start} > ${appendToQuery(newQuery, suffix)}`
           }
         }
       } else {
-        newQuery = appendToQuery(query, suffix)
+        newQuery = appendToQuery(newQuery, suffix)
       }
     }
 
-    updateQuery(newQuery)
+    updateQuery(prefix + newQuery)
     return undefined
   }

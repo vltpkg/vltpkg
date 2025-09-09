@@ -136,7 +136,11 @@ t.test('graph data for vlt project', async t => {
         [`${abbrevDepID} abbrev`]: `prod * ${abbrevDepID}`,
       },
     },
-    projectInfo: { tools: ['vlt'], vltInstalled: true },
+    projectInfo: {
+      root: projectRoot,
+      tools: ['vlt'],
+      vltInstalled: true,
+    },
     securityArchive: {
       [abbrevDepID]: {
         id: '99923218962',
@@ -204,7 +208,11 @@ t.test('graph data for depless vlt project', async t => {
       nodes: {},
       edges: {},
     },
-    projectInfo: { tools: ['vlt'], vltInstalled: true },
+    projectInfo: {
+      root: projectRoot,
+      tools: ['vlt'],
+      vltInstalled: true,
+    },
     securityArchive: { ok: false },
   })
 })

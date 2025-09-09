@@ -77,7 +77,7 @@ export const load = (transfered: TransferData): LoadResponse => {
     edges: new Set<EdgeLike>(),
     nodes: new Map<DepID, NodeLike>(),
     nodesByName: new Map<string, Set<NodeLike>>(),
-    projectRoot: mainImporter?.projectRoot || '',
+    projectRoot: transfered.projectInfo.root,
     addEdge(
       type: DependencyTypeShort,
       spec: Spec,
@@ -122,12 +122,14 @@ export const load = (transfered: TransferData): LoadResponse => {
         manifest,
         edgesIn: new Set(),
         edgesOut: new Map(),
+        workspaces: undefined,
         graph,
         importer: false,
         mainImporter: false,
         projectRoot: graph.projectRoot,
         dev: false,
         optional: false,
+        options: transfered.lockfile.options,
         confused: false,
         setResolved() {},
         setConfusedManifest(
@@ -173,6 +175,8 @@ export const load = (transfered: TransferData): LoadResponse => {
     },
   }
 
+  const specOptions = loadSpecOptions(transfered.lockfile)
+
   // configure importer nodes
   for (const importer of transfered.importers) {
     const id = importer.id as DepID
@@ -208,8 +212,12 @@ export const load = (transfered: TransferData): LoadResponse => {
 
   // populate nodes and edges from loaded data
   const graph = maybeGraph as GraphLike
-  const specOptions = loadSpecOptions(transfered.lockfile)
-  lockfile.loadNodes(graph, transfered.lockfile.nodes)
+  lockfile.loadNodes(
+    graph,
+    transfered.lockfile.nodes,
+    specOptions,
+    graph,
+  )
   lockfile.loadEdges(graph, transfered.lockfile.edges, specOptions)
 
   const securityArchive = SecurityArchive.load(

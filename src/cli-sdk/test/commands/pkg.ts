@@ -515,6 +515,12 @@ t.test('scope functionality', async t => {
       actual: {
         load: () => mockGraph,
       },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: {
         maybeLoad: () => undefined,
       },
@@ -630,6 +636,12 @@ t.test('scope functionality', async t => {
   >('../../src/commands/pkg.ts', {
     '@vltpkg/graph': {
       actual: { load: () => mockGraph },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: { maybeLoad: () => undefined },
     },
     '@vltpkg/query': {
@@ -759,6 +771,12 @@ t.test('scope with no matching workspaces', async t => {
       actual: {
         load: () => ({ nodes: new Map() }),
       },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: {
         maybeLoad: () => undefined,
       },
@@ -843,6 +861,12 @@ t.test('scope with security selectors', async t => {
       actual: {
         load: () => ({ nodes: new Map() }),
       },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: {
         maybeLoad: () => undefined,
       },
@@ -1081,6 +1105,12 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
@@ -1162,6 +1192,12 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
@@ -1243,6 +1279,12 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
@@ -1307,6 +1349,12 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
@@ -1361,6 +1409,12 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },

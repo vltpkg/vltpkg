@@ -19,7 +19,6 @@ import {
 } from '@vltpkg/dss-parser'
 import { removeNode, removeQuotes } from './helpers.ts'
 import type { NodeLike, Packument } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { ParserState } from '../types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 
@@ -82,10 +81,9 @@ export const asOutdatedKind = (value: string): OutdatedKinds => {
  */
 export const retrieveRemoteVersions = async (
   node: NodeLike,
-  specOptions: SpecOptions,
   signal?: AbortSignal,
 ): Promise<string[]> => {
-  const spec = hydrate(node.id, String(node.name), specOptions)
+  const spec = hydrate(node.id, String(node.name), node.options)
   if (!spec.registry || !node.name) {
     return []
   }
@@ -156,8 +154,7 @@ export const queueNode = async (
   let versions: string[]
   try {
     versions = await pRetry(
-      () =>
-        retrieveRemoteVersions(node, state.specOptions, state.signal),
+      () => retrieveRemoteVersions(node, state.signal),
       {
         retries: state.retries,
         signal: state.signal,

@@ -86,12 +86,13 @@ export const selectorFixture =
       loose,
       initial,
       partial,
+      importers: new Set<NodeLike>(),
+      hostContexts: undefined,
       walk,
       retries: 0,
       scopeIDs,
       securityArchive: undefined,
       signal: new AbortController().signal,
-      specOptions: {},
       specificity: { idCounter: 0, commonCounter: 0 },
     }
     const res = await testFn(state)
