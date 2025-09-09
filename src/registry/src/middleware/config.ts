@@ -10,9 +10,6 @@ import {
   VERSION,
 } from '../../config.ts'
 
-const DEFAULT_PORT = 1337
-const DEFAULT_URL = `http://localhost:${DEFAULT_PORT}`
-
 /**
  * Runtime configuration resolver - can be used outside of routes
  * Checks environment variables and falls back to defaults
@@ -29,16 +26,20 @@ export function resolveConfig(env?: any) {
       : defaultValue
   }
 
+  const ARG_PORT = env?.ARG_PORT as string | undefined
+  if (!ARG_PORT) {
+    throw new Error('ARG_PORT is required')
+  }
+
   // Resolve port and base URL from env (injected by vsr) or fallbacks
-  const resolvedPort =
-    typeof env?.ARG_PORT === 'string' ?
-      Number(env.ARG_PORT) || DEFAULT_PORT
-    : DEFAULT_PORT
-  const runtimeUrl =
-    (typeof env?.ARG_URL === 'string' && env.ARG_URL) ||
-    (typeof env?.ARG_HOST === 'string' && env.ARG_HOST ?
-      `http://${env.ARG_HOST}:${resolvedPort}`
-    : DEFAULT_URL)
+  const resolvedPort = Number(ARG_PORT)
+
+  const ARG_HOST = env?.ARG_HOST as string | undefined
+  if (!ARG_HOST) {
+    throw new Error('ARG_HOST is required')
+  }
+
+  const runtimeUrl = `http://${ARG_HOST}:${resolvedPort}`
 
   return {
     // Daemon configuration

@@ -477,7 +477,6 @@ void (async () => {
         `--ip=${HOST}`,
         `--var=ARG_HOST:${HOST}`,
         `--var=ARG_PORT:${PORT}`,
-        `--var=ARG_URL:http://${HOST}:${PORT}`,
         `--var=ARG_DEBUG:${DEBUG}`,
         `--var=ARG_TELEMETRY:${TELEMETRY}`,
         `--var=ARG_DAEMON:${DAEMON}`,
