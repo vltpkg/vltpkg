@@ -1,4 +1,4 @@
-import { resolveConfig } from '../middleware/config.ts'
+import { resolveConfig } from './resolve-config.ts'
 
 /**
  * Global runtime configuration - can be used outside of routes

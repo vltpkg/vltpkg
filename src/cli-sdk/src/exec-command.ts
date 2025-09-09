@@ -94,6 +94,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   fg: F
   arg0?: string
   args: string[]
+  env?: NodeJS.ProcessEnv
   #monorepo?: Monorepo
   #nodes?: string[]
   #defaultIgnoreMissing = false
@@ -309,6 +310,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       cwd,
       arg0,
       args: this.args,
+      env: this.env,
       projectRoot: this.projectRoot,
       packageJson: this.conf.options.packageJson,
       'script-shell':
@@ -324,6 +326,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         this.conf.get('if-present') ?? this.#defaultIgnoreMissing,
       arg0: this.arg0,
       args: this.args,
+      env: this.env,
       projectRoot: this.projectRoot,
       packageJson: this.conf.options.packageJson,
       'script-shell': this.conf.get('script-shell'),
