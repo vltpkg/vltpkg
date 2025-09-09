@@ -390,9 +390,9 @@ function rewriteTarballUrlIfNeeded(
 ): string {
   try {
     // Check if we should rewrite URLs for this upstream
-    const upstream = context?.upstream
-    const protocol = context?.protocol
-    const host = context?.host
+    const upstream = context.upstream
+    const protocol = context.protocol
+    const host = context.host
 
     if (upstream && protocol && host) {
       // Rewrite to our local registry format for upstream packages

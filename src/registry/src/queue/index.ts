@@ -1,10 +1,13 @@
-import type { QueueBatch, Environment } from '../../types.ts'
+import type {
+  QueueBatch,
+  Environment,
+  HonoContext,
+} from '../../types.ts'
 import { createDatabaseOperations } from '../db/client.ts'
 import {
   getUpstreamConfig,
   buildUpstreamUrl,
 } from '../utils/upstream.ts'
-import type { HonoContext } from '../../types.ts'
 
 /**
  * Queue handler for background cache refresh jobs

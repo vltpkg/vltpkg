@@ -19,6 +19,7 @@ export function getUpstreamConfig(
   upstreamName: string,
   c: HonoContext,
 ): UpstreamConfig | null {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
   return c.env.ORIGIN_CONFIG.upstreams[upstreamName] ?? null
 }
 
@@ -27,6 +28,7 @@ export function getUpstreamConfig(
  * @returns {string} The default upstream name
  */
 export function getDefaultUpstream(c: HonoContext): string {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
   return c.env.ORIGIN_CONFIG.default
 }
 

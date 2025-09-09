@@ -26,11 +26,13 @@ export function resolveConfig(env?: any) {
       : defaultValue
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const ARG_PORT = env?.ARG_PORT || '1337'
 
   // Resolve port and base URL from env (injected by vsr) or fallbacks
   const resolvedPort = Number(ARG_PORT)
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const ARG_HOST = env?.ARG_HOST || 'localhost'
 
   const runtimeUrl = `http://${ARG_HOST}:${resolvedPort}`
