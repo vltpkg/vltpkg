@@ -5,10 +5,12 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { reload } from '@vltpkg/vlt-json'
 import type { Node } from '../src/node.ts'
 import { Edge } from '../src/edge.ts'
-import type { GraphLike, NodeLike, EdgeLike } from '../src/types.ts'
 import type {
   DependencyTypeShort,
   NormalizedManifest,
+  GraphLike,
+  NodeLike,
+  EdgeLike,
 } from '@vltpkg/types'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 

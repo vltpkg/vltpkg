@@ -1,4 +1,4 @@
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type {
   SecurityArchiveLike,

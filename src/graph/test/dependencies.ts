@@ -11,8 +11,11 @@ import {
 } from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { DependencyTypeLong, Manifest } from '@vltpkg/types'
-import type { NodeLike } from '../src/types.ts'
+import type {
+  DependencyTypeLong,
+  Manifest,
+  NodeLike,
+} from '@vltpkg/types'
 
 t.test('shorten', async t => {
   t.strictSame(

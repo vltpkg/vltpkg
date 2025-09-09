@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { parse } from '@vltpkg/dss-parser'
 import { walk } from '../../src/index.ts'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/types'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 import type {

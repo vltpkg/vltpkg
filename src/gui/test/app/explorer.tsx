@@ -14,7 +14,7 @@ import type {
   QueryResponseEdge,
   QueryResponseNode,
 } from '@vltpkg/query'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/types'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'

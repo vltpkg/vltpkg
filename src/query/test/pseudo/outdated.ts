@@ -11,7 +11,7 @@ import {
   getSemverRichGraph,
   getSimpleGraph,
 } from '../fixtures/graph.ts'
-import type { NodeLike } from '@vltpkg/graph'
+import type { NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { ParserState } from '../../src/types.ts'
 

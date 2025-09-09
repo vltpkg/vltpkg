@@ -1,5 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { Attribute } from 'postcss-selector-parser'
 import t from 'tap'
 import {

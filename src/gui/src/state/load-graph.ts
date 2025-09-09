@@ -1,10 +1,12 @@
 import type { DepID } from '@vltpkg/dep-id/browser'
+import type { LockfileData } from '@vltpkg/graph'
 import type {
   EdgeLike,
   GraphLike,
-  LockfileData,
   NodeLike,
-} from '@vltpkg/graph'
+  DependencyTypeShort,
+  NormalizedManifest,
+} from '@vltpkg/types'
 import { lockfile, stringifyNode } from '@vltpkg/graph/browser'
 import { SecurityArchive } from '@vltpkg/security-archive/browser'
 import type { Spec, SpecOptionsFilled } from '@vltpkg/spec/browser'
@@ -15,10 +17,6 @@ import {
   defaultRegistry,
   defaultScopeRegistries,
 } from '@vltpkg/spec/browser'
-import type {
-  DependencyTypeShort,
-  NormalizedManifest,
-} from '@vltpkg/types'
 import type { TransferData } from './types.ts'
 import { assert } from '@/lib/utils.ts'
 

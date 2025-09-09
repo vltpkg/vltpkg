@@ -4,9 +4,12 @@ import { fastSplit } from '@vltpkg/fast-split'
 import { Spec } from '@vltpkg/spec/browser'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import { longDependencyTypes } from '@vltpkg/types'
-import type { DependencyTypeShort } from '@vltpkg/types'
+import type {
+  DependencyTypeShort,
+  GraphLike,
+  NodeLike,
+} from '@vltpkg/types'
 import { isDependencyTypeShort } from '../dependencies.ts'
-import type { GraphLike, NodeLike } from '../types.ts'
 import type {
   LockfileData,
   LockfileEdgeKey,

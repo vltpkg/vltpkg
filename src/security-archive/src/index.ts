@@ -9,7 +9,7 @@ import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { GraphLike, NodeLike } from '@vltpkg/graph'
+import type { GraphLike, NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
   PackageReportData,

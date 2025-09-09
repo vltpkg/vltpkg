@@ -20,8 +20,10 @@
     }
   },
   "dependencies": {
+    "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/semver": "workspace:*"
+    "@vltpkg/semver": "workspace:*",
+    "@vltpkg/spec": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

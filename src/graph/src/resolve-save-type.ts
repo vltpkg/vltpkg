@@ -1,8 +1,8 @@
 import type {
   DependencySaveType,
   DependencyTypeShort,
+  NodeLike,
 } from '@vltpkg/types'
-import type { NodeLike } from './types.ts'
 
 /**
  * Resolve a {@link DependencySaveType} to a {@link DependencyTypeShort}

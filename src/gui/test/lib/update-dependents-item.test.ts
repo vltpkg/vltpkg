@@ -7,7 +7,7 @@ import type {
 } from '@vltpkg/query'
 import { Spec } from '@vltpkg/spec/browser'
 import type { DepID } from '@vltpkg/dep-id'
-import type { NodeLike } from '@vltpkg/graph'
+import type { NodeLike } from '@vltpkg/types'
 
 // Mock QueryResponseNode for testing
 const createMockNode = (

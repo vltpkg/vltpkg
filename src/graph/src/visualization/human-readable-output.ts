@@ -1,5 +1,5 @@
 import { splitDepID } from '@vltpkg/dep-id'
-import type { EdgeLike, NodeLike } from '../types.ts'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import { styleText as utilStyleText } from 'node:util'
 
 const styleText = (

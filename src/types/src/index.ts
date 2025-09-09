@@ -1,5 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { Version } from '@vltpkg/semver'
+import type { DepID } from '@vltpkg/dep-id'
+import type { Spec, SpecLikeBase } from '@vltpkg/spec'
 
 /**
  * Utility type that overrides specific properties of type T with new types
@@ -1209,3 +1211,85 @@ export const dependencyTypes = new Map<
   ['peerDependencies', 'peer'],
   ['optionalDependencies', 'optional'],
 ])
+
+// Abstract graph types for loose coupling with graph implementations
+export type EdgeLike = {
+  name: string
+  from: NodeLike
+  spec: SpecLikeBase
+  to?: NodeLike
+  type: DependencyTypeShort
+  optional?: boolean
+  peer?: boolean
+}
+
+export type GraphLike = {
+  importers: Set<NodeLike>
+  mainImporter: NodeLike
+  projectRoot: string
+  nodes: Map<DepID, NodeLike>
+  nodesByName: Map<string, Set<NodeLike>>
+  edges: Set<EdgeLike>
+  addEdge: (
+    type: DependencyTypeShort,
+    spec: Spec,
+    from: NodeLike,
+    to?: NodeLike,
+  ) => EdgeLike
+  addNode: (
+    id?: DepID,
+    manifest?: NormalizedManifest,
+    spec?: Spec,
+    name?: string,
+    version?: string,
+  ) => NodeLike
+}
+
+export type NodeLike = {
+  id: DepID
+  confused: boolean
+  edgesIn: Set<EdgeLike>
+  edgesOut: Map<string, EdgeLike>
+  location?: string
+  manifest?: NormalizedManifest | null
+  rawManifest?: NormalizedManifest | null
+  name?: string | null
+  version?: string | null
+  integrity?: string | null
+  resolved?: string | null
+  importer: boolean
+  graph: GraphLike
+  mainImporter: boolean
+  projectRoot: string
+  dev: boolean
+  optional: boolean
+  modifier?: string | undefined
+  registry?: string
+  toJSON: () => Pick<
+    NodeLike,
+    | 'id'
+    | 'name'
+    | 'version'
+    | 'location'
+    | 'importer'
+    | 'manifest'
+    | 'projectRoot'
+    | 'integrity'
+    | 'resolved'
+    | 'dev'
+    | 'optional'
+    | 'confused'
+  > & {
+    rawManifest?: NodeLike['manifest']
+  }
+  toString(): string
+  setResolved(): void
+  setConfusedManifest(
+    fixed: NormalizedManifest,
+    confused?: NormalizedManifest,
+  ): void
+  maybeSetConfusedManifest(
+    spec: Spec,
+    confused?: NormalizedManifest,
+  ): void
+}

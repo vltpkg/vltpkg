@@ -8,7 +8,7 @@ import {
   newNode,
 } from '../fixtures/graph.ts'
 import { Spec } from '@vltpkg/spec/browser'
-import type { GraphLike, NodeLike } from '@vltpkg/graph'
+import type { GraphLike, NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 
 const specOptions = {

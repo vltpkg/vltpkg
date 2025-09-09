@@ -1,8 +1,11 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
-import type { GraphLike, NodeLike } from '@vltpkg/graph'
+import type {
+  GraphLike,
+  NodeLike,
+  DependencyTypeShort,
+} from '@vltpkg/types'
 import type { SpecLike, SpecOptions } from '@vltpkg/spec/browser'
-import type { DependencyTypeShort } from '@vltpkg/types'
 
 export const specOptions = {
   registry: 'https://registry.npmjs.org/',

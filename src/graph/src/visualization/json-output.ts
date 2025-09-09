@@ -1,5 +1,5 @@
 import type { DepID } from '@vltpkg/dep-id'
-import type { EdgeLike, NodeLike } from '../types.ts'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 
 /**
  * A JSON output item describes a package that is present in the install

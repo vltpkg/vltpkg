@@ -8,7 +8,7 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { Edge } from '../../src/edge.ts'
 import { Node } from '../../src/node.ts'
-import type { GraphLike } from '../../src/types.ts'
+import type { GraphLike } from '@vltpkg/types'
 
 const fooManifest = {
   name: 'foo',

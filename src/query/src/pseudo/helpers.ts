@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { ParserState } from '../types.js'
 
 /**
