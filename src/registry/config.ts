@@ -16,8 +16,6 @@ export const SENTRY_CONFIG = {
 
 export const TELEMETRY_ENABLED = true as boolean
 
-export const HELP_ENABLED = false as boolean
-
 export const DEBUG_ENABLED = false as boolean
 
 export const API_DOCS_ENABLED = true as boolean
