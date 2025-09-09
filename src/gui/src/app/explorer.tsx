@@ -1,9 +1,9 @@
+import { transfer } from '@vltpkg/graph/browser'
 import { useNavigate } from 'react-router'
 import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
-import { load } from '@/state/load-graph.ts'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
 import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import type { TransferData, Action, State } from '@/state/types.ts'
@@ -34,7 +34,7 @@ const startGraphData = async ({
     hasDashboard: boolean
   }
 
-  const { graph, specOptions, securityArchive } = load(data)
+  const { graph, specOptions, securityArchive } = transfer.load(data)
   const q = new Query({ graph, specOptions, securityArchive })
 
   updateHasDashboard(data.hasDashboard)

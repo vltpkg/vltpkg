@@ -9,7 +9,7 @@ import type {
   QueryResponseNode,
 } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
-import { load } from '@/state/load-graph.ts'
+import { transfer } from '@vltpkg/graph/browser'
 import type { RawNode } from '@/state/types.ts'
 import { Query } from '@vltpkg/query'
 
@@ -175,7 +175,7 @@ test('ExplorerGrid with stack', async () => {
 })
 
 test('ExplorerGrid renders workspace with edges in', async () => {
-  const { graph } = load({
+  const { graph } = transfer.load({
     lockfile: {
       lockfileVersion: 0,
       options: {},

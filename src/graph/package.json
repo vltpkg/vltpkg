@@ -34,6 +34,7 @@
     "@vltpkg/rollback-remove": "workspace:*",
     "@vltpkg/run": "workspace:*",
     "@vltpkg/satisfies": "workspace:*",
+    "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
