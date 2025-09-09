@@ -11,7 +11,7 @@ let globalRuntimeConfig: ReturnType<typeof resolveConfig> | null =
  * Initialize the global runtime configuration
  * Should be called early in the application lifecycle
  */
-export function initializeGlobalConfig(env?: any) {
+export function initializeGlobalConfig(env: any) {
   globalRuntimeConfig = resolveConfig(env)
   return globalRuntimeConfig
 }
@@ -20,31 +20,10 @@ export function initializeGlobalConfig(env?: any) {
  * Get the current runtime configuration
  * Falls back to resolving with no environment if not initialized
  */
-export function getRuntimeConfig(env?: any) {
+export function getRuntimeConfig(env: any) {
   if (globalRuntimeConfig) {
     return globalRuntimeConfig
   }
   // Fallback to resolving with the provided env or defaults
   return resolveConfig(env)
-}
-
-/**
- * Check if daemon is enabled at runtime
- */
-export function isDaemonEnabled(env?: any): boolean {
-  return getRuntimeConfig(env).DAEMON_ENABLED
-}
-
-/**
- * Check if telemetry is enabled at runtime
- */
-export function isTelemetryEnabled(env?: any): boolean {
-  return getRuntimeConfig(env).TELEMETRY_ENABLED
-}
-
-/**
- * Check if debug is enabled at runtime
- */
-export function isDebugEnabled(env?: any): boolean {
-  return getRuntimeConfig(env).DEBUG_ENABLED
 }

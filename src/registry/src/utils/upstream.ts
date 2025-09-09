@@ -158,16 +158,3 @@ export function buildUpstreamUrl(
       return `${baseUrl}/${encodedPackage}${path ? `/${path}` : ''}`
   }
 }
-
-/**
- * Checks if proxying is enabled for an upstream
- * @param {string} upstreamName - The upstream name
- * @returns {boolean} True if proxying is enabled
- */
-export function isProxyEnabled(
-  upstreamName: string,
-  c: HonoContext,
-): boolean {
-  const config = getUpstreamConfig(upstreamName, c)
-  return config !== null && config.type !== 'local'
-}

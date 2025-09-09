@@ -1,7 +1,6 @@
 import * as semver from 'semver'
 import validate from 'validate-npm-package-name'
 import { createRoute, z } from '@hono/zod-openapi'
-import { getRuntimeConfig } from '../utils/config.ts'
 import {
   getUpstreamConfig,
   buildUpstreamUrl,
@@ -62,6 +61,7 @@ interface _SlimmedManifest {
 export async function slimPackumentVersion(
   manifest: any,
   context: SlimPackumentContext = {},
+  c: HonoContext,
 ): Promise<SlimmedManifest | null> {
   try {
     if (!manifest) return null
@@ -104,6 +104,7 @@ export async function slimPackumentVersion(
           parsed.name as string,
           parsed.version as string,
           context,
+          c,
         ),
       },
     }
@@ -160,13 +161,14 @@ export async function rewriteTarballUrlIfNeeded(
   packageName: string,
   version: string,
   context: SlimPackumentContext = {},
+  c: HonoContext,
 ): Promise<string> {
   try {
     const { upstream, protocol, host } = context
 
     if (!upstream || !protocol || !host) {
       // If no context, create a local tarball URL
-      return `${getRuntimeConfig().URL}/${createFile({ pkg: packageName, version })}`
+      return `${c.env.URL}/${createFile({ pkg: packageName, version })}`
     }
 
     // Create a proper upstream tarball URL that points to our registry
@@ -180,7 +182,7 @@ export async function rewriteTarballUrlIfNeeded(
     return `${protocol}://${host}/${upstream}/${packageName}/-/${packageFileName}-${version}.tgz`
   } catch (_err) {
     // Fallback to local URL format
-    return `${getRuntimeConfig().URL}/${createFile({ pkg: packageName, version })}`
+    return `${c.env.URL}/${createFile({ pkg: packageName, version })}`
   }
 }
 
@@ -217,27 +219,6 @@ function decodePackageName(
     return decodedScope
   }
 }
-
-// /**
-//  * Determines if a package is available only through proxy or is locally published
-//  * A package is considered proxied if it doesn't exist locally but PROXY is enabled
-//  */
-// function _isProxiedPackage(
-//   packageData: ParsedPackage | null,
-// ): boolean {
-//   // If the package doesn't exist locally but PROXY is enabled
-//   if (!packageData && PROXY) {
-//     return true
-//   }
-
-//   // If the package is marked as proxied (has a source field indicating where it came from)
-//   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-//   if (packageData && (packageData as any).source === 'proxy') {
-//     return true
-//   }
-
-//   return false
-// }
 
 export async function getPackageTarball(c: HonoContext) {
   try {
@@ -767,7 +748,11 @@ export async function getPackageManifest(c: HonoContext) {
     if (versionData) {
       // Convert the full manifest to a slimmed version for the response
 
-      const slimmedManifest = slimManifest(versionData.manifest)
+      const slimmedManifest = slimManifest(
+        versionData.manifest,
+        {},
+        c,
+      )
 
       // Ensure we have correct name, version and tarball URL
 
@@ -779,7 +764,7 @@ export async function getPackageManifest(c: HonoContext) {
 
         dist: {
           ...slimmedManifest.dist,
-          tarball: `${getRuntimeConfig().URL}/${createFile({ pkg, version: resolvedVersion })}`,
+          tarball: `${c.env.URL}/${createFile({ pkg, version: resolvedVersion })}`,
         },
       }
 
@@ -850,6 +835,7 @@ export async function getPackageManifest(c: HonoContext) {
               pkg,
               resolvedVersion,
               context,
+              c,
             )
         }
 
@@ -1424,6 +1410,7 @@ export async function getPackagePackument(c: HonoContext) {
               const slimmedManifest = slimManifest(
                 manifest as PackageManifest,
                 context,
+                c,
               )
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               if (slimmedManifest) {
@@ -1449,6 +1436,7 @@ export async function getPackagePackument(c: HonoContext) {
                       ...slimManifest(
                         manifest as PackageManifest,
                         context,
+                        c,
                       ),
                     } as PackageManifest
 
@@ -1590,6 +1578,8 @@ export async function getPackagePackument(c: HonoContext) {
           // Use slimManifest to create a smaller response
           const slimmedManifest = slimManifest(
             versionData.manifest as PackageManifest,
+            {},
+            c,
           )
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (slimmedManifest) {
@@ -1616,6 +1606,8 @@ export async function getPackagePackument(c: HonoContext) {
           if (versionData) {
             const slimmedManifest = slimManifest(
               versionData.manifest as PackageManifest,
+              {},
+              c,
             )
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (slimmedManifest) {
@@ -1630,7 +1622,7 @@ export async function getPackagePackument(c: HonoContext) {
               version: latestVersion,
               description: `Mock package for ${name}`,
               dist: {
-                tarball: `${getRuntimeConfig().URL}/${name}/-/${name}-${latestVersion}.tgz`,
+                tarball: `${c.env.URL}/${name}/-/${name}-${latestVersion}.tgz`,
               },
             }
             packageData.versions[latestVersion] = mockManifest
@@ -1648,7 +1640,7 @@ export async function getPackagePackument(c: HonoContext) {
           version: latestVersion,
           description: `Package ${name}`,
           dist: {
-            tarball: `${getRuntimeConfig().URL}/${name}/-/${name}-${latestVersion}.tgz`,
+            tarball: `${c.env.URL}/${name}/-/${name}-${latestVersion}.tgz`,
           },
         }
         packageData.versions[latestVersion] = mockManifest
