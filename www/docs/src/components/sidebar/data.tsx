@@ -10,12 +10,8 @@ export const labelMap: Record<string, string> = {
 }
 
 export const majorSections = new Set([
-  'documentation',
   'registry',
-  'api',
   'client',
-  'commands',
-  'internals',
   'packages',
 ])
 
@@ -25,9 +21,10 @@ const allIcons = {
   ...VltIcons,
 }
 
-type IconName = keyof typeof allIcons
+export type IconName = keyof typeof allIcons
 
 export const iconMap: Partial<Record<string, IconName>> = {
+  overview: 'Home',
   registry: 'Vsr',
   client: 'Client',
   packages: 'Package',
@@ -37,15 +34,15 @@ export const iconMap: Partial<Record<string, IconName>> = {
   configuring: 'Config',
   deployment: 'Rocket',
   features: 'Star',
-  'getting-started': 'BookOpen',
   'getting started': 'BookOpen',
   commands: 'Command',
+  authentication: 'Authentication',
   auth: 'Authentication',
+  'query selectors': 'Query',
   catalogs: 'Database',
   registries: 'Globe',
   selectors: 'Search',
   workspaces: 'Folder',
-  'graph-modifiers': 'GitBranch',
   'graph modifiers': 'GitBranch',
   cache: 'Cache',
   config: 'Config',
@@ -63,6 +60,7 @@ export const iconMap: Partial<Record<string, IconName>> = {
   pkg: 'Package',
   publish: 'Upload',
   query: 'Query',
+  run: 'Play',
   'run-exec': 'Play',
   token: 'Authentication',
   uninstall: 'Trash2',
