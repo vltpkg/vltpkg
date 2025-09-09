@@ -83,6 +83,7 @@ export type LoadResult = {
 export type TransferData = {
   importers: {
     importer: boolean
+    mainImporter: boolean
     id: string
     name: string
     version: string
@@ -96,6 +97,8 @@ export type TransferData = {
   }[]
   lockfile: LockfileData
   projectInfo: {
+    root: string
+    homedirRelativeRoot: string
     tools?: string[]
     vltInstalled?: boolean
   }
@@ -109,7 +112,7 @@ export const load = (transfered: TransferData): LoadResult => {
     edges: new Set<EdgeLike>(),
     nodes: new Map<DepID, NodeLike>(),
     nodesByName: new Map<string, Set<NodeLike>>(),
-    projectRoot: mainImporter?.projectRoot || '',
+    projectRoot: transfered.projectInfo.root,
     addEdge(
       type: DependencyTypeShort,
       spec: Spec,
@@ -154,12 +157,14 @@ export const load = (transfered: TransferData): LoadResult => {
         manifest,
         edgesIn: new Set(),
         edgesOut: new Map(),
+        workspaces: undefined,
         graph,
         importer: false,
         mainImporter: false,
         projectRoot: graph.projectRoot,
         dev: false,
         optional: false,
+        options: transfered.lockfile.options,
         confused: false,
         setResolved() {},
         setConfusedManifest(
@@ -242,7 +247,7 @@ export const load = (transfered: TransferData): LoadResult => {
   // populate nodes and edges from loaded data
   const graph = maybeGraph as GraphLike
   const specOptions = loadSpecOptions(transfered.lockfile)
-  loadNodes(graph, transfered.lockfile.nodes)
+  loadNodes(graph, transfered.lockfile.nodes, specOptions, graph)
   loadEdges(graph, transfered.lockfile.edges, specOptions)
 
   const securityArchive = SecurityArchive.load(

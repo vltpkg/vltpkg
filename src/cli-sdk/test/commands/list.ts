@@ -1,15 +1,15 @@
+import { join, resolve } from 'node:path'
+import t from 'tap'
+import { PathScurry } from 'path-scurry'
 import * as Graph from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
-import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
-import { PathScurry } from 'path-scurry'
-import type { Test } from 'tap'
-import t from 'tap'
-import type { LoadedConfig } from '../../src/config/index.ts'
-import { join } from 'path'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { SpecOptions } from '@vltpkg/spec'
+import type { Test } from 'tap'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -384,6 +384,78 @@ t.test('list', async t => {
         C,
       ),
       'should add all scope nodes as importers',
+    )
+  })
+
+  await t.test('running from homedir', async t => {
+    const dir = t.testdir({
+      projects: {
+        'my-project': {
+          node_modules: {
+            '.vlt': {},
+          },
+          'package.json': JSON.stringify({
+            name: 'my-project',
+            version: '1.0.0',
+          }),
+          'vlt.json': JSON.stringify({
+            workspaces: { packages: ['./packages/*'] },
+          }),
+          packages: {
+            a: {
+              'package.json': JSON.stringify({
+                name: 'a',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+    })
+    t.chdir(dir)
+    unload()
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/query.ts')
+    >('../../src/commands/query.ts')
+    const options = {
+      ['dashboard-root']: [resolve(dir, 'projects')],
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      projectRoot: dir,
+      monorepo: Monorepo.maybeLoad(
+        resolve(dir, 'projects/my-project'),
+      ),
+    }
+
+    t.matchSnapshot(
+      await runCommand(
+        {
+          positionals: [],
+          values: {
+            view: 'human',
+          },
+          options,
+        },
+        Command,
+      ),
+      'should list all projects deps',
+    )
+
+    const projectFolder = resolve(dir, 'projects/my-project')
+    t.matchSnapshot(
+      await runCommand(
+        {
+          positionals: [],
+          values: {
+            target: `:host-context("file:${projectFolder}")`,
+            view: 'human',
+          },
+          options,
+        },
+        Command,
+      ),
+      'should read project from host context',
     )
   })
 

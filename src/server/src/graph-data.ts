@@ -1,12 +1,15 @@
+import { homedir } from 'node:os'
+import { posix, resolve } from 'node:path'
 import type { ActualLoadOptions } from '@vltpkg/graph'
 import { actual } from '@vltpkg/graph'
 import type { PackageJson } from '@vltpkg/package-json'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { rmSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import type { Path, PathBase, PathScurry } from 'path-scurry'
 import type { ProjectTools } from './project-tools.ts'
 import { inferTools } from './project-tools.ts'
+
+const home = posix.resolve(homedir())
 
 export type GraphDataOptions = ActualLoadOptions
 
@@ -55,11 +58,9 @@ const getGraphData = async (
     skipHiddenLockfile: false,
     skipLoadingNodesOnModifiersChange: false,
   })
+  const nodes = [...graph.nodes.values()]
   const importers = [...graph.importers]
-  const securityArchive = await SecurityArchive.start({
-    graph,
-    specOptions: options,
-  })
+  const securityArchive = await SecurityArchive.start({ nodes })
 
   return {
     hasDashboard,
@@ -70,7 +71,7 @@ const getGraphData = async (
   }
 }
 
-const getProjectData = (
+export const getProjectData = (
   {
     packageJson,
     scurry,
@@ -78,6 +79,8 @@ const getProjectData = (
   folder: PathBase,
 ) => {
   return {
+    root: folder.fullpathPosix(),
+    homedirRelativeRoot: posix.relative(home, folder.fullpathPosix()),
     tools: inferTools(
       packageJson.read(folder.fullpath()),
       folder,

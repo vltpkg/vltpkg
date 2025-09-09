@@ -49,6 +49,14 @@ export type Action = {
  */
 export type ProjectInfo = {
   /**
+   * The homedir-relative location this project was loaded from.
+   */
+  homedirRelativeRoot: string
+  /**
+   * The location this project was loaded from.
+   */
+  root: string
+  /**
    * Other tools used by this project, such as runtime and package mangager.
    */
   tools: DashboardTools[]
@@ -76,6 +84,7 @@ export type TransferData = {
 
 export type RawNode = {
   importer: boolean
+  mainImporter: boolean
   id: string
   name: string
   version: string

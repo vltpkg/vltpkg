@@ -72,6 +72,31 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-b",
+    "fromID": "workspace·packages§workspace-a",
+    "spec": "workspace-b@workspace:*",
+    "type": "dev",
+    "to": {
+      "id": "workspace·packages§workspace-b",
+      "name": "workspace-b",
+      "version": "1.0.0",
+      "location": "./packages/workspace-b",
+      "importer": true,
+      "manifest": {
+        "name": "workspace-b",
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false,
+      "confused": false
+    },
+    "overridden": false
+  },
+  {
+    "name": "workspace-b",
+    "fromID": "file·.",
+    "spec": "workspace-b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§workspace-b",
       "name": "workspace-b",
@@ -91,6 +116,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-a",
+    "fromID": "file·.",
+    "spec": "workspace-a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§workspace-a",
       "name": "workspace-a",
@@ -292,28 +320,6 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "fromID": "file·.",
     "spec": "missing@^1.0.0",
     "type": "prod",
-    "overridden": false
-  },
-  {
-    "name": "workspace-b",
-    "fromID": "workspace·packages§workspace-a",
-    "spec": "workspace-b@workspace:*",
-    "type": "dev",
-    "to": {
-      "id": "workspace·packages§workspace-b",
-      "name": "workspace-b",
-      "version": "1.0.0",
-      "location": "./packages/workspace-b",
-      "importer": true,
-      "manifest": {
-        "name": "workspace-b",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false
-    },
     "overridden": false
   },
   {

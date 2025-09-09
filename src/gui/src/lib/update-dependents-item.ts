@@ -1,6 +1,9 @@
+import { Query } from '@vltpkg/query'
 import type React from 'react'
 import type { OnDependentClickOptions } from '@/components/explorer-grid/overview-sidebar/index.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types'
+import type { ParsedSelectorToken } from '@vltpkg/query'
+import { VIRTUAL_ROOT_ID } from '@vltpkg/graph/browser'
 
 export type UpdateDependentsItemOptions = {
   /**
@@ -11,6 +14,10 @@ export type UpdateDependentsItemOptions = {
    * The zustand-store query update function.
    */
   updateQuery: (query: string) => void
+  /**
+   * Whether the clicked item is a workspace.
+   */
+  workspace?: boolean
 }
 
 /**
@@ -142,65 +149,104 @@ const getFromDirectWorkspaceDepName = (
 }
 
 /**
+ * Checks if any segment of the query has a :host-context selector.
+ */
+const hasHostContextToken = (
+  queryTokens: ParsedSelectorToken[],
+): boolean => {
+  for (const segment of queryTokens) {
+    if (segment.value === ':host-context') {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Updates the query based on a given dependents item.
  */
 export const updateDependentsItem =
-  ({ query, updateQuery }: UpdateDependentsItemOptions) =>
+  ({ query, updateQuery, workspace }: UpdateDependentsItemOptions) =>
   ({ item, isParent }: OnDependentClickOptions) =>
   (e: React.MouseEvent | MouseEvent) => {
     e.preventDefault()
+    // handle :host-context() selector if present
+    const queryTokens = Query.getQueryTokens(query)
+    let newQuery = query.trim()
+    let prefix = ''
+    if (hasHostContextToken(queryTokens)) {
+      const [, ...rest] = query.split(':host-context(')
+      const [key, ...after] = rest.join('').split(')')
+      newQuery = after.join(')')
+      prefix = `:host-context(${key}) `
+    }
+
+    if (prefix && item.id === VIRTUAL_ROOT_ID) {
+      updateQuery(prefix.trim())
+      return
+    }
+
+    if (workspace) {
+      updateQuery(`${prefix}#${item.name}:workspace`)
+      return
+    }
 
     // wrap around :has selector to try and select its parent
     if (!item.from) {
-      updateQuery(`:has(${query})`)
+      updateQuery(`${prefix}:has(${query})`)
       return
     }
 
     // If the item points to a mainImporter, navigate to root
     if (item.from.mainImporter) {
-      updateQuery(`:root`)
+      const name = prefix ? `#${item.name}` : ''
+      updateQuery(`${prefix}${name}:root`)
       return
     }
 
     // If the item is a workspace, use the :workspace selector
     if (item.from.importer && item.from.name) {
-      updateQuery(`#${item.from.name}:workspace`)
+      updateQuery(`${prefix}#${item.from.name}:workspace`)
       return
     }
 
     // Handle basic parent navigation by removing the
     // last part of the query if it matches common patterns
-    const trimmedQuery = query.trim()
     if (isParent) {
       // id selectors are edge-based, so here we only get an id selector name
       // if the target node has a single name across all its edges in,
       // that's not going to be the case, for example, for aliased packages
-      if (endsWithChildRef(trimmedQuery, item)) {
+      if (endsWithChildRef(newQuery, item)) {
         updateQuery(
-          appendSelfRef(
-            query.slice(0, query.lastIndexOf('>')).trim(),
-            item,
-          ),
+          prefix +
+            appendSelfRef(
+              newQuery.slice(0, newQuery.lastIndexOf('>')).trim(),
+              item,
+            ),
         )
         return
       }
       // when ending with a parentesis, it's should be mostly the same
       // it may be the case to queries with appended :is(#parent > #child)
       // selectors from search result
-      if (endsWithChildRef(trimmedQuery, item, true)) {
+      if (endsWithChildRef(newQuery, item, true)) {
         updateQuery(
-          appendSelfRef(
-            query.slice(0, query.lastIndexOf('>')).trim() + ')',
-            item,
-          ),
+          prefix +
+            appendSelfRef(
+              newQuery.slice(0, newQuery.lastIndexOf('>')).trim() +
+                ')',
+              item,
+            ),
         )
         return
       }
     }
 
     // preppends selectors if it's a direct importer dependency
-    const prefix =
-      isFromDirectRootDep(item) ? ':root > '
+    const start =
+      isFromDirectRootDep(item) ?
+        prefix ? `#${item.name}:root >`
+        : ':root > '
       : isFromDirectWorkspaceDep(item) ?
         `#${getFromDirectWorkspaceDepName(item)}:workspace > `
       : ''
@@ -219,5 +265,5 @@ export const updateDependentsItem =
       !uniqueNodeName && item.from.version ?
         `:v(${item.from.version})`
       : ''
-    updateQuery(`${prefix}${name}${version}`)
+    updateQuery(`${prefix}${start}${name}${version}`)
   }

@@ -240,10 +240,11 @@ t.test('filterAttributes', async t => {
     initial: copyGraphSelectionState(all),
     partial: all,
     loose: false,
+    importers: simpleGraph.importers,
+    hostContexts: new Map(),
     walk: async (state: ParserState) => state,
     retries: 0,
     securityArchive: undefined,
-    specOptions: {},
     signal: new AbortController().signal,
     specificity: { idCounter: 0, commonCounter: 0 },
   }

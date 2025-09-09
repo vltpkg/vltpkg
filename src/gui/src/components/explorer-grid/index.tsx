@@ -28,7 +28,7 @@ const getItemsData = (
 ) => {
   const items: GridItemData[] = []
   const seenEdges = new Map<DepID, Set<EdgeLoose>>()
-  const seenItems = new Map<DepID, GridItemData>()
+  const seenItems = new Map<string, GridItemData>()
   const allEdges: EdgeLoose[] = [...edges]
 
   // creates empty edge references for importer nodes
@@ -50,7 +50,9 @@ const getItemsData = (
 
   const ids = new Set<string | undefined>(
     allEdges.map(edge =>
-      edge.to?.id ? baseDepID(edge.to.id) : undefined,
+      edge.to?.id ?
+        `${edge.to.projectRoot}#${baseDepID(edge.to.id)}`
+      : undefined,
     ),
   )
   ids.delete(undefined)
@@ -68,7 +70,7 @@ const getItemsData = (
     if (!id_) {
       items.push({
         ...edge,
-        id: `${edge.from?.id}${title}`,
+        id: `${edge.from?.id || ''}${title}`,
         labels: edge.type && edge.type !== 'prod' ? [edge.type] : [],
         title,
         version: 'Missing package',
@@ -79,11 +81,12 @@ const getItemsData = (
       continue
     }
     // retrieve the target node base depID
-    const id = baseDepID(id_)
+    const baseID = baseDepID(id_)
+    const id = `${edge.to?.projectRoot || ''}#${baseID}`
     // items resolving to the same package will be stacked
     const item = seenItems.get(id)
     if (item && stackable) {
-      const seen = seenEdges.get(id)
+      const seen = seenEdges.get(baseID)
       seen?.add(edge)
       item.size += 1
       item.stacked = true
@@ -116,9 +119,10 @@ const getItemsData = (
           ) as string[],
         ),
       ).filter(i => i !== 'prod')
+      //const id = baseDepID(edge.to.id)
       const data: GridItemData = {
         ...edge,
-        id: `${edge.from?.id}${edge.to?.id}` || title,
+        id: `${edge.to?.projectRoot || ''}#${edge.from?.id || ''}#${edge.to?.id || title}`,
         labels,
         title,
         version: edge.to ? stringifyNode(edge.to) : '',
@@ -127,7 +131,7 @@ const getItemsData = (
         size: 1,
       }
       items.push(data)
-      seenEdges.set(id, new Set([edge]))
+      seenEdges.set(baseID, new Set([edge]))
       seenItems.set(id, data)
     }
   }

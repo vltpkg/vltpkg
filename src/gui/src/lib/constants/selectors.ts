@@ -275,6 +275,13 @@ export const PSEUDO_RELATIONSHIP_SELECTORS = {
 } as const satisfies Record<string, Selector>
 
 export const PSEUDO_PROJECT_SELECTORS = {
+  ':host-context(local)': {
+    selector: ':host-context(local)',
+    label: 'All configured projects',
+    category: 'pseudo',
+    description:
+      'Matches all configured projects found in the Dashboard.',
+  },
   ':workspace': {
     selector: ':workspace',
     label: 'Matches workspaces in `vlt.json`',

@@ -1,11 +1,23 @@
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import type {
   SecurityArchiveLike,
   PackageScore,
 } from '@vltpkg/security-archive'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PostcssNode } from '@vltpkg/dss-parser'
+
+export type HostContextsMapResult = {
+  initialEdges: EdgeLike[]
+  initialNodes: NodeLike[]
+  edges: EdgeLike[]
+  nodes: NodeLike[]
+  securityArchive: SecurityArchiveLike
+}
+
+export type HostContextsMap = Map<
+  string,
+  () => Promise<HostContextsMapResult>
+>
 
 export type Specificity = {
   idCounter: number
@@ -22,6 +34,8 @@ export type ParserState = {
   collect: GraphSelectionState
   comment: string
   current: PostcssNode
+  hostContexts?: HostContextsMap
+  importers: Set<NodeLike>
   initial: GraphSelectionState
   loose?: boolean
   next?: PostcssNode
@@ -32,7 +46,6 @@ export type ParserState = {
   partial: GraphSelectionState
   retries: number
   securityArchive: SecurityArchiveLike | undefined
-  specOptions: SpecOptions
   scopeIDs?: DepID[]
   specificity: Specificity
 }
@@ -40,6 +53,7 @@ export type ParserState = {
 export type QueryResponse = {
   edges: QueryResponseEdge[]
   nodes: QueryResponseNode[]
+  importers: QueryResponseNode[]
   comment: string
   specificity: Specificity
 }

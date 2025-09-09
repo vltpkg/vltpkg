@@ -37,6 +37,10 @@ vi.mock('@/components/explorer-grid/setup-project.tsx', () => ({
   SetupProject: 'gui-setup-project',
 }))
 
+vi.mock('@/lib/query-host-contexts.ts', () => ({
+  createHostContextsMap: vi.fn().mockResolvedValue(new Map()),
+}))
+
 export const restHandlers = [
   http.get('/graph.json', () => {
     return HttpResponse.json({
@@ -59,6 +63,8 @@ export const restHandlers = [
       ],
       lockfile: { options: {}, nodes: [], edges: [] },
       projectInfo: {
+        projectRoot: '/path/to/project',
+        homedirRelativeRoot: 'project',
         tools: ['vlt'],
         vltInstalled: true,
       },
@@ -89,7 +95,12 @@ test('render default', async () => {
     const updateProjectInfo = useStore(
       state => state.updateProjectInfo,
     )
-    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    updateProjectInfo({
+      homedirRelativeRoot: '.',
+      root: '.',
+      tools: ['vlt'],
+      vltInstalled: true,
+    })
     return <Explorer />
   }
   render(<Container />)
@@ -102,7 +113,12 @@ test('explorer has project root info', async () => {
       state => state.updateProjectInfo,
     )
     const updateGraph = useStore(state => state.updateGraph)
-    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    updateProjectInfo({
+      homedirRelativeRoot: '.',
+      root: '.',
+      tools: ['vlt'],
+      vltInstalled: true,
+    })
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
     return <Explorer />
   }
@@ -127,7 +143,12 @@ test('update nodes and edges info on query change', async () => {
     const updateQ = useStore(state => state.updateQ)
     const updateQuery = useStore(state => state.updateQuery)
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
-    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    updateProjectInfo({
+      homedirRelativeRoot: '.',
+      root: '.',
+      tools: ['vlt'],
+      vltInstalled: true,
+    })
     updateQ(q as unknown as Query)
     updateQuery('#foo')
     return <Explorer />
@@ -186,7 +207,12 @@ test('render no results if search throws', async () => {
     ])
 
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
-    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    updateProjectInfo({
+      homedirRelativeRoot: '.',
+      root: '.',
+      tools: ['vlt'],
+      vltInstalled: true,
+    })
     updateQ(q as unknown as Query)
     updateQuery('#bar')
     return <Explorer />
@@ -225,7 +251,12 @@ test('explorer not vlt installed', async () => {
       state => state.updateProjectInfo,
     )
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
-    updateProjectInfo({ tools: [], vltInstalled: false })
+    updateProjectInfo({
+      homedirRelativeRoot: '.',
+      root: '.',
+      tools: [],
+      vltInstalled: false,
+    })
     return <Explorer />
   }
   render(<Container />)

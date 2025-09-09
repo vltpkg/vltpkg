@@ -4,7 +4,6 @@ import t from 'tap'
 import { joinDepIDTuple, baseDepID } from '@vltpkg/dep-id'
 import { SecurityArchive } from '../src/index.ts'
 import {
-  specOptions,
   getSimpleReportGraph,
   newGraph,
   newNode,
@@ -123,6 +122,7 @@ t.test('SecurityArchive.refresh', async t => {
   t.capture(console, 'warn').args
   const dir = t.testdir()
   const graph = getSimpleReportGraph()
+  const nodes = [...graph.nodes.values()]
   t.intercept(global, 'fetch', {
     value: async () =>
       ({
@@ -135,9 +135,8 @@ ${JSON.stringify(englishDaysReport)}
   })
   const path = resolve(dir, 'test.db')
   const archive = await SecurityArchive.start({
-    graph,
+    nodes,
     path,
-    specOptions,
   })
 
   t.strictSame(
@@ -177,7 +176,7 @@ ${JSON.stringify(englishDaysReport)}
       }) as unknown as Response,
   })
 
-  await archive.refresh({ graph, specOptions })
+  await archive.refresh({ nodes })
 
   // here we test that retrieving data for foo still returns the old
   // version, since that was loaded from the db instead and is still valid
@@ -210,7 +209,7 @@ ${JSON.stringify(englishDaysReport)}
     SecurityArchive.defaultTtl,
   )
 
-  await archive.refresh({ graph, specOptions })
+  await archive.refresh({ nodes })
 
   const readBorked = db.prepare('SELECT depID, report FROM cache')
   const dumpBorked: Record<string, any> = {}
@@ -252,7 +251,7 @@ ${JSON.stringify({
 
     const warn = t.capture(console, 'warn').args
     const archive = new SecurityArchive({ path })
-    await archive.refresh({ graph, specOptions })
+    await archive.refresh({ nodes })
 
     t.strictSame(
       warn(),
@@ -270,7 +269,7 @@ ${JSON.stringify({
     const path = resolve(dir, 'missing-folder/new.db')
 
     const archive = new SecurityArchive({ path })
-    await archive.refresh({ graph, specOptions })
+    await archive.refresh({ nodes })
     t.ok('cache folder created')
   })
 
@@ -290,7 +289,7 @@ ${JSON.stringify({
 
     const archive = new SecurityArchive({ path, retries: 0 })
     await t.rejects(
-      archive.refresh({ graph, specOptions }),
+      archive.refresh({ nodes }),
       /Failed to fetch security data/,
       'should throw an error when the API response is invalid',
     )
@@ -312,7 +311,7 @@ ${JSON.stringify({
 
     const archive = new SecurityArchive({ path })
     await t.rejects(
-      archive.refresh({ graph, specOptions }),
+      archive.refresh({ nodes }),
       /Missing API/,
       'should abort retries',
     )
@@ -322,6 +321,7 @@ ${JSON.stringify({
     const dir = t.testdir()
     const path = resolve(dir, 'stale-revalidate.db')
     const graph = getSimpleReportGraph()
+    const nodes = [...graph.nodes.values()]
 
     // Initial fetch response
     t.intercept(global, 'fetch', {
@@ -337,9 +337,8 @@ ${JSON.stringify(englishDaysReport)}
 
     // Create an initial archive and populate it
     await SecurityArchive.start({
-      graph,
+      nodes,
       path,
-      specOptions,
     })
 
     // Open the database directly to manipulate entries for testing
@@ -376,7 +375,7 @@ ${JSON.stringify(englishDaysReport)}
 
     // Create a new archive that should load the expired entry and trigger revalidation
     const refreshedArchive = new SecurityArchive({ path })
-    await refreshedArchive.refresh({ graph, specOptions })
+    await refreshedArchive.refresh({ nodes })
 
     // Initially, we should get the stale data while revalidation happens in background
     const initialData = refreshedArchive.get(englishDaysId)
@@ -418,7 +417,7 @@ ${JSON.stringify(englishDaysReport)}
 
     // Create another new archive to verify it loads the updated entry
     const finalArchive = new SecurityArchive({ path })
-    await finalArchive.refresh({ graph, specOptions })
+    await finalArchive.refresh({ nodes })
 
     const finalData = finalArchive.get(englishDaysId)
     t.strictSame(
@@ -434,6 +433,7 @@ ${JSON.stringify(englishDaysReport)}
     const dir = t.testdir()
     const path = resolve(dir, 'average-score.db')
     const graph = getSimpleReportGraph()
+    const nodes = [...graph.nodes.values()]
 
     // Mock response with scores that will result in a specific average
     const testReport = {
@@ -457,9 +457,8 @@ ${JSON.stringify(englishDaysReport)}
     })
 
     const archive = await SecurityArchive.start({
-      graph,
+      nodes,
       path,
-      specOptions,
     })
 
     const storedData = archive.get(
@@ -496,6 +495,7 @@ t.test('DepID normalization', async t => {
   fooNode.id = depIDWithExtra // Node itself can have extra info
   // But graph stores nodes using normalized DepID keys
   graph.nodes.set(baseDepIDValue, fooNode)
+  const nodes = [...graph.nodes.values()]
 
   // Mock fetch response
   t.intercept(global, 'fetch', {
@@ -508,9 +508,8 @@ t.test('DepID normalization', async t => {
   })
 
   const archive = await SecurityArchive.start({
-    graph,
+    nodes,
     path,
-    specOptions,
   })
 
   t.test('should normalize DepID in cache', async t => {
@@ -568,7 +567,7 @@ t.test('DepID normalization', async t => {
   t.test('should handle lookup with mixed DepID formats', async t => {
     // Create a fresh archive to test loading from database
     const freshArchive = new SecurityArchive({ path })
-    await freshArchive.refresh({ graph, specOptions })
+    await freshArchive.refresh({ nodes })
 
     // Should find the data using the normalized DepID
     t.strictSame(

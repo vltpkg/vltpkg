@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { Version } from '@vltpkg/semver'
 import type { DepID } from '@vltpkg/dep-id'
-import type { Spec, SpecLikeBase } from '@vltpkg/spec'
+import type { Spec, SpecLikeBase, SpecOptions } from '@vltpkg/spec'
 
 /**
  * Utility type that overrides specific properties of type T with new types
@@ -1250,6 +1250,7 @@ export type NodeLike = {
   confused: boolean
   edgesIn: Set<EdgeLike>
   edgesOut: Map<string, EdgeLike>
+  workspaces: Map<string, EdgeLike> | undefined
   location?: string
   manifest?: NormalizedManifest | null
   rawManifest?: NormalizedManifest | null
@@ -1265,6 +1266,7 @@ export type NodeLike = {
   optional: boolean
   modifier?: string | undefined
   registry?: string
+  options: SpecOptions
   toJSON: () => Pick<
     NodeLike,
     | 'id'

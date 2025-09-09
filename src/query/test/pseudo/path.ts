@@ -5,16 +5,8 @@ import {
   getSimpleGraph,
 } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { PostcssNode as _PostcssNode } from '@vltpkg/dss-parser'
 import { joinDepIDTuple, splitDepID } from '@vltpkg/dep-id/browser'
-
-const specOptions = {
-  registry: 'https://registry.npmjs.org',
-  registries: {
-    custom: 'http://example.com',
-  },
-} as SpecOptions
 
 const getState = (query: string, graph = getPathBasedGraph()) => {
   const ast = parse(query)
@@ -38,7 +30,7 @@ const getState = (query: string, graph = getPathBasedGraph()) => {
     walk: async i => i,
     retries: 0,
     securityArchive: undefined,
-    specOptions,
+    importers: new Set(graph.importers),
     signal: new AbortController().signal,
     specificity: { idCounter: 0, commonCounter: 0 },
     loose: false,

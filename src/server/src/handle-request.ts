@@ -6,7 +6,8 @@ import {
 } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve, extname, join } from 'node:path'
-import { install, uninstall } from '@vltpkg/graph'
+import { actual, install, uninstall } from '@vltpkg/graph'
+import { SecurityArchive } from '@vltpkg/security-archive'
 import { init } from '@vltpkg/init'
 import { asError } from '@vltpkg/types'
 import { handleStatic } from './handle-static.ts'
@@ -18,9 +19,12 @@ import {
   normalizeKeyPairs,
   normalizeKeyValuePairs,
 } from './utils.ts'
+import { readProjectFolders } from './read-project-folders.ts'
+import { reloadConfig } from './config-data.ts'
+import { getProjectData } from './graph-data.ts'
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { DependencyTypeShort } from '@vltpkg/types'
+import type { NodeLike, DependencyTypeShort } from '@vltpkg/types'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 import type { VltServerListening } from './index.ts'
 
@@ -160,6 +164,86 @@ export const handleRequest = async (
         return json.ok(res, 'ok')
       } catch (err) {
         return json.error(res, 'Uninstall failed', err, 500)
+      }
+    }
+
+    case `/host-contexts`: {
+      try {
+        const { scurry } = server.options
+        const userDefinedProjectPaths =
+          server.options['dashboard-root'] ?? []
+
+        // Read all project folders from the configured paths
+        const projectFolders = await readProjectFolders({
+          scurry,
+          userDefinedProjectPaths,
+        })
+
+        // Load graphs from each project folder
+        const contexts: Record<string, any>[] = []
+        const nodes: NodeLike[] = []
+        for (const folder of projectFolders) {
+          try {
+            const config = await reloadConfig(folder.fullpath())
+            const projectInfo = getProjectData(
+              {
+                packageJson: config.options.packageJson,
+                scurry: config.options.scurry,
+              },
+              folder,
+            )
+
+            // only include projects that are vlt-installed
+            /* c8 ignore next 3 */
+            if (!projectInfo.vltInstalled) {
+              continue
+            }
+
+            // load each individual graph
+            const graph = actual.load({
+              ...config.options,
+              projectRoot: folder.fullpath(),
+              skipLoadingNodesOnModifiersChange: false,
+            })
+            const importers: NodeLike[] = []
+            nodes.push(...graph.nodes.values())
+            importers.push(...graph.importers)
+            contexts.push({
+              hasDashboard: true,
+              importers,
+              lockfile: graph,
+              projectInfo,
+              // security archive will be initialized once for all graphs
+              // so here we just ignore it
+              securityArchive: undefined,
+            })
+          } catch (_error) {
+            // Skip projects that fail to load
+            continue
+          }
+        }
+
+        const securityArchive = await SecurityArchive.start({ nodes })
+
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(
+          JSON.stringify(
+            {
+              local: contexts,
+              securityArchive,
+            },
+            null,
+            2,
+          ),
+        )
+        return
+      } catch (err) {
+        return json.error(
+          res,
+          'Host contexts retrieval failed',
+          asError(err).message,
+          500,
+        )
       }
     }
 
