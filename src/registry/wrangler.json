@@ -6,7 +6,7 @@
     {
       "binding": "DB",
       "database_name": "vsr-local-database",
-      "database_id": "74ce30e6-35cf-42b2-880e-be628f1e8bbb",
+      "database_id": "local-database",
       "migrations_dir": "src/db/migrations"
     }
   ],
