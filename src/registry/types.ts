@@ -221,13 +221,6 @@ export interface OriginConfig {
   upstreams: Record<string, UpstreamConfig>
 }
 
-export interface ParsedPackageInfo {
-  upstream?: string
-  packageName: string
-  version?: string
-  segments: string[]
-}
-
 // ---------------------------------------------------------
 // Cache Types
 // ---------------------------------------------------------
@@ -584,6 +577,7 @@ export interface Args {
   debug: boolean
   help: boolean
   port: number
+  host: string
   config?: string
   env?: string
   'db-name'?: string

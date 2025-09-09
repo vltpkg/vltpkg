@@ -1,8 +1,5 @@
-import { ORIGIN_CONFIG, RESERVED_ROUTES } from '../../config.ts'
-import type {
-  UpstreamConfig,
-  ParsedPackageInfo,
-} from '../../types.ts'
+import { RESERVED_ROUTES } from '../../config.ts'
+import type { UpstreamConfig, HonoContext } from '../../types.ts'
 
 /**
  * Validates if an upstream name is allowed (not reserved)
@@ -20,16 +17,19 @@ export function isValidUpstreamName(upstreamName: string): boolean {
  */
 export function getUpstreamConfig(
   upstreamName: string,
+  { env }: { env: HonoContext['env'] },
 ): UpstreamConfig | null {
-  return ORIGIN_CONFIG.upstreams[upstreamName] ?? null
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+  return env.ORIGIN_CONFIG.upstreams[upstreamName] ?? null
 }
 
 /**
  * Gets the default upstream name
  * @returns {string} The default upstream name
  */
-export function getDefaultUpstream(): string {
-  return ORIGIN_CONFIG.default
+export function getDefaultUpstream(c: HonoContext): string {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+  return c.env.ORIGIN_CONFIG.default
 }
 
 /**
@@ -64,75 +64,6 @@ export function generateCacheKey(
 }
 
 /**
- * Parses a request path to extract package information
- * @param {string} path - The request path
- * @returns {ParsedPackageInfo} Parsed package info
- */
-export function parsePackageSpec(path: string): ParsedPackageInfo {
-  // Remove leading slash and split by '/'
-  const segments = path.replace(/^\/+/, '').split('/')
-
-  // Handle different path patterns
-  if (segments.length === 0) {
-    return { packageName: '', segments }
-  }
-
-  // Check if first segment is an upstream name
-  const firstSegment = segments[0]
-  if (firstSegment && ORIGIN_CONFIG.upstreams[firstSegment]) {
-    // Path starts with upstream name: /upstream/package/version
-    const upstream = firstSegment
-    const packageSegments = segments.slice(1)
-
-    if (packageSegments.length === 0) {
-      return { upstream, packageName: '', segments: packageSegments }
-    }
-
-    // Handle scoped packages: @scope/package
-    if (
-      packageSegments[0]?.startsWith('@') &&
-      packageSegments.length > 1
-    ) {
-      const packageName = `${packageSegments[0]}/${packageSegments[1]}`
-      const version = packageSegments[2]
-      const remainingSegments = packageSegments.slice(2)
-      return {
-        upstream,
-        packageName,
-        version,
-        segments: remainingSegments,
-      }
-    }
-
-    // Handle regular packages
-    const packageName = packageSegments[0] || ''
-    const version = packageSegments[1]
-    const remainingSegments = packageSegments.slice(1)
-    return {
-      upstream,
-      packageName,
-      version,
-      segments: remainingSegments,
-    }
-  }
-
-  // No upstream in path, treat as package name
-  if (firstSegment?.startsWith('@') && segments.length > 1) {
-    // Scoped package: @scope/package/version
-    const packageName = `${segments[0]}/${segments[1] || ''}`
-    const version = segments[2]
-    const remainingSegments = segments.slice(2)
-    return { packageName, version, segments: remainingSegments }
-  }
-
-  // Regular package: package/version
-  const packageName = segments[0] || ''
-  const version = segments[1]
-  const remainingSegments = segments.slice(1)
-  return { packageName, version, segments: remainingSegments }
-}
-
-/**
  * Constructs the upstream URL for a package request
  * @param {UpstreamConfig} upstreamConfig - The upstream configuration
  * @param {string} packageName - The package name
@@ -159,14 +90,4 @@ export function buildUpstreamUrl(
     default:
       return `${baseUrl}/${encodedPackage}${path ? `/${path}` : ''}`
   }
-}
-
-/**
- * Checks if proxying is enabled for an upstream
- * @param {string} upstreamName - The upstream name
- * @returns {boolean} True if proxying is enabled
- */
-export function isProxyEnabled(upstreamName: string): boolean {
-  const config = getUpstreamConfig(upstreamName)
-  return config !== null && config.type !== 'local'
 }

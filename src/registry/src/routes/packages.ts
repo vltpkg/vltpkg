@@ -1,7 +1,6 @@
 import * as semver from 'semver'
 import validate from 'validate-npm-package-name'
 import { createRoute, z } from '@hono/zod-openapi'
-import { URL, PROXY, PROXY_URL } from '../../config.ts'
 import {
   getUpstreamConfig,
   buildUpstreamUrl,
@@ -11,7 +10,6 @@ import { getCachedPackageWithRefresh } from '../utils/cache.ts'
 import type {
   HonoContext,
   SlimmedManifest,
-  ParsedPackage,
   PackageManifest,
   DatabaseOperations,
 } from '../../types.ts'
@@ -27,18 +25,7 @@ interface SlimPackumentContext {
   upstream?: string
 }
 
-interface _TarballRequestParams {
-  scope: string
-  pkg: string
-}
-
-interface _PackageRouteSegments {
-  upstream?: string
-  packageName: string
-  segments: string[]
-}
-
-interface _UpstreamData {
+interface UpstreamData {
   'dist-tags'?: Record<string, string>
   versions?: Record<string, unknown>
   time?: Record<string, string>
@@ -50,13 +37,6 @@ interface PackageData {
   'dist-tags': Record<string, string>
   versions: Record<string, unknown>
   time: Record<string, string>
-}
-
-// Use the existing ParsedVersion interface from types.ts instead
-
-interface _CachedResult {
-  fromCache?: boolean
-  package?: PackageData
 }
 
 interface _SlimmedManifest {
@@ -81,6 +61,7 @@ interface _SlimmedManifest {
 export async function slimPackumentVersion(
   manifest: any,
   context: SlimPackumentContext = {},
+  c: HonoContext,
 ): Promise<SlimmedManifest | null> {
   try {
     if (!manifest) return null
@@ -123,6 +104,7 @@ export async function slimPackumentVersion(
           parsed.name as string,
           parsed.version as string,
           context,
+          c,
         ),
       },
     }
@@ -179,13 +161,14 @@ export async function rewriteTarballUrlIfNeeded(
   packageName: string,
   version: string,
   context: SlimPackumentContext = {},
+  c: HonoContext,
 ): Promise<string> {
   try {
     const { upstream, protocol, host } = context
 
     if (!upstream || !protocol || !host) {
       // If no context, create a local tarball URL
-      return `${URL}/${createFile({ pkg: packageName, version })}`
+      return `${c.env.URL}/${createFile({ pkg: packageName, version })}`
     }
 
     // Create a proper upstream tarball URL that points to our registry
@@ -199,7 +182,7 @@ export async function rewriteTarballUrlIfNeeded(
     return `${protocol}://${host}/${upstream}/${packageName}/-/${packageFileName}-${version}.tgz`
   } catch (_err) {
     // Fallback to local URL format
-    return `${URL}/${createFile({ pkg: packageName, version })}`
+    return `${c.env.URL}/${createFile({ pkg: packageName, version })}`
   }
 }
 
@@ -235,27 +218,6 @@ function decodePackageName(
     // Unscoped package - scope is actually the package name
     return decodedScope
   }
-}
-
-/**
- * Determines if a package is available only through proxy or is locally published
- * A package is considered proxied if it doesn't exist locally but PROXY is enabled
- */
-function _isProxiedPackage(
-  packageData: ParsedPackage | null,
-): boolean {
-  // If the package doesn't exist locally but PROXY is enabled
-  if (!packageData && PROXY) {
-    return true
-  }
-
-  // If the package is marked as proxied (has a source field indicating where it came from)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (packageData && (packageData as any).source === 'proxy') {
-    return true
-  }
-
-  return false
 }
 
 export async function getPackageTarball(c: HonoContext) {
@@ -372,7 +334,7 @@ export async function getPackageTarball(c: HonoContext) {
           const upstream = c.get('upstream')
           if (upstream) {
             // Get packument data to find the actual version for this dist-tag
-            const upstreamConfig = getUpstreamConfig(upstream)
+            const upstreamConfig = getUpstreamConfig(upstream, c)
             if (upstreamConfig) {
               const packumentUrl = buildUpstreamUrl(
                 upstreamConfig,
@@ -504,7 +466,7 @@ export async function getPackageTarball(c: HonoContext) {
     }
 
     // If file doesn't exist and proxying is enabled, try to get it from upstream
-    if (PROXY) {
+    if (c.env.PROXY) {
       try {
         // Construct the correct URL for scoped and unscoped packages
         const tarballPath =
@@ -518,7 +480,7 @@ export async function getPackageTarball(c: HonoContext) {
 
         if (upstream) {
           // Use upstream-specific URL
-          const upstreamConfig = getUpstreamConfig(upstream)
+          const upstreamConfig = getUpstreamConfig(upstream, c)
           if (!upstreamConfig) {
             return c.json(
               { error: `Unknown upstream: ${upstream}` },
@@ -528,7 +490,7 @@ export async function getPackageTarball(c: HonoContext) {
           source = `${upstreamConfig.url}/${tarballPath}`
         } else {
           // Use default proxy URL
-          source = `${PROXY_URL}/${tarballPath}`
+          source = `${c.env.PROXY_URL}/${tarballPath}`
         }
 
         // Hono middleware logs proxy information
@@ -786,7 +748,11 @@ export async function getPackageManifest(c: HonoContext) {
     if (versionData) {
       // Convert the full manifest to a slimmed version for the response
 
-      const slimmedManifest = slimManifest(versionData.manifest)
+      const slimmedManifest = slimManifest(
+        versionData.manifest,
+        {},
+        c,
+      )
 
       // Ensure we have correct name, version and tarball URL
 
@@ -798,7 +764,7 @@ export async function getPackageManifest(c: HonoContext) {
 
         dist: {
           ...slimmedManifest.dist,
-          tarball: `${URL}/${createFile({ pkg, version: resolvedVersion })}`,
+          tarball: `${c.env.URL}/${createFile({ pkg, version: resolvedVersion })}`,
         },
       }
 
@@ -811,10 +777,10 @@ export async function getPackageManifest(c: HonoContext) {
 
     // If not found locally and we have an upstream, try to fetch from upstream
     const upstream = c.get('upstream')
-    if (upstream && PROXY) {
+    if (upstream && c.env.PROXY) {
       try {
         // Get the upstream configuration
-        const upstreamConfig = getUpstreamConfig(upstream)
+        const upstreamConfig = getUpstreamConfig(upstream, c)
         if (!upstreamConfig) {
           return c.json(
             { error: `Unknown upstream: ${upstream}` },
@@ -869,6 +835,7 @@ export async function getPackageManifest(c: HonoContext) {
               pkg,
               resolvedVersion,
               context,
+              c,
             )
         }
 
@@ -1344,13 +1311,13 @@ export async function getPackagePackument(c: HonoContext) {
     // 1. Explicit upstream is specified (like /npm/lodash)
     // 2. PROXY is enabled and package doesn't exist locally
     const upstream =
-      explicitUpstream || (PROXY && !localPkg ? 'npm' : null)
+      explicitUpstream || (c.env.PROXY && !localPkg ? 'npm' : null)
     if (upstream) {
       // Hono middleware logs racing cache strategy information
 
       const fetchUpstreamFn = async () => {
         // Get the appropriate upstream configuration
-        const upstreamConfig = getUpstreamConfig(upstream)
+        const upstreamConfig = getUpstreamConfig(upstream, c)
         if (!upstreamConfig) {
           throw new Error(`Unknown upstream: ${upstream}`)
         }
@@ -1372,7 +1339,7 @@ export async function getPackagePackument(c: HonoContext) {
           throw new Error(`Upstream error: ${response.status}`)
         }
 
-        const upstreamData: _UpstreamData = await response.json()
+        const upstreamData: UpstreamData = await response.json()
 
         // Prepare data for storage with consistent structure
         const packageData: PackageData = {
@@ -1443,6 +1410,7 @@ export async function getPackagePackument(c: HonoContext) {
               const slimmedManifest = slimManifest(
                 manifest as PackageManifest,
                 context,
+                c,
               )
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               if (slimmedManifest) {
@@ -1468,6 +1436,7 @@ export async function getPackagePackument(c: HonoContext) {
                       ...slimManifest(
                         manifest as PackageManifest,
                         context,
+                        c,
                       ),
                     } as PackageManifest
 
@@ -1609,6 +1578,8 @@ export async function getPackagePackument(c: HonoContext) {
           // Use slimManifest to create a smaller response
           const slimmedManifest = slimManifest(
             versionData.manifest as PackageManifest,
+            {},
+            c,
           )
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (slimmedManifest) {
@@ -1635,6 +1606,8 @@ export async function getPackagePackument(c: HonoContext) {
           if (versionData) {
             const slimmedManifest = slimManifest(
               versionData.manifest as PackageManifest,
+              {},
+              c,
             )
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (slimmedManifest) {
@@ -1649,7 +1622,7 @@ export async function getPackagePackument(c: HonoContext) {
               version: latestVersion,
               description: `Mock package for ${name}`,
               dist: {
-                tarball: `${URL}/${name}/-/${name}-${latestVersion}.tgz`,
+                tarball: `${c.env.URL}/${name}/-/${name}-${latestVersion}.tgz`,
               },
             }
             packageData.versions[latestVersion] = mockManifest
@@ -1667,7 +1640,7 @@ export async function getPackagePackument(c: HonoContext) {
           version: latestVersion,
           description: `Package ${name}`,
           dist: {
-            tarball: `${URL}/${name}/-/${name}-${latestVersion}.tgz`,
+            tarball: `${c.env.URL}/${name}/-/${name}-${latestVersion}.tgz`,
           },
         }
         packageData.versions[latestVersion] = mockManifest
@@ -1713,7 +1686,7 @@ export async function handleRootPackageRoute(c: HonoContext) {
 
   // Package doesn't exist locally, redirect to default upstream
   const { getDefaultUpstream } = await import('../utils/upstream.ts')
-  const defaultUpstream = getDefaultUpstream()
+  const defaultUpstream = getDefaultUpstream(c)
   return c.redirect(`/${defaultUpstream}/${pkg}`, 302)
 }
 
@@ -1802,7 +1775,7 @@ export async function handlePackageVersion(c: HonoContext) {
 
   // Package doesn't exist locally, redirect to default upstream
   const { getDefaultUpstream } = await import('../utils/upstream.ts')
-  const defaultUpstream = getDefaultUpstream()
+  const defaultUpstream = getDefaultUpstream(c)
   return c.redirect(`/${defaultUpstream}/${pkg}/${version}`, 302)
 }
 
@@ -1837,7 +1810,7 @@ export async function handlePackageTarball(c: HonoContext) {
 
   // Package doesn't exist locally, redirect to default upstream
   const { getDefaultUpstream } = await import('../utils/upstream.ts')
-  const defaultUpstream = getDefaultUpstream()
+  const defaultUpstream = getDefaultUpstream(c)
   const tarball = c.req.param('tarball')
   return c.redirect(`/${defaultUpstream}/${pkg}/-/${tarball}`, 302)
 }
@@ -1865,7 +1838,7 @@ async function validateUpstreamAndDelegate(
   }
 
   // Check if upstream is configured
-  const upstreamConfig = getUpstreamConfig(upstream)
+  const upstreamConfig = getUpstreamConfig(upstream, c)
   if (!upstreamConfig) {
     return c.json({ error: `Unknown upstream: ${upstream}` }, 404)
   }

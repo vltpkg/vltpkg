@@ -46,10 +46,6 @@
     "directory": "./dist/assets/",
     "binding": "ASSETS"
   },
-  "dev": {
-    "local_protocol": "http",
-    "port": 1337
-  },
   "placement": {
     "mode": "smart"
   },
