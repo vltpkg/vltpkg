@@ -3,6 +3,7 @@ export * from './vlt.tsx'
 export * from './query.tsx'
 export * from './vsr.tsx'
 export * from './vlt-client.tsx'
+export * from './config.tsx'
 
 // general
 export * from './sidebar.tsx'

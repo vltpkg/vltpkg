@@ -1,10 +1,5 @@
-import { Query } from '@/components/icons/query.tsx'
-import {
-  CircleHelp,
-  LayoutDashboard,
-  Library,
-  Settings2,
-} from 'lucide-react'
+import { Query, Config } from '@/components/icons/index.ts'
+import { CircleHelp, LayoutDashboard, Library } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface MenuItem {
@@ -49,7 +44,7 @@ export const settingsMenuItems: MenuItem[] = [
   {
     title: 'General',
     url: '/settings/general',
-    icon: Settings2,
+    icon: Config,
   },
 ]
 
@@ -75,6 +70,6 @@ export const footerMenuItems: MenuItem[] = [
   {
     title: 'Settings',
     url: '/settings',
-    icon: Settings2,
+    icon: Config,
   },
 ]
