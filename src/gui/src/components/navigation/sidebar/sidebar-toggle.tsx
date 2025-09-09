@@ -1,14 +1,15 @@
 import { useSidebar } from '@/components/ui/sidebar.tsx'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Sidebar } from '@/components/icons/index.ts'
+
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 
 export const SidebarToggle = () => {
   const { state, toggleSidebar } = useSidebar()
 
   const toggleItem: MenuItem = {
     title: state === 'expanded' ? 'Collapse' : 'Expand',
-    icon: state === 'expanded' ? PanelLeftClose : PanelLeftOpen,
+    icon: Sidebar,
     onClick: toggleSidebar,
   }
 

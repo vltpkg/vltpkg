@@ -33,11 +33,8 @@ vi.mock('@/components/ui/collapsible.tsx', () => ({
   CollapsibleContent: 'gui-collapsible-content',
 }))
 
-vi.mock('lucide-react', () => ({
-  ArrowUpRight: 'gui-arrow-up-right-icon',
-  ChevronRight: 'gui-chevron-right-icon',
-  PanelLeftOpen: 'gui-panel-left-open-icon',
-  PanelLeftClose: 'gui-panel-left-close-icon',
+vi.mock('@/components/icons/index.ts', () => ({
+  Sidebar: 'gui-sidebar-icon',
 }))
 
 expect.addSnapshotSerializer({
@@ -96,7 +93,7 @@ test('SidebarToggle shows correct icon based on state', async () => {
 
   const { container: expandedContainer } = render(<SidebarToggle />)
   expect(
-    expandedContainer.querySelector('gui-panel-left-close-icon'),
+    expandedContainer.querySelector('gui-sidebar-icon'),
   ).toBeTruthy()
 
   // Test collapsed state
@@ -114,6 +111,6 @@ test('SidebarToggle shows correct icon based on state', async () => {
 
   const { container: collapsedContainer } = render(<SidebarToggle />)
   expect(
-    collapsedContainer.querySelector('gui-panel-left-open-icon'),
+    collapsedContainer.querySelector('gui-sidebar-icon'),
   ).toBeTruthy()
 })
