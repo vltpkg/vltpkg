@@ -1,6 +1,5 @@
 import * as semver from 'semver'
 import validate from 'validate-npm-package-name'
-import { URL } from '../../config.ts'
 import type {
   HonoContext,
   PackageSpec,
@@ -200,7 +199,8 @@ interface ParsedManifest {
  */
 export function slimManifest(
   manifest: unknown,
-  context?: SlimManifestContext,
+  context: SlimManifestContext = {},
+  c: HonoContext,
 ): ParsedManifest {
   if (!manifest) return {} as ParsedManifest
 
@@ -275,6 +275,7 @@ export function slimManifest(
         parsed.name ?? '',
         parsed.version ?? '',
         context,
+        c,
       ),
       integrity: parsed.dist?.integrity ?? '',
       shasum: parsed.dist?.shasum ?? '',
@@ -384,25 +385,23 @@ function rewriteTarballUrlIfNeeded(
   _originalUrl: string,
   packageName: string,
   version: string,
-  context?: SlimManifestContext,
+  context: SlimManifestContext = {},
+  c: HonoContext,
 ): string {
   try {
     // Check if we should rewrite URLs for this upstream
-    const upstream = context?.upstream
-    const protocol = context?.protocol
-    const host = context?.host
+    const upstream = context.upstream
+    const protocol = context.protocol
+    const host = context.host
 
     if (upstream && protocol && host) {
       // Rewrite to our local registry format for upstream packages
       return `${protocol}://${host}/${upstream}/${packageName}/-/${generateTarballFilename(packageName, version)}`
     }
+  } catch {}
 
-    // Default to local registry format using DOMAIN
-    return `${URL}/${createFile({ pkg: packageName, version })}`
-  } catch (_err) {
-    // Fallback to local registry format
-    return `${URL}/${createFile({ pkg: packageName, version })}`
-  }
+  // Fallback to local registry format
+  return `${c.env.URL}/${createFile({ pkg: packageName, version })}`
 }
 
 /**

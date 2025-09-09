@@ -1,22 +1,9 @@
 // get openapi schema
-import wranglerJson from './wrangler.json' with { type: 'json' }
 import packageJson from './package.json' with { type: 'json' }
 import { apiBody } from './src/utils/docs.ts'
-import type {
-  OriginConfig,
-  CookieOptions,
-  ApiDocsConfig,
-} from './types.ts'
+import type { CookieOptions, ApiDocsConfig } from './types.ts'
 
 export const YEAR = new Date().getFullYear()
-
-export const WRANGLER_CONFIG = wranglerJson.dev
-
-export const PORT = WRANGLER_CONFIG.port || (1337 as number)
-
-export const TELEMETRY_ENABLED = true as boolean
-
-export const HELP_ENABLED = false as boolean
 
 // Sentry configuration for error reporting (when telemetry is enabled)
 export const SENTRY_CONFIG = {
@@ -27,6 +14,8 @@ export const SENTRY_CONFIG = {
   tracesSampleRate: 0.1, // Lower sample rate for performance traces
 }
 
+export const TELEMETRY_ENABLED = true as boolean
+
 export const DEBUG_ENABLED = false as boolean
 
 export const API_DOCS_ENABLED = true as boolean
@@ -35,32 +24,9 @@ export const DAEMON_ENABLED = true as boolean
 
 export const DAEMON_PORT = 3000 as number
 
-// Runtime configuration is now handled by configMiddleware
-// which enriches c.env with computed values like DAEMON_ENABLED, TELEMETRY_ENABLED, etc.
-
 export const DAEMON_URL = `http://localhost:${DAEMON_PORT}`
 
 export const VERSION: string = packageJson.version
-
-export const URL = `http://localhost:${PORT}`
-
-export const REDIRECT_URI = `${URL}/-/auth/callback`
-
-// how to handle packages requests
-export const ORIGIN_CONFIG: OriginConfig = {
-  default: 'local',
-  upstreams: {
-    local: {
-      type: 'local',
-      url: URL,
-      allowPublish: true,
-    },
-    npm: {
-      type: 'npm',
-      url: 'https://registry.npmjs.org',
-    },
-  },
-}
 
 // Reserved route prefixes that cannot be used as upstream names
 export const RESERVED_ROUTES: string[] = [
@@ -77,13 +43,6 @@ export const RESERVED_ROUTES: string[] = [
   'admin',
   '*', // Reserved for hash-based routes
 ]
-
-// Backward compatibility - maintain old PROXY behavior
-export const PROXY: boolean =
-  Object.keys(ORIGIN_CONFIG.upstreams).length > 1
-
-export const PROXY_URL: string | undefined =
-  ORIGIN_CONFIG.upstreams[ORIGIN_CONFIG.default]?.url
 
 // the time in seconds to cache the registry
 export const REQUEST_TIMEOUT: number = 60 * 1000

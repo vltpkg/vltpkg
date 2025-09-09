@@ -7,9 +7,7 @@ import {
   DEBUG_ENABLED,
   TELEMETRY_ENABLED,
   SENTRY_CONFIG,
-  PORT,
   VERSION,
-  URL,
 } from '../../config.ts'
 
 /**
@@ -27,6 +25,17 @@ export function resolveConfig(env?: any) {
         value.toLowerCase() === 'true'
       : defaultValue
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  const ARG_PORT = env?.ARG_PORT || '1337'
+
+  // Resolve port and base URL from env (injected by vsr) or fallbacks
+  const resolvedPort = Number(ARG_PORT)
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  const ARG_HOST = env?.ARG_HOST || 'localhost'
+
+  const runtimeUrl = `http://${ARG_HOST}:${resolvedPort}`
 
   return {
     // Daemon configuration
@@ -46,9 +55,27 @@ export function resolveConfig(env?: any) {
     DAEMON_PORT,
     DAEMON_URL,
     SENTRY_CONFIG,
-    PORT,
+    // Allow overriding PORT/URL via vars from vsr
+    PORT: resolvedPort,
     VERSION,
-    URL,
+    URL: runtimeUrl,
+    REDIRECT_URI: `${runtimeUrl}/-/auth/callback`,
+    ORIGIN_CONFIG: {
+      default: 'local',
+      upstreams: {
+        local: {
+          type: 'local',
+          url: runtimeUrl,
+          allowPublish: true,
+        },
+        npm: {
+          type: 'npm',
+          url: 'https://registry.npmjs.org',
+        },
+      },
+    },
+    PROXY: true,
+    PROXY_URL: runtimeUrl,
   }
 }
 
@@ -62,12 +89,6 @@ export async function configMiddleware(
 ): Promise<void> {
   // Use the resolver to get computed config
   const runtimeConfig = resolveConfig(c.env)
-
-  // Initialize global config if not already done
-  const { initializeGlobalConfig } = await import(
-    '../utils/config.ts'
-  )
-  initializeGlobalConfig(c.env)
 
   // Enrich the context environment with computed values
   // Ensure c.env exists (it might be undefined in test environments)

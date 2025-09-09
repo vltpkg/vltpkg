@@ -30,7 +30,7 @@ export async function queue(batch: QueueBatch, env: Environment) {
 
       if (type === 'package_refresh' && packageName) {
         // Handle package refresh - refetch from upstream and cache
-        const upstreamConfig = getUpstreamConfig(upstream)
+        const upstreamConfig = getUpstreamConfig(upstream, { env })
         if (upstreamConfig) {
           const upstreamUrl = buildUpstreamUrl(
             upstreamConfig,
