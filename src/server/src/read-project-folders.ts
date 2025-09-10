@@ -8,8 +8,8 @@ let home: string
 try {
   home = homedir()
 } catch {
-  // In restricted environments (like locked-down Codespaces),
-  // homedir() might fail. Fall back to current working directory.
+  // In restricted environments, homedir() might fail.
+  // Fall back to current working directory.
   home = process.cwd()
 }
 
@@ -71,8 +71,8 @@ export const readProjectFolders = async (
       }
       /* c8 ignore next 4 */
     } catch {
-      // Ignore directories that can't be read (permission denied, etc.)
-      // This commonly happens in restricted environments like Codespaces
+      // Ignore directories that can't be read.
+      // This commonly happens in restricted environments.
     }
   }
 

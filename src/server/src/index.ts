@@ -127,9 +127,7 @@ export class VltServer extends EventEmitter<{
     ) {
       this.#rootAddress = `https://${process.env.CODESPACE_NAME}-${this.port}.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/`
     } else {
-    /* c8 ignore stop */
       this.#rootAddress = `http://localhost:${this.port}/`
-    /* c8 ignore start */
     }
     /* c8 ignore stop */
 
