@@ -118,7 +118,20 @@ export class VltServer extends EventEmitter<{
     if (!this.listening()) {
       throw error('failed to start server')
     }
-    this.#rootAddress = `http://localhost:${this.port}/`
+
+    // In GitHub Codespaces, use the forwarded URL instead of localhost
+    /* c8 ignore start */
+    if (
+      process.env.CODESPACE_NAME &&
+      process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
+    ) {
+      this.#rootAddress = `https://${process.env.CODESPACE_NAME}-${this.port}.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/`
+    } else {
+    /* c8 ignore stop */
+      this.#rootAddress = `http://localhost:${this.port}/`
+    /* c8 ignore start */
+    }
+    /* c8 ignore stop */
 
     const { publicDir = tmpdir(), assetsDir = await getAssetsDir() } =
       this.options
