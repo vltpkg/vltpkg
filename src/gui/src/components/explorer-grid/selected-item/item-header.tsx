@@ -233,20 +233,20 @@ const PackageImage = () => {
   return (
     <Avatar className="aspect-square size-16">
       <AvatarImage
-        className="aspect-square size-16 rounded-md border-[1px] bg-secondary object-cover"
+        className="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
         src={favicon?.src}
         alt={favicon?.alt ?? 'Package Icon'}
       />
-      <AvatarFallback className="flex aspect-square size-16 h-full w-full items-center justify-center rounded-md border-[1px]">
+      <AvatarFallback className="flex aspect-square size-16 h-full w-full items-center justify-center rounded-xl border-[1px]">
         {selectedItem.to?.mainImporter ?
-          <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
+          <div className="flex h-full w-full items-center justify-center rounded-xl bg-muted p-4">
             <Home
               size={32}
               strokeWidth={1.25}
               className="text-muted-foreground"
             />
           </div>
-        : <div className="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
+        : <div className="h-full w-full rounded-xl bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
         }
       </AvatarFallback>
     </Avatar>
