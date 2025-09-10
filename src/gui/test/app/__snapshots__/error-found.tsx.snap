@@ -3,12 +3,12 @@
 exports[`error-found has a cause 1`] = `
 
 <div>
-  <section class="flex flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black h-full">
+  <section class="flex flex-col items-center justify-center rounded-lg bg-white dark:bg-black h-full">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
         <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
         </div>
-        <div class="flex gap-8 opacity-50">
+        <div class="flex gap-8 opacity-20">
           <div class="relative flex flex-col gap-2">
             <div class="flex h-[100px] w-[175px] rounded-sm border-[1px] border-neutral-400 bg-neutral-400/10 dark:border-neutral-800 dark:bg-neutral-800/10">
               <div class="flex w-1/4 flex-col justify-between border-r-[1px] border-neutral-700/50 bg-neutral-700/25 px-[3px] py-[3px]">
@@ -388,10 +388,18 @@ exports[`error-found has a cause 1`] = `
           Failed because of...
         </p>
         <div class="z-[2] mt-3 flex gap-3">
-          <gui-button variant="outline">
+          <gui-button
+            size="sm"
+            classname="rounded-xl"
+            variant="outline"
+          >
             Back
           </gui-button>
-          <gui-button aschild="true">
+          <gui-button
+            aschild="true"
+            classname="rounded-xl"
+            size="sm"
+          >
             <gui-nav-link to="/">
               <span>
                 Dashboard
@@ -413,12 +421,12 @@ exports[`error-found has a cause 1`] = `
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black h-full">
+  <section class="flex flex-col items-center justify-center rounded-lg bg-white dark:bg-black h-full">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
         <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
         </div>
-        <div class="flex gap-8 opacity-50">
+        <div class="flex gap-8 opacity-20">
           <div class="relative flex flex-col gap-2">
             <div class="flex h-[100px] w-[175px] rounded-sm border-[1px] border-neutral-400 bg-neutral-400/10 dark:border-neutral-800 dark:bg-neutral-800/10">
               <div class="flex w-1/4 flex-col justify-between border-r-[1px] border-neutral-700/50 bg-neutral-700/25 px-[3px] py-[3px]">
@@ -798,10 +806,18 @@ exports[`render default 1`] = `
           An unexpected error occured.
         </p>
         <div class="z-[2] mt-3 flex gap-3">
-          <gui-button variant="outline">
+          <gui-button
+            size="sm"
+            classname="rounded-xl"
+            variant="outline"
+          >
             Back
           </gui-button>
-          <gui-button aschild="true">
+          <gui-button
+            aschild="true"
+            classname="rounded-xl"
+            size="sm"
+          >
             <gui-nav-link to="/">
               <span>
                 Dashboard
