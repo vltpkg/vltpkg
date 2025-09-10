@@ -69,7 +69,7 @@ export const readProjectFolders = async (
           traverse.push(step(child, depth + 1))
         }
       }
-    /* c8 ignore next 4 */
+      /* c8 ignore next 4 */
     } catch {
       // Ignore directories that can't be read (permission denied, etc.)
       // This commonly happens in restricted environments like Codespaces

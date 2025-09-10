@@ -13,6 +13,10 @@ export const listenCarefully = async (
   end = 1000,
 ): Promise<number> => {
   let port = start
+  // In GitHub Codespaces, bind to 0.0.0.0 to accept forwarded connections
+  /* c8 ignore next */
+  const host = process.env.CODESPACE_NAME ? '0.0.0.0' : undefined
+
   return new Promise<number>((res, rej) => {
     server.once('listening', () => {
       server.removeListener('error', onerr)
@@ -34,10 +38,10 @@ export const listenCarefully = async (
         return
       }
       port++
-      server.listen(port)
+      server.listen(port, host)
     }
 
     server.on('error', onerr)
-    server.listen(port)
+    server.listen(port, host)
   })
 }

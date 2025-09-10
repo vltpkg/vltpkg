@@ -46,7 +46,7 @@ t.test('dashboard construction with homedir error', async t => {
       throw new Error('Permission denied')
     },
   })
-  
+
   const { Dashboard: DashboardWithError } = await t.mockImport<
     typeof import('../src/dashboard.ts')
   >('../src/dashboard.ts', {

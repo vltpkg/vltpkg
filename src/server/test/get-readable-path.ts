@@ -13,18 +13,23 @@ t.equal(getReadablePath('/x/y/'), '~/')
 t.equal(getReadablePath('/a/b/c'), '/a/b/c')
 
 t.test('getReadablePath with homedir error', async t => {
-  const { getReadablePath: getReadablePathWithError } = await t.mockImport<
-    typeof import('../src/get-readable-path.ts')
-  >('../src/get-readable-path.ts', {
-    'node:os': t.createMock(await import('node:os'), {
-      homedir: () => {
-        throw new Error('Permission denied')
+  const { getReadablePath: getReadablePathWithError } =
+    await t.mockImport<typeof import('../src/get-readable-path.ts')>(
+      '../src/get-readable-path.ts',
+      {
+        'node:os': t.createMock(await import('node:os'), {
+          homedir: () => {
+            throw new Error('Permission denied')
+          },
+        }),
       },
-    }),
-  })
+    )
 
   // Should fall back to process.cwd() and still work
   const cwd = process.cwd()
   t.equal(getReadablePathWithError(`${cwd}/test`), '~/test')
-  t.equal(getReadablePathWithError('/some/other/path'), '/some/other/path')
+  t.equal(
+    getReadablePathWithError('/some/other/path'),
+    '/some/other/path',
+  )
 })
