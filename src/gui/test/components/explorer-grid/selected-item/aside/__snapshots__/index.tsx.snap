@@ -1,6 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`AsideOverview renders with the correct structure 1`] = `
+exports[`AsideOverview renders an empty state when all sections are empty 1`] = `
+
+<gui-aside-overview-empty-state>
+</gui-aside-overview-empty-state>
+
+`;
+
+exports[`AsideOverview renders when all sections are present 1`] = `
 
 <gui-aside>
   <gui-aside-repo>
