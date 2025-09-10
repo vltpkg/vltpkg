@@ -40,6 +40,43 @@ t.test('dashboard construction', async t => {
   t.strictSame(d2.dashboardRoot, [t.testdirName])
 })
 
+t.test('dashboard construction with homedir error', async t => {
+  const mockOs = t.createMock(await import('node:os'), {
+    homedir: () => {
+      throw new Error('Permission denied')
+    },
+  })
+  
+  const { Dashboard: DashboardWithError } = await t.mockImport<
+    typeof import('../src/dashboard.ts')
+  >('../src/dashboard.ts', {
+    'node:os': mockOs,
+    './get-readable-path.ts': await t.mockImport<
+      typeof import('../src/get-readable-path.ts')
+    >('../src/get-readable-path.ts', {
+      'node:os': mockOs,
+    }),
+    '@vltpkg/git': {
+      getUser: async () => ({
+        name: 'Person Name',
+        email: 'e@ma.il',
+      }),
+    },
+  })
+
+  const publicDir = t.testdirName
+  const scurry = new PathScurry(publicDir)
+  const packageJson = new PackageJson()
+
+  const d = new DashboardWithError({
+    publicDir,
+    scurry,
+    packageJson,
+    'dashboard-root': [],
+  })
+  t.strictSame(d.dashboardRoot, [process.cwd()])
+})
+
 t.test('update projects, with dashboard', async t => {
   const dir = t.testdir({
     public: {
