@@ -145,7 +145,10 @@ t.test('read project folders with homedir error', async t => {
     path: dir,
   })
 
-  t.ok(Array.isArray(result), 'returns an array even with homedir error')
+  t.ok(
+    Array.isArray(result),
+    'returns an array even with homedir error',
+  )
 })
 
 t.test('read project folders with file access errors', async t => {
@@ -186,56 +189,70 @@ t.test('read project folders with file access errors', async t => {
     userDefinedProjectPaths: [],
   })
 
-  t.ok(Array.isArray(result), 'returns an array even with file access errors')
+  t.ok(
+    Array.isArray(result),
+    'returns an array even with file access errors',
+  )
   // Should still find the accessible project
-  t.ok(result.some(r => r.name === 'includeme'), 'finds accessible projects')
+  t.ok(
+    result.some(r => r.name === 'includeme'),
+    'finds accessible projects',
+  )
   // Should not include the restricted project due to lstat error
-  t.notOk(result.some(r => r.name === 'restricted'), 'skips inaccessible projects')
+  t.notOk(
+    result.some(r => r.name === 'restricted'),
+    'skips inaccessible projects',
+  )
 })
 
-t.test('read project folders with directory readdir errors', async t => {
-  const dir = t.testdir({
-    web: {
-      includeme: {
-        'package.json': JSON.stringify({ name: 'foo' }),
+t.test(
+  'read project folders with directory readdir errors',
+  async t => {
+    const dir = t.testdir({
+      web: {
+        includeme: {
+          'package.json': JSON.stringify({ name: 'foo' }),
+        },
       },
-    },
-    restricted: {
-      // This directory will throw an error when trying to read it
-      somesubdir: {},
-    },
-  })
+      restricted: {
+        // This directory will throw an error when trying to read it
+        somesubdir: {},
+      },
+    })
 
-  // Create a custom PathScurry that throws errors when reading the root directory
-  class TestPathScurry extends PathScurry {
-    lstatSync(path: string) {
-      const result = super.lstatSync(path)
-      if (result && result.fullpath() === dir) {
-        // Override readdir to throw an error for the root directory
-        const originalReaddir = result.readdir?.bind(result)
-        result.readdir = async () => {
-          throw new Error('Permission denied')
+    // Create a custom PathScurry that throws errors when reading the root directory
+    class TestPathScurry extends PathScurry {
+      lstatSync(path: string) {
+        const result = super.lstatSync(path)
+        if (result && result.fullpath() === dir) {
+          // Override readdir to throw an error for the root directory
+          result.readdir = async () => {
+            throw new Error('Permission denied')
+          }
         }
+        return result
       }
-      return result
     }
-  }
 
-  const scurry = new TestPathScurry(dir) as PathScurry
+    const scurry = new TestPathScurry(dir) as PathScurry
 
-  const { readProjectFolders } = await t.mockImport<
-    typeof import('../src/read-project-folders.ts')
-  >('../src/read-project-folders.ts', {
-    'node:os': t.createMock(await import('node:os'), {
-      homedir: () => dir,
-    }),
-  })
+    const { readProjectFolders } = await t.mockImport<
+      typeof import('../src/read-project-folders.ts')
+    >('../src/read-project-folders.ts', {
+      'node:os': t.createMock(await import('node:os'), {
+        homedir: () => dir,
+      }),
+    })
 
-  // Should handle directory read errors gracefully
-  const result = await readProjectFolders({
-    scurry,
-    userDefinedProjectPaths: [],
-  })
+    // Should handle directory read errors gracefully
+    const result = await readProjectFolders({
+      scurry,
+      userDefinedProjectPaths: [],
+    })
 
-  t.ok(Array.isArray(result), 'returns an array even with directory read errors')
-})
+    t.ok(
+      Array.isArray(result),
+      'returns an array even with directory read errors',
+    )
+  },
+)
