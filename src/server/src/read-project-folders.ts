@@ -118,13 +118,9 @@ const collectResult = async (
   }
 
   const resolved = entry.fullpath()
-  let statPackageJson
-  try {
-    statPackageJson = await scurry.lstat(`${resolved}/package.json`)
-  } catch {
-    // Ignore files that can't be accessed (permission denied, etc.)
-    statPackageJson = null
-  }
+const statPackageJson = await scurry.lstat(
+  `${resolved}/package.json`,
+).catch(() => {})
   const hasValidPackageJson =
     statPackageJson &&
     statPackageJson.isFile() &&
