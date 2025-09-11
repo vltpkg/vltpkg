@@ -63,7 +63,15 @@ export class Dashboard {
     } = options
     this.packageJson = packageJson
     this.dashboardRoot = dashboardRoot
-    if (!this.dashboardRoot.length) this.dashboardRoot = [homedir()]
+    if (!this.dashboardRoot.length) {
+      try {
+        this.dashboardRoot = [homedir()]
+      } catch {
+        // In restricted environments (like locked-down Codespaces),
+        // homedir() might fail. Fall back to current working directory.
+        this.dashboardRoot = [process.cwd()]
+      }
+    }
     this.scurry = scurry
     this.publicDir = publicDir
   }

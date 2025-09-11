@@ -4,7 +4,14 @@ import { callLimit } from 'promise-call-limit'
 import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.ts'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
-const home = homedir()
+let home: string
+try {
+  home = homedir()
+} catch {
+  // In restricted environments, homedir() might fail.
+  // Fall back to current working directory.
+  home = process.cwd()
+}
 
 type ProjectFolderOptions = {
   /**
@@ -47,19 +54,25 @@ export const readProjectFolders = async (
     userDefinedProjectPaths.length ? userDefinedProjectPaths : [path]
 
   const step = (entry: PathBase, depth: number) => async () => {
-    for (const child of await entry.readdir()) {
-      if (
-        await collectResult(
-          child,
-          result,
-          scurry,
-          entry === homeEntry,
-          depth,
-          maxDepth,
-        )
-      ) {
-        traverse.push(step(child, depth + 1))
+    try {
+      for (const child of await entry.readdir()) {
+        if (
+          await collectResult(
+            child,
+            result,
+            scurry,
+            entry === homeEntry,
+            depth,
+            maxDepth,
+          )
+        ) {
+          traverse.push(step(child, depth + 1))
+        }
       }
+      /* c8 ignore next 4 */
+    } catch {
+      // Ignore directories that can't be read.
+      // This commonly happens in restricted environments.
     }
   }
 
@@ -105,9 +118,9 @@ const collectResult = async (
   }
 
   const resolved = entry.fullpath()
-  const statPackageJson = await scurry.lstat(
-    `${resolved}/package.json`,
-  )
+  const statPackageJson = await scurry
+    .lstat(`${resolved}/package.json`)
+    .catch(() => {})
   const hasValidPackageJson =
     statPackageJson &&
     statPackageJson.isFile() &&
