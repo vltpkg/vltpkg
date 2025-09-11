@@ -99,6 +99,10 @@ vi.mock('@/components/ui/loading-spinner.tsx', () => ({
   LoadingSpinner: 'gui-loading-spinner',
 }))
 
+vi.mock('@/components/ui/inline-code.tsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

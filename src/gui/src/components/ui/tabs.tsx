@@ -56,7 +56,7 @@ const tabsListVariants = cva('inline-flex ', {
   variants: {
     variant: {
       default:
-        'items-center justify-center h-10 rounded-md bg-muted p-1 text-muted-foreground',
+        'items-center justify-center h-10 rounded-lg bg-muted p-1 text-muted-foreground',
       outline: 'border-b-[1px] border-muted w-full',
       ghost: 'pb-1 bg-transparent border-b-[2px] border-muted w-full',
       nestedCard:
@@ -164,7 +164,7 @@ const TabsTrigger = React.forwardRef<
                     bounce: 0.1,
                   }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-100/80 dark:bg-neutral-800/80"
+                  className="absolute inset-0 z-[1] h-full w-full rounded-lg bg-neutral-100/80 dark:bg-neutral-800/80"
                 />
               )}
             </AnimatePresence>
@@ -181,7 +181,7 @@ const TabsTrigger = React.forwardRef<
                     bounce: 0.1,
                   }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-[1] h-full w-full rounded-sm border-[1px] border-neutral-200 bg-neutral-100 dark:border-[#313131] dark:bg-neutral-800"
+                  className="absolute inset-0 z-[1] h-full w-full rounded-lg border-[1px] border-neutral-200 bg-neutral-100 dark:border-[#313131] dark:bg-neutral-800"
                 />
               )}
             </AnimatePresence>
@@ -202,7 +202,7 @@ const TabsTrigger = React.forwardRef<
                     bounce: 0.1,
                   }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-100 dark:bg-neutral-800"
+                  className="absolute inset-0 z-[1] h-full w-full rounded-lg bg-neutral-100 dark:bg-neutral-800"
                 />
               )}
             </AnimatePresence>

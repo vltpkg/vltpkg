@@ -38,20 +38,20 @@ export const DependencyEmptyState = () => {
             ease: 'easeInOut',
             duration: 0.25,
           }}
-          className="flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-sm border-[1px] border-dashed border-muted py-12">
+          className="flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed border-muted bg-card py-12">
           <div className="mb-6 flex justify-center">
             <div className="relative">
               <div className="relative space-y-2">
-                <div className="h-12 w-64 rotate-1 transform rounded-lg border-[1px] border-dashed border-muted-foreground/20 bg-muted/30" />
+                <div className="h-12 w-64 rotate-1 transform rounded-xl border-[1px] border-dashed border-muted-foreground/20 bg-muted/30" />
 
-                <div className="-mt-10 h-12 w-64 -rotate-1 transform rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/50" />
+                <div className="-mt-10 h-12 w-64 -rotate-1 transform rounded-xl border-[1px] border-dashed border-muted-foreground/30 bg-muted/50" />
 
-                <div className="relative z-10 -mt-10 flex h-12 w-64 items-center justify-between rounded-lg border-[1px] border-dashed border-muted-foreground/40 bg-background px-4">
+                <div className="relative z-10 -mt-10 flex h-12 w-64 items-center justify-between rounded-xl border-[1px] border-dashed border-muted-foreground/40 bg-background px-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-6 w-12 rounded border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
-                    <div className="h-4 w-24 rounded border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
+                    <div className="h-6 w-12 rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
+                    <div className="h-4 w-24 rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
                   </div>
-                  <div className="h-4 w-12 rounded border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
+                  <div className="h-4 w-12 rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
                 </div>
               </div>
             </div>
@@ -77,7 +77,7 @@ export const DependencyEmptyState = () => {
                 <PopoverTrigger asChild>
                   <Button
                     onClick={toggleAddDepPopover}
-                    className="mt-2 h-8 w-fit border-[1px] border-muted">
+                    className="mt-2 h-8 w-fit rounded-xl border-[1px] border-muted">
                     Install a dependency
                     <motion.span
                       animate={{
