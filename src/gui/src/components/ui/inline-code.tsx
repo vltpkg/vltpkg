@@ -14,7 +14,7 @@ interface InlineCodeProps
 }
 
 const variants = cva(
-  'mx-1 rounded-md px-1.5 py-1 pt-1.5 text-xs font-normal',
+  'inline-flex rounded-lg px-1.5 items-center leading-[1.6rem] h-[1.6rem] text-xs font-normal',
   {
     variants: {
       color: {

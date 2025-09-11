@@ -3,6 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { AsideOverview } from '@/components/explorer-grid/selected-item/aside/index.tsx'
+import { useEmptyCheck } from '@/components/explorer-grid/selected-item/aside/use-empty-check.tsx'
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
@@ -54,14 +55,16 @@ vi.mock(
 )
 
 vi.mock(
+  '@/components/explorer-grid/selected-item/aside/empty-state.tsx',
+  () => ({
+    AsideOverviewEmptyState: 'gui-aside-overview-empty-state',
+  }),
+)
+
+vi.mock(
   '@/components/explorer-grid/selected-item/aside/use-empty-check.tsx',
   () => ({
-    useEmptyCheck: vi.fn(() => ({
-      isRepoEmpty: false,
-      isFundingEmpty: false,
-      isBugsEmpty: false,
-      isMetadataEmpty: false,
-    })),
+    useEmptyCheck: vi.fn(),
   }),
 )
 
@@ -80,7 +83,30 @@ afterEach(() => {
   cleanup()
 })
 
-test('AsideOverview renders with the correct structure', () => {
+test('AsideOverview renders when all sections are present', () => {
+  vi.mocked(useEmptyCheck).mockReturnValue({
+    isRepoEmpty: false,
+    isFundingEmpty: false,
+    isBugsEmpty: false,
+    isMetadataEmpty: false,
+  })
+
+  const Container = () => {
+    return <AsideOverview />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('AsideOverview renders an empty state when all sections are empty', () => {
+  vi.mocked(useEmptyCheck).mockReturnValue({
+    isRepoEmpty: true,
+    isFundingEmpty: true,
+    isBugsEmpty: true,
+    isMetadataEmpty: true,
+  })
+
   const Container = () => {
     return <AsideOverview />
   }

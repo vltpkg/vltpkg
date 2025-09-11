@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AsideOverviewEmptyState renders correctly 1`] = `
+
+<div
+  class="mt-4 flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed border-muted bg-card py-12 md:mt-0"
+  style="opacity: 0; filter: blur(2px);"
+>
+  <div class="mb-6 flex justify-center">
+    <div class="relative">
+      <div class="flex size-28 items-center justify-center rounded-full">
+        <gui-package-icon
+          classname="size-10 text-muted-foreground"
+          strokewidth="1"
+        >
+        </gui-package-icon>
+        <div class="absolute bottom-1 right-1 flex size-8 items-center justify-center rounded-full bg-black dark:bg-white">
+          <gui-search-icon classname="z-1 relative size-4 text-white dark:text-black">
+          </gui-search-icon>
+        </div>
+        <div class="border-neutral-150 absolute z-[-1] size-28 rounded-full border">
+        </div>
+        <div class="border-neutral-150 absolute z-[-1] size-36 rounded-full border">
+        </div>
+        <div class="absolute z-[-1] size-44 rounded-full border">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col items-center justify-center gap-1 text-center">
+    <h3 class="text-base font-medium tracking-tight text-foreground">
+      No Overview Available
+    </h3>
+    <p class="w-4/5 text-pretty text-sm font-normal tracking-normal text-muted-foreground">
+      This package does not have any additional metadata. Try adding some fields into
+      <gui-inline-code>
+        package.json
+      </gui-inline-code>
+    </p>
+  </div>
+</div>
+
+`;

@@ -18,13 +18,13 @@ export const ErrorFound = () => {
   return (
     <section
       className={cn(
-        'flex flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black',
+        'flex flex-col items-center justify-center rounded-lg bg-white dark:bg-black',
         pathname === '/error' ? 'h-full' : 'h-screen',
       )}>
       <div className="relative -mt-32 flex flex-col items-center justify-center">
         <div className="relative flex flex-col gap-8">
           <div className="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black" />
-          <div className="flex gap-8 opacity-50">
+          <div className="flex gap-8 opacity-20">
             <DashboardMiniView />
             <QueryMiniView />
             <DashboardMiniView />
@@ -49,10 +49,14 @@ export const ErrorFound = () => {
             {errorCause ? errorCause : 'An unexpected error occured.'}
           </p>
           <div className="z-[2] mt-3 flex gap-3">
-            <Button variant="outline" onClick={onBackButtonClick}>
+            <Button
+              size="sm"
+              className="rounded-xl"
+              variant="outline"
+              onClick={onBackButtonClick}>
               Back
             </Button>
-            <Button asChild>
+            <Button asChild className="rounded-xl" size="sm">
               <NavLink to="/">
                 <span>Dashboard</span>
                 <ArrowRight />
