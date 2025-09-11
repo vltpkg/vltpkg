@@ -5,4 +5,13 @@ export default defineNitroConfig({
   compatibilityDate: 'latest',
   srcDir: 'server',
   imports: false,
+  experimental: {
+    database: true,
+  },
+  database: {
+    default: {
+      connector: 'sqlite',
+      options: { name: 'db' },
+    },
+  },
 })
