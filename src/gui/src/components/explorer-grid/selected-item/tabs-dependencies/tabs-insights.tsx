@@ -231,7 +231,7 @@ export const InsightsTabContent = () => {
               role={hasUnscannedDeps ? 'button' : undefined}
               onClick={() => queryUnscannedDeps()}
               className={cn(
-                'duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors',
+                'duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors',
                 hasUnscannedDeps &&
                   'hover:border-muted-foreground/30 hover:bg-secondary/60',
               )}>
@@ -263,7 +263,7 @@ export const InsightsTabContent = () => {
             </div>
 
             {averageScore !== undefined && (
-              <div className="relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3">
+              <div className="relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3">
                 <p className="font-regular text-xs tracking-wide text-muted-foreground">
                   Average package score
                 </p>
@@ -294,7 +294,7 @@ export const InsightsTabContent = () => {
                   }
                   key={`warning-${severity}-${idx}`}
                   warning={`${count} ${severity} severity`}
-                  className="rounded-sm px-2 py-1"
+                  className="px-2 py-1"
                   severity={severity as DepWarning['severity']}
                 />
               ),

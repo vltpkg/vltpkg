@@ -26,7 +26,7 @@ export const Warning = ({
       role="button"
       {...(onClick ? { onClick } : undefined)}
       className={cn(
-        'duration-250 flex cursor-default items-center justify-between rounded-md border-[1px] bg-transparent px-3 py-2 transition-colors',
+        'duration-250 flex cursor-default items-center justify-between rounded-lg border-[1px] bg-transparent px-3 py-2 transition-colors',
         alertStyles[severity].background,
         alertStyles[severity].border,
         className,
