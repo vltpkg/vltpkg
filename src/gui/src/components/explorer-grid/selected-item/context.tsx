@@ -129,7 +129,7 @@ const getSocketInsights = (
             )
             if (argumentDetail) {
               results.push({
-                selector: parentInsight.selector,
+                selector: `:${key}(${argumentDetail.argument})`,
                 severity: argumentDetail.severity,
                 description: argumentDetail.description,
                 category: parentInsight.securityCategory,

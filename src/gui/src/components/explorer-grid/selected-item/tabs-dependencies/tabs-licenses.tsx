@@ -253,7 +253,7 @@ export const LicensesTabContent = () => {
               role={licenseWarningCount > 0 ? 'button' : undefined}
               onClick={() => queryAllLicenseWarnings()}
               className={cn(
-                'duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors',
+                'duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors',
                 licenseWarningCount > 0 &&
                   'hover:border-muted-foreground/30 hover:bg-secondary/60',
               )}>

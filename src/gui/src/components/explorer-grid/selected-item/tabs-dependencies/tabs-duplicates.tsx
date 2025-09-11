@@ -52,7 +52,7 @@ export const DuplicatesTabContent = () => {
     <MotionTabsContent {...tabMotion} value="duplicates">
       {duplicatedDeps && duplicatedDepCount > 0 ?
         <div className="px-6 pt-4">
-          <div className="relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3">
+          <div className="relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3">
             <p className="font-regular text-xs tracking-wide text-muted-foreground">
               Packages with multiple versions
             </p>

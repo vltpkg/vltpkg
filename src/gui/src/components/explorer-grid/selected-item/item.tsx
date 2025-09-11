@@ -63,7 +63,9 @@ export const SelectedItemTabs = () => {
         uniqueId={selectedItem.id}
         onValueChange={handleTabChange}
         value={activeTab}>
-        <TabsList variant="ghost" className="w-full gap-2 px-6">
+        <TabsList
+          variant="ghost"
+          className="w-full gap-2 overflow-x-scroll px-6">
           <OverviewTabButton />
           <TabsJsonButton />
           <InsightTabButton />

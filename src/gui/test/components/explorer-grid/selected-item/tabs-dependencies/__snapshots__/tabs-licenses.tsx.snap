@@ -53,7 +53,7 @@ exports[`LicensesTabContent renders with licenses 1`] = `
     <div class="px-6">
       <div
         role="button"
-        class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-sm border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors hover:border-muted-foreground/30 hover:bg-secondary/60"
+        class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors hover:border-muted-foreground/30 hover:bg-secondary/60"
       >
         <p class="font-regular text-xs tracking-wide text-muted-foreground">
           Licenses warnings

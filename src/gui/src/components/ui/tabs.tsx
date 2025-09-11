@@ -143,7 +143,7 @@ const TabsTrigger = React.forwardRef<
         {...props}>
         <span
           className={cn(
-            'z-[2]',
+            'z-[2] inline-flex items-center',
             variant === 'nestedCard' &&
               'inline-flex w-fit items-center gap-1',
           )}>

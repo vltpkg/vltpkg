@@ -64,7 +64,7 @@ export const DependenciesTabContent = () => {
   return (
     <MotionTabsContent {...tabMotion} value="dependencies">
       <Tabs onValueChange={handleSubTabChange} value={activeSubTab}>
-        <TabsList variant="nestedCard">
+        <TabsList variant="nestedCard" className="overflow-x-scroll">
           <InsightsTabButton />
           <LicensesTabButton />
           <DuplicatesTabButton />
