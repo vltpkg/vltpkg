@@ -1,0 +1,47 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Results Displays items 1`] = `
+
+<gui-results-provider allitems="[object Object],[object Object],[object Object]">
+  <section class="flex h-full flex-col">
+    <div class="mx-auto mt-2 w-full max-w-8xl grow px-8 py-4">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="inline-flex items-baseline gap-2 text-lg">
+          Results
+          <span class="font-mono text-sm tabular-nums text-muted-foreground">
+            (3)
+          </span>
+        </h3>
+        <div class="flex items-center gap-2">
+          <gui-results-sort>
+          </gui-results-sort>
+        </div>
+      </div>
+      <div class="flex flex-col gap-5 mt-4">
+        <gui-result-item item="[object Object]">
+        </gui-result-item>
+        <gui-result-item item="[object Object]">
+        </gui-result-item>
+        <gui-result-item item="[object Object]">
+        </gui-result-item>
+      </div>
+    </div>
+    <div class="mx-auto grid w-full max-w-8xl grid-cols-12 items-center px-8 py-4">
+      <gui-result-page-options classname="col-span-3">
+      </gui-result-page-options>
+      <gui-results-pagination-navigation classname="col-span-6 col-start-4">
+      </gui-results-pagination-navigation>
+    </div>
+  </section>
+</gui-results-provider>
+
+`;
+
+exports[`Results renders an empty state when there are no items 1`] = `
+
+<div class="px-8 py-4">
+  <gui-empty-results-state>
+  </gui-empty-results-state>
+</div>
+
+`;
