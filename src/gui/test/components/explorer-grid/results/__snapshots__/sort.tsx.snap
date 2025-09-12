@@ -1,0 +1,77 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultsPaginationNavigation renders default 1`] = `
+
+<gui-dropdown-menu>
+  <gui-dropdown-menu-trigger aschild="true">
+    <gui-button
+      variant="outline"
+      size="sm"
+      classname="max-h-8 gap-3 rounded-xl text-sm [&amp;>.chevron]:data-[state=open]:rotate-90 [&amp;_svg]:text-muted-foreground"
+    >
+      <gui-arrow-down-narrow-wide-icon>
+      </gui-arrow-down-narrow-wide-icon>
+      <span>
+        Sort
+      </span>
+      <gui-chevron-right-icon classname="chevron transition-transform duration-150">
+      </gui-chevron-right-icon>
+    </gui-button>
+  </gui-dropdown-menu-trigger>
+  <gui-dropdown-menu-content
+    align="end"
+    classname="rounded-xl shadow-none"
+  >
+    <gui-dropdown-menu-group>
+      <gui-dropdown-menu-label classname="text-sm text-muted-foreground">
+        Sort by
+      </gui-dropdown-menu-label>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        <div class="size-4">
+          <gui-check-icon classname="size-3">
+          </gui-check-icon>
+        </div>
+        <span>
+          Alphabetical
+        </span>
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        <div class="size-4">
+        </div>
+        <span>
+          Version
+        </span>
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        <div class="size-4">
+        </div>
+        <span>
+          Dependency type
+        </span>
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        <div class="size-4">
+        </div>
+        <span>
+          Dependents
+        </span>
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        <div class="size-4">
+        </div>
+        <span>
+          Module type
+        </span>
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        <div class="size-4">
+        </div>
+        <span>
+          Overall score
+        </span>
+      </gui-dropdown-menu-item>
+    </gui-dropdown-menu-group>
+  </gui-dropdown-menu-content>
+</gui-dropdown-menu>
+
+`;
