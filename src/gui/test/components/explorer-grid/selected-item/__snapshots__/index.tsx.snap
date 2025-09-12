@@ -2,35 +2,37 @@
 
 exports[`SelectedItem renders default 1`] = `
 
-<div
-  class="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4"
-  style="opacity: 1; filter: blur(0px);"
->
-  <div class="relative col-span-2">
-    <gui-overview-sidebar
-      dependencies
-      workspaces
-      dependents
-      selecteditem="[object Object]"
-    >
-    </gui-overview-sidebar>
-  </div>
-  <div class="col-span-4">
-    <div class="flex items-center justify-between">
-      <gui-grid-header>
-        Selected
-      </gui-grid-header>
-      <gui-focused-button>
-      </gui-focused-button>
+<section>
+  <div
+    class="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4"
+    style="opacity: 1; filter: blur(0px);"
+  >
+    <div class="relative col-span-2">
+      <gui-overview-sidebar
+        dependencies
+        workspaces
+        dependents
+        selecteditem="[object Object]"
+      >
+      </gui-overview-sidebar>
     </div>
-    <div class="flex flex-col gap-6">
-      <gui-selected-item item="[object Object]">
-      </gui-selected-item>
+    <div class="col-span-4">
+      <div class="flex items-center justify-between">
+        <gui-grid-header>
+          Selected
+        </gui-grid-header>
+        <gui-focused-button>
+        </gui-focused-button>
+      </div>
+      <div class="flex flex-col gap-6">
+        <gui-selected-item item="[object Object]">
+        </gui-selected-item>
+      </div>
+    </div>
+    <div class="col-span-2">
     </div>
   </div>
-  <div class="col-span-2">
-  </div>
-</div>
+</section>
 
 `;
 

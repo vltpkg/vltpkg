@@ -25,7 +25,7 @@ const getItemsData = (
   edges: QueryResponseEdge[],
   nodes: QueryResponseNode[],
   query: State['query'],
-) => {
+): GridItemData[] => {
   const items: GridItemData[] = []
   const seenEdges = new Map<DepID, Set<EdgeLoose>>()
   const seenItems = new Map<DepID, GridItemData>()
@@ -148,11 +148,9 @@ export const ExplorerGrid = () => {
   const nodes = useGraphStore(state => state.nodes)
   const query = useGraphStore(state => state.query)
   const items = getItemsData(edges, nodes, query)
-  return (
-    <section>
-      {items.length === 1 && items[0] ?
-        <SelectedItem item={items[0]} />
-      : <Results items={items} />}
-    </section>
-  )
+
+  if (items.length === 1 && items[0])
+    return <SelectedItem item={items[0]} />
+
+  return <Results allItems={items} />
 }

@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultsPaginationNavigation renders default 1`] = `
+
+<gui-pagination classname>
+  <gui-pagination-content>
+    <gui-pagination-item>
+      <gui-pagination-previous>
+      </gui-pagination-previous>
+    </gui-pagination-item>
+    <gui-pagination-item>
+      <gui-pagination-next>
+      </gui-pagination-next>
+    </gui-pagination-item>
+  </gui-pagination-content>
+</gui-pagination>
+
+`;

@@ -1,11 +1,10 @@
 import {
   Outlet,
   Navigate,
-  createBrowserRouter,
   RouterProvider,
+  createBrowserRouter,
   useParams,
 } from 'react-router'
-import type { RouteObject } from 'react-router'
 
 import Layout from '@/layout.tsx'
 
@@ -38,6 +37,8 @@ import { HelpSelectors } from '@/app/help/help-selectors.tsx'
 /** Query Helpers */
 import { DEFAULT_QUERY } from '@/state/index.ts'
 import { encodeCompressedQuery } from '@/lib/compress-query.ts'
+
+import type { RouteObject } from 'react-router'
 import type {
   Tab,
   SubTabDependencies,

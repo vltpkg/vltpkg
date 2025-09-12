@@ -65,7 +65,7 @@ export const SelectedItemTabs = () => {
         value={activeTab}>
         <TabsList
           variant="ghost"
-          className="w-full gap-2 overflow-x-scroll px-6">
+          className="w-full gap-2 overflow-x-auto px-6">
           <OverviewTabButton />
           <TabsJsonButton />
           <InsightTabButton />

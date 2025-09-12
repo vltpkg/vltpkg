@@ -4,14 +4,18 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
+import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
+import { transfer } from '@vltpkg/graph/browser'
+import { Query } from '@vltpkg/query'
+import { useResultsStore } from '@/components/explorer-grid/results/context.tsx'
+
+import type { ResultsStore } from '@/components/explorer-grid/results/context.tsx'
 import type {
   QueryResponseEdge,
   QueryResponseNode,
 } from '@vltpkg/query'
-import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
-import { transfer } from '@vltpkg/graph/browser'
 import type { RawNode } from '@/state/types.ts'
-import { Query } from '@vltpkg/query'
+import type { GridItemData } from '@/components/explorer-grid/types'
 
 vi.mock('lucide-react', () => ({
   Package: 'gui-package-icon',
@@ -20,6 +24,36 @@ vi.mock('lucide-react', () => ({
 vi.mock('@/components/explorer-grid/results/result-item.tsx', () => ({
   ResultItem: 'gui-result-item',
 }))
+
+vi.mock(
+  '@/components/explorer-grid/results/empty-results-state.tsx',
+  () => ({
+    EmptyResultsState: 'gui-empty-results-state',
+  }),
+)
+
+vi.mock('@/components/explorer-grid/results/sort.tsx', () => ({
+  ResultsSort: 'gui-results-sort',
+}))
+
+vi.mock('@/components/explorer-grid/results/context.tsx', () => ({
+  ResultsProvider: 'gui-results-provider',
+  useResultsStore: vi.fn(),
+}))
+
+vi.mock(
+  '@/components/explorer-grid/results/page-navigation.tsx',
+  () => ({
+    ResultsPaginationNavigation: 'gui-results-pagination-navigation',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/results/page-options.tsx',
+  () => ({
+    ResultPageOptions: 'gui-result-page-options',
+  }),
+)
 
 vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
   SideItem: 'gui-side-item',
@@ -63,35 +97,80 @@ afterEach(() => {
 })
 
 test('ExplorerGrid render default', async () => {
+  const mockState = {
+    page: 1,
+    totalPages: 0,
+    pageSize: 25,
+    pageItems: [],
+    allItems: [],
+    sortBy: 'alphabetical',
+    sortDir: 'asc',
+    setPage: vi.fn(),
+    setSortBy: vi.fn(),
+    setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
+  } satisfies ResultsStore
+
+  vi.mocked(useResultsStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
   render(<ExplorerGrid />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
 test('ExplorerGrid with results', async () => {
+  const rootNode = {
+    id: joinDepIDTuple(['file', '.']),
+    name: 'root',
+    version: '1.0.0',
+    insights: {},
+    toJSON() {},
+  } as QueryResponseNode
+  const aNode = {
+    id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
+    name: 'a',
+    version: '1.0.0',
+    insights: {},
+    toJSON() {},
+  } as QueryResponseNode
+  const bNode = {
+    id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
+    name: 'b',
+    version: '1.0.0',
+    insights: {},
+    toJSON() {},
+  } as QueryResponseNode
+
+  const mockState = {
+    page: 1,
+    totalPages: 0,
+    pageSize: 25,
+    pageItems: [
+      rootNode as unknown as GridItemData,
+      aNode as unknown as GridItemData,
+      bNode as unknown as GridItemData,
+    ],
+    allItems: [
+      rootNode as unknown as GridItemData,
+      aNode as unknown as GridItemData,
+      bNode as unknown as GridItemData,
+    ],
+    sortBy: 'alphabetical',
+    sortDir: 'asc',
+    setPage: vi.fn(),
+    setSortBy: vi.fn(),
+    setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
+  } satisfies ResultsStore
+
+  vi.mocked(useResultsStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
-    const rootNode = {
-      id: joinDepIDTuple(['file', '.']),
-      name: 'root',
-      version: '1.0.0',
-      insights: {},
-      toJSON() {},
-    } as QueryResponseNode
-    const aNode = {
-      id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
-      name: 'a',
-      version: '1.0.0',
-      insights: {},
-      toJSON() {},
-    } as QueryResponseNode
-    const bNode = {
-      id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
-      name: 'b',
-      version: '1.0.0',
-      insights: {},
-      toJSON() {},
-    } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
     const edges: QueryResponseEdge[] = [
       {
@@ -118,30 +197,57 @@ test('ExplorerGrid with results', async () => {
 })
 
 test('ExplorerGrid with stack', async () => {
+  const rootNode = {
+    id: joinDepIDTuple(['file', '.']),
+    name: 'root',
+    version: '1.0.0',
+    insights: {},
+    toJSON() {},
+  } as QueryResponseNode
+  const aNode = {
+    id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
+    name: 'a',
+    version: '1.0.0',
+    insights: {},
+    toJSON() {},
+  } as QueryResponseNode
+  const bNode = {
+    id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
+    name: 'b',
+    version: '1.0.0',
+    insights: {},
+    toJSON() {},
+  } as QueryResponseNode
+
+  const mockState = {
+    page: 1,
+    totalPages: 0,
+    pageSize: 25,
+    pageItems: [
+      rootNode as unknown as GridItemData,
+      aNode as unknown as GridItemData,
+      bNode as unknown as GridItemData,
+    ],
+    allItems: [
+      rootNode as unknown as GridItemData,
+      aNode as unknown as GridItemData,
+      bNode as unknown as GridItemData,
+    ],
+    sortBy: 'alphabetical',
+    sortDir: 'asc',
+    setPage: vi.fn(),
+    setSortBy: vi.fn(),
+    setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
+  } satisfies ResultsStore
+
+  vi.mocked(useResultsStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
-    const rootNode = {
-      id: joinDepIDTuple(['file', '.']),
-      name: 'root',
-      version: '1.0.0',
-      insights: {},
-      toJSON() {},
-    } as QueryResponseNode
-    const aNode = {
-      id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
-      name: 'a',
-      version: '1.0.0',
-      insights: {},
-      toJSON() {},
-    } as QueryResponseNode
-    const bNode = {
-      id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
-      name: 'b',
-      version: '1.0.0',
-      insights: {},
-      toJSON() {},
-    } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
     const edges: QueryResponseEdge[] = [
       {
