@@ -5,7 +5,7 @@ exports[`Results Displays items 1`] = `
 <gui-results-provider allitems="[object Object],[object Object],[object Object]">
   <section class="flex h-full flex-col">
     <div class="mx-auto mt-2 w-full max-w-8xl grow px-8 py-4">
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-3">
         <h3 class="inline-flex items-baseline gap-2 text-lg">
           Results
           <span class="font-mono text-sm tabular-nums text-muted-foreground">

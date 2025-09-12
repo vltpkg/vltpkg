@@ -13,12 +13,15 @@ import type { PageSizeOption } from '@/components/explorer-grid/results/page-opt
 import type { GridItemData } from '@/components/explorer-grid/types.tsx'
 
 export type ResultsSortBy =
+  | 'none'
   | 'alphabetical'
   | 'version'
   | 'dependencyType'
   | 'dependents'
   | 'moduleType'
   | 'overallScore'
+
+export type ResultsSortDir = 'asc' | 'desc'
 
 type ResultsStoreState = {
   /**
@@ -45,6 +48,10 @@ type ResultsStoreState = {
    * Current sort key for list view
    */
   sortBy: ResultsSortBy
+  /**
+   * Current sort direction for list view
+   */
+  sortDir: ResultsSortDir
 }
 
 type ResultsStoreAction = {
@@ -60,6 +67,10 @@ type ResultsStoreAction = {
    * Sets the sort key for the results list
    */
   setSortBy: (sortBy: ResultsSortBy) => void
+  /**
+   * Sets the sort direction for the results list
+   */
+  setSortDir: (sortDir: ResultsSortDir) => void
 }
 
 export type ResultsStore = ResultsStoreState & ResultsStoreAction
@@ -97,8 +108,9 @@ export const ResultsProvider = ({
       allItems,
       sortBy: (() => {
         const raw = (searchParams.get('sort') ??
-          'alphabetical') as ResultsSortBy
+          'none') as ResultsSortBy
         const valid: ResultsSortBy[] = [
+          'none',
           'alphabetical',
           'version',
           'dependencyType',
@@ -106,7 +118,30 @@ export const ResultsProvider = ({
           'moduleType',
           'overallScore',
         ]
-        return valid.includes(raw) ? raw : 'alphabetical'
+        return valid.includes(raw) ? raw : 'none'
+      })(),
+      sortDir: (() => {
+        const sortByParam = (searchParams.get('sort') ??
+          'none') as ResultsSortBy
+        const dirParam = searchParams.get('dir') ?? ''
+        const validSorts: ResultsSortBy[] = [
+          'none',
+          'alphabetical',
+          'version',
+          'dependencyType',
+          'dependents',
+          'moduleType',
+          'overallScore',
+        ]
+        const sortBy =
+          validSorts.includes(sortByParam) ? sortByParam : 'none'
+        const defaultDirFor = (key: ResultsSortBy): ResultsSortDir =>
+          key === 'dependents' || key === 'overallScore' ?
+            'desc'
+          : 'asc'
+        return dirParam === 'asc' || dirParam === 'desc' ?
+            dirParam
+          : defaultDirFor(sortBy)
       })(),
       setPage: (page: ResultsStoreState['page']) => {
         const next = new URLSearchParams(
@@ -132,7 +167,28 @@ export const ResultsProvider = ({
         const next = new URLSearchParams(
           latestSearchParamsRef.current,
         )
-        next.set('sort', sortBy)
+        if (sortBy === 'none') {
+          next.delete('sort')
+        } else {
+          next.set('sort', sortBy)
+        }
+        // when changing sort key, reset direction to sensible default for that key
+        const defaultDirFor = (key: ResultsSortBy): ResultsSortDir =>
+          key === 'dependents' || key === 'overallScore' ?
+            'desc'
+          : 'asc'
+        if (sortBy === 'none') {
+          next.delete('dir')
+        } else {
+          next.set('dir', defaultDirFor(sortBy))
+        }
+        setSearchParams(next, { replace: true })
+      },
+      setSortDir: (sortDir: ResultsSortDir) => {
+        const next = new URLSearchParams(
+          latestSearchParamsRef.current,
+        )
+        next.set('dir', sortDir)
         setSearchParams(next, { replace: true })
       },
     })),
@@ -188,8 +244,9 @@ export const ResultsProvider = ({
     const clampedPage = Math.min(Math.max(rawPage, 1), totalPages)
 
     const rawSort = (searchParams.get('sort') ??
-      'alphabetical') as ResultsSortBy
+      'none') as ResultsSortBy
     const validSorts: ResultsSortBy[] = [
+      'none',
       'alphabetical',
       'version',
       'dependencyType',
@@ -197,11 +254,15 @@ export const ResultsProvider = ({
       'moduleType',
       'overallScore',
     ]
-    const sortBy =
-      validSorts.includes(rawSort) ? rawSort : 'alphabetical'
+    const sortBy = validSorts.includes(rawSort) ? rawSort : 'none'
 
-    const start = (clampedPage - 1) * validPageSize
-    const pageSlice = allItems.slice(start, start + validPageSize)
+    const rawDir = searchParams.get('dir') ?? ''
+    const defaultDirFor = (key: ResultsSortBy): ResultsSortDir =>
+      key === 'dependents' || key === 'overallScore' ? 'desc' : 'asc'
+    const sortDir: ResultsSortDir =
+      sortBy === 'none' ? 'asc'
+      : rawDir === 'asc' || rawDir === 'desc' ? rawDir
+      : defaultDirFor(sortBy)
 
     const compareString = (x?: string, y?: string) =>
       (x ?? '').localeCompare(y ?? '', undefined, {
@@ -218,44 +279,60 @@ export const ResultsProvider = ({
       return desc ? ny - nx : nx - ny
     }
 
-    const pageItems = [...pageSlice].sort((a, b) => {
-      switch (sortBy) {
-        case 'alphabetical':
-          return compareString(a.name, b.name)
-        case 'version': {
-          const va = a.version
-          const vb = b.version
-          return compareString(va, vb)
-        }
-        case 'dependencyType':
-          return compareString(a.type, b.type)
-        case 'dependents':
-          return compareNumber(a.size, b.size, true)
-        case 'moduleType': {
-          const ma = a.to?.manifest?.type ?? ''
-          const mb = b.to?.manifest?.type ?? ''
-          return compareString(ma, mb)
-        }
-        case 'overallScore': {
-          const scoreA = a.to?.insights.score
-          const scoreB = b.to?.insights.score
-          const sa = scoreA ? scoreA.overall : null
-          const sb = scoreB ? scoreB.overall : null
-          return compareNumber(sa, sb, true)
-        }
-      }
-    })
+    // page-local sorting: slice first, then sort the current page only
+    const start = (clampedPage - 1) * validPageSize
+    const pageSlice = allItems.slice(start, start + validPageSize)
+    const sortedAll =
+      sortBy === 'none' ? pageSlice : (
+        [...pageSlice].sort((a, b) => {
+          const dirMultiplier = sortDir === 'asc' ? 1 : -1
+          switch (sortBy) {
+            case 'alphabetical':
+              return dirMultiplier * compareString(a.name, b.name)
+            case 'version': {
+              const va = a.version
+              const vb = b.version
+              return dirMultiplier * compareString(va, vb)
+            }
+            case 'dependencyType':
+              return dirMultiplier * compareString(a.type, b.type)
+            case 'dependents':
+              return compareNumber(a.size, b.size, sortDir === 'desc')
+            case 'moduleType': {
+              const ma = a.to?.manifest?.type ?? ''
+              const mb = b.to?.manifest?.type ?? ''
+              return dirMultiplier * compareString(ma, mb)
+            }
+            case 'overallScore': {
+              const scoreA = a.to?.insights.score
+              const scoreB = b.to?.insights.score
+              const sa = scoreA ? scoreA.overall : null
+              const sb = scoreB ? scoreB.overall : null
+              return compareNumber(sa, sb, sortDir === 'desc')
+            }
+          }
+        })
+      )
+
+    const pageItems = sortedAll
 
     // reflect clamped/validated values in URL if needed
     if (
       rawPage !== clampedPage ||
       rawPageSize !== validPageSize ||
-      rawSort !== sortBy
+      rawSort !== sortBy ||
+      rawDir !== sortDir
     ) {
       const next = new URLSearchParams(searchParams)
       next.set('page', String(clampedPage))
       next.set('pageSize', String(validPageSize))
-      next.set('sort', sortBy)
+      if (sortBy === 'none') {
+        next.delete('sort')
+        next.delete('dir')
+      } else {
+        next.set('sort', sortBy)
+        next.set('dir', sortDir)
+      }
       setSearchParams(next, { replace: true })
     }
 
@@ -266,6 +343,7 @@ export const ResultsProvider = ({
       pageItems,
       allItems,
       sortBy,
+      sortDir,
     })
   }, [allItems, searchParams, resultsStore, setSearchParams])
 

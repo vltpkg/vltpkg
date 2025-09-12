@@ -40,7 +40,7 @@ export const Results = ({
 const ResultsHeader = () => {
   const allItems = useResultsStore(state => state.allItems)
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-col gap-3">
       <h3 className="inline-flex items-baseline gap-2 text-lg">
         Results
         <span className="font-mono text-sm tabular-nums text-muted-foreground">

@@ -43,9 +43,11 @@ test('ResultsPaginationNavigation renders default', () => {
     pageItems: mockItems,
     allItems: mockItems,
     sortBy: 'alphabetical',
+    sortDir: 'asc',
     setPage: vi.fn(),
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>

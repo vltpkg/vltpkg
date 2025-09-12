@@ -104,9 +104,11 @@ test('ExplorerGrid render default', async () => {
     pageItems: [],
     allItems: [],
     sortBy: 'alphabetical',
+    sortDir: 'asc',
     setPage: vi.fn(),
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
@@ -155,9 +157,11 @@ test('ExplorerGrid with results', async () => {
       bNode as unknown as GridItemData,
     ],
     sortBy: 'alphabetical',
+    sortDir: 'asc',
     setPage: vi.fn(),
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
@@ -230,9 +234,11 @@ test('ExplorerGrid with stack', async () => {
       bNode as unknown as GridItemData,
     ],
     sortBy: 'alphabetical',
+    sortDir: 'asc',
     setPage: vi.fn(),
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>

@@ -13,18 +13,14 @@ vi.mock('@/components/ui/button.tsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
-  ChevronRight: 'gui-chevron-right-icon',
-  Check: 'gui-check-icon',
-  ArrowDownNarrowWide: 'gui-arrow-down-narrow-wide-icon',
-}))
-
-vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
-  DropdownMenu: 'gui-dropdown-menu',
-  DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
-  DropdownMenuItem: 'gui-dropdown-menu-item',
-  DropdownMenuGroup: 'gui-dropdown-menu-group',
-  DropdownMenuLabel: 'gui-dropdown-menu-label',
-  DropdownMenuContent: 'gui-dropdown-menu-content',
+  ChevronUp: 'gui-chevron-up-icon',
+  ChevronDown: 'gui-chevron-down-icon',
+  Layers: 'gui-layers-icon',
+  SendToBack: 'gui-send-to-back-icon',
+  CircleGauge: 'gui-circle-gauge-icon',
+  List: 'gui-list-icon',
+  GalleryVerticalEnd: 'gui-gallery-vertical-end-icon',
+  Blocks: 'gui-blocks-icon',
 }))
 
 vi.mock('@/components/explorer-grid/results/context.tsx', () => ({
@@ -52,9 +48,11 @@ test('ResultsPaginationNavigation renders default', () => {
     pageItems: mockItems,
     allItems: mockItems,
     sortBy: 'alphabetical',
+    sortDir: 'asc',
     setPage: vi.fn(),
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
