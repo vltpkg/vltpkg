@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { useGraphStore } from '@/state/index.ts'
 import { useNavigate, useParams, useLocation } from 'react-router'
+import { useGraphStore } from '@/state/index.ts'
 import {
   encodeCompressedQuery,
   decodeCompressedQuery,
 } from '@/lib/compress-query.ts'
 
+/**
+ * A hook that synchronizes the query state in zustand with the URL.
+ */
 export const useQueryNavigation = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -14,12 +17,26 @@ export const useQueryNavigation = () => {
     tab,
     subTab,
   } = useParams<{ query: string; tab: string; subTab?: string }>()
+
   const query = useGraphStore(state => state.query)
   const updateQuery = useGraphStore(state => state.updateQuery)
 
-  // Track when we're updating from URL to prevent navigation loops
+  /**
+   * Prevent navigation loops between:
+   * url -> zustand -> url
+   *
+   * Setting this flag tells the next effect:
+   * 'this change came from the url; don't navigate again.'
+   */
   const skipNextNavigation = useRef(false)
 
+  /**
+   * Runs when the `encodedQueryURL` changes.
+   *
+   * If `encodedQueryURL` is present, decode the compressed `encodedQueryURL` and if it's
+   * different from the current query in zustand, set `skipNextNavigation`
+   * and call `updateQuery` to update the query in zustand
+   */
   useEffect(() => {
     if (encodedQueryURL) {
       const decodedQueryURL = decodeCompressedQuery(encodedQueryURL)
@@ -30,6 +47,17 @@ export const useQueryNavigation = () => {
     }
   }, [encodedQueryURL, updateQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /**
+   * Runs when the zustand query or some routing parameters change.
+   *
+   * If `skipNextNavigation` is set, clears the flag and
+   * returns early preventing navigation.
+   *
+   * Otherwise if the `query` is present, encode it and if it's different from
+   * `encodedQueryURL`, navigate to the new URL with the encoded query.
+   *
+   * This keeps the url updated when the query changes in zustand.
+   */
   useEffect(() => {
     if (skipNextNavigation.current) {
       skipNextNavigation.current = false
