@@ -6,7 +6,16 @@
     "dev": "nitro dev"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.14",
+    "db0": "^0.3.2",
+    "drizzle-orm": "^0.44.5",
     "h3": "^2.0.0-beta.4",
-    "nitro": "npm:nitro-nightly@latest"
-  }
+    "nitro": "npm:nitro-nightly@latest",
+    "unstorage": "^1.17.1",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.4"
+  },
+  "type": "module"
 }
