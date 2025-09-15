@@ -1,6 +1,6 @@
 {
   // https://nitro.build/guide/typescript
-  // "extends": "./.nitro/types/tsconfig.json",
+  "extends": "./.nitro/types/tsconfig.json",
   "compilerOptions": {
     // Module resolution
     "target": "ESNext",
@@ -25,8 +25,8 @@
     "noUnusedLocals": true,
     // "noUnusedParameters": true,
 
-     // Libs & paths
+    // Libs & paths
     "lib": ["ESNext", "DOM"],
-    "baseUrl": ".",
+    "baseUrl": "."
   }
 }
