@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "nitro build",
-    "dev": "nitro dev"
+    "dev": "nitro dev",
+    "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\""
   },
   "dependencies": {
     "@libsql/client": "^0.15.14",
@@ -15,7 +16,9 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.4"
+    "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.4",
+    "http-proxy": "^1.18.1"
   },
   "type": "module"
 }
