@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "nitro build",
+    "postbuild": "cp -r ../../node_modules/.pnpm/@libsql+darwin-arm64@0.5.20/node_modules/@libsql/darwin-arm64/ .output/server/node_modules/@libsql/darwin-arm64",
     "db:push": "drizzle-kit push",
     "dev": "nitro dev",
     "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\""
