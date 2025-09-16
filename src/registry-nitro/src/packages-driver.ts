@@ -1,78 +1,199 @@
 import { defineDriver } from 'unstorage'
 import { db } from './db/index.ts'
-import { packages, versions } from './db/schema.ts'
+import * as Schema from './db/schema.ts'
+import { eq, like } from 'drizzle-orm'
 
 const packageStorageDriver = defineDriver(() => {
   return {
     name: 'package-storage',
     options: {},
-    async hasItem(key, _opts) {
-      // console.log('hasItem', key, _opts)
-      return false
-    },
+
     async getItem(key, _opts) {
-      // console.log('getItem', key, _opts)
-      return undefined
+      console.log('getItem', key)
+
+      const keyId = key.split(':').pop()!
+      const isPackage = keyId.startsWith('npm___package___')
+      const isVersion = keyId.startsWith('npm___version___')
+
+      const [response] = await db
+        .select()
+        .from(Schema.packageResponses)
+        .where(eq(Schema.packageResponses.key, key))
+        .limit(1)
+        .execute()
+
+      if (!response) {
+        return undefined
+      }
+
+      const packageName = response.package_name
+
+      let body: any
+
+      if (isPackage) {
+        const [packumentRow] = await db
+          .select()
+          .from(Schema.packages)
+          .where(eq(Schema.packages.name, packageName))
+          .limit(1)
+          .execute()
+
+        if (!packumentRow) {
+          return undefined
+        }
+
+        const packument = JSON.parse(packumentRow.packument)
+
+        const versionRows = await db
+          .select()
+          .from(Schema.versions)
+          .where(like(Schema.versions.spec, `${packageName}@%`))
+          .execute()
+
+        if (versionRows.length === 0) {
+          return undefined
+        }
+
+        body = {
+          ...packument,
+          versions: Object.fromEntries(
+            versionRows.map(version => {
+              // split on the last @ and take the last part
+              return [
+                version.spec.split('@').pop()!,
+                JSON.parse(version.manifest),
+              ]
+            }),
+          ),
+        }
+      } else if (isVersion) {
+        const packageVersion = response.package_version!
+        const [version] = await db
+          .select()
+          .from(Schema.versions)
+          .where(
+            eq(
+              Schema.versions.spec,
+              `${packageName}@${packageVersion}`,
+            ),
+          )
+          .limit(1)
+          .execute()
+
+        // console.log('version', version)
+
+        if (!version) {
+          return undefined
+        }
+
+        body = JSON.parse(version.manifest)
+      }
+
+      const x = {
+        expires: response.expires,
+        mtime: response.mtime,
+        integrity: response.integrity,
+        value: {
+          ...JSON.parse(response.value),
+          body: JSON.stringify(body),
+        },
+      }
+
+      // console.log('getItem', x)
+
+      return x
     },
 
-    async setItem(key, value, _opts) {
-      console.log('setItem', key)
-      // value is a JSON string containing an object with shape: { value: { body: stringifiedPackument } }
-      const parsedValue = JSON.parse(value)
-      // console.log(parsedValue)
-      const pkg = JSON.parse(parsedValue.value.body)
+    async setItem(key, rawValue, _opts) {
+      const keyId = key.split(':').pop()!
+      const isPackage = keyId.startsWith('npm___package___')
+      const isVersion = keyId.startsWith('npm___version___')
 
-      const name: string = pkg.name
-      const distTags: Record<string, string> = pkg['dist-tags'] ?? {}
-      const versionsMap: Record<string, unknown> = pkg.versions ?? {}
-      const timeMap: Record<string, string> = pkg.time ?? {}
+      const { expires, mtime, integrity, value } =
+        JSON.parse(rawValue)
+      const { body: rawBody, ...valueWithoutBody } = value
+      const body = JSON.parse(rawBody)
+      const name: string = body.name
 
-      const cachedAt: string = new Date().toISOString()
-
-      const lastUpdated: string =
-        timeMap.modified ?? new Date().toISOString()
-
-      // Upsert package row
+      const stringifiedValueWithoutBody =
+        JSON.stringify(valueWithoutBody)
       await db
-        .insert(packages)
+        .insert(Schema.packageResponses)
         .values({
-          name,
-          tags: JSON.stringify(distTags),
-          lastUpdated,
-          cachedAt,
+          key,
+          value: stringifiedValueWithoutBody,
+          expires,
+          mtime,
+          integrity,
+          package_name: name,
+          package_version: isVersion ? body.version : null,
         })
         .onConflictDoUpdate({
-          target: packages.name,
+          target: Schema.packageResponses.key,
           set: {
-            tags: JSON.stringify(distTags),
-            lastUpdated,
-            cachedAt,
+            value: stringifiedValueWithoutBody,
+            expires,
+            mtime,
+            integrity,
           },
         })
 
-      // Upsert each version row
-      for (const [version, manifest] of Object.entries(versionsMap)) {
-        const spec = `${name}@${version}`
-        const publishedAt =
-          timeMap[version] ?? new Date().toISOString()
-
+      if (isPackage) {
+        const { versions, ...packument } = body
+        const stringifiedPackument = JSON.stringify(packument)
         await db
-          .insert(versions)
+          .insert(Schema.packages)
           .values({
-            spec,
-            manifest: JSON.stringify(manifest),
-            publishedAt,
-            cachedAt,
+            name,
+            packument: stringifiedPackument,
           })
           .onConflictDoUpdate({
-            target: versions.spec,
+            target: Schema.packages.name,
             set: {
-              manifest: JSON.stringify(manifest),
-              publishedAt,
-              cachedAt,
+              packument: stringifiedPackument,
+            },
+          })
+
+        for (const [version, manifest] of Object.entries(versions)) {
+          const spec = `${name}@${version}`
+
+          const stringifiedManifest = JSON.stringify(manifest)
+          await db
+            .insert(Schema.versions)
+            .values({
+              spec,
+              manifest: stringifiedManifest,
+            })
+            .onConflictDoUpdate({
+              target: Schema.versions.spec,
+              set: {
+                manifest: stringifiedManifest,
+              },
+            })
+        }
+      }
+
+      if (isVersion) {
+        const spec = `${name}@${body.version}`
+
+        const stringifiedManifest = JSON.stringify(body)
+        await db
+          .insert(Schema.versions)
+          .values({
+            spec,
+            manifest: stringifiedManifest,
+          })
+          .onConflictDoUpdate({
+            target: Schema.versions.spec,
+            set: {
+              manifest: stringifiedManifest,
             },
           })
       }
+    },
+    // Not implemented since the Nitro's cache event handler does not use them
+    async hasItem(key, _opts) {
+      return false
     },
     async removeItem(key, _opts) {},
     async getKeys(base, _opts) {
