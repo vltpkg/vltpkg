@@ -10,6 +10,7 @@ const tarballsDriver = defineDriver(() => {
   return {
     name: 'huh-what-the-tarballs',
     setItem: async (key, value, _opts) => {
+      console.log('setItem', key)
       // const parsed = JSON.parse(value)
       // const body = parsed.value.body
       // return driver.setItem(key, body, _opts)
