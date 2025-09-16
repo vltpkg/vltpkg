@@ -27,13 +27,16 @@ const getPackageOrVersionHandler = cachedEventHandler(
     const resp = await $fetch(
       `https://registry.npmjs.org/${joinParams('/', param1, param2, param3)}`,
     )
-    console.log('fetched resp for', param1, param2, param3)
     return resp
   },
   {
     base: 'packages',
     integrity: 'packages.0',
-    maxAge: 60 * 60,
+    // TODO: If Nitro could make this take a function with the same event signature
+    // then we could have different max ages for packages vs versions. Ideally packages
+    // should be cached for a short time (5m) and versions for a long time, maybe even forever
+    // like tarballs.
+    maxAge: 60 * 5,
     getKey: event => {
       const param1 = assertParam(event, 'param1')
       const param2 = getRouterParam(event, 'param2')
@@ -56,9 +59,8 @@ const getPackageOrVersionHandler = cachedEventHandler(
 const getTarballHandler = cachedEventHandler(
   async event => {
     const param1 = assertParam(event, 'param1')
-    const param2 = assertParam(event, 'param2')
+    const param2 = getRouterParam(event, 'param2')
     const tarball = assertParam(event, 'tarball')
-    console.log('fetched tarball for', param1, param2, tarball)
     return proxy(
       event,
       `https://registry.npmjs.org/${joinParams('/', param1, param2)}/-/${tarball}`,
@@ -67,10 +69,10 @@ const getTarballHandler = cachedEventHandler(
   {
     base: 'tarballs',
     integrity: 'tarballs.0',
-    maxAge: 5 * 60,
+    maxAge: 60 * 60 * 24 * 365 * 100,
     getKey: event => {
       const param1 = assertParam(event, 'param1')
-      const param2 = assertParam(event, 'param2')
+      const param2 = getRouterParam(event, 'param2')
       const tarball = assertParam(event, 'tarball')
       return `npm___tarball___${joinParams('_', param1, param2, tarball)}`
     },
