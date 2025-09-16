@@ -1,10 +1,16 @@
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
+import { mkdirSync } from 'node:fs'
+
+mkdirSync(resolve(import.meta.dirname, '.data'), {
+  recursive: true,
+})
 
 const packagesDriver = resolve(
   import.meta.dirname,
   './src/packages-driver.ts',
 )
+
 const tarballsDriver = resolve(
   import.meta.dirname,
   './src/tarballs-driver.ts',
@@ -14,13 +20,14 @@ export default defineNitroConfig({
   compatibilityDate: 'latest',
   srcDir: 'server',
   imports: false,
+
   experimental: {
     database: true,
   },
   database: {
     default: {
       connector: 'libsql',
-      options: { url: 'file:db.sqlite' },
+      options: { url: 'file:.data/db.sqlite' },
     },
   },
   storage: {
