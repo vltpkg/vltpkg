@@ -109,7 +109,6 @@ t.test('graph data for vlt project', async t => {
         manifest: {
           dependencies: { abbrev: '*' },
         },
-        projectRoot,
         dev: false,
         optional: false,
         confused: false,
@@ -137,7 +136,6 @@ t.test('graph data for vlt project', async t => {
       },
     },
     projectInfo: {
-      root: projectRoot,
       tools: ['vlt'],
       vltInstalled: true,
     },
@@ -196,7 +194,6 @@ t.test('graph data for depless vlt project', async t => {
         location: '.',
         importer: true,
         manifest: {},
-        projectRoot,
         dev: false,
         optional: false,
         confused: false,
@@ -209,7 +206,6 @@ t.test('graph data for depless vlt project', async t => {
       edges: {},
     },
     projectInfo: {
-      root: projectRoot,
       tools: ['vlt'],
       vltInstalled: true,
     },

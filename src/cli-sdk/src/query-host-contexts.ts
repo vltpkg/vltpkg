@@ -1,5 +1,5 @@
 import { homedir } from 'node:os'
-import { posix } from 'node:path'
+import { parse, posix } from 'node:path'
 import {
   getProjectData,
   readProjectFolders,
@@ -24,10 +24,11 @@ export type HostContextsMapResult = {
 // homedir() might fail. Fall back to parent directory.
 let foundHome
 try {
-  foundHome = posix.resolve(homedir())
-  /* c8 ignore next 2 */
+  foundHome = posix.format(parse(homedir()))
+  /* c8 ignore next 3 */
 } catch {}
-const home = foundHome ?? posix.dirname(process.cwd())
+const home =
+  foundHome ?? posix.dirname(posix.format(parse(process.cwd())))
 
 /**
  * Generates possible project keys for a given folder.
@@ -42,7 +43,7 @@ const getPossibleProjectKeys = (
   )
   const absolutePath = folder.fullpathPosix()
   const homeRelativePath = posix.relative(
-    home,
+    scurry.resolvePosix(home),
     folder.fullpathPosix(),
   )
   const dotRelativeKey =

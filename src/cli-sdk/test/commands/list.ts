@@ -442,7 +442,9 @@ t.test('list', async t => {
       'should list all projects deps',
     )
 
-    const projectFolder = resolve(dir, 'projects/my-project')
+    const projectFolder = options.scurry.resolvePosix(
+      resolve(dir, 'projects/my-project'),
+    )
     t.matchSnapshot(
       await runCommand(
         {

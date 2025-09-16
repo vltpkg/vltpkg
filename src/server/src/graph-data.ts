@@ -1,5 +1,5 @@
 import { homedir } from 'node:os'
-import { posix, resolve } from 'node:path'
+import { parse, posix, resolve } from 'node:path'
 import type { ActualLoadOptions } from '@vltpkg/graph'
 import { actual } from '@vltpkg/graph'
 import type { PackageJson } from '@vltpkg/package-json'
@@ -9,7 +9,15 @@ import type { Path, PathBase, PathScurry } from 'path-scurry'
 import type { ProjectTools } from './project-tools.ts'
 import { inferTools } from './project-tools.ts'
 
-const home = posix.resolve(homedir())
+// In restricted environments (like locked-down Codespaces),
+// homedir() might fail. Fall back to parent directory.
+let foundHome
+try {
+  foundHome = posix.format(parse(homedir()))
+  /* c8 ignore next 3 */
+} catch {}
+const home =
+  foundHome ?? posix.dirname(posix.format(parse(process.cwd())))
 
 export type GraphDataOptions = ActualLoadOptions
 

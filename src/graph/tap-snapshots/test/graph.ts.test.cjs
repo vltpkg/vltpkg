@@ -168,7 +168,7 @@ Set {
             },
             "monorepo": Monorepo [
               Workspace {
-                "fullpath": "{CWD}/.tap/fixtures/test-graph.ts-workspaces/packages/b",
+                "fullpath": #
                 "groups": Array [
                   "packages",
                 ],
@@ -183,7 +183,7 @@ Set {
                 "path": "packages/b",
               },
               Workspace {
-                "fullpath": "{CWD}/.tap/fixtures/test-graph.ts-workspaces/packages/a",
+                "fullpath": #
                 "groups": Array [
                   "packages",
                 ],
@@ -284,7 +284,7 @@ Set {
             },
             "monorepo": Monorepo [
               Workspace {
-                "fullpath": "{CWD}/.tap/fixtures/test-graph.ts-workspaces/packages/b",
+                "fullpath": #
                 "groups": Array [
                   "packages",
                 ],
@@ -299,7 +299,7 @@ Set {
                 "path": "packages/b",
               },
               Workspace {
-                "fullpath": "{CWD}/.tap/fixtures/test-graph.ts-workspaces/packages/a",
+                "fullpath": #
                 "groups": Array [
                   "packages",
                 ],

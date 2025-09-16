@@ -442,7 +442,6 @@ t.test('createHostContextsMap', async t => {
         },
       })
 
-      const projectPath = resolve(dir, 'nested/projectA')
       const cwd = dir
       t.chdir(cwd)
 
@@ -516,13 +515,17 @@ t.test('createHostContextsMap', async t => {
       const hostContexts = await createMocked(conf)
 
       // Test different key formats for the same project
+      const scurry = new PathScurry(dir)
+      const posixProjectPath = scurry.resolvePosix(
+        resolve(dir, 'nested/projectA'),
+      )
       const expectedKeys = [
         'file:nested/projectA', // relative path
         'file:./nested/projectA', // dot relative path
-        `file:${projectPath}`, // absolute path
+        `file:${posixProjectPath}`, // absolute path
         'file:nested/projectA/', // relative path with trailing slash
         'file:./nested/projectA/', // dot relative path with trailing slash
-        `file:${projectPath}/`, // absolute path with trailing slash
+        `file:${posixProjectPath}/`, // absolute path with trailing slash
       ]
 
       // Test that all key formats exist and point to the same function
