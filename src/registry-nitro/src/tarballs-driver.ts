@@ -8,7 +8,7 @@ import { eq } from 'drizzle-orm'
 import { basename } from 'node:path'
 
 const tarballsDriver = defineDriver(() => {
-  const base = resolve(process.cwd(), '.tarballs')
+  const base = resolve(process.cwd(), '.data/tarballs')
   mkdirSync(base, { recursive: true })
 
   const getFilePath = (key: string) => {
