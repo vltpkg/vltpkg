@@ -1,3 +1,4 @@
+import { dirname } from 'node:path'
 import t from 'tap'
 
 const mockOS = t.createMock(await import('node:os'), {
@@ -25,8 +26,8 @@ t.test('getReadablePath with homedir error', async t => {
       },
     )
 
-  // Should fall back to process.cwd() and still work
-  const cwd = process.cwd()
+  // Should fall back to dirname(process.cwd()) and still work
+  const cwd = dirname(process.cwd())
   t.equal(getReadablePathWithError(`${cwd}/test`), '~/test')
   t.equal(
     getReadablePathWithError('/some/other/path'),

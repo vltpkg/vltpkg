@@ -1,6 +1,6 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join, resolve, dirname } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 
@@ -74,7 +74,7 @@ t.test('dashboard construction with homedir error', async t => {
     packageJson,
     'dashboard-root': [],
   })
-  t.strictSame(d.dashboardRoot, [process.cwd()])
+  t.strictSame(d.dashboardRoot, [dirname(process.cwd())])
 })
 
 t.test('update projects, with dashboard', async t => {

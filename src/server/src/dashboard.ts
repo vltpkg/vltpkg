@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
 import { getUser } from '@vltpkg/git'
 import { getAuthorFromGitUser } from '@vltpkg/init'
 import { getReadablePath } from './get-readable-path.ts'
@@ -69,7 +69,7 @@ export class Dashboard {
       } catch {
         // In restricted environments (like locked-down Codespaces),
         // homedir() might fail. Fall back to current working directory.
-        this.dashboardRoot = [process.cwd()]
+        this.dashboardRoot = [dirname(process.cwd())]
       }
     }
     this.scurry = scurry

@@ -1,4 +1,5 @@
 import { homedir } from 'node:os'
+import { dirname } from 'node:path'
 
 let home: string
 try {
@@ -6,7 +7,7 @@ try {
 } catch {
   // In restricted environments (like locked-down Codespaces),
   // homedir() might fail. Fall back to current working directory.
-  home = process.cwd()
+  home = dirname(process.cwd())
 }
 
 export const getReadablePath = (path: string) =>

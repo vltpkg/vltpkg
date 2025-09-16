@@ -138,7 +138,7 @@ t.test('read project folders with homedir error', async t => {
     },
   })
 
-  // Should fall back to process.cwd() and still work
+  // Should fall back to dirname(process.cwd()) and still work
   const result = await readProjectFolders({
     scurry: new PathScurry(dir),
     userDefinedProjectPaths: [],
