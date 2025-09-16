@@ -5,10 +5,20 @@ import { db } from './db/index.ts'
 import { readFile, writeFile } from 'node:fs/promises'
 import { mkdirSync } from 'node:fs'
 import { eq } from 'drizzle-orm'
+import { basename } from 'node:path'
 
 const tarballsDriver = defineDriver(() => {
   const base = resolve(process.cwd(), '.tarballs')
   mkdirSync(base, { recursive: true })
+
+  const getFilePath = (key: string) => {
+    const keyId = key
+      .split(':')
+      .pop()!
+      .replace('npm___tarball___', '')
+    const keyBase = basename(keyId, '.json')
+    return resolve(base, keyBase) + '.tgz'
+  }
 
   return {
     name: 'huh-what-the-tarballs',
@@ -25,9 +35,9 @@ const tarballsDriver = defineDriver(() => {
         return undefined
       }
 
-      const buffer = await readFile(
-        resolve(base, key) + '.tgz',
-      ).catch(() => undefined)
+      const buffer = await readFile(getFilePath(key)).catch(
+        () => undefined,
+      )
 
       if (!buffer) {
         return undefined
@@ -71,7 +81,7 @@ const tarballsDriver = defineDriver(() => {
         })
 
       const buffer = new Uint8Array(rawBody)
-      await writeFile(resolve(base, key) + '.tgz', buffer)
+      await writeFile(getFilePath(key), buffer)
     },
 
     // Not implemented since the Nitro's cache event handler does not use them
