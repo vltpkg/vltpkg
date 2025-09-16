@@ -9,8 +9,6 @@ const packageStorageDriver = defineDriver(() => {
     options: {},
 
     async getItem(key, _opts) {
-      console.log('getItem', key)
-
       const keyId = key.split(':').pop()!
       const isPackage = keyId.startsWith('npm___package___')
       const isVersion = keyId.startsWith('npm___version___')
@@ -80,8 +78,6 @@ const packageStorageDriver = defineDriver(() => {
           .limit(1)
           .execute()
 
-        // console.log('version', version)
-
         if (!version) {
           return undefined
         }
@@ -98,8 +94,6 @@ const packageStorageDriver = defineDriver(() => {
           body: JSON.stringify(body),
         },
       }
-
-      // console.log('getItem', x)
 
       return x
     },
@@ -154,6 +148,7 @@ const packageStorageDriver = defineDriver(() => {
             },
           })
 
+        // TODO: This should be done in a single transaction
         for (const [version, manifest] of Object.entries(versions)) {
           const spec = `${name}@${version}`
 
