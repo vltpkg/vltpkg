@@ -27,11 +27,13 @@ const getPackageOrVersionHandler = cachedEventHandler(
     const resp = await $fetch(
       `https://registry.npmjs.org/${joinParams('/', param1, param2, param3)}`,
     )
+    console.log('fetched resp for', param1, param2, param3)
     return resp
   },
   {
     base: 'packages',
-    maxAge: 5 * 60,
+    integrity: 'packages.0',
+    maxAge: 60 * 60,
     getKey: event => {
       const param1 = assertParam(event, 'param1')
       const param2 = getRouterParam(event, 'param2')
@@ -46,7 +48,7 @@ const getPackageOrVersionHandler = cachedEventHandler(
         type = 'version'
       }
 
-      return joinParams('_', 'npm', type, param1, param2, param3)
+      return `npm___${type}___${joinParams('_', param1, param2, param3)}`
     },
   },
 )
@@ -56,6 +58,7 @@ const getTarballHandler = cachedEventHandler(
     const param1 = assertParam(event, 'param1')
     const param2 = assertParam(event, 'param2')
     const tarball = assertParam(event, 'tarball')
+    console.log('fetched tarball for', param1, param2, tarball)
     return proxy(
       event,
       `https://registry.npmjs.org/${joinParams('/', param1, param2)}/-/${tarball}`,
@@ -63,19 +66,13 @@ const getTarballHandler = cachedEventHandler(
   },
   {
     base: 'tarballs',
+    integrity: 'tarballs.0',
     maxAge: 5 * 60,
     getKey: event => {
       const param1 = assertParam(event, 'param1')
       const param2 = assertParam(event, 'param2')
       const tarball = assertParam(event, 'tarball')
-      return joinParams(
-        '_',
-        'npm',
-        'tarball',
-        param1,
-        param2,
-        tarball,
-      )
+      return `npm___tarball___${joinParams('_', param1, param2, tarball)}`
     },
   },
 )

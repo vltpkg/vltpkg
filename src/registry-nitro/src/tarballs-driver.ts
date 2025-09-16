@@ -1,32 +1,90 @@
-import fsDriver from 'unstorage/drivers/fs-lite'
 import { resolve } from 'node:path'
 import { defineDriver } from 'unstorage'
+import * as Schema from './db/schema.ts'
+import { db } from './db/index.ts'
+import { readFile, writeFile } from 'node:fs/promises'
+import { mkdirSync } from 'node:fs'
+import { eq } from 'drizzle-orm'
 
 const tarballsDriver = defineDriver(() => {
-  const driver = fsDriver({
-    base: resolve(import.meta.dirname, '../.tarballs'),
-  })
+  const base = resolve(process.cwd(), '.tarballs')
+  mkdirSync(base, { recursive: true })
 
   return {
     name: 'huh-what-the-tarballs',
-    setItem: async (key, value, _opts) => {
-      console.log('setItem', key)
-      // const parsed = JSON.parse(value)
-      // const body = parsed.value.body
-      // return driver.setItem(key, body, _opts)
+
+    async getItem(key, _opts) {
+      const [response] = await db
+        .select()
+        .from(Schema.tarballResponses)
+        .where(eq(Schema.tarballResponses.key, key))
+        .limit(1)
+        .execute()
+
+      if (!response) {
+        return undefined
+      }
+
+      const buffer = await readFile(
+        resolve(base, key) + '.tgz',
+      ).catch(() => undefined)
+
+      if (!buffer) {
+        return undefined
+      }
+
+      return {
+        expires: response.expires,
+        mtime: response.mtime,
+        integrity: response.integrity,
+        value: {
+          ...JSON.parse(response.value),
+          body: Array.from(new Uint8Array(buffer)),
+        },
+      }
     },
-    hasItem: async (key, _opts) => {
+
+    async setItem(key, rawValue, _opts) {
+      const { expires, mtime, integrity, value } =
+        JSON.parse(rawValue)
+      const { body: rawBody, ...valueWithoutBody } = value
+
+      const stringifiedValueWithoutBody =
+        JSON.stringify(valueWithoutBody)
+      await db
+        .insert(Schema.tarballResponses)
+        .values({
+          key,
+          value: stringifiedValueWithoutBody,
+          expires,
+          mtime,
+          integrity,
+        })
+        .onConflictDoUpdate({
+          target: Schema.tarballResponses.key,
+          set: {
+            value: stringifiedValueWithoutBody,
+            expires,
+            mtime,
+            integrity,
+          },
+        })
+
+      const buffer = new Uint8Array(rawBody)
+      await writeFile(resolve(base, key) + '.tgz', buffer)
+    },
+
+    // Not implemented since the Nitro's cache event handler does not use them
+    async hasItem(key, _opts) {
       return false
     },
-    getItem: async (key, _opts) => {
-      return undefined
-    },
-    getKeys: async (base, _opts) => {
+    async removeItem(key, _opts) {},
+    async getKeys(base, _opts) {
       return []
     },
-    clear: async (base, _opts) => {},
-    dispose: async () => {},
-    watch: async () => {
+    async clear(base, _opts) {},
+    async dispose() {},
+    async watch() {
       return () => {}
     },
   }

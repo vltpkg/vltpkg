@@ -1,30 +1,37 @@
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, numeric } from 'drizzle-orm/sqlite-core'
 
-// Define the packages table
-export const packages = sqliteTable('packages', {
-  name: text('name').primaryKey(),
-  tags: text('tags').$type<string>(), // JSON stored as string
-  lastUpdated: text('last_updated'), // Timestamp for when this package was last updated
-  origin: text('origin').notNull().default('local'), // 'local' or 'upstream'
-  upstream: text('upstream'), // Name of upstream registry (null for local packages)
-  cachedAt: text('cached_at'), // When this package was cached from upstream
+export const packageResponses = sqliteTable('package_responses', {
+  key: text('key').primaryKey().notNull(),
+  value: text('value').$type<string>().notNull(),
+  expires: numeric('expires').notNull(),
+  mtime: numeric('mtime').notNull(),
+  integrity: text('integrity').notNull(),
+  package_name: text('package_name').notNull(),
+  package_version: text('package_version'),
 })
 
-// Define the tokens table
+export const tarballResponses = sqliteTable('tarball_responses', {
+  key: text('key').primaryKey().notNull(),
+  value: text('value').$type<string>().notNull(),
+  expires: numeric('expires').notNull(),
+  mtime: numeric('mtime').notNull(),
+  integrity: text('integrity').notNull(),
+})
+
+export const packages = sqliteTable('packages', {
+  name: text('name').primaryKey().notNull(),
+  packument: text('packument').$type<string>().notNull(),
+})
+
+export const versions = sqliteTable('versions', {
+  spec: text('spec').primaryKey().notNull(),
+  manifest: text('manifest').$type<string>().notNull(),
+})
+
 export const tokens = sqliteTable('tokens', {
   token: text('token').primaryKey(),
   uuid: text('uuid').notNull(),
-  scope: text('scope').$type<string>(), // JSON stored as string
-})
-
-// Define the versions table
-export const versions = sqliteTable('versions', {
-  spec: text('spec').primaryKey(),
-  manifest: text('manifest').$type<string>(), // JSON stored as string
-  publishedAt: text('published_at'),
-  origin: text('origin').notNull().default('local'), // 'local' or 'upstream'
-  upstream: text('upstream'), // Name of upstream registry (null for local packages)
-  cachedAt: text('cached_at'), // When this version was cached from upstream
+  scope: text('scope').$type<string>(),
 })
 
 export type Package = typeof packages.$inferSelect
