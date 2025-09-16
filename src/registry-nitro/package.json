@@ -3,12 +3,16 @@
   "private": true,
   "scripts": {
     "build": "nitro build",
-    "postbuild": "cp -r ../../node_modules/.pnpm/@libsql+darwin-arm64@0.5.20/node_modules/@libsql/darwin-arm64/ .output/server/node_modules/@libsql/darwin-arm64",
+    "postbuild": "node dev/find-libsql.mjs",
     "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio --port 4985",
     "dev": "nitro dev",
-    "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\""
+    "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\"",
+    "serve": "node .output/server/index.mjs",
+    "serve:https": "concurrently \"pnpm serve\" \"node --no-warnings ./dev/https-proxy.mjs\""
   },
   "dependencies": {
+    "libsql": "^0.5.20",
     "@libsql/client": "^0.15.14",
     "db0": "^0.3.2",
     "drizzle-orm": "^0.44.5",
@@ -18,6 +22,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@neon-rs/load": "^0.0.4",
     "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.4",
     "http-proxy": "^1.18.1"
