@@ -5,7 +5,7 @@ import { eq, like } from 'drizzle-orm'
 
 const packageStorageDriver = defineDriver(() => {
   return {
-    name: 'package-storage',
+    name: 'packages-storage',
     options: {},
 
     async getItem(key, _opts) {

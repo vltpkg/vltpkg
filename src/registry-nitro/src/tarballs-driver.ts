@@ -21,7 +21,7 @@ const tarballsDriver = defineDriver(() => {
   }
 
   return {
-    name: 'huh-what-the-tarballs',
+    name: 'tarballs-storage',
 
     async getItem(key, _opts) {
       const [response] = await db
