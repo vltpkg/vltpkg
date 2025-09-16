@@ -1,7 +1,15 @@
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
 
-// https://nitro.build/config
+const packagesDriver = resolve(
+  import.meta.dirname,
+  './src/packages-driver.ts',
+)
+const tarballsDriver = resolve(
+  import.meta.dirname,
+  './src/tarballs-driver.ts',
+)
+
 export default defineNitroConfig({
   compatibilityDate: 'latest',
   srcDir: 'server',
@@ -16,13 +24,19 @@ export default defineNitroConfig({
     },
   },
   storage: {
-    cache: {
-      driver: resolve(import.meta.dirname, './src/custom-driver.ts'),
+    packages: {
+      driver: packagesDriver,
+    },
+    tarballs: {
+      driver: tarballsDriver,
     },
   },
   devStorage: {
-    cache: {
-      driver: resolve(import.meta.dirname, './src/custom-driver.ts'),
+    packages: {
+      driver: packagesDriver,
+    },
+    tarballs: {
+      driver: tarballsDriver,
     },
   },
 })
