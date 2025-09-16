@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "nitro build",
+    "db:push": "drizzle-kit push",
     "dev": "nitro dev",
     "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\""
   },
