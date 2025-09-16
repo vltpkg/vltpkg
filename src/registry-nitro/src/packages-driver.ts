@@ -16,6 +16,7 @@ const packageStorageDriver = defineDriver(() => {
     },
 
     async setItem(key, value, _opts) {
+      console.log('setItem', key)
       // value is a JSON string containing an object with shape: { value: { body: stringifiedPackument } }
       const parsedValue = JSON.parse(value)
       // console.log(parsedValue)
