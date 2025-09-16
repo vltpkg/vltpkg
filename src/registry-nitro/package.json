@@ -1,5 +1,5 @@
 {
-  "name": "nitro-app",
+  "name": "@vltpkg/vsr-nitro",
   "private": true,
   "scripts": {
     "build": "nitro build",
