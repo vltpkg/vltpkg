@@ -11,7 +11,7 @@ export default cachedEventHandler(
     return x
   },
   {
-    name: 'scoped_package',
+    base: 'packages',
     maxAge: 5 * 60,
     getKey: event => {
       const scope = getRouterParam(event, 'scope')!

@@ -11,7 +11,7 @@ export default cachedEventHandler(
     return x
   },
   {
-    name: 'package_version',
+    base: 'packages',
     maxAge: 5 * 60,
     getKey: event => {
       const pkg = getRouterParam(event, 'package')!
