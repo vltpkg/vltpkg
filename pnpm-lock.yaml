@@ -1868,6 +1868,9 @@ importers:
       h3:
         specifier: ^2.0.0-beta.4
         version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
+      libsql:
+        specifier: ^0.5.20
+        version: 0.5.20
       nitro:
         specifier: npm:nitro-nightly@latest
         version: nitro-nightly@3.0.0-20250911-162707-b6dbc0f9(patch_hash=6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f)(@libsql/client@0.15.14)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@opentelemetry/api@1.9.0)(better-sqlite3@12.2.0)(gel@2.1.1))(encoding@0.1.13)
@@ -1878,6 +1881,9 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8
     devDependencies:
+      '@neon-rs/load':
+        specifier: ^0.0.4
+        version: 0.0.4
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
