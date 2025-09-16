@@ -272,7 +272,8 @@ const fixLicense = async (ws: Workspace) => {
       break
     }
     case '@vltpkg/gui':
-    case '@vltpkg/vsr': {
+    case '@vltpkg/vsr':
+    case '@vltpkg/vsr-nitro': {
       ws.pj.license = 'FSL-1.1-MIT'
       containsText(ws.pj.license)
       containsVlt()

@@ -1,16 +1,12 @@
 {
   "name": "@vltpkg/vsr-nitro",
   "private": true,
-  "scripts": {
-    "build": "nitro build",
-    "postbuild": "node dev/find-libsql.mjs",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio --port 4985",
-    "dev": "nitro dev",
-    "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\"",
-    "serve": "node .output/server/index.mjs",
-    "serve:https": "concurrently \"pnpm serve\" \"node --no-warnings ./dev/https-proxy.mjs\""
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/registry-nitro"
   },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "libsql": "^0.5.20",
     "@libsql/client": "^0.15.14",
@@ -26,6 +22,20 @@
     "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.4",
     "http-proxy": "^1.18.1"
+  },
+  "license": "FSL-1.1-MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "nitro build",
+    "postbuild": "node dev/find-libsql.mjs",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio --port 4985",
+    "dev": "nitro dev",
+    "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\"",
+    "serve": "node .output/server/index.mjs",
+    "serve:https": "concurrently \"pnpm serve\" \"node --no-warnings ./dev/https-proxy.mjs\""
   },
   "type": "module"
 }
