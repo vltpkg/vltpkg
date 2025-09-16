@@ -7,43 +7,26 @@ const tarballsDriver = defineDriver(() => {
     base: resolve(import.meta.dirname, '../.tarballs'),
   })
 
-  // console.log(driver)
-
-  // const setItem = driver.setItem
-
-  // driver.setItem = async (key, value, _opts) => {
-  //   console.log('setItem', key)
-  //   return setItem(key, value, _opts)
-  // }
-
-  // return driver
-
   return {
     name: 'huh-what-the-tarballs',
     setItem: async (key, value, _opts) => {
-      console.log('setItem', key, value)
-      return driver.setItem(key, value, _opts)
+      // const parsed = JSON.parse(value)
+      // const body = parsed.value.body
+      // return driver.setItem(key, body, _opts)
     },
     hasItem: async (key, _opts) => {
-      console.log('hasItem', key)
       return false
     },
     getItem: async (key, _opts) => {
-      console.log('getItem', key)
       return undefined
     },
     getKeys: async (base, _opts) => {
-      console.log('getKeys', base)
       return []
     },
-    clear: async (base, _opts) => {
-      console.log('clear', base)
-    },
-    dispose: async () => {
-      console.log('dispose')
-    },
+    clear: async (base, _opts) => {},
+    dispose: async () => {},
     watch: async () => {
-      console.log('watch')
+      return () => {}
     },
   }
 })
