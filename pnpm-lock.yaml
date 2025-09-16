@@ -96,6 +96,9 @@ overrides:
   '@types/react-dom': ^18.3.7
 
 patchedDependencies:
+  nitro-nightly:
+    hash: 6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f
+    path: patches/nitro-nightly.patch
   tshy:
     hash: bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e
     path: patches/tshy.patch
@@ -206,7 +209,7 @@ importers:
         version: 3.6.2
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.18.0)(@types/react@18.3.24)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.18.0)(@types/react@18.3.24)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -237,7 +240,7 @@ importers:
         version: 3.6.2
       tap:
         specifier: 'catalog:'
-        version: 21.1.0(@types/node@22.18.0)(@types/react@18.3.24)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.7.3)
+        version: 21.1.0(@types/node@22.18.0)(@types/react@18.3.24)(react-devtools-core@4.28.5)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1876,7 +1879,7 @@ importers:
         version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.9.5))
       nitro:
         specifier: npm:nitro-nightly@latest
-        version: nitro-nightly@3.0.1-20251105-152910-c0ee44bf(@libsql/client@0.15.14)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.7.0)
+        version: nitro-nightly@3.0.1-20251105-152910-c0ee44bf(patch_hash=6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f)(@libsql/client@0.15.14)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.7.0)
       unstorage:
         specifier: ^1.17.1
         version: 1.17.1(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.14)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.7.0)
@@ -19671,7 +19674,7 @@ snapshots:
 
   nf3@0.1.5: {}
 
-  nitro-nightly@3.0.1-20251105-152910-c0ee44bf(@libsql/client@0.15.14)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.7.0):
+  nitro-nightly@3.0.1-20251105-152910-c0ee44bf(patch_hash=6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f)(@libsql/client@0.15.14)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.7.0):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.1(srvx@0.9.5)
