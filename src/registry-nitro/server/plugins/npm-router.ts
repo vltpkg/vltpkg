@@ -1,6 +1,6 @@
 import { cachedEventHandler, defineNitroPlugin } from 'nitro/runtime'
 import { getRouterParam, proxy } from 'h3'
-import type { HTTPEvent, EventHandlerRequest } from 'h3'
+import type { HTTPEvent, EventHandlerRequest, H3Event } from 'h3'
 import assert from 'node:assert'
 
 const assertParam = (
@@ -19,15 +19,30 @@ const joinParams = (
   return params.filter(Boolean).join(sep)
 }
 
+const proxyToNpm = (
+  event: H3Event<EventHandlerRequest>,
+  url: string,
+) => {
+  return proxy(event, `https://registry.npmjs.org${url}`, {
+    onResponse: (event, response) => {
+      event.res.status = response.status
+      event.res.statusText = response.statusText
+      for (const [key, value] of response.headers.entries()) {
+        event.res.headers.set(key, value)
+      }
+    },
+  })
+}
+
 const getPackageOrVersionHandler = cachedEventHandler(
   async event => {
     const param1 = assertParam(event, 'param1')
     const param2 = getRouterParam(event, 'param2')
     const param3 = getRouterParam(event, 'param3')
-    const resp = await $fetch(
-      `https://registry.npmjs.org/${joinParams('/', param1, param2, param3)}`,
+    return proxyToNpm(
+      event,
+      `/${joinParams('/', param1, param2, param3)}`,
     )
-    return resp
   },
   {
     base: 'packages',
@@ -61,9 +76,9 @@ const getTarballHandler = cachedEventHandler(
     const param1 = assertParam(event, 'param1')
     const param2 = getRouterParam(event, 'param2')
     const tarball = assertParam(event, 'tarball')
-    return proxy(
+    return proxyToNpm(
       event,
-      `https://registry.npmjs.org/${joinParams('/', param1, param2)}/-/${tarball}`,
+      `/${joinParams('/', param1, param2)}/-/${tarball}`,
     )
   },
   {
