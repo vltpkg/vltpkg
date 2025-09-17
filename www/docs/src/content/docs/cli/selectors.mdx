@@ -226,12 +226,17 @@ security data needs to be fetched prior to a `Query` instantiation.
   - `:license(none)` Matches packages that have no license data.
   - `:license(exception)` Matches packages that have SPDX license
     exception.
-- `:malware(<type>)` Matches packages that may contain malware. The
-  type parameter is required and can be one of the following:
+- `:malware` Matches packages that may contain malware with severity
+  > = medium (critical, high, medium but excludes low severity
+  > alerts).
+- `:malware(<type>)` Matches packages that may contain malware of a
+  specific severity level. The type parameter can be one of the
+  following:
   - `critical` or `0`
   - `high` or `1`
   - `medium` or `2`
   - `low` or `3`
+  - Supports comparators: `:malware(">1")`, `:malware(">=medium")`
 - `:minified` Matches packages that contain minified code. This may be
   harmless in some cases where minified code is included in packaged
   libraries.
