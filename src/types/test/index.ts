@@ -47,6 +47,9 @@ import {
   normalizeFunding,
   normalizeKeywords,
   normalizeManifest,
+  normalizeEngines,
+  normalizeOs,
+  normalizeCpu,
   fixManifestVersion,
   parsePerson,
   isBoolean,
@@ -58,6 +61,9 @@ import {
   isNormalizedKeywords,
   isNormalizedContributorEntry,
   isNormalizedContributors,
+  isNormalizedEngines,
+  isNormalizedOs,
+  isNormalizedCpu,
   isNormalizedManifest,
   isNormalizedManifestRegistry,
   maybeBoolean,
@@ -2606,6 +2612,504 @@ t.test('expandNormalizedManifestSymbols', t => {
     t.same(result.license, manifest.license)
     t.end()
   })
+
+  t.end()
+})
+
+t.test('normalizeEngines', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeEngines(undefined), undefined)
+    t.equal(normalizeEngines(null), undefined)
+    t.end()
+  })
+
+  t.test('handles valid engines object', t => {
+    const engines = { node: '>=18.0.0', npm: '^7.0.0' }
+    const result = normalizeEngines(engines)
+    t.same(result, { node: '>=18.0.0', npm: '^7.0.0' })
+    t.end()
+  })
+
+  t.test('handles empty engines object', t => {
+    const result = normalizeEngines({})
+    t.same(result, {})
+    t.end()
+  })
+
+  t.test('handles already normalized engines', t => {
+    const alreadyNormalized = { node: '>=16.0.0', yarn: '^1.0.0' }
+    const result = normalizeEngines(alreadyNormalized)
+    t.same(result, { node: '>=16.0.0', yarn: '^1.0.0' })
+    t.end()
+  })
+
+  t.test('handles invalid input types', t => {
+    t.equal(normalizeEngines('string'), undefined)
+    t.equal(normalizeEngines(123), undefined)
+    t.equal(normalizeEngines(true), undefined)
+    t.equal(normalizeEngines([]), undefined)
+    t.equal(normalizeEngines({ node: 123 }), undefined)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('normalizeOs', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeOs(undefined), undefined)
+    t.equal(normalizeOs(null), undefined)
+    t.end()
+  })
+
+  t.test('handles string os', t => {
+    const result = normalizeOs('linux')
+    t.same(result, ['linux'])
+    t.end()
+  })
+
+  t.test('handles string with whitespace', t => {
+    const result = normalizeOs('  darwin  ')
+    t.same(result, ['darwin'])
+    t.end()
+  })
+
+  t.test('handles empty string', t => {
+    const result = normalizeOs('')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles string with only whitespace', t => {
+    const result = normalizeOs('   ')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles valid array of os', t => {
+    const result = normalizeOs(['linux', 'darwin', 'win32'])
+    t.same(result, ['linux', 'darwin', 'win32'])
+    t.end()
+  })
+
+  t.test('handles array with whitespace', t => {
+    const result = normalizeOs([
+      '  linux  ',
+      '  darwin  ',
+      '  win32  ',
+    ])
+    t.same(result, ['linux', 'darwin', 'win32'])
+    t.end()
+  })
+
+  t.test('handles array with empty strings', t => {
+    const result = normalizeOs([
+      'linux',
+      '',
+      'darwin',
+      '   ',
+      'win32',
+    ])
+    t.same(result, ['linux', 'darwin', 'win32'])
+    t.end()
+  })
+
+  t.test('handles array with non-string entries', t => {
+    const result = normalizeOs([
+      'linux',
+      123,
+      'darwin',
+      null,
+      'win32',
+      undefined,
+      true,
+    ])
+    t.same(result, ['linux', 'darwin', 'win32'])
+    t.end()
+  })
+
+  t.test('handles empty array', t => {
+    const result = normalizeOs([])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles array with only invalid entries', t => {
+    const result = normalizeOs(['', '  ', 123, null, undefined])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles already normalized os', t => {
+    const alreadyNormalized = ['linux', 'darwin']
+    const result = normalizeOs(alreadyNormalized)
+    t.same(result, ['linux', 'darwin'])
+    t.end()
+  })
+
+  t.test('handles invalid input types', t => {
+    t.equal(normalizeOs(123), undefined)
+    t.equal(normalizeOs(true), undefined)
+    t.equal(normalizeOs({}), undefined)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('normalizeCpu', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeCpu(undefined), undefined)
+    t.equal(normalizeCpu(null), undefined)
+    t.end()
+  })
+
+  t.test('handles string cpu', t => {
+    const result = normalizeCpu('x64')
+    t.same(result, ['x64'])
+    t.end()
+  })
+
+  t.test('handles string with whitespace', t => {
+    const result = normalizeCpu('  arm64  ')
+    t.same(result, ['arm64'])
+    t.end()
+  })
+
+  t.test('handles empty string', t => {
+    const result = normalizeCpu('')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles string with only whitespace', t => {
+    const result = normalizeCpu('   ')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles valid array of cpu', t => {
+    const result = normalizeCpu(['x64', 'arm64', 'ia32'])
+    t.same(result, ['x64', 'arm64', 'ia32'])
+    t.end()
+  })
+
+  t.test('handles array with whitespace', t => {
+    const result = normalizeCpu(['  x64  ', '  arm64  ', '  ia32  '])
+    t.same(result, ['x64', 'arm64', 'ia32'])
+    t.end()
+  })
+
+  t.test('handles array with empty strings', t => {
+    const result = normalizeCpu(['x64', '', 'arm64', '   ', 'ia32'])
+    t.same(result, ['x64', 'arm64', 'ia32'])
+    t.end()
+  })
+
+  t.test('handles array with non-string entries', t => {
+    const result = normalizeCpu([
+      'x64',
+      123,
+      'arm64',
+      null,
+      'ia32',
+      undefined,
+      true,
+    ])
+    t.same(result, ['x64', 'arm64', 'ia32'])
+    t.end()
+  })
+
+  t.test('handles empty array', t => {
+    const result = normalizeCpu([])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles array with only invalid entries', t => {
+    const result = normalizeCpu(['', '  ', 123, null, undefined])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles already normalized cpu', t => {
+    const alreadyNormalized = ['x64', 'arm64']
+    const result = normalizeCpu(alreadyNormalized)
+    t.same(result, ['x64', 'arm64'])
+    t.end()
+  })
+
+  t.test('handles invalid input types', t => {
+    t.equal(normalizeCpu(123), undefined)
+    t.equal(normalizeCpu(true), undefined)
+    t.equal(normalizeCpu({}), undefined)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('isNormalizedEngines', async t => {
+  t.test('valid normalized engines', t => {
+    t.equal(isNormalizedEngines({}), true)
+    t.equal(isNormalizedEngines({ node: '>=18.0.0' }), true)
+    t.equal(
+      isNormalizedEngines({ node: '>=18.0.0', npm: '^7.0.0' }),
+      true,
+    )
+    t.end()
+  })
+
+  t.test('invalid engines', t => {
+    t.equal(isNormalizedEngines(null), false)
+    t.equal(isNormalizedEngines(undefined), false)
+    t.equal(isNormalizedEngines('string'), false)
+    t.equal(isNormalizedEngines([]), false)
+    t.equal(isNormalizedEngines({ node: 123 }), false)
+    t.equal(isNormalizedEngines({ node: null }), false)
+    t.equal(isNormalizedEngines({ node: undefined }), false)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('isNormalizedOs', async t => {
+  t.test('valid normalized os arrays', t => {
+    t.equal(isNormalizedOs(['linux']), true)
+    t.equal(isNormalizedOs(['linux', 'darwin']), true)
+    t.equal(isNormalizedOs(['linux', 'darwin', 'win32']), true)
+    t.end()
+  })
+
+  t.test('invalid os arrays', t => {
+    t.equal(isNormalizedOs([]), false)
+    t.equal(isNormalizedOs(null), false)
+    t.equal(isNormalizedOs(undefined), false)
+    t.equal(isNormalizedOs('string'), false)
+    t.equal(isNormalizedOs(['', 'valid']), false)
+    t.equal(isNormalizedOs([' leadingspace']), false)
+    t.equal(isNormalizedOs(['trailingspace ']), false)
+    t.equal(isNormalizedOs(['valid', 123]), false)
+    t.equal(isNormalizedOs(['valid', null]), false)
+    t.equal(isNormalizedOs(['valid', undefined]), false)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('isNormalizedCpu', async t => {
+  t.test('valid normalized cpu arrays', t => {
+    t.equal(isNormalizedCpu(['x64']), true)
+    t.equal(isNormalizedCpu(['x64', 'arm64']), true)
+    t.equal(isNormalizedCpu(['x64', 'arm64', 'ia32']), true)
+    t.end()
+  })
+
+  t.test('invalid cpu arrays', t => {
+    t.equal(isNormalizedCpu([]), false)
+    t.equal(isNormalizedCpu(null), false)
+    t.equal(isNormalizedCpu(undefined), false)
+    t.equal(isNormalizedCpu('string'), false)
+    t.equal(isNormalizedCpu(['', 'valid']), false)
+    t.equal(isNormalizedCpu([' leadingspace']), false)
+    t.equal(isNormalizedCpu(['trailingspace ']), false)
+    t.equal(isNormalizedCpu(['valid', 123]), false)
+    t.equal(isNormalizedCpu(['valid', null]), false)
+    t.equal(isNormalizedCpu(['valid', undefined]), false)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('normalizeManifest with new fields', t => {
+  t.test('normalizes manifest with engines', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      engines: { node: '>=18.0.0', npm: '^7.0.0' },
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.engines, { node: '>=18.0.0', npm: '^7.0.0' })
+    t.end()
+  })
+
+  t.test('normalizes manifest with os string', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      os: 'linux',
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.os, ['linux'])
+    t.end()
+  })
+
+  t.test('normalizes manifest with os array', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      os: ['linux', '  darwin  ', '', 'win32'],
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.os, ['linux', 'darwin', 'win32'])
+    t.end()
+  })
+
+  t.test('normalizes manifest with cpu string', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      cpu: 'x64',
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.cpu, ['x64'])
+    t.end()
+  })
+
+  t.test('normalizes manifest with cpu array', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      cpu: ['x64', '  arm64  ', '', 'ia32'],
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.cpu, ['x64', 'arm64', 'ia32'])
+    t.end()
+  })
+
+  t.test('normalizes manifest with all new fields', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      engines: { node: '>=18.0.0', npm: '^7.0.0' },
+      os: 'linux',
+      cpu: ['x64', 'arm64'],
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.engines, { node: '>=18.0.0', npm: '^7.0.0' })
+    t.same(result.os, ['linux'])
+    t.same(result.cpu, ['x64', 'arm64'])
+    t.end()
+  })
+
+  t.test('removes undefined fields from manifest', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      engines: null as any,
+      os: '' as any,
+      cpu: [] as any,
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.equal(result.engines, undefined)
+    t.equal(result.os, undefined)
+    t.equal(result.cpu, undefined)
+    t.notOk('engines' in result)
+    t.notOk('os' in result)
+    t.notOk('cpu' in result)
+    t.end()
+  })
+
+  t.test('preserves other manifest properties with new fields', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      description: 'A test package',
+      engines: { node: '>=18.0.0' },
+      os: 'linux',
+      cpu: 'x64',
+      dependencies: { foo: '^1.0.0' },
+    }
+    const result = normalizeManifest(manifest)
+    t.same(result.engines, { node: '>=18.0.0' })
+    t.same(result.os, ['linux'])
+    t.same(result.cpu, ['x64'])
+    t.same(result.name, manifest.name)
+    t.same(result.description, manifest.description)
+    t.same(result.dependencies, manifest.dependencies)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('isNormalizedManifest with new fields', async t => {
+  t.test('valid normalized manifests with new fields', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      engines: { node: '>=18.0.0', npm: '^7.0.0' },
+      os: ['linux', 'darwin'],
+      cpu: ['x64', 'arm64'],
+    }
+    t.equal(isNormalizedManifest(manifest), true)
+    t.end()
+  })
+
+  t.test(
+    'invalid normalized manifests with invalid new fields',
+    t => {
+      const manifestWithInvalidEngines = {
+        name: 'test',
+        version: '1.0.0',
+        engines: { node: 123 }, // Invalid engines
+      }
+      t.equal(isNormalizedManifest(manifestWithInvalidEngines), false)
+
+      const manifestWithInvalidOs = {
+        name: 'test',
+        version: '1.0.0',
+        os: ['linux', ''], // Invalid os
+      }
+      t.equal(isNormalizedManifest(manifestWithInvalidOs), false)
+
+      const manifestWithInvalidCpu = {
+        name: 'test',
+        version: '1.0.0',
+        cpu: ['x64', 123], // Invalid cpu
+      }
+      t.equal(isNormalizedManifest(manifestWithInvalidCpu), false)
+      t.end()
+    },
+  )
 
   t.end()
 })

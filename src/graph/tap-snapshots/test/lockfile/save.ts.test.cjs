@@ -254,7 +254,9 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
         "engines": {
           "node": ">=16"
         },
-        "os": "linux",
+        "os": [
+          "linux"
+        ],
         "cpu": [
           "x64"
         ]

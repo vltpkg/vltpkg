@@ -401,6 +401,18 @@ export class Graph implements GraphLike {
     toNode.dev = flags.dev
     toNode.optional = flags.optional
     toNode.modifier = extra
+
+    // add platform info if available
+    if (manifest) {
+      const { engines, os, cpu } = manifest
+      if (engines || os || cpu) {
+        const platform: NodeLike['platform'] = {}
+        if (engines) platform.engines = engines
+        if (os) platform.os = os
+        if (cpu) platform.cpu = cpu
+        toNode.platform = platform
+      }
+    }
     toNode.maybeSetConfusedManifest(spec, manifest)
 
     this.addEdge(depType, spec, fromNode, toNode)

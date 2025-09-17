@@ -752,7 +752,7 @@ t.test('save platform data for optional dependencies', async t => {
       name: 'bar',
       version: '1.0.0',
       engines: { node: '>=16' },
-      os: 'linux',
+      os: ['linux'],
       cpu: ['x64'],
       dist: {
         integrity:
@@ -804,7 +804,7 @@ t.test('save platform data for optional dependencies', async t => {
     barNode?.[7],
     {
       engines: { node: '>=16' },
-      os: 'linux',
+      os: ['linux'],
       cpu: ['x64'],
     },
     'bar platform data is correct',

@@ -419,6 +419,21 @@ export type NormalizedBugsEntry = {
 export type NormalizedKeywords = string[]
 
 /**
+ * Normalized engines - always a record of string to string
+ */
+export type NormalizedEngines = Record<string, string>
+
+/**
+ * Normalized OS list - always an array of strings
+ */
+export type NormalizedOs = string[]
+
+/**
+ * Normalized CPU list - always an array of strings
+ */
+export type NormalizedCpu = string[]
+
+/**
  * Normalized bugs - always an array of {@link NormalizedBugsEntry}
  */
 export type NormalizedBugs = NormalizedBugsEntry[]
@@ -566,6 +581,134 @@ export const isNormalizedKeywords = (
   )
 }
 
+/**
+ * Normalize engines information to a {@link NormalizedEngines} consistent format.
+ */
+export const normalizeEngines = (
+  engines: unknown,
+): NormalizedEngines | undefined => {
+  if (!engines) return
+
+  if (isNormalizedEngines(engines)) {
+    // Return undefined if empty object
+    return Object.keys(engines).length === 0 ? undefined : engines
+  }
+
+  /* c8 ignore next 3 */
+  if (isRecordStringString(engines)) {
+    // Return undefined if empty object
+    return Object.keys(engines).length === 0 ? undefined : engines
+  }
+
+  // Invalid format
+  return
+}
+
+/**
+ * Normalize OS information to a {@link NormalizedOs} consistent format.
+ */
+export const normalizeOs = (
+  os: unknown,
+): NormalizedOs | undefined => {
+  if (!os) return
+
+  let osArray: string[] = []
+
+  if (typeof os === 'string') {
+    // Handle single OS string
+    osArray = [os.trim()].filter(item => item.length > 0)
+  } else if (Array.isArray(os)) {
+    // If all OS entries are already normalized, return them directly
+    if (isNormalizedOs(os)) {
+      return os
+    }
+    // Handle array of strings, filter out empty/invalid entries
+    osArray = os
+      .filter((item): item is string => typeof item === 'string')
+      .map(item => item.trim())
+      .filter(item => item.length > 0)
+  } else {
+    // Invalid format
+    return
+  }
+
+  return osArray.length > 0 ? osArray : undefined
+}
+
+/**
+ * Normalize CPU information to a {@link NormalizedCpu} consistent format.
+ */
+export const normalizeCpu = (
+  cpu: unknown,
+): NormalizedCpu | undefined => {
+  if (!cpu) return
+
+  let cpuArray: string[] = []
+
+  if (typeof cpu === 'string') {
+    // Handle single CPU string
+    cpuArray = [cpu.trim()].filter(item => item.length > 0)
+  } else if (Array.isArray(cpu)) {
+    // If all CPU entries are already normalized, return them directly
+    if (isNormalizedCpu(cpu)) {
+      return cpu
+    }
+    // Handle array of strings, filter out empty/invalid entries
+    cpuArray = cpu
+      .filter((item): item is string => typeof item === 'string')
+      .map(item => item.trim())
+      .filter(item => item.length > 0)
+  } else {
+    // Invalid format
+    return
+  }
+
+  return cpuArray.length > 0 ? cpuArray : undefined
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedEngines}.
+ */
+export const isNormalizedEngines = (
+  o: unknown,
+): o is NormalizedEngines => {
+  return isRecordStringString(o)
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedOs}.
+ */
+export const isNormalizedOs = (o: unknown): o is NormalizedOs => {
+  return (
+    Array.isArray(o) &&
+    o.length > 0 &&
+    o.every(
+      item =>
+        typeof item === 'string' &&
+        !!item &&
+        !item.startsWith(' ') &&
+        !item.endsWith(' '),
+    )
+  )
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedCpu}.
+ */
+export const isNormalizedCpu = (o: unknown): o is NormalizedCpu => {
+  return (
+    Array.isArray(o) &&
+    o.length > 0 &&
+    o.every(
+      item =>
+        typeof item === 'string' &&
+        !!item &&
+        !item.startsWith(' ') &&
+        !item.endsWith(' '),
+    )
+  )
+}
+
 export type Manifest = {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
@@ -645,6 +788,9 @@ export type NormalizedFields = {
   contributors: NormalizedContributors | undefined
   funding: NormalizedFunding | undefined
   keywords: NormalizedKeywords | undefined
+  engines: NormalizedEngines | undefined
+  os: NormalizedOs | undefined
+  cpu: NormalizedCpu | undefined
 }
 
 /**
@@ -940,6 +1086,9 @@ export const normalizeManifest = <
   )
   const normalizedBugs = normalizeBugs(manifest.bugs)
   const normalizedKeywords = normalizeKeywords(manifest.keywords)
+  const normalizedEngines = normalizeEngines(manifest.engines)
+  const normalizedOs = normalizeOs(manifest.os)
+  const normalizedCpu = normalizeCpu(manifest.cpu)
 
   // holds the same object reference but renames the variable here
   // so that it's simpler to cast it to the normalized type
@@ -975,6 +1124,24 @@ export const normalizeManifest = <
     delete normalizedManifest.keywords
   }
 
+  if (normalizedEngines) {
+    normalizedManifest.engines = normalizedEngines
+  } else {
+    delete normalizedManifest.engines
+  }
+
+  if (normalizedOs) {
+    normalizedManifest.os = normalizedOs
+  } else {
+    delete normalizedManifest.os
+  }
+
+  if (normalizedCpu) {
+    normalizedManifest.cpu = normalizedCpu
+  } else {
+    delete normalizedManifest.cpu
+  }
+
   // Remove maintainers field if it exists in the raw manifest
   // this can only happen if the manifest is of ManifestRegistry type
   if (
@@ -1004,7 +1171,10 @@ export const isNormalizedManifest = (
     : true) &&
     ('funding' in o ? isNormalizedFunding(o.funding) : true) &&
     ('bugs' in o ? isNormalizedBugs(o.bugs) : true) &&
-    ('keywords' in o ? isNormalizedKeywords(o.keywords) : true)
+    ('keywords' in o ? isNormalizedKeywords(o.keywords) : true) &&
+    ('engines' in o ? isNormalizedEngines(o.engines) : true) &&
+    ('os' in o ? isNormalizedOs(o.os) : true) &&
+    ('cpu' in o ? isNormalizedCpu(o.cpu) : true)
   )
 }
 
