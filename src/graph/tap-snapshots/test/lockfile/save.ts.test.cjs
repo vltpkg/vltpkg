@@ -233,6 +233,54 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 `
 
+exports[`test/lockfile/save.ts > TAP > save platform data for optional dependencies > lockfile with platform data for optional dependencies 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··bar@1.0.0": [
+      1,
+      "bar",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      {
+        "engines": {
+          "node": ">=16"
+        },
+        "os": [
+          "linux"
+        ],
+        "cpu": [
+          "x64"
+        ]
+      }
+    ],
+    "··baz@1.0.0": [
+      1,
+      "baz",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ],
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ]
+  },
+  "edges": {
+    "file·. bar": "optional ^1.0.0 ··bar@1.0.0",
+    "file·. baz": "optional ^1.0.0 ··baz@1.0.0",
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and contributors > should save hidden lockfile with normalized manifest containing author and contributors 1`] = `
 {
   "lockfileVersion": 0,

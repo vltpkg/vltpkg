@@ -83,7 +83,9 @@ export class Diff {
     for (const [id, node] of this.to.nodes) {
       if (!this.from.nodes.get(id)?.equals(node)) {
         this.nodes.add.add(node)
-        if (!node.optional) this.optionalOnly = false
+        if (!node.optional) {
+          this.optionalOnly = false
+        }
       }
     }
 

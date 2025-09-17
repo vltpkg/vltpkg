@@ -1077,3 +1077,110 @@ t.test(
     }
   },
 )
+
+t.test('load platform data for optional dependencies', async t => {
+  const projectRoot = t.testdir()
+  const packageJson = new PackageJson()
+
+  const lockfileData: LockfileData = {
+    lockfileVersion: 0,
+    options: configData,
+    nodes: {
+      [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+        0,
+        'foo',
+        null,
+        null,
+        null,
+        null,
+        null,
+      ] as LockfileNode,
+      [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
+        1, // optional flag
+        'bar',
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          engines: { node: '>=16' },
+          os: 'linux',
+          cpu: ['x64'],
+        },
+      ] as LockfileNode,
+      [joinDepIDTuple(['registry', '', 'baz@1.0.0'])]: [
+        1, // optional flag
+        'baz',
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          engines: { node: '>=14' },
+          os: ['linux', 'darwin'],
+          cpu: ['x64', 'arm64'],
+        },
+      ] as LockfileNode,
+    },
+    edges: {
+      [`${joinDepIDTuple(['file', '.'])} foo`]:
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'foo@1.0.0'])}` as LockfileEdgeValue,
+      [`${joinDepIDTuple(['file', '.'])} bar`]:
+        `optional ^1.0.0 ${joinDepIDTuple(['registry', '', 'bar@1.0.0'])}` as LockfileEdgeValue,
+      [`${joinDepIDTuple(['file', '.'])} baz`]:
+        `optional ^1.0.0 ${joinDepIDTuple(['registry', '', 'baz@1.0.0'])}` as LockfileEdgeValue,
+    },
+  }
+
+  const graph = loadObject(
+    {
+      ...configData,
+      mainManifest,
+      projectRoot,
+      packageJson,
+    },
+    lockfileData,
+  )
+
+  // Verify nodes are loaded correctly
+  const foo = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+  )
+  t.ok(foo, 'foo node exists')
+  t.notOk(foo?.platform, 'foo does not have platform data')
+  t.equal(foo?.optional, false, 'foo is not optional')
+
+  const bar = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+  )
+  t.ok(bar, 'bar node exists')
+  t.ok(bar?.platform, 'bar has platform data')
+  t.same(
+    bar?.platform,
+    {
+      engines: { node: '>=16' },
+      os: 'linux',
+      cpu: ['x64'],
+    },
+    'bar platform data is loaded correctly',
+  )
+  t.equal(bar?.optional, true, 'bar is optional')
+
+  const baz = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'baz@1.0.0']),
+  )
+  t.ok(baz, 'baz node exists')
+  t.ok(baz?.platform, 'baz has platform data')
+  t.same(
+    baz?.platform,
+    {
+      engines: { node: '>=14' },
+      os: ['linux', 'darwin'],
+      cpu: ['x64', 'arm64'],
+    },
+    'baz platform data is loaded correctly',
+  )
+  t.equal(baz?.optional, true, 'baz is optional')
+})

@@ -184,6 +184,17 @@ export class Node implements NodeLike {
   resolved?: string
 
   /**
+   * Platform requirements (engines, os, cpu) extracted from manifest.
+   * Stored separately for optional dependencies to enable platform checks
+   * when manifest is not loaded.
+   */
+  platform?: {
+    engines?: Record<string, string>
+    os?: string[] | string
+    cpu?: string[] | string
+  }
+
+  /**
    * The file system location for this node.
    */
   get location(): string {
@@ -399,6 +410,7 @@ export class Node implements NodeLike {
       optional: this.optional,
       confused: this.confused,
       modifier: this.modifier,
+      platform: this.platform,
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),
