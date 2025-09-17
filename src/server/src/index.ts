@@ -14,11 +14,12 @@ import { dirname, relative, resolve } from 'node:path'
 import { Dashboard } from './dashboard.ts'
 import { AppDataManager } from './app-data.ts'
 import { getAssetsDir } from './get-assets-dir.ts'
-import { updateGraphData } from './graph-data.ts'
+import { getProjectData, updateGraphData } from './graph-data.ts'
 import { handleRequest } from './handle-request.ts'
 import { listenCarefully } from './listen-carefully.ts'
 import { Config } from '@vltpkg/cli-sdk/config'
-import { ConfigManager } from './config-data.ts'
+import { ConfigManager, reloadConfig } from './config-data.ts'
+import { readProjectFolders } from './read-project-folders.ts'
 
 import type { SecurityArchive } from '@vltpkg/security-archive'
 import type {
@@ -29,6 +30,9 @@ import type {
 import type { PackageJson } from '@vltpkg/package-json'
 import type { Server } from 'node:http'
 import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
+
+// TODO: these reusable functions should be moved to their own packages
+export { getProjectData, readProjectFolders, reloadConfig }
 
 export const createServer = (options: VltServerOptions) =>
   new VltServer(options)

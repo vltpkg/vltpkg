@@ -10,7 +10,9 @@ import { Graph } from '../src/graph.ts'
 import type { GraphLike } from '@vltpkg/types'
 
 t.cleanSnapshot = s =>
-  s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
+  s
+    .replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
+    .replace(/^(\s+)"fullpath": .*$/gm, '$1"fullpath": #')
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {

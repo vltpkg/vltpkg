@@ -2,6 +2,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
 import { normalizeManifest } from '@vltpkg/types'
 import type {
+  EdgeLike,
   GraphLike,
   NodeLike,
   Manifest,
@@ -52,9 +53,11 @@ export const newNode =
     resolved: undefined,
     dev: false,
     optional: false,
+    options: specOptions,
     setConfusedManifest() {},
     setResolved() {},
     maybeSetConfusedManifest() {},
+    workspaces: undefined,
     toJSON() {
       return {
         id: this.id,
@@ -236,6 +239,13 @@ export const getSingleWorkspaceGraph = (): GraphLike => {
   w.id = joinDepIDTuple(['workspace', 'w'])
   graph.nodes.set(w.id, w)
   graph.importers.add(w)
+  graph.mainImporter.workspaces = new Map()
+  graph.mainImporter.workspaces.set('w', {
+    name: 'w',
+    from: graph.mainImporter,
+    spec: Spec.parse('w', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
   w.importer = true
   return graph
 }
@@ -259,6 +269,28 @@ export const getMultiWorkspaceGraph = (): GraphLike => {
   graph.nodes.set(c.id, c)
   graph.importers.add(c)
   c.importer = true
+
+  // Set up workspaces property on mainImporter
+  graph.mainImporter.workspaces = new Map()
+  graph.mainImporter.workspaces.set('a', {
+    name: 'a',
+    from: graph.mainImporter,
+    spec: Spec.parse('a', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
+  graph.mainImporter.workspaces.set('b', {
+    name: 'b',
+    from: graph.mainImporter,
+    spec: Spec.parse('b', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
+  graph.mainImporter.workspaces.set('c', {
+    name: 'c',
+    from: graph.mainImporter,
+    spec: Spec.parse('c', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
+
   const [d, e, f, y] = ['d', 'e', 'f', '@x/y'].map(i =>
     addNode(i),
   ) as [NodeLike, NodeLike, NodeLike, NodeLike, NodeLike]
@@ -690,6 +722,27 @@ export const getPathBasedGraph = (): GraphLike => {
   graph.importers.add(a)
   graph.importers.add(b)
   graph.importers.add(c)
+
+  // Set up workspaces property on mainImporter
+  graph.mainImporter.workspaces = new Map()
+  graph.mainImporter.workspaces.set('a', {
+    name: 'a',
+    from: graph.mainImporter,
+    spec: Spec.parse('a', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
+  graph.mainImporter.workspaces.set('b', {
+    name: 'b',
+    from: graph.mainImporter,
+    spec: Spec.parse('b', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
+  graph.mainImporter.workspaces.set('c', {
+    name: 'c',
+    from: graph.mainImporter,
+    spec: Spec.parse('c', 'workspace:*', specOptions),
+    type: 'prod',
+  } satisfies EdgeLike)
 
   // Add edges to create the dependency structure
   newEdge(

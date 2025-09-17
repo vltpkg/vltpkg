@@ -30,7 +30,7 @@ t.test('selects the root node of the graph', async t => {
       walk: async i => i,
       retries: 0,
       securityArchive: undefined,
-      specOptions: {},
+      importers: new Set(graph.importers),
       signal: new AbortController().signal,
       specificity: { idCounter: 0, commonCounter: 0 },
     }
@@ -63,20 +63,4 @@ t.test('selects the root node of the graph', async t => {
       edges: [...res.partial.edges].map(e => e.name),
     })
   })
-
-  await t.test(
-    'throws error when no main importer exists',
-    async t => {
-      // Create a state with empty nodes set
-      const state = getState(':root')
-      state.initial.nodes.clear()
-      await t.rejects(
-        root(state),
-        {
-          message: ':root pseudo-element works on local graphs only',
-        },
-        'should throw error when no main importer exists',
-      )
-    },
-  )
 })

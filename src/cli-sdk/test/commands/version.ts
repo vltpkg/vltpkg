@@ -59,6 +59,7 @@ class MockConfig {
     this.projectRoot = process.cwd()
     this.values.packageJson = {
       read: (_cwd: string) => ({ ...this.packageJsonContent }),
+      maybeRead: (_cwd: string) => ({ ...this.packageJsonContent }),
       find: (cwd: string) => {
         // If cwd is already a package.json path, check if it should exist
         if (basename(cwd) === 'package.json') {
@@ -604,11 +605,13 @@ t.test('version command with scope', async t => {
     const mockNodes = [
       {
         id: 'file:packages/a',
-        toJSON: () => ({ location: 'packages/a' }),
+        projectRoot: dir,
+        location: 'packages/a',
       },
       {
         id: 'file:packages/b',
-        toJSON: () => ({ location: 'packages/b' }),
+        projectRoot: dir,
+        location: 'packages/b',
       },
     ]
 
@@ -624,11 +627,20 @@ t.test('version command with scope', async t => {
             nodes: new Map(),
           }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
       },
       '@vltpkg/query': {
         Query: class {
           search = mockQuery.search
         },
+      },
+      '../../src/query-host-contexts.ts': {
+        createHostContextsMap: async () => new Map(),
       },
     })
 
@@ -674,6 +686,9 @@ t.test('version command with scope', async t => {
       return { name: 'root', version: '1.0.0' }
     }
 
+    // Also override maybeRead
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
+
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array of results')
@@ -706,11 +721,20 @@ t.test('version command with scope', async t => {
             nodes: new Map(),
           }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
       },
       '@vltpkg/query': {
         Query: class {
           search = async () => ({ nodes: [] })
         },
+      },
+      '../../src/query-host-contexts.ts': {
+        createHostContextsMap: async () => new Map(),
       },
     })
 
@@ -784,6 +808,9 @@ t.test('version command with workspace paths', async t => {
       }
       return { name: 'root', version: '1.0.0' }
     }
+
+    // Also override maybeRead
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
 
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
@@ -869,6 +896,9 @@ t.test('version command with workspace-group', async t => {
       }
       return { name: 'root', version: '1.0.0' }
     }
+
+    // Also override maybeRead
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
 
     const result = await cmd.command(conf as unknown as LoadedConfig)
 
@@ -958,6 +988,9 @@ t.test('version command with recursive', async t => {
       }
       return { name: 'root', version: '1.0.0' }
     }
+
+    // Also override maybeRead
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
 
     const result = await cmd.command(conf as unknown as LoadedConfig)
 

@@ -26,7 +26,7 @@ t.test('selects packages based on attribute properties', async t => {
       cancellable: async () => {},
       walk: async i => i,
       securityArchive: undefined,
-      specOptions: {},
+      importers: new Set(graph.importers),
       retries: 0,
       signal: new AbortController().signal,
       specificity: { idCounter: 0, commonCounter: 0 },

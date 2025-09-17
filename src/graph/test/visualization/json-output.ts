@@ -106,7 +106,7 @@ t.test('json-output', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should print json output',
   )
@@ -116,23 +116,28 @@ t.test('actual graph', async t => {
   const graph = loadActualGraph(t)
   t.matchSnapshot(
     jsonOutput({
-      edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      edges: [
+        ...graph.edges,
+        ...(graph.mainImporter.workspaces ?
+          graph.mainImporter.workspaces.values()
+        : []),
+      ],
+      importers: graph.importers,
     }),
     'should print from an actual loaded graph',
   )
 
   t.test('selected packages', async t => {
     const edges = [...graph.edges].filter(e => e.name === 'baz')
-    const nodes = [
+    const importers = new Set([
       graph.nodes.get(
         joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']),
       )!,
-    ]
+    ])
     t.matchSnapshot(
       jsonOutput({
         edges,
-        nodes,
+        importers,
       }),
       'should print selected packages',
     )
@@ -174,7 +179,7 @@ t.test('workspaces', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should print json workspaces output',
   )
@@ -221,7 +226,7 @@ t.test('cycle', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should print cycle json output',
   )
@@ -236,7 +241,7 @@ t.test('nameless package', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should fallback to printing package id if name is missing',
   )
@@ -263,7 +268,7 @@ t.test('versionless package', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should skip printing version number',
   )
@@ -290,7 +295,7 @@ t.test('aliased package', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should print both edge and node names',
   )
@@ -316,7 +321,7 @@ t.test('missing optional', async t => {
   t.matchSnapshot(
     jsonOutput({
       edges: [...graph.edges],
-      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
     }),
     'should print missing optional package',
   )

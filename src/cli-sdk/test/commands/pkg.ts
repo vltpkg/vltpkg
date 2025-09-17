@@ -6,6 +6,7 @@ import * as Command from '../../src/commands/pkg.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { ViewOptions } from '../../src/view.ts'
 import { setupEnv } from '../fixtures/util.ts'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const kNewline = Symbol.for('newline')
 const kIndent = Symbol.for('indent')
@@ -492,17 +493,13 @@ t.test('scope functionality', async t => {
           id: 'workspace-a-id',
           location: 'packages/a',
           name: 'workspace-a',
-          toJSON: () => ({
-            location: 'packages/a',
-          }),
+          projectRoot: t.testdirName,
         },
         {
           id: 'workspace-b-id',
           location: 'packages/b',
           name: 'workspace-b',
-          toJSON: () => ({
-            location: 'packages/b',
-          }),
+          projectRoot: t.testdirName,
         },
       ],
     }),
@@ -515,9 +512,16 @@ t.test('scope functionality', async t => {
       actual: {
         load: () => mockGraph,
       },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: {
         maybeLoad: () => undefined,
       },
+      VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
     },
     '@vltpkg/query': {
       Query: class {
@@ -531,6 +535,9 @@ t.test('scope functionality', async t => {
       SecurityArchive: {
         start: async () => undefined,
       },
+    },
+    '../../src/query-host-contexts.ts': {
+      createHostContextsMap: async () => new Map(),
     },
   })
 
@@ -609,17 +616,13 @@ t.test('scope functionality', async t => {
           id: 'workspace-a-id',
           location: 'packages/a',
           name: 'workspace-a',
-          toJSON: () => ({
-            location: 'packages/a',
-          }),
+          projectRoot: t.testdirName,
         },
         {
           id: 'workspace-b-id',
           location: 'packages/b',
           name: 'workspace-b',
-          toJSON: () => ({
-            location: 'packages/b',
-          }),
+          projectRoot: t.testdirName,
         },
       ],
     }),
@@ -630,7 +633,14 @@ t.test('scope functionality', async t => {
   >('../../src/commands/pkg.ts', {
     '@vltpkg/graph': {
       actual: { load: () => mockGraph },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: { maybeLoad: () => undefined },
+      VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
     },
     '@vltpkg/query': {
       Query: class {
@@ -642,6 +652,9 @@ t.test('scope functionality', async t => {
     },
     '@vltpkg/security-archive': {
       SecurityArchive: { start: async () => undefined },
+    },
+    '../../src/query-host-contexts.ts': {
+      createHostContextsMap: async () => new Map(),
     },
   })
 
@@ -759,9 +772,16 @@ t.test('scope with no matching workspaces', async t => {
       actual: {
         load: () => ({ nodes: new Map() }),
       },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: {
         maybeLoad: () => undefined,
       },
+      VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
     },
     '@vltpkg/query': {
       Query: class {
@@ -775,6 +795,9 @@ t.test('scope with no matching workspaces', async t => {
       SecurityArchive: {
         start: async () => undefined,
       },
+    },
+    '../../src/query-host-contexts.ts': {
+      createHostContextsMap: async () => new Map(),
     },
   })
 
@@ -828,9 +851,7 @@ t.test('scope with security selectors', async t => {
           id: 'workspace-a-id',
           location: 'packages/a',
           name: 'workspace-a',
-          toJSON: () => ({
-            location: 'packages/a',
-          }),
+          projectRoot: t.testdirName,
         },
       ],
     }),
@@ -843,9 +864,16 @@ t.test('scope with security selectors', async t => {
       actual: {
         load: () => ({ nodes: new Map() }),
       },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
       GraphModifier: {
         maybeLoad: () => undefined,
       },
+      VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
     },
     '@vltpkg/query': {
       Query: class {
@@ -859,6 +887,9 @@ t.test('scope with security selectors', async t => {
       SecurityArchive: {
         start: async () => mockSecurityArchive,
       },
+    },
+    '../../src/query-host-contexts.ts': {
+      createHostContextsMap: async () => new Map(),
     },
   })
 
@@ -1081,9 +1112,16 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
       },
       '@vltpkg/query': {
         Query: {
@@ -1162,9 +1200,16 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
       },
       '@vltpkg/query': {
         Query: {
@@ -1243,9 +1288,16 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
       },
       '@vltpkg/query': {
         Query: {
@@ -1307,9 +1359,16 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
       },
       '@vltpkg/query': {
         Query: {
@@ -1361,9 +1420,16 @@ t.test(
         actual: {
           load: () => ({ nodes: new Map() }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
         GraphModifier: {
           maybeLoad: () => undefined,
         },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
       },
       '@vltpkg/query': {
         Query: {

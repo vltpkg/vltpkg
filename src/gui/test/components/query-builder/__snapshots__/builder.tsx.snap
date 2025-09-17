@@ -95,6 +95,11 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
           <gui-command-group heading="Project">
             <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
               <span>
+                All configured projects
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
                 Matches workspaces in \`vlt.json\`
               </span>
             </gui-command-item>
@@ -826,6 +831,11 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
           <gui-command-group heading="Project">
             <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
               <span>
+                All configured projects
+              </span>
+            </gui-command-item>
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
                 Matches workspaces in \`vlt.json\`
               </span>
             </gui-command-item>
@@ -1555,6 +1565,11 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
           <gui-command-separator>
           </gui-command-separator>
           <gui-command-group heading="Project">
+            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
+              <span>
+                All configured projects
+              </span>
+            </gui-command-item>
             <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
               <span>
                 Matches workspaces in \`vlt.json\`

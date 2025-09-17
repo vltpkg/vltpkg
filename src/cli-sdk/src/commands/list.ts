@@ -1,9 +1,3 @@
-import type {
-  HumanReadableOutputGraph,
-  JSONOutputGraph,
-  MermaidOutputGraph,
-  Node,
-} from '@vltpkg/graph'
 import {
   actual,
   asNode,
@@ -15,11 +9,20 @@ import {
 import LZString from 'lz-string'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
-import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
-import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
+import { createHostContextsMap } from '../query-host-contexts.ts'
+import type {
+  HumanReadableOutputGraph,
+  JSONOutputGraph,
+  MermaidOutputGraph,
+  Node,
+  Graph,
+} from '@vltpkg/graph'
+import type { DepID } from '@vltpkg/dep-id'
+import type { NodeLike } from '@vltpkg/types'
+import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
@@ -100,16 +103,25 @@ export const views = {
 export const command: CommandFn<ListResult> = async conf => {
   const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
-  const mainManifest = conf.options.packageJson.read(
+  const mainManifest = conf.options.packageJson.maybeRead(
     conf.options.projectRoot,
   )
-  const graph = actual.load({
-    ...conf.options,
-    mainManifest,
-    modifiers,
-    monorepo,
-    loadManifests: true,
-  })
+  let graph: Graph | undefined
+  let securityArchive: SecurityArchive | undefined
+
+  // optionally load the cwd graph if we found a package.json file
+  if (mainManifest) {
+    graph = actual.load({
+      ...conf.options,
+      mainManifest,
+      modifiers,
+      monorepo,
+      loadManifests: true,
+    })
+    securityArchive = await SecurityArchive.start({
+      nodes: [...graph.nodes.values()],
+    })
+  }
 
   // Validate positional arguments - only allow package names, not direct queries
   for (const arg of conf.positionals) {
@@ -124,41 +136,45 @@ export const command: CommandFn<ListResult> = async conf => {
     }
   }
 
+  // retrieve default values and set up host contexts
   const positionalQueryString = conf.positionals
     .map(k => `#${k.replace(/\//, '\\/')}`)
     .join(', ')
   const targetQueryString = conf.get('target')
+  const scopeQueryString = conf.get('scope')
   const queryString = targetQueryString || positionalQueryString
-
-  const securityArchive = await SecurityArchive.start({
-    graph,
-    specOptions: conf.options,
-  })
-  const query = new Query({
-    graph,
-    specOptions: conf.options,
-    securityArchive,
-  })
-  const projectQueryString = ':project, :project > *'
+  const projectQueryString = ':workspace, :project > *'
   const selectImporters: string[] = []
-
+  const hostContexts = await createHostContextsMap(conf)
   const importers = new Set<Node>()
   const scopeIDs: DepID[] = []
 
   // handle --scope option to add scope nodes as importers
-  const scopeQueryString = conf.get('scope')
   let scopeNodes
   if (scopeQueryString) {
     // run scope query to get all matching nodes
+    /* c8 ignore start */
+    const edges = graph?.edges ?? new Set()
+    const nodes =
+      graph?.nodes ?
+        new Set<NodeLike>(graph.nodes.values())
+      : new Set<NodeLike>()
+    const importers = graph?.importers ?? new Set()
+    /* c8 ignore stop */
     const scopeQuery = new Query({
-      graph,
-      specOptions: conf.options,
+      nodes,
+      edges,
+      importers,
       securityArchive,
+      hostContexts,
     })
-    const { nodes } = await scopeQuery.search(scopeQueryString, {
-      signal: new AbortController().signal,
-    })
-    scopeNodes = nodes
+    const { nodes: resultNodes } = await scopeQuery.search(
+      scopeQueryString,
+      {
+        signal: new AbortController().signal,
+      },
+    )
+    scopeNodes = resultNodes
   }
 
   if (scopeQueryString && scopeNodes) {
@@ -166,10 +182,10 @@ export const command: CommandFn<ListResult> = async conf => {
     for (const queryNode of scopeNodes) {
       importers.add(asNode(queryNode))
     }
-  } else {
+  } else if ('workspace' in conf.values) {
     // if in a workspace environment, select only the specified
     // workspaces as top-level items
-    if (monorepo) {
+    if (monorepo && graph) {
       for (const workspace of monorepo.filter(conf.values)) {
         const w: Node | undefined = graph.nodes.get(workspace.id)
         if (w) {
@@ -180,41 +196,68 @@ export const command: CommandFn<ListResult> = async conf => {
         }
       }
     }
-    // if no top-level item was set then by default
-    // we just set all importers as top-level items
-    if (importers.size === 0) {
-      for (const importer of graph.importers) {
-        importers.add(importer)
-      }
-    }
   }
 
   // build a default query string to use in the target search
   const selectImportersQueryString = selectImporters.join(', ')
-  const defaultQueryString =
+  const defaultProjectQueryString =
     (
+      graph &&
       selectImporters.length &&
       selectImporters.length < graph.importers.size
     ) ?
       selectImportersQueryString
     : projectQueryString
+  const defaultLocalScopeQueryString =
+    ':host-context(local) :root > *'
 
   // retrieve the selected nodes and edges
-  const { edges, nodes } = await query.search(
-    queryString || defaultQueryString,
-    {
-      signal: new AbortController().signal,
-      scopeIDs: scopeIDs.length > 0 ? scopeIDs : undefined,
-    },
-  )
-
-  return {
-    importers,
+  /* c8 ignore start */
+  const edges_ = graph?.edges ?? new Set()
+  const nodes_ =
+    graph?.nodes ?
+      new Set<NodeLike>(graph.nodes.values())
+    : new Set<NodeLike>()
+  const importers_ =
+    importers.size === 0 && graph ?
+      new Set([graph.mainImporter])
+    : importers
+  /* c8 ignore stop */
+  const q = new Query({
+    nodes: nodes_,
+    edges: edges_,
+    importers: importers_,
+    securityArchive,
+    hostContexts,
+  })
+  const query =
+    queryString ||
+    /* c8 ignore next */
+    (graph ? defaultProjectQueryString : defaultLocalScopeQueryString)
+  const {
     edges,
     nodes,
-    queryString: queryString || defaultQueryString,
+    importers: queryResultImporters,
+  } = await q.search(query, {
+    signal: new AbortController().signal,
+    scopeIDs: scopeIDs.length > 0 ? scopeIDs : undefined,
+  })
+
+  return {
+    importers:
+      importers.size === 0 ?
+        new Set(queryResultImporters)
+      : importers,
+    edges,
+    nodes,
     highlightSelection: !!(
       targetQueryString || positionalQueryString
     ),
+    queryString:
+      queryString ||
+      (graph ?
+        /* c8 ignore next 2 */
+        defaultProjectQueryString
+      : defaultLocalScopeQueryString),
   }
 }

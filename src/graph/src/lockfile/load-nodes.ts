@@ -3,10 +3,12 @@ import { getBooleanFlagsFromNum } from './types.ts'
 import type { LockfileData, LockfileNode } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { GraphLike } from '@vltpkg/types'
+import type { SpecOptions } from '@vltpkg/spec/browser'
 
 export const loadNodes = (
   graph: GraphLike,
   nodes: LockfileData['nodes'],
+  options: SpecOptions,
   actual?: GraphLike,
 ) => {
   const entries = Object.entries(nodes) as [DepID, LockfileNode][]
@@ -85,10 +87,12 @@ export const loadNodes = (
     }
 
     const { dev, optional } = getBooleanFlagsFromNum(flags)
+    node.options = options
     node.dev = dev
     node.optional = optional
     node.integrity = integrity ?? referenceNode?.integrity
     node.resolved = resolved ?? referenceNode?.resolved
+    node.projectRoot = graph.projectRoot
     if (!node.resolved) node.setResolved()
     if (location) {
       node.location = location

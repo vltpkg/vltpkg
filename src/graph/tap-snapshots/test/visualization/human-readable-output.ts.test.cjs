@@ -7,22 +7,22 @@
 'use strict'
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colors > should use colors 1`] = `
 [0mmy-project
-├── link (linked@1.0.0)
-├── foo@1.0.0
-├── extraneous@1.0.0
-├─┬ bar@1.0.0
-│ ├── blooo@1.0.0
-│ └── baz (custom:baz@1.0.0)
-├── aliased (custom:foo@1.0.0)
+├── @scoped/a@1.0.0
 ├─┬ @scoped/b@1.0.0
 │ └── @scoped/c@1.0.0
-├── @scoped/a@1.0.0
+├── aliased (custom:foo@1.0.0)
+├─┬ bar@1.0.0
+│ ├── baz (custom:baz@1.0.0)
+│ └── blooo@1.0.0
+├── extraneous@1.0.0
+├── foo@1.0.0
+├── link (linked@1.0.0)
 └── missing@^1.0.0 [31m(missing)[39m
 workspace-b
 workspace-a
-├── workspace-b@1.0.0
+├── foo@1.0.0
 ├── ipsum@1.0.0
-└── foo@1.0.0
+└── workspace-b@1.0.0
 [0m
 `
 
@@ -35,22 +35,22 @@ my-project
 
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > should print from an actual loaded graph 1`] = `
 my-project
-├── link (linked@1.0.0)
-├── foo@1.0.0
-├── extraneous@1.0.0
-├─┬ bar@1.0.0
-│ ├── blooo@1.0.0
-│ └── baz (custom:baz@1.0.0)
-├── aliased (custom:foo@1.0.0)
+├── @scoped/a@1.0.0
 ├─┬ @scoped/b@1.0.0
 │ └── @scoped/c@1.0.0
-├── @scoped/a@1.0.0
+├── aliased (custom:foo@1.0.0)
+├─┬ bar@1.0.0
+│ ├── baz (custom:baz@1.0.0)
+│ └── blooo@1.0.0
+├── extraneous@1.0.0
+├── foo@1.0.0
+├── link (linked@1.0.0)
 └── missing@^1.0.0 (missing)
 workspace-b
 workspace-a
-├── workspace-b@1.0.0
+├── foo@1.0.0
 ├── ipsum@1.0.0
-└── foo@1.0.0
+└── workspace-b@1.0.0
 
 `
 
@@ -76,11 +76,11 @@ my-project
 
 exports[`test/visualization/human-readable-output.ts > TAP > human-readable-output > should print human readable output 1`] = `
 my-project
-├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ ├─┬ baz (custom:baz@1.0.0)
 │ │ └── foo@1.0.0
 │ └── extraneous@1.0.0
+├── foo@1.0.0
 └── missing@^1.0.0 (missing)
 
 `
@@ -136,5 +136,16 @@ exports[`test/visualization/human-readable-output.ts > TAP > workspaces > should
 my-project
 b
 a
+
+`
+
+exports[`test/visualization/human-readable-output.ts > TAP > workspaces as dependencies > should print workspaces as dependencies of the main importer 1`] = `
+my-project
+├── workspace-a@1.0.0
+├── workspace-a@1.0.0
+├── workspace-b@1.0.0
+├── workspace-b@1.0.0
+workspace-b
+workspace-a
 
 `

@@ -118,6 +118,17 @@ exports[`test/commands/list.ts > TAP > list > package names as positionals > sho
 
 `
 
+exports[`test/commands/list.ts > TAP > list > running from homedir > should list all projects deps 1`] = `
+local
+└── my-project@1.0.0
+
+`
+
+exports[`test/commands/list.ts > TAP > list > running from homedir > should read project from host context 1`] = `
+my-project
+
+`
+
 exports[`test/commands/list.ts > TAP > list > scope with a transitive dependency > should handle scope with a transitive dependency 1`] = `
 foo
 
@@ -413,29 +424,10 @@ d("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.
 exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope nodes as importers 1`] = `
 [
   {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    },
-    "overridden": false
-  },
-  {
     "name": "b",
+    "fromID": "file·.",
+    "spec": "b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§b",
       "name": "b",
@@ -458,6 +450,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
   },
   {
     "name": "a",
+    "fromID": "file·.",
+    "spec": "a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§a",
       "name": "a",
@@ -493,8 +488,8 @@ a
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in human readable format 1`] = `
 my-project
-b
-a
+├── a@1.0.0
+└── b@1.0.0
 
 `
 
@@ -524,6 +519,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   },
   {
     "name": "b",
+    "fromID": "file·.",
+    "spec": "b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§b",
       "name": "b",
@@ -546,6 +544,9 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   },
   {
     "name": "a",
+    "fromID": "file·.",
+    "spec": "a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§a",
       "name": "a",

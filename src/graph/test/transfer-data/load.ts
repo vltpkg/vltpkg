@@ -15,6 +15,7 @@ const transferData: TransferData = {
   importers: [
     {
       importer: true,
+      mainImporter: true,
       id: joinDepIDTuple(['file', '.']),
       name: 'my-project',
       version: '1.0.0',
@@ -84,6 +85,8 @@ const transferData: TransferData = {
     },
   },
   projectInfo: {
+    root: '/path/to/project',
+    homedirRelativeRoot: 'project',
     tools: ['vlt'],
     vltInstalled: true,
   },
@@ -237,6 +240,7 @@ t.test('load graph with multiple importers', async () => {
       ...transferData.importers,
       {
         importer: true,
+        mainImporter: false,
         id: joinDepIDTuple(['workspace', 'workspace-a']),
         name: 'workspace-a',
         version: '1.0.0',
@@ -275,6 +279,7 @@ t.test('load graph without projectRoot', async () => {
     importers: [
       {
         importer: true,
+        mainImporter: true,
         id: baseImporter.id,
         name: baseImporter.name,
         version: baseImporter.version,
@@ -285,6 +290,11 @@ t.test('load graph without projectRoot', async () => {
         optional: false,
       },
     ],
+    projectInfo: {
+      ...transferData.projectInfo,
+      root: '',
+      homedirRelativeRoot: '',
+    },
   }
 
   const result = load(noProjectRootData)

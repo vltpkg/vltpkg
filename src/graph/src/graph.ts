@@ -13,8 +13,8 @@ import type {
 import type { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
-import type { Edge } from './edge.ts'
 import { lockfileData } from './lockfile/save.ts'
+import { Edge } from './edge.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
@@ -164,6 +164,7 @@ export class Graph implements GraphLike {
     mainImporter.setImporterLocation(mainImporterLocation)
     mainImporter.mainImporter = true
     this.mainImporter = mainImporter
+    this.mainImporter.workspaces = new Map()
     this.importers.add(mainImporter)
     this.manifests.set(mainImporter.id, mainManifest)
 
@@ -183,6 +184,14 @@ export class Graph implements GraphLike {
           this.manifests.set(wsNode.id, wsNode.manifest)
         }
         this.importers.add(wsNode)
+        // creates a virtual edge to connect the workspaces to the root node
+        const edge = new Edge(
+          'prod',
+          Spec.parse(wsNode.name, 'workspace:*', this.#options),
+          this.mainImporter,
+          wsNode,
+        )
+        this.mainImporter.workspaces.set(wsNode.name, edge)
       }
     }
   }

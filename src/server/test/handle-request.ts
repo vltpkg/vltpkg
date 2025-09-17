@@ -1727,3 +1727,372 @@ t.test('/fs/ls generic server error (500)', async t => {
   await handleRequest(context.req, context.res, context.server)
   t.equal(errorCalled, true)
 })
+
+t.test(
+  '/host-contexts returns array of TransferData for local context',
+  async t => {
+    const context = getContext(t)
+    let responseData = ''
+    let statusCode = 0
+
+    // Mock the response object to capture direct writes
+    context.res = {
+      writeHead: (code: number) => {
+        statusCode = code
+      },
+      end: (data: string) => {
+        responseData = data
+      },
+    } as unknown as ServerResponse
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/read-project-folders.ts': {
+        readProjectFolders: async () => [
+          { fullpath: () => '/test/project1' },
+          { fullpath: () => '/test/project2' },
+        ],
+      },
+      '../src/config-data.ts': {
+        reloadConfig: async (projectRoot: string) => ({
+          options: {
+            projectRoot,
+            scurry: new (await import('path-scurry')).PathScurry(
+              projectRoot,
+            ),
+            packageJson: {
+              read: () => ({
+                name: projectRoot,
+                version: '1.0.0',
+              }),
+            },
+          },
+        }),
+      },
+      '@vltpkg/graph': {
+        actual: {
+          load: (options: any) => ({
+            nodes: { values: () => [{ id: 'mock-node' }] },
+            importers: [
+              {
+                importer: true,
+                id: 'test-importer',
+                name: options.projectRoot,
+                version: '1.0.0',
+                location: options.projectRoot,
+                manifest: {
+                  name: options.projectRoot,
+                  version: '1.0.0',
+                },
+                dev: false,
+                optional: false,
+              },
+            ],
+          }),
+        },
+        asDependency: (obj: any) => obj,
+        install: () => {},
+        uninstall: () => {},
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return undefined
+          },
+        },
+      },
+      '../src/graph-data.ts': {
+        getProjectData: (options: any, folder: any) => ({
+          root: options.projectRoot || folder.fullpath(),
+          tools: ['vlt'],
+          vltInstalled: true,
+        }),
+      },
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {}
+        },
+        error: (
+          _res: ServerResponse,
+          _errType: string,
+          _error: string,
+          _code: number,
+        ) => {
+          t.fail('error should not be called in success case')
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+
+    t.equal(statusCode, 200, 'returns 200 status')
+    t.ok(responseData, 'returns response data')
+
+    const response = JSON.parse(responseData)
+    t.ok(response.local, 'has local context')
+    t.ok(Array.isArray(response.local), 'local is an array')
+    t.equal(
+      response.local.length,
+      2,
+      'returns data for both projects',
+    )
+
+    const firstProject = response.local[0]
+    t.ok(firstProject.importers, 'has importers')
+    t.ok(firstProject.lockfile, 'has lockfile')
+    t.ok(firstProject.projectInfo, 'has projectInfo')
+    t.equal(
+      firstProject.securityArchive,
+      undefined,
+      'securityArchive is undefined as expected',
+    )
+  },
+)
+
+t.test(
+  '/host-contexts handles project load failures gracefully',
+  async t => {
+    const context = getContext(t)
+    let responseData = ''
+    let statusCode = 0
+    let callCount = 0
+
+    // Mock the response object to capture direct writes
+    context.res = {
+      writeHead: (code: number) => {
+        statusCode = code
+      },
+      end: (data: string) => {
+        responseData = data
+      },
+    } as unknown as ServerResponse
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/read-project-folders.ts': {
+        readProjectFolders: async () => [
+          { fullpath: () => '/test/project1' },
+          { fullpath: () => '/test/failing-project' },
+          { fullpath: () => '/test/project3' },
+        ],
+      },
+      '../src/config-data.ts': {
+        reloadConfig: async (projectRoot: string) => {
+          if (projectRoot === '/test/failing-project') {
+            throw new Error('Failed to load config')
+          }
+          callCount++
+          return {
+            options: {
+              projectRoot,
+              scurry: new (await import('path-scurry')).PathScurry(
+                projectRoot,
+              ),
+              packageJson: {
+                read: () => ({
+                  name: projectRoot,
+                  version: '1.0.0',
+                }),
+              },
+            },
+          }
+        },
+      },
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({
+            nodes: { values: () => [] },
+            importers: [],
+          }),
+        },
+        asDependency: (obj: any) => obj,
+        install: () => {},
+        uninstall: () => {},
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return undefined
+          },
+        },
+      },
+      '../src/graph-data.ts': {
+        getProjectData: (options: any, folder: any) => ({
+          root: options.projectRoot || folder.fullpath(),
+          tools: ['vlt'],
+          vltInstalled: true,
+        }),
+      },
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {}
+        },
+        error: (
+          _res: ServerResponse,
+          _errType: string,
+          _error: string,
+          _code: number,
+        ) => {
+          t.fail('error should not be called in success case')
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+
+    t.equal(statusCode, 200, 'returns 200 status')
+    t.ok(responseData, 'returns response data')
+
+    const response = JSON.parse(responseData)
+    t.equal(response.local.length, 2, 'skips failing project')
+    t.equal(
+      callCount,
+      2,
+      'only calls getGraphData for successful projects',
+    )
+  },
+)
+
+t.test(
+  '/host-contexts handles empty dashboard-root configuration',
+  async t => {
+    const context = getContext(t)
+    let responseData = ''
+    let statusCode = 0
+
+    // Mock the response object to capture direct writes
+    context.res = {
+      writeHead: (code: number) => {
+        statusCode = code
+      },
+      end: (data: string) => {
+        responseData = data
+      },
+    } as unknown as ServerResponse
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/read-project-folders.ts': {
+        readProjectFolders: async (options: any) => {
+          t.same(
+            options.userDefinedProjectPaths,
+            [],
+            'passes empty array when no dashboard-root',
+          )
+          return []
+        },
+      },
+      '../src/config-data.ts': {
+        reloadConfig: async () => ({
+          options: {
+            projectRoot: '/test/project',
+            scurry: new (await import('path-scurry')).PathScurry(
+              '/test/project',
+            ),
+            packageJson: {
+              read: () => ({ name: 'test', version: '1.0.0' }),
+            },
+          },
+        }),
+      },
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({
+            nodes: { values: () => [] },
+            importers: [],
+          }),
+        },
+        asDependency: (obj: any) => obj,
+        install: () => {},
+        uninstall: () => {},
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return undefined
+          },
+        },
+      },
+      '../src/graph-data.ts': {
+        getProjectData: (options: any, folder: any) => ({
+          root: options.projectRoot || folder.fullpath(),
+          tools: [],
+          vltInstalled: false,
+        }),
+      },
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {}
+        },
+        error: (
+          _res: ServerResponse,
+          _errType: string,
+          _error: string,
+          _code: number,
+        ) => {
+          t.fail('error should not be called in success case')
+        },
+      },
+    })
+
+    // Override server options to simulate empty dashboard-root
+    ;(context.server as any).options = {
+      ...context.server.options,
+      'dashboard-root': undefined,
+    }
+
+    await handleRequest(context.req, context.res, context.server)
+
+    t.equal(statusCode, 200, 'returns 200 status')
+    t.ok(responseData, 'returns response data')
+
+    const response = JSON.parse(responseData)
+    t.same(response.local, [], 'returns empty array')
+  },
+)
+
+t.test('/host-contexts handles server errors', async t => {
+  const context = getContext(t)
+  let errorCalled = false
+
+  const { handleRequest } = await t.mockImport<
+    typeof import('../src/handle-request.ts')
+  >('../src/handle-request.ts', {
+    '../src/read-project-folders.ts': {
+      readProjectFolders: async () => {
+        throw new Error('Failed to read project folders')
+      },
+    },
+    '../src/json.ts': {
+      read: async (req: IncomingMessage) => {
+        t.equal(req, context.req)
+        return {}
+      },
+      error: (
+        res: ServerResponse,
+        errType: string,
+        error: string,
+        code: number,
+      ) => {
+        t.equal(res, context.res)
+        t.equal(code, 500, 'returns 500 status')
+        t.ok(error, 'returns error message')
+        t.match(
+          errType,
+          /Host contexts retrieval failed/,
+          'returns correct error type',
+        )
+        errorCalled = true
+      },
+    },
+  })
+
+  await handleRequest(context.req, context.res, context.server)
+  t.equal(errorCalled, true)
+})
