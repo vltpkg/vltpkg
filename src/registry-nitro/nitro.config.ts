@@ -1,10 +1,5 @@
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
-import { mkdirSync } from 'node:fs'
-
-mkdirSync(resolve(import.meta.dirname, '.data'), {
-  recursive: true,
-})
 
 const packagesDriver = resolve(
   import.meta.dirname,
@@ -20,7 +15,6 @@ export default defineNitroConfig({
   compatibilityDate: 'latest',
   srcDir: 'server',
   imports: false,
-
   experimental: {
     database: true,
   },
