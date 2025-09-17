@@ -1,6 +1,7 @@
 import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
+import { normalizeManifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
@@ -1546,6 +1547,358 @@ t.test('resetResolution method', async t => {
         foundFile,
         fileNode,
         'file node resolution works after reset',
+      )
+    },
+  )
+})
+
+t.test('node platform data setting', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      'engines-pkg': '^1.0.0',
+      'os-pkg': '^1.0.0',
+      'cpu-pkg': '^1.0.0',
+      'combined-pkg': '^1.0.0',
+      'no-platform-pkg': '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  t.test('should set engines property from manifest', async t => {
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('engines-pkg@^1.0.0'),
+      normalizeManifest({
+        name: 'engines-pkg',
+        version: '1.0.0',
+        engines: {
+          node: '>=16.0.0',
+          npm: '>=8.0.0',
+        },
+      }),
+    )
+
+    t.ok(node, 'node was created successfully')
+    t.ok(node?.platform, 'platform property is set')
+    t.strictSame(
+      node?.platform?.engines,
+      {
+        node: '>=16.0.0',
+        npm: '>=8.0.0',
+      },
+      'engines property correctly set on node.platform',
+    )
+    t.notOk(
+      node?.platform?.os,
+      'os property is not set when not in manifest',
+    )
+    t.notOk(
+      node?.platform?.cpu,
+      'cpu property is not set when not in manifest',
+    )
+  })
+
+  t.test('should set os property from manifest (string)', async t => {
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('os-string-pkg@^1.0.0'),
+      normalizeManifest({
+        name: 'os-string-pkg',
+        version: '1.0.0',
+        os: 'linux',
+      }),
+    )
+
+    t.ok(node, 'node was created successfully')
+    t.ok(node?.platform, 'platform property is set')
+    t.strictSame(
+      node?.platform?.os,
+      ['linux'],
+      'os property correctly normalized to array on node.platform',
+    )
+    t.notOk(
+      node?.platform?.engines,
+      'engines property is not set when not in manifest',
+    )
+    t.notOk(
+      node?.platform?.cpu,
+      'cpu property is not set when not in manifest',
+    )
+  })
+
+  t.test('should set os property from manifest (array)', async t => {
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('os-array-pkg@^1.0.0'),
+      {
+        name: 'os-array-pkg',
+        version: '1.0.0',
+        os: ['linux', 'darwin'],
+      },
+    )
+
+    t.ok(node, 'node was created successfully')
+    t.ok(node?.platform, 'platform property is set')
+    t.strictSame(
+      node?.platform?.os,
+      ['linux', 'darwin'],
+      'os property correctly set as array on node.platform',
+    )
+  })
+
+  t.test(
+    'should set cpu property from manifest (string)',
+    async t => {
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('cpu-string-pkg@^1.0.0'),
+        normalizeManifest({
+          name: 'cpu-string-pkg',
+          version: '1.0.0',
+          cpu: 'x64',
+        }),
+      )
+
+      t.ok(node, 'node was created successfully')
+      t.ok(node?.platform, 'platform property is set')
+      t.strictSame(
+        node?.platform?.cpu,
+        ['x64'],
+        'cpu property correctly normalized to array on node.platform',
+      )
+      t.notOk(
+        node?.platform?.engines,
+        'engines property is not set when not in manifest',
+      )
+      t.notOk(
+        node?.platform?.os,
+        'os property is not set when not in manifest',
+      )
+    },
+  )
+
+  t.test('should set cpu property from manifest (array)', async t => {
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('cpu-array-pkg@^1.0.0'),
+      {
+        name: 'cpu-array-pkg',
+        version: '1.0.0',
+        cpu: ['x64', 'arm64'],
+      },
+    )
+
+    t.ok(node, 'node was created successfully')
+    t.ok(node?.platform, 'platform property is set')
+    t.strictSame(
+      node?.platform?.cpu,
+      ['x64', 'arm64'],
+      'cpu property correctly set as array on node.platform',
+    )
+  })
+
+  t.test(
+    'should set all platform properties when present',
+    async t => {
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('combined-pkg@^1.0.0'),
+        normalizeManifest({
+          name: 'combined-pkg',
+          version: '1.0.0',
+          engines: {
+            node: '>=18.0.0',
+          },
+          os: ['linux', 'darwin'],
+          cpu: 'x64',
+        }),
+      )
+
+      t.ok(node, 'node was created successfully')
+      t.ok(node?.platform, 'platform property is set')
+      t.strictSame(
+        node?.platform?.engines,
+        {
+          node: '>=18.0.0',
+        },
+        'engines property correctly set',
+      )
+      t.strictSame(
+        node?.platform?.os,
+        ['linux', 'darwin'],
+        'os property correctly set',
+      )
+      t.strictSame(
+        node?.platform?.cpu,
+        ['x64'],
+        'cpu property correctly normalized to array',
+      )
+    },
+  )
+
+  t.test(
+    'should not set platform when no platform properties in manifest',
+    async t => {
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('no-platform-pkg@^1.0.0'),
+        {
+          name: 'no-platform-pkg',
+          version: '1.0.0',
+          dependencies: {
+            some: '^1.0.0',
+          },
+        },
+      )
+
+      t.ok(node, 'node was created successfully')
+      t.notOk(
+        node?.platform,
+        'platform property should not be set when manifest has no platform data',
+      )
+    },
+  )
+
+  t.test(
+    'should not set platform when manifest is undefined',
+    async t => {
+      // Create an edge without manifest (missing dependency)
+      graph.addEdge(
+        'prod',
+        Spec.parse('missing-pkg@^1.0.0'),
+        graph.mainImporter,
+      )
+
+      const edge = graph.mainImporter.edgesOut.get('missing-pkg')
+      t.ok(edge, 'edge was created')
+      t.equal(
+        edge?.to,
+        undefined,
+        'edge has no target node (missing dependency)',
+      )
+
+      // Verify that placePackage without manifest doesn't crash
+      const result = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('missing-test-pkg@^1.0.0'),
+      )
+
+      t.equal(
+        result,
+        undefined,
+        'placePackage returns undefined for missing manifest',
+      )
+    },
+  )
+
+  t.test('should handle empty platform objects', async t => {
+    const node1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('empty-engines-pkg@^1.0.0'),
+      normalizeManifest({
+        name: 'empty-engines-pkg',
+        version: '1.0.0',
+        engines: {},
+      }),
+    )
+
+    t.ok(node1, 'node was created successfully')
+    t.notOk(
+      node1?.platform,
+      'platform property should not be set when engines is empty object',
+    )
+
+    const node2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('empty-array-pkg@^1.0.0'),
+      normalizeManifest({
+        name: 'empty-array-pkg',
+        version: '1.0.0',
+        os: [],
+        cpu: [],
+      }),
+    )
+
+    t.ok(node2, 'node was created successfully')
+    t.notOk(
+      node2?.platform,
+      'platform property should not be set when os and cpu are empty arrays',
+    )
+  })
+
+  t.test(
+    'should preserve platform data when reusing existing nodes',
+    async t => {
+      // First, create a node with platform data
+      const originalNode = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('reuse-pkg@^1.0.0'),
+        normalizeManifest({
+          name: 'reuse-pkg',
+          version: '1.0.0',
+          engines: {
+            node: '>=16.0.0',
+          },
+          os: 'linux',
+        }),
+      )
+
+      t.ok(originalNode, 'original node was created successfully')
+      t.ok(originalNode?.platform, 'original node has platform data')
+
+      // Now try to place the same package again (should reuse existing node)
+      const reusedNode = graph.placePackage(
+        graph.mainImporter,
+        'dev',
+        Spec.parse('reuse-pkg@^1.0.0'),
+        normalizeManifest({
+          name: 'reuse-pkg',
+          version: '1.0.0',
+          engines: {
+            node: '>=16.0.0',
+          },
+          os: 'linux',
+        }),
+      )
+
+      t.equal(
+        reusedNode,
+        originalNode,
+        'same node instance is reused',
+      )
+      t.ok(
+        reusedNode?.platform,
+        'platform data is preserved on reused node',
+      )
+      t.strictSame(
+        reusedNode?.platform?.engines,
+        { node: '>=16.0.0' },
+        'engines property is preserved',
+      )
+      t.strictSame(
+        reusedNode?.platform?.os,
+        ['linux'],
+        'os property is preserved as normalized array',
       )
     },
   )

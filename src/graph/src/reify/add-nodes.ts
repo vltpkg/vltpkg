@@ -25,16 +25,18 @@ export const addNodes = (
     // remove anything already there
     const target = node.resolvedLocation(scurry)
     const from = scurry.resolve('')
-    const spec = hydrate(node.id, manifest.name, options)
+    const spec = hydrate(node.id, node.name, options)
     const onErr = optionalFail(diff, node)
     const { integrity, resolved } = node
     // if it's optional, and we know it isn't for this platform, or it's
     // deprecated, don't install it. if it's not optional, try our best.
+    // Use platform data from node if available (from lockfile), otherwise fall back to manifest
+    const platformData = node.platform ?? manifest
     if (
       onErr &&
       (manifest.deprecated ||
         !platformCheck(
-          manifest,
+          platformData,
           process.version,
           process.platform,
           process.arch,

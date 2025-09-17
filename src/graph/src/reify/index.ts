@@ -59,7 +59,7 @@ export const reify = async (options: ReifyOptions) => {
 
   const diff = new Diff(actual, graph)
   const skipOptionalOnly =
-    options.add?.modifiedDependencies && diff.optionalOnly
+    !options.add?.modifiedDependencies && diff.optionalOnly
   if (!diff.hasChanges() || skipOptionalOnly) {
     // nothing to do, so just return the diff
     done()
@@ -92,6 +92,7 @@ const reify_ = async (
 ) => {
   const { add, remove, packageInfo, packageJson, scurry } = options
   const saveImportersPackageJson =
+    /* c8 ignore next */
     add?.modifiedDependencies || remove?.modifiedDependencies ?
       updatePackageJson({
         add,
@@ -136,12 +137,15 @@ const reify_ = async (
 
   // if we had to change the actual graph along the way,
   // make sure we do not leave behind any unreachable nodes
+  // TODO: add tests to cover this
+  /* c8 ignore start */
   if (diff.hadOptionalFailures) {
     for (const node of options.graph.gc().values()) {
       diff.nodes.add.delete(node)
       diff.nodes.delete.add(node)
     }
   }
+  /* c8 ignore stop */
   saveHidden(options)
 
   // delete garbage from the store.

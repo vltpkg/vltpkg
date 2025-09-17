@@ -24,6 +24,7 @@ import type {
   LockfileEdges,
   LockfileEdgeValue,
   LockfileNode,
+  LockfilePlatform,
 } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
 
@@ -89,6 +90,11 @@ const formatNodes = (
           node.rawManifest,
         )
       }
+    }
+
+    // Always save platform data for optional dependencies if available
+    if (node.optional && node.platform) {
+      lockfileNode[7] = node.platform as LockfilePlatform
     }
 
     res[node.id] = lockfileNode

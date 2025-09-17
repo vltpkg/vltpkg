@@ -699,3 +699,135 @@ t.test(
     )
   },
 )
+
+t.test('save platform data for optional dependencies', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+    },
+    optionalDependencies: {
+      bar: '^1.0.0',
+      baz: '^1.0.0',
+    },
+  }
+
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  // Regular dependency (should not have platform data in lockfile)
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@^1.0.0'),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      engines: { node: '>=14' },
+      os: ['linux', 'darwin'],
+      cpu: ['x64', 'arm64'],
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!foo) throw new Error('Missing foo package')
+  foo.setResolved()
+
+  // Optional dependency with platform requirements
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'optional',
+    Spec.parse('bar@^1.0.0'),
+    {
+      name: 'bar',
+      version: '1.0.0',
+      engines: { node: '>=16' },
+      os: ['linux'],
+      cpu: ['x64'],
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!bar) throw new Error('Missing bar package')
+  bar.setResolved()
+  bar.optional = true
+
+  // Optional dependency without platform requirements
+  const baz = graph.placePackage(
+    graph.mainImporter,
+    'optional',
+    Spec.parse('baz@^1.0.0'),
+    {
+      name: 'baz',
+      version: '1.0.0',
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!baz) throw new Error('Missing baz package')
+  baz.setResolved()
+  baz.optional = true
+
+  // Save the lockfile and check that platform data is included for optional deps
+  save({ ...configData, graph })
+  const lockfileContent = JSON.parse(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+      encoding: 'utf8',
+    }),
+  )
+
+  // Verify platform data is saved for bar but not for foo or baz
+  // Debug: log all node keys to see what format they're using
+  const nodeKeys = Object.keys(lockfileContent.nodes)
+  t.comment('Node keys in lockfile:', nodeKeys)
+
+  // Find the actual key for bar
+  const barKey = nodeKeys.find(k => k.includes('bar'))
+  const barNode = barKey ? lockfileContent.nodes[barKey] : undefined
+  t.ok(barNode, 'bar node exists in lockfile')
+  t.ok(barNode?.[7], 'bar has platform data at index 7')
+  t.same(
+    barNode?.[7],
+    {
+      engines: { node: '>=16' },
+      os: ['linux'],
+      cpu: ['x64'],
+    },
+    'bar platform data is correct',
+  )
+
+  const fooKey = nodeKeys.find(k => k.includes('foo'))
+  const fooNode = fooKey ? lockfileContent.nodes[fooKey] : undefined
+  t.ok(fooNode, 'foo node exists in lockfile')
+  t.notOk(
+    fooNode?.[7],
+    'foo does not have platform data (not optional)',
+  )
+
+  const bazKey = nodeKeys.find(k => k.includes('baz'))
+  const bazNode = bazKey ? lockfileContent.nodes[bazKey] : undefined
+  t.ok(bazNode, 'baz node exists in lockfile')
+  t.notOk(
+    bazNode?.[7],
+    'baz does not have platform data (no platform requirements)',
+  )
+
+  t.matchSnapshot(
+    JSON.stringify(lockfileContent, null, 2),
+    'lockfile with platform data for optional dependencies',
+  )
+})

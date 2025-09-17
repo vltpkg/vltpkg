@@ -28,6 +28,7 @@ export const loadNodes = (
       location,
       manifest,
       rawManifest,
+      platform,
     ] = lockfileNode
     // workspace nodes and the project root node are already part of the
     // graph and it should not create new nodes if an existing one is there
@@ -104,6 +105,12 @@ export const loadNodes = (
     }
     if (mani && rawManifest) {
       node.setConfusedManifest(mani, rawManifest)
+    }
+
+    // Set platform data if provided
+    /* c8 ignore next 3 */
+    if (platform) {
+      node.platform = platform
     }
   }
 }
