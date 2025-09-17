@@ -13,10 +13,9 @@ import { DataTable } from '@/components/data-table/data-table.tsx'
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.tsx'
 import { selectorColumns } from '@/components/help-selectors/selector-table-columns.tsx'
 import { Input } from '@/components/ui/input.tsx'
-import Markdown from 'react-markdown'
-import { markdownComponents } from '@/components/markdown-components.tsx'
 import { selectorsContent } from '@/components/help-selectors/content.ts'
 import { cn } from '@/lib/utils.ts'
+import { Markdown } from '@/components/markdown-components.tsx'
 
 import type { Table, VisibilityState } from '@tanstack/react-table'
 import type { Selector } from '@/lib/constants/index.ts'
@@ -31,9 +30,7 @@ export const HelpSelectors = () => {
     <section className="flex h-full w-full flex-col">
       <div className="flex max-w-8xl flex-col pt-8">
         <div className="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
-          <Markdown components={markdownComponents}>
-            {selectorsContent}
-          </Markdown>
+          <Markdown>{selectorsContent}</Markdown>
         </div>
         <SelectorsTable className="py-8" />
       </div>
