@@ -1,0 +1,110 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultsPaginationNavigation renders default 1`] = `
+
+<div class="flex gap-2 overflow-x-auto">
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700 [&amp;>.option-icon]:text-foreground"
+  >
+    <gui-list-icon classname="option-icon size-4">
+    </gui-list-icon>
+    <span>
+      Alphabetical
+    </span>
+    <div class="flex flex-col items-center justify-center [&amp;_svg]:size-2.5 [&amp;>.ascending]:text-foreground">
+      <gui-chevron-up-icon classname="ascending">
+      </gui-chevron-up-icon>
+      <gui-chevron-down-icon classname="descending">
+      </gui-chevron-down-icon>
+    </div>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+  >
+    <gui-layers-icon classname="option-icon size-4">
+    </gui-layers-icon>
+    <span>
+      Version
+    </span>
+    <div class="flex flex-col items-center justify-center [&amp;_svg]:size-2.5 [&amp;_svg]:opacity-40">
+      <gui-chevron-up-icon classname="ascending">
+      </gui-chevron-up-icon>
+      <gui-chevron-down-icon classname="descending">
+      </gui-chevron-down-icon>
+    </div>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+  >
+    <gui-send-to-back-icon classname="option-icon size-4">
+    </gui-send-to-back-icon>
+    <span>
+      Dependency type
+    </span>
+    <div class="flex flex-col items-center justify-center [&amp;_svg]:size-2.5 [&amp;_svg]:opacity-40">
+      <gui-chevron-up-icon classname="ascending">
+      </gui-chevron-up-icon>
+      <gui-chevron-down-icon classname="descending">
+      </gui-chevron-down-icon>
+    </div>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+  >
+    <gui-gallery-vertical-end-icon classname="option-icon size-4">
+    </gui-gallery-vertical-end-icon>
+    <span>
+      Dependents
+    </span>
+    <div class="flex flex-col items-center justify-center [&amp;_svg]:size-2.5 [&amp;_svg]:opacity-40">
+      <gui-chevron-up-icon classname="ascending">
+      </gui-chevron-up-icon>
+      <gui-chevron-down-icon classname="descending">
+      </gui-chevron-down-icon>
+    </div>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+  >
+    <gui-blocks-icon classname="option-icon size-4">
+    </gui-blocks-icon>
+    <span>
+      Module type
+    </span>
+    <div class="flex flex-col items-center justify-center [&amp;_svg]:size-2.5 [&amp;_svg]:opacity-40">
+      <gui-chevron-up-icon classname="ascending">
+      </gui-chevron-up-icon>
+      <gui-chevron-down-icon classname="descending">
+      </gui-chevron-down-icon>
+    </div>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+  >
+    <gui-circle-gauge-icon classname="option-icon size-4">
+    </gui-circle-gauge-icon>
+    <span>
+      Overall score
+    </span>
+    <div class="flex flex-col items-center justify-center [&amp;_svg]:size-2.5 [&amp;_svg]:opacity-40">
+      <gui-chevron-up-icon classname="ascending">
+      </gui-chevron-up-icon>
+      <gui-chevron-down-icon classname="descending">
+      </gui-chevron-down-icon>
+    </div>
+  </gui-button>
+</div>
+
+`;

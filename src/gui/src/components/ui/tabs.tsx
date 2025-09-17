@@ -213,7 +213,7 @@ const TabsTrigger = React.forwardRef<
                 layout
                 className="absolute w-full bg-primary"
                 style={{
-                  bottom: -6,
+                  bottom: -4,
                   height: 2,
                   originY: '0px',
                 }}
