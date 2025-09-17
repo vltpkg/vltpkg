@@ -1,0 +1,289 @@
+---
+title: Security & Malware Detection
+sidebar:
+  label: Security
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+VLT provides powerful security analysis capabilities through
+integration with [Socket](https://socket.dev/), enabling you to
+identify and assess security risks in your dependencies. This guide
+covers how to use VLT's security-focused selectors to detect malware,
+vulnerabilities, and other security issues.
+
+## Quick Security Scan
+
+### Check for Any Malware
+
+The simplest way to check for malware in your dependencies is using
+the parameterless `:malware` selector:
+
+<Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
+
+This command finds packages with **medium or higher severity** malware
+alerts (critical, high, medium) but excludes low-severity alerts to
+focus on more serious threats.
+
+### Check for All Security Issues
+
+Get a comprehensive overview of all security-related packages:
+
+<Code code="$ vlt query ':scanned'" title="Terminal" lang="bash" />
+
+This shows all packages that have been analyzed by Socket's security
+scanning.
+
+## Malware Detection
+
+### Severity-Based Detection
+
+VLT categorizes malware alerts into four severity levels:
+
+- **Critical (0)** - Immediate security threat
+- **High (1)** - Serious security risk
+- **Medium (2)** - Moderate security concern
+- **Low (3)** - Minor security note
+
+<Code
+  code={`# Find critical malware only
+$ vlt query ':malware(critical)'
+
+# Find high severity and above
+
+$ vlt query ':malware(">=high")'
+
+# Find specific severity levels
+
+$ vlt query ':malware(medium)'
+
+# Include low severity alerts
+
+$ vlt query ':malware(low)'`} title="Terminal" lang="bash" />
+
+> [!NOTE] Low severity malware alerts are AI-generated and may detect
+> benign behavior.
+
+### Advanced Malware Queries
+
+<Code
+  code={`# Find direct dependencies with malware
+$ vlt query ':root > :malware'
+
+# Find malware in production dependencies
+
+$ vlt query ':prod :malware'
+
+# Find malware in workspaces
+
+$ vlt query ':workspace :malware'`} title="Terminal" lang="bash" />
+
+## Vulnerability Detection
+
+### CVE, CWE, and Severity-Based Searches
+
+<Code
+  code={`# Find packages affected by specific CVEs
+$ vlt query ':cve(CVE-2023-1234)'
+
+# Find packages with specific weakness types (CWE)
+
+$ vlt query ':cwe(CWE-79)'
+
+# Find packages based on CVE severity
+
+$ vlt query ':severity(critical)' $ vlt query ':severity(">medium")'`}
+title="Terminal" lang="bash" />
+
+## Behavioral Security Risks
+
+### Code Execution Risks
+
+<Code
+  code={`# Dynamic code execution
+$ vlt query ':eval'
+
+# Shell access
+
+$ vlt query ':shell'
+
+# Install scripts
+
+$ vlt query ':scripts'`} title="Terminal" lang="bash" />
+
+### Data Access Risks
+
+<Code
+  code={`# File system access
+$ vlt query ':fs'
+
+# Network access
+
+$ vlt query ':network'
+
+# Environment variables
+
+$ vlt query ':env'`} title="Terminal" lang="bash" />
+
+### Code Quality Concerns
+
+<Code
+  code={`# Obfuscated code
+$ vlt query ':obfuscated'
+
+# Minified code
+
+$ vlt query ':minified'
+
+# High entropy strings
+
+$ vlt query ':entropic'`} title="Terminal" lang="bash" />
+
+## Package Trust & Maintenance
+
+### Package Legitimacy
+
+<Code
+  code={`# Typosquatting detection
+$ vlt query ':squat(critical)'
+
+# Abandoned packages
+
+$ vlt query ':abandoned'
+
+# Manifest confusion
+
+$ vlt query ':confused'`} title="Terminal" lang="bash" />
+
+### Maintenance Status
+
+<Code
+  code={`# Deprecated packages
+$ vlt query ':deprecated'
+
+# Unmaintained packages
+
+$ vlt query ':unmaintained'
+
+# Unstable ownership
+
+$ vlt query ':unstable'`} title="Terminal" lang="bash" />
+
+## License Compliance
+
+### License Issues
+
+<Code
+  code={`# Unlicensed packages
+$ vlt query ':license(unlicensed)'
+
+# Restricted licenses
+
+$ vlt query ':license(restricted)'
+
+# Copyleft licenses
+
+$ vlt query ':license(copyleft)'`} title="Terminal" lang="bash" />
+
+## Security Scoring
+
+<Code
+  code={
+    '# Find packages with low overall security scores\n$ vlt query \':score("<0.5")\'\n\n# Find packages with low vulnerability scores\n$ vlt query \':score("<0.7", "vulnerability")\'\n\n# Find packages with low maintenance scores\n$ vlt query \':score("<0.6", "maintenance")\''
+  }
+  title="Terminal"
+  lang="bash"
+/>
+
+## Comprehensive Security Audit
+
+<Code
+  code={
+    "# Multi-criteria security check - combine multiple selectors\n$ vlt query ':malware, :eval, :shell, :obfuscated'\n\n# Production dependencies security audit\n$ vlt query ':prod (:malware, :cve(*), :deprecated, :abandoned)'\n\n# Workspace security overview\n$ vlt query ':workspace (:malware, :score(\"<0.5\"), :unmaintained)'"
+  }
+  title="Terminal"
+  lang="bash"
+/>
+
+## Cross-Project Security Analysis
+
+### Cross-Project Security Scanning
+
+<Code
+  code={
+    "# Scan multiple projects using host-context\n$ vlt query ':host-context(local) :malware'\n\n# Specific project security check\n$ vlt query ':host-context(\"file:~/my-project\") :malware'"
+  }
+  title="Terminal"
+  lang="bash"
+/>
+
+## Best Practices
+
+### Regular Security Audits
+
+1. **Daily Quick Check**: `vlt query ':malware'`
+2. **Weekly Comprehensive Scan**:
+   `vlt query ':host-context(local) :is(:malware, :not(:scanned))'`
+3. **Before Releasing Projects**:
+   `vlt query ':root :is(:malware, :score("<0.6"))'`
+
+### Automated Security Monitoring
+
+Consider integrating these queries into your CI/CD pipeline:
+
+<Code
+  code={`#!/bin/bash
+# Exit with error if any malware is found (using --expect-results)
+vlt query ':malware' --expect-results=0 || {
+  echo "WARNING: Malware detected in dependencies!"
+  vlt query ':malware'
+  exit 1
+}
+
+# Alternative: Traditional approach with jq
+
+if vlt query ':malware' --view=json | jq -e '.nodes | length > 0';
+then echo "WARNING: Malware detected in dependencies!" vlt query
+':malware' exit 1 fi`} title="security-check.sh" lang="bash" />
+
+### Automation with --expect-results
+
+The `--expect-results` flag is perfect for CI/CD pipelines and
+automated security checks:
+
+<Code
+  code={`# Security gates that fail builds if issues are found
+$ vlt query ':malware' --expect-results=0
+$ vlt query ':cwe(1333)' --expect-results=0 # CWE-1333 is a ReDoS vulnerability
+$ vlt query ':deprecated' --expect-results=0
+
+# Quality gates with thresholds
+
+$ vlt query ':score("<0.5")' --expect-results=0 $ vlt query
+':unmaintained' --expect-results="<3"
+
+# Ensure security scans are working
+
+$ vlt query ':workspace' --expect-results=">0"`} title="Terminal"
+lang="bash" />
+
+### Security-First Development
+
+- Always check new dependencies:
+  `vlt query '#<new-package>:malware, #<new-package> :malware'`
+- Monitor transitive dependencies: `vlt query ':root > * :malware'`
+- Regular maintenance updates:
+  `vlt query ':deprecated, :unmaintained'`
+
+## Understanding Security Data
+
+Security data is provided by [Socket](https://socket.dev/) and
+requires network access to fetch the latest threat intelligence. The
+first query may take longer as security metadata is downloaded and
+cached locally.
+
+For more detailed information about specific security selectors, see
+the
+[Dependency Selector Syntax](/cli/selectors#security-insights-pseudo-classes--states)
+reference.

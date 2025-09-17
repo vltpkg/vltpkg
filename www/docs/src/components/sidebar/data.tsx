@@ -42,6 +42,7 @@ export const iconMap: Partial<Record<string, IconName>> = {
   catalogs: 'Database',
   registries: 'Globe',
   selectors: 'Search',
+  security: 'Shield',
   workspaces: 'Folder',
   'graph modifiers': 'GitBranch',
   cache: 'Cache',
