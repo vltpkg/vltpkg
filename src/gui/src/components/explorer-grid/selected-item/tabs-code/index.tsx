@@ -83,7 +83,7 @@ export const CodeTabContent = () => {
     setView('code')
     setFilter('')
     reset()
-  }, [breadcrumbs, reset])
+  }, [breadcrumbs]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Default to preview for markdown files when a file is selected
