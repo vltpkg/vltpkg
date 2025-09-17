@@ -245,3 +245,44 @@ t.test('graph data for missing project', async t => {
     },
   })
 })
+
+t.test(
+  'loadGraph passes manifest and flags to actual.load',
+  async t => {
+    const projectRoot = t.testdir({})
+    const manifest = { name: 'proj' }
+    let called = false
+
+    const { loadGraph } = await t.mockImport<
+      typeof import('../src/graph-data.ts')
+    >('../src/graph-data.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: (opts: any) => {
+            called = true
+            t.equal(opts.projectRoot, projectRoot)
+            t.same(opts.mainManifest, manifest)
+            t.equal(opts.loadManifests, true)
+            t.equal(opts.skipHiddenLockfile, false)
+            t.equal(opts.skipLoadingNodesOnModifiersChange, false)
+            return { ok: true }
+          },
+        },
+      },
+    })
+
+    const result = loadGraph({
+      projectRoot,
+      // minimal packageJson impl needed by loadGraph
+      packageJson: {
+        read: (root: string) => {
+          t.equal(root, projectRoot)
+          return manifest as any
+        },
+      },
+    } as any)
+
+    t.ok(called)
+    t.strictSame(result, { ok: true })
+  },
+)
