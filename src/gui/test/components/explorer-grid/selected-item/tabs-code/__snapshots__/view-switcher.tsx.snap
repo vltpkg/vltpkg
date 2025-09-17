@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ViewSwitcher renders with code active 1`] = `
+
+<div class="flex h-8 items-center gap-2 rounded-xl border px-1 py-2 border-neutral-300 dark:border-neutral-700">
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+  >
+    <span class="z-[2] inline-flex items-center gap-2">
+      <gui-code-icon>
+      </gui-code-icon>
+      <span>
+        Code
+      </span>
+    </span>
+    <div class="absolute inset-0 z-[1] rounded-lg border transition-colors duration-150 border-neutral-300 bg-white group-hover/view-switcher:border-neutral-200 group-hover/view-switcher:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 group-hover/view-switcher:dark:border-neutral-600 group-hover/view-switcher:dark:bg-neutral-700">
+    </div>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+  >
+    <span class="z-[2] inline-flex items-center gap-2">
+      <gui-heading1-icon>
+      </gui-heading1-icon>
+      <span>
+        Preview
+      </span>
+    </span>
+  </gui-button>
+</div>
+
+`;
+
+exports[`ViewSwitcher renders with preview active 1`] = `
+
+<div class="flex h-8 items-center gap-2 rounded-xl border px-1 py-2 border-neutral-300 dark:border-neutral-700">
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+  >
+    <span class="z-[2] inline-flex items-center gap-2">
+      <gui-code-icon>
+      </gui-code-icon>
+      <span>
+        Code
+      </span>
+    </span>
+  </gui-button>
+  <gui-button
+    variant="outline"
+    size="sm"
+    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+  >
+    <span class="z-[2] inline-flex items-center gap-2">
+      <gui-heading1-icon>
+      </gui-heading1-icon>
+      <span>
+        Preview
+      </span>
+    </span>
+    <div class="absolute inset-0 z-[1] rounded-lg border transition-colors duration-150 border-neutral-300 bg-white group-hover/view-switcher:border-neutral-200 group-hover/view-switcher:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 group-hover/view-switcher:dark:border-neutral-600 group-hover/view-switcher:dark:bg-neutral-700">
+    </div>
+  </gui-button>
+</div>
+
+`;
