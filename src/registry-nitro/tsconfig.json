@@ -26,7 +26,7 @@
     // "noUnusedParameters": true,
 
     // Libs & paths
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "baseUrl": "."
   }
 }
