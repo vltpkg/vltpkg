@@ -594,12 +594,6 @@ export const normalizeEngines = (
     return Object.keys(engines).length === 0 ? undefined : engines
   }
 
-  /* c8 ignore next 3 */
-  if (isRecordStringString(engines)) {
-    // Return undefined if empty object
-    return Object.keys(engines).length === 0 ? undefined : engines
-  }
-
   // Invalid format
   return
 }

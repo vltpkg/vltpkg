@@ -2632,7 +2632,7 @@ t.test('normalizeEngines', t => {
 
   t.test('handles empty engines object', t => {
     const result = normalizeEngines({})
-    t.same(result, {})
+    t.same(result, undefined)
     t.end()
   })
 
