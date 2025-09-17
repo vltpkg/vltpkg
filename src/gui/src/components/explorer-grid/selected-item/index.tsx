@@ -200,7 +200,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
   }
 
   return (
-    <>
+    <section>
       <AnimatePresence initial={false} mode="wait">
         {focused ?
           <FocusedView
@@ -271,6 +271,6 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
           </motion.div>
         }
       </AnimatePresence>
-    </>
+    </section>
   )
 }

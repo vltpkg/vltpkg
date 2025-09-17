@@ -3,12 +3,10 @@
 exports[`ExplorerGrid render default 1`] = `
 
 <div>
-  <section>
-    <div class="px-8 py-4">
-      <gui-empty-results-state>
-      </gui-empty-results-state>
-    </div>
-  </section>
+  <div class="px-8 py-4">
+    <gui-empty-results-state>
+    </gui-empty-results-state>
+  </div>
 </div>
 
 `;
@@ -16,10 +14,8 @@ exports[`ExplorerGrid render default 1`] = `
 exports[`ExplorerGrid renders workspace with edges in 1`] = `
 
 <div>
-  <section>
-    <gui-selected-item item="[object Object]">
-    </gui-selected-item>
-  </section>
+  <gui-selected-item item="[object Object]">
+  </gui-selected-item>
 </div>
 
 `;
@@ -27,24 +23,38 @@ exports[`ExplorerGrid renders workspace with edges in 1`] = `
 exports[`ExplorerGrid with results 1`] = `
 
 <div>
-  <section>
-    <div class="mt-8 grid w-full max-w-8xl gap-4 px-8 py-4">
-      <div class="flex items-center gap-3">
-        <gui-grid-header classname="h-fit">
-          Results
-        </gui-grid-header>
-        <gui-badge variant="default">
-          2
-        </gui-badge>
+  <gui-results-provider allitems="[object Object],[object Object]">
+    <section class="flex h-full flex-col">
+      <div class="mx-auto mt-2 w-full max-w-8xl grow px-8 py-4">
+        <div class="flex flex-col gap-3">
+          <h3 class="inline-flex items-baseline gap-2 text-lg">
+            Results
+            <span class="font-mono text-sm tabular-nums text-muted-foreground">
+              (3)
+            </span>
+          </h3>
+          <div class="flex items-center gap-2">
+            <gui-results-sort>
+            </gui-results-sort>
+          </div>
+        </div>
+        <div class="flex flex-col gap-5 mt-4">
+          <gui-result-item item="[object Object]">
+          </gui-result-item>
+          <gui-result-item item="[object Object]">
+          </gui-result-item>
+          <gui-result-item item="[object Object]">
+          </gui-result-item>
+        </div>
       </div>
-      <div class="flex flex-col gap-5">
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
+      <div class="mx-auto grid w-full max-w-8xl grid-cols-12 items-center px-8 py-4">
+        <gui-result-page-options classname="col-span-3">
+        </gui-result-page-options>
+        <gui-results-pagination-navigation classname="col-span-6 col-start-4">
+        </gui-results-pagination-navigation>
       </div>
-    </div>
-  </section>
+    </section>
+  </gui-results-provider>
 </div>
 
 `;
@@ -52,24 +62,38 @@ exports[`ExplorerGrid with results 1`] = `
 exports[`ExplorerGrid with stack 1`] = `
 
 <div>
-  <section>
-    <div class="mt-8 grid w-full max-w-8xl gap-4 px-8 py-4">
-      <div class="flex items-center gap-3">
-        <gui-grid-header classname="h-fit">
-          Results
-        </gui-grid-header>
-        <gui-badge variant="default">
-          2
-        </gui-badge>
+  <gui-results-provider allitems="[object Object],[object Object]">
+    <section class="flex h-full flex-col">
+      <div class="mx-auto mt-2 w-full max-w-8xl grow px-8 py-4">
+        <div class="flex flex-col gap-3">
+          <h3 class="inline-flex items-baseline gap-2 text-lg">
+            Results
+            <span class="font-mono text-sm tabular-nums text-muted-foreground">
+              (3)
+            </span>
+          </h3>
+          <div class="flex items-center gap-2">
+            <gui-results-sort>
+            </gui-results-sort>
+          </div>
+        </div>
+        <div class="flex flex-col gap-5 mt-4">
+          <gui-result-item item="[object Object]">
+          </gui-result-item>
+          <gui-result-item item="[object Object]">
+          </gui-result-item>
+          <gui-result-item item="[object Object]">
+          </gui-result-item>
+        </div>
       </div>
-      <div class="flex flex-col gap-5">
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
+      <div class="mx-auto grid w-full max-w-8xl grid-cols-12 items-center px-8 py-4">
+        <gui-result-page-options classname="col-span-3">
+        </gui-result-page-options>
+        <gui-results-pagination-navigation classname="col-span-6 col-start-4">
+        </gui-results-pagination-navigation>
       </div>
-    </div>
-  </section>
+    </section>
+  </gui-results-provider>
 </div>
 
 `;

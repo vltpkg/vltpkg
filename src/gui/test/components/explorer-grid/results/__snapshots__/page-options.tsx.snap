@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultPageOptions renders default 1`] = `
+
+<gui-dropdown-menu>
+  <gui-dropdown-menu-trigger aschild="true">
+    <gui-button
+      variant="outline"
+      size="sm"
+      classname="w-fit rounded-xl border border-neutral-200 bg-white hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 [&amp;_svg]:data-[state=open]:-rotate-90"
+    >
+      <span>
+        Showing 25
+      </span>
+      <gui-chevron-right-icon classname="chevron text-neutral-500 transition-transform duration-150">
+      </gui-chevron-right-icon>
+    </gui-button>
+  </gui-dropdown-menu-trigger>
+  <gui-dropdown-menu-content
+    align="start"
+    classname="rounded-xl shadow-none"
+  >
+    <gui-dropdown-menu-group>
+      <gui-dropdown-menu-label classname="text-sm text-muted-foreground">
+        Results per page
+      </gui-dropdown-menu-label>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        25
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        50
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        75
+      </gui-dropdown-menu-item>
+      <gui-dropdown-menu-item classname="rounded-lg">
+        100
+      </gui-dropdown-menu-item>
+    </gui-dropdown-menu-group>
+  </gui-dropdown-menu-content>
+</gui-dropdown-menu>
+
+`;
