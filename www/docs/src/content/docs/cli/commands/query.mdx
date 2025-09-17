@@ -48,6 +48,18 @@ Query packages with names starting with "@vltpkg"
   lang="bash"
 />
 
+Check for malware in dependencies
+
+<Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
+
+Find packages with critical security issues
+
+<Code
+  code="$ vlt query ':malware(critical), :cve(*), :eval'"
+  title="Terminal"
+  lang="bash"
+/>
+
 ## Options
 
 ### view
@@ -57,3 +69,29 @@ Output format. Defaults to human-readable or json if no tty.
 ```
 --view=[human | json | mermaid | gui]
 ```
+
+### expect-results
+
+Set expected result count for automation and CI/CD pipelines. Exits
+with error code if expectation is not met.
+
+```
+--expect-results=<comparison>
+```
+
+**Examples:**
+
+- `--expect-results=0` - Expect no results (useful for security
+  checks)
+- `--expect-results=">0"` - Expect at least one result
+- `--expect-results="<5"` - Expect fewer than 5 results
+- `--expect-results=">=10"` - Expect 10 or more results
+
+<Code
+  code={`# Security check that fails if malware is found
+$ vlt query ':malware' --expect-results=0
+
+# Ensure at least one workspace exists
+
+$ vlt query ':workspace' --expect-results=">0"`} title="Terminal"
+lang="bash" />
