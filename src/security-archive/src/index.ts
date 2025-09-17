@@ -9,8 +9,7 @@ import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { GraphLike, NodeLike } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec'
+import type { NodeLike } from '@vltpkg/types'
 import type {
   PackageReportData,
   SecurityArchiveLike,
@@ -73,10 +72,9 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
  * socket.dev API. This function checks if a given depID is pointing
  * to the public npm registry and returns `true` if it does.
  */
-const usesTargetRegistry = (
-  depID: DepID,
-  specOptions: SpecOptions,
-): boolean => {
+const usesTargetRegistry = (node: NodeLike): boolean => {
+  const depID = node.id
+  const specOptions = node.options
   const [nodeType, nodeRegistry] = splitDepID(depID)
 
   if (nodeType !== 'registry') {
@@ -99,22 +97,7 @@ export const { version } = loadPackageJson(
 }
 
 /**
- * Retrieves a node from the graph using its name and version.
- */
-const retrieveNodeFromGraph = (
-  graph: GraphLike,
-  name: string,
-  version: string,
-): NodeLike | undefined => {
-  for (const node of graph.nodesByName.get(name) ?? []) {
-    if (node.version === version) {
-      return node
-    }
-  }
-}
-
-/**
- * A database of security information for given packages in a graph.
+ * A database of security information for given packages from a list of nodes.
  *
  * Using the SecurityArchive.refresh() method will update the local cache
  * with information from the socket.dev APIs or load from the local storage
@@ -129,10 +112,12 @@ export class SecurityArchive
   #pUpdateExpired: Promise<void> | undefined
   #path: string
   #retries: number
+  #nodesByName = new Map<string, Set<NodeLike>>()
+  #nodesByID = new Map<DepID, NodeLike>()
 
   /**
-   * True if the refresh process was successful and report data
-   * is available for all public registry packages in the graph.
+   * True if the refresh process was successful and report data is available
+   * for all public registry packages from the initial list of nodes.
    */
   ok = false
 
@@ -175,6 +160,20 @@ export class SecurityArchive
   }
 
   /**
+   * Retrieves a node using its name and version.
+   */
+  #retrieveNodeByNameVersion(
+    name: string,
+    version: string,
+  ): NodeLike | undefined {
+    for (const node of this.#nodesByName.get(name) ?? []) {
+      if (node.version === version) {
+        return node
+      }
+    }
+  }
+
+  /**
    * Opens a connection to the database at the given path.
    */
   #openDatabase(): DatabaseSync {
@@ -197,9 +196,9 @@ export class SecurityArchive
   /**
    * Loads all valid items found in the database into the in-memory cache.
    */
-  #loadItemsFromDatabase(db: DatabaseSync, graph: GraphLike): void {
+  #loadItemsFromDatabase(db: DatabaseSync, nodes: NodeLike[]): void {
     const depIDs: string[] = []
-    for (const node of graph.nodes.values()) {
+    for (const node of nodes) {
       depIDs.push(`'${baseDepID(node.id)}'`)
     }
     // retrieves from the db packages using their dep-id reference
@@ -233,22 +232,26 @@ export class SecurityArchive
     // cli commands that make usage of the security-archive, e.g: vlt ls,
     // vlt query to not hang while waiting for stale-while-revalidate
     // request to finish and close the db connection
-    this.#pUpdateExpired = this.#updateExpired(db, graph)
+    this.#pUpdateExpired = this.#updateExpired(db)
   }
 
   /**
    * Updates the database with renewed entries for expired packages.
    */
-  async #updateExpired(
-    db: DatabaseSync,
-    graph: GraphLike,
-  ): Promise<void> {
+  async #updateExpired(db: DatabaseSync): Promise<void> {
     const expiredQueue = new Set<Record<'purl', string>>()
     for (const depID of this.#expired) {
-      const node = graph.nodes.get(baseDepID(depID))
+      const node = this.#nodesByID.get(baseDepID(depID))
 
-      /* c8 ignore next */
-      if (!node) continue
+      /* c8 ignore start */
+      if (!node?.version) {
+        // skip any missing node or nodes without a version, this
+        // should not happen, but some optional dependencies might
+        // end up in this state when reading from the lockfile
+        continue
+      }
+      /* c8 ignore stop */
+
       const purl = `pkg:npm/${node.name}@${node.version}`
       expiredQueue.add({ purl })
     }
@@ -257,7 +260,7 @@ export class SecurityArchive
         () => this.#retrieveRemoteData(expiredQueue),
         { retries: this.#retries },
       )
-      const ids = this.#loadFromNDJSON(res, graph)
+      const ids = this.#loadFromNDJSON(res)
       this.#storeNewItemsToDatabase(db, ids)
     }
   }
@@ -265,19 +268,15 @@ export class SecurityArchive
   /**
    * Queues up all required packages that are missing from the archive.
    */
-  #queueUpRequiredPackages(
-    graph: GraphLike,
-    specOptions: SpecOptions,
-  ): Set<Record<'purl', string>> {
+  #queueUpRequiredPackages(): Set<Record<'purl', string>> {
     const queue = new Set<Record<'purl', string>>()
-    const nodes = graph.nodes.values()
-    for (const node of nodes) {
+    for (const node of this.#nodesByID.values()) {
       const normalizedId = baseDepID(node.id)
       // only queue up valid public registry
       // references that are missing from the archive
       // also skips any pkg marked as expired
       if (
-        usesTargetRegistry(node.id, specOptions) &&
+        usesTargetRegistry(node) &&
         !this.has(normalizedId) &&
         !this.#expired.has(normalizedId)
       ) {
@@ -323,7 +322,7 @@ export class SecurityArchive
    * Parses and load NDJSON data into the in-memory cache.
    * Returns a set of dep ids that were successfully loaded.
    */
-  #loadFromNDJSON(str: string, graph: GraphLike): Set<DepID> {
+  #loadFromNDJSON(str: string): Set<DepID> {
     // builds a set of dep ids that were successfully fetched and loaded
     const fetchedDepIDs = new Set<DepID>()
     const json = str.split('}\n')
@@ -332,7 +331,7 @@ export class SecurityArchive
       const data = JSON.parse(line + '}') as JSONItemResponse
       const scope = data.namespace ? `${data.namespace}/` : ''
       const name = `${scope}${data.name}`
-      const node = retrieveNodeFromGraph(graph, name, data.version)
+      const node = this.#retrieveNodeByNameVersion(name, data.version)
       if (node) {
         const normalizedId = baseDepID(node.id)
         fetchedDepIDs.add(baseDepID(node.id))
@@ -401,12 +400,12 @@ export class SecurityArchive
   }
 
   /**
-   * Validates that all public-registry packages in the graph
+   * Validates that all public-registry packages in the nodes
    * have a valid report data in the current in-memory cache.
    */
-  #validateReportData(graph: GraphLike, specOptions: SpecOptions) {
-    for (const node of graph.nodes.values()) {
-      if (usesTargetRegistry(node.id, specOptions)) {
+  #validateReportData() {
+    for (const node of this.#nodesByID.values()) {
+      if (usesTargetRegistry(node)) {
         if (!this.has(baseDepID(node.id))) {
           this.ok = false
           return
@@ -417,25 +416,35 @@ export class SecurityArchive
   }
 
   /**
-   * Starts the security archive by providing a {@link GraphLike} instance,
+   * Starts the security archive by providing an array of {@link NodeLike} instances,
    * its registry-based nodes are going to be used as valid potential entries.
    *
    * Any entry that is missing from the persisted cached values are going
    * to be requested in a batch-request to the remote socket.dev API.
    */
-  async refresh({
-    graph,
-    specOptions,
-  }: SecurityArchiveRefreshOptions) {
+  async refresh({ nodes }: SecurityArchiveRefreshOptions) {
     // should start by clearing the current in-memory cache
     this.clear()
 
     const db = this.#openDatabase()
 
-    try {
-      this.#loadItemsFromDatabase(db, graph)
+    // indexes nodes by name and id for quick lookup
+    this.#nodesByName.clear()
+    this.#nodesByID.clear()
+    for (const node of nodes) {
+      /* c8 ignore start */
+      const setByName =
+        this.#nodesByName.get(node.name ?? '') ?? new Set()
+      setByName.add(node)
+      this.#nodesByName.set(node.name ?? '', setByName)
+      /* c8 ignore stop */
+      this.#nodesByID.set(baseDepID(node.id), node)
+    }
 
-      const queue = this.#queueUpRequiredPackages(graph, specOptions)
+    try {
+      this.#loadItemsFromDatabase(db, nodes)
+
+      const queue = this.#queueUpRequiredPackages()
       // only reach for the remote API if there are packages queued up
       if (queue.size > 0) {
         // Parse the response data
@@ -443,12 +452,12 @@ export class SecurityArchive
           () => this.#retrieveRemoteData(queue),
           { retries: this.#retries },
         )
-        const ids = this.#loadFromNDJSON(res, graph)
+        const ids = this.#loadFromNDJSON(res)
         this.#storeNewItemsToDatabase(db, ids)
       }
 
       // validates the refresh process was successful
-      this.#validateReportData(graph, specOptions)
+      this.#validateReportData()
     } finally {
       // TODO: once we move the stale-while-revalidate to a detached process
       // the this.#close method no longer needs to be async

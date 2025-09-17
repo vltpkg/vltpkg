@@ -82,6 +82,21 @@ export class PackageJson {
     }
   }
 
+  /**
+   * Optionally reads and parses contents of a `package.json` file at a
+   * directory `dir`. Returns `undefined` if it could not be read.
+   */
+  maybeRead(
+    dir: string,
+    { reload }: { reload?: boolean } = {},
+  ): NormalizedManifest | undefined {
+    try {
+      return this.read(dir, { reload })
+    } catch {
+      return undefined
+    }
+  }
+
   write(
     dir: string,
     manifest: NormalizedManifest,

@@ -6,6 +6,7 @@ import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
 import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
+import { createHostContextsMap } from '@/lib/query-host-contexts.ts'
 import type { TransferData, Action, State } from '@/state/types.ts'
 
 export type ExplorerOptions = {
@@ -35,7 +36,17 @@ const startGraphData = async ({
   }
 
   const { graph, specOptions, securityArchive } = transfer.load(data)
-  const q = new Query({ graph, specOptions, securityArchive })
+  const hostContexts = await createHostContextsMap()
+  const nodes = new Set(graph.nodes.values())
+  const edges = graph.edges
+  const importers = graph.importers
+  const q = new Query({
+    edges,
+    nodes,
+    importers,
+    securityArchive,
+    hostContexts,
+  })
 
   updateHasDashboard(data.hasDashboard)
   updateGraph(graph)

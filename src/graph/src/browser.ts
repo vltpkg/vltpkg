@@ -10,6 +10,8 @@ export type {
   TransferData,
 } from './transfer-data/load.ts'
 
+export * from './virtual-root.ts'
+
 const lockfile = {
   loadEdges,
   loadNodes,

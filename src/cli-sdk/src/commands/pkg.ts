@@ -1,19 +1,21 @@
+import assert from 'node:assert'
 import { resolve } from 'node:path'
 import * as dotProp from '@vltpkg/dot-prop'
 import { error } from '@vltpkg/error-cause'
-import type { PackageJson } from '@vltpkg/package-json'
-import type { NormalizedManifest } from '@vltpkg/types'
-import assert from 'node:assert'
-import { commandUsage } from '../config/usage.ts'
-import type { CommandFn, CommandUsage } from '../index.ts'
-import type { LoadedConfig } from '../config/index.ts'
 import { init } from '@vltpkg/init'
-import type { InitFileResults } from '@vltpkg/init'
-import type { Views } from '../view.ts'
-import { views as initViews } from './init.ts'
-import { actual, GraphModifier } from '@vltpkg/graph'
+import { actual, GraphModifier, VIRTUAL_ROOT_ID } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import { views as initViews } from './init.ts'
+import { commandUsage } from '../config/usage.ts'
+import { createHostContextsMap } from '../query-host-contexts.ts'
+import type { Graph } from '@vltpkg/graph'
+import type { PackageJson } from '@vltpkg/package-json'
+import type { NormalizedManifest, NodeLike } from '@vltpkg/types'
+import type { InitFileResults } from '@vltpkg/init'
+import type { CommandFn, CommandUsage } from '../index.ts'
+import type { LoadedConfig } from '../config/index.ts'
+import type { Views } from '../view.ts'
 
 export const views = {
   human: (results, _, config) => {
@@ -96,41 +98,56 @@ export const command: CommandFn = async conf => {
 
   if (queryString) {
     const modifiers = GraphModifier.maybeLoad(options)
-    const graph = actual.load({
-      ...options,
-      mainManifest: options.packageJson.read(projectRoot),
-      modifiers,
-      monorepo: options.monorepo,
-      loadManifests: false,
-    })
+    const mainManifest = options.packageJson.maybeRead(projectRoot)
+    let graph: Graph | undefined
+    let securityArchive: SecurityArchive | undefined
 
-    const securityArchive =
-      Query.hasSecuritySelectors(queryString) ?
-        await SecurityArchive.start({
-          graph,
-          specOptions: options,
-        })
-      : undefined
+    if (mainManifest) {
+      graph = actual.load({
+        ...options,
+        mainManifest,
+        modifiers,
+        monorepo: options.monorepo,
+        loadManifests: false,
+      })
+      securityArchive =
+        Query.hasSecuritySelectors(queryString) ?
+          await SecurityArchive.start({
+            nodes: [...graph.nodes.values()],
+          })
+        : undefined
+    }
 
+    const hostContexts = await createHostContextsMap(conf)
+    const edges = graph?.edges ?? new Set()
+    const nodes =
+      graph?.nodes ?
+        new Set<NodeLike>(graph.nodes.values())
+      : /* c8 ignore next */ new Set<NodeLike>()
+    const importers = graph?.importers ?? new Set()
     const query = new Query({
-      graph,
-      specOptions: options,
+      edges,
+      nodes,
+      importers,
       securityArchive,
+      hostContexts,
     })
 
-    const { nodes } = await query.search(queryString, {
+    const { nodes: resultNodes } = await query.search(queryString, {
       signal: new AbortController().signal,
     })
 
-    for (const node of nodes) {
-      const { location } = node.toJSON()
+    for (const node of resultNodes) {
+      const location = node.location
       assert(
         location,
         error(`node ${node.id} has no location`, {
           found: node,
         }),
       )
-      locations.push(resolve(projectRoot, location))
+      if (node.id !== VIRTUAL_ROOT_ID) {
+        locations.push(resolve(node.projectRoot, location))
+      }
     }
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {

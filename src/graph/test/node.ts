@@ -57,6 +57,7 @@ t.test('Node', async t => {
     './path/to/importer',
     'should return the expected location value for importers',
   )
+  t.strictSame(root.options, opts, 'should have the options')
   t.matchSnapshot(
     inspect(root, { depth: 0 }),
     'should print with special tag name',

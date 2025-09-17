@@ -21,6 +21,7 @@ import { entropic } from './pseudo/entropic.ts'
 import { env } from './pseudo/env.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { fs } from './pseudo/fs.ts'
+import { hostContext } from './pseudo/host-context.ts'
 import { license } from './pseudo/license.ts'
 import { link } from './pseudo/link.ts'
 import { malware } from './pseudo/malware.ts'
@@ -89,9 +90,10 @@ const has = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
           nodes: new Set(state.partial.nodes),
         },
+        hostContexts: state.hostContexts,
+        importers: state.importers,
         retries: state.retries,
         securityArchive: state.securityArchive,
-        specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
         comment: state.comment,
@@ -175,10 +177,11 @@ const is = async (state: ParserState) => {
           nodes: new Set(state.partial.nodes),
           edges: new Set(state.partial.edges),
         },
+        importers: state.importers,
+        hostContexts: state.hostContexts,
         walk: state.walk,
         retries: state.retries,
         securityArchive: state.securityArchive,
-        specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
         comment: state.comment,
@@ -219,10 +222,11 @@ const not = async (state: ParserState) => {
           nodes: new Set(state.partial.nodes),
           edges: new Set(state.partial.edges),
         },
+        importers: state.importers,
+        hostContexts: state.hostContexts,
         walk: state.walk,
         retries: state.retries,
         securityArchive: state.securityArchive,
-        specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
         comment: state.comment,
@@ -301,6 +305,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     env,
     fs,
     has,
+    'host-context': hostContext,
     is,
     license,
     link,

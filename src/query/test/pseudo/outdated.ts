@@ -12,15 +12,7 @@ import {
   getSimpleGraph,
 } from '../fixtures/graph.ts'
 import type { NodeLike } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { ParserState } from '../../src/types.ts'
-
-const specOptions = {
-  registry: 'https://registry.npmjs.org',
-  registries: {
-    custom: 'http://example.com',
-  },
-} as SpecOptions
 
 global.fetch = (async (url: string) => {
   if (url === 'https://registry.npmjs.org/h') {
@@ -133,7 +125,7 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
     walk: async i => i,
     retries: 0,
     securityArchive: undefined,
-    specOptions,
+    importers: new Set(graph.importers),
     signal: new AbortController().signal,
     specificity: { idCounter: 0, commonCounter: 0 },
   }
@@ -287,7 +279,7 @@ t.test('retrieveRemoveVersions', async t => {
     id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
   } as NodeLike
   t.strictSame(
-    await retrieveRemoteVersions(missingName, specOptions),
+    await retrieveRemoteVersions(missingName),
     [],
     'should return an empty array if missing essential info',
   )
@@ -298,7 +290,7 @@ t.test('retrieveRemoveVersions', async t => {
       id: joinDepIDTuple(['registry', '', 'h@1.0.0']),
     } as NodeLike
     await t.rejects(
-      retrieveRemoteVersions(missingName, specOptions),
+      retrieveRemoteVersions(missingName),
       /Failed to fetch packument/,
       'should throw an internal error so that it may be retried',
     )
@@ -310,7 +302,7 @@ t.test('retrieveRemoveVersions', async t => {
       id: joinDepIDTuple(['registry', '', 'i@1.0.0']),
     } as NodeLike
     await t.rejects(
-      retrieveRemoteVersions(missingName, specOptions),
+      retrieveRemoteVersions(missingName),
       /ERR/,
       'should throw the original error that will be retried',
     )

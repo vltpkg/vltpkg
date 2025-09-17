@@ -34,29 +34,27 @@ export type JSONOutputItem = {
 
 export type JSONOutputGraph = {
   edges: EdgeLike[]
-  nodes: NodeLike[]
+  importers: Set<NodeLike>
 }
 
 /**
  * Returns a JSON string representation of the graph.
  */
-export function jsonOutput({ edges, nodes }: JSONOutputGraph) {
+export function jsonOutput({ edges, importers }: JSONOutputGraph) {
   const res: JSONOutputItem[] = []
-
-  // Collects importer nodes as edgeless json output items
-  for (const node of nodes) {
-    if (node.importer) {
-      res.push({
-        /* c8 ignore next - name can't be missing but ts won't know */
-        name: node.name || node.id,
-        to: node,
-        overridden: false,
-      })
-    }
-  }
+  const seenIds = new Set<DepID>()
 
   // Collects edge & it's linked nodes as json output items
-  for (const edge of edges) {
+  const orderedEdges = [...edges].sort((a, b) => {
+    const aIsWorkspace = a.spec.type === 'workspace'
+    const bIsWorkspace = b.spec.type === 'workspace'
+    if (aIsWorkspace && !bIsWorkspace) return -1
+    /* c8 ignore next */
+    if (!aIsWorkspace && bIsWorkspace) return 1
+    return 0 // preserve original order otherwise
+  })
+  for (const edge of orderedEdges) {
+    if (edge.to) seenIds.add(edge.to.id)
     res.push({
       name: edge.name,
       fromID: edge.from.id,
@@ -64,6 +62,23 @@ export function jsonOutput({ edges, nodes }: JSONOutputGraph) {
       type: edge.type,
       to: edge.to,
       overridden: edge.spec.overridden,
+    })
+  }
+
+  // Collects included importer nodes json output items
+  /* c8 ignore next 3 */
+  const orderedImporters = [...importers].sort((a, b) => {
+    if (!a.name) return 1
+    if (!b.name) return -1
+    return a.name.localeCompare(b.name)
+  })
+  for (const node of orderedImporters) {
+    if (seenIds.has(node.id)) continue
+    res.unshift({
+      /* c8 ignore next - name can't be missing but ts won't know */
+      name: node.name || node.id,
+      to: node,
+      overridden: false,
     })
   }
 

@@ -213,6 +213,86 @@ t.test('workspaces', async t => {
   )
 })
 
+t.test('workspaces as dependencies', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({
+      workspaces: { packages: ['./packages/*'] },
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'workspace-a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'workspace-b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const monorepo = Monorepo.load(projectRoot)
+  const graph = new Graph({
+    projectRoot,
+    ...configData,
+    mainManifest,
+    monorepo,
+  })
+
+  // Manually add workspace edges to demonstrate the functionality
+  // This simulates how workspaces could be represented as dependencies
+  const mainImporter = graph.mainImporter
+  mainImporter.workspaces = new Map()
+  const workspaceA = [...graph.importers].find(
+    node => node.name === 'workspace-a',
+  )
+  const workspaceB = [...graph.importers].find(
+    node => node.name === 'workspace-b',
+  )
+
+  if (workspaceA && workspaceB) {
+    // Create edges to represent workspace dependencies in the workspaces map
+    const edgeA = graph.addEdge(
+      'prod',
+      Spec.parse('workspace-a', 'workspace:*'),
+      mainImporter,
+      workspaceA,
+    )
+    const edgeB = graph.addEdge(
+      'prod',
+      Spec.parse('workspace-b', 'workspace:*'),
+      mainImporter,
+      workspaceB,
+    )
+
+    // Add to workspaces map to show they should be treated like edgesOut
+    mainImporter.workspaces.set('workspace-a', edgeA)
+    mainImporter.workspaces.set('workspace-b', edgeB)
+  }
+
+  t.matchSnapshot(
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      {},
+    ),
+    'should print workspaces as dependencies of the main importer',
+  )
+})
+
 t.test('cycle', async t => {
   const projectRoot = t.testdir({ 'vlt.json': '{}' })
   t.chdir(projectRoot)

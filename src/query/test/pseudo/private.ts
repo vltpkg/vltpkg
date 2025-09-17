@@ -31,7 +31,7 @@ t.test('selects packages with private flag', async t => {
       walk: async i => i,
       retries: 0,
       securityArchive: undefined,
-      specOptions: {},
+      importers: new Set(graph.importers),
       signal: new AbortController().signal,
       specificity: { idCounter: 0, commonCounter: 0 },
     }

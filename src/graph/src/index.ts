@@ -12,6 +12,7 @@ export * from './uninstall.ts'
 export * from './update.ts'
 export * from './diff.ts'
 export * from './modifiers.ts'
+export * from './virtual-root.ts'
 
 import { load as actualLoad } from './actual/load.ts'
 import type { LoadOptions as ActualLoadOptions } from './actual/load.ts'

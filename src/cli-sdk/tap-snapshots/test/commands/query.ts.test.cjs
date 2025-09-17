@@ -7,59 +7,59 @@
 'use strict'
 exports[`test/commands/query.ts > TAP > query > --target option > should accept attribute selector 1`] = `
 my-project
-├── foo@1.0.0
-└─┬ bar@1.0.0
-  └─┬ baz (custom:baz@1.0.0)
-    └── foo@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── foo@1.0.0
+└── foo@1.0.0
 
 `
 
 exports[`test/commands/query.ts > TAP > query > --target option > should accept combinator selectors 1`] = `
 my-project
-├── foo@1.0.0
-└── bar@1.0.0
+├── bar@1.0.0
+└── foo@1.0.0
 
 `
 
 exports[`test/commands/query.ts > TAP > query > --target option > should accept ID selector 1`] = `
 my-project
-├── foo@1.0.0
-└─┬ bar@1.0.0
-  └─┬ baz (custom:baz@1.0.0)
-    └── foo@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── foo@1.0.0
+└── foo@1.0.0
 
 `
 
 exports[`test/commands/query.ts > TAP > query > --target option > should accept pseudo-element selectors 1`] = `
 my-project
-├── foo@1.0.0
-└── bar@1.0.0
+├── bar@1.0.0
+└── foo@1.0.0
 
 `
 
 exports[`test/commands/query.ts > TAP > query > --target option > should accept wildcard selector 1`] = `
 my-project
-├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0
+├── foo@1.0.0
 └── missing@^1.0.0 (missing)
 
 `
 
 exports[`test/commands/query.ts > TAP > query > --target option > should handle complex query string 1`] = `
 my-project
-├── foo@1.0.0
-└── bar@1.0.0
+├── bar@1.0.0
+└── foo@1.0.0
 
 `
 
 exports[`test/commands/query.ts > TAP > query > --target option > should use --target over positional arguments 1`] = `
 my-project
-├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0
+├── foo@1.0.0
 └── missing@^1.0.0 (missing)
 
 `
@@ -98,10 +98,10 @@ exports[`test/commands/query.ts > TAP > query > --target option > should work wi
 
 exports[`test/commands/query.ts > TAP > query > colors > should use colors when set in human readable format 1`] = `
 [0mmy-project
-├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0
+├── foo@1.0.0
 └── missing@^1.0.0 [31m(missing)[39m
 [0m
 `
@@ -113,11 +113,22 @@ a
 
 exports[`test/commands/query.ts > TAP > query > expect-results option > should return items when expect-results check passes 1`] = `
 my-project
-├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0
+├── foo@1.0.0
 └── missing@^1.0.0 (missing)
+
+`
+
+exports[`test/commands/query.ts > TAP > query > running from homedir > should list all projects deps 1`] = `
+local
+└── my-project@1.0.0
+
+`
+
+exports[`test/commands/query.ts > TAP > query > running from homedir > should read project from host context 1`] = `
+my-project
 
 `
 
@@ -233,10 +244,10 @@ a("root:my-project") -->|"missing#64;^1.0.0"| missing-0(Missing)
 
 exports[`test/commands/query.ts > TAP > query > should list pkgs in human readable format 1`] = `
 my-project
-├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0
+├── foo@1.0.0
 └── missing@^1.0.0 (missing)
 
 `
@@ -389,29 +400,10 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
 exports[`test/commands/query.ts > TAP > query > workspaces > should add all scope nodes as importers 1`] = `
 [
   {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    },
-    "overridden": false
-  },
-  {
     "name": "b",
+    "fromID": "file·.",
+    "spec": "b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§b",
       "name": "b",
@@ -434,6 +426,9 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
   },
   {
     "name": "a",
+    "fromID": "file·.",
+    "spec": "a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§a",
       "name": "a",
@@ -469,8 +464,8 @@ a
 
 exports[`test/commands/query.ts > TAP > query > workspaces > should list workspaces in human readable format 1`] = `
 my-project
-b
-a
+├── a@1.0.0
+└── b@1.0.0
 
 `
 
@@ -500,6 +495,9 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   },
   {
     "name": "b",
+    "fromID": "file·.",
+    "spec": "b@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§b",
       "name": "b",
@@ -522,6 +520,9 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   },
   {
     "name": "a",
+    "fromID": "file·.",
+    "spec": "a@workspace:*",
+    "type": "prod",
     "to": {
       "id": "workspace·packages§a",
       "name": "a",

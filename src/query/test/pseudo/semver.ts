@@ -35,7 +35,7 @@ t.test('select from semver definition', async t => {
       cancellable: async () => {},
       walk: async i => i,
       securityArchive: undefined,
-      specOptions: {},
+      importers: new Set(graph.importers),
       signal: new AbortController().signal,
       specificity: { idCounter: 0, commonCounter: 0 },
     }

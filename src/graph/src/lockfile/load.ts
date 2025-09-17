@@ -152,7 +152,12 @@ export const loadObject = (
     skipLoadingNodesOnModifiersChange && modifiersChanged
   )
   if (shouldLoadDependencies) {
-    loadNodes(graph, lockfileData.nodes, options.actual)
+    loadNodes(
+      graph,
+      lockfileData.nodes,
+      mergedOptions,
+      options.actual,
+    )
     loadEdges(graph, lockfileData.edges, mergedOptions)
   }
 

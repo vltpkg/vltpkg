@@ -100,6 +100,7 @@ export const COMBINATOR_LABELS: Record<Combinator, string> = {
 export const SELECTOR_GROUP_LABEL = 'and'
 
 export const PROJECT_SELECTORS = [
+  ':host-context',
   ':project',
   ':workspace',
   ':root',

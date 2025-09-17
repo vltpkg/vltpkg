@@ -3,7 +3,10 @@ import {
   list as listConfigValues,
 } from '@vltpkg/config'
 
-import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
+import type {
+  LoadedConfig,
+  ParsedConfig,
+} from '@vltpkg/cli-sdk/config'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 
 type VltJsonModule = {
@@ -18,6 +21,24 @@ type VltJsonModule = {
     cwd?: string,
     home?: string,
   ) => string
+}
+
+export const reloadConfig = async (
+  folder: string,
+): Promise<ParsedConfig> => {
+  // Clear vlt-json caches to ensure fresh file reads
+  try {
+    const { unload } = (await import(
+      '@vltpkg/vlt-json'
+    )) as VltJsonModule
+    unload('user')
+    unload('project')
+    /* c8 ignore next */
+  } catch {}
+
+  // Create a fresh config instance for the set operation to avoid cache issues
+  const { Config } = await import('@vltpkg/cli-sdk/config')
+  return Config.load(folder, process.argv, true)
 }
 
 export class ConfigManager {
@@ -104,23 +125,7 @@ export class ConfigManager {
     values: Record<string, string | string[]>,
     which?: WhichConfig,
   ) {
-    // Clear vlt-json caches to ensure fresh file reads
-    try {
-      const { unload } = (await import(
-        '@vltpkg/vlt-json'
-      )) as VltJsonModule
-      unload('user')
-      unload('project')
-      /* c8 ignore next */
-    } catch {}
-
-    // Create a fresh config instance for the set operation to avoid cache issues
-    const { Config } = await import('@vltpkg/cli-sdk/config')
-    const freshConfig = await Config.load(
-      this.config.projectRoot,
-      process.argv,
-      true,
-    )
+    const freshConfig = await reloadConfig(this.config.projectRoot)
 
     // Get which config file to write to (user or project)
     const selected: WhichConfig = which ?? freshConfig.get('config')

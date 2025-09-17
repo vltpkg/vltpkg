@@ -28,6 +28,10 @@ export const newGraph = (rootName: string): GraphLike => {
   mainImporter.mainImporter = true
   mainImporter.importer = true
   mainImporter.graph = graph
+
+  // Initialize empty workspaces Map for consistency with NodeLike interface
+  mainImporter.workspaces = new Map()
+
   graph.importers = new Set([mainImporter])
   graph.mainImporter = mainImporter
   graph.nodes.set(mainImporter.id, mainImporter)
@@ -60,6 +64,8 @@ export const newNode =
       dev: false,
       optional: false,
       confused: false,
+      workspaces: undefined,
+      options: specOptions,
       setResolved() {},
       maybeSetConfusedManifest() {},
       setConfusedManifest() {},

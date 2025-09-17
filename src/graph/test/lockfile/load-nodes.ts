@@ -46,7 +46,7 @@ t.test('load nodes', async t => {
       './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
     ],
   } as LockfileData['nodes']
-  loadNodes(graph, nodes)
+  loadNodes(graph, nodes, {})
   t.matchSnapshot(
     [...graph.nodes.values()].map(n => n.toJSON()),
     'should load nodes into graph',
@@ -59,7 +59,7 @@ t.test('load nodes', async t => {
       'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
     ],
   } as LockfileData['nodes']
-  loadNodes(graph, moreNodes)
+  loadNodes(graph, moreNodes, {})
   const namelessNode = graph.nodes.get(
     joinDepIDTuple(['registry', '', 'lorem']),
   )!
@@ -119,7 +119,7 @@ t.test('load nodes with manifest', async t => {
       },
     ],
   } as LockfileData['nodes']
-  loadNodes(graph, nodes)
+  loadNodes(graph, nodes, {})
   t.matchSnapshot(
     [...graph.nodes.values()].map(n => n.toJSON()),
     'should load nodes into graph with manifest data',
@@ -151,7 +151,7 @@ t.test('load nodes with confused manifest', async t => {
       },
     ],
   } as LockfileData['nodes']
-  loadNodes(graph, nodes)
+  loadNodes(graph, nodes, {})
   const loadedFoo = graph.nodes.get(
     joinDepIDTuple(['registry', '', 'foo@1.0.0']),
   )
@@ -247,7 +247,7 @@ t.test(
       ],
     } as LockfileData['nodes']
 
-    loadNodes(graph, nodes)
+    loadNodes(graph, nodes, {})
 
     // Verify registry node with modifier
     const modifiedPkgNode = graph.nodes.get(
@@ -433,7 +433,7 @@ t.test('load nodes with hydration from actual graph', async t => {
   } as LockfileData['nodes']
 
   // Load nodes with hydration from actual graph
-  loadNodes(targetGraph, nodes, actualGraph)
+  loadNodes(targetGraph, nodes, {}, actualGraph)
 
   t.matchSnapshot(
     [...targetGraph.nodes.values()]
@@ -477,7 +477,7 @@ t.test('load nodes with no actual graph provided', async t => {
   } as LockfileData['nodes']
 
   // Load nodes without actual graph (should handle gracefully)
-  loadNodes(graph, nodes) // No actual parameter
+  loadNodes(graph, nodes, {}) // No actual parameter
 
   t.matchSnapshot(
     [...graph.nodes.values()]
@@ -537,7 +537,7 @@ t.test(
       ]
     }
 
-    loadNodes(graph, nodes)
+    loadNodes(graph, nodes, {})
     t.equal(
       graph.nodes.size,
       61,

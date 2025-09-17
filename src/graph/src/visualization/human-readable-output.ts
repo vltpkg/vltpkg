@@ -65,10 +65,21 @@ const getTreeItems = (
         continue
       }
       seenNodes.add(item.node)
-      const edges = [...item.node.edgesOut.values()].sort(i =>
-        Number(i.to?.importer),
+      const edges = [...item.node.edgesOut.values()]
+      const workspaces =
+        item.node.workspaces ? [...item.node.workspaces.values()] : []
+      const allEdges = [...edges, ...workspaces].sort((a, b) =>
+        a.name.localeCompare(b.name, 'en'),
       )
-      for (const edge of edges) {
+
+      // keeps track of seen edge names to avoid duplicating printed
+      // items when a workspace is also a regular dependency of the root
+      const seenEdgeName = new Set<string>()
+      for (const edge of allEdges) {
+        if (seenEdgeName.has(edge.name)) {
+          continue
+        }
+        seenEdgeName.add(edge.name)
         const toItems: EdgeMap =
           treeItems.get(edge) ?? (new Map() as EdgeMap)
         const nextItem: TreeItem = {
@@ -153,7 +164,14 @@ export function humanReadableOutput(
     // seen items need not to be printed or traversed
     if (!item.seen) {
       const edges = item.node ? [...item.node.edgesOut.values()] : []
-      const nextItems = edges.map(i => treeItems.get(i)?.get(i.to))
+      const workspaces =
+        item.node?.workspaces ?
+          [...item.node.workspaces.values()]
+        : []
+      const allEdges = [...edges, ...workspaces].sort((a, b) =>
+        a.name.localeCompare(b.name, 'en'),
+      )
+      const nextItems = allEdges.map(i => treeItems.get(i)?.get(i.to))
       const includedItems = nextItems.filter(i => i?.include)
 
       for (const nextItem of nextItems) {

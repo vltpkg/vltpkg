@@ -106,7 +106,7 @@ const getDependencyItems = (
       ...edge,
       depName: edge.name,
       depIndex: count.currIndex++,
-      id: edge.to.id,
+      id: `${edge.to.projectRoot}#${edge.to.id}`,
       title,
       version: edge.to.version || '',
       stacked: false,
@@ -181,16 +181,6 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
   )
   const { focused } = useFocusState()
 
-  const workspaceClick =
-    ({ item }: { item: GridItemData }) =>
-    () => {
-      const itemQuery = getItemQuery(item)
-      if (itemQuery) {
-        updateQuery(`:project${itemQuery}`)
-      }
-      return undefined
-    }
-
   const dependencyClick = (item: GridItemData) => () => {
     const itemQuery = getItemQuery(item)
     if (itemQuery) {
@@ -243,7 +233,11 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                 parentItem={parentItem}
                 workspaces={workspaces}
                 dependents={dependents}
-                onWorkspaceClick={workspaceClick}
+                onWorkspaceClick={updateDependentsItem({
+                  query,
+                  updateQuery,
+                  workspace: true,
+                })}
                 onDependentClick={updateDependentsItem({
                   query,
                   updateQuery,

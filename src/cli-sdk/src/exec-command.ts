@@ -30,6 +30,7 @@ import type { Views } from './view.ts'
 import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
 import assert from 'node:assert'
 import { resolve } from 'node:path'
+import { createHostContextsMap } from './query-host-contexts.ts'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -141,16 +142,27 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     // scope takes precedence over workspaces or groups
     if (queryString) {
       this.#defaultIgnoreMissing = true
-      const graph = actual.load({
-        ...conf.options,
-        mainManifest: conf.options.packageJson.read(this.projectRoot),
-        monorepo: Monorepo.load(this.projectRoot),
-        loadManifests: false,
-      })
+      const mainManifest = conf.options.packageJson.maybeRead(
+        this.projectRoot,
+      )
+      let graph
+      if (mainManifest) {
+        graph = actual.load({
+          ...conf.options,
+          mainManifest,
+          monorepo: Monorepo.load(this.projectRoot),
+          loadManifests: false,
+        })
+      }
+      const hostContexts = await createHostContextsMap(conf)
       const query = new Query({
-        graph,
-        specOptions: conf.options,
+        /* c8 ignore start */
+        nodes: graph ? new Set(graph.nodes.values()) : new Set(),
+        edges: graph?.edges ?? new Set(),
+        importers: graph?.importers ?? new Set(),
+        /* c8 ignore stop */
         securityArchive: undefined,
+        hostContexts,
       })
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,

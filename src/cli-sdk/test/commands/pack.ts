@@ -317,11 +317,20 @@ t.test('pack command with scope', async t => {
             nodes: new Map(),
           }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
       },
       '@vltpkg/query': {
         Query: class {
           search = mockQuery.search
         },
+      },
+      '../../src/query-host-contexts.ts': {
+        createHostContextsMap: async () => new Map(),
       },
     })
 
@@ -378,11 +387,20 @@ t.test('pack command with scope', async t => {
             nodes: new Map(),
           }),
         },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
       },
       '@vltpkg/query': {
         Query: class {
           search = async () => ({ nodes: [] })
         },
+      },
+      '../../src/query-host-contexts.ts': {
+        createHostContextsMap: async () => new Map(),
       },
     })
 

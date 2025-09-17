@@ -56,7 +56,7 @@ t.test('scanned selector', async t => {
       cancellable: async () => {},
       walk: async i => i,
       securityArchive,
-      specOptions: {},
+      importers: new Set(graph.importers),
       retries: 0,
       signal: new AbortController().signal,
       specificity: { idCounter: 0, commonCounter: 0 },

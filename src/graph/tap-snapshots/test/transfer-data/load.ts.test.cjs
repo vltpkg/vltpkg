@@ -7,17 +7,17 @@
 'use strict'
 exports[`test/transfer-data/load.ts > TAP > must match snapshot 1`] = `
 my-project
-├─┬ foo@1.0.0
-│ └── bar@1.0.0
-└── baz (custom:baz@1.0.0)
+├── baz (custom:baz@1.0.0)
+└─┬ foo@1.0.0
+  └── bar@1.0.0
 
 `
 
 exports[`test/transfer-data/load.ts > TAP > must match snapshot 2`] = `
 my-project
-├─┬ foo@1.0.0
-│ └── bar@1.0.0
 ├── baz (custom:baz@1.0.0)
-└── confused (confused)
+├── confused (confused)
+└─┬ foo@1.0.0
+  └── bar@1.0.0
 
 `

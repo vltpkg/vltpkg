@@ -14,7 +14,6 @@ import {
   removeQuotes,
 } from './helpers.ts'
 import type { NodeLike, Packument } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { ParserState } from '../types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 
@@ -36,10 +35,9 @@ export type PublishedInternals = {
  */
 export const retrieveRemoteDate = async (
   node: NodeLike,
-  specOptions: SpecOptions,
   signal?: AbortSignal,
 ): Promise<string | undefined> => {
-  const spec = hydrate(node.id, String(node.name), specOptions)
+  const spec = hydrate(node.id, String(node.name), node.options)
   if (!spec.registry || !node.name || !node.version) {
     return undefined
   }
@@ -125,7 +123,7 @@ export const queueNode = async (
   let publishedDate: string | undefined
   try {
     publishedDate = await pRetry(
-      () => retrieveRemoteDate(node, state.specOptions, state.signal),
+      () => retrieveRemoteDate(node, state.signal),
       {
         retries: state.retries,
         signal: state.signal,

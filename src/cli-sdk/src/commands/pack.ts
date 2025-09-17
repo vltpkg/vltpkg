@@ -11,6 +11,7 @@ import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { error } from '@vltpkg/error-cause'
+import { createHostContextsMap } from '../query-host-contexts.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -77,16 +78,24 @@ export const command: CommandFn<CommandResult> = async conf => {
   let single: string | null = null
 
   if (queryString) {
-    const graph = actual.load({
-      ...options,
-      mainManifest: options.packageJson.read(projectRoot),
-      monorepo: options.monorepo,
-      loadManifests: false,
-    })
+    const mainManifest = options.packageJson.maybeRead(projectRoot)
+    let graph
+    if (mainManifest) {
+      graph = actual.load({
+        ...options,
+        mainManifest,
+        monorepo: options.monorepo,
+        loadManifests: false,
+      })
+    }
+    const hostContexts = await createHostContextsMap(conf)
     const query = new Query({
-      graph,
-      specOptions: conf.options,
+      /* c8 ignore next */
+      nodes: graph ? new Set(graph.nodes.values()) : new Set(),
+      edges: graph?.edges ?? new Set(),
+      importers: graph?.importers ?? new Set(),
       securityArchive: undefined,
+      hostContexts,
     })
     const { nodes } = await query.search(queryString, {
       signal: new AbortController().signal,

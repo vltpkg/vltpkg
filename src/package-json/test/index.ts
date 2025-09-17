@@ -1,6 +1,6 @@
 import t from 'tap'
 import { PackageJson } from '../src/index.ts'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 t.test('successfully reads a valid package.json file', async t => {
@@ -522,4 +522,202 @@ t.test('find method', async t => {
     const found = pj.find(nestedDir, customHome)
     t.equal(found, join(projectDir, 'package.json'))
   })
+})
+
+t.test('maybeRead method', async t => {
+  await t.test(
+    'successfully reads a valid package.json file',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+        }),
+      })
+      const pj = new PackageJson()
+      const result = pj.maybeRead(dir)
+      t.match(
+        result,
+        { name: 'my-project', version: '1.0.0' },
+        'should return parsed manifest on successful read',
+      )
+      t.type(
+        result,
+        'object',
+        'should return an object, not undefined',
+      )
+    },
+  )
+
+  await t.test(
+    'reads from a package.json path instead of dir',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+        }),
+      })
+      const pj = new PackageJson()
+      const result = pj.maybeRead(join(dir, 'package.json'))
+      t.match(
+        result,
+        { name: 'my-project', version: '1.0.0' },
+        'should return parsed manifest when given package.json file path',
+      )
+      t.type(
+        result,
+        'object',
+        'should return an object, not undefined',
+      )
+    },
+  )
+
+  await t.test(
+    'returns undefined on missing package.json file',
+    async t => {
+      const dir = t.testdirName
+      const pj = new PackageJson()
+      const result = pj.maybeRead(dir)
+      t.equal(
+        result,
+        undefined,
+        'should return undefined instead of throwing on missing file',
+      )
+    },
+  )
+
+  await t.test(
+    'returns undefined on malformed package.json file',
+    async t => {
+      const dir = t.testdir({
+        'package.json': '{%',
+      })
+      const pj = new PackageJson()
+      const result = pj.maybeRead(dir)
+      t.equal(
+        result,
+        undefined,
+        'should return undefined instead of throwing on malformed JSON',
+      )
+    },
+  )
+
+  await t.test('respects reload option', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+      }),
+    })
+    const pj = new PackageJson()
+
+    // First read to populate cache
+    const firstResult = pj.maybeRead(dir)
+    t.match(firstResult, { name: 'my-project', version: '1.0.0' })
+
+    // Change the file on disk
+    const newContent = JSON.stringify({
+      name: 'my-project',
+      version: '2.0.0',
+    })
+    writeFileSync(join(dir, 'package.json'), newContent)
+
+    // Read without reload should return cached version
+    const cachedResult = pj.maybeRead(dir)
+    t.match(
+      cachedResult,
+      { version: '1.0.0' },
+      'should return cached version without reload',
+    )
+
+    // Read with reload should return updated version
+    const reloadedResult = pj.maybeRead(dir, { reload: true })
+    t.match(
+      reloadedResult,
+      { version: '2.0.0' },
+      'should return updated version with reload',
+    )
+  })
+
+  await t.test('handles cached errors correctly', async t => {
+    const nonExistentDir = t.testdirName
+    const pj = new PackageJson()
+
+    // First call should cache the error
+    const firstResult = pj.maybeRead(nonExistentDir)
+    t.equal(
+      firstResult,
+      undefined,
+      'first call should return undefined',
+    )
+
+    // Second call should use cached error
+    const secondResult = pj.maybeRead(nonExistentDir)
+    t.equal(
+      secondResult,
+      undefined,
+      'second call should return undefined from cache',
+    )
+
+    // Call with reload should still return undefined
+    const reloadResult = pj.maybeRead(nonExistentDir, {
+      reload: true,
+    })
+    t.equal(
+      reloadResult,
+      undefined,
+      'reload call should return undefined',
+    )
+  })
+
+  await t.test(
+    'works consistently with read method for valid files',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'consistency-test',
+          version: '1.2.3',
+          dependencies: {
+            'some-package': '^1.0.0',
+          },
+        }),
+      })
+      const pj = new PackageJson()
+
+      const readResult = pj.read(dir)
+      const maybeReadResult = pj.maybeRead(dir)
+
+      t.strictSame(
+        maybeReadResult,
+        readResult,
+        'maybeRead should return identical result to read for valid files',
+      )
+    },
+  )
+
+  await t.test(
+    'maintains cache consistency between read and maybeRead',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'cache-test',
+          version: '1.0.0',
+        }),
+      })
+      const pj = new PackageJson()
+
+      // Read with maybeRead first
+      const maybeReadResult = pj.maybeRead(dir)
+
+      // Then read with read method - should get same cached object
+      const readResult = pj.read(dir)
+
+      t.strictSame(
+        readResult,
+        maybeReadResult,
+        'read and maybeRead should share the same cache',
+      )
+    },
+  )
 })

@@ -16,6 +16,7 @@ import { dirname, resolve } from 'node:path'
 import assert from 'node:assert'
 import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
+import { createHostContextsMap } from '../query-host-contexts.ts'
 
 export type VersionOptions = {
   prereleaseId?: string
@@ -267,43 +268,47 @@ export const command: CommandFn<CommandResult> = async conf => {
   const recursive = conf.get('recursive')
 
   const locations: string[] = []
-  let single: string | null = null
 
   if (queryString) {
-    const graph = actual.load({
-      ...options,
-      mainManifest: options.packageJson.read(projectRoot),
-      monorepo: options.monorepo,
-      loadManifests: false,
-    })
+    const mainManifest = options.packageJson.maybeRead(projectRoot)
+    let graph
+    if (mainManifest) {
+      graph = actual.load({
+        ...options,
+        mainManifest,
+        monorepo: options.monorepo,
+        loadManifests: false,
+      })
+    }
+    const hostContexts = await createHostContextsMap(conf)
     const query = new Query({
-      graph,
-      specOptions: conf.options,
+      /* c8 ignore next */
+      nodes: graph ? new Set(graph.nodes.values()) : new Set(),
+      edges: graph?.edges ?? new Set(),
+      importers: graph?.importers ?? new Set(),
       securityArchive: undefined,
+      hostContexts,
     })
     const { nodes } = await query.search(queryString, {
       signal: new AbortController().signal,
     })
     for (const node of nodes) {
-      const { location } = node.toJSON()
+      const location = node.location
       assert(
         location,
         error(`node ${node.id} has no location`, {
           found: node,
         }),
       )
-      locations.push(resolve(projectRoot, location))
+      locations.push(resolve(node.projectRoot, location))
     }
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
       locations.push(workspace.fullpath)
     }
   } else {
-    single = options.packageJson.find(process.cwd()) ?? projectRoot
-  }
-
-  if (single) {
-    return version(conf, positionals[0], single)
+    const cwd = options.packageJson.find(process.cwd()) ?? projectRoot
+    return version(conf, positionals[0], cwd)
   }
 
   assert(

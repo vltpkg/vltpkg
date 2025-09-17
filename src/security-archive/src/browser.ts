@@ -8,7 +8,7 @@ import type {
 } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 
-export type * from './types.ts'
+export * from './types.ts'
 
 const isObj = (o: unknown): o is Record<string, unknown> =>
   !!o && typeof o === 'object'

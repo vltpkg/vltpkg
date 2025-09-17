@@ -10,6 +10,7 @@ Node [@vltpkg/graph.Node] {
   confused: false,
   edgesIn: Set(0) {},
   edgesOut: Map(0) {},
+  workspaces: undefined,
   id: 'file·.',
   importer: true,
   mainImporter: true,

@@ -32,7 +32,7 @@ t.test('selects edges by spec.bareSpec value', async t => {
       walk: async i => i,
       retries: 0,
       securityArchive: undefined,
-      specOptions: {},
+      importers: new Set(graph.importers),
       signal: new AbortController().signal,
       scopeIDs: [],
       specificity: { idCounter: 0, commonCounter: 0 },
