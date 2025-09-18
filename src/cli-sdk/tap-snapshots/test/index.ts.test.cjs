@@ -65,10 +65,12 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --os=<os>
     --otp=<otp>
     --package=<p>
+    --port=<number>
     --publish-directory=<path>
     --recursive
     --registries=<name=url>
     --registry=<url>
+    --registry-port=<number>
     --save-dev
     --save-optional
     --save-peer
@@ -123,10 +125,12 @@ Unknown config option: asdf
     os
     otp
     package
+    port
     publish-directory
     recursive
     registries
     registry
+    registry-port
     save-dev
     save-optional
     save-peer

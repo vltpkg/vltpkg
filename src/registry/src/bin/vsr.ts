@@ -9,10 +9,11 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { createServer } from '@vltpkg/server'
 import { existsSync, readFileSync } from 'node:fs'
 import type { VltServerOptions } from '@vltpkg/server'
-import { DAEMON_PORT, DAEMON_URL } from '../../config.ts'
+import { DAEMON_PORT } from '../../config.ts'
 import { minArgs } from 'minargs'
 import { load } from '@vltpkg/vlt-json'
 import { createRequire } from 'node:module'
+import { resolveConfig } from '../utils/resolve-config.ts'
 
 const usage = `USAGE:
 
@@ -424,6 +425,8 @@ const serverOptions = {
 } as VltServerOptions
 
 void (async () => {
+  const { DAEMON_START_SERVER, DAEMON_PORT, DAEMON_URL } =
+    resolveConfig(process.env)
   try {
     if (command === 'deploy') {
       await deployToCloudflare()
@@ -431,7 +434,7 @@ void (async () => {
     }
 
     // Default 'dev' command
-    if (DAEMON) {
+    if (DAEMON && DAEMON_START_SERVER) {
       // Save original process.argv to restore later
       const originalArgv = process.argv.slice()
 

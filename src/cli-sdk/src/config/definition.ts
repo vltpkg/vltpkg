@@ -24,7 +24,6 @@ const canonicalCommands = {
   config: 'config',
   exec: 'exec',
   'exec-local': 'exec-local',
-  gui: 'gui',
   help: 'help',
   init: 'init',
   install: 'install',
@@ -38,6 +37,7 @@ const canonicalCommands = {
   query: 'query',
   'run-exec': 'run-exec',
   run: 'run',
+  serve: 'serve',
   token: 'token',
   uninstall: 'uninstall',
   update: 'update',
@@ -574,7 +574,7 @@ export const definition = j
   .optList({
     'dashboard-root': {
       hint: 'path',
-      description: `The root directory to use for the dashboard GUI.
+      description: `The root directory to use for the dashboard browser-based UI.
                     If not set, the user home directory is used.`,
     },
   })
@@ -647,6 +647,14 @@ export const definition = j
       hint: 'path',
       description: `Directory to use for pack and publish operations instead of the current directory.
                     The directory must exist and nothing will be copied to it.`,
+    },
+    port: {
+      hint: 'number',
+      description: `Port for the browser-based UI server when using vlt serve command (default: 8000).`,
+    },
+    'registry-port': {
+      hint: 'number',
+      description: `Port for the VSR registry when using vlt serve command (default: 1337).`,
     },
   })
 

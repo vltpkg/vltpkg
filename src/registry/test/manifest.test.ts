@@ -30,6 +30,27 @@ const mockEnv = {
     put: () => Promise.resolve(),
     delete: () => Promise.resolve(),
   },
+  PROXY: true,
+  PROXY_URL: 'https://registry.npmjs.org',
+  URL: 'http://localhost:1337',
+  ORIGIN_CONFIG: {
+    default: 'local',
+    upstreams: {
+      local: {
+        type: 'local',
+        url: 'http://localhost:1337',
+        allowPublish: true,
+      },
+      npm: {
+        type: 'npm',
+        url: 'https://registry.npmjs.org',
+      },
+      jsr: {
+        type: 'jsr',
+        url: 'https://jsr.io',
+      },
+    },
+  },
 }
 
 describe('Package Manifest Endpoints', () => {

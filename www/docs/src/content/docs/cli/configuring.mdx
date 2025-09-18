@@ -21,7 +21,7 @@ More documentation available at
 ## Subcommands
 
 ```
-cache, config, exec, exec-local, gui, help, init, install, login, logout, list, ls, pkg, query, run-exec, run, token, uninstall, exec-cache, whoami
+cache, config, exec, exec-local, serve, help, init, install, login, logout, list, ls, pkg, query, run-exec, run, token, uninstall, exec-cache, whoami
 ```
 
 Run `vlt <cmd> --help` for more information about a specific command
@@ -280,9 +280,9 @@ Valid options:
 
 ```
 "cache", "config", "exec", "exec-local",
-"gui", "help", "init", "install", "login", "logout",
-"list", "ls", "pkg", "query", "run-exec", "run", "token",
-"uninstall", "exec-cache", "whoami"
+"help", "init", "install", "login", "logout",
+"list", "ls", "pkg", "query", "run-exec", "run", "serve",
+"token", "uninstall", "exec-cache", "whoami"
 ```
 
 ### `--package=<p>`
@@ -298,8 +298,8 @@ Configures the output format for commands. Valid options: "human",
 
 ### `--dashboard-root=<path>`
 
-The root directory to use for the dashboard GUI. If not set, the user
-home directory is used.
+The root directory to use for the dashboard browser-based UI. If not
+set, the user home directory is used.
 
 Can be set multiple times
 

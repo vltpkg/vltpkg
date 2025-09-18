@@ -143,7 +143,7 @@ t.test('startGUI()', async t => {
   const server = await startGUI(conf)
   t.equal(serverCreated, true)
   t.equal(serverStarted, true)
-  t.equal(logged, '⚡️ vlt GUI running at server-address')
+  t.equal(logged, '⚡️ vlt UI running at server-address')
   t.equal(urlOpened, true)
   server.emit('needConfigUpdate', '/some/new/dir')
   t.equal(optionsResetted, '/some/new/dir')

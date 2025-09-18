@@ -60,6 +60,7 @@
     "react": "^19.1.1",
     "react-devtools-core": "^4.28.5",
     "react-dom": "^19.1.1",
+    "signal-exit": "^4.1.0",
     "ssri": "catalog:",
     "supports-color": "^10.2.0",
     "tar": "catalog:"

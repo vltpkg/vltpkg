@@ -22,6 +22,8 @@ export const API_DOCS_ENABLED = true as boolean
 
 export const DAEMON_ENABLED = true as boolean
 
+export const DAEMON_START_SERVER = true as boolean
+
 export const DAEMON_PORT = 3000 as number
 
 export const DAEMON_URL = `http://localhost:${DAEMON_PORT}`
