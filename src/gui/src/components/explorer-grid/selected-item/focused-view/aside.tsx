@@ -3,6 +3,7 @@ import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar
 import { motion, AnimatePresence } from 'framer-motion'
 import { AsideOverview } from '@/components/explorer-grid/selected-item/aside/index.tsx'
 import { AsideOverviewEmptyState } from '@/components/explorer-grid/selected-item/aside/empty-state.tsx'
+import { useEmptyCheck } from '@/components/explorer-grid/selected-item/aside/use-empty-check.tsx'
 
 import type {
   SubTabDependencies,
@@ -43,6 +44,8 @@ export const FocusedAside = ({
     tab: Tab
     subTab: SubTabDependencies
   }>()
+  const { isMetadataEmpty } = useEmptyCheck()
+
   const activeTab: Tab | undefined =
     !tab && subTab ? 'dependencies' : tab
 
@@ -54,8 +57,9 @@ export const FocusedAside = ({
         {tabAsideSet.has(activeTab) ?
           <motion.div {...motionVariants} className="p-0">
             <>
-              <AsideOverviewEmptyState />
-              <AsideOverview className="h-fit py-0" />
+              {isMetadataEmpty ?
+                <AsideOverviewEmptyState />
+              : <AsideOverview className="h-fit py-0" />}
             </>
           </motion.div>
         : activeTab === 'dependencies' ?
