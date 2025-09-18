@@ -40,7 +40,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogContent,
-  DialogPortal,
   DialogFooter,
 } from '@/components/ui/dialog.tsx'
 import { Input } from '@/components/ui/input.tsx'
@@ -160,6 +159,8 @@ const ArgumentDialog = memo(
       try {
         const isAttribute = argument?.type === 'attribute'
         const isScore = token.token === ':score'
+        const isHostFileArg =
+          token.token === ':host' && argument?.token === 'file'
         const operatorStr =
           operator?.operator || argument?.operator || '='
         const flagStr = flag?.flag || argument?.flag || ''
@@ -194,6 +195,15 @@ const ArgumentDialog = memo(
                   token: createToken(
                     'string',
                     `"${argument?.token || 'overall'}"`,
+                  ),
+                },
+              ]
+            : isHostFileArg ?
+              [
+                {
+                  token: createToken(
+                    'string',
+                    `"${effectiveValue.startsWith('file:') ? effectiveValue : `file:${effectiveValue}`}"`,
                   ),
                 },
               ]
@@ -237,163 +247,161 @@ const ArgumentDialog = memo(
 
     return (
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogPortal>
-          <DialogContent className="px-4 py-3">
-            <DialogHeader>
-              <DialogTitle className="text-md font-medium">
-                {token.label}
-              </DialogTitle>
-            </DialogHeader>
-            <DialogDescription />
-            <div className="w-full space-y-3">
-              <div className="flex w-full items-center gap-2">
-                {argument?.operators && (
-                  <div className="flex shrink flex-col gap-1">
-                    <label
-                      htmlFor="operator"
-                      className="block text-xs text-muted-foreground">
-                      operator
-                    </label>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          id="operator"
-                          className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
-                          <span>
-                            {operator ?
-                              operator.label
-                            : 'Select an operator'}
-                          </span>
-                          <ChevronRight />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuContent className="z-[10002]">
-                          {argument.operators.map((op, idx) => (
-                            <DropdownMenuItem
-                              key={idx}
-                              onSelect={() => {
-                                setOperator({
-                                  operator: op.operator,
-                                  label: op.label,
-                                })
-                              }}>
-                              {op.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenu>
-                  </div>
-                )}
-                <div className="flex w-full grow flex-col gap-1">
+        <DialogContent className="px-4 py-3">
+          <DialogHeader>
+            <DialogTitle className="text-md font-medium">
+              {token.label}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription />
+          <div className="w-full space-y-3">
+            <div className="flex w-full items-center gap-2">
+              {argument?.operators && (
+                <div className="flex shrink flex-col gap-1">
                   <label
-                    htmlFor="argument"
+                    htmlFor="operator"
                     className="block text-xs text-muted-foreground">
-                    value
+                    operator
                   </label>
-                  {argument?.values && argument.values.length > 0 ?
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          id="argument"
-                          className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
-                          <span>
-                            {selectedValue ?? 'Select a value'}
-                          </span>
-                          <ChevronRight />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuContent className="z-[10002]">
-                          {argument.values.map((val, idx) => (
-                            <DropdownMenuItem
-                              key={idx}
-                              onSelect={() => setSelectedValue(val)}>
-                              {val}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenu>
-                  : <Input
-                      id="argument"
-                      value={inputValue}
-                      onChange={e => setInputValue(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder={
-                        argument ?
-                          `Enter a value for ${argument.label}`
-                        : 'Enter value'
-                      }
-                      className="h-8 w-full border-[1px] border-muted bg-white dark:bg-neutral-800"
-                      autoFocus
-                    />
-                  }
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        id="operator"
+                        className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
+                        <span>
+                          {operator ?
+                            operator.label
+                          : 'Select an operator'}
+                        </span>
+                        <ChevronRight />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuContent className="z-[10002]">
+                        {argument.operators.map((op, idx) => (
+                          <DropdownMenuItem
+                            key={idx}
+                            onSelect={() => {
+                              setOperator({
+                                operator: op.operator,
+                                label: op.label,
+                              })
+                            }}>
+                            {op.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenu>
                 </div>
-                {argument?.flags && (
-                  <div className="flex shrink flex-col gap-1">
-                    <label
-                      htmlFor="flag"
-                      className="block text-xs text-muted-foreground">
-                      flag
-                    </label>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          id="flag"
-                          className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
-                          <span>
-                            {flag ? flag.label : 'Select a flag'}
-                          </span>
-                          <ChevronRight />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuContent className="z-[10002]">
-                          {argument.flags.map((flag, idx) => (
-                            <DropdownMenuItem
-                              key={idx}
-                              onSelect={() => {
-                                setFlag({
-                                  flag: flag.flag,
-                                  label: flag.label,
-                                })
-                              }}>
-                              {flag.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenu>
-                  </div>
-                )}
+              )}
+              <div className="flex w-full grow flex-col gap-1">
+                <label
+                  htmlFor="argument"
+                  className="block text-xs text-muted-foreground">
+                  value
+                </label>
+                {argument?.values && argument.values.length > 0 ?
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        id="argument"
+                        className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
+                        <span>
+                          {selectedValue ?? 'Select a value'}
+                        </span>
+                        <ChevronRight />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuContent className="z-[10002]">
+                        {argument.values.map((val, idx) => (
+                          <DropdownMenuItem
+                            key={idx}
+                            onSelect={() => setSelectedValue(val)}>
+                            {val}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenu>
+                : <Input
+                    id="argument"
+                    value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={
+                      argument ?
+                        `Enter a value for ${argument.label}`
+                      : 'Enter value'
+                    }
+                    className="h-8 w-full border-[1px] border-muted bg-white dark:bg-neutral-800"
+                    autoFocus
+                  />
+                }
               </div>
+              {argument?.flags && (
+                <div className="flex shrink flex-col gap-1">
+                  <label
+                    htmlFor="flag"
+                    className="block text-xs text-muted-foreground">
+                    flag
+                  </label>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        id="flag"
+                        className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
+                        <span>
+                          {flag ? flag.label : 'Select a flag'}
+                        </span>
+                        <ChevronRight />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuContent className="z-[10002]">
+                        {argument.flags.map((flag, idx) => (
+                          <DropdownMenuItem
+                            key={idx}
+                            onSelect={() => {
+                              setFlag({
+                                flag: flag.flag,
+                                label: flag.label,
+                              })
+                            }}>
+                            {flag.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenu>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {token.description}
-            </p>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-                size="sm">
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                size="sm"
-                disabled={
-                  argument?.values && argument.values.length > 0 ?
-                    !selectedValue
-                  : !inputValue.trim()
-                }>
-                Add
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogPortal>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {token.description}
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              size="sm">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              size="sm"
+              disabled={
+                argument?.values && argument.values.length > 0 ?
+                  !selectedValue
+                : !inputValue.trim()
+              }>
+              Add
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     )
   },
