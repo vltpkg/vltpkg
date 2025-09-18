@@ -21,7 +21,7 @@ import { entropic } from './pseudo/entropic.ts'
 import { env } from './pseudo/env.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { fs } from './pseudo/fs.ts'
-import { hostContext } from './pseudo/host-context.ts'
+import { hostContext } from './pseudo/host.ts'
 import { license } from './pseudo/license.ts'
 import { link } from './pseudo/link.ts'
 import { malware } from './pseudo/malware.ts'
@@ -305,7 +305,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     env,
     fs,
     has,
-    'host-context': hostContext,
+    host: hostContext,
     is,
     license,
     link,

@@ -7,13 +7,13 @@ import type {
   HostContextsMapResult,
 } from '../../src/types.ts'
 import type { GraphLike, EdgeLike } from '@vltpkg/types'
-import { hostContext } from '../../src/pseudo/host-context.ts'
+import { hostContext } from '../../src/pseudo/host.ts'
 import {
   getSimpleGraph,
   getMultiWorkspaceGraph,
 } from '../fixtures/graph.ts'
 
-t.test('host-context selector', async t => {
+t.test('host selector', async t => {
   // Helper function to convert GraphLike objects to HostContextsMapResult
   const graphsToHostContextResult = (
     graphs: GraphLike[],
@@ -80,7 +80,7 @@ t.test('host-context selector', async t => {
     )
 
     const state = getState(
-      ':host-context(test-context)',
+      ':host(test-context)',
       testGraph1,
       hostContexts,
     )
@@ -110,7 +110,7 @@ t.test('host-context selector', async t => {
       )
 
       const state = getState(
-        ':host-context(multi-context)',
+        ':host(multi-context)',
         getSimpleGraph(),
         hostContexts,
       )
@@ -136,7 +136,7 @@ t.test('host-context selector', async t => {
     })
 
     const state = getState(
-      ':host-context(async-context)',
+      ':host(async-context)',
       getSimpleGraph(),
       hostContexts,
     )
@@ -149,11 +149,11 @@ t.test('host-context selector', async t => {
   await t.test(
     'throws error when no host contexts available',
     async t => {
-      const state = getState(':host-context(test)')
+      const state = getState(':host(test)')
 
       await t.rejects(
         hostContext(state),
-        /No host contexts available for :host-context selector/,
+        /No host contexts available for :host selector/,
         'should throw when hostContexts is undefined',
       )
     },
@@ -166,7 +166,7 @@ t.test('host-context selector', async t => {
     )
 
     const state = getState(
-      ':host-context(unknown)',
+      ':host(unknown)',
       getSimpleGraph(),
       hostContexts,
     )
@@ -181,14 +181,14 @@ t.test('host-context selector', async t => {
   await t.test('handles empty context key', async t => {
     const hostContexts: HostContextsMap = new Map()
     const state = getState(
-      ':host-context("")',
+      ':host("")',
       getSimpleGraph(),
       hostContexts,
     )
 
     await t.rejects(
       hostContext(state),
-      /Failed to parse :host-context selector/,
+      /Failed to parse :host selector/,
       'should throw for empty context key',
     )
   })
@@ -201,9 +201,7 @@ t.test('host-context selector', async t => {
     )
 
     // Create state with unquoted parameter
-    const ast = postcssSelectorParser().astSync(
-      ':host-context(unquoted)',
-    )
+    const ast = postcssSelectorParser().astSync(':host(unquoted)')
     const current = ast.first.first
     const state: ParserState = {
       comment: '',
@@ -247,7 +245,7 @@ t.test('host-context selector', async t => {
       )
 
       const state = getState(
-        ':host-context(replace-context)',
+        ':host(replace-context)',
         originalGraph,
         hostContexts,
       )

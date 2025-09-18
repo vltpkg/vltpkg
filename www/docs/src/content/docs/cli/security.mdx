@@ -212,7 +212,7 @@ $ vlt query ':license(copyleft)'`} title="Terminal" lang="bash" />
 
 <Code
   code={
-    "# Scan multiple projects using host-context\n$ vlt query ':host-context(local) :malware'\n\n# Specific project security check\n$ vlt query ':host-context(\"file:~/my-project\") :malware'"
+    "# Scan multiple projects using host\n$ vlt query ':host(local) :malware'\n\n# Specific project security check\n$ vlt query ':host(\"file:~/my-project\") :malware'"
   }
   title="Terminal"
   lang="bash"
@@ -224,7 +224,7 @@ $ vlt query ':license(copyleft)'`} title="Terminal" lang="bash" />
 
 1. **Daily Quick Check**: `vlt query ':malware'`
 2. **Weekly Comprehensive Scan**:
-   `vlt query ':host-context(local) :is(:malware, :not(:scanned))'`
+   `vlt query ':host(local) :is(:malware, :not(:scanned))'`
 3. **Before Releasing Projects**:
    `vlt query ':root :is(:malware, :score("<0.6"))'`
 
