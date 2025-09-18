@@ -9,6 +9,18 @@ exports[`FocusedAside renders default 1`] = `
   >
     <gui-aside-overview-empty-state>
     </gui-aside-overview-empty-state>
+  </div>
+</div>
+
+`;
+
+exports[`FocusedAside renders with content 1`] = `
+
+<div class="col-span-full lg:col-span-3 lg:pl-4 lg:pr-0">
+  <div
+    class="p-0"
+    style="opacity: 0; filter: blur(2px); transform: translateY(2px);"
+  >
     <gui-aside-overview classname="h-fit py-0">
     </gui-aside-overview>
   </div>
