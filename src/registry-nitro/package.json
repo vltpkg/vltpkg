@@ -19,9 +19,7 @@
   },
   "devDependencies": {
     "@neon-rs/load": "^0.0.4",
-    "concurrently": "^9.2.1",
-    "drizzle-kit": "^0.31.4",
-    "http-proxy": "^1.18.1"
+    "drizzle-kit": "^0.31.4"
   },
   "license": "FSL-1.1-MIT",
   "engines": {
@@ -34,9 +32,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio --port 4985",
     "dev": "nitro dev",
-    "dev:https": "concurrently \"pnpm dev\" \"node --no-warnings ./dev/https-proxy.mjs\"",
-    "serve": "node .output/server/index.mjs",
-    "serve:https": "concurrently \"pnpm serve\" \"node --no-warnings ./dev/https-proxy.mjs\""
+    "serve": "node .output/server/index.mjs"
   },
   "type": "module"
 }
