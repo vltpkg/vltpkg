@@ -1,5 +1,5 @@
 import { cachedEventHandler, defineNitroPlugin } from 'nitro/runtime'
-import { getRouterParam, proxy } from 'h3'
+import { getRouterParam, proxyRequest } from 'h3'
 import type { HTTPEvent, EventHandlerRequest, H3Event } from 'h3'
 import assert from 'node:assert'
 
@@ -23,13 +23,10 @@ const proxyToNpm = (
   event: H3Event<EventHandlerRequest>,
   url: string,
 ) => {
-  return proxy(event, `https://registry.npmjs.org${url}`, {
+  return proxyRequest(event, `https://registry.npmjs.org${url}`, {
     onResponse: (event, response) => {
       event.res.status = response.status
       event.res.statusText = response.statusText
-      for (const [key, value] of response.headers.entries()) {
-        event.res.headers.set(key, value)
-      }
     },
   })
 }
@@ -98,7 +95,8 @@ export default defineNitroPlugin(nitroApp => {
   const { _h3: h3 } = nitroApp
   assert(h3, 'h3 is not available')
 
-  h3.get('/npm', () => ({}))
+  h3.get('/', () => ({ ok: true }))
+  h3.get('/npm', () => ({ ok: true }))
   h3.get('/npm/:param1', getPackageOrVersionHandler)
   h3.get('/npm/:param1/:param2', getPackageOrVersionHandler)
   h3.get('/npm/:param1/:param2/:param3', getPackageOrVersionHandler)
