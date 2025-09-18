@@ -59,7 +59,7 @@ export const startGUI = async (
   })
   const { projectRoot, scurry } = conf.options
   await server.start()
-  stdout(`⚡️ vlt GUI running at ${server.address()}`)
+  stdout(`⚡️ vlt UI running at ${server.address()}`)
   void urlOpen(
     server.address(
       await getDefaultStartingRoute({

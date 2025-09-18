@@ -377,8 +377,7 @@ export async function handleDashboardData(
 
   if (env.DAEMON_ENABLED) {
     try {
-      const DAEMON_URL = 'http://localhost:3000'
-      const data = await fetch(`${DAEMON_URL}/dashboard.json`)
+      const data = await fetch(`${env.DAEMON_URL}/dashboard.json`)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const jsonData = (await data.json()) as Record<string, any>
       return c.json(jsonData)
@@ -410,8 +409,7 @@ export async function handleAppData(c: Context): Promise<Response> {
 
   if (env.DAEMON_ENABLED) {
     try {
-      const DAEMON_URL = 'http://localhost:3000'
-      const data = await fetch(`${DAEMON_URL}/app-data.json`)
+      const data = await fetch(`${env.DAEMON_URL}/app-data.json`)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const jsonData = (await data.json()) as Record<string, any>
       return c.json(jsonData)
