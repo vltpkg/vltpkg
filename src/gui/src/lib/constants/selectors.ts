@@ -275,12 +275,28 @@ export const PSEUDO_RELATIONSHIP_SELECTORS = {
 } as const satisfies Record<string, Selector>
 
 export const PSEUDO_PROJECT_SELECTORS = {
-  ':host(local)': {
-    selector: ':host(local)',
+  ':host': {
+    selector: ':host(<context>)',
     label: 'All configured projects',
     category: 'pseudo',
     description:
       'Matches all configured projects found in the Dashboard.',
+    arguments: [
+      {
+        argument: 'local',
+        category: 'tag',
+        label: 'local',
+        description: 'Local projects on your filesystem',
+      },
+      {
+        argument: 'file',
+        argumentType: 'input',
+        category: 'string',
+        label: 'file or directory',
+        description:
+          'Local project matching the path on your filesystem',
+      },
+    ],
   },
   ':workspace': {
     selector: ':workspace',
