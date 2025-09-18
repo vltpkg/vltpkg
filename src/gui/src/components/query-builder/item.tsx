@@ -58,13 +58,32 @@ const TagItem = ({ node }: { node: UiNode }) => (
   <Text variant="tag">{node.value}</Text>
 )
 
-const ProjectItem = ({ node }: { node: PseudoUiNode }) => (
-  <>
-    <Text variant="selector">project</Text>
-    <Text variant="selector">is</Text>
-    <Text variant="string">{node.value}</Text>
-  </>
-)
+const ProjectItem = ({ node }: { node: PseudoUiNode }) => {
+  const hostItem = node.children?.[0] ?? {
+    type: 'string',
+    value: 'unknown',
+  }
+
+  if (node.value === ':root') {
+    return (
+      <>
+        <Text variant="selector">project</Text>
+        <Text variant="selector">is</Text>
+        <Text variant="string">{node.value}</Text>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Text variant="pseudo">host</Text>
+      <Text variant="selector">is</Text>
+      <Text variant={hostItem.type as QueryTokenProps['variant']}>
+        {hostItem.value}
+      </Text>
+    </>
+  )
+}
 
 const CombinatorItem = ({ node }: { node: UiNode }) => (
   <Text variant="combinator">

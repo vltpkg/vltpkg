@@ -93,10 +93,34 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
           <gui-command-separator>
           </gui-command-separator>
           <gui-command-group heading="Project">
-            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
-              <span>
-                All configured projects
-              </span>
+            <gui-command-item
+              keywords="local,file or directory"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  All configured projects
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    local
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    file or directory
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
             </gui-command-item>
             <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
               <span>
@@ -829,10 +853,34 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
           <gui-command-separator>
           </gui-command-separator>
           <gui-command-group heading="Project">
-            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
-              <span>
-                All configured projects
-              </span>
+            <gui-command-item
+              keywords="local,file or directory"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  All configured projects
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    local
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    file or directory
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
             </gui-command-item>
             <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
               <span>
@@ -1565,10 +1613,34 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
           <gui-command-separator>
           </gui-command-separator>
           <gui-command-group heading="Project">
-            <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
-              <span>
-                All configured projects
-              </span>
+            <gui-command-item
+              keywords="local,file or directory"
+              classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800"
+            >
+              <gui-dropdown-menu>
+                <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
+                  All configured projects
+                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  </gui-chevron-right-icon>
+                </gui-dropdown-menu-trigger>
+                <gui-dropdown-menu-content
+                  side="right"
+                  align="start"
+                  classname="w-[200px] rounded-lg p-1"
+                >
+                  <div class="px-2 py-1.5">
+                    <h4 class="text-xs font-medium text-muted-foreground">
+                      Options
+                    </h4>
+                  </div>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    local
+                  </gui-dropdown-menu-item>
+                  <gui-dropdown-menu-item classname="cursor-default">
+                    file or directory
+                  </gui-dropdown-menu-item>
+                </gui-dropdown-menu-content>
+              </gui-dropdown-menu>
             </gui-command-item>
             <gui-command-item classname="!bg-transparent hover:!bg-neutral-200/50 dark:bg-transparent dark:hover:!bg-neutral-800">
               <span>

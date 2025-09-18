@@ -100,10 +100,10 @@ export const COMBINATOR_LABELS: Record<Combinator, string> = {
 export const SELECTOR_GROUP_LABEL = 'and'
 
 export const PROJECT_SELECTORS = [
-  ':host',
   ':project',
   ':workspace',
   ':root',
+  ':host',
 ] as const
 
 export interface QueryBuilderToken {
@@ -154,6 +154,25 @@ export const projectOptions: QueryBuilderGroup = {
   items: Object.entries(PSEUDO_PROJECT_SELECTORS).map(
     ([token, selector]) => ({
       label: selector.label,
+      options:
+        'arguments' in selector ?
+          {
+            label: 'Options',
+            options: selector.arguments.map(arg => ({
+              label: arg.label,
+              token: {
+                type: arg.category,
+                argumentType:
+                  'argumentType' in arg ?
+                    (arg.argumentType as ArgumentType)
+                  : undefined,
+                token: arg.argument,
+                label: arg.label,
+                description: arg.description,
+              },
+            })),
+          }
+        : undefined,
       token: {
         token,
         type: selector.category,
