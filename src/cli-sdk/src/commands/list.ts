@@ -208,8 +208,7 @@ export const command: CommandFn<ListResult> = async conf => {
     ) ?
       selectImportersQueryString
     : projectQueryString
-  const defaultLocalScopeQueryString =
-    ':host-context(local) :root > *'
+  const defaultLocalScopeQueryString = ':host(local) :root > *'
 
   // retrieve the selected nodes and edges
   /* c8 ignore start */

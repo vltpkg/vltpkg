@@ -73,7 +73,7 @@ const projectLoadContextFunction =
   }
 
 /**
- * Creates a Map of host context functions that can be used by the :host-context
+ * Creates a Map of host context functions that can be used by the :host
  * pseudo selector to dynamically load graphs from different sources.
  * This is the browser-based implementation that fetches data from the server.
  * Returns a Map where keys are context names and values are functions that return HostContextsMapResult

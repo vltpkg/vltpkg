@@ -488,7 +488,7 @@ t.test('query', async t => {
     t.matchSnapshot(
       await runCommand(
         {
-          positionals: [`:host-context("file:${projectFolder}")`],
+          positionals: [`:host("file:${projectFolder}")`],
           values: {
             view: 'human',
           },

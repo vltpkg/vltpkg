@@ -74,22 +74,22 @@ e.g: `#foo` is the same as `[name=foo]`
   results for the selector expression used. As an example, here is a
   query that matches all packages that have a peer dependency on
   `react`: `:has(.peer[name=react])`
-- `:host-context(<context>)` Switches the current graph context to a
-  new set of graphs loaded from a specific host context. This selector
-  allows querying across multiple projects or switching to different
-  project scopes. The context parameter can be:
+- `:host(<context>)` Switches the current graph context to a new set
+  of graphs loaded from a specific host context. This selector allows
+  querying across multiple projects or switching to different project
+  scopes. The context parameter can be:
   - A specific project folder path (e.g., `"file:~/my-project"`)
   - The special `local` context which loads all configured projects
     from your vlt dashboard Examples with CLI commands:
-  - `vlt query ':host-context(local) :malware'` - Find malware across
-    all configured projects
-  - `vlt version patch --scope=':host-context("file:~/tmp/test-vite")'`
+  - `vlt query ':host(local) :malware'` - Find malware across all
+    configured projects
+  - `vlt version patch --scope=':host("file:~/tmp/test-vite")'`
     - Bump version for a specific project
-  - `vlt pkg pick name version --scope=':host-context(local) > :root > *'`
+  - `vlt pkg pick name version --scope=':host(local) > :root > *'`
     - Get name and version of all direct dependencies across all
       configured projects
-  - `vlt query ':host-context("file:~/my-app") :outdated'` - Find
-    outdated packages in a specific project
+  - `vlt query ':host("file:~/my-app") :outdated'` - Find outdated
+    packages in a specific project
 - `:is(<forgiving-selector-list>)` Useful for writing large selectors
   in a more compact form, the `:is()` pseudo-class takes a selector
   list as its arguments and selects any element that can be selected

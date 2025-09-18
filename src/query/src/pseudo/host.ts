@@ -11,7 +11,7 @@ import type { ParserState } from '../types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 
 /**
- * Parses the internal parameters of the :host-context() pseudo selector.
+ * Parses the internal parameters of the :host() pseudo selector.
  * Returns the context key that should be used to look up the host context function.
  */
 export const parseInternals = (nodes: PostcssNode[]): string => {
@@ -32,16 +32,14 @@ export const parseInternals = (nodes: PostcssNode[]): string => {
   }
 
   if (!contextKey) {
-    throw error(
-      'Expected a context key parameter for :host-context selector',
-    )
+    throw error('Expected a context key parameter for :host selector')
   }
 
   return contextKey
 }
 
 /**
- * :host-context Pseudo-Selector, switches the current graph context to a new
+ * :host Pseudo-Selector, switches the current graph context to a new
  * set of graphs loaded from a specific host context.
  *
  * This selector accepts a single parameter that specifies which host context
@@ -49,13 +47,11 @@ export const parseInternals = (nodes: PostcssNode[]): string => {
  * to the Query constructor.
  *
  * Example:
- * - :host-context(local) - Switches to graphs loaded from the local context
+ * - :host(local) - Switches to graphs loaded from the local context
  */
 export const hostContext = async (state: ParserState) => {
   if (!state.hostContexts) {
-    throw error(
-      'No host contexts available for :host-context selector',
-    )
+    throw error('No host contexts available for :host selector')
   }
 
   let contextKey: string
@@ -64,7 +60,7 @@ export const hostContext = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :host-context selector', {
+    throw error('Failed to parse :host selector', {
       cause: err,
     })
   }
