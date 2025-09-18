@@ -308,25 +308,40 @@ export const handleRequest = async (
             ...server.options.loadedConfig.options,
           })
         }
-        // if dashboard-root was set explicitly, update server options immediately
-        const dr = normRes.normalized.find(
-          p => p.key === 'dashboard-root',
-        )
-        if (dr) {
-          try {
-            const parsed = JSON.parse(dr.value) as unknown
-            if (
-              Array.isArray(parsed) &&
-              parsed.every(v => typeof v === 'string')
-            ) {
-              server.updateOptions({
-                ...server.options,
-                'dashboard-root': parsed,
-              })
-            }
-            /* c8 ignore next */
-          } catch {}
-        }
+        // reflect canonical dashboard-root from config into server options
+        try {
+          const projectRoot = await server.config.get(
+            'dashboard-root',
+            'project',
+          )
+          const userRoot = await server.config.get(
+            'dashboard-root',
+            'user',
+          )
+          const nextOptions = { ...server.options }
+          const root =
+            (
+              Array.isArray(projectRoot) &&
+              projectRoot.every(v => typeof v === 'string')
+            ) ?
+              projectRoot
+            : (
+              Array.isArray(userRoot) &&
+              userRoot.every(v => typeof v === 'string')
+            ) ?
+              userRoot
+            : undefined
+          if (root) {
+            nextOptions['dashboard-root'] = root
+          } else {
+            // ensure we do not keep stale in-memory value
+            delete (nextOptions as Record<string, unknown>)[
+              'dashboard-root'
+            ]
+          }
+          server.updateOptions(nextOptions)
+          /* c8 ignore next */
+        } catch {}
         // reload server so changes take effect immediately
         await server.update()
         // notify after successful reload to let external listeners refresh
@@ -367,6 +382,39 @@ export const handleRequest = async (
             ...server.options.loadedConfig.options,
           })
         }
+        // reflect canonical dashboard-root from config into server options
+        try {
+          const projectRoot = await server.config.get(
+            'dashboard-root',
+            'project',
+          )
+          const userRoot = await server.config.get(
+            'dashboard-root',
+            'user',
+          )
+          const nextOptions = { ...server.options }
+          const root =
+            (
+              Array.isArray(projectRoot) &&
+              projectRoot.every(v => typeof v === 'string')
+            ) ?
+              projectRoot
+            : (
+              Array.isArray(userRoot) &&
+              userRoot.every(v => typeof v === 'string')
+            ) ?
+              userRoot
+            : undefined
+          if (root) {
+            nextOptions['dashboard-root'] = root
+          } else {
+            delete (nextOptions as Record<string, unknown>)[
+              'dashboard-root'
+            ]
+          }
+          server.updateOptions(nextOptions)
+          /* c8 ignore next */
+        } catch {}
         // reload server so changes take effect immediately
         await server.update()
         // notify after successful reload to let external listeners refresh

@@ -3,7 +3,6 @@ import { AsideFunding } from '@/components/explorer-grid/selected-item/aside/asi
 import { AsideRepo } from '@/components/explorer-grid/selected-item/aside/aside-repo.tsx'
 import { AsideBugs } from '@/components/explorer-grid/selected-item/aside/aside-bugs.tsx'
 import { AsideMetadata } from '@/components/explorer-grid/selected-item/aside/aside-metadata.tsx'
-import { AsideOverviewEmptyState } from '@/components/explorer-grid/selected-item/aside/empty-state.tsx'
 import { useEmptyCheck } from '@/components/explorer-grid/selected-item/aside/use-empty-check.tsx'
 
 interface AsideOverviewProps {
@@ -19,7 +18,7 @@ export const AsideOverview = ({ className }: AsideOverviewProps) => {
   } = useEmptyCheck()
 
   if (isRepoEmpty && isFundingEmpty && isBugsEmpty && isMetadataEmpty)
-    return <AsideOverviewEmptyState />
+    return null
 
   return (
     <Aside className={className}>

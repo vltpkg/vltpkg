@@ -55,13 +55,6 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/aside/empty-state.tsx',
-  () => ({
-    AsideOverviewEmptyState: 'gui-aside-overview-empty-state',
-  }),
-)
-
-vi.mock(
   '@/components/explorer-grid/selected-item/aside/use-empty-check.tsx',
   () => ({
     useEmptyCheck: vi.fn(),
@@ -99,7 +92,7 @@ test('AsideOverview renders when all sections are present', () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('AsideOverview renders an empty state when all sections are empty', () => {
+test('AsideOverview renders null when all sections are empty', () => {
   vi.mocked(useEmptyCheck).mockReturnValue({
     isRepoEmpty: true,
     isFundingEmpty: true,
