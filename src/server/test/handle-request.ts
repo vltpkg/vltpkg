@@ -1191,8 +1191,19 @@ t.test(
     const context = getContext(t)
     let okCalled = false
 
+    // ensure no stale loadedConfig from prior tests interferes
+    delete (context.server as any).options.loadedConfig
+
+    // mock config writes and canonical reads
     ;(context.server as any).config = {
       async setPairs() {},
+      async get(key?: string, _which?: 'user' | 'project') {
+        if (key === 'dashboard-root') {
+          // return canonical value as would be read from config after write
+          return ['a', 'b']
+        }
+        return undefined
+      },
     }
 
     const { handleRequest } = await t.mockImport<
@@ -1226,6 +1237,271 @@ t.test(
     t.ok(updates.length >= 1, 'updateOptions was called')
     const last = updates[updates.length - 1]
     t.same((last?.[1] as any)['dashboard-root'], ['a', 'b'])
+  },
+)
+
+t.test(
+  '/config/set reloads loadedConfig and updates options',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+    let reloaded = false
+
+    ;(context.server as any).options.loadedConfig = {
+      async reloadFromDisk() {
+        reloaded = true
+      },
+      options: { some: 'set-opt', 'dashboard-root': ['from-loaded'] },
+    }
+    ;(context.server as any).config = {
+      async setPairs() {},
+      async get(key?: string, _which?: 'user' | 'project') {
+        if (key === 'dashboard-root') {
+          return ['set-project']
+        }
+        return undefined
+      },
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {
+            which: 'project',
+            pairs: [
+              { key: 'registry', value: 'https://example.test/' },
+            ],
+          }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values set successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    t.equal(reloaded, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.same((last?.[1] as any)['dashboard-root'], ['set-project'])
+  },
+)
+
+t.test(
+  '/config/set uses user dashboard-root when project missing',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+
+    delete (context.server as any).options.loadedConfig
+    ;(context.server as any).config = {
+      async setPairs() {},
+      async get(key?: string, _which?: 'user' | 'project') {
+        if (key === 'dashboard-root' && _which === 'user')
+          return ['u1', 'u2']
+        if (key === 'dashboard-root' && _which === 'project')
+          return undefined
+        return undefined
+      },
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {
+            which: 'project',
+            pairs: [{ key: 'registry', value: 'x' }],
+          }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values set successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.same((last?.[1] as any)['dashboard-root'], ['u1', 'u2'])
+  },
+)
+
+t.test(
+  '/config/set removes dashboard-root when not present in config',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+
+    // start with a stale in-memory dashboard-root
+    ;(context.server as any).options['dashboard-root'] = ['stale']
+    ;(context.server as any).config = {
+      async setPairs() {},
+      async get() {
+        return undefined
+      },
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return {
+            which: 'project',
+            pairs: [{ key: 'registry', value: 'x' }],
+          }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values set successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.equal((last?.[1] as any)['dashboard-root'], undefined)
+  },
+)
+
+t.test(
+  '/config/delete uses project dashboard-root if present',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+
+    ;(context.server as any).config = {
+      async deleteMany() {},
+      async get(key?: string, _which?: 'user' | 'project') {
+        if (key === 'dashboard-root' && _which === 'project')
+          return ['p1']
+        return undefined
+      },
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return { which: 'project', pairs: [{ key: 'registry' }] }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values deleted successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.same((last?.[1] as any)['dashboard-root'], ['p1'])
+  },
+)
+
+t.test(
+  '/config/delete uses user dashboard-root when project missing',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+
+    ;(context.server as any).config = {
+      async deleteMany() {},
+      async get(key?: string, _which?: 'user' | 'project') {
+        if (key === 'dashboard-root' && _which === 'project')
+          return undefined
+        if (key === 'dashboard-root' && _which === 'user')
+          return ['u-only']
+        return undefined
+      },
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return { which: 'project', pairs: [{ key: 'registry' }] }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values deleted successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.same((last?.[1] as any)['dashboard-root'], ['u-only'])
+  },
+)
+
+t.test(
+  '/config/delete removes dashboard-root when not present in config',
+  async t => {
+    const context = getContext(t)
+    let okCalled = false
+
+    // start with stale in-memory value
+    ;(context.server as any).options['dashboard-root'] = ['stale']
+    ;(context.server as any).config = {
+      async deleteMany() {},
+      async get() {
+        return undefined
+      },
+    }
+
+    const { handleRequest } = await t.mockImport<
+      typeof import('../src/handle-request.ts')
+    >('../src/handle-request.ts', {
+      '../src/json.ts': {
+        read: async (req: IncomingMessage) => {
+          t.equal(req, context.req)
+          return { which: 'project', pairs: [{ key: 'registry' }] }
+        },
+        ok: (res: ServerResponse, data: string) => {
+          t.equal(res, context.res)
+          t.equal(data, 'Config values deleted successfully')
+          okCalled = true
+        },
+      },
+    })
+
+    await handleRequest(context.req, context.res, context.server)
+    t.equal(okCalled, true)
+    const updates = ms.log.filter(([k]) => k === 'updateOptions')
+    t.ok(updates.length >= 1, 'updateOptions was called')
+    const last = updates[updates.length - 1]
+    t.equal((last?.[1] as any)['dashboard-root'], undefined)
   },
 )
 

@@ -27,6 +27,13 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/aside/empty-state.tsx',
+  () => ({
+    AsideOverviewEmptyState: 'gui-aside-overview-empty-state',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
