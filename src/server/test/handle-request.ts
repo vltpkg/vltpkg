@@ -517,6 +517,11 @@ t.test('/graph/node/resolved-path node not found (404)', async t => {
     },
     '../src/graph-data.ts': {
       loadGraph: () => ({ nodes: { get: () => undefined } }),
+      getProjectData: () => ({
+        root: '',
+        tools: [],
+        vltInstalled: true,
+      }),
     },
   })
 
@@ -554,6 +559,11 @@ t.test('/graph/node/resolved-path success', async t => {
     },
     '../src/graph-data.ts': {
       loadGraph: () => ({ nodes: { get: () => node } }),
+      getProjectData: () => ({
+        root: '',
+        tools: [],
+        vltInstalled: true,
+      }),
     },
   })
 
@@ -591,6 +601,11 @@ t.test('/graph/node/resolved-path error (500)', async t => {
       loadGraph: () => {
         throw new Error('kaput')
       },
+      getProjectData: () => ({
+        root: '',
+        tools: [],
+        vltInstalled: true,
+      }),
     },
   })
 
@@ -1556,8 +1571,11 @@ t.test('/fs/ls edge cases: other type and null fileType', async t => {
       ...realFs,
       realpathSync: (p: string) => p,
       statSync: (p: string) => ({
-        isDirectory: () => p === root,
-        isFile: () => p !== root && !p.endsWith('/sock'),
+        isDirectory: () =>
+          p.replace(/\\/g, '/') === root.replace(/\\/g, '/'),
+        isFile: () =>
+          p.replace(/\\/g, '/') !== root.replace(/\\/g, '/') &&
+          !p.endsWith('/sock'),
         size: 0,
         mtime: new Date(),
       }),
@@ -1621,12 +1639,15 @@ t.test('/fs/ls includes symlink entries', async t => {
     'node:fs': {
       ...realFs,
       realpathSync: (p: string) => p,
-      statSync: (p: string) => ({
-        isDirectory: () => p === root,
-        isFile: () => p.endsWith('/link'),
-        size: 3,
-        mtime: new Date(),
-      }),
+      statSync: (p: string) => {
+        const normalized = p.replace(/\\/g, '/')
+        return {
+          isDirectory: () => normalized === root.replace(/\\/g, '/'),
+          isFile: () => normalized.endsWith('/link'),
+          size: 3,
+          mtime: new Date(),
+        }
+      },
       readdirSync: () => [
         {
           name: 'link',
@@ -2388,6 +2409,7 @@ t.test(
         },
       },
       '../src/graph-data.ts': {
+        loadGraph: () => ({ nodes: { get: () => undefined } }),
         getProjectData: (options: any, folder: any) => ({
           root: options.projectRoot || folder.fullpath(),
           tools: ['vlt'],
@@ -2505,6 +2527,7 @@ t.test(
         },
       },
       '../src/graph-data.ts': {
+        loadGraph: () => ({ nodes: { get: () => undefined } }),
         getProjectData: (options: any, folder: any) => ({
           root: options.projectRoot || folder.fullpath(),
           tools: ['vlt'],
@@ -2604,6 +2627,7 @@ t.test(
         },
       },
       '../src/graph-data.ts': {
+        loadGraph: () => ({ nodes: { get: () => undefined } }),
         getProjectData: (options: any, folder: any) => ({
           root: options.projectRoot || folder.fullpath(),
           tools: [],

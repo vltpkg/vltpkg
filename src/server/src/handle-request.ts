@@ -24,8 +24,7 @@ import {
 } from './utils.ts'
 import { readProjectFolders } from './read-project-folders.ts'
 import { reloadConfig } from './config-data.ts'
-import { getProjectData } from './graph-data.ts'
-import { loadGraph } from './graph-data.ts'
+import { loadGraph, getProjectData } from './graph-data.ts'
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { NodeLike, DependencyTypeShort } from '@vltpkg/types'
@@ -488,6 +487,7 @@ export const handleRequest = async (
 
     case '/fs/read': {
       try {
+        /* c8 ignore next */
         const { path, encoding } = await json.read<{
           path?: string
           encoding?: 'utf8' | 'base64'
