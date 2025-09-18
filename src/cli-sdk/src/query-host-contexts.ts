@@ -65,7 +65,7 @@ const getPossibleProjectKeys = (
 }
 
 /**
- * Creates a Map of host context functions that can be used by the :host-context
+ * Creates a Map of host context functions that can be used by the :host
  * pseudo selector to dynamically load graphs from different sources.
  */
 export const createHostContextsMap = async (

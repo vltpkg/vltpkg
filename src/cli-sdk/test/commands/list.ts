@@ -450,7 +450,7 @@ t.test('list', async t => {
         {
           positionals: [],
           values: {
-            target: `:host-context("file:${projectFolder}")`,
+            target: `:host("file:${projectFolder}")`,
             view: 'human',
           },
           options,

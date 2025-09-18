@@ -164,7 +164,7 @@ export const command: CommandFn<QueryResult> = async conf => {
 
   // retrieve default values and set up host contexts
   const defaultProjectQueryString = '*'
-  const defaultLocalScopeQueryString = ':host-context(local) *'
+  const defaultLocalScopeQueryString = ':host(local) *'
   const positionalQueryString = conf.positionals[0]
   const targetQueryString = conf.get('target')
   const scopeQueryString = conf.get('scope')

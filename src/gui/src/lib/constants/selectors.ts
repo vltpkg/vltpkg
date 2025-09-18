@@ -275,8 +275,8 @@ export const PSEUDO_RELATIONSHIP_SELECTORS = {
 } as const satisfies Record<string, Selector>
 
 export const PSEUDO_PROJECT_SELECTORS = {
-  ':host-context(local)': {
-    selector: ':host-context(local)',
+  ':host(local)': {
+    selector: ':host(local)',
     label: 'All configured projects',
     category: 'pseudo',
     description:

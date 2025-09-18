@@ -46,13 +46,13 @@ const hasImporterToken = (
 }
 
 /**
- * Checks if any segment of the query has a :host-context selector.
+ * Checks if any segment of the query has a :host selector.
  */
 const hasHostContextToken = (
   queryTokens: ParsedSelectorToken[],
 ): boolean => {
   for (const segment of queryTokens) {
-    if (segment.value === ':host-context') {
+    if (segment.value === ':host') {
       return true
     }
   }
@@ -69,14 +69,14 @@ export const updateResultItem =
     if (!item.to) return
     const query = q.trim()
     let newQuery = query
-    // handle :host-context() selector if present
+    // handle :host() selector if present
     const queryTokens = Query.getQueryTokens(query)
     let prefix = ''
     if (hasHostContextToken(queryTokens)) {
-      const [, ...rest] = query.split(':host-context(')
+      const [, ...rest] = query.split(':host(')
       const [key, ...after] = rest.join('').split(')')
       newQuery = after.join(')')
-      prefix = `:host-context(${key}) `
+      prefix = `:host(${key}) `
     }
     // if it's a stacked item we make sure we select the unique node so that
     // either we get down to a single item or the user is presented with the
