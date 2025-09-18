@@ -30,6 +30,7 @@
   "scripts": {
     "build": "nitro build",
     "postbuild": "node dev/find-libsql.mjs",
+    "cache:drop": "rm -rf .data",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio --port 4985",
     "dev": "nitro dev",
