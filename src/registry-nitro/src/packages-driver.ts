@@ -1,7 +1,7 @@
 import { defineDriver } from 'unstorage'
 import { db } from './db/index.ts'
 import * as Schema from './db/schema.ts'
-import { eq, like } from 'drizzle-orm'
+import { eq, like, sql } from 'drizzle-orm'
 import { text } from 'stream/consumers'
 
 const packageStorageDriver = defineDriver(() => {
@@ -149,24 +149,22 @@ const packageStorageDriver = defineDriver(() => {
             },
           })
 
-        // TODO: This should be done in a single transaction
-        for (const [version, manifest] of Object.entries(versions)) {
-          const spec = `${name}@${version}`
-
-          const stringifiedManifest = JSON.stringify(manifest)
-          await db
-            .insert(Schema.versions)
-            .values({
-              spec,
-              manifest: stringifiedManifest,
-            })
-            .onConflictDoUpdate({
-              target: Schema.versions.spec,
-              set: {
-                manifest: stringifiedManifest,
-              },
-            })
-        }
+        await db
+          .insert(Schema.versions)
+          .values(
+            Object.entries(versions).map(([version, manifest]) => ({
+              spec: `${name}@${version}`,
+              manifest: JSON.stringify(manifest),
+            })),
+          )
+          .onConflictDoUpdate({
+            target: Schema.versions.spec,
+            set: {
+              manifest: sql.raw(
+                `excluded.${Schema.versions.manifest.name}`,
+              ),
+            },
+          })
       }
 
       if (isVersion) {
