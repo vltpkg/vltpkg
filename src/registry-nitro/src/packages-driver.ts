@@ -2,13 +2,14 @@ import { defineDriver } from 'unstorage'
 import { db } from './db/index.ts'
 import * as Schema from './db/schema.ts'
 import { eq, like } from 'drizzle-orm'
+import { text } from 'stream/consumers'
 
 const packageStorageDriver = defineDriver(() => {
   return {
     name: 'packages-storage',
     options: {},
 
-    async getItem(key, _opts) {
+    async getItem(key) {
       const keyId = key.split(':').pop()!
       const isPackage = keyId.startsWith('npm___package___')
       const isVersion = keyId.startsWith('npm___version___')
@@ -98,15 +99,15 @@ const packageStorageDriver = defineDriver(() => {
       return x
     },
 
-    async setItem(key, rawValue, _opts) {
+    async setItemRaw(key, { expires, mtime, integrity, value }) {
       const keyId = key.split(':').pop()!
       const isPackage = keyId.startsWith('npm___package___')
       const isVersion = keyId.startsWith('npm___version___')
 
-      const { expires, mtime, integrity, value } =
-        JSON.parse(rawValue)
-      const { body: rawBody, ...valueWithoutBody } = value
-      const body = JSON.parse(rawBody)
+      const { body: bodyStream, ...valueWithoutBody } = value
+
+      const bodyText = await text(bodyStream)
+      const body = JSON.parse(bodyText)
       const name: string = body.name
 
       const stringifiedValueWithoutBody =
