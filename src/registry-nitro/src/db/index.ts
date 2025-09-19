@@ -1,6 +1,7 @@
-import { createDatabase } from 'db0'
-import libSql from 'db0/connectors/libsql/node'
-import { drizzle } from 'db0/integrations/drizzle'
+import { drizzle } from 'drizzle-orm/libsql'
 
-const db0 = createDatabase(libSql({ url: 'file:.data/db.sqlite' }))
-export const db = drizzle(db0)
+export const db = drizzle({
+  connection: {
+    url: 'file:.data/db.sqlite',
+  },
+})
