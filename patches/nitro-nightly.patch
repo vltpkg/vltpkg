@@ -1,5 +1,5 @@
 diff --git a/dist/runtime/internal/cache.mjs b/dist/runtime/internal/cache.mjs
-index 7b3265de048214b2aa34252716438d1320eed08c..bd5c6e128e07860e1eb75282466c4ef39375725a 100644
+index 7b3265de048214b2aa34252716438d1320eed08c..c862a45ac8013e48a45d3020b05d48df512255db 100644
 --- a/dist/runtime/internal/cache.mjs
 +++ b/dist/runtime/internal/cache.mjs
 @@ -69,7 +69,21 @@ export function defineCachedFunction(fn, opts = {}) {
@@ -25,14 +25,16 @@ index 7b3265de048214b2aa34252716438d1320eed08c..bd5c6e128e07860e1eb75282466c4ef3
              console.error(`[cache] Cache write error.`, error);
              useNitroApp().captureError(error, { event, tags: ["cache"] });
            });
-@@ -179,7 +193,9 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
+@@ -179,8 +193,10 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
        }
        const rawValue = await handler(event);
        const res = await toResponse(rawValue, event);
 -      const body = await res.text();
+-      if (!res.headers.has("etag")) {
 +      const body = opts.streaming 
 +        ? res.body
 +        : await res.text();
-       if (!res.headers.has("etag")) {
++      if (!res.headers.has("etag") && !(body instanceof ReadableStream)) {
          res.headers.set("etag", `W/"${hash(body)}"`);
        }
+       if (!res.headers.has("last-modified")) {
