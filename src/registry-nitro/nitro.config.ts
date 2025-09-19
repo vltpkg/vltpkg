@@ -3,12 +3,12 @@ import { resolve } from 'node:path'
 
 const packagesDriver = resolve(
   import.meta.dirname,
-  './src/packages-driver.ts',
+  './src/drivers/packages.ts',
 )
 
 const tarballsDriver = resolve(
   import.meta.dirname,
-  './src/tarballs-driver.ts',
+  './src/drivers/tarballs.ts',
 )
 
 export default defineNitroConfig({
