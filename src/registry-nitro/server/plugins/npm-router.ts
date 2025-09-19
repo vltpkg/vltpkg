@@ -44,6 +44,8 @@ const getPackageOrVersionHandler = cachedEventHandler(
   {
     base: 'packages',
     integrity: 'packages.0',
+    // @ts-expect-error - Patched Nitro to support streaming mode
+    streaming: true,
     // TODO: If Nitro could make this take a function with the same event signature
     // then we could have different max ages for packages vs versions. Ideally packages
     // should be cached for a short time (5m) and versions for a long time, maybe even forever
@@ -82,6 +84,8 @@ const getTarballHandler = cachedEventHandler(
     base: 'tarballs',
     integrity: 'tarballs.0',
     maxAge: 60 * 60 * 24 * 365 * 100,
+    // @ts-expect-error - Patched Nitro to support streaming mode
+    streaming: true,
     getKey: event => {
       const param1 = assertParam(event, 'param1')
       const param2 = getRouterParam(event, 'param2')

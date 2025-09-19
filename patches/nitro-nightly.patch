@@ -1,39 +1,38 @@
 diff --git a/dist/runtime/internal/cache.mjs b/dist/runtime/internal/cache.mjs
-index 7b3265de048214b2aa34252716438d1320eed08c..6279ade5c2f5db0c863cd35764db36c20faad16f 100644
+index 7b3265de048214b2aa34252716438d1320eed08c..bd5c6e128e07860e1eb75282466c4ef39375725a 100644
 --- a/dist/runtime/internal/cache.mjs
 +++ b/dist/runtime/internal/cache.mjs
-@@ -179,7 +179,11 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
+@@ -69,7 +69,21 @@ export function defineCachedFunction(fn, opts = {}) {
+           if (opts.maxAge && !opts.swr) {
+             setOpts = { ttl: opts.maxAge };
+           }
+-          const promise = useStorage().setItem(cacheKey, entry, setOpts).catch((error) => {
++          let cacheEntry = entry;
++          let setItem = useStorage().setItem;
++          if (opts.streaming && entry.value?.body instanceof ReadableStream) {
++            const [streamForCache, streamForResponse] = entry.value.body.tee();
++            cacheEntry = {
++              ...entry,
++              value: {
++                ...entry.value,
++                body: streamForCache
++              }
++            };
++            entry.value.body = streamForResponse;
++            setItem = useStorage().setItemRaw;
++          }
++          const promise = setItem(cacheKey, cacheEntry, setOpts).catch((error) => {
+             console.error(`[cache] Cache write error.`, error);
+             useNitroApp().captureError(error, { event, tags: ["cache"] });
+           });
+@@ -179,7 +193,9 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
        }
        const rawValue = await handler(event);
        const res = await toResponse(rawValue, event);
 -      const body = await res.text();
-+      const contentType = res.headers.get('content-type') || '';
-+      const isBinary = !contentType.startsWith('text/') && !contentType.includes('json') && !contentType.includes('xml');
-+      const body = isBinary 
-+        ? Array.from(new Uint8Array(await res.arrayBuffer()))
++      const body = opts.streaming 
++        ? res.body
 +        : await res.text();
        if (!res.headers.has("etag")) {
          res.headers.set("etag", `W/"${hash(body)}"`);
        }
-@@ -206,7 +210,8 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
-         status: res.status,
-         statusText: res.statusText,
-         headers: Object.fromEntries(res.headers.entries()),
--        body
-+        body,
-+        isBinary,
-       };
-       return cacheEntry;
-     },
-@@ -227,7 +232,10 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
-     })) {
-       return;
-     }
--    return new FastResponse(response.body, {
-+    const responseBody = response.isBinary 
-+      ? new Uint8Array(response.body).buffer
-+      : response.body;
-+    return new FastResponse(responseBody, {
-       status: response.status,
-       statusText: response.statusText,
-       headers: response.headers

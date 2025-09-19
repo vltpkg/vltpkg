@@ -97,7 +97,7 @@ overrides:
 
 patchedDependencies:
   nitro-nightly:
-    hash: 6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f
+    hash: 8acdad475ac27955d8123344c5ff7258cf84d50f64a7780631c58b82dd592d70
     path: patches/nitro-nightly.patch
   tshy:
     hash: bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e
@@ -1873,7 +1873,7 @@ importers:
         version: 0.5.20
       nitro:
         specifier: npm:nitro-nightly@latest
-        version: nitro-nightly@3.0.0-20250911-162707-b6dbc0f9(patch_hash=6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f)(@libsql/client@0.15.14)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@opentelemetry/api@1.9.0)(better-sqlite3@12.2.0)(gel@2.1.1))(encoding@0.1.13)
+        version: nitro-nightly@3.0.0-20250911-162707-b6dbc0f9(patch_hash=8acdad475ac27955d8123344c5ff7258cf84d50f64a7780631c58b82dd592d70)(@libsql/client@0.15.14)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@opentelemetry/api@1.9.0)(better-sqlite3@12.2.0)(gel@2.1.1))(encoding@0.1.13)
       unstorage:
         specifier: ^1.17.1
         version: 1.17.1(@vercel/functions@2.2.13)(db0@0.3.2(@libsql/client@0.15.14)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@opentelemetry/api@1.9.0)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.7.0)
@@ -19851,7 +19851,7 @@ snapshots:
 
   neotraverse@0.6.18: {}
 
-  nitro-nightly@3.0.0-20250911-162707-b6dbc0f9(patch_hash=6348b86f84b8e4c17796f70e5a8a559973b551aebb7bd66ef3ab64155c1b543f)(@libsql/client@0.15.14)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@opentelemetry/api@1.9.0)(better-sqlite3@12.2.0)(gel@2.1.1))(encoding@0.1.13):
+  nitro-nightly@3.0.0-20250911-162707-b6dbc0f9(patch_hash=8acdad475ac27955d8123344c5ff7258cf84d50f64a7780631c58b82dd592d70)(@libsql/client@0.15.14)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(drizzle-orm@0.44.5(@cloudflare/workers-types@4.20250830.0)(@libsql/client@0.15.14)(@opentelemetry/api@1.9.0)(better-sqlite3@12.2.0)(gel@2.1.1))(encoding@0.1.13):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.50.1)
       '@rollup/plugin-commonjs': 28.0.6(rollup@4.50.1)
