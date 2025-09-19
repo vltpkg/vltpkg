@@ -11,7 +11,7 @@ export type HostContextsMapResult = {
   initialNodes: NodeLike[]
   edges: EdgeLike[]
   nodes: NodeLike[]
-  securityArchive: SecurityArchiveLike
+  securityArchive: SecurityArchiveLike | undefined
 }
 
 export type HostContextsMap = Map<
