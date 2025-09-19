@@ -31,7 +31,7 @@ const proxyToNpm = (
   })
 }
 
-const getPackageOrVersionHandler = cachedEventHandler(
+export const getPackageOrVersionHandler = cachedEventHandler(
   async event => {
     const param1 = assertParam(event, 'param1')
     const param2 = getRouterParam(event, 'param2')
@@ -70,7 +70,7 @@ const getPackageOrVersionHandler = cachedEventHandler(
   },
 )
 
-const getTarballHandler = cachedEventHandler(
+export const getTarballHandler = cachedEventHandler(
   async event => {
     const param1 = assertParam(event, 'param1')
     const param2 = getRouterParam(event, 'param2')
@@ -94,16 +94,3 @@ const getTarballHandler = cachedEventHandler(
     },
   },
 )
-
-export default defineNitroPlugin(nitroApp => {
-  const { _h3: h3 } = nitroApp
-  assert(h3, 'h3 is not available')
-
-  h3.get('/', () => ({ ok: true }))
-  h3.get('/npm', () => ({ ok: true }))
-  h3.get('/npm/:param1', getPackageOrVersionHandler)
-  h3.get('/npm/:param1/:param2', getPackageOrVersionHandler)
-  h3.get('/npm/:param1/:param2/:param3', getPackageOrVersionHandler)
-  h3.get('/npm/:param1/-/:tarball', getTarballHandler)
-  h3.get('/npm/:param1/:param2/-/:tarball', getTarballHandler)
-})
