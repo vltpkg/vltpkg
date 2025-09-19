@@ -2,10 +2,15 @@ import { resolve } from 'node:path'
 import { defineDriver } from 'unstorage'
 import * as Schema from './db/schema.ts'
 import { db } from './db/index.ts'
-import { readFile, writeFile } from 'node:fs/promises'
-import { mkdirSync } from 'node:fs'
+import { access } from 'node:fs/promises'
+import {
+  createReadStream,
+  createWriteStream,
+  mkdirSync,
+} from 'node:fs'
 import { eq } from 'drizzle-orm'
 import { basename } from 'node:path'
+import { pipeline } from 'node:stream/promises'
 
 const tarballsDriver = defineDriver(() => {
   const base = resolve(process.cwd(), '.data/tarballs')
@@ -23,7 +28,7 @@ const tarballsDriver = defineDriver(() => {
   return {
     name: 'tarballs-storage',
 
-    async getItem(key, _opts) {
+    async getItem(key) {
       const [response] = await db
         .select()
         .from(Schema.tarballResponses)
@@ -35,11 +40,11 @@ const tarballsDriver = defineDriver(() => {
         return undefined
       }
 
-      const buffer = await readFile(getFilePath(key)).catch(
-        () => undefined,
-      )
+      const exists = await access(getFilePath(key))
+        .then(() => true)
+        .catch(() => false)
 
-      if (!buffer) {
+      if (!exists) {
         return undefined
       }
 
@@ -49,15 +54,13 @@ const tarballsDriver = defineDriver(() => {
         integrity: response.integrity,
         value: {
           ...JSON.parse(response.value),
-          body: Array.from(new Uint8Array(buffer)),
+          body: createReadStream(getFilePath(key)),
         },
       }
     },
 
-    async setItem(key, rawValue, _opts) {
-      const { expires, mtime, integrity, value } =
-        JSON.parse(rawValue)
-      const { body: rawBody, ...valueWithoutBody } = value
+    async setItemRaw(key, { expires, mtime, integrity, value }) {
+      const { body, ...valueWithoutBody } = value
 
       const stringifiedValueWithoutBody =
         JSON.stringify(valueWithoutBody)
@@ -80,19 +83,18 @@ const tarballsDriver = defineDriver(() => {
           },
         })
 
-      const buffer = new Uint8Array(rawBody)
-      await writeFile(getFilePath(key), buffer)
+      await pipeline(body, createWriteStream(getFilePath(key)))
     },
 
     // Not implemented since the Nitro's cache event handler does not use them
-    async hasItem(key, _opts) {
+    async hasItem(key) {
       return false
     },
-    async removeItem(key, _opts) {},
-    async getKeys(base, _opts) {
+    async removeItem(key) {},
+    async getKeys(base) {
       return []
     },
-    async clear(base, _opts) {},
+    async clear(base) {},
     async dispose() {},
     async watch() {
       return () => {}
