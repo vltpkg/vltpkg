@@ -1,6 +1,6 @@
 import { defineDriver } from 'unstorage'
-import { db } from './db/index.ts'
-import * as Schema from './db/schema.ts'
+import { db } from '../db/index.ts'
+import * as Schema from '../db/schema.ts'
 import { eq, like, sql } from 'drizzle-orm'
 import { text } from 'stream/consumers'
 
@@ -56,13 +56,10 @@ const packageStorageDriver = defineDriver(() => {
         body = {
           ...packument,
           versions: Object.fromEntries(
-            versionRows.map(version => {
-              // split on the last @ and take the last part
-              return [
-                version.spec.split('@').pop()!,
-                JSON.parse(version.manifest),
-              ]
-            }),
+            versionRows.map(version => [
+              version.spec.split('@').pop()!,
+              JSON.parse(version.manifest),
+            ]),
           ),
         }
       } else if (isVersion) {
