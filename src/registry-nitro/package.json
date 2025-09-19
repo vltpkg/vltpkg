@@ -1,0 +1,38 @@
+{
+  "name": "@vltpkg/vsr-nitro",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/registry-nitro"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "dependencies": {
+    "@libsql/client": "^0.15.14",
+    "drizzle-orm": "^0.44.5",
+    "h3": "^2.0.0-beta.4",
+    "libsql": "^0.5.20",
+    "nitro": "npm:nitro-nightly@latest",
+    "nitro-nightly": "3.0.0-20250918-181039-90ec8ffa",
+    "unstorage": "^1.17.1",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@neon-rs/load": "^0.0.4",
+    "drizzle-kit": "^0.31.4"
+  },
+  "license": "FSL-1.1-MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "nitro build",
+    "postbuild": "node dev/find-libsql.mjs",
+    "cache:drop": "rm -rf .data",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio --port 4985",
+    "dev": "nitro dev",
+    "serve": "node .output/server/index.mjs"
+  },
+  "type": "module"
+}
