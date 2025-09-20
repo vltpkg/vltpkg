@@ -437,6 +437,7 @@ export const load = (options: LoadOptions): Graph => {
     try {
       // if we reach here, the hidden lockfile is valid
       const graph = loadHidden({
+        ...options,
         projectRoot,
         mainManifest,
         packageJson,
