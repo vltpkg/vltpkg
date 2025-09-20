@@ -200,11 +200,7 @@ export const handleRequest = async (
             }
 
             // load each individual graph
-            const graph = actual.load({
-              ...config.options,
-              projectRoot: folder.fullpath(),
-              skipLoadingNodesOnModifiersChange: false,
-            })
+            const graph = actual.load(config.options)
             const importers: NodeLike[] = []
             nodes.push(...graph.nodes.values())
             importers.push(...graph.importers)

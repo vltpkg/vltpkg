@@ -1,4 +1,6 @@
 import { transfer, createVirtualRoot } from '@vltpkg/graph/browser'
+import { SecurityArchive } from '@vltpkg/security-archive/browser'
+import type { SecurityArchiveLike } from '@vltpkg/security-archive/browser'
 import type { TransferData } from '@/state/types.ts'
 import type {
   HostContextsMap,
@@ -39,9 +41,9 @@ const getPossibleProjectKeys = (
 
 const projectLoadContextFunction =
   (
-    res: HostContextsResponse,
     transferData: TransferData,
     key: string,
+    securityArchive: SecurityArchiveLike | undefined,
   ) =>
   async (): Promise<HostContextsMapResult> => {
     const seenContext = seenContexts.get(key)
@@ -52,8 +54,6 @@ const projectLoadContextFunction =
     // Transform server response into HostContextsMapResult format
     const initialEdges: HostContextsMapResult['initialEdges'] = []
     const initialNodes: HostContextsMapResult['initialNodes'] = []
-    const securityArchive: HostContextsMapResult['securityArchive'] =
-      res.securityArchive
 
     const { graph } = transfer.load(transferData)
     // Collect all edges and nodes
@@ -97,6 +97,16 @@ export const createHostContextsMap =
 
     const data = (await response.json()) as HostContextsResponse
 
+    // load security data
+    let securityArchive: SecurityArchiveLike | undefined
+    const loadedSecurityArchiveData: HostContextsMapResult['securityArchive'] =
+      data.securityArchive
+    if (loadedSecurityArchiveData) {
+      securityArchive = SecurityArchive.load(
+        loadedSecurityArchiveData,
+      )
+    }
+
     for (const transferData of data.local) {
       const { projectInfo } = transferData
 
@@ -107,9 +117,9 @@ export const createHostContextsMap =
       )) {
         if (!hostContexts.has(path)) {
           const retrieveProjectGraph = projectLoadContextFunction(
-            data,
             transferData,
             path,
+            securityArchive,
           )
           hostContexts.set(path, retrieveProjectGraph)
         }
@@ -127,8 +137,6 @@ export const createHostContextsMap =
         // Transform server response into HostContextsMapResult format
         const initialEdges: HostContextsMapResult['initialEdges'] = []
         const initialNodes: HostContextsMapResult['initialNodes'] = []
-        const securityArchive: HostContextsMapResult['securityArchive'] =
-          data.securityArchive
         const mainImporters: HostContextsMapResult['nodes'] = []
 
         for (const transferData of data.local) {
