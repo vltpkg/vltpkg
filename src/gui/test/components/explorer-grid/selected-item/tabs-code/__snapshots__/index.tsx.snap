@@ -1,0 +1,140 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CodeTabContent renders code view for selected file 1`] = `
+
+<div>
+  <gui-motion-tabs-content
+    value="code"
+    classname="py-4"
+  >
+    <gui-empty-state>
+    </gui-empty-state>
+  </gui-motion-tabs-content>
+</div>
+
+`;
+
+exports[`CodeTabContent renders directory listing 1`] = `
+
+<div>
+  <gui-motion-tabs-content
+    value="code"
+    classname="py-4"
+  >
+    <div style="opacity: 1; filter: blur(0px);">
+      <div class="flex flex-col">
+        <div class="overflow-x-scroll border-b border-muted px-6 pb-4">
+          <h3 class="text-md inline-flex items-baseline gap-1 overflow-x-scroll whitespace-nowrap font-medium">
+            <span class="cursor-pointer hover:underline">
+              selected-pkg
+            </span>
+            <span class="cursor-default text-muted-foreground">
+              /
+            </span>
+            <span class="cursor-pointer text-muted-foreground transition-colors duration-100 hover:text-foreground hover:underline">
+              root
+            </span>
+            <span class="cursor-default text-muted-foreground">
+              /
+            </span>
+          </h3>
+        </div>
+      </div>
+      <div
+        class="flex flex-col"
+        style="opacity: 1; filter: blur(0px);"
+      >
+        <div class="px-6 pb-1 pt-4">
+          <div class="relative flex w-full items-center">
+            <gui-search-icon classname="absolute ml-3 size-4 text-muted-foreground">
+            </gui-search-icon>
+            <gui-input
+              placeholder="Filter..."
+              classname="h-9 rounded-xl pl-9 text-sm"
+              value
+            >
+            </gui-input>
+          </div>
+        </div>
+        <div class="grid grid-cols-12 px-6 pb-2 pt-4">
+          <div class="col-span-6">
+            <gui-sorting-header
+              label="File"
+              icon="gui-files-icon"
+              dir="unsorted"
+            >
+            </gui-sorting-header>
+          </div>
+          <div class="col-span-3 flex justify-center">
+            <gui-sorting-header
+              label="Type"
+              icon="gui-file-sliders"
+              dir="unsorted"
+            >
+            </gui-sorting-header>
+          </div>
+          <div class="col-span-3 flex justify-end text-right">
+            <gui-sorting-header
+              label="Size"
+              icon="gui-decimals-arrow-right"
+              dir="unsorted"
+            >
+            </gui-sorting-header>
+          </div>
+        </div>
+        <gui-package-content-item item="[object Object]">
+        </gui-package-content-item>
+        <gui-package-content-item item="[object Object]">
+        </gui-package-content-item>
+        <gui-package-content-item item="[object Object]">
+        </gui-package-content-item>
+      </div>
+    </div>
+  </gui-motion-tabs-content>
+</div>
+
+`;
+
+exports[`CodeTabContent renders empty state 1`] = `
+
+<div>
+  <gui-motion-tabs-content
+    value="code"
+    classname="py-4"
+  >
+    <gui-empty-state>
+    </gui-empty-state>
+  </gui-motion-tabs-content>
+</div>
+
+`;
+
+exports[`CodeTabContent renders error state 1`] = `
+
+<div>
+  <gui-motion-tabs-content
+    value="code"
+    classname="py-4"
+  >
+    <gui-error-state errors="[object Object]">
+    </gui-error-state>
+  </gui-motion-tabs-content>
+</div>
+
+`;
+
+exports[`CodeTabContent renders loading state 1`] = `
+
+<div>
+  <gui-motion-tabs-content
+    value="code"
+    classname="py-4"
+  >
+    <div style="opacity: 1; filter: blur(0px);">
+      <gui-loading-state>
+      </gui-loading-state>
+    </div>
+  </gui-motion-tabs-content>
+</div>
+
+`;

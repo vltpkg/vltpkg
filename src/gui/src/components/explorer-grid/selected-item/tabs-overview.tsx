@@ -1,6 +1,6 @@
 import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import Markdown from 'react-markdown'
+import { Markdown } from '@/components/markdown-components.tsx'
 import { FileText, RectangleHorizontal } from 'lucide-react'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { ContributorList } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'

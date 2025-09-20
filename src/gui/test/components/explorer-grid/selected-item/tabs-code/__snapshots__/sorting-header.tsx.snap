@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SortingHeader renders with icon and asc dir 1`] = `
+
+<gui-button
+  size="sm"
+  variant="outline"
+  data-dir="asc"
+  classname="group flex h-7 items-center gap-2 rounded-xl border-transparent transition-colors duration-100 [&amp;_svg]:text-muted-foreground [&amp;_svg]:transition-colors [&amp;_svg]:duration-100 bg-neutral-100 hover:border-neutral-300 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+>
+  <gui-files-icon classname="size-5 group-hover:text-black group-hover:dark:text-white">
+  </gui-files-icon>
+  <span class="text-sm font-medium text-muted-foreground transition-colors duration-100 group-hover:text-black group-hover:dark:text-white">
+    File
+  </span>
+  <div class="flex flex-col items-center [&amp;_svg]:size-[0.75rem]">
+    <gui-chevron-up classname="group-data-[dir=asc]:text-foreground">
+    </gui-chevron-up>
+    <gui-chevron-down classname="group-data-[dir=desc]:text-foreground">
+    </gui-chevron-down>
+  </div>
+</gui-button>
+
+`;
+
+exports[`SortingHeader renders without icon and desc dir 1`] = `
+
+<gui-button
+  size="sm"
+  variant="outline"
+  data-dir="desc"
+  classname="group flex h-7 items-center gap-2 rounded-xl border-transparent transition-colors duration-100 [&amp;_svg]:text-muted-foreground [&amp;_svg]:transition-colors [&amp;_svg]:duration-100 bg-neutral-100 hover:border-neutral-300 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+>
+  <span class="text-sm font-medium text-muted-foreground transition-colors duration-100 group-hover:text-black group-hover:dark:text-white">
+    Size
+  </span>
+  <div class="flex flex-col items-center [&amp;_svg]:size-[0.75rem]">
+    <gui-chevron-up classname="group-data-[dir=asc]:text-foreground">
+    </gui-chevron-up>
+    <gui-chevron-down classname="group-data-[dir=desc]:text-foreground">
+    </gui-chevron-down>
+  </div>
+</gui-button>
+
+`;
