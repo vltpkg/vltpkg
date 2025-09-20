@@ -81,6 +81,7 @@ export const createVirtualRoot = (
         type: 'prod',
       } satisfies EdgeLike
       res.edgesOut.set(name, edge)
+      importer.edgesIn.add(edge)
     }
   }
   return res
