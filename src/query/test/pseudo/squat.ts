@@ -327,12 +327,10 @@ t.test('selects packages with a specific squat kind', async t => {
     )
   })
 
-  await t.test('wrong parameter', async t => {
-    await t.rejects(
-      squat(getState(':squat')),
-      { message: /Failed to parse :squat selector/ },
-      'should throw an error',
-    )
+  await t.test('pseudo state form works', async t => {
+    // :squat without parameters should now work as pseudo state
+    const result = await squat(getState(':squat'))
+    t.ok(result, 'should not throw an error for pseudo state form')
   })
 })
 
@@ -455,5 +453,113 @@ t.test('parseInternals', async t => {
       message: /Expected a valid squat kind for comparison/,
     },
     'should throw for out of range number with comparator',
+  )
+})
+
+t.test('pseudo state form - :squat without parameters', async t => {
+  const getState = (graph = getSimpleGraph()) => {
+    const ast = parse(':squat')
+    const current = ast.first.first
+    const state: ParserState = {
+      comment: '',
+      current,
+      initial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      partial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      collect: {
+        edges: new Set(),
+        nodes: new Set(),
+      },
+      cancellable: async () => {},
+      walk: async i => i,
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'e@1.0.0']),
+            {
+              id: joinDepIDTuple(['registry', '', 'e@1.0.0']),
+              alerts: [{ type: 'didYouMean' }],
+            },
+          ],
+          [
+            joinDepIDTuple(['registry', '', 'f@1.0.0']),
+            {
+              id: joinDepIDTuple(['registry', '', 'f@1.0.0']),
+              alerts: [{ type: 'gptDidYouMean' }],
+            },
+          ],
+        ]),
+      ),
+      importers: new Set(graph.importers),
+      retries: 0,
+      signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
+    }
+    return state
+  }
+
+  const state = getState()
+  const result = await squat(state)
+  t.matchSnapshot(
+    {
+      nodes: [...result.partial.nodes].map(n => n.id),
+      edges: [...result.partial.edges].map(
+        e => `${e.from.id}->${e.to?.id}`,
+      ),
+    },
+    'should match any packages with squat alerts',
+  )
+})
+
+t.test('error handling for non-query node errors', async t => {
+  // Create a state that will trigger a non-"Expected a query node" error
+  const ast = parse(':squat(invalid)')
+  const current = ast.first.first
+
+  // Create a corrupted current node that will cause parsing to fail differently
+  const corruptedCurrent = {
+    ...current,
+    nodes: [
+      {
+        type: 'function',
+        value: 'squat',
+        nodes: null, // This will cause asPostcssNodeWithChildren to fail differently
+      },
+    ],
+  }
+
+  const state: ParserState = {
+    comment: '',
+    current: corruptedCurrent as any,
+    initial: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    partial: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    collect: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    cancellable: async () => {},
+    walk: async i => i,
+    securityArchive: asSecurityArchiveLike(new Map()),
+    importers: new Set(),
+    retries: 0,
+    signal: new AbortController().signal,
+    specificity: { idCounter: 0, commonCounter: 0 },
+  }
+
+  await t.rejects(
+    squat(state),
+    { message: /Failed to parse :squat selector/ },
+    'should throw error for parsing failures other than missing query node',
   )
 })
