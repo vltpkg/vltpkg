@@ -1,6 +1,7 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
@@ -186,9 +187,32 @@ export const published = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :published selector', {
-      cause: err,
-    })
+    if (asError(err).message === 'Expected a query node') {
+      // No parameters provided - pseudo state form: match ANY published metadata
+      for (const node of state.partial.nodes) {
+        // filter out nodes that are always ignored by the published selector
+        if (
+          node.mainImporter ||
+          node.manifest?.private ||
+          splitDepID(node.id)[0] !== 'registry'
+        ) {
+          removeNode(state, node)
+          continue
+        }
+
+        // For pseudo state form, we just check if the node has published metadata
+        // This is equivalent to checking if it's a registry package with version info
+        if (!node.name || !node.version) {
+          removeNode(state, node)
+        }
+      }
+      removeDanglingEdges(state)
+      return state
+    } else {
+      throw error('Failed to parse :published selector', {
+        cause: err,
+      })
+    }
   }
 
   const { relativeDate, comparator } = internals

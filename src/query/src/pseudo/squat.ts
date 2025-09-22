@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
@@ -117,7 +118,12 @@ export const squat = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :squat selector', { cause: err })
+    if (asError(err).message === 'Expected a query node') {
+      // No parameters provided - pseudo state form: match ANY squat level
+      internals = { kind: undefined, comparator: undefined }
+    } else {
+      throw error('Failed to parse :squat selector', { cause: err })
+    }
   }
 
   const { kind, comparator } = internals
@@ -143,7 +149,14 @@ export const squat = async (state: ParserState) => {
     // At this point we know report exists and has alerts
     let exclude = true
 
-    if (comparator) {
+    if (kind === undefined && comparator === undefined) {
+      // Pseudo state form: match ANY squat level
+      exclude = !report.alerts.some(alert =>
+        [...kindsMap.values()].includes(
+          alert.type as SquatAlertTypes,
+        ),
+      )
+    } else if (comparator) {
       // Get the value to compare against
       const kindLevel = kindLevelMap.get(kind)
       /* c8 ignore next - impossible */

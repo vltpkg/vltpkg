@@ -5,6 +5,28 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/pseudo/score.ts > TAP > pseudo state form - :score without parameters > should match any packages with score data (scanned packages) 1`] = `
+Object {
+  "edges": Array [
+    "file·.->··a@1.0.0",
+    "file·.->··b@1.0.0",
+    "file·.->··e@1.0.0",
+    "··b@1.0.0->··c@1.0.0",
+    "··b@1.0.0->··d@1.0.0",
+    "··d@1.0.0->··e@1.0.0",
+    "··d@1.0.0->··f@1.0.0",
+  ],
+  "nodes": Array [
+    "··a@1.0.0",
+    "··b@1.0.0",
+    "··c@1.0.0",
+    "··d@1.0.0",
+    "··e@1.0.0",
+    "··f@1.0.0",
+  ],
+}
+`
+
 exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > exact match on overall score > must match snapshot 1`] = `
 Object {
   "edges": Array [

@@ -5,6 +5,18 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/pseudo/license.ts > TAP > pseudo state form - :license without parameters > should match packages with any license defined (not none) 1`] = `
+Object {
+  "edges": Array [
+    "file·.->··e@1.0.0",
+    "··d@1.0.0->··e@1.0.0",
+  ],
+  "nodes": Array [
+    "··e@1.0.0",
+  ],
+}
+`
+
 exports[`test/pseudo/license.ts > TAP > selects packages with a specific license kind > filter out any node that does not have the license > must match snapshot 1`] = `
 Object {
   "edges": Array [

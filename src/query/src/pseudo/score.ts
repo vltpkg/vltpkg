@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
@@ -135,7 +136,19 @@ export const score = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :score selector', { cause: err })
+    if (asError(err).message === 'Expected a query node') {
+      // No parameters provided - pseudo state form: match ANY score (scanned packages)
+      for (const node of state.partial.nodes) {
+        const report = state.securityArchive.get(node.id)
+        if (!report) {
+          removeNode(state, node)
+        }
+      }
+      removeDanglingEdges(state)
+      return state
+    } else {
+      throw error('Failed to parse :score selector', { cause: err })
+    }
   }
 
   const { comparator, rate, kind } = internals
