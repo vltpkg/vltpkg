@@ -7,7 +7,10 @@ import {
   queueNode,
   retrieveRemoteDate,
 } from '../../src/pseudo/published.ts'
-import { getSemverRichGraph } from '../fixtures/graph.ts'
+import {
+  getSemverRichGraph,
+  getSimpleGraph,
+} from '../fixtures/graph.ts'
 import type { NodeLike } from '@vltpkg/types'
 import type { ParserState } from '../../src/types.ts'
 
@@ -267,12 +270,10 @@ t.test('select from published definition', async t => {
     },
   )
 
-  await t.test('invalid pseudo selector usage', async t => {
-    await t.rejects(
-      published(getState(':semver')),
-      /Failed to parse :published selector/,
-      'should throw an error for invalid pseudo selector usage',
-    )
+  await t.test('pseudo state form works', async t => {
+    // :published without parameters should now work as pseudo state
+    const result = await published(getState(':published'))
+    t.ok(result, 'should not throw an error for pseudo state form')
   })
 })
 
@@ -378,5 +379,168 @@ t.test('queueNode', async t => {
     ),
     missingName,
     'should return node if missing essential info',
+  )
+})
+
+t.test(
+  'pseudo state form - :published without parameters',
+  async t => {
+    const getState = (graph = getSimpleGraph()) => {
+      const ast = parse(':published')
+      const current = ast.first.first
+      const state: ParserState = {
+        comment: '',
+        current,
+        initial: {
+          edges: new Set(graph.edges.values()),
+          nodes: new Set(graph.nodes.values()),
+        },
+        partial: {
+          edges: new Set(graph.edges.values()),
+          nodes: new Set(graph.nodes.values()),
+        },
+        collect: {
+          edges: new Set(),
+          nodes: new Set(),
+        },
+        cancellable: async () => {},
+        walk: async i => i,
+        securityArchive: undefined,
+        importers: new Set(graph.importers),
+        retries: 0,
+        signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
+      }
+      return state
+    }
+
+    const state = getState()
+    const result = await published(state)
+    t.matchSnapshot(
+      {
+        nodes: [...result.partial.nodes].map(n => n.id),
+        edges: [...result.partial.edges].map(
+          e => `${e.from.id}->${e.to?.id}`,
+        ),
+      },
+      'should match packages with published metadata (registry packages)',
+    )
+  },
+)
+
+t.test(
+  'pseudo state form with nodes missing name or version',
+  async t => {
+    const getState = () => {
+      const graph = getSimpleGraph()
+      // Get a real node and modify it to lack name/version
+      const nodeWithoutName = [...graph.nodes.values()][0]
+
+      // Ensure it's a registry node that will pass initial checks
+      Object.defineProperty(nodeWithoutName, 'id', {
+        value: joinDepIDTuple(['registry', '', 'test@1.0.0']),
+        writable: true,
+      })
+      Object.defineProperty(nodeWithoutName, 'mainImporter', {
+        value: false,
+        writable: true,
+      })
+      Object.defineProperty(nodeWithoutName, 'manifest', {
+        value: { private: false },
+        writable: true,
+      })
+      // Remove name and version to trigger the uncovered lines
+      Object.defineProperty(nodeWithoutName, 'name', {
+        value: undefined,
+        writable: true,
+      })
+      Object.defineProperty(nodeWithoutName, 'version', {
+        value: undefined,
+        writable: true,
+      })
+
+      const ast = parse(':published')
+      const current = ast.first.first
+      const state: ParserState = {
+        comment: '',
+        current,
+        initial: {
+          edges: new Set(),
+          nodes: new Set([nodeWithoutName] as NodeLike[]),
+        },
+        partial: {
+          edges: new Set(),
+          nodes: new Set([nodeWithoutName] as NodeLike[]),
+        },
+        collect: {
+          edges: new Set(),
+          nodes: new Set(),
+        },
+        cancellable: async () => {},
+        walk: async i => i,
+        securityArchive: undefined,
+        importers: new Set(),
+        retries: 0,
+        signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
+      }
+      return state
+    }
+
+    const state = getState()
+    const result = await published(state)
+    t.equal(
+      result.partial.nodes.size,
+      0,
+      'should remove nodes without name or version',
+    )
+  },
+)
+
+t.test('error handling for non-query node errors', async t => {
+  // Create a state that will trigger a non-"Expected a query node" error
+  const ast = parse(':published(invalid)')
+  const current = ast.first.first
+
+  // Create a corrupted current node that will cause parsing to fail differently
+  const corruptedCurrent = {
+    ...current,
+    nodes: [
+      {
+        type: 'function',
+        value: 'published',
+        nodes: null, // This will cause asPostcssNodeWithChildren to fail differently
+      },
+    ],
+  }
+
+  const state: ParserState = {
+    comment: '',
+    current: corruptedCurrent as any,
+    initial: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    partial: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    collect: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    cancellable: async () => {},
+    walk: async i => i,
+    securityArchive: undefined,
+    importers: new Set(),
+    retries: 0,
+    signal: new AbortController().signal,
+    specificity: { idCounter: 0, commonCounter: 0 },
+  }
+
+  await t.rejects(
+    published(state),
+    { message: /Failed to parse :published selector/ },
+    'should throw error for parsing failures other than missing query node',
   )
 })

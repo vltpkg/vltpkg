@@ -546,3 +546,46 @@ t.test('utility functions', async t => {
     )
   })
 })
+
+t.test('pseudo state form - :score without parameters', async t => {
+  const getState = (graph = getSimpleGraph()) => {
+    const ast = parse(':score')
+    const current = ast.first.first
+    const state: ParserState = {
+      comment: '',
+      current,
+      initial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      partial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      collect: {
+        edges: new Set(),
+        nodes: new Set(),
+      },
+      cancellable: async () => {},
+      walk: async i => i,
+      securityArchive: createTestSecurityArchive(),
+      importers: new Set(graph.importers),
+      retries: 0,
+      signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
+    }
+    return state
+  }
+
+  const state = getState()
+  const result = await score(state)
+  t.matchSnapshot(
+    {
+      nodes: [...result.partial.nodes].map(n => n.id),
+      edges: [...result.partial.edges].map(
+        e => `${e.from.id}->${e.to?.id}`,
+      ),
+    },
+    'should match any packages with score data (scanned packages)',
+  )
+})

@@ -5,6 +5,20 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/pseudo/squat.ts > TAP > pseudo state form - :squat without parameters > should match any packages with squat alerts 1`] = `
+Object {
+  "edges": Array [
+    "file·.->··e@1.0.0",
+    "··d@1.0.0->··e@1.0.0",
+    "··d@1.0.0->··f@1.0.0",
+  ],
+  "nodes": Array [
+    "··e@1.0.0",
+    "··f@1.0.0",
+  ],
+}
+`
+
 exports[`test/pseudo/squat.ts > TAP > selects packages with a specific squat kind > filter out any node that does not have the squat alert > must match snapshot 1`] = `
 Object {
   "edges": Array [

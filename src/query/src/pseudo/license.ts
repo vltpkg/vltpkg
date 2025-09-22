@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
@@ -96,7 +97,23 @@ export const license = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :license selector', { cause: err })
+    if (asError(err).message === 'Expected a query node') {
+      // No parameters provided - pseudo state form: match ANY license defined (not 'none')
+      for (const node of state.partial.nodes) {
+        const report = state.securityArchive.get(node.id)
+        // Exclude if no report or if it has 'noLicenseFound' alert
+        const exclude =
+          !report?.alerts ||
+          report.alerts.some(alert => alert.type === 'noLicenseFound')
+        if (exclude) {
+          removeNode(state, node)
+        }
+      }
+      removeDanglingEdges(state)
+      return state
+    } else {
+      throw error('Failed to parse :license selector', { cause: err })
+    }
   }
 
   const { kind } = internals
