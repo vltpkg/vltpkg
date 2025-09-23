@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LoadingState renders spinner container 1`] = `
+
+<div class="flex h-64 items-center justify-center">
+  <gui-jelly-triangle-spinner color="white">
+  </gui-jelly-triangle-spinner>
+</div>
+
+`;

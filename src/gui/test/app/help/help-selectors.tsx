@@ -20,8 +20,8 @@ vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 
-vi.mock('react-markdown', () => ({
-  default: 'gui-react-markdown',
+vi.mock('@/components/markdown-components.tsx', () => ({
+  Markdown: 'gui-react-markdown',
 }))
 
 expect.addSnapshotSerializer({

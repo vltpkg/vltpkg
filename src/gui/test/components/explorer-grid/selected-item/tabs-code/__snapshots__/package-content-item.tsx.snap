@@ -1,0 +1,148 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PackageContentItem renders directory row 1`] = `
+
+<gui-alert-dialog open="false">
+  <gui-alert-dialog-trigger aschild="true">
+    <div
+      role="link"
+      class="group/package-content-item grid cursor-default grid-cols-12 bg-transparent px-6 py-2 transition-colors duration-100 hover:bg-neutral-200 hover:dark:bg-neutral-800"
+    >
+      <div class="col-span-6 flex items-center gap-2">
+        <div class="flex size-4 items-center justify-center">
+          <gui-folder-icon
+            classname="size-4 text-muted-foreground"
+            strokewidth="1"
+          >
+          </gui-folder-icon>
+        </div>
+        <p class="text-sm font-medium group-hover/package-content-item:underline">
+          src
+        </p>
+      </div>
+      <div class="col-span-3 flex justify-center">
+        <p class="text-sm font-medium text-muted-foreground">
+          directory
+        </p>
+      </div>
+      <div class="col-span-3 flex justify-end text-right">
+        <p class="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+          -
+        </p>
+      </div>
+    </div>
+  </gui-alert-dialog-trigger>
+  <gui-alert-dialog-content>
+    <gui-alert-dialog-header>
+      <gui-alert-dialog-title>
+      </gui-alert-dialog-title>
+      <gui-alert-dialog-description>
+      </gui-alert-dialog-description>
+    </gui-alert-dialog-header>
+    <gui-alert-dialog-footer>
+      <gui-alert-dialog-cancel classname="rounded-xl">
+        Cancel
+      </gui-alert-dialog-cancel>
+      <gui-alert-dialog-action classname="rounded-xl">
+        Open
+      </gui-alert-dialog-action>
+    </gui-alert-dialog-footer>
+  </gui-alert-dialog-content>
+</gui-alert-dialog>
+
+`;
+
+exports[`PackageContentItem renders file row with formatted size 1`] = `
+
+<gui-alert-dialog open="false">
+  <gui-alert-dialog-trigger aschild="true">
+    <div
+      role="link"
+      class="group/package-content-item grid cursor-default grid-cols-12 bg-transparent px-6 py-2 transition-colors duration-100 hover:bg-neutral-200 hover:dark:bg-neutral-800"
+    >
+      <div class="col-span-6 flex items-center gap-2">
+        <div class="flex size-4 items-center justify-center">
+          <gui-file-text-icon
+            classname="size-4 text-muted-foreground"
+            strokewidth="1"
+          >
+          </gui-file-text-icon>
+        </div>
+        <p class="text-sm font-medium group-hover/package-content-item:underline">
+          file.ts
+        </p>
+      </div>
+      <div class="col-span-3 flex justify-center">
+        <p class="text-sm font-medium text-muted-foreground">
+          file
+        </p>
+      </div>
+      <div class="col-span-3 flex justify-end text-right">
+        <p class="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+          1 KB
+        </p>
+      </div>
+    </div>
+  </gui-alert-dialog-trigger>
+  <gui-alert-dialog-content>
+    <gui-alert-dialog-header>
+      <gui-alert-dialog-title>
+      </gui-alert-dialog-title>
+      <gui-alert-dialog-description>
+      </gui-alert-dialog-description>
+    </gui-alert-dialog-header>
+    <gui-alert-dialog-footer>
+      <gui-alert-dialog-cancel classname="rounded-xl">
+        Cancel
+      </gui-alert-dialog-cancel>
+      <gui-alert-dialog-action classname="rounded-xl">
+        Open
+      </gui-alert-dialog-action>
+    </gui-alert-dialog-footer>
+  </gui-alert-dialog-content>
+</gui-alert-dialog>
+
+`;
+
+exports[`PackageContentItem renders none row without icon and size 1`] = `
+
+<gui-alert-dialog open="false">
+  <gui-alert-dialog-trigger aschild="true">
+    <div
+      role="link"
+      class="group/package-content-item grid cursor-default grid-cols-12 bg-transparent px-6 py-2 transition-colors duration-100 hover:bg-neutral-200 hover:dark:bg-neutral-800"
+    >
+      <div class="col-span-6 flex items-center gap-2">
+        <p class="text-sm font-medium group-hover/package-content-item:underline">
+          ../
+        </p>
+      </div>
+      <div class="col-span-3 flex justify-center">
+        <p class="text-sm font-medium text-muted-foreground">
+        </p>
+      </div>
+      <div class="col-span-3 flex justify-end text-right">
+        <p class="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+        </p>
+      </div>
+    </div>
+  </gui-alert-dialog-trigger>
+  <gui-alert-dialog-content>
+    <gui-alert-dialog-header>
+      <gui-alert-dialog-title>
+      </gui-alert-dialog-title>
+      <gui-alert-dialog-description>
+      </gui-alert-dialog-description>
+    </gui-alert-dialog-header>
+    <gui-alert-dialog-footer>
+      <gui-alert-dialog-cancel classname="rounded-xl">
+        Cancel
+      </gui-alert-dialog-cancel>
+      <gui-alert-dialog-action classname="rounded-xl">
+        Open
+      </gui-alert-dialog-action>
+    </gui-alert-dialog-footer>
+  </gui-alert-dialog-content>
+</gui-alert-dialog>
+
+`;

@@ -84,6 +84,14 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/tabs-code/index.tsx',
+  () => ({
+    CodeTabButton: 'gui-tabs-code-button',
+    CodeTabContent: 'gui-tabs-code-content',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

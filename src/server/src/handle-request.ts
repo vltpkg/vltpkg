@@ -1,15 +1,18 @@
 import {
   readdirSync,
+  readFileSync,
   mkdirSync,
   statSync,
   realpathSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
-import { resolve, extname, join } from 'node:path'
 import { actual, install, uninstall } from '@vltpkg/graph'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import { resolve, extname, join, basename } from 'node:path'
+import { lookup as mimeLookup } from 'mime-types'
 import { init } from '@vltpkg/init'
 import { asError } from '@vltpkg/types'
+import { asDepID } from '@vltpkg/dep-id'
 import { handleStatic } from './handle-static.ts'
 import * as json from './json.ts'
 import { parseInstallOptions } from './parse-install-options.ts'
@@ -21,7 +24,7 @@ import {
 } from './utils.ts'
 import { readProjectFolders } from './read-project-folders.ts'
 import { reloadConfig } from './config-data.ts'
-import { getProjectData } from './graph-data.ts'
+import { loadGraph, getProjectData } from './graph-data.ts'
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { NodeLike, DependencyTypeShort } from '@vltpkg/types'
@@ -480,7 +483,8 @@ export const handleRequest = async (
           let mtime: Date | null = null
           try {
             const s = statSync(fullPath)
-            size = s.isFile() ? s.size : null
+            /* c8 ignore next */
+            size = s.isFile() || s.isDirectory() ? s.size : null
             mtime = s.mtime
             /* c8 ignore next */
           } catch {}
@@ -491,6 +495,7 @@ export const handleRequest = async (
             type:
               dirent.isDirectory() ? 'directory'
               : dirent.isFile() ? 'file'
+              : dirent.isSymbolicLink() ? 'symlink'
               : 'other',
             fileType:
               dirent.isFile() ?
@@ -522,6 +527,121 @@ export const handleRequest = async (
           )
         }
         return json.error(res, 'Server error', e.message, 500)
+      }
+    }
+
+    case '/fs/read': {
+      try {
+        const { path, encoding } = await json.read<{
+          path?: string
+          encoding?: 'utf8' | 'base64'
+        }>(req)
+
+        if (!path || typeof path !== 'string') {
+          return json.error(
+            res,
+            'Bad request',
+            'path must be a string',
+            400,
+          )
+        }
+        const ROOT = homedir()
+        const targetPath = realpathSync(resolve(ROOT, path))
+        if (!targetPath.startsWith(ROOT)) {
+          return json.error(
+            res,
+            'Forbidden',
+            'Path traversal detected',
+            403,
+          )
+        }
+        const stats = statSync(targetPath)
+        if (!stats.isFile()) {
+          return json.error(
+            res,
+            'Bad request',
+            'Path must be a file',
+            400,
+          )
+        }
+        const isUtf8 = encoding !== 'base64'
+        const ext = extname(targetPath).slice(1) || null
+        const name = basename(targetPath)
+        const mime =
+          mimeLookup(targetPath) || 'application/octet-stream'
+        const content =
+          isUtf8 ?
+            readFileSync(targetPath, 'utf8')
+          : readFileSync(targetPath).toString('base64')
+        return json.ok(
+          res,
+          JSON.stringify({
+            content,
+            encoding: isUtf8 ? 'utf8' : 'base64',
+            mime,
+            ext,
+            name,
+          }),
+        )
+      } catch (err) {
+        const e = asError(err)
+        const code = (e as Partial<NodeJS.ErrnoException>).code
+        if (code === 'ENOENT')
+          return json.error(
+            res,
+            'Not Found',
+            'File does not exist',
+            404,
+          )
+        if (code === 'EACCES')
+          return json.error(
+            res,
+            'Forbidden',
+            'Permission denied',
+            403,
+          )
+        return json.error(res, 'Server error', e.message, 500)
+      }
+    }
+
+    case '/graph/node/resolved-path': {
+      try {
+        const { depId } = await json.read<{ depId?: string }>(req)
+
+        if (typeof depId !== 'string') {
+          return json.error(
+            res,
+            'Bad request',
+            'depId must be a string',
+            400,
+          )
+        }
+
+        const id = asDepID(depId)
+        const graph = loadGraph(server.options)
+        const node = graph.nodes.get(id)
+
+        if (!node) {
+          return json.error(
+            res,
+            'Not Found',
+            'Node not found for provided depId',
+            404,
+          )
+        }
+
+        const { scurry } = server.options
+        const path = node.resolvedLocation(scurry)
+
+        return json.ok(res, JSON.stringify({ path }))
+      } catch (err: unknown) {
+        const e = asError(err)
+        return json.error(
+          res,
+          'Unable to resolve path',
+          e.message,
+          500,
+        )
       }
     }
 

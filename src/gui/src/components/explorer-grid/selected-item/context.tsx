@@ -38,6 +38,7 @@ export type Tab =
   | 'insights'
   | 'versions'
   | 'json'
+  | 'code'
   | 'dependencies'
   | 'contributors'
 
