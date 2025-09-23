@@ -114,8 +114,28 @@ export const buildCrumbsFromAbsolute = (
   rootAbsolutePath: string,
   absolutePath: string,
 ): { name: string; path: string }[] => {
-  const root = stripTrailingSlashes(rootAbsolutePath)
-  const abs = stripTrailingSlashes(absolutePath)
+  // Normalize Windows paths to a consistent POSIX-like form:
+  // - Convert backslashes to '/'
+  // - Insert missing drive colon (e.g., 'C/..' -> 'C:/..')
+  // - Collapse duplicate '/'
+  const toNormalizedAbsolute = (p: string): string => {
+    let s = p.replace(/\\/g, '/')
+    // If it already has a drive colon, keep it; otherwise, add when looks like 'C/...'
+    if (!/^[A-Za-z]:/.test(s) && /^[A-Za-z]\//.test(s)) {
+      s = `${s[0]}:/${s.slice(2)}`
+    }
+    // Collapse duplicate slashes
+    s = s.replace(/\/+/, '/').replace(/\/+/, '/') // fast-path for common cases
+    s = s.replace(/\/+/g, '/') // full collapse as fallback
+    // Ensure exactly one slash after drive colon
+    s = s.replace(/^([A-Za-z]:)\/+/, '$1/')
+    return s
+  }
+
+  const root = stripTrailingSlashes(
+    toNormalizedAbsolute(rootAbsolutePath),
+  )
+  const abs = stripTrailingSlashes(toNormalizedAbsolute(absolutePath))
   if (abs === root) return []
   const prefix = `${root}/`
   const rel = abs.startsWith(prefix) ? abs.slice(prefix.length) : abs

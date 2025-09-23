@@ -5,55 +5,7 @@ exports[`help selectors view > help selectors render default 1`] = `
 <section class="flex h-full w-full flex-col">
   <div class="flex max-w-8xl flex-col pt-8">
     <div class="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
-      <gui-react-markdown
-        remarkplugins="function remarkGfm(options) {
-  // @ts-expect-error: TS is wrong about \`this\`.
-  // eslint-disable-next-line unicorn/no-this-assignment
-  const self = /** @type {Processor<Root>} */ (this)
-  const settings = options || emptyOptions
-  const data = self.data()
-
-  const micromarkExtensions =
-    data.micromarkExtensions || (data.micromarkExtensions = [])
-  const fromMarkdownExtensions =
-    data.fromMarkdownExtensions || (data.fromMarkdownExtensions = [])
-  const toMarkdownExtensions =
-    data.toMarkdownExtensions || (data.toMarkdownExtensions = [])
-
-  micromarkExtensions.push(gfm(settings))
-  fromMarkdownExtensions.push(gfmFromMarkdown())
-  toMarkdownExtensions.push(gfmToMarkdown(settings))
-}"
-        rehypeplugins="function rehypeRaw(options) {
-  /**
-   * @param {Root} tree
-   *   Tree.
-   * @param {VFile} file
-   *   File.
-   * @returns {Root}
-   *   New tree.
-   */
-  return function (tree, file) {
-    // Assume root in -> root out.
-    const result = /** @type {Root} */ (raw(tree, {...options, file}))
-    return result
-  }
-},function rehypeSanitize(options) {
-  /**
-   * @param {Root} tree
-   *   Tree.
-   * @returns {Root}
-   *   New tree.
-   */
-  return function (tree) {
-    // Assume root in -> root out.
-    const result = /** @type {Root} */ (sanitize(tree, options))
-    return result
-  }
-}"
-        skiphtml="false"
-        components="[object Object]"
-      >
+      <gui-react-markdown>
         Selectors provide a powerful way to analyze your project’s dependencies using our custom query language.  
 For more information, see the [Selectors documentation](https://docs.vlt.sh/cli/selectors)
       </gui-react-markdown>

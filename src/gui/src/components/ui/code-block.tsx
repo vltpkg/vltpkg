@@ -1,6 +1,10 @@
 import React from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import {
+  oneLight,
+  atomDark,
+} from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
 import { cn } from '@/lib/utils.ts'
 
 type CodeBlockProps = {
@@ -23,6 +27,7 @@ export const CodeBlock = ({
   selectedLines: controlledSelected,
   onSelectedLinesChange,
 }: CodeBlockProps) => {
+  const { resolvedTheme } = useTheme()
   const [uncontrolledSelected, setUncontrolledSelected] =
     React.useState<[number, number] | null>(null)
   const isDeepLinkEnabled = deepLinkLines
@@ -46,7 +51,7 @@ export const CodeBlock = ({
       )}>
       <SyntaxHighlighter
         language={language}
-        style={atomDark}
+        style={resolvedTheme === 'light' ? oneLight : atomDark}
         customStyle={{
           margin: 0,
           padding: 0,

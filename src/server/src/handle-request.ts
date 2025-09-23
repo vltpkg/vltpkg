@@ -483,6 +483,7 @@ export const handleRequest = async (
           let mtime: Date | null = null
           try {
             const s = statSync(fullPath)
+            /* c8 ignore next */
             size = s.isFile() || s.isDirectory() ? s.size : null
             mtime = s.mtime
             /* c8 ignore next */

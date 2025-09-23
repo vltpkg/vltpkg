@@ -6,6 +6,7 @@ import {
   shouldDeferInitialUrlSync,
   buildLineHash,
   parseLineHash,
+  buildCrumbsFromAbsolute,
 } from '@/components/explorer-grid/selected-item/tabs-code/utils.ts'
 
 import type { FsItem, ReadOpItem } from '@/lib/fetch-fs.ts'
@@ -13,15 +14,15 @@ import type { FsItem, ReadOpItem } from '@/lib/fetch-fs.ts'
 export const useCodeNavigation = ({
   breadcrumbs,
   selectedPackageContentItem,
-  onRootClick,
   onCrumbClick,
   onPackageContentItemClick,
+  nodeResolvedPath,
 }: {
   breadcrumbs: { name: string; path: string }[]
   selectedPackageContentItem: ReadOpItem | null
-  onRootClick: () => void
   onCrumbClick: (crumbPath: string) => void
   onPackageContentItemClick: (item: FsItem) => void
+  nodeResolvedPath?: string
 }) => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -34,7 +35,17 @@ export const useCodeNavigation = ({
     [number, number] | null
   >(() => parseLineHash(location.hash))
 
+  /**
+   * Tracks whether we've reflected internal state to the URL at least once.
+   * Used to defer the initial sync to preserve deep-link URLs on first render.
+   */
   const hasReflectedUrlOnceRef = useRef(false)
+
+  /**
+   * When we imperatively navigate (e.g., breadcrumb click), suppress the
+   * very next URL-reflection effect run to avoid racing double updates.
+   */
+  const suppressNextReflectRef = useRef(false)
 
   // Sync selected lines with URL hash changes (e.g., back/forward navigation)
   useEffect(() => {
@@ -49,7 +60,14 @@ export const useCodeNavigation = ({
 
   // Reflect current crumb/file selection into the URL
   useEffect(() => {
+    if (suppressNextReflectRef.current) {
+      suppressNextReflectRef.current = false
+      hasReflectedUrlOnceRef.current = true
+      return
+    }
+    // Only defer on the very first render to preserve deep links
     if (
+      !hasReflectedUrlOnceRef.current &&
       shouldDeferInitialUrlSync(
         codePath,
         breadcrumbs,
@@ -87,15 +105,29 @@ export const useCodeNavigation = ({
     selectedLines,
   ])
 
-  // Provide wrappers that perform state changes; URL is updated by the effect above
-  const onRootNavigate = () => onRootClick()
-  const onCrumbNavigate = (crumbPath: string) =>
+  const onCrumbNavigate = (crumbPath: string) => {
+    hasReflectedUrlOnceRef.current = true
+    if (nodeResolvedPath) {
+      const crumbs = buildCrumbsFromAbsolute(
+        nodeResolvedPath,
+        crumbPath,
+      )
+      const relSegments = crumbs.map(c => c.name)
+      const target =
+        relSegments.length > 0 ?
+          `/explore/${query}/code/${relSegments.join('/')}`
+        : `/explore/${query}/code`
+      suppressNextReflectRef.current = true
+      void navigate(target, { replace: true })
+    }
     onCrumbClick(crumbPath)
-  const onItemNavigate = (item: FsItem) =>
+  }
+  const onItemNavigate = (item: FsItem) => {
+    hasReflectedUrlOnceRef.current = true
     onPackageContentItemClick(item)
+  }
 
   return {
-    onRootNavigate,
     onCrumbNavigate,
     onItemNavigate,
     selectedLines,

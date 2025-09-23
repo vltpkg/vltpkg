@@ -103,6 +103,22 @@ describe('tabs-code/utils', () => {
         { name: 'b', path: '/root/pkg/a/b' },
       ])
     })
+    it('builds crumbs on Windows paths (backslashes and drive letter)', () => {
+      const root = 'C\\\\Users\\me\\pkg'
+      const target = 'C\\\\Users\\me\\pkg\\a\\b'
+      expect(buildCrumbsFromAbsolute(root, target)).toEqual([
+        { name: 'a', path: 'C:/Users/me/pkg/a' },
+        { name: 'b', path: 'C:/Users/me/pkg/a/b' },
+      ])
+    })
+    it('handles mixed Windows slashes in absolute paths', () => {
+      const root = 'C:/Users/me/pkg'
+      const target = 'C\\\\Users\\me\\pkg/a\\b'
+      expect(buildCrumbsFromAbsolute(root, target)).toEqual([
+        { name: 'a', path: 'C:/Users/me/pkg/a' },
+        { name: 'b', path: 'C:/Users/me/pkg/a/b' },
+      ])
+    })
   })
 
   describe('breadcrumbsToSegments', () => {

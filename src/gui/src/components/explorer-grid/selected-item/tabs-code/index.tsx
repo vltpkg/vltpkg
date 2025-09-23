@@ -67,8 +67,8 @@ export const CodeTabContent = () => {
     loading,
     selectedPackageContentItem,
     breadcrumbs,
+    nodeResolvedPath,
     onPackageContentItemClick,
-    onRootClick,
     onCrumbClick,
     errors,
   } = useCodeExplorer({
@@ -99,7 +99,6 @@ export const CodeTabContent = () => {
   }, [selectedPackageContentItem])
 
   const {
-    onRootNavigate,
     onCrumbNavigate,
     onItemNavigate,
     selectedLines,
@@ -107,9 +106,9 @@ export const CodeTabContent = () => {
   } = useCodeNavigation({
     breadcrumbs,
     selectedPackageContentItem,
-    onRootClick,
     onCrumbClick,
     onPackageContentItemClick,
+    nodeResolvedPath,
   })
 
   const [filter, setFilter] = useState<string>('')
@@ -144,7 +143,10 @@ export const CodeTabContent = () => {
               <div className="overflow-x-scroll border-b border-muted px-6 pb-4">
                 <h3 className="text-md inline-flex items-baseline gap-1 overflow-x-scroll whitespace-nowrap font-medium">
                   <span
-                    onClick={onRootNavigate}
+                    onClick={() => {
+                      if (nodeResolvedPath)
+                        onCrumbNavigate(nodeResolvedPath)
+                    }}
                     className="cursor-pointer hover:underline">
                     {selectedItemName}
                   </span>
@@ -185,9 +187,11 @@ export const CodeTabContent = () => {
                         const last =
                           breadcrumbs[breadcrumbs.length - 1]
                         if (last) onCrumbNavigate(last.path)
-                        else onRootNavigate()
+                        else if (nodeResolvedPath)
+                          onCrumbNavigate(nodeResolvedPath)
                       } else {
-                        onRootNavigate()
+                        if (nodeResolvedPath)
+                          onCrumbNavigate(nodeResolvedPath)
                       }
                     }}
                     variant="outline"
@@ -318,9 +322,11 @@ export const CodeTabContent = () => {
                           const prev =
                             breadcrumbs[breadcrumbs.length - 2]
                           if (prev) onCrumbNavigate(prev.path)
-                          else onRootNavigate()
+                          else if (nodeResolvedPath)
+                            onCrumbNavigate(nodeResolvedPath)
                         } else {
-                          onRootNavigate()
+                          if (nodeResolvedPath)
+                            onCrumbNavigate(nodeResolvedPath)
                         }
                       }}
                     />

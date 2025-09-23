@@ -103,55 +103,7 @@ exports[`OverviewTabContent renders with content 1`] = `
         description
       </h4>
       <div class="prose-sm prose-neutral max-w-none text-sm">
-        <gui-markdown
-          remarkplugins="function remarkGfm(options) {
-  // @ts-expect-error: TS is wrong about \`this\`.
-  // eslint-disable-next-line unicorn/no-this-assignment
-  const self = /** @type {Processor<Root>} */ (this)
-  const settings = options || emptyOptions
-  const data = self.data()
-
-  const micromarkExtensions =
-    data.micromarkExtensions || (data.micromarkExtensions = [])
-  const fromMarkdownExtensions =
-    data.fromMarkdownExtensions || (data.fromMarkdownExtensions = [])
-  const toMarkdownExtensions =
-    data.toMarkdownExtensions || (data.toMarkdownExtensions = [])
-
-  micromarkExtensions.push(gfm(settings))
-  fromMarkdownExtensions.push(gfmFromMarkdown())
-  toMarkdownExtensions.push(gfmToMarkdown(settings))
-}"
-          rehypeplugins="function rehypeRaw(options) {
-  /**
-   * @param {Root} tree
-   *   Tree.
-   * @param {VFile} file
-   *   File.
-   * @returns {Root}
-   *   New tree.
-   */
-  return function (tree, file) {
-    // Assume root in -> root out.
-    const result = /** @type {Root} */ (raw(tree, {...options, file}))
-    return result
-  }
-},function rehypeSanitize(options) {
-  /**
-   * @param {Root} tree
-   *   Tree.
-   * @returns {Root}
-   *   New tree.
-   */
-  return function (tree) {
-    // Assume root in -> root out.
-    const result = /** @type {Root} */ (sanitize(tree, options))
-    return result
-  }
-}"
-          skiphtml="false"
-          components="[object Object]"
-        >
+        <gui-markdown>
           ## Description
 
 This is a custom description
