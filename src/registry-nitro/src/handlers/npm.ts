@@ -2,6 +2,7 @@ import { cachedEventHandler, defineNitroPlugin } from 'nitro/runtime'
 import { getRouterParam, proxyRequest } from 'h3'
 import type { HTTPEvent, EventHandlerRequest, H3Event } from 'h3'
 import assert from 'node:assert'
+import { useDatabase } from 'nitro/runtime'
 
 const assertParam = (
   event: HTTPEvent<EventHandlerRequest>,
