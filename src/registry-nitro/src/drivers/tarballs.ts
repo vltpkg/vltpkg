@@ -1,104 +1,101 @@
-import { resolve } from 'node:path'
 import { defineDriver } from 'unstorage'
 import * as Schema from '../db/schema.ts'
-import { db } from '../db/index.ts'
-import { access } from 'node:fs/promises'
-import {
-  createReadStream,
-  createWriteStream,
-  mkdirSync,
-} from 'node:fs'
 import { eq } from 'drizzle-orm'
 import { basename } from 'node:path'
-import { pipeline } from 'node:stream/promises'
+import type { LibSQLDatabase } from 'drizzle-orm/libsql'
+import type { DrizzleD1Database } from 'drizzle-orm/d1'
+import type { ReadStream } from 'node:fs'
 
-const tarballsDriver = defineDriver(() => {
-  const base = resolve(process.cwd(), '.data/tarballs')
-  mkdirSync(base, { recursive: true })
+export type TarballsFsDriver = {
+  hasItem: (key: string) => Promise<boolean>
+  getItemRaw: (key: string) => Promise<ReadStream>
+  setItemRaw: (key: string, value: ReadStream) => Promise<void>
+}
 
-  const getFilePath = (key: string) => {
-    const keyId = key
-      .split(':')
-      .pop()!
-      .replace('npm___tarball___', '')
-    const keyBase = basename(keyId, '.json')
-    return resolve(base, keyBase) + '.tgz'
-  }
+export const defineTarballsDriver = (
+  getDb: () => LibSQLDatabase | DrizzleD1Database,
+  fsDriver: TarballsFsDriver,
+) =>
+  defineDriver(() => {
+    const getFilePath = (key: string) => {
+      const keyId = key
+        .split(':')
+        .pop()!
+        .replace('npm___tarball___', '')
+      const keyBase = basename(keyId, '.json')
+      return keyBase + '.tgz'
+    }
 
-  return {
-    name: 'tarballs-storage',
+    return {
+      name: 'tarballs-storage',
 
-    async getItem(key) {
-      const [[response], exists] = await Promise.all([
-        db
-          .select()
-          .from(Schema.tarballResponses)
-          .where(eq(Schema.tarballResponses.key, key))
-          .limit(1)
-          .execute(),
-        access(getFilePath(key))
-          .then(() => true)
-          .catch(() => false),
-      ])
+      async getItem(key) {
+        const [[response], exists] = await Promise.all([
+          getDb()
+            .select()
+            .from(Schema.tarballResponses)
+            .where(eq(Schema.tarballResponses.key, key))
+            .limit(1)
+            .execute(),
+          fsDriver.hasItem(getFilePath(key)),
+        ])
 
-      if (!response || !exists) {
-        return undefined
-      }
+        if (!response || !exists) {
+          return undefined
+        }
 
-      return {
-        expires: response.expires,
-        mtime: response.mtime,
-        integrity: response.integrity,
-        value: {
-          ...JSON.parse(response.value),
-          body: createReadStream(getFilePath(key)),
-        },
-      }
-    },
+        return {
+          expires: response.expires,
+          mtime: response.mtime,
+          integrity: response.integrity,
+          value: {
+            ...JSON.parse(response.value),
+            body: await fsDriver.getItemRaw(getFilePath(key)),
+          },
+        }
+      },
 
-    async setItemRaw(key, { expires, mtime, integrity, value }) {
-      const { body, ...valueWithoutBody } = value
+      async setItemRaw(key, { expires, mtime, integrity, value }) {
+        const { body, ...valueWithoutBody } = value
 
-      const stringifiedValueWithoutBody =
-        JSON.stringify(valueWithoutBody)
+        const stringifiedValueWithoutBody =
+          JSON.stringify(valueWithoutBody)
 
-      await Promise.all([
-        await db
-          .insert(Schema.tarballResponses)
-          .values({
-            key,
-            value: stringifiedValueWithoutBody,
-            expires,
-            mtime,
-            integrity,
-          })
-          .onConflictDoUpdate({
-            target: Schema.tarballResponses.key,
-            set: {
+        await Promise.all([
+          getDb()
+            .insert(Schema.tarballResponses)
+            .values({
+              key,
               value: stringifiedValueWithoutBody,
               expires,
               mtime,
               integrity,
-            },
-          }),
-        pipeline(body, createWriteStream(getFilePath(key))),
-      ])
-    },
+            })
+            .onConflictDoUpdate({
+              target: Schema.tarballResponses.key,
+              set: {
+                value: stringifiedValueWithoutBody,
+                expires,
+                mtime,
+                integrity,
+              },
+            }),
+          fsDriver.setItemRaw(getFilePath(key), body),
+        ])
+      },
 
-    // Not implemented since the Nitro's cache event handler does not use them
-    async hasItem(key) {
-      return false
-    },
-    async removeItem(key) {},
-    async getKeys(base) {
-      return []
-    },
-    async clear(base) {},
-    async dispose() {},
-    async watch() {
-      return () => {}
-    },
-  }
-})
-
-export default tarballsDriver
+      // Not implemented since the Nitro's cache event handler does not use them
+      async hasItem(key) {
+        return false
+      },
+      async removeItem(key) {},
+      async getKeys(base) {
+        return []
+      },
+      async clear(base) {},
+      async dispose() {},
+      async watch() {
+        return () => {}
+      },
+    }
+  })

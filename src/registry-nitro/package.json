@@ -8,17 +8,20 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
-    "libsql": "^0.5.20",
     "@libsql/client": "^0.15.14",
+    "db0": "^0.3.2",
     "drizzle-orm": "^0.44.5",
     "h3": "^2.0.0-beta.4",
+    "libsql": "^0.5.20",
     "nitro": "npm:nitro-nightly@3.0.0-20250911-162707-b6dbc0f9",
     "unstorage": "^1.17.1",
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250829.0",
     "@neon-rs/load": "^0.0.4",
-    "drizzle-kit": "^0.31.4"
+    "drizzle-kit": "^0.31.4",
+    "wrangler": "^4.33.1"
   },
   "license": "FSL-1.1-MIT",
   "engines": {
@@ -26,11 +29,13 @@
   },
   "scripts": {
     "build": "nitro build",
+    "build:cf": "VSR_CLOUDFLARE=1 nitro build",
     "postbuild": "node dev/find-libsql.mjs",
     "cache:drop": "rm -rf .data",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio --port 4985",
     "dev": "nitro dev",
+    "dev:cf": "wrangler dev",
     "serve": "node .output/server/index.mjs"
   },
   "type": "module"
