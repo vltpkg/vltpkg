@@ -10,6 +10,7 @@ import { InsightTabButton } from '@/components/explorer-grid/selected-item/tabs-
 import { OverviewTabButton } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import { VersionsTabButton } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
 import { TabsJsonButton } from '@/components/explorer-grid/selected-item/tabs-json.tsx'
+import { CodeTabButton } from '@/components/explorer-grid/selected-item/tabs-code/index.tsx'
 import { DependenciesTabsButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
 import { AnimatePresence } from 'framer-motion'
@@ -68,6 +69,7 @@ export const SelectedItemTabs = () => {
           className="w-full gap-2 overflow-x-auto px-6">
           <OverviewTabButton />
           <TabsJsonButton />
+          <CodeTabButton />
           <InsightTabButton />
           <VersionsTabButton />
           <DependenciesTabsButton />

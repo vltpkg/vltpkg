@@ -58,8 +58,8 @@ vi.mock('@/components/ui/tabs.tsx', () => ({
   TabsContent: 'gui-tabs-content',
 }))
 
-vi.mock('react-markdown', () => ({
-  default: 'gui-markdown',
+vi.mock('@/components/markdown-components.tsx', () => ({
+  Markdown: 'gui-markdown',
 }))
 
 vi.mock('lucide-react', () => ({

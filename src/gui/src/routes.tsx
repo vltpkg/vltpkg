@@ -24,6 +24,7 @@ import { InsightTabContent } from '@/components/explorer-grid/selected-item/tabs
 import { DependenciesTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { VersionsTabContent } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
 import { ContributorTabContent } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
+import { CodeTabContent } from '@/components/explorer-grid/selected-item/tabs-code/index.tsx'
 
 /** Dependencies SubTabs */
 import { InsightsTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-insights.tsx'
@@ -63,6 +64,8 @@ const TabRouter = () => {
       return <DependenciesTabContent />
     case 'contributors':
       return <ContributorTabContent />
+    case 'code':
+      return <CodeTabContent />
     default:
       return <Navigate to="overview" replace />
   }
@@ -116,7 +119,7 @@ export const routes: RouteObject[] = [
             element: <Navigate to="overview" replace />,
           },
           {
-            path: ':tab',
+            path: ':tab/*',
             element: <TabRouter />,
             children: [
               {

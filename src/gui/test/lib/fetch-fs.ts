@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { fetchFsLs, fetchHomedir } from '@/lib/fetch-fs.ts'
+import {
+  fetchFsLs,
+  fetchHomedir,
+  FS_ENDPOINTS,
+} from '@/lib/fetch-fs.ts'
 
 type MockResponse = {
   ok: boolean
@@ -100,7 +104,7 @@ test('returns homedir path string', async () => {
   global.fetch = vi.fn(async url => {
     const endpoint =
       typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
-    if (endpoint === '/fs/homedir') {
+    if (endpoint === FS_ENDPOINTS.homedir) {
       return {
         ok: true,
         json: async () => JSON.stringify('/home/user'),
@@ -121,7 +125,7 @@ test('throws on non-ok response for homedir', async () => {
   global.fetch = vi.fn(async url => {
     const endpoint =
       typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
-    if (endpoint === '/fs/homedir') {
+    if (endpoint === FS_ENDPOINTS.homedir) {
       return {
         ok: false,
         json: async () => 'Bad status',
@@ -143,7 +147,7 @@ test('throws when server returns error field for homedir', async () => {
   global.fetch = vi.fn(async url => {
     const endpoint =
       typeof url === 'string' ? new URL(`file://${url}`).pathname : ''
-    if (endpoint === '/fs/homedir') {
+    if (endpoint === FS_ENDPOINTS.homedir) {
       return {
         ok: true,
         json: async () => ({ error: 'Server-side error' }),

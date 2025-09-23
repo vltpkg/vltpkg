@@ -5,7 +5,7 @@ exports[`help selectors view > help selectors render default 1`] = `
 <section class="flex h-full w-full flex-col">
   <div class="flex max-w-8xl flex-col pt-8">
     <div class="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
-      <gui-react-markdown components="[object Object]">
+      <gui-react-markdown>
         Selectors provide a powerful way to analyze your project’s dependencies using our custom query language.  
 For more information, see the [Selectors documentation](https://docs.vlt.sh/cli/selectors)
       </gui-react-markdown>

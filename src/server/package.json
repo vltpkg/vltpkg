@@ -35,6 +35,7 @@
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
+    "mime-types": "^3.0.1",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@types/mime-types": "^3.0.1",
     "@types/node": "catalog:",
     "@types/serve-handler": "^6.1.4",
     "@vltpkg/package-info": "workspace:*",

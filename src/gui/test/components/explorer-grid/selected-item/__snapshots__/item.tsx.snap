@@ -17,6 +17,8 @@ exports[`Item renders connection lines 1`] = `
             </gui-overview-tab-button>
             <gui-json-tab-button>
             </gui-json-tab-button>
+            <gui-tabs-code-button>
+            </gui-tabs-code-button>
             <gui-insight-tab-button>
             </gui-insight-tab-button>
             <gui-versions-tab-button>
@@ -53,6 +55,8 @@ exports[`Item renders with the default structure 1`] = `
             </gui-overview-tab-button>
             <gui-json-tab-button>
             </gui-json-tab-button>
+            <gui-tabs-code-button>
+            </gui-tabs-code-button>
             <gui-insight-tab-button>
             </gui-insight-tab-button>
             <gui-versions-tab-button>

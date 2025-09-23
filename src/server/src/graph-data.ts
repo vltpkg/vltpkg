@@ -1,13 +1,14 @@
 import { homedir } from 'node:os'
 import { parse, posix, resolve } from 'node:path'
-import type { ActualLoadOptions } from '@vltpkg/graph'
 import { actual } from '@vltpkg/graph'
-import type { PackageJson } from '@vltpkg/package-json'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { rmSync, writeFileSync } from 'node:fs'
+import { inferTools } from './project-tools.ts'
+
+import type { ActualLoadOptions } from '@vltpkg/graph'
+import type { PackageJson } from '@vltpkg/package-json'
 import type { Path, PathBase, PathScurry } from 'path-scurry'
 import type { ProjectTools } from './project-tools.ts'
-import { inferTools } from './project-tools.ts'
 
 // In restricted environments (like locked-down Codespaces),
 // homedir() might fail. Fall back to parent directory.
@@ -104,4 +105,16 @@ export const getProjectData = (
         .lstatSync()
         ?.isFile(),
   }
+}
+
+export const loadGraph = (options: ActualLoadOptions) => {
+  const { packageJson, projectRoot } = options
+  const mainManifest = packageJson.read(projectRoot)
+  return actual.load({
+    ...options,
+    mainManifest,
+    loadManifests: true,
+    skipHiddenLockfile: false,
+    skipLoadingNodesOnModifiersChange: false,
+  })
 }
