@@ -1,8 +1,8 @@
 diff --git a/dist/runtime/internal/cache.mjs b/dist/runtime/internal/cache.mjs
-index 7b3265de048214b2aa34252716438d1320eed08c..c862a45ac8013e48a45d3020b05d48df512255db 100644
+index 7b3265de048214b2aa34252716438d1320eed08c..b09ca6637f037caeec48b37dd5079d693216fa51 100644
 --- a/dist/runtime/internal/cache.mjs
 +++ b/dist/runtime/internal/cache.mjs
-@@ -69,7 +69,21 @@ export function defineCachedFunction(fn, opts = {}) {
+@@ -69,12 +69,28 @@ export function defineCachedFunction(fn, opts = {}) {
            if (opts.maxAge && !opts.swr) {
              setOpts = { ttl: opts.maxAge };
            }
@@ -25,7 +25,23 @@ index 7b3265de048214b2aa34252716438d1320eed08c..c862a45ac8013e48a45d3020b05d48df
              console.error(`[cache] Cache write error.`, error);
              useNitroApp().captureError(error, { event, tags: ["cache"] });
            });
-@@ -179,8 +193,10 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
+           if (typeof event?.req?.waitUntil === "function") {
+             event.req.waitUntil(promise);
++          } else if (typeof event?.context?.waitUntil === "function") {
++            event.context.waitUntil(promise);
+           }
+         }
+       }
+@@ -84,6 +100,8 @@ export function defineCachedFunction(fn, opts = {}) {
+       await _resolvePromise;
+     } else if (expired && event && event.req.waitUntil) {
+       event.req.waitUntil(_resolvePromise);
++    } else if (expired && event && event.context.waitUntil) {
++      event.context.waitUntil(_resolvePromise);
+     }
+     if (opts.swr && validate(entry) !== false) {
+       _resolvePromise.catch((error) => {
+@@ -179,8 +197,10 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
        }
        const rawValue = await handler(event);
        const res = await toResponse(rawValue, event);

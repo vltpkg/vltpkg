@@ -12,18 +12,14 @@ const storage = createStorage({
 
 const fsDriver: TarballsFsDriver = {
   hasItem: async key => {
-    console.log('hasItem', key)
-    const x = await storage.hasItem(key)
-    console.log('hasItem x', x)
-    return x
+    const value = await storage.hasItem(key)
+    return value
   },
   getItemRaw: async key => {
-    const value = await storage.getItemRaw(key, { type: 'object' })
-    console.log('getItemRaw', key, value)
+    const value = await storage.getItemRaw(key, { type: 'stream' })
     return value
   },
   setItemRaw: async (key, value) => {
-    console.log('setItemRaw', key, value)
     await storage.setItemRaw(key, value)
   },
 }

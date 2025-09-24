@@ -34,6 +34,7 @@
     "cache:drop": "rm -rf .data",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio --port 4985",
+    "deploy:cf": "wrangler deploy",
     "dev": "nitro dev",
     "dev:cf": "wrangler dev",
     "serve": "node .output/server/index.mjs"

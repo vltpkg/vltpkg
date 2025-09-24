@@ -14,6 +14,8 @@ export const definePackagesDriver = (
       options: {},
 
       async getItem(key) {
+        console.log('[cache] req', key)
+
         const keyId = key.split(':').pop()!
         const isPackage = keyId.startsWith('npm___package___')
         const isVersion = keyId.startsWith('npm___version___')
@@ -97,10 +99,14 @@ export const definePackagesDriver = (
           },
         }
 
+        console.log('[cache] hit', key)
+
         return x
       },
 
       async setItemRaw(key, { expires, mtime, integrity, value }) {
+        console.log('[cache] set', key)
+
         const keyId = key.split(':').pop()!
         const isPackage = keyId.startsWith('npm___package___')
         const isVersion = keyId.startsWith('npm___version___')
@@ -150,22 +156,34 @@ export const definePackagesDriver = (
               },
             })
 
-          await getDb()
-            .insert(Schema.versions)
-            .values(
-              Object.entries(versions).map(([version, manifest]) => ({
-                spec: `${name}@${version}`,
-                manifest: JSON.stringify(manifest),
-              })),
-            )
-            .onConflictDoUpdate({
-              target: Schema.versions.spec,
-              set: {
-                manifest: sql.raw(
-                  `excluded.${Schema.versions.manifest.name}`,
-                ),
-              },
-            })
+          // Insert versions in chunks to avoid query length limits
+          const versionEntries = Object.entries(versions).map(
+            ([version, manifest]) => ({
+              spec: `${name}@${version}`,
+              manifest: JSON.stringify(manifest),
+            }),
+          )
+
+          // Make sizing dynamic based on env. Cloudflare can handle less than Node.
+          const CHUNK_SIZE = 1
+          for (
+            let i = 0;
+            i < versionEntries.length;
+            i += CHUNK_SIZE
+          ) {
+            const chunk = versionEntries.slice(i, i + CHUNK_SIZE)
+            await getDb()
+              .insert(Schema.versions)
+              .values(chunk)
+              .onConflictDoUpdate({
+                target: Schema.versions.spec,
+                set: {
+                  manifest: sql.raw(
+                    `excluded.${Schema.versions.manifest.name}`,
+                  ),
+                },
+              })
+          }
         }
 
         if (isVersion) {
@@ -185,6 +203,8 @@ export const definePackagesDriver = (
               },
             })
         }
+
+        console.log('[cache] set done', key)
       },
       // Not implemented since the Nitro's cache event handler does not use them
       async hasItem(key, _opts) {

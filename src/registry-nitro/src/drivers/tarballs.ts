@@ -30,6 +30,8 @@ export const defineTarballsDriver = (
       name: 'tarballs-storage',
 
       async getItem(key) {
+        console.log('[cache] req', key)
+
         const [[response], exists] = await Promise.all([
           getDb()
             .select()
@@ -44,6 +46,8 @@ export const defineTarballsDriver = (
           return undefined
         }
 
+        console.log('[cache] hit', key)
+
         return {
           expires: response.expires,
           mtime: response.mtime,
@@ -56,6 +60,8 @@ export const defineTarballsDriver = (
       },
 
       async setItemRaw(key, { expires, mtime, integrity, value }) {
+        console.log('[cache] set', key)
+
         const { body, ...valueWithoutBody } = value
 
         const stringifiedValueWithoutBody =
@@ -82,6 +88,8 @@ export const defineTarballsDriver = (
             }),
           fsDriver.setItemRaw(getFilePath(key), body),
         ])
+
+        console.log('[cache] set done', key)
       },
 
       // Not implemented since the Nitro's cache event handler does not use them
