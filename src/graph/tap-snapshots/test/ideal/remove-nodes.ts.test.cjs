@@ -7,6 +7,10 @@
 'use strict'
 exports[`test/ideal/remove-nodes.ts > TAP > removeNodes > should remove the node and edge from the graph 1`] = `
 Object {
+  "build": Object {
+    "allowed": Object {},
+    "blocked": Object {},
+  },
   "edges": Object {},
   "lockfileVersion": 0,
   "nodes": Object {},

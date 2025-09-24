@@ -36,6 +36,10 @@ const transferData: TransferData = {
         custom: 'http://example.com',
       },
     },
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       '··bar@1.0.0': [
         3,

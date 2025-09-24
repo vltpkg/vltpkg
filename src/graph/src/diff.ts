@@ -155,4 +155,17 @@ ${lines
       this.edges.delete.size > 0
     )
   }
+
+  toJSON() {
+    return {
+      nodes: {
+        add: [...this.nodes.add].map(node => node.toJSON()),
+        delete: [...this.nodes.delete].map(node => node.toJSON()),
+      },
+      edges: {
+        add: [...this.edges.add].map(edge => edge.toJSON()),
+        delete: [...this.edges.delete].map(edge => edge.toJSON()),
+      },
+    }
+  }
 }

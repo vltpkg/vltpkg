@@ -19,6 +19,7 @@ export const defaultEditor = () =>
   : 'vi')
 
 const canonicalCommands = {
+  build: 'build',
   cache: 'cache',
   ci: 'ci',
   config: 'config',
@@ -630,6 +631,10 @@ export const definition = j
     'frozen-lockfile': {
       description:
         'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
+    },
+    'install-scripts': {
+      description:
+        'Include lifecycle scripts when installing packages',
     },
   })
   .opt({

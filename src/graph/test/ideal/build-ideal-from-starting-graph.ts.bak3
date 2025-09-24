@@ -86,10 +86,6 @@ t.test('build from a virtual graph', async t => {
         custom: 'https://registry.example.com',
       },
     },
-    build: {
-      allowed: {},
-      blocked: {},
-    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['file', 'linked'])]: [0, 'linked'],
@@ -190,10 +186,6 @@ t.test('add from manifest file only', async t => {
         custom: 'https://registry.example.com',
       },
     },
-    build: {
-      allowed: {},
-      blocked: {},
-    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
     } as Record<DepID, LockfileNode>,
@@ -240,10 +232,6 @@ t.test('remove from manifest file only', async t => {
         npm: 'https://registry.npmjs.org/',
         custom: 'https://registry.example.com',
       },
-    },
-    build: {
-      allowed: {},
-      blocked: {},
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],

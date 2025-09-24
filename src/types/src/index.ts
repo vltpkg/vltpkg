@@ -3,6 +3,12 @@ import { Version } from '@vltpkg/semver'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Spec, SpecLikeBase, SpecOptions } from '@vltpkg/spec'
 
+// Forward declare LockfileBuildData to avoid circular dependency
+export type LockfileBuildData = {
+  allowed: Record<string, string[]>
+  blocked: Record<string, string[]>
+}
+
 /**
  * Utility type that overrides specific properties of type T with new types
  * from R. Constrains override values to exclude undefined, ensuring that
@@ -1394,6 +1400,7 @@ export type GraphLike = {
   nodes: Map<DepID, NodeLike>
   nodesByName: Map<string, Set<NodeLike>>
   edges: Set<EdgeLike>
+  build?: LockfileBuildData
   addEdge: (
     type: DependencyTypeShort,
     spec: Spec,
@@ -1435,6 +1442,8 @@ export type NodeLike = {
     os?: string[] | string
     cpu?: string[] | string
   }
+  buildAllowed?: boolean
+  buildBlocked?: boolean
   options: SpecOptions
   toJSON: () => Pick<
     NodeLike,
@@ -1451,6 +1460,8 @@ export type NodeLike = {
     | 'optional'
     | 'confused'
     | 'platform'
+    | 'buildAllowed'
+    | 'buildBlocked'
   > & {
     rawManifest?: NodeLike['manifest']
   }

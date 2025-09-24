@@ -831,3 +831,152 @@ t.test('save platform data for optional dependencies', async t => {
     'lockfile with platform data for optional dependencies',
   )
 })
+
+t.test('save build data', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  await t.test('save with build data provided', async t => {
+    const buildData = {
+      allowed: {
+        'https://registry.npmjs.org/': ['foo', 'bar'],
+      },
+      blocked: {
+        'https://registry.npmjs.org/': ['baz'],
+      },
+    }
+
+    const lockfile = lockfileData({
+      ...configData,
+      graph,
+      build: buildData,
+    })
+    t.same(
+      lockfile.build,
+      buildData,
+      'build data should be preserved when provided',
+    )
+    t.matchSnapshot(
+      JSON.stringify(lockfile, null, 2),
+      'lockfile with build data provided',
+    )
+  })
+
+  await t.test('save without build data (defaults)', async t => {
+    const lockfile = lockfileData({ ...configData, graph })
+    t.same(
+      lockfile.build,
+      {
+        allowed: {},
+        blocked: {},
+      },
+      'build property should have empty allowed and blocked records by default',
+    )
+    t.matchSnapshot(
+      JSON.stringify(lockfile, null, 2),
+      'lockfile with no build data',
+    )
+  })
+
+  await t.test('save empty build data', async t => {
+    const buildData = {
+      allowed: {},
+      blocked: {},
+    }
+
+    const lockfile = lockfileData({
+      ...configData,
+      graph,
+      build: buildData,
+    })
+    t.same(
+      lockfile.build,
+      buildData,
+      'empty build data should be preserved when explicitly provided',
+    )
+    t.matchSnapshot(
+      JSON.stringify(lockfile, null, 2),
+      'lockfile with empty build data',
+    )
+  })
+
+  await t.test(
+    'save() and saveHidden() functions with build data',
+    async t => {
+      const foo = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo@^1.0.0'),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          dist: {
+            integrity:
+              'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+          },
+        },
+      )
+      if (!foo) throw new Error('Missing foo package')
+      foo.setResolved()
+
+      const buildData = {
+        allowed: {
+          'https://registry.npmjs.org/': ['foo'],
+        },
+        blocked: {
+          'https://registry.npmjs.org/': ['blocked'],
+        },
+      }
+
+      // Test save() with build data
+      save({ ...configData, graph, build: buildData })
+      const savedContent = JSON.parse(
+        readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+          encoding: 'utf8',
+        }),
+      )
+      t.same(
+        savedContent.build,
+        buildData,
+        'save() should include build data in lockfile',
+      )
+      t.matchSnapshot(
+        JSON.stringify(savedContent, null, 2),
+        'save() with build data',
+      )
+
+      // Test saveHidden() with build data
+      saveHidden({ ...configData, graph, build: buildData })
+      const hiddenContent = JSON.parse(
+        readFileSync(
+          resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+          {
+            encoding: 'utf8',
+          },
+        ),
+      )
+      t.same(
+        hiddenContent.build,
+        buildData,
+        'saveHidden() should include build data in hidden lockfile',
+      )
+      t.matchSnapshot(
+        JSON.stringify(hiddenContent, null, 2),
+        'saveHidden() with build data',
+      )
+    },
+  )
+})

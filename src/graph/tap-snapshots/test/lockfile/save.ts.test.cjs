@@ -13,6 +13,10 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
       "custom": "http://example.com"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "··foo@1.0.0": [
       0,
@@ -55,6 +59,10 @@ exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must matc
       "example": "https://example.com/$1/$2/archive/$3.tar.gz"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "git·example%3Afoo§bar·": [
       0,
@@ -74,6 +82,10 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] 
     "scope-registries": {
       "@myscope": "https://example.com/"
     }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
   },
   "nodes": {
     "··foo@1.0.0": [
@@ -95,6 +107,10 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] 
       "intl": "https://jsr.example.com/"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "·https%3A§§jsr.example.com§·@foo§bar@1.0.0": [
       0,
@@ -113,6 +129,10 @@ exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 
   "options": {
     "registry": "http://example.com"
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {},
   "edges": {}
 }
@@ -127,6 +147,10 @@ exports[`test/lockfile/save.ts > TAP > overrides default registries > must match
       "npm": "http://example.com"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {},
   "edges": {}
 }
@@ -139,6 +163,10 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
     "registries": {
       "custom": "http://example.com"
     }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
   },
   "nodes": {
     "··bar@1.0.0": [3,"bar"],
@@ -161,6 +189,10 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
     "registries": {
       "custom": "http://example.com"
     }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
   },
   "nodes": {
     "··bar@1.0.0": [
@@ -219,6 +251,10 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
       "custom": "http://example.com"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "··bar@1.0.0": [3,"bar"],
     "··foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"],
@@ -233,6 +269,158 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 `
 
+exports[`test/lockfile/save.ts > TAP > save build data > save build data undefined > lockfile with undefined build data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
+  "nodes": {},
+  "edges": {}
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save build data > save empty build data > lockfile with empty build data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
+  "nodes": {},
+  "edges": {}
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save build data > save with build data provided > lockfile with build data provided 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "build": {
+    "allowed": {
+      "https://registry.npmjs.org/": [
+        "foo",
+        "bar"
+      ]
+    },
+    "blocked": {
+      "https://registry.npmjs.org/": [
+        "baz"
+      ]
+    }
+  },
+  "nodes": {},
+  "edges": {}
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save build data > save without build data (defaults) > lockfile with no build data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
+  "nodes": {},
+  "edges": {}
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save build data > save() and saveHidden() functions with build data > save() with build data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "build": {
+    "allowed": {
+      "https://registry.npmjs.org/": [
+        "foo"
+      ]
+    },
+    "blocked": {
+      "https://registry.npmjs.org/": [
+        "blocked"
+      ]
+    }
+  },
+  "nodes": {
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save build data > save() and saveHidden() functions with build data > saveHidden() with build data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "build": {
+    "allowed": {
+      "https://registry.npmjs.org/": [
+        "foo"
+      ]
+    },
+    "blocked": {
+      "https://registry.npmjs.org/": [
+        "blocked"
+      ]
+    }
+  },
+  "nodes": {
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      {
+        "name": "foo",
+        "version": "1.0.0",
+        "dist": {
+          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+        }
+      }
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > save platform data for optional dependencies > lockfile with platform data for optional dependencies 1`] = `
 {
   "lockfileVersion": 0,
@@ -240,6 +428,10 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
     "registries": {
       "custom": "http://example.com"
     }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
   },
   "nodes": {
     "··bar@1.0.0": [
@@ -289,6 +481,10 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
       "custom": "http://example.com"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "··foo@1.0.0": [
       0,
@@ -333,6 +529,10 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with empty modifiers config > should save lockfile without modifiers when config is empty 1`] = `
 Object {
+  "build": Object {
+    "allowed": Object {},
+    "blocked": Object {},
+  },
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
@@ -354,6 +554,10 @@ Object {
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with invalid scope registries > should save lockfile without scope registries when invalid type 1`] = `
 Object {
+  "build": Object {
+    "allowed": Object {},
+    "blocked": Object {},
+  },
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
@@ -375,6 +579,10 @@ Object {
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with missing modifiers > should save lockfile without modifiers when undefined 1`] = `
 Object {
+  "build": Object {
+    "allowed": Object {},
+    "blocked": Object {},
+  },
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
@@ -396,6 +604,10 @@ Object {
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with undefined scope registries > should save lockfile without scope registries when undefined 1`] = `
 Object {
+  "build": Object {
+    "allowed": Object {},
+    "blocked": Object {},
+  },
   "edges": Object {
     "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
   },
@@ -426,6 +638,10 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
       "custom": "http://example.com"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "··foo@2.0.0·%3Aroot%20%3E%20%23foo": [0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
@@ -444,6 +660,10 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
       "custom": "http://example.com"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {
     "··c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
@@ -461,6 +681,10 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
     "registries": {
       "custom": "http://example.com"
     }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
   },
   "nodes": {
     "··c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]

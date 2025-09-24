@@ -247,6 +247,10 @@ export const load = (transfered: TransferData): LoadResult => {
   // populate nodes and edges from loaded data
   const graph = maybeGraph as GraphLike
   const specOptions = loadSpecOptions(transfered.lockfile)
+
+  // Set build data on the graph
+  graph.build = transfered.lockfile.build
+
   loadNodes(graph, transfered.lockfile.nodes, specOptions, graph)
   loadEdges(graph, transfered.lockfile.edges, specOptions)
 

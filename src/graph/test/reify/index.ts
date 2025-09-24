@@ -82,7 +82,7 @@ t.test('super basic reification', async t => {
 
   t.strictSame(
     new Set(readdirSync(projectRoot + '/node_modules')),
-    new Set(['.vlt', '.vlt-lock.json', 'lodash']),
+    new Set(['.vlt', '.vlt-build.json', '.vlt-lock.json', 'lodash']),
   )
 
   t.strictSame(
@@ -95,6 +95,10 @@ t.test('super basic reification', async t => {
   const expectLockfileData: LockfileData = {
     lockfileVersion: 0,
     options: {},
+    build: {
+      allowed: { file: ['x'] },
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['registry', '', 'lodash@4.17.21'])]: [
         0,
@@ -126,11 +130,14 @@ t.test('super basic reification', async t => {
     graph.mainImporter.manifest.dependencies.underscore = '1'
   }
   graph.mainImporter.edgesOut.delete('lodash')
-  graph.removeNode(
-    graph.nodes.get(
-      joinDepIDTuple(['registry', '', 'lodash@4.17.21']),
-    )!,
+  const ldNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'lodash@4.17.21']),
   )
+  if (!ldNode) {
+    throw new Error('expected lodash node to be present')
+  }
+
+  graph.removeNode(ldNode)
   graph.addNode(
     joinDepIDTuple(['registry', '', 'underscore@1.13.7']),
     fixtureManifest('underscore-1.13.7'),
@@ -327,6 +334,7 @@ t.test('failure rolls back', async t => {
       projectRoot,
       packageInfo: mockPackageInfo,
       graph,
+      includeScripts: true,
       packageJson: new PackageJson(),
       scurry: new PathScurry(projectRoot),
     }),
@@ -515,8 +523,9 @@ t.test('early termination when no changes are needed', async t => {
   })
 
   // Verify early termination behavior
-  t.ok(result, 'reify should return a diff object')
-  t.equal(result.hasChanges(), false, 'diff should have no changes')
+  const { diff } = result
+  t.ok(diff, 'reify should return a diff object')
+  t.equal(diff.hasChanges(), false, 'diff should have no changes')
 
   // Verify that no reification work was performed
   t.equal(
@@ -545,3 +554,198 @@ t.test('early termination when no changes are needed', async t => {
     'deleteNodes should not be called when no changes',
   )
 })
+
+t.test('saveBuild is called during reification', async t => {
+  // Use the same test setup as the basic reification test
+  const dir = t.testdir({
+    project: {
+      'vlt.json': JSON.stringify({
+        monorepo: {
+          packages: [],
+        },
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: {
+          lodash: '4',
+        },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const packageJson = new PackageJson()
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson,
+  })
+
+  await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    graph: graph,
+  })
+
+  // Verify .vlt-build.json file was created (this proves saveBuild was called)
+  const buildFilePath = resolve(
+    projectRoot,
+    'node_modules/.vlt-build.json',
+  )
+  t.ok(
+    statSync(buildFilePath, { throwIfNoEntry: false }),
+    'build file should be created, proving saveBuild was called',
+  )
+
+  // Basic structure verification
+  if (statSync(buildFilePath, { throwIfNoEntry: false })) {
+    const buildContent = readFileSync(buildFilePath, 'utf8')
+    const buildData = JSON.parse(buildContent)
+    t.type(buildData, 'object', 'build data should be an object')
+    t.ok(
+      'queue' in buildData,
+      'build data should have queue property',
+    )
+  }
+})
+
+t.test('reify removes existing .vlt-build.json file', async t => {
+  const dir = t.testdir({
+    project: {
+      'vlt.json': JSON.stringify({
+        monorepo: {
+          packages: [],
+        },
+      }),
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: {
+          lodash: '4',
+        },
+      }),
+      node_modules: {
+        '.vlt-build.json': JSON.stringify({
+          diff: {
+            nodes: { add: [], delete: [] },
+            edges: { add: [], delete: [] },
+          },
+        }),
+      },
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const packageJson = new PackageJson()
+
+  // Verify the build file exists before reify
+  const buildFilePath = resolve(
+    projectRoot,
+    'node_modules/.vlt-build.json',
+  )
+  t.ok(
+    statSync(buildFilePath, { throwIfNoEntry: false }),
+    'build file should exist before reify',
+  )
+
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson,
+  })
+
+  await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    graph: graph,
+  })
+
+  // The old build file should have been removed and a new one created
+  // We can verify this worked by checking that the file exists (new one was created by saveBuild)
+  // and contains the expected structure from the current reify operation
+  t.ok(
+    statSync(buildFilePath, { throwIfNoEntry: false }),
+    'build file should exist after reify (new one created)',
+  )
+
+  const buildContent = readFileSync(buildFilePath, 'utf8')
+  const buildData = JSON.parse(buildContent)
+  t.type(buildData, 'object', 'new build data should be an object')
+  t.ok(
+    'queue' in buildData,
+    'new build data should have queue property',
+  )
+})
+
+t.test(
+  'saveBuild is called when includeScripts is undefined',
+  async t => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const packageJson = new PackageJson()
+
+    const graph = await ideal.build({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson,
+    })
+
+    // Call reify without includeScripts (should be undefined)
+    await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      graph,
+      // Explicitly not setting includeScripts (undefined)
+    })
+
+    // Verify .vlt-build.json file was created (this proves saveBuild was called)
+    const buildFilePath = resolve(
+      projectRoot,
+      'node_modules/.vlt-build.json',
+    )
+    t.ok(
+      statSync(buildFilePath, { throwIfNoEntry: false }),
+      'build file should be created when includeScripts is undefined, proving saveBuild was called',
+    )
+
+    // Verify the build file contains expected structure
+    if (statSync(buildFilePath, { throwIfNoEntry: false })) {
+      const buildContent = readFileSync(buildFilePath, 'utf8')
+      const buildData = JSON.parse(buildContent)
+      t.type(buildData, 'object', 'build data should be an object')
+      t.ok(
+        'queue' in buildData,
+        'build data should have queue property',
+      )
+      t.type(buildData.queue, Array, 'queue should be an array')
+    }
+  },
+)

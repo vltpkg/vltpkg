@@ -4,6 +4,7 @@ import type {
   Integrity,
   NormalizedManifest,
   DependencyTypeShort,
+  LockfileBuildData,
 } from '@vltpkg/types'
 import type { Graph } from '../graph.ts'
 
@@ -28,6 +29,7 @@ export type LockfileData = {
   options: SpecOptions & {
     modifiers?: Record<string, string> | undefined
   }
+  build: LockfileBuildData
   nodes: Record<DepID, LockfileNode>
   edges: LockfileEdges
 }

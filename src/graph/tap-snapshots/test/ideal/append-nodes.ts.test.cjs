@@ -42,6 +42,7 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
 @vltpkg/graph.Graph {
   lockfileVersion: 0,
   options: { registries: {} },
+  build: { allowed: {}, blocked: {} },
   nodes: {
     '··bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
     '··foo@1.0.0': [
@@ -98,6 +99,7 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
   options: {
     registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' }
   },
+  build: { allowed: {}, blocked: {} },
   nodes: {
     '·a·bar@1.2.3': [
       0,

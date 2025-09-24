@@ -38,6 +38,26 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
 ]
 `
 
+exports[`test/lockfile/load.ts > TAP > load build data > load with build data provided > graph loaded with build data 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
+`
+
+exports[`test/lockfile/load.ts > TAP > load build data > load with empty build data > graph loaded with empty build data 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
+`
+
+exports[`test/lockfile/load.ts > TAP > load build data > load without build data (defaults) > graph loaded without build data 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
+`
+
+exports[`test/lockfile/load.ts > TAP > load build data > load() and loadHidden() with build data files > load() with build data 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
+`
+
+exports[`test/lockfile/load.ts > TAP > load build data > load() and loadHidden() with build data files > loadHidden() with build data 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
+`
+
 exports[`test/lockfile/load.ts > TAP > load with custom git hosts > should build specs with custom git hosts 1`] = `
 Spec {
   "bareSpec": "example:foo/bar",
@@ -283,6 +303,10 @@ exports[`test/lockfile/load.ts > TAP > missing options object > should be able t
       "example": "http://foo"
     }
   },
+  "build": {
+    "allowed": {},
+    "blocked": {}
+  },
   "nodes": {},
   "edges": {}
 }
@@ -297,6 +321,10 @@ exports[`test/lockfile/load.ts > TAP > option-defined values should overwrite lo
       "example": "http://bar",
       "lorem": "http://lorem"
     }
+  },
+  "build": {
+    "allowed": {},
+    "blocked": {}
   },
   "nodes": {},
   "edges": {}

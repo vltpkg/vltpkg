@@ -5,14 +5,67 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/pseudo/scripts.ts > TAP > selects packages with an installScripts alert > filter out any node that does not have the alert > must match snapshot 1`] = `
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > filters out nodes without build requirements > must match snapshot 1`] = `
 Object {
-  "edges": Array [
-    "e",
-    "e",
-  ],
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > handles empty partial state > must match snapshot 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > handles mixed scenarios correctly > must match snapshot 1`] = `
+Object {
+  "edges": Array [],
   "nodes": Array [
-    "e",
+    "build-pkg1",
+    "build-pkg2",
+  ],
+}
+`
+
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > selects git dependencies with prepare scripts > must match snapshot 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "git-pkg",
+    "git-postprepare-pkg",
+    "git-preprepare-pkg",
+  ],
+}
+`
+
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > selects importer nodes with prepare scripts > must match snapshot 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "importer-pkg",
+  ],
+}
+`
+
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > selects nodes with binary files > must match snapshot 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "object-bin-pkg",
+    "string-bin-pkg",
+  ],
+}
+`
+
+exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > selects nodes with install lifecycle scripts > must match snapshot 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "install-pkg",
+    "postinstall-pkg",
+    "preinstall-pkg",
   ],
 }
 `

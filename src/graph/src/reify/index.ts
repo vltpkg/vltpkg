@@ -3,6 +3,7 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
 import { callLimit } from 'promise-call-limit'
+import type { DepID } from '@vltpkg/dep-id'
 import type { LoadOptions } from '../actual/load.ts'
 import { load as loadActual } from '../actual/load.ts'
 import type {
@@ -11,7 +12,6 @@ import type {
 } from '../dependencies.ts'
 import { Diff } from '../diff.ts'
 import type { Graph } from '../graph.ts'
-import { lockfile } from '../index.ts'
 import type { GraphModifier } from '../modifiers.ts'
 import {
   lockfileData,
@@ -22,11 +22,13 @@ import { addEdges } from './add-edges.ts'
 import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
+import { saveBuild } from './save-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
-import { copyFileSync } from 'node:fs'
+import { copyFileSync, unlinkSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 
@@ -35,6 +37,7 @@ const limit = Math.max(availableParallelism() - 1, 1) * 8
 
 export type ReifyOptions = LoadOptions & {
   add?: AddImportersDependenciesMap
+  includeScripts?: boolean
   remove?: RemoveImportersDependenciesMap
   graph: Graph
   actual?: Graph
@@ -42,11 +45,36 @@ export type ReifyOptions = LoadOptions & {
   modifiers?: GraphModifier
 }
 
+export type ReifyResult = {
+  /**
+   * The diff object that was used to reify the project.
+   */
+  diff: Diff
+  /**
+   * Optional queue of DepIDs that requires building (running lifecycle scripts
+   * and binary linking) after the reification is complete.
+   */
+  buildQueue?: DepID[]
+}
+
 /**
  * Make the current project match the supplied graph.
  */
-export const reify = async (options: ReifyOptions) => {
+export const reify = async (
+  options: ReifyOptions,
+): Promise<ReifyResult> => {
   const done = graphStep('reify')
+
+  // Remove any existing build file before proceeding
+  try {
+    const buildFilePath = resolve(
+      options.projectRoot,
+      'node_modules/.vlt-build.json',
+    )
+    unlinkSync(buildFilePath)
+  } catch {
+    // Ignore any errors - file might not exist or be unreadable
+  }
 
   const { graph, scurry } = options
 
@@ -60,18 +88,20 @@ export const reify = async (options: ReifyOptions) => {
   const diff = new Diff(actual, graph)
   const skipOptionalOnly =
     !options.add?.modifiedDependencies && diff.optionalOnly
+  const res: ReifyResult = { diff }
   if (!diff.hasChanges() || skipOptionalOnly) {
     // nothing to do, so just return the diff
     done()
-    return diff
+    return res
   }
 
   const remover = new RollbackRemove()
   let success = false
   try {
-    await reify_(options, diff, remover)
+    const { buildQueue } = await reify_(options, diff, remover)
     remover.confirm()
     success = true
+    res.buildQueue = buildQueue
   } finally {
     /* c8 ignore start */
     if (!success) {
@@ -82,15 +112,17 @@ export const reify = async (options: ReifyOptions) => {
 
   done()
 
-  return diff
+  return res
 }
 
 const reify_ = async (
   options: ReifyOptions,
   diff: Diff,
   remover: RollbackRemove,
-) => {
-  const { add, remove, packageInfo, packageJson, scurry } = options
+): Promise<Omit<ReifyResult, 'diff'>> => {
+  const res: Omit<ReifyResult, 'diff'> = {}
+  const { add, graph, remove, packageInfo, packageJson, scurry } =
+    options
   const saveImportersPackageJson =
     /* c8 ignore next */
     add?.modifiedDependencies || remove?.modifiedDependencies ?
@@ -129,11 +161,34 @@ const reify_ = async (
 
   await internalHoist(diff.to, options, remover)
 
-  // run lifecycles and chmod bins
-  await build(diff, packageJson, scurry)
+  // run install lifecycle scripts and link any binary files
+  const built = await build(
+    diff,
+    packageJson,
+    scurry,
+    options.includeScripts,
+  )
 
-  // save the lockfile
-  lockfile.save(options)
+  // add any allowed build dependency to the lockfile data
+  const builtEntries = Object.entries(built)
+  if (builtEntries.length) {
+    for (const [registry, names] of builtEntries) {
+      /* c8 ignore next */
+      const prevAllowed = graph.build?.allowed[registry] ?? []
+      if (names.length) {
+        lfData.build.allowed[registry] = [
+          ...new Set([...prevAllowed, ...names]),
+        ]
+      }
+    }
+  }
+
+  // save any remaining build data for potential future builds
+  const { queue } = saveBuild({
+    diff,
+    projectRoot: options.projectRoot,
+  })
+  res.buildQueue = queue
 
   // if we had to change the actual graph along the way,
   // make sure we do not leave behind any unreachable nodes
@@ -169,4 +224,7 @@ const reify_ = async (
       scurry.resolve('node_modules/.vlt/vlt.json'),
     )
   }
+
+  // returns the result object
+  return res
 }

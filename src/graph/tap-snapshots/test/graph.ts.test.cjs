@@ -6,13 +6,20 @@
  */
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
-@vltpkg/graph.Graph { lockfileVersion: 0, options: [Object], nodes: {}, edges: {} }
+@vltpkg/graph.Graph {
+  lockfileVersion: 0,
+  options: [Object],
+  build: [Object],
+  nodes: {},
+  edges: {}
+}
 `
 
 exports[`test/graph.ts > TAP > using placePackage > should add a type=git package 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 0,
   options: { registries: {} },
+  build: { allowed: {}, blocked: {} },
   nodes: {
     '··bar@1.0.0': [
       0,
@@ -37,6 +44,7 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 @vltpkg/graph.Graph {
   lockfileVersion: 0,
   options: { registries: {} },
+  build: { allowed: {}, blocked: {} },
   nodes: {
     '··bar@1.0.0': [
       0,
@@ -60,6 +68,7 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
 @vltpkg/graph.Graph {
   lockfileVersion: 0,
   options: { registries: {} },
+  build: { allowed: {}, blocked: {} },
   nodes: {
     '··bar@1.0.0': [
       0,
@@ -81,6 +90,7 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 0,
   options: { registries: {} },
+  build: { allowed: {}, blocked: {} },
   nodes: {
     '··bar@1.0.0': [
       0,
@@ -109,6 +119,7 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
 Set {
   &ref_1 Node {
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
@@ -221,6 +232,7 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "built": false,
           "confused": false,
           "edgesIn": Set {},
           "edgesOut": Map {},
@@ -338,6 +350,7 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "built": false,
           "confused": false,
           "edgesIn": Set {},
           "edgesOut": Map {},
@@ -365,6 +378,7 @@ Set {
     },
   },
   Node {
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
@@ -388,6 +402,7 @@ Set {
     "workspaces": undefined,
   },
   Node {
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
