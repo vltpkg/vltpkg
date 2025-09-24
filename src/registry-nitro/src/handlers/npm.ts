@@ -1,8 +1,12 @@
-import { cachedEventHandler, defineNitroPlugin } from 'nitro/runtime'
-import { getRouterParam, proxyRequest } from 'h3'
+import { cachedEventHandler } from 'nitro/runtime'
+import { getRouterParam, proxyRequest, eventHandler } from 'h3'
 import type { HTTPEvent, EventHandlerRequest, H3Event } from 'h3'
 import assert from 'node:assert'
-import { useDatabase } from 'nitro/runtime'
+import type { CachedEventHandlerOptions } from 'nitro/types'
+import type { EventHandler } from 'h3'
+
+const CACHE_MANIFESTS = process.env.VSR_NO_CACHE_MANIFESTS !== '1'
+const CACHE_TARBALLS = process.env.VSR_NO_CACHE_TARBALLS !== '1'
 
 const assertParam = (
   event: HTTPEvent<EventHandlerRequest>,
@@ -32,66 +36,77 @@ const proxyToNpm = (
   })
 }
 
-export const getPackageOrVersionHandler = cachedEventHandler(
-  async event => {
+const packageOrVersionOptions: CachedEventHandlerOptions = {
+  base: 'packages',
+  integrity: 'packages.0',
+  // @ts-expect-error - Patched Nitro to support streaming mode
+  streaming: true,
+  // TODO: If Nitro could make this take a function with the same event signature
+  // then we could have different max ages for packages vs versions. Ideally packages
+  // should be cached for a short time (5m) and versions for a long time, maybe even forever
+  // like tarballs.
+  maxAge: 60 * 5,
+  getKey: event => {
     const param1 = assertParam(event, 'param1')
     const param2 = getRouterParam(event, 'param2')
     const param3 = getRouterParam(event, 'param3')
-    return proxyToNpm(
-      event,
-      `/${joinParams('/', param1, param2, param3)}`,
+
+    let type: string
+    if (!param2 && !param3) {
+      type = 'package'
+    } else if (param2 && !param3) {
+      type = param1.startsWith('@') ? 'package' : 'version'
+    } else {
+      type = 'version'
+    }
+
+    return `npm___${type}___${joinParams('_', param1, param2, param3)}`
+  },
+}
+
+const packageOrVersionHandler: EventHandler = async event => {
+  const param1 = assertParam(event, 'param1')
+  const param2 = getRouterParam(event, 'param2')
+  const param3 = getRouterParam(event, 'param3')
+  return proxyToNpm(
+    event,
+    `/${joinParams('/', param1, param2, param3)}`,
+  )
+}
+
+export const getPackageOrVersionHandler =
+  CACHE_MANIFESTS ?
+    cachedEventHandler(
+      packageOrVersionHandler,
+      packageOrVersionOptions,
     )
-  },
-  {
-    base: 'packages',
-    integrity: 'packages.0',
-    // @ts-expect-error - Patched Nitro to support streaming mode
-    streaming: true,
-    // TODO: If Nitro could make this take a function with the same event signature
-    // then we could have different max ages for packages vs versions. Ideally packages
-    // should be cached for a short time (5m) and versions for a long time, maybe even forever
-    // like tarballs.
-    maxAge: 60 * 5,
-    getKey: event => {
-      const param1 = assertParam(event, 'param1')
-      const param2 = getRouterParam(event, 'param2')
-      const param3 = getRouterParam(event, 'param3')
+  : eventHandler(packageOrVersionHandler)
 
-      let type: string
-      if (!param2 && !param3) {
-        type = 'package'
-      } else if (param2 && !param3) {
-        type = param1.startsWith('@') ? 'package' : 'version'
-      } else {
-        type = 'version'
-      }
-
-      return `npm___${type}___${joinParams('_', param1, param2, param3)}`
-    },
-  },
-)
-
-export const getTarballHandler = cachedEventHandler(
-  async event => {
+const tarballOptions: CachedEventHandlerOptions = {
+  base: 'tarballs',
+  integrity: 'tarballs.0',
+  maxAge: 60 * 60 * 24 * 365 * 100,
+  // @ts-expect-error - Patched Nitro to support streaming mode
+  streaming: true,
+  getKey: event => {
     const param1 = assertParam(event, 'param1')
     const param2 = getRouterParam(event, 'param2')
     const tarball = assertParam(event, 'tarball')
-    return proxyToNpm(
-      event,
-      `/${joinParams('/', param1, param2)}/-/${tarball}`,
-    )
+    return `npm___tarball___${joinParams('_', param1, param2, tarball)}`
   },
-  {
-    base: 'tarballs',
-    integrity: 'tarballs.0',
-    maxAge: 60 * 60 * 24 * 365 * 100,
-    // @ts-expect-error - Patched Nitro to support streaming mode
-    streaming: true,
-    getKey: event => {
-      const param1 = assertParam(event, 'param1')
-      const param2 = getRouterParam(event, 'param2')
-      const tarball = assertParam(event, 'tarball')
-      return `npm___tarball___${joinParams('_', param1, param2, tarball)}`
-    },
-  },
-)
+}
+
+const tarballHandler: EventHandler = async event => {
+  const param1 = assertParam(event, 'param1')
+  const param2 = getRouterParam(event, 'param2')
+  const tarball = assertParam(event, 'tarball')
+  return proxyToNpm(
+    event,
+    `/${joinParams('/', param1, param2)}/-/${tarball}`,
+  )
+}
+
+export const getTarballHandler =
+  CACHE_TARBALLS ?
+    cachedEventHandler(tarballHandler, tarballOptions)
+  : eventHandler(tarballHandler)
