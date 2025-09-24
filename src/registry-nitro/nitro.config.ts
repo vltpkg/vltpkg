@@ -35,14 +35,14 @@ export default defineNitroConfig({
       d1_databases: [
         {
           binding: 'DB',
-          database_name: 'vsr-database',
-          database_id: 'bde782f8-f31b-4771-a79a-642935b3fc6c',
+          database_name: 'vsr-production',
+          database_id: 'bbefa4da-e572-4c89-b1f6-9f6ea992ffc3',
         },
       ],
       r2_buckets: [
         {
           binding: 'BUCKET',
-          bucket_name: 'vsr-bucket',
+          bucket_name: 'vsr-production-tarballs',
         },
       ],
     },
