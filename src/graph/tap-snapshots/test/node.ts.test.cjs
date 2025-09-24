@@ -22,7 +22,9 @@ Node [@vltpkg/graph.Node] {
   modifier: undefined,
   version: '1.0.0',
   resolved: undefined,
-  platform: undefined
+  platform: undefined,
+  built: false,
+  buildState: 'none'
 }
 `
 
@@ -40,7 +42,8 @@ exports[`test/node.ts > TAP > Node > should serialize node to JSON 1`] = `
   "projectRoot": "{ROOT}",
   "dev": false,
   "optional": false,
-  "confused": false
+  "confused": false,
+  "buildState": "none"
 }
 `
 
@@ -90,6 +93,7 @@ workspace:a
 
 exports[`test/node.ts > TAP > rawManifest getter and setter > should serialize node to JSON 1`] = `
 Object {
+  "buildState": "none",
   "confused": true,
   "dev": false,
   "id": "··foo@1.0.0",

@@ -195,6 +195,20 @@ export class Node implements NodeLike {
   }
 
   /**
+   * True if this node has been built as part of the reify step.
+   */
+  built = false
+
+  /**
+   * Build state of this node - tracks whether it needs building, has been built, or failed.
+   * - 'none': No build state (default)
+   * - 'needed': Node needs to be built
+   * - 'built': Node has been successfully built
+   * - 'failed': Node build has failed
+   */
+  buildState: 'none' | 'needed' | 'built' | 'failed' = 'none'
+
+  /**
    * The file system location for this node.
    */
   get location(): string {
@@ -411,6 +425,7 @@ export class Node implements NodeLike {
       confused: this.confused,
       modifier: this.modifier,
       platform: this.platform,
+      buildState: this.buildState,
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),

@@ -966,3 +966,244 @@ t.test('optionalOnly method', async t => {
     },
   )
 })
+
+t.test('toJSON method', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
+    }),
+  })
+
+  t.test('serializes diff with nodes and edges correctly', t => {
+    const graphA = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'old-package@1.0.0'])]: [
+            0,
+            'old-package',
+            'sha512-oldpackage==',
+          ],
+          [joinDepIDTuple(['registry', '', 'shared@1.0.0'])]: [
+            0,
+            'shared',
+            'sha512-shared==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'old-package')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'old-package@1.0.0']),
+          [edgeKey(['file', '.'], 'shared')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'shared@1.0.0']),
+        } as LockfileEdges,
+      },
+    )
+
+    const graphB = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      {
+        lockfileVersion: 0,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          [joinDepIDTuple(['registry', '', 'new-package@2.0.0'])]: [
+            0,
+            'new-package',
+            'sha512-newpackage==',
+          ],
+          [joinDepIDTuple(['registry', '', 'shared@1.0.0'])]: [
+            0,
+            'shared',
+            'sha512-shared==',
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'new-package')]:
+            'dev ^2.0.0 ' +
+            joinDepIDTuple(['registry', '', 'new-package@2.0.0']),
+          [edgeKey(['file', '.'], 'shared')]:
+            'prod ^1.0.0 ' +
+            joinDepIDTuple(['registry', '', 'shared@1.0.0']),
+        } as LockfileEdges,
+      },
+    )
+
+    const diff = new Diff(graphA, graphB)
+    const diffJSON = diff.toJSON()
+
+    // Verify structure
+    t.type(diffJSON, 'object', 'should return an object')
+    t.ok('nodes' in diffJSON, 'should have nodes property')
+    t.ok('edges' in diffJSON, 'should have edges property')
+    t.ok('add' in diffJSON.nodes, 'should have nodes.add property')
+    t.ok(
+      'delete' in diffJSON.nodes,
+      'should have nodes.delete property',
+    )
+    t.ok('add' in diffJSON.edges, 'should have edges.add property')
+    t.ok(
+      'delete' in diffJSON.edges,
+      'should have edges.delete property',
+    )
+
+    // Verify types
+    t.type(diffJSON.nodes.add, Array, 'nodes.add should be an array')
+    t.type(
+      diffJSON.nodes.delete,
+      Array,
+      'nodes.delete should be an array',
+    )
+    t.type(diffJSON.edges.add, Array, 'edges.add should be an array')
+    t.type(
+      diffJSON.edges.delete,
+      Array,
+      'edges.delete should be an array',
+    )
+
+    // Verify content
+    t.ok(diffJSON.nodes.add.length > 0, 'should have added nodes')
+    t.ok(
+      diffJSON.nodes.delete.length > 0,
+      'should have deleted nodes',
+    )
+    t.ok(diffJSON.edges.add.length > 0, 'should have added edges')
+    t.ok(
+      diffJSON.edges.delete.length > 0,
+      'should have deleted edges',
+    )
+
+    // Check node structure
+    const addedNode = diffJSON.nodes.add[0]!
+    t.ok(addedNode, 'should have an added node')
+    t.ok('id' in addedNode, 'added node should have id')
+    t.ok('name' in addedNode, 'added node should have name')
+    t.ok('location' in addedNode, 'added node should have location')
+
+    const deletedNode = diffJSON.nodes.delete[0]!
+    t.ok(deletedNode, 'should have a deleted node')
+    t.ok('id' in deletedNode, 'deleted node should have id')
+    t.ok('name' in deletedNode, 'deleted node should have name')
+    t.ok(
+      'location' in deletedNode,
+      'deleted node should have location',
+    )
+
+    // Check edge structure
+    const addedEdge = diffJSON.edges.add[0]!
+    t.ok(addedEdge, 'should have an added edge')
+    t.ok('from' in addedEdge, 'added edge should have from')
+    t.ok('to' in addedEdge, 'added edge should have to')
+    t.ok('type' in addedEdge, 'added edge should have type')
+    t.ok('spec' in addedEdge, 'added edge should have spec')
+
+    const deletedEdge = diffJSON.edges.delete[0]!
+    t.ok(deletedEdge, 'should have a deleted edge')
+    t.ok('from' in deletedEdge, 'deleted edge should have from')
+    t.ok('to' in deletedEdge, 'deleted edge should have to')
+    t.ok('type' in deletedEdge, 'deleted edge should have type')
+    t.ok('spec' in deletedEdge, 'deleted edge should have spec')
+
+    t.end()
+  })
+
+  t.test('serializes empty diff correctly', t => {
+    const graphData = {
+      lockfileVersion: 0,
+      options: {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+        },
+      },
+      nodes: {
+        [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+          0,
+          'foo',
+          'sha512-foofoofoo==',
+        ],
+      } as Record<DepID, LockfileNode>,
+      edges: {
+        [edgeKey(['file', '.'], 'foo')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      } as LockfileEdges,
+    }
+
+    const graph1 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      graphData,
+    )
+
+    const graph2 = loadObject(
+      {
+        projectRoot,
+        mainManifest: {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+      graphData,
+    )
+
+    const diff = new Diff(graph1, graph2)
+    const diffJSON = diff.toJSON()
+
+    t.equal(
+      diffJSON.nodes.add.length,
+      0,
+      'should have no added nodes',
+    )
+    t.equal(
+      diffJSON.nodes.delete.length,
+      0,
+      'should have no deleted nodes',
+    )
+    t.equal(
+      diffJSON.edges.add.length,
+      0,
+      'should have no added edges',
+    )
+    t.equal(
+      diffJSON.edges.delete.length,
+      0,
+      'should have no deleted edges',
+    )
+
+    t.end()
+  })
+
+  t.end()
+})

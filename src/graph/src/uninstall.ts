@@ -7,6 +7,7 @@ import { reify } from './reify/index.ts'
 
 export type UninstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
+  allowScripts: string
 }
 
 export const uninstall = async (

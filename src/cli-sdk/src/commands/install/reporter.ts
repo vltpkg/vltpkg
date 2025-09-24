@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
+import type { InstallResult } from '../install.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -118,8 +119,18 @@ export class InstallReporter extends ViewClass {
     this.#instance = render($(App))
   }
 
-  async done(_result: unknown, { time }: { time: number }) {
-    this.#instance?.rerender($(App, { trailer: `Done in ${time}ms` }))
+  async done(_result: InstallResult, { time }: { time: number }) {
+    let out = `Done in ${time}ms`
+
+    // prints a very complete message explaining users the next steps
+    // in case there are packages to be built
+    if (_result.buildQueue?.length) {
+      out += `\n\n📦 ${_result.buildQueue.length} packages have install scripts defined & were not fully built\n`
+      out += '🔎 Run `vlt query :scripts` to list them\n'
+      out +=
+        '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
+    }
+    this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }
 

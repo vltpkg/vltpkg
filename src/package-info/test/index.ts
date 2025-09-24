@@ -1055,6 +1055,7 @@ t.test('cache manifests', async t => {
     // Use @latest tag - should not cache (dist tags are dynamic)
     const mani1 = await pi.manifest('abbrev@latest')
     t.match(mani1, { name: 'abbrev' })
+    await new Promise(resolve => setTimeout(resolve, 10))
     const files = await readdir(
       pathResolve(xdgDir, 'package-info'),
     ).catch(() => [])
@@ -1067,6 +1068,7 @@ t.test('cache manifests', async t => {
     // Use specific version - should cache after
     const mani2 = await pi.manifest('abbrev@2.0.0')
     t.strictSame(mani2, pakuAbbrev.versions['2.0.0'])
+    await new Promise(resolve => setTimeout(resolve, 10))
     const filesAfter = await readdir(
       pathResolve(xdgDir, 'package-info'),
     )
@@ -1086,6 +1088,7 @@ t.test('cache manifests', async t => {
     // Use * range - should not cache
     const mani = await pi.manifest('abbrev@*')
     t.match(mani, { name: 'abbrev' })
+    await new Promise(resolve => setTimeout(resolve, 10))
     const filesAfter = await readdir(
       pathResolve(xdgDir, 'package-info'),
     ).catch(() => [])
@@ -1229,6 +1232,8 @@ t.test('cache manifests', async t => {
     const maniRegistry = await pi.manifest('abbrev@2.0.0')
     t.strictSame(maniRegistry, pakuAbbrev.versions['2.0.0'])
 
+    await new Promise(resolve => setTimeout(resolve, 100))
+
     const filesAfter = await readdir(
       pathResolve(xdgDir, 'package-info'),
     ).catch(() => [])
@@ -1303,6 +1308,7 @@ t.test('cache manifests', async t => {
     const spec = Spec.parseArgs('abbrev@2.0.0', opts)
     const mani = await pi.manifest(spec)
     t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     const filesAfter = await readdir(
       pathResolve(xdgDir, 'package-info'),
@@ -1328,6 +1334,8 @@ t.test('cache manifests', async t => {
     // if we run L502-L504 that removes the expired cache file
     const maniAgain = await pi.manifest('abbrev@2.0.0')
     t.strictSame(maniAgain, pakuAbbrev.versions['2.0.0'])
+
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     // still has a single entry at the end
     const filesAfterAgain = await readdir(

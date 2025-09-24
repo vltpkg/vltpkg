@@ -9,6 +9,7 @@ import {
 // imported pseudo selectors
 import { abandoned } from './pseudo/abandoned.ts'
 import { attr } from './pseudo/attr.ts'
+import { built } from './pseudo/built.ts'
 import { confused } from './pseudo/confused.ts'
 import { cve } from './pseudo/cve.ts'
 import { cwe } from './pseudo/cwe.ts'
@@ -249,6 +250,9 @@ const not = async (state: ParserState) => {
       removeNode(state, node)
     }
   }
+
+  removeDanglingEdges(state)
+
   return state
 }
 
@@ -292,6 +296,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
   Object.entries({
     abandoned,
     attr,
+    built,
     confused,
     cve,
     cwe,

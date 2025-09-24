@@ -10,6 +10,7 @@ const options = {
   packageJson: new PackageJson(),
   scurry: new PathScurry(t.testdirName),
   packageInfo: new PackageInfoClient(),
+  allowScripts: '*',
 }
 const result = parseUninstallOptions(options, {
   [joinDepIDTuple(['file', '.'])]: ['a', 'b'],

@@ -58,6 +58,7 @@ t.test('no pkgOption, no arg, return undefined', async t => {
     packageJson,
     scurry: new PathScurry(t.testdirName),
     packageInfo: mockPackageInfoClient,
+    allowScripts: '*',
   })
   t.strictSame(addedToPath, [])
   t.equal(result, undefined)
@@ -87,6 +88,7 @@ t.test('no pkgOption, has arg, bin found locally', async t => {
     packageJson,
     scurry: new PathScurry(t.testdirName),
     packageInfo: mockPackageInfoClient,
+    allowScripts: '*',
   })
   t.strictSame(addedToPath, [])
   t.equal(result, resolve(projectRoot, 'node_modules/.bin/glob'))
@@ -101,6 +103,7 @@ t.test('no pkgOption, has arg, not found locally', async t => {
     packageJson,
     scurry: new PathScurry(t.testdirName),
     packageInfo: mockPackageInfoClient,
+    allowScripts: '*',
   })
   t.strictSame(addedToPath, [
     resolve(t.testdirName, 'globhash/node_modules/.bin'),
@@ -137,6 +140,7 @@ t.test('pkgOption is bare, use local', async t => {
     packageJson,
     scurry: new PathScurry(t.testdirName),
     packageInfo: mockPackageInfoClient,
+    allowScripts: '*',
   })
   t.strictSame(addedToPath, [
     resolve(projectRoot, 'node_modules/.bin'),
@@ -172,6 +176,7 @@ t.test('pkgOption has version, use global', async t => {
     packageJson,
     scurry: new PathScurry(t.testdirName),
     packageInfo: mockPackageInfoClient,
+    allowScripts: '*',
   })
   t.strictSame(addedToPath, [
     resolve(projectRoot, 'globhash/node_modules/.bin'),
@@ -208,6 +213,7 @@ t.test('pkgOption has version, use global, cannot infer', async t => {
       packageJson,
       scurry: new PathScurry(t.testdirName),
       packageInfo: mockPackageInfoClient,
+      allowScripts: '*',
     }),
     {
       message: 'Package executable could not be inferred',

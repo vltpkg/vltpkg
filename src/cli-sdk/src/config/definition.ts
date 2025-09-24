@@ -19,6 +19,7 @@ export const defaultEditor = () =>
   : 'vi')
 
 const canonicalCommands = {
+  build: 'build',
   cache: 'cache',
   ci: 'ci',
   config: 'config',
@@ -426,11 +427,13 @@ export const definition = j
   .opt({
     scope: {
       short: 's',
+      hint: 'query',
       description:
         'Set to filter the scope of an operation using a DSS Query.',
     },
     target: {
       short: 't',
+      hint: 'query',
       description:
         'Set to select packages using a DSS Query selector.',
     },
@@ -630,6 +633,19 @@ export const definition = j
     'frozen-lockfile': {
       description:
         'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
+    },
+  })
+  .opt({
+    'allow-scripts': {
+      hint: 'query',
+      description: `Filter which packages are allowed to run lifecycle scripts using DSS query syntax.
+                    When provided, only packages matching the query will execute their
+                    install, preinstall, postinstall, prepare, preprepare, and postprepare scripts.
+                    Defaults to ':not(*)' which means no scripts will be run.
+                    
+                    Example: --allow-scripts=":root > *, #my-package"
+                    Runs scripts only for direct dependencies of the current project and any occurrences
+                    of a specific dependency with the name "my-package" anywhere in the dependency graph.`,
     },
   })
   .opt({

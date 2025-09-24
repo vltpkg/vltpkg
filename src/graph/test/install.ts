@@ -38,6 +38,7 @@ t.test('install', async t => {
         return { name: 'my-project', version: '1.0.0' }
       },
     },
+    allowScripts: ':not(*)',
   } as unknown as InstallOptions
   let log = ''
 
@@ -59,6 +60,7 @@ t.test('install', async t => {
     '../src/reify/index.ts': {
       reify: async () => {
         log += 'reify\n'
+        return { buildQueue: [], diff: {} }
       },
     },
     '../src/modifiers.ts': {
@@ -104,12 +106,15 @@ t.test('install with no package.json file in cwd', async t => {
     scurry: new PathScurry(),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
+    allowScripts: ':not(*)',
   } as unknown as InstallOptions
   const { install } = await t.mockImport<
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => {},
+      reify: async () => {
+        return { buildQueue: [], diff: {} }
+      },
     },
   })
 
@@ -148,12 +153,15 @@ t.test('unknown error reading package.json', async t => {
       },
     },
     packageInfo: mockPackageInfo,
+    allowScripts: ':not(*)',
   } as unknown as InstallOptions
   const { install } = await t.mockImport<
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => {},
+      reify: async () => {
+        return { buildQueue: [], diff: {} }
+      },
     },
   })
 
@@ -194,6 +202,7 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       expectLockfile: true,
+      allowScripts: ':not(*)',
       // No cleanInstall option - just expect-lockfile
     } as unknown as InstallOptions
 
@@ -258,6 +267,7 @@ t.test('install with cleanInstall option (ci command)', async t => {
     packageInfo: mockPackageInfo,
     expectLockfile: true,
     cleanInstall: true, // This is set by ci command
+    allowScripts: ':not(*)',
   } as unknown as InstallOptions
 
   const removedPaths: string[] = []
@@ -267,7 +277,7 @@ t.test('install with cleanInstall option (ci command)', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
+      reify: async () => ({ buildQueue: {}, diff: {} }),
     },
     '@vltpkg/rollback-remove': {
       RollbackRemove: class MockRollbackRemove {
@@ -311,13 +321,14 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       expectLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const { install } = await t.mockImport<
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -362,13 +373,14 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const { install } = await t.mockImport<
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -417,13 +429,14 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const { install } = await t.mockImport<
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -460,6 +473,7 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const addMap = new Map()
@@ -472,7 +486,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -535,6 +549,7 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const removeMap = new Map()
@@ -544,7 +559,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -605,13 +620,14 @@ t.test('install with frozenLockfile and spec changes', async t => {
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     frozenLockfile: true,
+    allowScripts: ':not(*)',
   } as unknown as InstallOptions
 
   const { install } = await t.mockImport<
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
+      reify: async () => ({ buildQueue: {}, diff: {} }),
     },
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
@@ -706,13 +722,14 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const { install } = await t.mockImport<
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -758,6 +775,7 @@ t.test(
       packageInfo: mockPackageInfo,
       expectLockfile: true,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const addMap = new Map()
@@ -770,7 +788,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -840,6 +858,7 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const wsDir = resolve(dir, 'packages/pkg-a')
@@ -853,7 +872,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -920,6 +939,7 @@ t.test(
       },
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     let initCalled = false
@@ -932,7 +952,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -1002,6 +1022,7 @@ t.test(
       },
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const { install } = await t.mockImport<
@@ -1013,7 +1034,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -1050,6 +1071,7 @@ t.test(
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const addMap = new Map()
@@ -1064,7 +1086,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -1131,6 +1153,7 @@ t.test('install with expectLockfile but no node_modules', async t => {
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     expectLockfile: true,
+    allowScripts: ':not(*)',
   } as unknown as InstallOptions
 
   const removedPaths: string[] = []
@@ -1140,7 +1163,7 @@ t.test('install with expectLockfile but no node_modules', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
+      reify: async () => ({ buildQueue: {}, diff: {} }),
     },
     '@vltpkg/rollback-remove': {
       RollbackRemove: class MockRollbackRemove {
@@ -1198,6 +1221,7 @@ t.test(
       packageInfo: mockPackageInfo,
       expectLockfile: true,
       cleanInstall: true, // This is set by ci command
+      allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
     const removedPaths: string[] = []
@@ -1213,7 +1237,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '@vltpkg/rollback-remove': {
         RollbackRemove: class MockRollbackRemove {

@@ -9,6 +9,7 @@ exports[`test/config/definition.ts > TAP > commands 1`] = `
 Object {
   "?": "help",
   "add": "install",
+  "build": "build",
   "cache": "cache",
   "ci": "ci",
   "conf": "config",
@@ -57,6 +58,14 @@ Object {
       "public",
       "restricted",
     ],
+  },
+  "allow-scripts": Object {
+    "description": String(
+      Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.  
+      Example: --allow-scripts=":root > *, #my-package" Runs scripts only for direct dependencies of the current project and any occurrences of a specific dependency with the name "my-package" anywhere in the dependency graph.
+    ),
+    "hint": "query",
+    "type": "string",
   },
   "arch": Object {
     "description": "CPU architecture to use as the selector when choosing packages based on their \`cpu\` value.",
@@ -141,6 +150,7 @@ Object {
     "hint": "command",
     "type": "string",
     "validOptions": Array [
+      "build",
       "cache",
       "ci",
       "config",
@@ -369,6 +379,7 @@ Object {
   },
   "scope": Object {
     "description": "Set to filter the scope of an operation using a DSS Query.",
+    "hint": "query",
     "short": "s",
     "type": "string",
   },
@@ -418,6 +429,7 @@ Object {
   },
   "target": Object {
     "description": "Set to select packages using a DSS Query selector.",
+    "hint": "query",
     "short": "t",
     "type": "string",
   },
@@ -482,6 +494,7 @@ Object {
 exports[`test/config/definition.ts > TAP > getSortedCliDefinitions > sorted CLI definitions 1`] = `
 Array [
   "--access=<access>",
+  "--allow-scripts=<query>",
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
@@ -522,12 +535,12 @@ Array [
   "--save-optional",
   "--save-peer",
   "--save-prod",
-  "--scope=<scope>",
+  "--scope=<query>",
   "--scope-registries=<@scope=url>",
   "--script-shell=<program>",
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
-  "--target=<target>",
+  "--target=<query>",
   "--version",
   "--view=<output>",
   "--workspace=<ws>",
@@ -539,6 +552,7 @@ Array [
 exports[`test/config/definition.ts > TAP > getSortedKeys > sorted keys 1`] = `
 Array [
   "access",
+  "allow-scripts",
   "arch",
   "bail",
   "before",
