@@ -37,7 +37,6 @@ export default defineNitroConfig({
           binding: 'DB',
           database_name: 'vsr-database',
           database_id: 'bde782f8-f31b-4771-a79a-642935b3fc6c',
-          migrations_dir: '../../drizzle',
         },
       ],
       r2_buckets: [
