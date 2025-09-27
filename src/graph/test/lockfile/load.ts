@@ -73,6 +73,10 @@ t.test('load', async t => {
         custom: 'https://registry.example.com',
       },
     },
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['file', 'linked'])]: [0, 'linked'],
@@ -142,6 +146,10 @@ t.test('loadHidden', async t => {
         custom: 'https://registry.example.com',
       },
     },
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['file', 'linked'])]: [0, 'linked'],
@@ -190,6 +198,10 @@ t.test('workspaces', async t => {
       registries: {
         custom: 'http://example.com',
       },
+    },
+    build: {
+      allowed: {},
+      blocked: {},
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -246,6 +258,10 @@ t.test('unknown dep type', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 0,
     options: {},
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -283,6 +299,10 @@ t.test('invalid dep id in edge', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 0,
     options: {},
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -321,6 +341,10 @@ t.test('missing edge `from`', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 0,
     options: {},
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -365,6 +389,10 @@ t.test('load with custom git hosts', async t => {
         example: 'git+ssh://example.com/$1/$2/archive/$3.tar.gz',
       },
     },
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['git', 'example:foo/bar', ''])]: [0, 'foo'],
     } as Record<DepID, LockfileNode>,
@@ -404,6 +432,10 @@ t.test('load with custom scope registry', async t => {
       'scope-registries': {
         '@myscope': 'http://example.com',
       },
+    },
+    build: {
+      allowed: {},
+      blocked: {},
     },
     nodes: {
       [joinDepIDTuple(['registry', '', '@myscope/foo@1.0.0'])]: [
@@ -464,6 +496,7 @@ t.test(
         },
       },
       nodes: {},
+      build: { allowed: {}, blocked: {} },
       edges: {},
     }
     t.matchSnapshot(
@@ -486,7 +519,10 @@ t.test('missing options object', async t => {
     projectRoot,
   }
   const lockfileData = {
+    lockfileVersion: 0,
+    options: {},
     nodes: {},
+    build: { allowed: {}, blocked: {} },
     edges: {},
   } as LockfileData
   t.matchSnapshot(
@@ -508,6 +544,10 @@ t.test('skipLoadingNodesOnModifiersChange behavior', async t => {
     lockfileVersion: 0,
     options: {
       modifiers: modifiersConfig,
+    },
+    build: {
+      allowed: {},
+      blocked: {},
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'test-project'],
@@ -982,6 +1022,10 @@ t.test('load with optimization path for large graphs', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 0,
     options: { registry: 'https://registry.npmjs.org/' },
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes,
     edges,
   }
@@ -1085,6 +1129,10 @@ t.test('load platform data for optional dependencies', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 0,
     options: configData,
+    build: {
+      allowed: {},
+      blocked: {},
+    },
     nodes: {
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
         0,
@@ -1183,4 +1231,237 @@ t.test('load platform data for optional dependencies', async t => {
     'baz platform data is loaded correctly',
   )
   t.equal(baz?.optional, true, 'baz is optional')
+})
+
+t.test('load build data', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  await t.test('load with build data provided', async t => {
+    const buildData = {
+      allowed: {
+        'https://registry.npmjs.org/': ['foo', 'bar'],
+      },
+      blocked: {
+        'https://registry.npmjs.org/': ['baz'],
+      },
+    }
+
+    const lockfileData: LockfileData = {
+      lockfileVersion: 0,
+      options: {},
+      build: buildData,
+      nodes: {},
+      edges: {},
+    }
+
+    const graph = loadObject(
+      {
+        ...configData,
+        projectRoot,
+        mainManifest,
+      },
+      lockfileData,
+    )
+
+    t.ok(graph, 'graph should be created')
+    t.same(
+      graph.build,
+      buildData,
+      'build data should be preserved on graph',
+    )
+    t.matchSnapshot(
+      objectLikeOutput(graph),
+      'graph loaded with build data',
+    )
+  })
+
+  await t.test('load without build data (defaults)', async t => {
+    const lockfileData: LockfileData = {
+      lockfileVersion: 0,
+      options: {},
+      nodes: {},
+      edges: {},
+      // build property is missing - will default to empty objects
+    } as LockfileData
+
+    const graph = loadObject(
+      {
+        ...configData,
+        projectRoot,
+        mainManifest,
+      },
+      lockfileData,
+    )
+
+    t.ok(graph, 'graph should be created even without build data')
+    t.same(
+      graph.build,
+      { allowed: {}, blocked: {} },
+      'build should default to empty objects',
+    )
+    t.matchSnapshot(
+      objectLikeOutput(graph),
+      'graph loaded without build data',
+    )
+  })
+
+  await t.test('load with empty build data', async t => {
+    const buildData = {
+      allowed: {},
+      blocked: {},
+    }
+
+    const lockfileData: LockfileData = {
+      lockfileVersion: 0,
+      options: {},
+      build: buildData,
+      nodes: {},
+      edges: {},
+    }
+
+    const graph = loadObject(
+      {
+        ...configData,
+        projectRoot,
+        mainManifest,
+      },
+      lockfileData,
+    )
+
+    t.ok(graph, 'graph should be created with empty build data')
+    t.same(
+      graph.build,
+      buildData,
+      'empty build data should be preserved on graph',
+    )
+    t.matchSnapshot(
+      objectLikeOutput(graph),
+      'graph loaded with empty build data',
+    )
+  })
+
+  await t.test(
+    'load() and loadHidden() with build data files',
+    async t => {
+      const buildData = {
+        allowed: {
+          'https://registry.npmjs.org/': ['foo'],
+        },
+        blocked: {
+          'https://registry.npmjs.org/': ['blocked'],
+        },
+      }
+
+      const lockfileContent = {
+        lockfileVersion: 0,
+        options: {
+          registry: 'https://registry.npmjs.org/',
+        },
+        build: buildData,
+        nodes: {},
+        edges: {},
+      }
+
+      // Create vlt-lock.json file
+      const testDir = t.testdir({
+        'vlt.json': '{}',
+        'vlt-lock.json': JSON.stringify(lockfileContent, null, 2),
+        node_modules: {
+          '.vlt-lock.json': JSON.stringify(lockfileContent, null, 2),
+        },
+      })
+      t.chdir(testDir)
+      unload('project')
+
+      // Test load()
+      const graph1 = load({
+        ...configData,
+        projectRoot: testDir,
+        mainManifest,
+      })
+      t.ok(graph1, 'load() should work with build data in lockfile')
+      t.same(
+        graph1.build,
+        buildData,
+        'build data should be loaded correctly from lockfile',
+      )
+      t.matchSnapshot(
+        objectLikeOutput(graph1),
+        'load() with build data',
+      )
+
+      // Test loadHidden()
+      const graph2 = loadHidden({
+        ...configData,
+        projectRoot: testDir,
+        mainManifest,
+      })
+      t.ok(
+        graph2,
+        'loadHidden() should work with build data in hidden lockfile',
+      )
+      t.same(
+        graph2.build,
+        buildData,
+        'build data should be loaded correctly from hidden lockfile',
+      )
+      t.matchSnapshot(
+        objectLikeOutput(graph2),
+        'loadHidden() with build data',
+      )
+    },
+  )
+
+  await t.test('load with malformed build data', async t => {
+    // Test various edge cases with malformed/missing build data
+    const lockfileDataWithUndefinedBuild: any = {
+      lockfileVersion: 0,
+      options: {},
+      build: undefined,
+      nodes: {},
+      edges: {},
+    }
+
+    const graph1 = loadObject(
+      {
+        ...configData,
+        projectRoot,
+        mainManifest,
+      },
+      lockfileDataWithUndefinedBuild,
+    )
+    t.ok(graph1, 'should handle undefined build data gracefully')
+    t.same(
+      graph1.build,
+      { allowed: {}, blocked: {} },
+      'undefined build should default to empty objects',
+    )
+
+    const lockfileDataWithNullBuild: any = {
+      lockfileVersion: 0,
+      options: {},
+      build: null,
+      nodes: {},
+      edges: {},
+    }
+
+    const graph2 = loadObject(
+      {
+        ...configData,
+        projectRoot,
+        mainManifest,
+      },
+      lockfileDataWithNullBuild,
+    )
+    t.ok(graph2, 'should handle null build data gracefully')
+    t.same(
+      graph2.build,
+      { allowed: {}, blocked: {} },
+      'null build should default to empty objects',
+    )
+  })
 })

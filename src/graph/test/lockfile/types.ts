@@ -23,18 +23,29 @@ t.test('lockfile type checks', t => {
   //@ts-expect-error - missing required properties
   let ld: LockfileData = {}
   ld
-  //@ts-expect-error - options must be an object
-  ld = { options: null, nodes: {}, edges: {} }
+  ld = {
+    //@ts-expect-error - options must be an object
+    options: null,
+    nodes: {},
+    build: { allowed: {}, blocked: {} },
+    edges: {},
+  }
   //@ts-expect-error - nodes must be a record
   ld = { options: {}, nodes: null, edges: {} }
-  //@ts-expect-error - edges must be a record
-  ld = { options: {}, nodes: {}, edges: null }
+  ld = {
+    options: {},
+    nodes: {},
+    build: { allowed: {}, blocked: {} },
+    //@ts-expect-error - edges must be a record
+    edges: null,
+  }
 
   // Valid LockfileData
   ld = {
     lockfileVersion: 0,
     options: {},
     nodes: {},
+    build: { allowed: {}, blocked: {} },
     edges: {},
   }
 
@@ -53,6 +64,10 @@ t.test('lockfile type checks', t => {
     options: {
       registries: { npm: 'https://registry.npmjs.org/' },
       modifiers: { ':root > #foo': '2.0.0' },
+    },
+    build: {
+      allowed: {},
+      blocked: {},
     },
     nodes: {
       [validDepId]: [
@@ -311,6 +326,7 @@ t.test('lockfile type constraints', t => {
       },
     },
     nodes: {},
+    build: { allowed: {}, blocked: {} },
     edges: {},
   }
   t.ok(
@@ -331,6 +347,7 @@ t.test('lockfile type constraints', t => {
       modifiers: undefined,
     },
     nodes: {},
+    build: { allowed: {}, blocked: {} },
     edges: {},
   }
   t.equal(

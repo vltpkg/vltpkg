@@ -9,6 +9,7 @@ import type {
   NodeLike,
   NormalizedManifest,
   DependencySaveType,
+  LockfileBuildData,
 } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
@@ -139,6 +140,11 @@ export class Graph implements GraphLike {
    * The root of the project this graph represents
    */
   projectRoot: string
+
+  /**
+   * The lockfile build data related to this graph if any is available.
+   */
+  build: LockfileBuildData | undefined
 
   constructor(options: GraphOptions) {
     const { mainManifest, monorepo } = options

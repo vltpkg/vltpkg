@@ -59,6 +59,7 @@ t.test('install', async t => {
     '../src/reify/index.ts': {
       reify: async () => {
         log += 'reify\n'
+        return { buildQueue: [], diff: {} }
       },
     },
     '../src/modifiers.ts': {
@@ -109,7 +110,9 @@ t.test('install with no package.json file in cwd', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => {},
+      reify: async () => {
+        return { buildQueue: [], diff: {} }
+      },
     },
   })
 
@@ -153,7 +156,9 @@ t.test('unknown error reading package.json', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => {},
+      reify: async () => {
+        return { buildQueue: [], diff: {} }
+      },
     },
   })
 
@@ -267,7 +272,7 @@ t.test('install with cleanInstall option (ci command)', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
+      reify: async () => ({ buildQueue: {}, diff: {} }),
     },
     '@vltpkg/rollback-remove': {
       RollbackRemove: class MockRollbackRemove {
@@ -317,7 +322,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -368,7 +373,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -423,7 +428,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -472,7 +477,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -544,7 +549,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -611,7 +616,7 @@ t.test('install with frozenLockfile and spec changes', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
+      reify: async () => ({ buildQueue: {}, diff: {} }),
     },
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
@@ -712,7 +717,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -770,7 +775,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -853,7 +858,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -932,7 +937,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -1013,7 +1018,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
     })
 
@@ -1064,7 +1069,7 @@ t.test(
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
@@ -1140,7 +1145,7 @@ t.test('install with expectLockfile but no node_modules', async t => {
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/reify/index.ts': {
-      reify: async () => ({ diff: {} }),
+      reify: async () => ({ buildQueue: {}, diff: {} }),
     },
     '@vltpkg/rollback-remove': {
       RollbackRemove: class MockRollbackRemove {
@@ -1213,7 +1218,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: {}, diff: {} }),
       },
       '@vltpkg/rollback-remove': {
         RollbackRemove: class MockRollbackRemove {

@@ -71,8 +71,13 @@ export const loadHidden = (options: LoadOptions): Graph => {
 
 export const loadObject = (
   options: LoadOptions,
-  lockfileData: Omit<LockfileData, 'options' | 'lockfileVersion'> &
-    Partial<Pick<LockfileData, 'options' | 'lockfileVersion'>>,
+  lockfileData: Omit<
+    LockfileData,
+    'options' | 'lockfileVersion' | 'build'
+  > &
+    Partial<
+      Pick<LockfileData, 'options' | 'lockfileVersion' | 'build'>
+    >,
 ) => {
   const {
     mainManifest,
@@ -93,6 +98,7 @@ export const loadObject = (
     registries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
+    /* c8 ignore next */
   } = lockfileData.options ?? {}
 
   // Optimize options merging - only create new objects when needed
@@ -123,6 +129,9 @@ export const loadObject = (
     mainManifest,
     monorepo,
   })
+
+  // Extract build data with default to empty objects
+  graph.build = lockfileData.build ?? { allowed: {}, blocked: {} }
 
   // When using the skipLoadingNodesOnModifiersChange option, we should skip loading
   // dependencies in case the modifiers have changed since we'll need to

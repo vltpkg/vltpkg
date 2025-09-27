@@ -9,6 +9,7 @@ exports[`test/config/definition.ts > TAP > commands 1`] = `
 Object {
   "?": "help",
   "add": "install",
+  "build": "build",
   "cache": "cache",
   "ci": "ci",
   "conf": "config",
@@ -141,6 +142,7 @@ Object {
     "hint": "command",
     "type": "string",
     "validOptions": Array [
+      "build",
       "cache",
       "ci",
       "config",
@@ -253,6 +255,10 @@ Object {
       This will default to true if --scope, --workspace,
       --workspace-group, or --recursive is set. Otherwise, it will default to false.
     ),
+    "type": "boolean",
+  },
+  "install-scripts": Object {
+    "description": "Include lifecycle scripts when installing packages",
     "type": "boolean",
   },
   "jsr-registries": Object {
@@ -505,6 +511,7 @@ Array [
   "--help",
   "--identity=<name>",
   "--if-present",
+  "--install-scripts",
   "--jsr-registries=<name=url>",
   "--no-bail",
   "--no-color",
@@ -562,6 +569,7 @@ Array [
   "help",
   "identity",
   "if-present",
+  "install-scripts",
   "jsr-registries",
   "no-bail",
   "no-color",

@@ -26,6 +26,7 @@ import type {
   LockfileNode,
   LockfilePlatform,
 } from './types.ts'
+import type { LockfileBuildData } from '@vltpkg/types'
 import type { GraphModifier } from '../modifiers.ts'
 
 export type SaveOptions = SpecOptions & {
@@ -41,6 +42,11 @@ export type SaveOptions = SpecOptions & {
    * Should it save manifest data in the lockfile?
    */
   saveManifests?: boolean
+  /**
+   * Build data indicating what dependencies are auto-build
+   * and what should be auto-skipped during an install.
+   */
+  build?: LockfileBuildData
 }
 
 const formatNodes = (
@@ -137,6 +143,7 @@ const removeDefaultItems = (
 
 export const lockfileData = ({
   graph,
+  build,
   catalog,
   catalogs,
   'git-hosts': gitHosts,
@@ -201,6 +208,7 @@ export const lockfileData = ({
         { 'git-host-archives': cleanGitHostArchives }
       : undefined),
     },
+    build: build ?? { allowed: {}, blocked: {} },
     nodes: formatNodes(graph.nodes.values(), saveManifests, registry),
     edges: formatEdges(graph.edges),
   }

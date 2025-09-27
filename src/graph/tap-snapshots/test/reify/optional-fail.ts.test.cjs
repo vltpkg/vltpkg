@@ -7,6 +7,10 @@
 'use strict'
 exports[`test/reify/optional-fail.ts > TAP > register and optional node failure > must match snapshot 1`] = `
 Object {
+  "build": Object {
+    "allowed": Object {},
+    "blocked": Object {},
+  },
   "edges": Object {
     "··foo@1.2.3 bar": "prod * MISSING",
     "file·. foo": "optional * ··foo@1.2.3",

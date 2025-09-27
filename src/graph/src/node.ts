@@ -195,6 +195,11 @@ export class Node implements NodeLike {
   }
 
   /**
+   * True if this node has been built as part of the reify step.
+   */
+  built = false
+
+  /**
    * The file system location for this node.
    */
   get location(): string {

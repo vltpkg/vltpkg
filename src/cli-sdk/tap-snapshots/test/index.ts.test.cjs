@@ -58,6 +58,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --help
     --identity=<name>
     --if-present
+    --install-scripts
     --jsr-registries=<name=url>
     --no-bail
     --no-color
@@ -118,6 +119,7 @@ Unknown config option: asdf
     help
     identity
     if-present
+    install-scripts
     jsr-registries
     no-bail
     no-color
