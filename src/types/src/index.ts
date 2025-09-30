@@ -1407,6 +1407,11 @@ export type GraphLike = {
     name?: string,
     version?: string,
   ) => NodeLike
+  removeNode(
+    node: NodeLike,
+    replacement?: NodeLike,
+    keepEdges?: boolean,
+  ): void
 }
 
 export type NodeLike = {

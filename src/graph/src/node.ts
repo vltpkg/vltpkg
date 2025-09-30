@@ -17,6 +17,7 @@ import type {
   NodeLike,
 } from '@vltpkg/types'
 import { Edge } from './edge.ts'
+import type { Graph } from './graph.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { GraphModifier } from './modifiers.ts'
@@ -92,6 +93,11 @@ export class Node implements NodeLike {
   confused = false
 
   /**
+   * True if this node has been extracted to the file system.
+   */
+  extracted = false
+
+  /**
    * List of edges coming into this node.
    */
   edgesIn = new Set<Edge>()
@@ -126,7 +132,7 @@ export class Node implements NodeLike {
   /**
    * A reference to the graph this node is a part of.
    */
-  graph: GraphLike
+  graph: Graph
 
   /**
    * The manifest integrity value.
@@ -274,7 +280,7 @@ export class Node implements NodeLike {
       }
       this.id = getId(spec, manifest)
     }
-    this.graph = options.graph
+    this.graph = options.graph as Graph
     this.manifest = manifest
 
     this.#name = name || this.manifest?.name
