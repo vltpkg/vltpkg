@@ -16,6 +16,12 @@ type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
 }
 
+const labels: Record<Events['graphStep']['step'], string> = {
+  build: 'resolving dependencies',
+  actual: '',
+  reify: 'extracting files',
+}
+
 const GraphStep = ({ text, step }: { text: string; step: Step }) => {
   if (step.state === 'waiting') {
     return $(Text, { color: 'gray' }, text)
@@ -33,6 +39,7 @@ const GraphStep = ({ text, step }: { text: string; step: Step }) => {
 
 const App = ({ trailer }: { trailer?: string }) => {
   const [requests, setRequests] = useState(0)
+  const [cacheHit, setCacheHit] = useState(0)
 
   const [steps, setSteps] = useState<
     Record<Events['graphStep']['step'], Step>
@@ -49,9 +56,15 @@ const App = ({ trailer }: { trailer?: string }) => {
   })
 
   useEffect(() => {
-    const update = () => setRequests(p => p + 1)
-    emitter.on('request', update)
-    return () => emitter.off('request', update)
+    const updateRequests = ({ state }: Events['request']) => {
+      if (state === 'start') {
+        setRequests(p => p + 1)
+      } else if (state === 'cache' || state === 'stale') {
+        setCacheHit(p => p + 1)
+      }
+    }
+    emitter.on('request', updateRequests)
+    return () => emitter.off('request', updateRequests)
   }, [])
 
   useEffect(() => {
@@ -77,16 +90,23 @@ const App = ({ trailer }: { trailer?: string }) => {
       ...(['build', 'actual', 'reify'] as const).map(
         (step, idx, list) => {
           const separator = idx === list.length - 1 ? '' : ' > '
+          const label = labels[step]
+          if (!label) return null
           return $(
             Text,
             { key: step },
-            $(GraphStep, { text: step, step: steps[step] }),
+            $(GraphStep, { text: label, step: steps[step] }),
             $(Text, { color: 'gray' }, separator),
           )
         },
       ),
     ),
-    requests > 0 ? $(Text, null, `${requests} requests`) : null,
+    cacheHit > 0 ?
+      $(Text, null, `${cacheHit} cache hit${cacheHit > 1 ? 's' : ''}`)
+    : null,
+    requests > 0 ?
+      $(Text, null, `${requests} request${requests > 1 ? 's' : ''}`)
+    : null,
     trailer ? $(Text, null, trailer) : null,
   )
 }
