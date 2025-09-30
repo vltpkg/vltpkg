@@ -20,6 +20,9 @@ import type {
   GraphModifier,
   ModifierActiveEntry,
 } from '../modifiers.ts'
+import type { ExtractResult } from '../reify/extract-node.ts'
+import { extractNode } from '../reify/extract-node.ts'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 
 type FileTypeInfo = {
   id: DepID
@@ -216,6 +219,11 @@ const processPlacementTasks = async (
   options: SpecOptions,
   placementTasks: NodePlacementTask[],
   modifiers?: GraphModifier,
+  scurry?: PathScurry,
+  packageInfo?: PackageInfoClient,
+  extractPromises?: Promise<ExtractResult>[],
+  actual?: Graph,
+  seenExtracted?: Set<DepID>,
 ): Promise<{
   childDepsToProcess: Omit<AppendNodeEntry, 'depth'>[]
 }> => {
@@ -298,6 +306,62 @@ const processPlacementTasks = async (
       modifiers?.updateActiveEntry(node, activeModifier)
     }
 
+    // Extract the node if it doesn't exist in the actual graph and we have the necessary parameters
+    if (
+      extractPromises &&
+      actual &&
+      scurry &&
+      packageInfo &&
+      node.inVltStore()
+    ) {
+      if (seenExtracted?.has(node.id)) {
+        continue
+      }
+      seenExtracted?.add(node.id)
+      const actualNode = actual.nodes.get(node.id)
+      if (!actualNode?.equals(node)) {
+        // Create a minimal diff object for the extractNode function
+        const diff = {
+          to: graph,
+          from: actual,
+          nodes: {
+            delete: new Set<Node>(),
+            add: new Set<Node>([node]),
+          },
+          hadOptionalFailures: false,
+          projectRoot: graph.projectRoot,
+          edges: {
+            add: new Set(),
+            delete: new Set(),
+            change: new Set(),
+          },
+          hasChanges: () => true,
+        }
+        
+        // We need a proper RollbackRemove instance - for now use a minimal implementation
+        const remover = {
+          rm: async () => Promise.resolve(),
+          confirm: () => {},
+          rollback: async () => Promise.resolve(),
+          others: [],
+          dirs: new Set<string>(),
+          files: new Set<string>(),
+          allPaths: new Set<string>(),
+        } as unknown as RollbackRemove
+        
+        // Extract the node without awaiting - push the promise to the array
+        const extractPromise = extractNode(
+          node,
+          scurry,
+          remover,
+          options,
+          packageInfo,
+          diff as any,
+        )
+        extractPromises.push(extractPromise)
+      }
+    }
+
     // updates graph node information
     if (fileTypeInfo?.path && fileTypeInfo.isDirectory) {
       node.location = fileTypeInfo.path
@@ -367,6 +431,9 @@ export const appendNodes = async (
   seen: Set<DepID>,
   modifiers?: GraphModifier,
   modifierRefs?: Map<string, ModifierActiveEntry>,
+  extractPromises?: Promise<ExtractResult>[],
+  actual?: Graph,
+  seenExtracted?: Set<DepID>,
 ) => {
   /* c8 ignore next */
   if (seen.has(fromNode.id)) return
@@ -413,6 +480,11 @@ export const appendNodes = async (
             options,
             placementTasks,
             modifiers,
+            scurry,
+            packageInfo,
+            extractPromises,
+            actual,
+            seenExtracted,
           )
         },
       ),

@@ -141,6 +141,10 @@ t.test('append a new node to a graph from a registry', async t => {
     scurry,
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
@@ -177,6 +181,10 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -208,6 +216,10 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.matchSnapshot(
     [...add].map(([name, dep]) => [
@@ -283,6 +295,10 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
 
   await appendNodes(
@@ -294,6 +310,10 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
 
   await t.rejects(
@@ -392,6 +412,10 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   await appendNodes(
     add,
@@ -402,6 +426,10 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -519,6 +547,10 @@ t.test('resolve against the correct registries', async t => {
       registries,
     },
     new Set(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
@@ -635,6 +667,8 @@ t.test(
       new Set(),
       modifiers,
       completeModifierRefs,
+      undefined,
+      undefined,
     )
 
     // Verify bar was added from the edge modifier
@@ -718,6 +752,8 @@ t.test('spec edge removal', async t => {
     new Set(),
     modifiers,
     completeModifierRefs,
+    undefined,
+    undefined,
   )
 
   const fooNode = graph.nodesByName.get('foo')

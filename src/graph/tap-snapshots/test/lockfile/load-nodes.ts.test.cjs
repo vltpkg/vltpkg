@@ -9,6 +9,7 @@ exports[`test/lockfile/load-nodes.ts > TAP > load nodes > should load node missi
 Object {
   "confused": false,
   "dev": false,
+  "extracted": false,
   "id": "··lorem",
   "importer": false,
   "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -29,6 +30,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "file·.",
     "importer": true,
     "integrity": undefined,
@@ -48,6 +50,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "file·linked",
     "importer": false,
     "integrity": undefined,
@@ -64,6 +67,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "··foo@1.0.0",
     "importer": false,
     "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -80,6 +84,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "··edge-case@",
     "importer": false,
     "integrity": undefined,
@@ -96,6 +101,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "··bar@1.0.0",
     "importer": false,
     "integrity": "sha512-6/deadbeef==",
@@ -112,6 +118,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "··baz@1.0.0",
     "importer": false,
     "integrity": undefined,
@@ -132,6 +139,7 @@ exports[`test/lockfile/load-nodes.ts > TAP > load nodes with confused manifest >
 Object {
   "confused": true,
   "dev": false,
+  "extracted": false,
   "id": "··foo@1.0.0",
   "importer": false,
   "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -223,6 +231,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "file·.",
     "importer": true,
     "integrity": undefined,
@@ -242,6 +251,7 @@ Array [
   Object {
     "confused": false,
     "dev": true,
+    "extracted": false,
     "id": "··bar@1.0.0",
     "importer": false,
     "integrity": undefined,
@@ -261,6 +271,7 @@ Array [
   Object {
     "confused": false,
     "dev": true,
+    "extracted": false,
     "id": "··foo@1.0.0",
     "importer": false,
     "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -283,6 +294,7 @@ Array [
   Object {
     "confused": false,
     "dev": false,
+    "extracted": false,
     "id": "·custom·baz@1.0.0",
     "importer": false,
     "integrity": undefined,
