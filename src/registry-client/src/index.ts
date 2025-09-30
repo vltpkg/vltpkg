@@ -398,8 +398,6 @@ export class RegistryClient {
     url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
-    logRequest(url, 'start')
-
     const u = typeof url === 'string' ? new URL(url) : url
     const {
       method = 'GET',
@@ -426,14 +424,18 @@ export class RegistryClient {
 
     const entry = buffer ? CacheEntry.decode(buffer) : undefined
     if (entry?.valid) {
+      logRequest(url, 'cache')
       return entry
     }
 
     if (staleWhileRevalidate && entry?.staleWhileRevalidate && m) {
       // revalidate while returning the stale entry
       register(dirname(this.cache.path()), m, url)
+      logRequest(url, 'stale')
       return entry
     }
+
+    logRequest(url, 'start')
 
     // either no cache entry, or need to revalidate before use.
     setCacheHeaders(options, entry)
