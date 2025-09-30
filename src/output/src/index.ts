@@ -3,7 +3,7 @@ import EventEmitter from 'node:events'
 export type Events = {
   request: {
     url: URL | string
-    state: 'start' | 'complete' | '304' | 'cache'
+    state: 'start' | 'complete' | '304' | 'cache' | 'stale'
   }
   graphStep: {
     step: 'build' | 'actual' | 'reify'
