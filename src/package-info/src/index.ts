@@ -17,7 +17,15 @@ import { asPackument, isIntegrity } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'node:crypto'
-import { readFile, rm, stat, symlink } from 'node:fs/promises'
+import {
+  mkdir,
+  readFile,
+  rm,
+  stat,
+  symlink,
+  unlink,
+  writeFile,
+} from 'node:fs/promises'
 import {
   basename,
   dirname,
@@ -28,6 +36,7 @@ import { create as tarC } from 'tar'
 import { rename } from './rename.ts'
 
 const xdg = new XDG('vlt')
+export const delimiter = '·'
 
 export type Resolution = {
   resolved: string
@@ -64,6 +73,9 @@ export type PackageInfoClientExtractOptions =
     resolved?: string
   }
 
+// the maximum duration of a manifest cache file
+const manifestCacheMaxAge = 5 * 60 * 1000
+
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #projectRoot: string
@@ -73,6 +85,8 @@ export class PackageInfoClient {
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
+  #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
+  #cachePath: string
 
   get registryClient() {
     if (!this.#registryClient) {
@@ -102,6 +116,11 @@ export class PackageInfoClient {
         load: wsLoad,
         packageJson: this.packageJson,
       })
+    this.#cachePath = options.cache ?? xdg.cache()
+    // optionally create its cache directory if it doesn't exist
+    void mkdir(pathResolve(this.#cachePath, 'package-info'), {
+      recursive: true,
+    }).catch(() => {})
   }
 
   async extract(
@@ -270,6 +289,51 @@ export class PackageInfoClient {
     return ws
   }
 
+  /**
+   * Return the manifest cache key for a spec and the current options.
+   */
+  #manifestCacheKey(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+  ): string {
+    let extra = ''
+    if (options['node-version']) {
+      extra += `${delimiter}node-version:${options['node-version']}`
+    }
+    if (options.os) {
+      extra += `${delimiter}os:${options.os}`
+    }
+    if (options.arch) {
+      extra += `${delimiter}arch:${options.arch}`
+    }
+    return encodeURIComponent(
+      `${spec.registry}${delimiter}${spec}${extra}`,
+    )
+  }
+
+  /**
+   * Conditionally return the path to the manifest cache file. The logic
+   * to determine if caching should be skipped aligns with `pickManifest`
+   * and is used to avoid caching manifest results that can be variable.
+   */
+  _manifestCachePath(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+  ): string | undefined {
+    if (options.before) {
+      return
+    }
+    // if the final resolved spec is either a dist tag or something that
+    // matches any range (such as a semver range of `*` or empty string)
+    // then we skip caching
+    const f = spec.final
+    if (f.distTag || f.range?.isAny) {
+      return
+    }
+    const key = this.#manifestCacheKey(f, options)
+    return pathResolve(this.#cachePath, 'package-info', key)
+  }
+
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -418,13 +482,40 @@ export class PackageInfoClient {
 
     switch (f.type) {
       case 'registry': {
+        // Check if manifest is cached, if so just return it earlier
+        const cachePath = this._manifestCachePath(spec, options)
+        if (cachePath) {
+          try {
+            // Cache file exists, read and return it
+            const cached = await readFile(cachePath, 'utf8')
+            const json = JSON.parse(cached) as Manifest & {
+              __VLT_MANIFEST_CACHE_TIMESTAMP?: number
+            }
+            // retrieve timestamp to check if cache is still valid
+            const timestamp = json.__VLT_MANIFEST_CACHE_TIMESTAMP
+            delete json.__VLT_MANIFEST_CACHE_TIMESTAMP
+            // removes the cache file if older than its maximum age
+            if (
+              timestamp != null &&
+              timestamp < this.#manifestCacheMinAge
+            ) {
+              void unlink(cachePath).catch(() => {})
+              throw new Error('manifest cache expired')
+            }
+            return json
+          } catch {
+            // Cache miss, fetch from packument
+          }
+        }
+
         const mani = pickManifest(
           await this.packument(f, options),
           spec,
           options,
         )
         if (!mani) throw this.#resolveError(spec, options)
-        const { integrity, tarball } = mani.dist ?? {}
+        const { integrity, tarball } =
+          mani.dist ?? /* c8 ignore next */ {}
         if (isIntegrity(integrity) && tarball) {
           const registryOrigin = new URL(String(f.registry)).origin
           const tgzOrigin = new URL(tarball).origin
@@ -432,6 +523,33 @@ export class PackageInfoClient {
           if (tgzOrigin === registryOrigin) {
             this.#trustedIntegrities.set(tarball, integrity)
           }
+        }
+
+        // Cache the manifest data
+        if (cachePath) {
+          const json = JSON.stringify({
+            ...mani,
+            // append a timestamp to the manifest so that we can quickly
+            // check if the cache is still valid when loading it
+            __VLT_MANIFEST_CACHE_TIMESTAMP: Date.now(),
+          })
+          void writeFile(cachePath, json, 'utf8').catch(
+            (err: unknown) => {
+              // in case the cache directory doesn't exist
+              // just create it and retry
+              if (
+                err instanceof Error &&
+                'code' in err &&
+                err.code === 'ENOENT'
+              ) {
+                void mkdir(dirname(cachePath), {
+                  recursive: true,
+                }).then(() => {
+                  void writeFile(cachePath, json, 'utf8')
+                })
+              }
+            },
+          )
         }
 
         return mani
