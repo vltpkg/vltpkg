@@ -38,7 +38,7 @@ const proxyToNpm = (
 
 const packageOrVersionOptions: CachedEventHandlerOptions = {
   base: 'packages',
-  integrity: 'packages.0',
+  integrity: 'packages.1',
   // @ts-expect-error - Patched Nitro to support streaming mode
   streaming: true,
   // TODO: If Nitro could make this take a function with the same event signature
