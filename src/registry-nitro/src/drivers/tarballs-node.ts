@@ -7,7 +7,7 @@ import {
   mkdirSync,
 } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import type { ReadStream } from 'node:fs'
 import type { TarballsFsDriver } from './tarballs.ts'
 
@@ -16,10 +16,11 @@ mkdirSync(base, { recursive: true })
 
 const fsDriver: TarballsFsDriver = {
   hasItem: (key: string) =>
-    access(key)
+    access(join(base, key))
       .then(() => true)
       .catch(() => false),
-  getItemRaw: async (key: string) => createReadStream(key),
+  getItemRaw: async (key: string) =>
+    createReadStream(join(base, key)),
   setItemRaw: (key: string, value: ReadStream) => {
     return pipeline(value, createWriteStream(key))
   },

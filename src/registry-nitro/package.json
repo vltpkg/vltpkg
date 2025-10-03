@@ -9,6 +9,8 @@
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@libsql/client": "^0.15.14",
+    "@libsql/linux-x64-gnu": "^0.5.22",
+    "@vercel/blob": "^2.0.0",
     "db0": "^0.3.2",
     "drizzle-orm": "^0.44.5",
     "h3": "^2.0.0-beta.4",
