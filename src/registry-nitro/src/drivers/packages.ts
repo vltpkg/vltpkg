@@ -20,12 +20,14 @@ export const definePackagesDriver = (
         const isPackage = keyId.startsWith('npm___package___')
         const isVersion = keyId.startsWith('npm___version___')
 
+        console.time(`[cache] read package ${key}`)
         const [response] = await getDb()
           .select()
           .from(Schema.packageResponses)
           .where(eq(Schema.packageResponses.key, key))
           .limit(1)
           .execute()
+        console.timeEnd(`[cache] read package ${key}`)
 
         if (!response) {
           return undefined
@@ -36,12 +38,14 @@ export const definePackagesDriver = (
         let body: any
 
         if (isPackage) {
+          console.time(`[cache] read packument ${key}`)
           const [packumentRow] = await getDb()
             .select()
             .from(Schema.packages)
             .where(eq(Schema.packages.name, packageName))
             .limit(1)
             .execute()
+          console.timeEnd(`[cache] read packument ${key}`)
 
           if (!packumentRow) {
             return undefined
@@ -49,24 +53,24 @@ export const definePackagesDriver = (
 
           const packument = JSON.parse(packumentRow.packument)
 
-          const versionRows = await getDb()
-            .select()
-            .from(Schema.versions)
-            .where(like(Schema.versions.spec, `${packageName}@%`))
-            .execute()
+          // const versionRows = await getDb()
+          //   .select()
+          //   .from(Schema.versions)
+          //   .where(like(Schema.versions.spec, `${packageName}@%`))
+          //   .execute()
 
-          if (versionRows.length === 0) {
-            return undefined
-          }
+          // if (versionRows.length === 0) {
+          //   return undefined
+          // }
 
           body = {
             ...packument,
-            versions: Object.fromEntries(
-              versionRows.map(version => [
-                version.spec.split('@').pop()!,
-                JSON.parse(version.manifest),
-              ]),
-            ),
+            // versions: Object.fromEntries(
+            //   versionRows.map(version => [
+            //     version.spec.split('@').pop()!,
+            //     JSON.parse(version.manifest),
+            //   ]),
+            // ),
           }
         } else if (isVersion) {
           const packageVersion = response.package_version!
@@ -141,8 +145,8 @@ export const definePackagesDriver = (
           })
 
         if (isPackage) {
-          const { versions, ...packument } = body
-          const stringifiedPackument = JSON.stringify(packument)
+          // const { versions, ...packument } = body
+          const stringifiedPackument = JSON.stringify(body)
           await getDb()
             .insert(Schema.packages)
             .values({
@@ -157,33 +161,33 @@ export const definePackagesDriver = (
             })
 
           // Insert versions in chunks to avoid query length limits
-          const versionEntries = Object.entries(versions).map(
-            ([version, manifest]) => ({
-              spec: `${name}@${version}`,
-              manifest: JSON.stringify(manifest),
-            }),
-          )
+          // const versionEntries = Object.entries(versions).map(
+          //   ([version, manifest]) => ({
+          //     spec: `${name}@${version}`,
+          //     manifest: JSON.stringify(manifest),
+          //   }),
+          // )
 
-          // Make sizing dynamic based on env. Cloudflare can handle less than Node.
-          const CHUNK_SIZE = 1
-          for (
-            let i = 0;
-            i < versionEntries.length;
-            i += CHUNK_SIZE
-          ) {
-            const chunk = versionEntries.slice(i, i + CHUNK_SIZE)
-            await getDb()
-              .insert(Schema.versions)
-              .values(chunk)
-              .onConflictDoUpdate({
-                target: Schema.versions.spec,
-                set: {
-                  manifest: sql.raw(
-                    `excluded.${Schema.versions.manifest.name}`,
-                  ),
-                },
-              })
-          }
+          // // Make sizing dynamic based on env. Cloudflare can handle less than Node.
+          // const CHUNK_SIZE = 250
+          // for (
+          //   let i = 0;
+          //   i < versionEntries.length;
+          //   i += CHUNK_SIZE
+          // ) {
+          //   const chunk = versionEntries.slice(i, i + CHUNK_SIZE)
+          //   await getDb()
+          //     .insert(Schema.versions)
+          //     .values(chunk)
+          //     .onConflictDoUpdate({
+          //       target: Schema.versions.spec,
+          //       set: {
+          //         manifest: sql.raw(
+          //           `excluded.${Schema.versions.manifest.name}`,
+          //         ),
+          //       },
+          //     })
+          // }
         }
 
         if (isVersion) {

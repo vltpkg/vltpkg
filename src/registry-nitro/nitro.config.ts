@@ -1,21 +1,32 @@
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
 
-const preset =
-  process.env.VSR_CLOUDFLARE ? 'cloudflare-module' : 'node-server'
+const Envs = {
+  cloudflare: 'cloudflare',
+  vercel: 'vercel',
+  node: 'node',
+}
 
-const packagesDriver = resolve(
-  import.meta.dirname,
-  `./src/drivers/packages-${preset === 'cloudflare-module' ? 'cloudflare' : 'node'}.ts`,
-)
+const buildEnv =
+  process.env.VSR_CLOUDFLARE ? Envs.cloudflare
+  : process.env.VSR_VERCEL ? Envs.vercel
+  : Envs.node
 
-const tarballsDriver = resolve(
-  import.meta.dirname,
-  `./src/drivers/tarballs-${preset === 'cloudflare-module' ? 'cloudflare' : 'node'}.ts`,
-)
+const getDriver = (
+  type: 'packages' | 'tarballs',
+  env: (typeof Envs)[keyof typeof Envs],
+) => {
+  return resolve(
+    import.meta.dirname,
+    `./src/drivers/${type}-${env}.ts`,
+  )
+}
 
 export default defineNitroConfig({
-  preset,
+  preset:
+    buildEnv === Envs.cloudflare ? 'cloudflare-module'
+    : buildEnv === Envs.vercel ? 'vercel'
+    : 'node-server',
   compatibilityDate: '2025-09-22',
   srcDir: 'server',
   minify: false,
@@ -49,18 +60,18 @@ export default defineNitroConfig({
   },
   storage: {
     packages: {
-      driver: packagesDriver,
+      driver: getDriver('packages', buildEnv),
     },
     tarballs: {
-      driver: tarballsDriver,
+      driver: getDriver('tarballs', buildEnv),
     },
   },
   devStorage: {
     packages: {
-      driver: packagesDriver,
+      driver: getDriver('packages', 'node'),
     },
     tarballs: {
-      driver: tarballsDriver,
+      driver: getDriver('tarballs', 'node'),
     },
   },
 })
