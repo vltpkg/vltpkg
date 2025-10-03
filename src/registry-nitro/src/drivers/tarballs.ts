@@ -32,6 +32,7 @@ export const defineTarballsDriver = (
       async getItem(key) {
         console.log('[cache] req', key)
 
+        console.time(`[cache] read tarball ${key}`)
         const [[response], exists] = await Promise.all([
           getDb()
             .select()
@@ -41,6 +42,7 @@ export const defineTarballsDriver = (
             .execute(),
           fsDriver.hasItem(getFilePath(key)),
         ])
+        console.timeEnd(`[cache] read tarball ${key}`)
 
         if (!response || !exists) {
           return undefined
