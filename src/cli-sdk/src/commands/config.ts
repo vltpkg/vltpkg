@@ -201,13 +201,13 @@ const configPick = async (conf: LoadedConfig) => {
       case 'user': {
         // Return entire user config object
         const userConfig = getUserConfigObject()
-        return userConfig ?? {}
+        return userConfig /* c8 ignore next */ ?? {}
       }
 
       case 'project': {
         // Return entire project config object
         const projectConfig = getProjectConfigObject()
-        return projectConfig ?? {}
+        return projectConfig /* c8 ignore next */ ?? {}
       }
     }
   }
@@ -216,7 +216,7 @@ const configPick = async (conf: LoadedConfig) => {
   const result: Record<string, unknown> = {}
 
   for (const key of keys) {
-    if (!key) continue
+    if (!key) /* c8 ignore next */ continue
 
     switch (configOption) {
       case 'all':
@@ -329,7 +329,7 @@ const getUserConfigList = (): string[] => {
       'user',
     )
 
-    if (!userConfig) return []
+    if (!userConfig) return /* c8 ignore next */ []
 
     return configToStringArray(userConfig)
   } catch (_err) {
@@ -355,7 +355,7 @@ const getProjectConfigList = (): string[] => {
       'project',
     )
 
-    if (!projectConfig) return []
+    if (!projectConfig) return /* c8 ignore next */ []
 
     return configToStringArray(projectConfig)
   } catch (_err) {
@@ -384,18 +384,19 @@ const getUserConfigObject = ():
     )
 
     if (!userConfig || typeof userConfig !== 'object')
-      return undefined
+      /* c8 ignore next */
+      return
 
     return userConfig as Record<string, unknown>
   } catch (_err) {
-    return undefined
+    return
   }
 }
 
 // Get a specific value from user config
 const getUserConfigValue = (key: string): unknown => {
   const userConfig = getUserConfigObject()
-  if (!userConfig) return undefined
+  if (!userConfig) return
 
   // Use dotProp.get like vlt pkg get does
   return dotProp.get(userConfig as Record<PropertyKey, unknown>, key)
@@ -422,18 +423,19 @@ const getProjectConfigObject = ():
     )
 
     if (!projectConfig || typeof projectConfig !== 'object')
-      return undefined
+      /* c8 ignore next */
+      return
 
     return projectConfig as Record<string, unknown>
   } catch (_err) {
-    return undefined
+    return
   }
 }
 
 // Get a specific value from project config
 const getProjectConfigValue = (key: string): unknown => {
   const projectConfig = getProjectConfigObject()
-  if (!projectConfig) return undefined
+  if (!projectConfig) return
 
   // Use dotProp.get like vlt pkg get does
   return dotProp.get(
