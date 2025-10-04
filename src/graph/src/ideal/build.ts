@@ -80,6 +80,7 @@ export const build = async (
     graph,
     packageInfo,
     remove: getMap(options.remove),
+    actual: options.actual,
   })
   done()
   return res

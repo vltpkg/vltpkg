@@ -92,6 +92,11 @@ export class Node implements NodeLike {
   confused = false
 
   /**
+   * True if this node has been extracted to the file system.
+   */
+  extracted = false
+
+  /**
    * List of edges coming into this node.
    */
   edgesIn = new Set<Edge>()
@@ -409,6 +414,7 @@ export class Node implements NodeLike {
       dev: this.dev,
       optional: this.optional,
       confused: this.confused,
+      extracted: this.extracted,
       modifier: this.modifier,
       platform: this.platform,
       ...(this.confused ?

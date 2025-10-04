@@ -10,6 +10,8 @@ import type {
 } from './types.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
 import type { GraphModifier } from '../modifiers.ts'
+import type { ExtractResult } from '../reify/extract-node.ts'
+import type { Graph } from '../graph.ts'
 
 export type AddNodesOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
@@ -27,6 +29,11 @@ export type AddNodesOptions = BuildIdealAddOptions &
      * A {@link PackageInfoClient} instance to read manifest info from.
      */
     packageInfo: PackageInfoClient
+
+    /**
+     * The actual graph to compare against for early extraction
+     */
+    actual?: Graph
   }
 
 /**
@@ -38,9 +45,13 @@ export const addNodes = async ({
   modifiers,
   packageInfo,
   scurry,
+  actual,
   ...specOptions
 }: AddNodesOptions) => {
   const seen = new Set<DepID>()
+  const extractPromises: Promise<ExtractResult>[] = []
+  const seenExtracted = new Set<DepID>()
+
   // iterates on the list of dependencies per importer updating
   // the graph using metadata fetch from the registry manifest files
   for (const [depID, dependencies] of add) {
@@ -74,6 +85,20 @@ export const addNodes = async ({
       seen,
       modifiers,
       modifiers?.tryDependencies(importer, deps),
+      extractPromises,
+      actual,
+      seenExtracted,
     )
+  }
+
+  // Wait for all extraction promises to complete
+  if (extractPromises.length > 0) {
+    const results = await Promise.all(extractPromises)
+    // Mark successfully extracted nodes
+    for (const result of results) {
+      if (result.success) {
+        result.node.extracted = true
+      }
+    }
   }
 }

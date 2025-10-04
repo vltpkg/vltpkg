@@ -135,6 +135,30 @@ const diff = {
         isOptional: isOptionalTrue,
         edgesIn: new Set(),
       }),
+      // this one is already extracted, so skip it
+      node({
+        id: joinDepIDTuple([
+          'registry',
+          '',
+          'already-extracted@1.2.3',
+        ]),
+        inVltStore: inVltStoreTrue,
+        location:
+          './node_modules/.vlt/' +
+          joinDepIDTuple([
+            'registry',
+            '',
+            'already-extracted@1.2.3',
+          ]) +
+          '/node_modules/already-extracted',
+        name: 'already-extracted',
+        manifest: {
+          name: 'already-extracted',
+          version: '1.2.3',
+        },
+        isOptional: isOptionalFalse,
+        extracted: true,
+      }),
     ]),
   },
 } as unknown as Diff
@@ -179,23 +203,41 @@ t.strictSame(removed, [
   ),
 ])
 
-t.strictSame(extracted, [
+// verify that already-extracted node was not removed or extracted
+t.notMatch(
+  removed,
   [
-    Spec.parse('foo@1.2.3'),
     resolve(
       t.testdirName,
       'node_modules/.vlt/' +
-        joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
-        '/node_modules/foo',
+        joinDepIDTuple(['registry', '', 'already-extracted@1.2.3']) +
+        '/node_modules/already-extracted',
     ),
   ],
+  'already-extracted node should not be removed',
+)
+
+t.strictSame(
+  extracted,
   [
-    Spec.parse('bar@1.2.3'),
-    resolve(
-      t.testdirName,
-      'node_modules/.vlt/' +
-        joinDepIDTuple(['registry', '', 'bar@1.2.3']) +
-        '/node_modules/bar',
-    ),
+    [
+      Spec.parse('foo@1.2.3'),
+      resolve(
+        t.testdirName,
+        'node_modules/.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+          '/node_modules/foo',
+      ),
+    ],
+    [
+      Spec.parse('bar@1.2.3'),
+      resolve(
+        t.testdirName,
+        'node_modules/.vlt/' +
+          joinDepIDTuple(['registry', '', 'bar@1.2.3']) +
+          '/node_modules/bar',
+      ),
+    ],
   ],
-])
+  'already-extracted node should not be in extracted list',
+)
