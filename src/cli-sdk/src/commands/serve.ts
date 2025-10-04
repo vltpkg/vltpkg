@@ -88,11 +88,18 @@ export const command: CommandFn<ServeResult> = async (
   }
 
   // runs the exec command internally
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
   const arg0 = await vlx.resolve(
     ['@vltpkg/vsr'],
     {
       ...conf.options,
       query: undefined,
+      allowScripts,
     },
     async () => 'y',
   )

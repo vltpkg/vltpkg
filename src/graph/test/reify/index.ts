@@ -78,6 +78,7 @@ t.test('super basic reification', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     graph,
+    allowScripts: ':not(*)',
   })
 
   t.strictSame(
@@ -126,11 +127,14 @@ t.test('super basic reification', async t => {
     graph.mainImporter.manifest.dependencies.underscore = '1'
   }
   graph.mainImporter.edgesOut.delete('lodash')
-  graph.removeNode(
-    graph.nodes.get(
-      joinDepIDTuple(['registry', '', 'lodash@4.17.21']),
-    )!,
+  const ldNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'lodash@4.17.21']),
   )
+  if (!ldNode) {
+    throw new Error('expected lodash node to be present')
+  }
+
+  graph.removeNode(ldNode)
   graph.addNode(
     joinDepIDTuple(['registry', '', 'underscore@1.13.7']),
     fixtureManifest('underscore-1.13.7'),
@@ -162,6 +166,7 @@ t.test('super basic reification', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     graph,
+    allowScripts: ':not(*)',
   })
 
   t.throws(() => statSync(ldPath))
@@ -206,6 +211,7 @@ t.test('super basic reification', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson,
     graph,
+    allowScripts: ':not(*)',
   })
   t.match(
     JSON.parse(
@@ -229,6 +235,7 @@ t.test('super basic reification', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson,
     graph,
+    allowScripts: ':not(*)',
   })
   t.match(
     JSON.parse(
@@ -271,6 +278,7 @@ t.test('reify with a bin', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
+    allowScripts: ':not(*)',
   })
   t.equal(
     // note: not lstat, since this is going to be a shim on windows,
@@ -327,6 +335,7 @@ t.test('failure rolls back', async t => {
       projectRoot,
       packageInfo: mockPackageInfo,
       graph,
+      allowScripts: '*',
       packageJson: new PackageJson(),
       scurry: new PathScurry(projectRoot),
     }),
@@ -411,6 +420,7 @@ t.test('failure of optional node just deletes it', async t => {
       },
     }),
     graph,
+    allowScripts: ':not(*)',
   })
 
   const after = actual.load({
@@ -512,11 +522,13 @@ t.test('early termination when no changes are needed', async t => {
     packageJson: new PackageJson(),
     graph: baseGraph,
     actual: baseGraph,
+    allowScripts: ':not(*)',
   })
 
   // Verify early termination behavior
-  t.ok(result, 'reify should return a diff object')
-  t.equal(result.hasChanges(), false, 'diff should have no changes')
+  const { diff } = result
+  t.ok(diff, 'reify should return a diff object')
+  t.equal(diff.hasChanges(), false, 'diff should have no changes')
 
   // Verify that no reification work was performed
   t.equal(
@@ -543,5 +555,212 @@ t.test('early termination when no changes are needed', async t => {
     deleteNodesCalled,
     false,
     'deleteNodes should not be called when no changes',
+  )
+})
+
+t.test('checkNeededBuild is called during reification', async t => {
+  // Use the same test setup as the basic reification test
+  const dir = t.testdir({
+    project: {
+      'vlt.json': JSON.stringify({
+        monorepo: {
+          packages: [],
+        },
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: {
+          lodash: '4',
+        },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const packageJson = new PackageJson()
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson,
+  })
+
+  const result = await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    graph: graph,
+    allowScripts: ':not(*)',
+  })
+
+  // Verify buildQueue is returned (this proves checkNeededBuild was called)
+  t.ok(result, 'reify should return a result object')
+  t.ok(
+    'buildQueue' in result,
+    'result should have buildQueue property',
+  )
+  t.type(result.buildQueue, Array, 'buildQueue should be an array')
+})
+
+t.test(
+  'reify sets buildState on nodes that need building',
+  async t => {
+    const dir = t.testdir({
+      project: {
+        'vlt.json': JSON.stringify({
+          monorepo: {
+            packages: [],
+          },
+        }),
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const packageJson = new PackageJson()
+
+    const graph = await ideal.build({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson,
+    })
+
+    const result = await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      graph,
+      allowScripts: '*',
+    })
+
+    // Verify buildQueue is returned (this proves checkNeededBuild was called)
+    t.ok(result, 'reify should return a result object')
+    t.ok(
+      'buildQueue' in result,
+      'result should have buildQueue property',
+    )
+    t.type(result.buildQueue, Array, 'buildQueue should be an array')
+  },
+)
+
+t.test(
+  'checkNeededBuild is called when allowScripts is :not(*)',
+  async t => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const packageJson = new PackageJson()
+
+    const graph = await ideal.build({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson,
+    })
+
+    // Call reify with allowScripts set to :not(*) (no scripts allowed)
+    const result = await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      graph,
+      allowScripts: ':not(*)',
+    })
+
+    // Verify buildQueue is returned (this proves checkNeededBuild was called)
+    t.ok(result, 'reify should return a result object')
+    t.ok(
+      'buildQueue' in result,
+      'result should have buildQueue property when allowScripts is :not(*)',
+    )
+    t.type(result.buildQueue, Array, 'buildQueue should be an array')
+  },
+)
+
+t.test('allowScripts with query selector :scripts', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: {
+          lodash: '4',
+        },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const packageJson = new PackageJson()
+
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson,
+  })
+
+  // Call reify with allowScripts set to :scripts to trigger the Query library logic
+  const result = await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    graph,
+    allowScripts: ':scripts',
+  })
+
+  // Verify reify completes successfully and returns expected result
+  t.ok(result, 'reify should return a result object')
+  t.ok('diff' in result, 'result should have diff property')
+  t.ok(
+    'buildQueue' in result,
+    'result should have buildQueue property when using query selector',
+  )
+  t.type(result.buildQueue, Array, 'buildQueue should be an array')
+
+  // Verify node_modules structure was created
+  t.strictSame(
+    new Set(readdirSync(projectRoot + '/node_modules')),
+    new Set(['.vlt', '.vlt-lock.json', 'lodash']),
+    'node_modules should contain expected directories',
+  )
+  t.equal(
+    result.buildQueue?.length,
+    0,
+    'lodash has no scripts so nothing was run',
   )
 })

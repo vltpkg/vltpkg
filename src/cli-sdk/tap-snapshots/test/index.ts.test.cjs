@@ -35,6 +35,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
   Found: --unknown
   Valid Options:
     --access=<access>
+    --allow-scripts=<query>
     --arch=<arch>
     --bail
     --before=<date>
@@ -75,12 +76,12 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --save-optional
     --save-peer
     --save-prod
-    --scope=<scope>
+    --scope=<query>
     --scope-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
-    --target=<target>
+    --target=<query>
     --version
     --view=<output>
     --workspace=<ws>
@@ -95,6 +96,7 @@ Unknown config option: asdf
   Found: "asdf"
   Valid Options:
     access
+    allow-scripts
     arch
     bail
     before

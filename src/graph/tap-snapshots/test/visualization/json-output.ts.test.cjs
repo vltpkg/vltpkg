@@ -25,7 +25,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > selected packa
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -66,7 +67,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -88,7 +90,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -110,7 +113,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -137,7 +141,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -159,7 +164,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -181,7 +187,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -203,7 +210,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -229,7 +237,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -251,7 +260,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": true,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -283,7 +293,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -311,7 +322,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -340,7 +352,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": true,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -362,7 +375,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -384,7 +398,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -406,7 +421,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -428,7 +444,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -455,7 +472,8 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -477,7 +495,8 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -504,7 +523,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -526,7 +546,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -551,7 +572,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -573,7 +595,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -602,7 +625,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -624,7 +648,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "projectRoot": "{ROOT}",
       "dev": true,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -649,7 +674,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -677,7 +703,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "resolved": "http://example.com/baz",
       "dev": true,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -706,7 +733,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "projectRoot": "{ROOT}",
       "dev": true,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -728,7 +756,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -755,7 +784,8 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -782,7 +812,8 @@ exports[`test/visualization/json-output.ts > TAP > nameless package > should fal
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -809,7 +840,8 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -829,7 +861,8 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": true,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }
@@ -853,7 +886,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -872,7 +906,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   },
@@ -891,7 +926,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
-      "confused": false
+      "confused": false,
+      "buildState": "none"
     },
     "overridden": false
   }

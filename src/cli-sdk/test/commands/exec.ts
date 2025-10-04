@@ -87,7 +87,11 @@ t.test('command', async t => {
       ) => {
         calledResolve = true
         t.strictSame(args, ['a', 'b', 'c'])
-        t.strictSame(options, { ...mockOptions, query: undefined })
+        t.strictSame(options, {
+          ...mockOptions,
+          query: undefined,
+          allowScripts: ':not(*)',
+        })
         return 'arg0'
       },
     },
@@ -96,6 +100,7 @@ t.test('command', async t => {
   const conf = {
     positionals: ['a', 'b', 'c'],
     options: mockOptions,
+    get: (_key: string) => undefined,
   } as unknown as LoadedConfig
   t.equal(await command(conf), result)
   t.equal(calledResolve, true)

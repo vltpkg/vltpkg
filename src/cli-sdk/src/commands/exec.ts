@@ -96,11 +96,18 @@ Is this ok? (y) `,
 }
 
 export const command: CommandFn<ExecResult> = async conf => {
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
   const arg0 = await vlx.resolve(
     conf.positionals,
     {
       ...conf.options,
       query: undefined,
+      allowScripts,
     },
     promptFn,
   )

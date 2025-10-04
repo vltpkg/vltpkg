@@ -1435,6 +1435,9 @@ export type NodeLike = {
     os?: string[] | string
     cpu?: string[] | string
   }
+  buildState?: 'none' | 'needed' | 'built' | 'failed'
+  buildAllowed?: boolean
+  buildBlocked?: boolean
   options: SpecOptions
   toJSON: () => Pick<
     NodeLike,
@@ -1451,6 +1454,9 @@ export type NodeLike = {
     | 'optional'
     | 'confused'
     | 'platform'
+    | 'buildState'
+    | 'buildAllowed'
+    | 'buildBlocked'
   > & {
     rawManifest?: NodeLike['manifest']
   }

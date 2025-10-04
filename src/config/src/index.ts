@@ -158,23 +158,45 @@ export const set = async (conf: LoadedConfig) => {
     }
   }
 
-  // Handle dot-prop paths for record fields
+  // Handle dot-prop paths for record fields and nested properties
   if (dotPropPairs.length > 0) {
-    for (const { field, subKey, value } of dotPropPairs) {
+    // Separate record fields from nested properties
+    const recordPairs: {
+      field: string
+      subKey: string
+      value: string
+    }[] = []
+    const nestedProps: { key: string; value: string }[] = []
+
+    for (const { key, field, subKey, value } of dotPropPairs) {
       if (isRecordField(field)) {
-        // For record fields, we add entries in the format field=key=value
-        const recordPair = `${field}=${subKey}=${value}`
-        try {
-          const parsed = conf.jack.parseRaw([
-            `--${recordPair}`,
-          ]).values
-          await conf.addConfigToFile(which, pairsToRecords(parsed))
-          /* c8 ignore start */
-        } catch (err) {
-          handleSetError([recordPair], err)
-        }
-        /* c8 ignore end */
+        recordPairs.push({ field, subKey, value })
+      } else {
+        nestedProps.push({ key, value })
       }
+    }
+
+    // Handle record fields
+    for (const { field, subKey, value } of recordPairs) {
+      // For record fields, we add entries in the format field=key=value
+      const recordPair = `${field}=${subKey}=${value}`
+      try {
+        const parsed = conf.jack.parseRaw([`--${recordPair}`]).values
+        await conf.addConfigToFile(which, pairsToRecords(parsed))
+        /* c8 ignore start */
+      } catch (err) {
+        handleSetError([recordPair], err)
+      }
+      /* c8 ignore end */
+    }
+
+    // Handle nested properties using dot-prop
+    if (nestedProps.length > 0) {
+      const nested: Record<string, any> = {}
+      for (const { key, value } of nestedProps) {
+        dotProp.set(nested, key, value)
+      }
+      await conf.addConfigToFile(which, nested)
     }
   }
 }

@@ -93,6 +93,7 @@ t.test('startGUI()', async t => {
       target: ':root',
     },
     reloadFromDisk: async () => {},
+    get: (_key: string) => undefined,
   } as unknown as LoadedConfig
 
   let optionsUpdated: LoadedConfig['options'] | undefined = undefined
@@ -110,7 +111,7 @@ t.test('startGUI()', async t => {
       },
       address: (route = '') => `server-address${route}`,
     },
-  ) as VltServerListening
+  ) as unknown as VltServerListening
 
   let serverCreated = false
   let urlOpened = false
@@ -127,6 +128,7 @@ t.test('startGUI()', async t => {
           ...conf.options,
           assetsDir: undefined,
           loadedConfig: conf,
+          allowScripts: ':not(*)',
         })
         serverCreated = true
         return mockServer
@@ -147,7 +149,10 @@ t.test('startGUI()', async t => {
   t.equal(urlOpened, true)
   server.emit('needConfigUpdate', '/some/new/dir')
   t.equal(optionsResetted, '/some/new/dir')
-  t.equal(optionsUpdated, conf.options)
+  t.strictSame(optionsUpdated, {
+    ...conf.options,
+    allowScripts: ':not(*)',
+  })
 })
 
 t.test('startGUI() with --target option', async t => {
@@ -165,6 +170,7 @@ t.test('startGUI() with --target option', async t => {
       values: {
         target: '#lodash',
       },
+      get: (_key: string) => undefined,
     } as unknown as LoadedConfig
 
     const mockServer = Object.assign(
@@ -217,6 +223,7 @@ t.test('startGUI() with --target option', async t => {
       values: {
         target: '#lodash',
       },
+      get: (_key: string) => undefined,
     } as unknown as LoadedConfig
 
     const mockServer = Object.assign(
@@ -268,6 +275,7 @@ t.test('startGUI() with --target option', async t => {
       values: {
         target: ':prod :scope(react)',
       },
+      get: (_key: string) => undefined,
     } as unknown as LoadedConfig
 
     const mockServer = Object.assign(
@@ -322,6 +330,7 @@ t.test('startGUI() with --target option', async t => {
       values: {
         target: '#lodash',
       },
+      get: (_key: string) => undefined,
     } as unknown as LoadedConfig
 
     const mockServer = Object.assign(
@@ -376,6 +385,7 @@ t.test('startGUI() reloadFromDisk behavior', async t => {
           target: ':root',
         },
         reloadFromDisk: async () => {},
+        get: (_key: string) => undefined,
       } as LoadedConfig
       let updateCount = 0
       const mockServer = Object.assign(
