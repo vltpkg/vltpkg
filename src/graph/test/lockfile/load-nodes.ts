@@ -563,3 +563,126 @@ t.test(
     )
   },
 )
+
+t.test('load nodes with buildState', async t => {
+  const graph = new Graph({
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+    },
+    projectRoot: t.testdirName,
+  })
+
+  const nodes = {
+    [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+    // Node with buildState = needed (1)
+    [joinDepIDTuple(['registry', '', 'needs-build@1.0.0'])]: [
+      0,
+      'needs-build',
+      'sha512-needsbuild==',
+      null,
+      null,
+      {
+        name: 'needs-build',
+        version: '1.0.0',
+        scripts: {
+          install: 'node install.js',
+        },
+      },
+      null,
+      null,
+      1, // buildState: needed
+    ],
+    // Node with buildState = built (2)
+    [joinDepIDTuple(['registry', '', 'already-built@1.0.0'])]: [
+      0,
+      'already-built',
+      'sha512-alreadybuilt==',
+      null,
+      null,
+      {
+        name: 'already-built',
+        version: '1.0.0',
+      },
+      null,
+      null,
+      2, // buildState: built
+    ],
+    // Node with buildState = failed (3)
+    [joinDepIDTuple(['registry', '', 'failed-build@1.0.0'])]: [
+      0,
+      'failed-build',
+      'sha512-failedbuild==',
+      null,
+      null,
+      {
+        name: 'failed-build',
+        version: '1.0.0',
+      },
+      null,
+      null,
+      3, // buildState: failed
+    ],
+    // Node with no buildState (undefined)
+    [joinDepIDTuple(['registry', '', 'no-build@1.0.0'])]: [
+      0,
+      'no-build',
+      'sha512-nobuild==',
+    ],
+  } as LockfileData['nodes']
+
+  loadNodes(graph, nodes, {})
+
+  // Verify buildState values are loaded correctly
+  const needsBuildNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'needs-build@1.0.0']),
+  )
+  t.ok(needsBuildNode, 'needs-build node should exist')
+  t.equal(
+    needsBuildNode?.buildState,
+    'needed',
+    'buildState should be "needed"',
+  )
+
+  const alreadyBuiltNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'already-built@1.0.0']),
+  )
+  t.ok(alreadyBuiltNode, 'already-built node should exist')
+  t.equal(
+    alreadyBuiltNode?.buildState,
+    'built',
+    'buildState should be "built"',
+  )
+
+  const failedBuildNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'failed-build@1.0.0']),
+  )
+  t.ok(failedBuildNode, 'failed-build node should exist')
+  t.equal(
+    failedBuildNode?.buildState,
+    'failed',
+    'buildState should be "failed"',
+  )
+
+  const noBuildNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'no-build@1.0.0']),
+  )
+  t.ok(noBuildNode, 'no-build node should exist')
+  t.equal(
+    noBuildNode?.buildState,
+    'none',
+    'buildState should be "none" when not specified',
+  )
+
+  t.matchSnapshot(
+    [...graph.nodes.values()]
+      .filter(node => node.name !== 'my-project')
+      .map(n => ({
+        id: n.id,
+        name: n.name,
+        buildState: n.buildState,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    'should load nodes with correct buildState values',
+  )
+})

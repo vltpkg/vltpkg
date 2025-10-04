@@ -1,4 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
@@ -830,4 +831,208 @@ t.test('save platform data for optional dependencies', async t => {
     JSON.stringify(lockfileContent, null, 2),
     'lockfile with platform data for optional dependencies',
   )
+})
+
+t.test('save buildState data', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+      bar: '^1.0.0',
+      baz: '^1.0.0',
+      qux: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  // Create nodes with different buildState values
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@^1.0.0'),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!foo) throw new Error('Missing foo package')
+  foo.setResolved()
+  foo.buildState = 'needed'
+
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar@^1.0.0'),
+    {
+      name: 'bar',
+      version: '1.0.0',
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!bar) throw new Error('Missing bar package')
+  bar.setResolved()
+  bar.buildState = 'built'
+
+  const baz = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('baz@^1.0.0'),
+    {
+      name: 'baz',
+      version: '1.0.0',
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!baz) throw new Error('Missing baz package')
+  baz.setResolved()
+  baz.buildState = 'failed'
+
+  const qux = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('qux@^1.0.0'),
+    {
+      name: 'qux',
+      version: '1.0.0',
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    },
+  )
+  if (!qux) throw new Error('Missing qux package')
+  qux.setResolved()
+  qux.buildState = 'none'
+
+  await t.test('save with saveBuildData: true', async t => {
+    const lockfile = lockfileData({
+      ...configData,
+      graph,
+      saveBuildData: true,
+    })
+
+    // Verify buildState is saved for each node
+    const nodeKeys = Object.keys(lockfile.nodes)
+    const fooKey = nodeKeys.find(k => k.includes('foo')) as DepID
+    const barKey = nodeKeys.find(k => k.includes('bar')) as DepID
+    const bazKey = nodeKeys.find(k => k.includes('baz')) as DepID
+    const quxKey = nodeKeys.find(k => k.includes('qux')) as DepID
+
+    t.ok(fooKey, 'foo node exists')
+    t.ok(barKey, 'bar node exists')
+    t.ok(bazKey, 'baz node exists')
+    t.ok(quxKey, 'qux node exists')
+
+    // Check buildState values (index 8 in LockfileNode array)
+    t.equal(
+      lockfile.nodes[fooKey]?.[8],
+      1,
+      'foo buildState is 1 (needed)',
+    )
+    t.equal(
+      lockfile.nodes[barKey]?.[8],
+      2,
+      'bar buildState is 2 (built)',
+    )
+    t.equal(
+      lockfile.nodes[bazKey]?.[8],
+      3,
+      'baz buildState is 3 (failed)',
+    )
+    t.notOk(
+      lockfile.nodes[quxKey]?.[8],
+      'qux buildState is undefined (none)',
+    )
+
+    t.matchSnapshot(
+      JSON.stringify(lockfile, null, 2),
+      'lockfile with buildState data',
+    )
+  })
+
+  await t.test('save without saveBuildData (default)', async t => {
+    const lockfile = lockfileData({
+      ...configData,
+      graph,
+      saveBuildData: false,
+    })
+
+    // Verify buildState is NOT saved when saveBuildData is false
+    const nodeKeys = Object.keys(lockfile.nodes)
+    const fooKey = nodeKeys.find(k => k.includes('foo')) as DepID
+
+    t.ok(fooKey, 'foo node exists')
+    t.notOk(
+      lockfile.nodes[fooKey]?.[8],
+      'buildState not saved when saveBuildData is false',
+    )
+
+    t.matchSnapshot(
+      JSON.stringify(lockfile, null, 2),
+      'lockfile without buildState data',
+    )
+  })
+
+  await t.test('save() and saveHidden() with buildState', async t => {
+    // Test save() with saveBuildData
+    save({ ...configData, graph, saveBuildData: true })
+    const savedContent = JSON.parse(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+        encoding: 'utf8',
+      }),
+    )
+
+    const nodeKeys = Object.keys(savedContent.nodes)
+    const fooKey = nodeKeys.find(k => k.includes('foo'))
+    t.equal(
+      savedContent.nodes[fooKey!]?.[8],
+      1,
+      'save() with saveBuildData includes buildState',
+    )
+    t.matchSnapshot(
+      JSON.stringify(savedContent, null, 2),
+      'save() output with buildState',
+    )
+
+    // Test saveHidden() (automatically includes buildState)
+    saveHidden({ ...configData, graph })
+    const hiddenContent = JSON.parse(
+      readFileSync(
+        resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+        {
+          encoding: 'utf8',
+        },
+      ),
+    )
+
+    const hiddenNodeKeys = Object.keys(hiddenContent.nodes)
+    const hiddenFooKey = hiddenNodeKeys.find(k => k.includes('foo'))
+    t.equal(
+      hiddenContent.nodes[hiddenFooKey!]?.[8],
+      1,
+      'saveHidden() automatically includes buildState',
+    )
+    t.matchSnapshot(
+      JSON.stringify(hiddenContent, null, 2),
+      'saveHidden() output with buildState',
+    )
+  })
 })

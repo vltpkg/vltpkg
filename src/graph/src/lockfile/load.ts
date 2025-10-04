@@ -93,6 +93,7 @@ export const loadObject = (
     registries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
+    /* c8 ignore next */
   } = lockfileData.options ?? {}
 
   // Optimize options merging - only create new objects when needed

@@ -12,6 +12,7 @@ import { graphStep } from '@vltpkg/output'
 
 export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
+  allowScripts: string
 }
 
 export const update = async (options: UpdateOptions) => {
@@ -47,7 +48,7 @@ export const update = async (options: UpdateOptions) => {
     loadManifests: true,
   })
 
-  const diff = await reify({
+  const { buildQueue, diff } = await reify({
     ...options,
     actual: act,
     graph,
@@ -55,5 +56,5 @@ export const update = async (options: UpdateOptions) => {
     modifiers,
   })
 
-  return { graph, diff }
+  return { buildQueue, graph, diff }
 }

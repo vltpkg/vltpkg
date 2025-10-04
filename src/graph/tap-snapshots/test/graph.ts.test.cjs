@@ -109,6 +109,8 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
 Set {
   &ref_1 Node {
+    "buildState": "none",
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
@@ -221,6 +223,8 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "buildState": "none",
+          "built": false,
           "confused": false,
           "edgesIn": Set {},
           "edgesOut": Map {},
@@ -338,6 +342,8 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "buildState": "none",
+          "built": false,
           "confused": false,
           "edgesIn": Set {},
           "edgesOut": Map {},
@@ -365,6 +371,8 @@ Set {
     },
   },
   Node {
+    "buildState": "none",
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
@@ -388,6 +396,8 @@ Set {
     "workspaces": undefined,
   },
   Node {
+    "buildState": "none",
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},

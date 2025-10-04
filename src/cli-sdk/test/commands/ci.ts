@@ -1,6 +1,6 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { Graph } from '@vltpkg/graph'
+import type { CIResult } from '../../src/commands/ci.ts'
 
 const options = {}
 let log = ''
@@ -30,6 +30,7 @@ t.test('command execution', async t => {
     positionals: [],
     values: {},
     options,
+    get: () => undefined,
   } as unknown as LoadedConfig)
   t.matchSnapshot(
     log,
@@ -41,8 +42,10 @@ t.test('views', t => {
   // Test json view
   t.strictSame(
     Command.views.json({
-      toJSON: () => ({ ci: true }),
-    } as unknown as Graph),
+      graph: {
+        toJSON: () => ({ ci: true }),
+      },
+    } as unknown as CIResult),
     { ci: true },
     'json view returns graph.toJSON()',
   )

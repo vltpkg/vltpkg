@@ -81,6 +81,7 @@ exports[`test/commands/list.ts > TAP > list > --target option > should work with
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -261,6 +262,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -286,6 +288,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -314,6 +317,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -346,6 +350,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -371,6 +376,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -399,6 +405,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -442,6 +449,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -467,6 +475,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -511,6 +520,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -536,6 +546,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -561,6 +572,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }

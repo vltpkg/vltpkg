@@ -1,5 +1,8 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import { getBooleanFlagsFromNum } from './types.ts'
+import {
+  getBooleanFlagsFromNum,
+  getBuildStateFromNum,
+} from './types.ts'
 import type { LockfileData, LockfileNode } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { GraphLike } from '@vltpkg/types'
@@ -29,6 +32,7 @@ export const loadNodes = (
       manifest,
       rawManifest,
       platform,
+      buildState,
     ] = lockfileNode
     // workspace nodes and the project root node are already part of the
     // graph and it should not create new nodes if an existing one is there
@@ -111,6 +115,11 @@ export const loadNodes = (
     /* c8 ignore next 3 */
     if (platform) {
       node.platform = platform
+    }
+
+    // Set build state if provided
+    if (buildState !== undefined && buildState !== null) {
+      node.buildState = getBuildStateFromNum(buildState)
     }
   }
 }

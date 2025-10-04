@@ -81,6 +81,8 @@ export const vlxInstall = async (
     projectRoot: dir,
     monorepo: undefined,
     scurry: new PathScurry(dir),
+    // vlx always run lifecycle scripts for all packages
+    allowScripts: '*',
   })
 
   return vlxInfo(dir, options, manifest)

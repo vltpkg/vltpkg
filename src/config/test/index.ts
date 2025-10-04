@@ -419,5 +419,81 @@ t.test('set', async t => {
       )
       t.ok(conf.addedConfig, 'config should be added')
     })
+
+    t.test('nested properties (non-record fields)', async t => {
+      const { conf } = await run(
+        t,
+        ['set', 'command.build.target=#esbuild'],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'project')
+      t.strictSame(configData, {
+        command: {
+          build: {
+            target: '#esbuild',
+          },
+        },
+      })
+    })
+
+    t.test('multiple nested properties', async t => {
+      const { conf } = await run(
+        t,
+        [
+          'set',
+          'command.build.target=#esbuild',
+          'command.install.force=true',
+        ],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'project')
+      t.strictSame(configData, {
+        command: {
+          build: {
+            target: '#esbuild',
+          },
+          install: {
+            force: 'true',
+          },
+        },
+      })
+    })
+
+    t.test('deeply nested properties', async t => {
+      const { conf } = await run(t, ['set', 'a.b.c.d.e=value'], {
+        config: 'user',
+      })
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'user')
+      t.strictSame(configData, {
+        a: {
+          b: {
+            c: {
+              d: {
+                e: 'value',
+              },
+            },
+          },
+        },
+      })
+    })
+
+    t.test('mixed nested properties and record fields', async t => {
+      const { conf } = await run(
+        t,
+        [
+          'set',
+          'command.build.target=#esbuild',
+          'registries.local=http://localhost:1337',
+        ],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+    })
   })
 })

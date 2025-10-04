@@ -93,4 +93,13 @@ export class Edge implements EdgeLike {
           this.from.projectRoot,
         )
   }
+
+  toJSON() {
+    return {
+      from: this.from.id,
+      to: this.to?.id,
+      type: this.type,
+      spec: String(this.spec),
+    }
+  }
 }

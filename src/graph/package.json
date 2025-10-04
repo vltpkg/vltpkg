@@ -31,6 +31,7 @@
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/pick-manifest": "workspace:*",
+    "@vltpkg/query": "workspace:*",
     "@vltpkg/rollback-remove": "workspace:*",
     "@vltpkg/run": "workspace:*",
     "@vltpkg/satisfies": "workspace:*",

@@ -157,20 +157,78 @@ t.test(
     before.removeNode(by)
     const diff = new Diff(before, after)
 
-    await build(diff, new PackageJson(), new PathScurry(projectRoot))
-    t.match(
-      new Set(runs),
-      new Set([
-        {
-          arg0: 'install',
-          cwd: resolve(
-            projectRoot,
-            `./node_modules/.vlt/${yid}/node_modules/y`,
-          ),
-        },
-        { arg0: 'prepare', cwd: resolve(projectRoot, `./src/app`) },
-      ]),
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set([xid, yid]),
     )
+
+    // Check that we got the expected build result
+    t.ok(result.success, 'should have success array')
+    t.ok(result.failure, 'should have failure array')
+    // only reports on non-importer nodes built
+    t.equal(
+      result.success.length,
+      2,
+      'should have 2 successfully built nodes',
+    )
+    t.equal(result.failure.length, 0, 'should have no failures')
+
+    // Verify the built nodes include expected packages
+    const successNames = result.success.map(n => n.name).sort()
+    t.match(
+      successNames,
+      ['x', 'y'],
+      'should include all expected packages',
+    )
+
+    // Check the runs - now including all the additional parameters
+    t.equal(runs.length, 2, 'should have 2 runs')
+
+    // Find the install run and prepare run
+    const installRun = runs.find(r => r.arg0 === 'install')
+    const prepareRun = runs.find(r => r.arg0 === 'prepare')
+
+    t.ok(installRun, 'should have install run')
+    t.ok(prepareRun, 'should have prepare run')
+
+    if (installRun) {
+      t.equal(
+        installRun.cwd,
+        resolve(
+          projectRoot,
+          `./node_modules/.vlt/${yid}/node_modules/y`,
+        ),
+        'install run should have correct cwd',
+      )
+      t.equal(
+        installRun.ignoreMissing,
+        true,
+        'install run should ignore missing',
+      )
+      t.ok(
+        installRun.signal instanceof AbortSignal,
+        'install run should have signal',
+      )
+    }
+
+    if (prepareRun) {
+      t.equal(
+        prepareRun.cwd,
+        resolve(projectRoot, `./src/app`),
+        'prepare run should have correct cwd',
+      )
+      t.equal(
+        prepareRun.ignoreMissing,
+        true,
+        'prepare run should ignore missing',
+      )
+      t.ok(
+        prepareRun.signal instanceof AbortSignal,
+        'prepare run should have signal',
+      )
+    }
     t.match(
       new Set(chmods),
       new Set([
@@ -280,7 +338,13 @@ t.test('should handle missing bin files gracefully', async t => {
   const diff = new Diff(before, after)
 
   // This should not throw an error even though the bin file doesn't exist
-  await build(diff, new PackageJson(), new PathScurry(projectRoot))
+  // Pass sqld node in allowScripts to ensure the visit function is called
+  await build(
+    diff,
+    new PackageJson(),
+    new PathScurry(projectRoot),
+    new Set([sqldId]),
+  )
 
   // Verify the existsSync was called for the missing bin file
   t.ok(
@@ -294,3 +358,177 @@ t.test('should handle missing bin files gracefully', async t => {
     'chmod should not be called for missing bin files',
   )
 })
+
+t.test(
+  'should handle optional dependency build failures',
+  async t => {
+    const runs: RunOptions[] = []
+    const chmods: string[] = []
+
+    const mockRun = async (options: RunOptions) => {
+      runs.push(options)
+      // Throw an error for the optional-dep package install script
+      if (options.cwd.endsWith('/optional-dep')) {
+        throw new Error('Build failed for optional dependency')
+      }
+    }
+
+    const mockFSP = t.createMock(FSP, {
+      chmod: async (path: string, mode: number) => {
+        t.equal(mode & 0o111, 0o111)
+        chmods.push(path)
+      },
+    })
+
+    const { build } = await t.mockImport<
+      typeof import('../../src/reify/build.ts')
+    >('../../src/reify/build.ts', {
+      '@vltpkg/run': { run: mockRun },
+      'node:fs/promises': mockFSP,
+    })
+
+    const regularId = joinDepIDTuple([
+      'registry',
+      '',
+      'regular-dep@1.0.0',
+    ])
+    const optionalId = joinDepIDTuple([
+      'registry',
+      '',
+      'optional-dep@1.0.0',
+    ])
+
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: {
+          'regular-dep': '1.0.0',
+        },
+        optionalDependencies: {
+          'optional-dep': '1.0.0',
+        },
+      }),
+      node_modules: {
+        'regular-dep': t.fixture(
+          'symlink',
+          './.vlt/' + regularId + '/node_modules/regular-dep',
+        ),
+        'optional-dep': t.fixture(
+          'symlink',
+          './.vlt/' + optionalId + '/node_modules/optional-dep',
+        ),
+        '.vlt': {
+          [regularId]: {
+            node_modules: {
+              'regular-dep': {
+                'package.json': JSON.stringify({
+                  name: 'regular-dep',
+                  version: '1.0.0',
+                  scripts: {
+                    install: 'echo "Installing regular-dep"',
+                  },
+                }),
+              },
+            },
+          },
+          [optionalId]: {
+            node_modules: {
+              'optional-dep': {
+                'package.json': JSON.stringify({
+                  name: 'optional-dep',
+                  version: '1.0.0',
+                  scripts: {
+                    install: 'exit 1', // This will fail
+                  },
+                }),
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // Load the "after" state with both packages present
+    const after = actual.load({
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      projectRoot,
+      loadManifests: true,
+    })
+
+    // Load the "before" state with all packages
+    const before = actual.load({
+      projectRoot,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      loadManifests: true,
+    })
+
+    // Remove both packages from the "before" state to simulate adding them
+    const bRegular = before.nodes.get(regularId)
+    const bOptional = before.nodes.get(optionalId)
+    if (!bRegular) throw new Error('no regular-dep node in before??')
+    if (!bOptional)
+      throw new Error('no optional-dep node in before??')
+    before.removeNode(bRegular)
+    before.removeNode(bOptional)
+
+    const diff = new Diff(before, after)
+
+    // Run the build with scripts enabled for both nodes
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set([regularId, optionalId]),
+    )
+
+    // Verify we have the expected structure
+    t.ok(result.success, 'should have success array')
+    t.ok(result.failure, 'should have failure array')
+
+    // using "exit 1" for testing failures is not going to work on windows
+    if (process.platform !== 'win32') {
+      // The regular dependency should succeed
+      t.equal(
+        result.success.length,
+        1,
+        'should have 1 successfully built node',
+      )
+      const successNames = result.success.map(n => n.name)
+      t.match(
+        successNames,
+        ['regular-dep'],
+        'regular-dep should succeed',
+      )
+
+      // The optional dependency should fail
+      t.equal(result.failure.length, 1, 'should have 1 failed node')
+      const failureNames = result.failure.map(n => n.name)
+      t.match(
+        failureNames,
+        ['optional-dep'],
+        'optional-dep should be in failures',
+      )
+
+      // Verify the failed node is optional
+      const failedNode = result.failure[0]
+      if (failedNode) {
+        t.ok(
+          failedNode.isOptional(),
+          'failed node should be marked as optional',
+        )
+      }
+    }
+
+    // Verify both install scripts were attempted
+    t.equal(runs.length, 2, 'should have attempted 2 install runs')
+    const regularRun = runs.find(r => r.cwd.includes('regular-dep'))
+    const optionalRun = runs.find(r => r.cwd.includes('optional-dep'))
+    t.ok(regularRun, 'should have attempted regular-dep install')
+    t.ok(optionalRun, 'should have attempted optional-dep install')
+  },
+)

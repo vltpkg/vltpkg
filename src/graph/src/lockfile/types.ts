@@ -57,6 +57,49 @@ export const LockfileNodeFlagDevOptional = 3
 export type LockfileNodeFlags = 0 | 1 | 2 | 3
 
 /**
+ * Build state constants for lockfile nodes
+ */
+export const BuildStateNone = undefined
+export const BuildStateNeeded = 1
+export const BuildStateBuilt = 2
+export const BuildStateFailed = 3
+
+/**
+ * Build state for a node - tracks whether it needs building, has been built, or failed
+ */
+export type LockfileBuildState = undefined | 1 | 2 | 3
+
+export const getBuildStateFromNode = (node: {
+  buildState?: 'none' | 'needed' | 'built' | 'failed'
+}): LockfileBuildState => {
+  switch (node.buildState) {
+    case 'needed':
+      return BuildStateNeeded
+    case 'built':
+      return BuildStateBuilt
+    case 'failed':
+      return BuildStateFailed
+    default:
+      return BuildStateNone
+  }
+}
+
+export const getBuildStateFromNum = (
+  state: LockfileBuildState,
+): 'none' | 'needed' | 'built' | 'failed' => {
+  switch (state) {
+    case BuildStateNeeded:
+      return 'needed'
+    case BuildStateBuilt:
+      return 'built'
+    case BuildStateFailed:
+      return 'failed'
+    default:
+      return 'none'
+  }
+}
+
+/**
  * Lockfile representation of a node from the install graph.
  */
 export type LockfileNode = [
@@ -68,6 +111,7 @@ export type LockfileNode = [
   manifest?: NormalizedManifest | null,
   rawManifest?: NormalizedManifest | null,
   platform?: LockfilePlatform | null,
+  buildState?: LockfileBuildState | null,
 ]
 
 /**

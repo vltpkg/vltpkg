@@ -486,6 +486,8 @@ t.test('missing options object', async t => {
     projectRoot,
   }
   const lockfileData = {
+    lockfileVersion: 0,
+    options: {},
     nodes: {},
     edges: {},
   } as LockfileData

@@ -116,11 +116,16 @@ const install = async (
       code: 'EUSAGE',
     })
   }
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
   return Promise.all(
     keys.map(async key => {
       const info = await vlx.install(key, {
         ...conf.options,
         query: undefined,
+        allowScripts,
       })
       view?.stdout(info)
       return info.path
@@ -148,11 +153,16 @@ const info = async (
   keys: string[],
   view?: ExecCacheView,
 ): Promise<VlxInfo[]> => {
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
   const results: VlxInfo[] = []
   for await (const key of keys.length ? keys : vlx.list()) {
     const info = vlx.info(key, {
       ...conf.options,
       query: undefined,
+      allowScripts,
     })
     results.push(info)
     view?.stdout(info)
@@ -165,11 +175,16 @@ const deleteEntries = async (
   keys: string[],
   view?: ExecCacheView,
 ): Promise<string[]> => {
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
   const remover = new RollbackRemove()
   const removed = (
     await vlx.delete(keys, remover, {
       ...conf.options,
       query: undefined,
+      allowScripts,
     })
   ).map(path => {
     view?.stdout(`- ${basename(path)}`)

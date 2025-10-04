@@ -44,6 +44,7 @@ t.test('update', async t => {
     '../src/reify/index.ts': {
       reify: async () => {
         log += 'reify\n'
+        return { buildQueue: [], diff: {} }
       },
     },
     '../src/modifiers.ts': {
@@ -92,7 +93,7 @@ t.test(
         },
       },
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: [], diff: {} }),
       },
     })
 
@@ -163,7 +164,7 @@ t.test(
       typeof import('../src/update.ts')
     >('../src/update.ts', {
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: [], diff: {} }),
       },
     })
 
@@ -215,7 +216,7 @@ t.test(
     >('../src/update.ts', {
       // Avoid making any file system changes
       '../src/reify/index.ts': {
-        reify: async () => ({ diff: {} }),
+        reify: async () => ({ buildQueue: [], diff: {} }),
       },
     })
 

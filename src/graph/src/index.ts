@@ -1,3 +1,4 @@
+export * from './build.ts'
 export * from './edge.ts'
 export * from './graph.ts'
 export * from './node.ts'
@@ -37,5 +38,7 @@ import { build } from './ideal/build.ts'
 import type { BuildIdealOptions } from './ideal/build.ts'
 export type { BuildIdealOptions }
 export const ideal = { build }
+
 export { reify } from './reify/index.ts'
 export type { ReifyOptions } from './reify/index.ts'
+export type { BuildResult } from './reify/build.ts'

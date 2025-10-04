@@ -1,6 +1,6 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { Graph } from '@vltpkg/graph'
+import type { UninstallResult } from '../../src/commands/uninstall.ts'
 
 const options = {}
 let log = ''
@@ -39,12 +39,15 @@ await Command.command({
   positionals: ['abbrev@2'],
   values: {},
   options,
+  get: (_key: string) => undefined,
 } as LoadedConfig)
 t.matchSnapshot(log, 'should uninstall a dependency')
 
 t.strictSame(
   Command.views.json({
-    toJSON: () => ({ install: true }),
-  } as unknown as Graph),
+    graph: {
+      toJSON: () => ({ install: true }),
+    },
+  } as unknown as UninstallResult),
   { install: true },
 )

@@ -77,4 +77,54 @@ t.test('Edge', async t => {
   const pdmEdge = new Edge('peerOptional', Spec.parse('foo@*'), pdm)
   t.equal(pdmEdge.peer, true)
   t.equal(pdmEdge.peerOptional, true)
+
+  // Test toJSON() method
+  t.test('toJSON', t => {
+    const edgeWithTo = new Edge(
+      'prod',
+      Spec.parse('child@^1.0.0'),
+      root,
+      child,
+    )
+    const edgeJSON = edgeWithTo.toJSON()
+    t.match(edgeJSON, {
+      from: root.id,
+      to: child.id,
+      type: 'prod',
+      spec: 'child@^1.0.0',
+    })
+    t.type(edgeJSON.from, 'string')
+    t.type(edgeJSON.to, 'string')
+    t.type(edgeJSON.type, 'string')
+    t.type(edgeJSON.spec, 'string')
+
+    // Test dangling edge (no to node)
+    const danglingEdgeJSON = dangling.toJSON()
+    t.match(danglingEdgeJSON, {
+      from: child.id,
+      to: undefined,
+      type: 'prod',
+      spec: 'missing@latest',
+    })
+    t.type(danglingEdgeJSON.from, 'string')
+    t.equal(danglingEdgeJSON.to, undefined)
+
+    // Test different dependency types
+    const devEdge = new Edge(
+      'dev',
+      Spec.parse('dev-dep@1.0.0'),
+      root,
+      child,
+    )
+    const devJSON = devEdge.toJSON()
+    t.equal(devJSON.type, 'dev')
+
+    const optionalJSON = optional.toJSON()
+    t.equal(optionalJSON.type, 'optional')
+
+    const peerOptionalJSON = pdmEdge.toJSON()
+    t.equal(peerOptionalJSON.type, 'peerOptional')
+
+    t.end()
+  })
 })

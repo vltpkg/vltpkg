@@ -6,6 +6,13 @@ import { parseRemoveArgs } from '../parse-add-remove-args.ts'
 import { InstallReporter } from './install/reporter.ts'
 import type { Views } from '../view.ts'
 
+export type UninstallResult = {
+  /**
+   * The resulting graph structure at the end of an uninstall.
+   */
+  graph: Graph
+}
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'uninstall',
@@ -15,13 +22,22 @@ export const usage: CommandUsage = () =>
   })
 
 export const views = {
-  json: g => g.toJSON(),
+  json: i => i.graph.toJSON(),
   human: InstallReporter,
-} as const satisfies Views<Graph>
+} as const satisfies Views<UninstallResult>
 
-export const command: CommandFn<Graph> = async conf => {
+export const command: CommandFn<UninstallResult> = async conf => {
   const monorepo = conf.options.monorepo
   const { remove } = parseRemoveArgs(conf, monorepo)
-  const { graph } = await uninstall(conf.options, remove)
-  return graph
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
+  const { graph } = await uninstall(
+    { ...conf.options, allowScripts },
+    remove,
+  )
+  return { graph }
 }

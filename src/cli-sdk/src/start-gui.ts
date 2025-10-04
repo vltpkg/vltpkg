@@ -41,19 +41,29 @@ export const startGUI = async (
   conf: LoadedConfig,
   startingRoute?: string,
 ) => {
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
   const server = createServer({
     ...conf.options,
     assetsDir: getAssetsDir(),
     loadedConfig: conf,
+    allowScripts,
   })
   server.on('needConfigUpdate', async dir => {
     conf.resetOptions(dir)
     const listeningServer = server as VltServerListening
-    listeningServer.updateOptions(conf.options)
+    listeningServer.updateOptions({ ...conf.options, allowScripts })
     await conf
       .reloadFromDisk()
       .then(() => {
-        listeningServer.updateOptions(conf.options)
+        listeningServer.updateOptions({
+          ...conf.options,
+          allowScripts,
+        })
       })
       .catch(() => {})
   })

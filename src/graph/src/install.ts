@@ -23,6 +23,7 @@ import { getImporterSpecs } from './ideal/get-importer-specs.ts'
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   cleanInstall?: boolean // Only set by ci command for clean install
+  allowScripts: string
 }
 
 export const install = async (
@@ -184,7 +185,7 @@ export const install = async (
       loadManifests: true,
       modifiers,
     })
-    const diff = await reify({
+    const { diff, buildQueue } = await reify({
       ...options,
       add,
       actual: act,
@@ -193,7 +194,7 @@ export const install = async (
       modifiers,
     })
 
-    return { graph, diff }
+    return { buildQueue, graph, diff }
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
