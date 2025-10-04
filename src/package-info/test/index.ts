@@ -110,35 +110,35 @@ const server = createServer((req, res) => {
       )
       return res.end(tgzAbbrev)
     }
-    case '/deleted': {
+    case '/abbrev/2.0.0': {
+      const manifest = pakuAbbrev.versions['2.0.0']
+      const json = JSON.stringify(manifest)
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/deleted':
+    case '/deleted/1.0.0': {
       const json = '{"error": "deleted"}'
       res.setHeader('content-length', json.length)
       res.statusCode = 404
       return res.end(json)
     }
-    case '/no-dist': {
+    case '/no-dist':
+    case '/no-dist/1.2.3': {
       const json = JSON.stringify({
-        'dist-tags': { latest: '1.2.3' },
-        versions: {
-          '1.2.3': {
-            name: 'no-dist',
-            version: '1.2.3',
-          },
-        },
+        name: 'no-dist',
+        version: '1.2.3',
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
-    case '/no-tgz': {
+    case '/no-tgz':
+    case '/no-tgz/1.2.3': {
       const json = JSON.stringify({
-        'dist-tags': { latest: '1.2.3' },
-        versions: {
-          '1.2.3': {
-            name: 'no-tgz',
-            version: '1.2.3',
-            dist: {},
-          },
-        },
+        name: 'no-tgz',
+        version: '1.2.3',
+        dist: {},
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
@@ -154,6 +154,17 @@ const server = createServer((req, res) => {
               tarball: `${defaultRegistry}missing.tgz`,
             },
           },
+        },
+      })
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/missing/1.2.3': {
+      const json = JSON.stringify({
+        name: 'missing',
+        version: '1.2.3',
+        dist: {
+          tarball: `${defaultRegistry}missing.tgz`,
         },
       })
       res.setHeader('content-length', json.length)
@@ -736,6 +747,15 @@ t.test('manifest must provide actual dist results', async t => {
   await t.rejects(tarball('deleted@latest', options))
   await t.rejects(tarball('no-tgz@latest', options))
   await t.rejects(tarball('no-dist@latest', options))
+  // Test specific version 404 paths with new routing
+  await t.rejects(resolve('deleted@1.0.0', options))
+  await t.rejects(manifest('deleted@1.0.0', options))
+  await t.rejects(tarball('deleted@1.0.0', options))
+  // Test specific version routes for packages without dist
+  await t.rejects(resolve('no-tgz@1.2.3', options))
+  await t.rejects(tarball('no-tgz@1.2.3', options))
+  await t.rejects(resolve('no-dist@1.2.3', options))
+  await t.rejects(tarball('no-dist@1.2.3', options))
 })
 
 t.test('git spec must have gitRemote', async t => {
@@ -859,8 +879,8 @@ t.test('fails on non-200 response', async t => {
   await t.rejects(manifest('lodash', options))
   await t.rejects(tarball('lodash', options))
   await t.rejects(resolve('lodash', options))
-  await t.rejects(tarball('missing', options))
-  await t.rejects(extract('missing', d, options))
+  await t.rejects(tarball('missing@1.2.3', options))
+  await t.rejects(extract('missing@1.2.3', d, options))
 
   await t.rejects(
     packument(`lodash@${defaultRegistry}lodash.tgz`, options),

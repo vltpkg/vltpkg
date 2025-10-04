@@ -12,7 +12,12 @@ import { RegistryClient } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import type { Integrity, Manifest, Packument } from '@vltpkg/types'
+import type {
+  Integrity,
+  Manifest,
+  Packument,
+  ManifestRegistry,
+} from '@vltpkg/types'
 import { asPackument, isIntegrity } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -334,6 +339,41 @@ export class PackageInfoClient {
     return pathResolve(this.#cachePath, 'package-info', key)
   }
 
+  async #registryManifestRequest(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+  ): Promise<ManifestRegistry> {
+    const { registry, name, registrySpec } = spec.final
+    /* c8 ignore start */
+    if (!spec.range?.isSingle || !registrySpec) {
+      throw this.#resolveError(
+        spec,
+        options,
+        'failed to request manifest',
+        { spec },
+      )
+    }
+    /* c8 ignore stop */
+    const pakuURL = new URL(`${name}/${registrySpec}`, registry)
+    const response = await this.registryClient.request(pakuURL, {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    if (response.statusCode !== 200) {
+      throw this.#resolveError(
+        spec,
+        options,
+        'failed to fetch manifest',
+        {
+          url: pakuURL,
+          response,
+        },
+      )
+    }
+    return response.json() as ManifestRegistry
+  }
+
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -508,11 +548,14 @@ export class PackageInfoClient {
           }
         }
 
-        const mani = pickManifest(
-          await this.packument(f, options),
-          spec,
-          options,
-        )
+        const mani =
+          spec.range?.isSingle ?
+            await this.#registryManifestRequest(spec, options)
+          : pickManifest(
+              await this.packument(f, options),
+              spec,
+              options,
+            )
         if (!mani) throw this.#resolveError(spec, options)
         const { integrity, tarball } =
           mani.dist ?? /* c8 ignore next */ {}
