@@ -27,7 +27,10 @@ export const del = async (conf: LoadedConfig) => {
     })
   }
 
-  await conf.deleteConfigKeys(conf.get('config'), fields)
+  const configOption = conf.get('config')
+  const whichConfig =
+    configOption === 'all' ? 'project' : configOption
+  await conf.deleteConfigKeys(whichConfig, fields)
 }
 
 export const get = async (conf: LoadedConfig) => {
@@ -74,7 +77,10 @@ export const edit = async (conf: LoadedConfig) => {
   if (!command) {
     throw error(`editor is empty`)
   }
-  await conf.editConfigFile(conf.get('config'), file => {
+  const configOption = conf.get('config')
+  const whichConfig =
+    configOption === 'all' ? 'project' : configOption
+  await conf.editConfigFile(whichConfig, file => {
     args.push(file)
     const res = spawnSync(command, args, {
       stdio: 'inherit',
@@ -93,11 +99,15 @@ export const set = async (conf: LoadedConfig) => {
   const pairs = conf.positionals.slice(1)
   if (!pairs.length) {
     // Create an empty config file
-    await conf.addConfigToFile(conf.get('config'), {})
+    const configOption = conf.get('config')
+    const whichConfig =
+      configOption === 'all' ? 'project' : configOption
+    await conf.addConfigToFile(whichConfig, {})
     return
   }
 
-  const which = conf.get('config')
+  const configOption = conf.get('config')
+  const which = configOption === 'all' ? 'project' : configOption
 
   // separate dot-prop paths from simple keys for different handling
   // any keys that include a dot (.) will be treated as dotPropPairs

@@ -7,51 +7,56 @@
 'use strict'
 exports[`test/commands/config.ts > TAP > usage 1`] = `
 Usage:
-  vlt config <command> [flags]
+  vlt config [<command>] [<args>]
 
-Work with vlt configuration
-
-  Aliases
-
-    ​conf
+Get or manipulate vlt configuration values
 
   Subcommands
 
     get
-      Print the named config value
+      Get a single config value. Use --config to specify which config to read
+      from.
 
-      ​vlt config get <key> [<key> ...]
+      ​vlt config get [<key>] [--config=<all | user | project>]
+
+    pick
+      Get multiple config values or all configuration. Use --config to specify
+      which config to read from.
+
+      ​vlt config pick [<key> [<key> ...]] [--config=<all | user | project>]
 
     list
-      Print all configuration settings currently in effect
+      Print configuration settings. --config=all shows merged config (default),
+      --config=user shows only user config, --config=project shows only project
+      config.
 
-      ​vlt config list
+      ​vlt config list [--config=<all | user | project>]
 
     set
-      Set config values. By default, these are written to the project config
-      file, \`vlt.json\` in the root of the project. To set things for all
-      projects, run with \`--config=user\`
+      Set config values. By default (or with --config=all), these are written to
+      the project config file, \`vlt.json\` in the root of the project. To set
+      things for all projects, run with \`--config=user\`.
 
-      ​vlt config set <key>=<value> [<key>=<value> ...] [--config=<user |
+      ​vlt config set <key>=<value> [<key>=<value> ...] [--config=<all | user |
       project>]
 
-    del
+    delete
       Delete the named config fields. If no values remain in the config file,
-      delete the file as well. By default, operates on the \`vlt.json\` file in
-      the root of the current project. To delete a config field from the user
-      config file, specify \`--config=user\`.
+      delete the file as well. By default (or with --config=all), operates on
+      the \`vlt.json\` file in the root of the current project. To delete a config
+      field from the user config file, specify \`--config=user\`.
 
-      ​vlt config del <key> [<key> ...] [--config=<user | project>]
+      ​vlt config delete <key> [<key> ...] [--config=<all | user | project>]
 
     edit
-      Edit the configuration file
+      Edit the configuration file. By default (or with --config=all), edits the
+      project config file.
 
-      ​vlt config edit [--config=<user | project>]
+      ​vlt config edit [--config=<all | user | project>]
 
-    help
-      Get information about a config field, or show a list of known config field
-      names.
+    location
+      Show the file path of the configuration file. Defaults to project config.
 
-      ​vlt config help [field ...]
+      ​vlt config location [--config=<user | project>]
 
 `

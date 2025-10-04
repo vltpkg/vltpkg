@@ -40,7 +40,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --before=<date>
     --cache=<path>
     --color
-    --config=<user | project>
+    --config=<all | user | project>
     --dashboard-root=<path>
     --dry-run
     --editor=<program>
