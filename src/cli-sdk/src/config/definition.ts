@@ -58,7 +58,6 @@ const aliases = {
   xl: 'exec-local',
   h: 'help',
   '?': 'help',
-  conf: 'config',
   ls: 'list',
   xc: 'exec-cache',
 } as const
@@ -477,11 +476,16 @@ export const definition = j
 
   .opt({
     config: {
-      hint: 'user | project',
-      description: `Specify whether to operate on user-level or project-level
-                    configuration files when running \`vlt config\` commands.`,
-      validOptions: ['user', 'project'] as const,
-      default: 'project',
+      hint: 'all | user | project',
+      description: `Specify which configuration to show or operate on when running
+                    \`vlt config\` commands. For read operations (get, pick, list):
+                    \`all\` shows merged configuration from both user and project
+                    files (default). For write operations (set, delete, edit):
+                    defaults to \`project\`. \`user\` shows/modifies only user-level
+                    configuration, \`project\` shows/modifies only project-level
+                    configuration.`,
+      validOptions: ['all', 'user', 'project'] as const,
+      default: 'all',
     },
 
     editor: {

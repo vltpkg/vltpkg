@@ -16,72 +16,158 @@ Usage:
 
 Work with vlt configuration
 
-## Aliases
-
-```
-conf
-```
+When no subcommand is provided, displays help information for the
+config command.
 
 ## Subcommands
 
 ### get
 
-Print the named config value
+Print the named config value(s). When no keys are provided, shows all
+configuration settings. When a single key is provided with
+`--config=all` (default), returns the merged configuration value. Use
+`--config=user` or `--config=project` to get values from specific
+configuration files only.
 
 <Code
-  code="$ vlt config get <key> [<key> ...]"
+  code="$ vlt config get [<key> [<key> ...]] [--config=<all | user | project>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### pick
+
+Select and display specific configuration values. Similar to `get` but
+optimized for retrieving multiple specific keys.
+
+<Code
+  code="$ vlt config pick [<key> [<key> ...]] [--config=<all | user | project>]"
   title="Terminal"
   lang="bash"
 />
 
 ### list
 
-Print all configuration settings currently in effect
+Print all configuration settings currently in effect as key=value
+pairs. Use `--config` to specify which configuration source to
+display.
 
-<Code code="$ vlt config list" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt config list [--config=<all | user | project>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Aliases: `ls`
 
 ### set
 
 Set config values. By default, these are written to the project config
 file, `vlt.json` in the root of the project. To set things for all
-projects, run with `--config=user`
+projects, run with `--config=user`. Note that `--config=all` defaults
+to `project` for write operations.
 
 <Code
-  code="$ vlt config set <key>=<value> [<key>=<value> ...] [--config=<user | project>]"
+  code="$ vlt config set <key>=<value> [<key>=<value> ...] [--config=<all | user | project>]"
   title="Terminal"
   lang="bash"
 />
 
-### del
+### delete
 
 Delete the named config fields. If no values remain in the config
 file, delete the file as well. By default, operates on the `vlt.json`
 file in the root of the current project. To delete a config field from
-the user config file, specify `--config=user`.
+the user config file, specify `--config=user`. Note that
+`--config=all` defaults to `project` for write operations.
 
 <Code
-  code="$ vlt config del <key> [<key> ...] [--config=<user | project>]"
+  code="$ vlt config delete <key> [<key> ...] [--config=<all | user | project>]"
   title="Terminal"
   lang="bash"
 />
+
+Aliases: `del`, `rm`, `remove`, `unset`
 
 ### edit
 
-Edit the configuration file
+Edit the configuration file. Note that `--config=all` defaults to
+`project` for write operations.
 
 <Code
-  code="$ vlt config edit [--config=<user | project>]"
+  code="$ vlt config edit [--config=<all | user | project>]"
   title="Terminal"
   lang="bash"
 />
 
-### help
+### location
 
-Get information about a config field, or show a list of known config
-field names.
+Print the file path of the configuration file being used.
 
 <Code
-  code="$ vlt config help [field ...]"
+  code="$ vlt config location [--config=<user | project>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Examples
+
+Get all configuration (merged from user and project):
+
+<Code code="$ vlt config get" title="Terminal" lang="bash" />
+
+Get a specific configuration value:
+
+<Code code="$ vlt config get registry" title="Terminal" lang="bash" />
+
+Get configuration from user config only:
+
+<Code
+  code="$ vlt config get --config=user"
+  title="Terminal"
+  lang="bash"
+/>
+
+Set a configuration value in the project config:
+
+<Code
+  code="$ vlt config set registry=https://my-registry.com"
+  title="Terminal"
+  lang="bash"
+/>
+
+Set a configuration value in the user config:
+
+<Code
+  code="$ vlt config set color=true --config=user"
+  title="Terminal"
+  lang="bash"
+/>
+
+List all configuration as key=value pairs:
+
+<Code code="$ vlt config list" title="Terminal" lang="bash" />
+
+List configuration using alias:
+
+<Code code="$ vlt config ls" title="Terminal" lang="bash" />
+
+Delete a configuration value:
+
+<Code
+  code="$ vlt config delete registry"
+  title="Terminal"
+  lang="bash"
+/>
+
+Delete a configuration value using alias:
+
+<Code code="$ vlt config del registry" title="Terminal" lang="bash" />
+
+Find the location of the project config file:
+
+<Code
+  code="$ vlt config location --config=project"
   title="Terminal"
   lang="bash"
 />

@@ -144,6 +144,13 @@ t.test('del', async t => {
       t.strictSame(conf.deletedKeys, [which, ['registry']])
     })
   }
+
+  t.test('all (defaults to project)', async t => {
+    const { conf } = await run(t, ['del', 'registry'], {
+      config: 'all',
+    })
+    t.strictSame(conf.deletedKeys, ['project', ['registry']])
+  })
   t.test('must specify key(s)', async t => {
     await t.rejects(run(t, ['del'], { config: 'user' }), {
       message: 'At least one key is required',
@@ -253,6 +260,14 @@ t.test('edit', async t => {
       t.equal(edited, which)
     })
   }
+
+  t.test('all (defaults to project)', async t => {
+    await run(t, ['edit'], {
+      config: 'all',
+      editor: 'EDITOR --passes-flags-to-args',
+    })
+    t.equal(edited, 'project')
+  })
   t.test('no editor', async t => {
     await t.rejects(run(t, ['edit'], { editor: '' }))
     await t.rejects(
@@ -280,6 +295,11 @@ t.test('set', async t => {
       t.strictSame(conf.addedConfig, ['user', {}])
     },
   )
+
+  t.test('nothing to set with all (defaults to project)', async t => {
+    const { conf } = await run(t, ['set'], { config: 'all' })
+    t.strictSame(conf.addedConfig, ['project', {}])
+  })
   for (const which of ['user', 'project']) {
     t.test(which, async t => {
       const { conf } = await run(
@@ -293,6 +313,18 @@ t.test('set', async t => {
       ])
     })
   }
+
+  t.test('all (defaults to project)', async t => {
+    const { conf } = await run(
+      t,
+      ['set', 'registry=https://example.com/'],
+      { config: 'all' },
+    )
+    t.strictSame(conf.addedConfig, [
+      'project',
+      { registry: 'https://example.com/' },
+    ])
+  })
 
   t.test('invalid key', async t => {
     await t.rejects(run(t, ['set', 'garbage=value'], {}), {
@@ -333,7 +365,7 @@ t.test('set', async t => {
       cause: {
         code: 'ECONFIG',
         found: 'asdf',
-        validOptions: ['user', 'project'],
+        validOptions: ['all', 'user', 'project'],
       },
     })
   })
