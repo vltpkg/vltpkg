@@ -1275,3 +1275,191 @@ t.test(
     t.ok(rolledBack, 'should rollback removal after error')
   },
 )
+
+t.test('install with lockfileOnly option', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+      dependencies: {
+        abbrev: '^1.0.0',
+      },
+    }),
+  })
+
+  const options = {
+    projectRoot: dir,
+    scurry: new PathScurry(),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    lockfileOnly: true,
+  } as unknown as InstallOptions
+
+  let reifyCalled = false
+  let lockfileSaveCalled = false
+  let lockfileSaveOptions: any = null
+
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/ideal/build.ts': {
+      build: async () => ({
+        nodes: new Map(),
+        importers: [],
+        projectRoot: dir,
+      }),
+    },
+    '../src/reify/index.ts': {
+      reify: async () => {
+        reifyCalled = true
+        return { hasChanges: () => false }
+      },
+    },
+    '../src/index.ts': {
+      lockfile: {
+        save: (opts: any) => {
+          lockfileSaveCalled = true
+          lockfileSaveOptions = opts
+        },
+      },
+    },
+  })
+
+  const result = await install(
+    options,
+    new Map() as AddImportersDependenciesMap,
+  )
+
+  t.notOk(
+    reifyCalled,
+    'should NOT call reify when lockfileOnly is true',
+  )
+  t.ok(
+    lockfileSaveCalled,
+    'should call lockfile.save when lockfileOnly is true',
+  )
+  t.ok(lockfileSaveOptions, 'should pass options to lockfile.save')
+  t.ok(result.graph, 'should return graph')
+  t.equal(
+    result.diff,
+    undefined,
+    'should return undefined for diff when lockfileOnly is true',
+  )
+})
+
+t.test('lockfileOnly incompatible with cleanInstall', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+  })
+
+  const options = {
+    projectRoot: dir,
+    scurry: new PathScurry(),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    lockfileOnly: true,
+    cleanInstall: true, // This should cause an error
+  } as unknown as InstallOptions
+
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {})
+
+  await t.rejects(
+    install(options, new Map() as AddImportersDependenciesMap),
+    /Cannot use --lockfile-only with --clean-install/,
+    'should throw error when lockfileOnly and cleanInstall are both set',
+  )
+})
+
+t.test(
+  'install with lockfileOnly and adding packages (updatePackageJson)',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      lockfileOnly: true,
+    } as unknown as InstallOptions
+
+    let reifyCalled = false
+    let lockfileSaveCalled = false
+    let updatePackageJsonCalled = false
+    let updatePackageJsonOptions: any = null
+
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/ideal/build.ts': {
+        build: async () => ({
+          nodes: new Map(),
+          importers: [],
+          projectRoot: dir,
+        }),
+      },
+      '../src/reify/index.ts': {
+        reify: async () => {
+          reifyCalled = true
+          return { hasChanges: () => false }
+        },
+      },
+      '../src/index.ts': {
+        lockfile: {
+          save: () => {
+            lockfileSaveCalled = true
+          },
+        },
+      },
+      '../src/reify/update-importers-package-json.ts': {
+        updatePackageJson: (opts: any) => {
+          updatePackageJsonCalled = true
+          updatePackageJsonOptions = opts
+          return () => {}
+        },
+      },
+    })
+
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const addMap = new Map([
+      [
+        rootDepID,
+        new Map<string, Dependency>([
+          [
+            'new-dep',
+            asDependency({
+              spec: Spec.parse('new-dep', '^1.0.0'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap
+    Object.assign(addMap, { modifiedDependencies: true })
+
+    const result = await install(options, addMap)
+
+    t.notOk(reifyCalled, 'should NOT call reify with lockfileOnly')
+    t.ok(lockfileSaveCalled, 'should call lockfile.save')
+    t.ok(
+      updatePackageJsonCalled,
+      'should call updatePackageJson when adding packages',
+    )
+    t.ok(
+      updatePackageJsonOptions?.add,
+      'should pass add map to updatePackageJson',
+    )
+    t.ok(result.graph, 'should return graph')
+    t.equal(result.diff, undefined, 'should return undefined diff')
+  },
+)
