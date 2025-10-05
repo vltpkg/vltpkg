@@ -19,6 +19,8 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
+import { lockfile } from './index.ts'
+import { updatePackageJson } from './reify/update-importers-package-json.ts'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -30,6 +32,13 @@ export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
+  // Validate incompatible options
+  if (options.lockfileOnly && options.cleanInstall) {
+    throw error(
+      'Cannot use --lockfile-only with --clean-install (ci command). Clean install requires filesystem operations.',
+    )
+  }
+
   if (options.expectLockfile || options.frozenLockfile) {
     const lockfilePath = resolve(options.projectRoot, 'vlt-lock.json')
     if (!existsSync(lockfilePath)) {
@@ -185,6 +194,24 @@ export const install = async (
       loadManifests: true,
       modifiers,
     })
+
+    // If lockfileOnly is enabled, skip reify and only save the lockfile
+    if (options.lockfileOnly) {
+      // Save only the main lockfile, skip all filesystem operations
+      lockfile.save({ graph, modifiers })
+      const saveImportersPackageJson =
+        /* c8 ignore next */
+        add?.modifiedDependencies ?
+          updatePackageJson({
+            ...options,
+            add,
+            graph,
+          })
+        : undefined
+      saveImportersPackageJson?.()
+      return { graph, diff: undefined }
+    }
+
     const { diff, buildQueue } = await reify({
       ...options,
       add,

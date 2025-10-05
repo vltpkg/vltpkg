@@ -163,3 +163,48 @@ t.test('frozen-lockfile flag', async t => {
     'should pass frozenLockfile to install',
   )
 })
+
+t.test('lockfile-only flag', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+  })
+
+  const options = {
+    projectRoot: dir,
+    'lockfile-only': true,
+  }
+
+  let log = ''
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install(opts: any, add: any) {
+        log += `install lockfileOnly=${opts.lockfileOnly}\n`
+        if (add && add.size > 0) {
+          log += `add packages: ${add.size}\n`
+        }
+        return {
+          graph: {},
+        }
+      },
+      asDependency: (dep: any) => dep,
+    },
+  })
+
+  await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+
+  t.match(
+    log,
+    /install lockfileOnly=true/,
+    'should pass lockfileOnly to install',
+  )
+})

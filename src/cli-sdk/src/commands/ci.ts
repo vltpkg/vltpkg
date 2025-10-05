@@ -33,6 +33,7 @@ export const command: CommandFn<CIResult> = async conf => {
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,
+    lockfileOnly: conf.options['lockfile-only'],
   }
 
   const { graph } = await install(ciOptions)
