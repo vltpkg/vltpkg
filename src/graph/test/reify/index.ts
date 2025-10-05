@@ -25,6 +25,7 @@ import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type {
   LockfileData,
   LockfileEdges,
@@ -70,6 +71,7 @@ t.test('super basic reification', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
+    remover: new RollbackRemove(),
   })
   await reify({
     projectRoot,
@@ -79,6 +81,7 @@ t.test('super basic reification', async t => {
     packageJson: new PackageJson(),
     graph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
 
   t.strictSame(
@@ -167,6 +170,7 @@ t.test('super basic reification', async t => {
     packageJson: new PackageJson(),
     graph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
 
   t.throws(() => statSync(ldPath))
@@ -212,6 +216,7 @@ t.test('super basic reification', async t => {
     packageJson,
     graph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
   t.match(
     JSON.parse(
@@ -236,6 +241,7 @@ t.test('super basic reification', async t => {
     packageJson,
     graph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
   t.match(
     JSON.parse(
@@ -270,6 +276,7 @@ t.test('reify with a bin', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
+    remover: new RollbackRemove(),
   })
   await reify({
     projectRoot,
@@ -279,6 +286,7 @@ t.test('reify with a bin', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
   t.equal(
     // note: not lstat, since this is going to be a shim on windows,
@@ -320,6 +328,7 @@ t.test('failure rolls back', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
+    remover: new RollbackRemove(),
   })
   const { reify } = await t.mockImport<
     typeof import('../../src/reify/index.ts')
@@ -338,6 +347,7 @@ t.test('failure rolls back', async t => {
       allowScripts: '*',
       packageJson: new PackageJson(),
       scurry: new PathScurry(projectRoot),
+      remover: new RollbackRemove(),
     }),
   )
 
@@ -392,6 +402,7 @@ t.test('failure of optional node just deletes it', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
+    remover: new RollbackRemove(),
   })
   const globEdge = graph.mainImporter.edgesOut.get('glob')
   t.ok(globEdge, 'main importer depends on glob')
@@ -421,6 +432,7 @@ t.test('failure of optional node just deletes it', async t => {
     }),
     graph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
 
   const after = actual.load({
@@ -523,6 +535,7 @@ t.test('early termination when no changes are needed', async t => {
     graph: baseGraph,
     actual: baseGraph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
 
   // Verify early termination behavior
@@ -584,6 +597,7 @@ t.test('checkNeededBuild is called during reification', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
+    remover: new RollbackRemove(),
   })
 
   const result = await reify({
@@ -594,6 +608,7 @@ t.test('checkNeededBuild is called during reification', async t => {
     packageJson: new PackageJson(),
     graph: graph,
     allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
   })
 
   // Verify buildQueue is returned (this proves checkNeededBuild was called)
@@ -633,6 +648,7 @@ t.test(
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson,
+      remover: new RollbackRemove(),
     })
 
     const result = await reify({
@@ -643,6 +659,7 @@ t.test(
       packageJson: new PackageJson(),
       graph,
       allowScripts: '*',
+      remover: new RollbackRemove(),
     })
 
     // Verify buildQueue is returned (this proves checkNeededBuild was called)
@@ -682,6 +699,7 @@ t.test(
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson,
+      remover: new RollbackRemove(),
     })
 
     // Call reify with allowScripts set to :not(*) (no scripts allowed)
@@ -693,6 +711,7 @@ t.test(
       packageJson: new PackageJson(),
       graph,
       allowScripts: ':not(*)',
+      remover: new RollbackRemove(),
     })
 
     // Verify buildQueue is returned (this proves checkNeededBuild was called)
@@ -730,6 +749,7 @@ t.test('allowScripts with query selector :scripts', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
+    remover: new RollbackRemove(),
   })
 
   // Call reify with allowScripts set to :scripts to trigger the Query library logic
@@ -741,6 +761,7 @@ t.test('allowScripts with query selector :scripts', async t => {
     packageJson: new PackageJson(),
     graph,
     allowScripts: ':scripts',
+    remover: new RollbackRemove(),
   })
 
   // Verify reify completes successfully and returns expected result

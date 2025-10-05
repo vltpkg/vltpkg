@@ -7,6 +7,7 @@ import { build as idealBuild } from './ideal/build.ts'
 import { reify } from './reify/index.ts'
 import { lockfile } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 export type UninstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -19,43 +20,53 @@ export const uninstall = async (
 ) => {
   const mainManifest = options.packageJson.read(options.projectRoot)
   const modifiers = GraphModifier.maybeLoad(options)
+  const remover = new RollbackRemove()
 
-  const graph = await idealBuild({
-    ...options,
-    remove,
-    mainManifest,
-    loadManifests: true,
-  })
-  const act = actualLoad({
-    ...options,
-    mainManifest,
-    loadManifests: true,
-  })
+  try {
+    const graph = await idealBuild({
+      ...options,
+      remove,
+      mainManifest,
+      loadManifests: true,
+      remover,
+    })
+    const act = actualLoad({
+      ...options,
+      mainManifest,
+      loadManifests: true,
+    })
 
-  // If lockfileOnly is enabled, skip reify and only save the lockfile
-  if (options.lockfileOnly) {
-    // Save only the main lockfile, skip all filesystem operations
-    lockfile.save({ graph, modifiers })
-    const saveImportersPackageJson =
-      /* c8 ignore next */
-      remove?.modifiedDependencies ?
-        updatePackageJson({
-          ...options,
-          remove,
-          graph,
-        })
-      : undefined
-    saveImportersPackageJson?.()
-    return { graph, diff: undefined }
+    // If lockfileOnly is enabled, skip reify and only save the lockfile
+    if (options.lockfileOnly) {
+      // Save only the main lockfile, skip all filesystem operations
+      lockfile.save({ graph, modifiers })
+      const saveImportersPackageJson =
+        /* c8 ignore next */
+        remove?.modifiedDependencies ?
+          updatePackageJson({
+            ...options,
+            remove,
+            graph,
+          })
+        : undefined
+      saveImportersPackageJson?.()
+      return { graph, diff: undefined }
+    }
+
+    const diff = await reify({
+      ...options,
+      remove,
+      actual: act,
+      graph,
+      loadManifests: true,
+      remover,
+    })
+
+    return { graph, diff }
+    /* c8 ignore start */
+  } catch (err) {
+    await remover.rollback().catch(() => {})
+    throw err
   }
-
-  const diff = await reify({
-    ...options,
-    remove,
-    actual: act,
-    graph,
-    loadManifests: true,
-  })
-
-  return { graph, diff }
+  /* c8 ignore stop */
 }
