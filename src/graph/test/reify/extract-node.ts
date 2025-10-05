@@ -276,7 +276,7 @@ t.test('use platform data from node when available', async t => {
     },
     platform: {
       engines: { node: '>=14' },
-      os: ['darwin', 'linux'],
+      os: ['darwin', 'linux', 'win32'],
     },
     optional: true,
   })
