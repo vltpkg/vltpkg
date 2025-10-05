@@ -1,5 +1,8 @@
-import type { PackageInfoClient } from '@vltpkg/package-info'
+import { graphStep } from '@vltpkg/output'
 import { load as loadActual } from '../actual/load.ts'
+import { load as loadVirtual } from '../lockfile/load.ts'
+import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions as LoadActualOptions } from '../actual/load.ts'
 import type {
   AddImportersDependenciesMap,
@@ -7,10 +10,8 @@ import type {
   Dependency,
 } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
-import { load as loadVirtual } from '../lockfile/load.ts'
-import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import { graphStep } from '@vltpkg/output'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 
 const getMap = <T extends Map<any, any>>(m?: T) =>
   m ?? (new Map() as T)
@@ -33,6 +34,10 @@ export type BuildIdealOptions = LoadActualOptions & {
    * dependency names to be removed from its dependency list.
    */
   remove?: RemoveImportersDependenciesMap
+  /**
+   * A {@link RollbackRemove} instance to handle extraction rollbacks
+   */
+  remover: RollbackRemove
   /**
    * A {@link PackageInfoClient} instance to read manifest info from.
    */
@@ -80,6 +85,7 @@ export const build = async (
     graph,
     packageInfo,
     remove: getMap(options.remove),
+    actual: options.actual,
   })
   done()
   return res

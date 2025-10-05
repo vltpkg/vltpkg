@@ -193,6 +193,7 @@ export const install = async (
       mainManifest,
       loadManifests: true,
       modifiers,
+      remover,
     })
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
@@ -219,6 +220,7 @@ export const install = async (
       graph,
       loadManifests: true,
       modifiers,
+      remover,
     })
 
     return { buildQueue, graph, diff }

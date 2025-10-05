@@ -8,7 +8,6 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
 import { Graph } from '../src/graph.ts'
-import type { GraphLike } from '@vltpkg/types'
 
 t.cleanSnapshot = s =>
   s
@@ -438,7 +437,7 @@ t.test('workspaces', async t => {
       graph,
       'should have a ref to its graph',
     )
-    importer.graph = 'Graph {}' as unknown as GraphLike
+    importer.graph = 'Graph {}' as unknown as Graph
   }
   t.matchSnapshot(
     graph.importers,

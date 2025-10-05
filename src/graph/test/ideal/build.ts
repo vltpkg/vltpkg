@@ -14,6 +14,7 @@ import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -72,6 +73,7 @@ t.test('build from lockfile', async t => {
       [joinDepIDTuple(['file', '.']), new Map()],
     ]) as AddImportersDependenciesMap,
     remove: new Map() as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
   })
 
   t.matchSnapshot(
@@ -117,6 +119,7 @@ t.test('build from actual files', async t => {
     packageJson: new PackageJson(),
     packageInfo,
     projectRoot,
+    remover: new RollbackRemove(),
   })
 
   t.matchSnapshot(

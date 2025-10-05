@@ -13,6 +13,7 @@ import { Graph } from '../../src/graph.ts'
 import type { GraphModifier } from '../../src/modifiers.ts'
 import { addNodes } from '../../src/ideal/add-nodes.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -80,6 +81,7 @@ t.test('addNodes', async t => {
     graph,
     packageInfo,
     scurry: new PathScurry(t.testdirName),
+    remover: new RollbackRemove(),
   })
   t.matchSnapshot(objectLikeOutput(graph), 'graph with an added foo')
 
@@ -90,6 +92,7 @@ t.test('addNodes', async t => {
     graph,
     scurry: new PathScurry(t.testdirName),
     packageInfo,
+    remover: new RollbackRemove(),
   })
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -104,6 +107,7 @@ t.test('addNodes', async t => {
       graph,
       packageInfo,
       scurry: new PathScurry(t.testdirName),
+      remover: new RollbackRemove(),
     }),
     /Could not find importer/,
     'should throw an error if finding an unknown importer id',
@@ -128,6 +132,7 @@ t.test('addNodes', async t => {
     scurry: new PathScurry(t.testdirName),
     graph,
     packageInfo,
+    remover: new RollbackRemove(),
   })
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -159,6 +164,7 @@ t.test('addNodes', async t => {
       packageInfo,
       scurry: new PathScurry(t.testdirName),
       modifiers: mockModifier,
+      remover: new RollbackRemove(),
     })
 
     t.equal(modifierCalls.tryImporter, 1, 'tryImporter was called')
@@ -169,3 +175,182 @@ t.test('addNodes', async t => {
     )
   })
 })
+
+t.test('addNodes waits for extraction promises', async t => {
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+
+  // Create an ideal graph with a new node
+  const idealGraph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+
+  // Create an actual graph without the node
+  const actualGraph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+
+  const extractionCompleted = { value: false }
+  const extractionStarted = { value: false }
+
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'foo') return fooManifest
+      return null
+    },
+    async extract() {
+      extractionStarted.value = true
+      // Simulate async extraction with a delay
+      await new Promise(resolve => setTimeout(resolve, 50))
+      extractionCompleted.value = true
+      return { extracted: true }
+    },
+  } as unknown as PackageInfoClient
+
+  const addEntry = new Map(
+    Object.entries({
+      foo: {
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod' as DependencySaveType,
+      } satisfies Dependency,
+    }),
+  )
+
+  // Call addNodes with actual graph to trigger early extraction
+  await addNodes({
+    add: new Map([
+      [joinDepIDTuple(['file', '.']), addEntry],
+    ]) as AddImportersDependenciesMap,
+    graph: idealGraph,
+    packageInfo,
+    scurry: new PathScurry(t.testdirName),
+    actual: actualGraph,
+    remover: new RollbackRemove(),
+  })
+
+  // Verify that extraction was started and completed
+  t.ok(extractionStarted.value, 'extraction was started')
+  t.ok(
+    extractionCompleted.value,
+    'extraction was completed before addNodes returned',
+  )
+})
+
+t.test(
+  'addNodes handles multiple extraction promises concurrently',
+  async t => {
+    const fooManifest = {
+      name: 'foo',
+      version: '1.0.0',
+    }
+    const barManifest = {
+      name: 'bar',
+      version: '1.0.0',
+    }
+    const bazManifest = {
+      name: 'baz',
+      version: '1.0.0',
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+
+    const idealGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const actualGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const extractedPackages: string[] = []
+    const extractionOrder: number[] = []
+    let extractionCounter = 0
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        switch (spec.name) {
+          case 'foo':
+            return fooManifest
+          case 'bar':
+            return barManifest
+          case 'baz':
+            return bazManifest
+          default:
+            return null
+        }
+      },
+      async extract(spec: Spec) {
+        const order = extractionCounter++
+        extractionOrder.push(order)
+        // Different delays to test concurrent execution
+        const delays: Record<string, number> = {
+          foo: 30,
+          bar: 10,
+          baz: 20,
+        }
+        await new Promise(resolve =>
+          setTimeout(resolve, delays[spec.name] || 0),
+        )
+        extractedPackages.push(spec.name)
+        return { extracted: true }
+      },
+    } as unknown as PackageInfoClient
+
+    const addEntry = new Map(
+      Object.entries({
+        foo: {
+          spec: Spec.parse('foo', '^1.0.0'),
+          type: 'prod' as DependencySaveType,
+        } satisfies Dependency,
+        bar: {
+          spec: Spec.parse('bar', '^1.0.0'),
+          type: 'prod' as DependencySaveType,
+        } satisfies Dependency,
+        baz: {
+          spec: Spec.parse('baz', '^1.0.0'),
+          type: 'prod' as DependencySaveType,
+        } satisfies Dependency,
+      }),
+    )
+
+    await addNodes({
+      add: new Map([
+        [joinDepIDTuple(['file', '.']), addEntry],
+      ]) as AddImportersDependenciesMap,
+      graph: idealGraph,
+      packageInfo,
+      scurry: new PathScurry(t.testdirName),
+      actual: actualGraph,
+      remover: new RollbackRemove(),
+    })
+
+    // Verify all packages were extracted
+    t.equal(
+      extractedPackages.length,
+      3,
+      'all three packages were extracted',
+    )
+    t.ok(extractedPackages.includes('foo'), 'foo was extracted')
+    t.ok(extractedPackages.includes('bar'), 'bar was extracted')
+    t.ok(extractedPackages.includes('baz'), 'baz was extracted')
+
+    // Verify all extractions started before any completed (concurrent execution)
+    t.equal(extractionOrder.length, 3, 'all extractions were started')
+  },
+)

@@ -22,6 +22,7 @@ import type {
 } from '../../src/index.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -172,6 +173,7 @@ t.test('build from a virtual graph', async t => {
     remove: new Map([
       [joinDepIDTuple(['file', '.']), new Set(['bar'])],
     ]) as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
@@ -219,6 +221,7 @@ t.test('add from manifest file only', async t => {
     graph: virtual,
     add: new Map() as AddImportersDependenciesMap,
     remove: new Map() as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
@@ -288,6 +291,7 @@ t.test('remove from manifest file only', async t => {
     graph: virtual,
     add: new Map() as AddImportersDependenciesMap,
     remove: new Map() as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
@@ -574,6 +578,7 @@ t.test('build from an actual graph', async t => {
     remove: new Map([
       [joinDepIDTuple(['file', '.']), new Set(['bar'])],
     ]) as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
   })
 
   t.matchSnapshot(objectLikeOutput(graph))

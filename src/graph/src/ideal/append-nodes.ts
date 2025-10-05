@@ -20,6 +20,9 @@ import type {
   GraphModifier,
   ModifierActiveEntry,
 } from '../modifiers.ts'
+import type { ExtractResult } from '../reify/extract-node.ts'
+import { extractNode } from '../reify/extract-node.ts'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 
 type FileTypeInfo = {
   id: DepID
@@ -216,6 +219,12 @@ const processPlacementTasks = async (
   options: SpecOptions,
   placementTasks: NodePlacementTask[],
   modifiers?: GraphModifier,
+  scurry?: PathScurry,
+  packageInfo?: PackageInfoClient,
+  extractPromises?: Promise<ExtractResult>[],
+  actual?: Graph,
+  seenExtracted?: Set<DepID>,
+  remover?: RollbackRemove,
 ): Promise<{
   childDepsToProcess: Omit<AppendNodeEntry, 'depth'>[]
 }> => {
@@ -298,6 +307,35 @@ const processPlacementTasks = async (
       modifiers?.updateActiveEntry(node, activeModifier)
     }
 
+    // Extract the node if it doesn't exist in the actual graph and we have the necessary parameters
+    if (
+      remover &&
+      extractPromises &&
+      actual &&
+      scurry &&
+      packageInfo &&
+      node.inVltStore()
+    ) {
+      /* c8 ignore start */
+      if (seenExtracted?.has(node.id)) {
+        continue
+      }
+      /* c8 ignore stop */
+      seenExtracted?.add(node.id)
+      const actualNode = actual.nodes.get(node.id)
+      if (!actualNode?.equals(node)) {
+        // Extract the node without awaiting - push the promise to the array
+        const extractPromise = extractNode(
+          node,
+          scurry,
+          remover,
+          options,
+          packageInfo,
+        )
+        extractPromises.push(extractPromise)
+      }
+    }
+
     // updates graph node information
     if (fileTypeInfo?.path && fileTypeInfo.isDirectory) {
       node.location = fileTypeInfo.path
@@ -367,6 +405,10 @@ export const appendNodes = async (
   seen: Set<DepID>,
   modifiers?: GraphModifier,
   modifierRefs?: Map<string, ModifierActiveEntry>,
+  extractPromises?: Promise<ExtractResult>[],
+  actual?: Graph,
+  seenExtracted?: Set<DepID>,
+  remover?: RollbackRemove,
 ) => {
   /* c8 ignore next */
   if (seen.has(fromNode.id)) return
@@ -413,6 +455,12 @@ export const appendNodes = async (
             options,
             placementTasks,
             modifiers,
+            scurry,
+            packageInfo,
+            extractPromises,
+            actual,
+            seenExtracted,
+            remover,
           )
         },
       ),

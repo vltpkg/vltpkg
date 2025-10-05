@@ -1,6 +1,6 @@
 import { graphStep } from '@vltpkg/output'
 import type { PackageInfoClient } from '@vltpkg/package-info'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
 import { callLimit } from 'promise-call-limit'
 import type { DepID } from '@vltpkg/dep-id'
@@ -93,6 +93,7 @@ export type ReifyOptions = LoadOptions & {
   actual?: Graph
   packageInfo: PackageInfoClient
   modifiers?: GraphModifier
+  remover: RollbackRemove
 }
 
 export type ReifyResult = {
@@ -115,7 +116,7 @@ export const reify = async (
 ): Promise<ReifyResult> => {
   const done = graphStep('reify')
 
-  const { graph, scurry } = options
+  const { graph, scurry, remover } = options
 
   const actual =
     options.actual ??
@@ -134,7 +135,6 @@ export const reify = async (
     return res
   }
 
-  const remover = new RollbackRemove()
   let success = false
   try {
     const { buildQueue } = await reify_(options, diff, remover)

@@ -1,4 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -18,6 +19,7 @@ import { reload } from '@vltpkg/vlt-json'
 import { build } from '../../src/ideal/build.ts'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PackageJson } from '@vltpkg/package-json'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -140,7 +142,11 @@ t.test('append a new node to a graph from a registry', async t => {
     [depFoo],
     scurry,
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
@@ -176,7 +182,11 @@ t.test('append a new node to a graph from a registry', async t => {
     [depBar],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -193,7 +203,7 @@ t.test('append a new node to a graph from a registry', async t => {
       [depBorked],
       new PathScurry(t.testdirName),
       configData,
-      new Set(),
+      new Set<DepID>(),
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
@@ -207,7 +217,11 @@ t.test('append a new node to a graph from a registry', async t => {
     [depNamelessGit],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.matchSnapshot(
     [...add].map(([name, dep]) => [
@@ -282,7 +296,11 @@ t.test('append different type of dependencies', async t => {
     [depFoo],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
 
   await appendNodes(
@@ -293,7 +311,11 @@ t.test('append different type of dependencies', async t => {
     [depBar],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
 
   await t.rejects(
@@ -305,7 +327,7 @@ t.test('append different type of dependencies', async t => {
       [depMissing],
       new PathScurry(t.testdirName),
       configData,
-      new Set(),
+      new Set<DepID>(),
     ),
     /failed to resolve dependency/,
     'should throw if failes to create a node for a given manifest',
@@ -391,7 +413,11 @@ t.test('append file type of nodes', async t => {
     [depLinked],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   await appendNodes(
     add,
@@ -401,7 +427,11 @@ t.test('append file type of nodes', async t => {
     [depFoo],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -518,7 +548,11 @@ t.test('resolve against the correct registries', async t => {
     {
       registries,
     },
-    new Set(),
+    new Set<DepID>(),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   )
   t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
@@ -554,7 +588,7 @@ t.test('appendNodes with query modifier', async t => {
     [],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
     undefined,
     undefined,
   )
@@ -632,9 +666,11 @@ t.test(
       [fooDep],
       new PathScurry(t.testdirName),
       configData,
-      new Set(),
+      new Set<DepID>(),
       modifiers,
       completeModifierRefs,
+      undefined,
+      undefined,
     )
 
     // Verify bar was added from the edge modifier
@@ -715,9 +751,11 @@ t.test('spec edge removal', async t => {
     [fooDep],
     new PathScurry(t.testdirName),
     configData,
-    new Set(),
+    new Set<DepID>(),
     modifiers,
     completeModifierRefs,
+    undefined,
+    undefined,
   )
 
   const fooNode = graph.nodesByName.get('foo')
@@ -765,7 +803,7 @@ t.test(
           [fooDep],
           new PathScurry(t.testdirName),
           configData,
-          new Set(),
+          new Set<DepID>(),
         ),
         /failed to place package/,
         'should throw when graph.placePackage returns null',
@@ -844,7 +882,7 @@ t.test(
       [fooDep],
       new PathScurry(t.testdirName),
       configData,
-      new Set(),
+      new Set<DepID>(),
       mockModifier as any,
       undefined,
     )
@@ -957,7 +995,7 @@ t.test(
         deps,
         new PathScurry(t.testdirName),
         configData,
-        new Set(),
+        new Set<DepID>(),
       )
       return graph
     }
@@ -975,6 +1013,349 @@ t.test(
     )
   },
 )
+
+t.test('early extraction during appendNodes', async t => {
+  t.test(
+    'extract nodes that do not exist in actual graph',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const extractedNodes: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          if (spec.name === 'foo') return fooManifest
+          return null
+        },
+        async extract(spec: Spec) {
+          extractedNodes.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      const extractPromises: any[] = []
+      const seenExtracted = new Set<DepID>()
+
+      await appendNodes(
+        new Map([['foo', fooDep]]),
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      // Wait for extractions
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      t.equal(extractedNodes.length, 1, 'node was extracted')
+      t.ok(extractedNodes.includes('foo'), 'foo was extracted')
+    },
+  )
+
+  t.test(
+    'skip extraction for nodes that exist in actual graph',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const extractedNodes: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          if (spec.name === 'foo') return fooManifest
+          return null
+        },
+        async extract(spec: Spec) {
+          extractedNodes.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      // First, add the node to actual graph
+      await appendNodes(
+        new Map([['foo', fooDep]]),
+        packageInfo,
+        actualGraph,
+        actualGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+      )
+
+      // Reset extraction tracking
+      extractedNodes.length = 0
+
+      const extractPromises: any[] = []
+      const seenExtracted = new Set<DepID>()
+
+      // Now add to ideal graph with actual graph provided
+      await appendNodes(
+        new Map([['foo', fooDep]]),
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      // Wait for any extractions
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      t.equal(
+        extractedNodes.length,
+        0,
+        'node was not extracted since it exists in actual graph',
+      )
+    },
+  )
+
+  t.test(
+    'avoid duplicate extractions with seenExtracted',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+        dependencies: {
+          bar: '^1.0.0',
+        },
+      }
+      const barManifest = {
+        name: 'bar',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0', // Circular dependency to trigger potential duplicate
+        },
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const extractionCalls: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          switch (spec.name) {
+            case 'foo':
+              return fooManifest
+            case 'bar':
+              return barManifest
+            default:
+              return null
+          }
+        },
+        async extract(spec: Spec) {
+          extractionCalls.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      const extractPromises: any[] = []
+      const seenExtracted = new Set<DepID>()
+
+      await appendNodes(
+        new Map([['foo', fooDep]]),
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      // Wait for extractions
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      // Each node should only be extracted once
+      const uniqueExtractions = new Set(extractionCalls)
+      t.equal(
+        extractionCalls.length,
+        uniqueExtractions.size,
+        'no duplicate extractions occurred',
+      )
+    },
+  )
+
+  t.test('extraction only happens for vlt store nodes', async t => {
+    const fooManifest = {
+      name: 'foo',
+      version: '1.0.0',
+    }
+    const barManifest = {
+      name: 'bar',
+      version: '1.0.0',
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+
+    const idealGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const actualGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const extractedNodes: string[] = []
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'foo') return fooManifest
+        if (spec.name === 'bar') return barManifest
+        return null
+      },
+      async extract(spec: Spec) {
+        extractedNodes.push(spec.name)
+        return { extracted: true }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+    const barDep = asDependency({
+      spec: Spec.parse('bar', '^1.0.0'),
+      type: 'prod',
+    })
+
+    const extractPromises: any[] = []
+    const seenExtracted = new Set<DepID>()
+
+    await appendNodes(
+      new Map([
+        ['foo', fooDep],
+        ['bar', barDep],
+      ]),
+      packageInfo,
+      idealGraph,
+      idealGraph.mainImporter,
+      [fooDep, barDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      undefined,
+      undefined,
+      extractPromises,
+      actualGraph,
+      seenExtracted,
+      new RollbackRemove(),
+    )
+
+    // Wait for any extractions
+    if (extractPromises.length > 0) {
+      await Promise.all(extractPromises)
+    }
+
+    t.ok(
+      extractedNodes.length > 0,
+      'extraction should happen for registry nodes',
+    )
+    t.ok(extractedNodes.includes('foo'), 'foo should be extracted')
+    t.ok(extractedNodes.includes('bar'), 'bar should be extracted')
+  })
+})
 
 t.test('skip peerOptional dependencies', async t => {
   const packageInfo = {
@@ -1053,6 +1434,7 @@ t.test('skip peerOptional dependencies', async t => {
       packageJson: new PackageJson(),
       packageInfo,
       projectRoot,
+      remover: new RollbackRemove(),
     })
 
     // Check that has-peer-optional was installed
@@ -1123,6 +1505,7 @@ t.test('skip peerOptional dependencies', async t => {
         packageJson: new PackageJson(),
         packageInfo,
         projectRoot,
+        remover: new RollbackRemove(),
       })
 
       // Check that peer-optional-dep was installed as a regular dependency
@@ -1181,6 +1564,7 @@ t.test('skip peerOptional dependencies', async t => {
         packageJson: new PackageJson(),
         packageInfo,
         projectRoot,
+        remover: new RollbackRemove(),
       })
 
       // Check that shared-dep was installed as a regular dependency of lib-a
