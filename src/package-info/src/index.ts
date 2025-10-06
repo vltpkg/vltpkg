@@ -354,7 +354,13 @@ export class PackageInfoClient {
       )
     }
     /* c8 ignore stop */
-    const pakuURL = new URL(`${name}/${registrySpec}`, registry)
+    const possibleLeadingChars = ['=', '^', '~', 'v']
+    const hasLeadingRange = possibleLeadingChars.some(char =>
+      registrySpec.startsWith(char),
+    )
+    const version =
+      hasLeadingRange ? registrySpec.slice(1) : registrySpec
+    const pakuURL = new URL(`${name}/${version}`, registry)
     const response = await this.registryClient.request(pakuURL, {
       headers: {
         accept: 'application/json',
