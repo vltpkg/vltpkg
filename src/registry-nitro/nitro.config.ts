@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
 
@@ -7,10 +8,23 @@ const Envs = {
   node: 'node',
 }
 
+// const DatabaseEnvs = {
+//   neon: 'neon',
+//   turso: 'turso',
+//   sqlite: 'sqlite',
+//   d1: 'd1',
+// }
+
 const buildEnv =
   process.env.VSR_CLOUDFLARE ? Envs.cloudflare
   : process.env.VSR_VERCEL ? Envs.vercel
   : Envs.node
+
+// const databaseEnv =
+//   buildEnv === Envs.cloudflare ? DatabaseEnvs.d1
+//   : process.env.VSR_NEON ? DatabaseEnvs.neon
+//   : process.env.VSR_TURSO ? DatabaseEnvs.turso
+//   : DatabaseEnvs.sqlite
 
 const getDriver = (
   type: 'packages' | 'tarballs',
