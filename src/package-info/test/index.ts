@@ -471,6 +471,18 @@ t.test('manifest', async t => {
   )
 })
 
+t.test('manifest strips leading semver characters', async t => {
+  // Test that leading characters (=, ^, ~, v) are stripped when using
+  // the registry manifest request shortcut for single version specs
+  for (const prefix of ['=', '^', '~', 'v']) {
+    t.strictSame(
+      await manifest(`abbrev@${prefix}2.0.0`, options),
+      pakuAbbrev.versions['2.0.0'],
+      `${prefix}2.0.0 should strip leading character`,
+    )
+  }
+})
+
 t.test('resolve', async t => {
   // do this with a consistent client so that we cover the memoizing paths
   const pi = new PackageInfoClient({
