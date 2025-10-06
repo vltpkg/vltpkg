@@ -1,0 +1,196 @@
+---
+title: vlt docs
+sidebar:
+  label: docs
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt docs [<spec>]" title="Terminal" lang="bash" />
+
+Open documentation for a package in a web browser.
+
+## How It Works
+
+The `vlt docs` command intelligently locates and opens the
+documentation for any package in your dependency graph. It follows a
+smart resolution strategy to find the best documentation URL:
+
+1. **Repository Resolution** – Checks the package's `repository` field
+   in its `package.json`
+2. **Git Host Detection** – For known git hosts (GitHub, GitLab,
+   Bitbucket, etc.), generates the canonical documentation URL
+3. **Fallback** – If no repository is found or the git host is
+   unknown, falls back to the npm package page
+
+This means you always get taken to the most relevant documentation,
+whether it's the project's README on GitHub, their custom docs site,
+or the npm registry page.
+
+## Basic Usage
+
+### Open docs for current project
+
+When run without arguments, `vlt docs` reads your local `package.json`
+and opens the documentation for your current project:
+
+<Code code="$ vlt docs" title="Terminal" lang="bash" />
+
+This is particularly useful when working on a project and you want to
+quickly view your own documentation or verify your repository URL is
+correctly configured.
+
+### Open docs for any package
+
+Provide a package spec to open documentation for any package, whether
+it's installed in your project or not:
+
+<Code
+  code={`# Open docs for a specific package
+$ vlt docs express
+
+# Open docs for a specific version
+
+$ vlt docs typescript@5.0.0
+
+# Open docs for a scoped package
+
+$ vlt docs @vltpkg/graph`} title="Terminal" lang="bash" />
+
+The command fetches the package manifest from the registry and
+intelligently determines the best documentation URL to open.
+
+## Examples
+
+### Exploring Dependencies
+
+Quickly explore documentation for packages you're considering adding
+to your project:
+
+<Code
+  code={`# Research a package before installing
+$ vlt docs react
+
+# Compare different versions
+
+$ vlt docs lodash@4.17.21 $ vlt docs lodash@latest`} title="Terminal"
+lang="bash" />
+
+### Development Workflow
+
+Open documentation while working on your project:
+
+<Code
+  code={`# View your own project's docs
+$ vlt docs
+
+# View a dependency's docs
+
+$ vlt docs axios
+
+# View a dev dependency's docs
+
+$ vlt docs tap`} title="Terminal" lang="bash" />
+
+### Integration with Query
+
+Combine with `vlt query` to explore documentation for packages
+matching specific patterns:
+
+<Code
+  code={`# Find all packages from a specific scope
+$ vlt query "[name^=@types]"
+
+# Then open docs for one
+
+$ vlt docs @types/node`} title="Terminal" lang="bash" />
+
+## Repository URL Resolution
+
+The command prioritizes finding documentation in this order:
+
+1. **Git Repository README** – For packages hosted on GitHub, GitLab,
+   Bitbucket, and other known git hosts, opens the repository's
+   documentation page (typically the README)
+2. **npm Package Page** – For packages without a recognized repository
+   or with unknown git hosts, opens the package page on npmjs.com
+
+### Git Host Support
+
+The following git hosts are automatically recognized and converted to
+their documentation URLs:
+
+- GitHub (`github.com`)
+- GitLab (`gitlab.com`)
+- Bitbucket (`bitbucket.org`)
+- SourceForge (`sourceforge.net`)
+- Gitea instances
+- And others supported by the `hosted-git-info` library
+
+## Use Cases
+
+### Package Discovery
+
+Quickly research packages during dependency selection:
+
+<Code
+  code={`# Compare test frameworks
+$ vlt docs tap
+$ vlt docs jest
+$ vlt docs vitest`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Debugging and Support
+
+Access documentation when troubleshooting issues:
+
+<Code
+  code={`# Error with a package? Read the docs
+$ vlt docs problematic-package
+
+# Need API reference?
+
+$ vlt docs @vltpkg/spec`} title="Terminal" lang="bash" />
+
+### Learning and Exploration
+
+Explore the ecosystem and learn about packages:
+
+<Code
+  code={`# Learn about vlt packages
+$ vlt docs @vltpkg/graph
+$ vlt docs @vltpkg/query
+
+# Explore popular packages
+
+$ vlt docs express $ vlt docs react`} title="Terminal" lang="bash" />
+
+## Integration with Other Commands
+
+The `vlt docs` command pairs well with other vlt commands:
+
+<Code
+  code={`# Find outdated packages, then check their docs for migration guides
+$ vlt query ":outdated"
+$ vlt docs some-outdated-package
+
+# List all dependencies, then explore their documentation
+
+$ vlt ls $ vlt docs dependency-name
+
+# Query packages with malware alerts, check their docs for details
+
+$ vlt query ":malware" $ vlt docs flagged-package`} title="Terminal"
+lang="bash" />
+
+## Notes
+
+- The command automatically opens your default web browser
+- Works with any valid package specifier (names, versions, tags, etc.)
+- Does not require the package to be installed in your project
+- Falls back gracefully to npm package pages when repository info is
+  unavailable
