@@ -12,6 +12,10 @@ import { proxySignals } from 'foreground-child/proxy-signals'
 import { statSync } from 'node:fs'
 import { delimiter, resolve, sep } from 'node:path'
 import { walkUp } from 'walk-up-path'
+import {
+  runWithNodeGypAlias,
+  checkBashAvailable,
+} from './aliasRunner.ts'
 
 /** map of which node_modules/.bin folders exist */
 const dotBins = new Map<string, boolean>()
@@ -31,6 +35,27 @@ const dirExists = (p: string) => {
 }
 
 const nmBin = `${sep}node_modules${sep}.bin`
+
+/**
+ * Determines if we should use the node-gyp alias for shell execution
+ */
+const shouldUseNodeGypAlias = (
+  arg0: string,
+  shell: boolean | string,
+): boolean => {
+  // Only use alias for shell execution
+  if (!shell) return false
+
+  // Check if bash is available
+  if (!checkBashAvailable()) return false
+
+  // Use alias if the command contains node-gyp
+  // This covers both simple commands like "node-gyp rebuild"
+  // and complex commands like "echo 'before' && node-gyp rebuild"
+  const hasNodeGyp = arg0.includes('node-gyp')
+
+  return hasNodeGyp
+}
 
 /**
  * Add all exsting `node_modules/.bin` folders to the PATH that
@@ -328,8 +353,35 @@ export const exec = async (
     projectRoot,
     'script-shell': shell = false,
     color = false,
+    signal,
     ...spawnOptions
   } = options
+
+  // Check if we should use node-gyp alias for shell execution
+  if (shouldUseNodeGypAlias(arg0, shell)) {
+    const fullCommand =
+      args.length > 0 ? `${arg0} ${args.join(' ')}` : arg0
+    const status = await runWithNodeGypAlias(fullCommand, {
+      cwd,
+      env: addPaths(projectRoot, cwd, {
+        ...process.env,
+        ...env,
+        FORCE_COLOR: color ? '1' : '0',
+      }),
+      stdio: 'pipe',
+      signal,
+    })
+
+    return {
+      command: arg0,
+      args,
+      cwd,
+      stdout: '',
+      stderr: '',
+      status,
+      signal: null,
+    }
+  }
 
   const p = promiseSpawn(arg0, args, {
     ...spawnOptions,
@@ -362,8 +414,35 @@ export const execFG = async (
     env = {},
     'script-shell': shell = false,
     color = true,
+    signal,
     ...spawnOptions
   } = options
+
+  // Check if we should use node-gyp alias for shell execution
+  if (shouldUseNodeGypAlias(arg0, shell)) {
+    const fullCommand =
+      args.length > 0 ? `${arg0} ${args.join(' ')}` : arg0
+    const status = await runWithNodeGypAlias(fullCommand, {
+      cwd,
+      env: addPaths(projectRoot, cwd, {
+        ...process.env,
+        ...env,
+        FORCE_COLOR: color ? '1' : '0',
+      }),
+      stdio: 'inherit',
+      signal,
+    })
+
+    return {
+      command: arg0,
+      args,
+      cwd,
+      stdout: null,
+      stderr: null,
+      status,
+      signal: null,
+    }
+  }
 
   return new Promise<SpawnResultNoStdio>(res => {
     foregroundChild(
@@ -429,3 +508,10 @@ export const runExecFG = async (
   options: RunExecOptions,
 ): Promise<RunFGResult | SpawnResultNoStdio> =>
   runExecImpl<SpawnResultNoStdio>(options, runFG, execFG)
+
+// Export alias runner utilities
+export {
+  runWithNodeGypAlias,
+  checkBashAvailable,
+  escapeShellArg,
+} from './aliasRunner.ts'
