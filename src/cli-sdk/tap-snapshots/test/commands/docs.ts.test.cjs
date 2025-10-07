@@ -10,6 +10,7 @@ Usage:
 
 \`\`\`
 vlt docs [<spec>]
+vlt docs [--target=<query>]
 \`\`\`
 
 Open documentation for a package in a web browser. Reads repository information from package.json or fetches manifest data for the specified package.
@@ -26,6 +27,22 @@ Open docs for a specific package version
 
 \`\`\`
 vlt docs abbrev@2.0.0
+\`\`\`
+
+List documentation URLs for all direct dependencies
+
+\`\`\`
+vlt docs --target=":root > *"
+\`\`\`
+
+## Options
+
+### target
+
+Query selector to filter packages using DSS syntax.
+
+\`\`\`
+--target=<query>
 \`\`\`
 
 `
