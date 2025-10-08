@@ -11,7 +11,9 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import type { Manifest, NormalizedManifest } from '@vltpkg/types'
 import hostedGitInfo from 'hosted-git-info'
-const { fromUrl: hostedGitInfoFromUrl } = hostedGitInfo
+const { fromUrl: hostedGitInfoFromUrl } = hostedGitInfo as {
+  fromUrl: (url: string) => { docs?: () => string } | null
+}
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -94,7 +96,7 @@ const getUrlFromManifest = (
 
       const info = hostedGitInfoFromUrl(repoUrl.replace(/^git\+/, ''))
 
-      if (info && typeof info.docs === 'function') {
+      if (info?.docs && typeof info.docs === 'function') {
         url = info.docs()
       }
     }
