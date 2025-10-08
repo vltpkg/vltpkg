@@ -48,6 +48,7 @@
     "@vltpkg/workspaces": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.6",
+    "chalk": "^5.6.2",
     "graph-run": "catalog:",
     "hosted-git-info": "^8.1.0",
     "ink": "^6.2.2",
