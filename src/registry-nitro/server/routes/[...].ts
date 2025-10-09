@@ -31,6 +31,7 @@ const app = new H3()
   )
   .get('/local/:param1/-/:tarball', local.getTarballHandler)
   .get('/local/:param1/:param2/-/:tarball', local.getTarballHandler)
+  .get('/-/v1/search', local.searchHandler)
   // default (must come last)
   .get('/:param1', local.getPackageOrVersionHandler)
   .put('/:param1', local.putPackageHandler)
@@ -39,5 +40,6 @@ const app = new H3()
   .get('/:param1/:param2/:param3', local.getPackageOrVersionHandler)
   .get('/:param1/-/:tarball', local.getTarballHandler)
   .get('/:param1/:param2/-/:tarball', local.getTarballHandler)
+  .get('/-/v1/search', npm.searchHandler) // TODO: change this to local search
 
 export default app.handler
