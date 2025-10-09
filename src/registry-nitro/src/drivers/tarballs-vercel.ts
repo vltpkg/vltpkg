@@ -1,9 +1,7 @@
 import { createStorage } from 'unstorage'
 import vercelBlobDriver from 'unstorage/drivers/vercel-blob'
-import {
-  defineTarballsDriver,
-  type TarballsFsDriver,
-} from './tarballs.ts'
+import { defineTarballsDriver } from './tarballs.ts'
+import type { TarballsFsDriver } from './tarballs.ts'
 import { getDb } from '../db/turso.ts'
 
 const storage = createStorage({

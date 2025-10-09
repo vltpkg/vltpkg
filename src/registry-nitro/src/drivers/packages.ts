@@ -1,6 +1,6 @@
 import { defineDriver } from 'unstorage'
 import * as Schema from '../db/schema.ts'
-import { eq, like, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import type { LibSQLDatabase } from 'drizzle-orm/libsql'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import { text } from 'stream/consumers'
@@ -211,14 +211,14 @@ export const definePackagesDriver = (
         console.log('[cache] set done', key)
       },
       // Not implemented since the Nitro's cache event handler does not use them
-      async hasItem(key, _opts) {
+      async hasItem(_key, _opts) {
         return false
       },
-      async removeItem(key, _opts) {},
-      async getKeys(base, _opts) {
+      async removeItem(_key, _opts) {},
+      async getKeys(_base, _opts) {
         return []
       },
-      async clear(base, _opts) {},
+      async clear(_base, _opts) {},
       async dispose() {},
       async watch() {
         return () => {}

@@ -25,7 +25,13 @@
     "@cloudflare/workers-types": "^4.20250829.0",
     "@neon-rs/load": "^0.0.4",
     "drizzle-kit": "^0.31.4",
-    "wrangler": "^4.33.1"
+    "wrangler": "^4.33.1",
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "license": "FSL-1.1-MIT",
   "engines": {
@@ -33,15 +39,22 @@
   },
   "scripts": {
     "build": "nitro build",
-    "build:cf": "VSR_CLOUDFLARE=1 nitro build",
     "postbuild": "node dev/find-libsql.mjs",
+    "build:cf": "VSR_CLOUDFLARE=1 nitro build",
     "cache:drop": "rm -rf .data",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio --port 4985",
     "deploy:cf": "wrangler deploy",
     "dev": "nitro dev",
     "dev:cf": "wrangler dev",
-    "serve": "node .output/server/index.mjs"
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "serve": "node .output/server/index.mjs",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
   },
+  "prettier": "../../.prettierrc.js",
   "type": "module"
 }
