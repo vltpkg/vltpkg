@@ -1,12 +1,8 @@
 import { getRouterParam, eventHandler, HTTPError } from 'h3'
-import type { HTTPEvent, EventHandlerRequest } from 'h3'
+import type { HTTPEvent, EventHandler } from 'h3'
 import assert from 'node:assert'
-import type { EventHandler } from 'h3'
 
-const assertParam = (
-  event: HTTPEvent<EventHandlerRequest>,
-  name: string,
-) => {
+const assertParam = (event: HTTPEvent, name: string) => {
   const param = getRouterParam(event, name)
   assert(param, `${name} parameter is required`)
   return param
@@ -49,7 +45,7 @@ export const putPackageHandler: EventHandler = async event => {
   }
 }
 
-export const searchHandler: EventHandler = async event => {
+export const searchHandler: EventHandler = async () => {
   throw new HTTPError('Not implemented', {
     status: 501,
   })

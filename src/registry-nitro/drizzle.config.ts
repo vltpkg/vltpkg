@@ -14,15 +14,15 @@ export default defineConfig({
       {
         dialect: 'turso',
         dbCredentials: {
-          url: process.env.DATABASE_URL!,
-          authToken: process.env.TURSO_AUTH_TOKEN!,
+          url: process.env.DATABASE_URL,
+          authToken: process.env.TURSO_AUTH_TOKEN,
         },
       }
     : {
         dialect: 'postgresql',
         schema: './src/db/schema-postgres.ts',
         dbCredentials: {
-          url: process.env.DATABASE_URL!,
+          url: process.env.DATABASE_URL,
         },
       }
   : {

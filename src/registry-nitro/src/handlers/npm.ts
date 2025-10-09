@@ -5,18 +5,14 @@ import {
   eventHandler,
   getQuery,
 } from 'h3'
-import type { HTTPEvent, EventHandlerRequest, H3Event } from 'h3'
+import type { HTTPEvent, H3Event, EventHandler } from 'h3'
 import assert from 'node:assert'
 import type { CachedEventHandlerOptions } from 'nitro/types'
-import type { EventHandler } from 'h3'
 
 const CACHE_MANIFESTS = process.env.VSR_NO_CACHE_MANIFESTS !== '1'
 const CACHE_TARBALLS = process.env.VSR_NO_CACHE_TARBALLS !== '1'
 
-const assertParam = (
-  event: HTTPEvent<EventHandlerRequest>,
-  name: string,
-) => {
+const assertParam = (event: HTTPEvent, name: string) => {
   const param = getRouterParam(event, name)
   assert(param, `${name} parameter is required`)
   return param
@@ -29,10 +25,7 @@ const joinParams = (
   return params.filter(Boolean).join(sep)
 }
 
-const proxyToNpm = (
-  event: H3Event<EventHandlerRequest>,
-  url: string,
-) => {
+const proxyToNpm = (event: H3Event, url: string) => {
   return proxyRequest(event, `https://registry.npmjs.org${url}`, {
     onResponse: (event, response) => {
       event.res.status = response.status

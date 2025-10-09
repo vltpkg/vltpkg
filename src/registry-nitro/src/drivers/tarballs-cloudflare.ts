@@ -1,9 +1,7 @@
 import { createStorage } from 'unstorage'
 import cloudflareR2BindingDriver from 'unstorage/drivers/cloudflare-r2-binding'
-import {
-  defineTarballsDriver,
-  type TarballsFsDriver,
-} from './tarballs.ts'
+import { defineTarballsDriver } from './tarballs.ts'
+import type { TarballsFsDriver } from './tarballs.ts'
 import { getDb } from '../db/d1.ts'
 
 const storage = createStorage({

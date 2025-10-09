@@ -95,14 +95,14 @@ export const defineTarballsDriver = (
       },
 
       // Not implemented since the Nitro's cache event handler does not use them
-      async hasItem(key) {
+      async hasItem(_key) {
         return false
       },
-      async removeItem(key) {},
-      async getKeys(base) {
+      async removeItem(_key) {},
+      async getKeys(_base) {
         return []
       },
-      async clear(base) {},
+      async clear(_base) {},
       async dispose() {},
       async watch() {
         return () => {}
