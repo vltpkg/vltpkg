@@ -1,5 +1,10 @@
 import { cachedEventHandler } from 'nitro/runtime'
-import { getRouterParam, proxyRequest, eventHandler } from 'h3'
+import {
+  getRouterParam,
+  proxyRequest,
+  eventHandler,
+  getQuery,
+} from 'h3'
 import type { HTTPEvent, EventHandlerRequest, H3Event } from 'h3'
 import assert from 'node:assert'
 import type { CachedEventHandlerOptions } from 'nitro/types'
@@ -115,4 +120,24 @@ export const putPackageHandler: EventHandler = async event => {
   const param1 = assertParam(event, 'param1')
   const param2 = getRouterParam(event, 'param2')
   return proxyToNpm(event, `/${joinParams('/', param1, param2)}`)
+}
+
+export const searchHandler: EventHandler = async event => {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries({
+    // Default values from npm/cli. Might not be needed but let's default to them
+    // so the GUI doesn't need to set these.
+    quality: '0.65',
+    popularity: '0.98',
+    maintenance: '0.5',
+    ...getQuery(event),
+  })) {
+    if (value) {
+      params.set(key, value)
+    }
+  }
+  return proxyToNpm(
+    event,
+    `/${joinParams('/', '-', 'v1', 'search')}?${params.toString()}`,
+  )
 }

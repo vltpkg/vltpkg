@@ -39,3 +39,12 @@ const tarballHandler: EventHandler = async event => {
 }
 
 export const getTarballHandler = eventHandler(tarballHandler)
+
+export const putPackageHandler: EventHandler = async event => {
+  const param1 = assertParam(event, 'param1')
+  const param2 = getRouterParam(event, 'param2')
+  return {
+    param1,
+    param2,
+  }
+}
