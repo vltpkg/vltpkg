@@ -8,6 +8,7 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
+    "@clerk/backend": "^2.17.2",
     "@libsql/client": "^0.15.14",
     "@libsql/linux-x64-gnu": "^0.5.22",
     "@vercel/blob": "^2.0.0",
