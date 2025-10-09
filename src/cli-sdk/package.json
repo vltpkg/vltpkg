@@ -57,6 +57,7 @@
     "minimatch": "catalog:",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
+    "polite-json": "catalog:",
     "pretty-bytes": "^7.0.1",
     "react": "^19.1.1",
     "react-devtools-core": "^4.28.5",
