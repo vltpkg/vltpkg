@@ -1919,7 +1919,7 @@ importers:
         version: 0.31.4
       eslint:
         specifier: 'catalog:'
-        version: 9.34.0(jiti@2.5.1)
+        version: 9.34.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -1928,7 +1928,7 @@ importers:
         version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.7.3)
+        version: 8.41.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.7.3)
       wrangler:
         specifier: ^4.33.1
         version: 4.33.1(@cloudflare/workers-types@4.20250830.0)
