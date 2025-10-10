@@ -1,11 +1,9 @@
 import { cmdShimIfExists } from '@vltpkg/cmd-shim'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import type { Manifest } from '@vltpkg/types'
 import { mkdir, symlink } from 'node:fs/promises'
 import { dirname, relative } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { Edge } from '../edge.ts'
-import { binPaths } from './bin-paths.ts'
 
 const clobberSymlink = async (
   target: string,
@@ -48,9 +46,9 @@ const clobberSymlink = async (
  */
 export const addEdge = async (
   edge: Edge,
-  manifest: Pick<Manifest, 'bin'>,
   scurry: PathScurry,
   remover: RollbackRemove,
+  bins?: Record<string, string>,
 ) => {
   if (!edge.to) return
   const binRoot = scurry.resolve(
@@ -73,17 +71,18 @@ export const addEdge = async (
   if (process.platform === 'win32') await p
   else promises.push(p)
 
-  const bp = binPaths(manifest)
-  for (const [key, val] of Object.entries(bp)) {
-    const link = scurry.resolve(binRoot, key)
-    const absTarget = scurry.resolve(path, val)
-    const target = relative(binRoot, absTarget)
-    // TODO: bash/cmd/ps1 shims on Windows
-    promises.push(
-      process.platform === 'win32' ?
-        cmdShimIfExists(absTarget, link, remover)
-      : clobberSymlink(target, link, remover),
-    )
+  if (bins) {
+    for (const [key, val] of Object.entries(bins)) {
+      const link = scurry.resolve(binRoot, key)
+      const absTarget = scurry.resolve(path, val)
+      const target = relative(binRoot, absTarget)
+      // TODO: bash/cmd/ps1 shims on Windows
+      promises.push(
+        process.platform === 'win32' ?
+          cmdShimIfExists(absTarget, link, remover)
+        : clobberSymlink(target, link, remover),
+      )
+    }
   }
   if (promises.length) await Promise.all(promises)
 }

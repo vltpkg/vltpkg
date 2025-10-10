@@ -277,6 +277,7 @@ t.test('using placePackage', async t => {
     {
       name: 'foo',
       version: '1.0.0',
+      bin: { foo: './bin.js' }, // cover bin field handling
     },
   )
   t.ok(foo)

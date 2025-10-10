@@ -1,6 +1,4 @@
-import type { PackageJson } from '@vltpkg/package-json'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import type { Manifest } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Diff } from '../../src/diff.ts'
@@ -15,9 +13,9 @@ t.test('add some edges', async t => {
     '../../src/reify/add-edge.ts': {
       addEdge: async (
         edge: Edge,
-        _mani: Manifest,
         _scurry: PathScurry,
         _remover: RollbackRemove,
+        _bins?: Record<string, string>,
       ) => {
         reified.push(edge)
       },
@@ -26,14 +24,11 @@ t.test('add some edges', async t => {
 
   const a = {
     to: {
-      // no manifest
-      resolvedLocation() {
-        return 'some/path'
-      },
+      bins: {},
     },
   }
   const b = {
-    to: { manifest: {} },
+    to: { bins: {} },
   }
   const diff = {
     edges: {
@@ -48,12 +43,7 @@ t.test('add some edges', async t => {
   } as unknown as Diff
   const scurry = new PathScurry(projectRoot)
   await Promise.all(
-    addEdges(
-      diff,
-      { read: () => ({}) } as unknown as PackageJson,
-      scurry,
-      {} as unknown as RollbackRemove,
-    ),
+    addEdges(diff, scurry, {} as unknown as RollbackRemove),
   )
   t.strictSame(new Set(reified), new Set([a, b]))
 })

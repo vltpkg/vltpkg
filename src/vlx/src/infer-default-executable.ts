@@ -1,3 +1,4 @@
+import { parseScope } from '@vltpkg/types'
 import type { NormalizedManifest } from '@vltpkg/types'
 
 /**
@@ -11,12 +12,8 @@ export const inferDefaultExecutable = ({
 }: NormalizedManifest): undefined | [string, string] => {
   if (!bin) return undefined
 
-  let binName = name?.startsWith('@') ? name.split('/')[1] : name
+  let [, binName] = parseScope(name ?? '')
   if (!binName) return undefined
-
-  if (typeof bin === 'string') {
-    return [binName, bin]
-  }
 
   // if it's exactly one key, that's the one,
   // even if it doesn't match the name
@@ -25,8 +22,8 @@ export const inferDefaultExecutable = ({
     binName = (keys as [string])[0]
   }
 
-  bin = bin[binName]
-  if (!bin) return undefined
+  const res = bin[binName]
+  if (!res) return undefined
 
-  return [binName, bin]
+  return [binName, res]
 }

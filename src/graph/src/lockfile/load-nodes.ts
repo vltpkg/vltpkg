@@ -32,6 +32,7 @@ export const loadNodes = (
       manifest,
       rawManifest,
       platform,
+      bins,
       buildState,
     ] = lockfileNode
     // workspace nodes and the project root node are already part of the
@@ -112,9 +113,13 @@ export const loadNodes = (
     }
 
     // Set platform data if provided
-    /* c8 ignore next 3 */
     if (platform) {
       node.platform = platform
+    }
+
+    // optionally set bin data if provided
+    if (bins) {
+      node.bins = bins
     }
 
     // Set build state if provided

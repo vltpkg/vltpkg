@@ -251,6 +251,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
       null,
       null,
       null,
+      null,
       2
     ],
     "··baz@1.0.0": [
@@ -262,12 +263,14 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
       null,
       null,
       null,
+      null,
       3
     ],
     "··foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
       null,
       null,
       null,
@@ -347,6 +350,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       null,
       null,
+      null,
       2
     ],
     "··baz@1.0.0": [
@@ -358,12 +362,14 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       null,
       null,
+      null,
       3
     ],
     "··foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
       null,
       null,
       null,
@@ -410,6 +416,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       },
       null,
       null,
+      null,
       2
     ],
     "··baz@1.0.0": [
@@ -427,6 +434,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       },
       null,
       null,
+      null,
       3
     ],
     "··foo@1.0.0": [
@@ -442,6 +450,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
           "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
         }
       },
+      null,
       null,
       null,
       1
@@ -507,7 +516,15 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
     "··foo@1.0.0": [
       0,
       "foo",
-      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      {
+        "foo": "foo.js"
+      }
     ]
   },
   "edges": {

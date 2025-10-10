@@ -591,6 +591,7 @@ t.test('load nodes with buildState', async t => {
       },
       null,
       null,
+      null,
       1, // buildState: needed
     ],
     // Node with buildState = built (2)
@@ -606,6 +607,7 @@ t.test('load nodes with buildState', async t => {
       },
       null,
       null,
+      null,
       2, // buildState: built
     ],
     // Node with buildState = failed (3)
@@ -619,6 +621,7 @@ t.test('load nodes with buildState', async t => {
         name: 'failed-build',
         version: '1.0.0',
       },
+      null,
       null,
       null,
       3, // buildState: failed
@@ -684,5 +687,129 @@ t.test('load nodes with buildState', async t => {
       }))
       .sort((a, b) => a.name.localeCompare(b.name)),
     'should load nodes with correct buildState values',
+  )
+})
+
+t.test('load nodes with platform and bin', async t => {
+  const graph = new Graph({
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+    },
+    projectRoot: t.testdirName,
+  })
+
+  const nodes = {
+    [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+    // Node with both platform constraints and bins
+    [joinDepIDTuple(['registry', '', 'pkg-with-bin@1.0.0'])]: [
+      0,
+      'pkg-with-bin',
+      'sha512-binpkg==',
+      null,
+      null,
+      {
+        name: 'pkg-with-bin',
+        version: '1.0.0',
+      },
+      null,
+      {
+        engines: { node: '>=18.0.0' },
+        os: ['linux', 'darwin'],
+        cpu: ['x64', 'arm64'],
+      },
+      {
+        'pkg-with-bin': './bin/cli.js',
+        'alt-name': './bin/alt.js',
+      },
+    ],
+    // Node with different platform constraints and single bin
+    [joinDepIDTuple(['registry', '', 'platform-pkg@2.0.0'])]: [
+      0,
+      'platform-pkg',
+      'sha512-platformpkg==',
+      null,
+      null,
+      {
+        name: 'platform-pkg',
+        version: '2.0.0',
+      },
+      null,
+      {
+        engines: { node: '>=20.0.0', npm: '>=10.0.0' },
+        os: 'win32',
+        cpu: 'x64',
+      },
+      {
+        'platform-pkg': './index.js',
+      },
+    ],
+  } as LockfileData['nodes']
+
+  loadNodes(graph, nodes, {})
+
+  // Verify first node with multiple bins and array platform values
+  const binPkgNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'pkg-with-bin@1.0.0']),
+  )
+  t.ok(binPkgNode, 'pkg-with-bin node should exist')
+  t.same(
+    binPkgNode?.bins,
+    { 'pkg-with-bin': './bin/cli.js', 'alt-name': './bin/alt.js' },
+    'should have correct bins',
+  )
+  t.same(
+    binPkgNode?.platform?.engines,
+    { node: '>=18.0.0' },
+    'should have correct engines',
+  )
+  t.same(
+    binPkgNode?.platform?.os,
+    ['linux', 'darwin'],
+    'should have correct os array',
+  )
+  t.same(
+    binPkgNode?.platform?.cpu,
+    ['x64', 'arm64'],
+    'should have correct cpu array',
+  )
+
+  // Verify second node with single bin and string platform values
+  const platformPkgNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'platform-pkg@2.0.0']),
+  )
+  t.ok(platformPkgNode, 'platform-pkg node should exist')
+  t.same(
+    platformPkgNode?.bins,
+    { 'platform-pkg': './index.js' },
+    'should have correct single bin',
+  )
+  t.same(
+    platformPkgNode?.platform?.engines,
+    { node: '>=20.0.0', npm: '>=10.0.0' },
+    'should have correct engines with multiple entries',
+  )
+  t.equal(
+    platformPkgNode?.platform?.os,
+    'win32',
+    'should have correct os string',
+  )
+  t.equal(
+    platformPkgNode?.platform?.cpu,
+    'x64',
+    'should have correct cpu string',
+  )
+
+  t.matchSnapshot(
+    [...graph.nodes.values()]
+      .filter(node => node.name !== 'my-project')
+      .map(n => ({
+        id: n.id,
+        name: n.name,
+        bins: n.bins,
+        platform: n.platform,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    'should load nodes with platform and bin data',
   )
 })
