@@ -502,3 +502,69 @@ t.test('deciding which node to hoist', async t => {
     t.equal(pickNodeToHoist(new Set([n, m])), n)
   })
 })
+
+t.test('hoisting with aliased dependencies', async t => {
+  const mainManifest = { name: 'root' }
+
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({
+      dependencies: {
+        foo: 'npm:bar@1.0.0',
+        baz: 'npm:bar@1.0.0',
+      },
+    }),
+    node_modules: {
+      foo: t.fixture(
+        'symlink',
+        `.vlt/${joinDepIDTuple(['registry', '', 'bar@1.0.0'])}/node_modules/bar`,
+      ),
+      baz: t.fixture(
+        'symlink',
+        `.vlt/${joinDepIDTuple(['registry', '', 'bar@1.0.0'])}/node_modules/bar`,
+      ),
+      '.vlt': {
+        [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: {
+          node_modules: {
+            bar: {
+              'package.json': JSON.stringify({
+                name: 'bar',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+    },
+  })
+
+  const packageJson = new PackageJson()
+  const scurry = new PathScurry(projectRoot)
+  const remover = {
+    rm: async (path: string) => await rm(path),
+  } as unknown as RollbackRemove
+
+  const graph = actual.load({
+    projectRoot,
+    mainManifest,
+    scurry,
+    packageJson,
+    monorepo: Monorepo.load(projectRoot),
+  })
+
+  await internalHoist(
+    graph,
+    {
+      projectRoot,
+      scurry,
+    },
+    remover,
+  )
+
+  const hoistDir = readdirSync(
+    resolve(projectRoot, 'node_modules/.vlt/node_modules'),
+  )
+  t.notOk(hoistDir.includes('bar'), 'canonical name NOT hoisted')
+  t.ok(hoistDir.includes('foo'), 'alias foo hoisted')
+  t.ok(hoistDir.includes('baz'), 'alias baz hoisted')
+})

@@ -94,10 +94,24 @@ export const internalHoist = async (
   // For each name, we prioritize registry deps over other types,
   // and higher versions over lower ones. In the case of non-registry
   // deps, we just pick the first item by sorting the DepIDs.
-  const links = new Map<string, DepID>()
+  const links = new Map<string, { id: DepID; name: string }>()
   for (const [name, nodes] of graph.nodesByName) {
     const pickNode = pickNodeToHoist(nodes)
-    if (pickNode) links.set(name, pickNode.id)
+    if (pickNode) {
+      let picked = false
+      if (pickNode.edgesIn.size > 0) {
+        for (const edgeIn of pickNode.edgesIn) {
+          const otherName = edgeIn.name
+          if (otherName !== name && !links.has(otherName)) {
+            picked = true
+            links.set(otherName, pickNode)
+          }
+        }
+      }
+      if (!picked) {
+        links.set(name, pickNode)
+      }
+    }
   }
 
   // now we have a list of everything to hoist
@@ -139,9 +153,9 @@ export const internalHoist = async (
   await Promise.all(removes)
 
   const symlinks: Promise<void>[] = []
-  for (const [name, id] of links) {
+  for (const [name, { name: nodeName, id }] of links) {
     const target = scurry.resolve(
-      `node_modules/.vlt/${id}/node_modules/${name}`,
+      `node_modules/.vlt/${id}/node_modules/${nodeName}`,
     )
     const path = scurry.resolve(
       `node_modules/.vlt/node_modules/${name}`,
@@ -159,13 +173,13 @@ export const internalHoist = async (
 const checkExisting = async (
   name: string,
   entry: PathBase,
-  links: Map<string, DepID>,
+  links: Map<string, { name: string; id: DepID }>,
   removes: Promise<void>[],
   scurry: PathScurry,
   remover: RollbackRemove,
 ) => {
   const target = await entry.readlink()
-  const id = links.get(name)
+  const { id } = links.get(name) /* c8 ignore next */ ?? {}
   if (
     !target ||
     !id ||
