@@ -1,10 +1,10 @@
 name: CI (with vlt)
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  # push:
+  # branches:
+  # - main
+  # pull_request:
   workflow_dispatch:
 
 concurrency:
@@ -26,7 +26,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
+          node-version: "^22.14.0"
           check-latest: true
 
       - name: Bootstrap
@@ -34,10 +34,10 @@ jobs:
 
       - name: Build vlt
         run: node --run build:bundle
-      
+
       - name: Add bundle to PATH
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
-      
+
       - name: Install Dependencies
         run: |
           # avoid changes from the bootstrap step
@@ -130,10 +130,10 @@ jobs:
 
       - name: Build vlt
         run: node --run build:bundle
-      
+
       - name: Add built to PATH
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
-      
+
       - name: Install Dependencies
         run: vlt install --view=json --allow-scripts="#tailwindcss"
 
@@ -141,7 +141,7 @@ jobs:
         continue-on-error: true
         # TODO: https://github.com/vltpkg/vltpkg/issues/810
         run: vlr --recursive typecheck
-          
+
       - name: Run Tests
         continue-on-error: true
         # https://github.com/vltpkg/vltpkg/issues/801
