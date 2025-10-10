@@ -735,6 +735,7 @@ t.test('save platform data for optional dependencies', async t => {
       engines: { node: '>=14' },
       os: ['linux', 'darwin'],
       cpu: ['x64', 'arm64'],
+      bin: { foo: 'foo.js' },
       dist: {
         integrity:
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
@@ -941,24 +942,24 @@ t.test('save buildState data', async t => {
     t.ok(bazKey, 'baz node exists')
     t.ok(quxKey, 'qux node exists')
 
-    // Check buildState values (index 8 in LockfileNode array)
+    // Check buildState values (index 9 in LockfileNode array)
     t.equal(
-      lockfile.nodes[fooKey]?.[8],
+      lockfile.nodes[fooKey]?.[9],
       1,
       'foo buildState is 1 (needed)',
     )
     t.equal(
-      lockfile.nodes[barKey]?.[8],
+      lockfile.nodes[barKey]?.[9],
       2,
       'bar buildState is 2 (built)',
     )
     t.equal(
-      lockfile.nodes[bazKey]?.[8],
+      lockfile.nodes[bazKey]?.[9],
       3,
       'baz buildState is 3 (failed)',
     )
     t.notOk(
-      lockfile.nodes[quxKey]?.[8],
+      lockfile.nodes[quxKey]?.[9],
       'qux buildState is undefined (none)',
     )
 
@@ -981,7 +982,7 @@ t.test('save buildState data', async t => {
 
     t.ok(fooKey, 'foo node exists')
     t.notOk(
-      lockfile.nodes[fooKey]?.[8],
+      lockfile.nodes[fooKey]?.[9],
       'buildState not saved when saveBuildData is false',
     )
 
@@ -1003,7 +1004,7 @@ t.test('save buildState data', async t => {
     const nodeKeys = Object.keys(savedContent.nodes)
     const fooKey = nodeKeys.find(k => k.includes('foo'))
     t.equal(
-      savedContent.nodes[fooKey!]?.[8],
+      savedContent.nodes[fooKey!]?.[9],
       1,
       'save() with saveBuildData includes buildState',
     )
@@ -1026,7 +1027,7 @@ t.test('save buildState data', async t => {
     const hiddenNodeKeys = Object.keys(hiddenContent.nodes)
     const hiddenFooKey = hiddenNodeKeys.find(k => k.includes('foo'))
     t.equal(
-      hiddenContent.nodes[hiddenFooKey!]?.[8],
+      hiddenContent.nodes[hiddenFooKey!]?.[9],
       1,
       'saveHidden() automatically includes buildState',
     )

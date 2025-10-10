@@ -25,7 +25,7 @@ const fooManifest = {
 const barManifest = {
   name: 'bar',
   version: '1.2.3',
-  bin: './bar.js',
+  bin: { bar: 'bar.js' },
 }
 
 t.test('reify an edge', async t => {
@@ -83,6 +83,9 @@ t.test('reify an edge', async t => {
     joinDepIDTuple(['registry', '', 'bar@1.2.3']),
     barManifest,
   )
+  barNode.bins = {
+    bar: 'bar.js',
+  }
 
   barNode.location =
     projectRoot +
@@ -96,7 +99,7 @@ t.test('reify an edge', async t => {
   const scurry = new PathScurry(projectRoot)
 
   t.intercept(process, 'platform', { value: 'win32' })
-  await addEdge(edge, barManifest, scurry, mockRemover)
+  await addEdge(edge, scurry, mockRemover, barNode.bins)
 
   t.throws(() => statSync(projectRoot + '/node_modules/.bin/bar'))
   statSync(fooNM + '/bar')
@@ -112,7 +115,7 @@ t.test('reify an edge', async t => {
   )
 
   t.intercept(process, 'platform', { value: 'darwin' })
-  await addEdge(rootEdge, barManifest, scurry, mockRemover)
+  await addEdge(rootEdge, scurry, mockRemover, barNode.bins)
   statSync(projectRoot + '/node_modules/bar')
   statSync(projectRoot + '/node_modules/.bin/bar')
   t.throws(() => statSync(projectRoot + '/node_modules/.bin/bar.cmd'))
@@ -125,10 +128,10 @@ t.test('reify an edge', async t => {
     undefined,
   )
   // just verify it doesn't blow up
-  await addEdge(dangle, {}, scurry, mockRemover)
+  await addEdge(dangle, scurry, mockRemover, undefined)
 
   // exercise the clobbering case
-  await addEdge(rootEdge, barManifest, scurry, mockRemover)
+  await addEdge(rootEdge, scurry, mockRemover, barNode.bins)
   statSync(projectRoot + '/node_modules/bar')
   statSync(projectRoot + '/node_modules/.bin/bar')
 })

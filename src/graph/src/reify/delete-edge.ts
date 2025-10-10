@@ -1,7 +1,6 @@
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { PathScurry } from 'path-scurry'
 import type { Edge } from '../edge.ts'
-import { binPaths } from './bin-paths.ts'
 
 const rmBinPosix = (remover: RollbackRemove, bin: string) => {
   return [remover.rm(bin)]
@@ -31,9 +30,9 @@ export const deleteEdge = async (
   const binRoot = scurry.cwd.resolve(`${nm}/.bin`)
   const promises: Promise<unknown>[] = []
   promises.push(remover.rm(path))
-  const manifest = to?.manifest
-  if (manifest) {
-    for (const key of Object.keys(binPaths(manifest))) {
+  const bins = to?.bins
+  if (bins) {
+    for (const key of Object.keys(bins)) {
       const bin = binRoot.resolve(key).fullpath()
       promises.push(...rmBin(remover, bin))
     }

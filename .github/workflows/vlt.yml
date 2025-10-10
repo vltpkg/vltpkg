@@ -19,6 +19,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
@@ -26,7 +30,7 @@ jobs:
           check-latest: true
 
       - name: Bootstrap
-        run: npx vlt install --view=json --allow-scripts="#tailwindcss"
+        run: pnpm install
 
       - name: Build vlt
         run: node --run build:bundle
@@ -35,7 +39,12 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
       
       - name: Install Dependencies
-        run: vlt install --view=json --allow-scripts="#tailwindcss"
+        run: |
+          # avoid changes from the bootstrap step
+          rm -rf node_modules
+          git checkout -- vlt-lock.json 
+          # re-install dependencies
+          vlt install --view=json --allow-scripts="#tailwindcss"
 
       - name: Formatting
         id: format

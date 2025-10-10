@@ -111,6 +111,7 @@ export type LockfileNode = [
   manifest?: NormalizedManifest | null,
   rawManifest?: NormalizedManifest | null,
   platform?: LockfilePlatform | null,
+  bins?: Record<string, string> | null,
   buildState?: LockfileBuildState | null,
 ]
 

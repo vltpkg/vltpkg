@@ -381,3 +381,44 @@ Array [
   },
 ]
 `
+
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with platform and bin > should load nodes with platform and bin data 1`] = `
+Array [
+  Object {
+    "bins": Object {
+      "alt-name": "./bin/alt.js",
+      "pkg-with-bin": "./bin/cli.js",
+    },
+    "id": "··pkg-with-bin@1.0.0",
+    "name": "pkg-with-bin",
+    "platform": Object {
+      "cpu": Array [
+        "x64",
+        "arm64",
+      ],
+      "engines": Object {
+        "node": ">=18.0.0",
+      },
+      "os": Array [
+        "linux",
+        "darwin",
+      ],
+    },
+  },
+  Object {
+    "bins": Object {
+      "platform-pkg": "./index.js",
+    },
+    "id": "··platform-pkg@2.0.0",
+    "name": "platform-pkg",
+    "platform": Object {
+      "cpu": "x64",
+      "engines": Object {
+        "node": ">=20.0.0",
+        "npm": ">=10.0.0",
+      },
+      "os": "win32",
+    },
+  },
+]
+`

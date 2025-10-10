@@ -201,6 +201,11 @@ export class Node implements NodeLike {
   }
 
   /**
+   * Record of binary names to their paths in the package, if any.
+   */
+  bins?: Record<string, string>
+
+  /**
    * True if this node has been built as part of the reify step.
    */
   built = false
