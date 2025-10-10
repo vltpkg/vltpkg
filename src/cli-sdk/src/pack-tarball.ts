@@ -8,6 +8,7 @@ import { existsSync, statSync } from 'node:fs'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
+import { parse, stringify } from 'polite-json'
 
 export type PackTarballResult = {
   name: string
@@ -31,8 +32,9 @@ const replaceWorkspaceAndCatalogSpecs = (
   manifest_: NormalizedManifest,
   config: LoadedConfig,
 ): NormalizedManifest => {
-  // Create a deep copy of the manifest to avoid modifying the original
-  const manifest = structuredClone(manifest_)
+  // Create a json copy of the manifest to avoid modifying the original
+  // preserves original formatting symbols from polite-json
+  const manifest = parse(stringify(manifest_)) as NormalizedManifest
 
   // Get workspace and catalog configuration from config
   const { monorepo, catalog = {}, catalogs = {} } = config.options
