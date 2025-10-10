@@ -1,17 +1,16 @@
 import { H3 } from 'h3'
 import * as npm from '../../src/handlers/npm.ts'
 import * as local from '../../src/handlers/local.ts'
-// import { clerkClient } from '../../src/auth.ts'
-
-// const auth = {
-//   middleware: [() => {
-
-//   }],
-// }
+import * as auth from '../../src/handlers/auth.ts'
+import { requireAuth } from '../../src/middleware/auth.ts'
 
 const app = new H3()
   .get('/', () => ({ ok: true }))
-  // npm
+  // Authentication endpoints
+  .post('/-/v1/login', auth.loginInitHandler)
+  .get('/-/v1/login/callback', auth.loginCallbackHandler)
+  .get('/-/v1/login/poll/:sessionId', auth.loginPollHandler)
+  // npm (no auth required - public proxy)
   .get('/npm/:param1', npm.getPackageOrVersionHandler)
   .put('/npm/:param1', npm.putPackageHandler)
   .get('/npm/:param1/:param2', npm.getPackageOrVersionHandler)
@@ -20,11 +19,11 @@ const app = new H3()
   .get('/npm/:param1/-/:tarball', npm.getTarballHandler)
   .get('/npm/:param1/:param2/-/:tarball', npm.getTarballHandler)
   .get('/npm/-/v1/search', npm.searchHandler)
-  // local
+  // local (auth required for PUT operations)
   .get('/local/:param1', local.getPackageOrVersionHandler)
-  .put('/local/:param1', local.putPackageHandler)
+  .put('/local/:param1', requireAuth(local.putPackageHandler))
   .get('/local/:param1/:param2', local.getPackageOrVersionHandler)
-  .put('/local/:param1/:param2', local.putPackageHandler)
+  .put('/local/:param1/:param2', requireAuth(local.putPackageHandler))
   .get(
     '/local/:param1/:param2/:param3',
     local.getPackageOrVersionHandler,
@@ -32,11 +31,11 @@ const app = new H3()
   .get('/local/:param1/-/:tarball', local.getTarballHandler)
   .get('/local/:param1/:param2/-/:tarball', local.getTarballHandler)
   .get('/-/v1/search', local.searchHandler)
-  // default (must come last)
+  // default (must come last) - auth required for PUT operations
   .get('/:param1', local.getPackageOrVersionHandler)
-  .put('/:param1', local.putPackageHandler)
+  .put('/:param1', requireAuth(local.putPackageHandler))
   .get('/:param1/:param2', local.getPackageOrVersionHandler)
-  .put('/:param1/:param2', local.putPackageHandler)
+  .put('/:param1/:param2', requireAuth(local.putPackageHandler))
   .get('/:param1/:param2/:param3', local.getPackageOrVersionHandler)
   .get('/:param1/-/:tarball', local.getTarballHandler)
   .get('/:param1/:param2/-/:tarball', local.getTarballHandler)
