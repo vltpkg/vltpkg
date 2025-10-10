@@ -240,6 +240,42 @@ t.test('command', async t => {
     await t.rejects(command(config), /Failed to publish package/)
   })
 
+  t.test('handles 404 errors with special message', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    // Mock a 404 response - need to URL encode the scoped package name
+    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
+      statusCode: 404,
+      text: 'Not Found',
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    await t.rejects(
+      command(config),
+      /Make sure you're logged in and have access to publish the package/,
+    )
+  })
+
   t.test('uses custom tag when provided', async t => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
