@@ -1,0 +1,43 @@
+{
+  "date": "2025-11-06T00:21:32.735Z",
+  "preset": "node-server",
+  "framework": {
+    "name": "nitro",
+    "version": ""
+  },
+  "versions": {
+    "nitro": "3.0.0-20250911-162707-b6dbc0f9"
+  },
+  "commands": {
+    "preview": "node ./server/index.mjs"
+  },
+  "config": {
+    "cloudflare": {
+      "deployConfig": true,
+      "nodeCompat": true,
+      "wrangler": {
+        "dev": {
+          "port": 3000
+        },
+        "observability": {
+          "logs": {
+            "enabled": true
+          }
+        },
+        "d1_databases": [
+          {
+            "binding": "DB",
+            "database_name": "vsr-production",
+            "database_id": "bbefa4da-e572-4c89-b1f6-9f6ea992ffc3"
+          }
+        ],
+        "r2_buckets": [
+          {
+            "binding": "BUCKET",
+            "bucket_name": "vsr-production-tarballs"
+          }
+        ]
+      }
+    }
+  }
+}

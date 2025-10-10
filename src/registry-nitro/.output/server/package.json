@@ -1,0 +1,21 @@
+{
+  "name": "@vltpkg/vsr-nitro-prod",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@libsql/client": "0.15.14",
+    "@libsql/core": "0.15.14",
+    "@libsql/hrana-client": "0.7.0",
+    "@libsql/isomorphic-fetch": "0.3.1",
+    "@libsql/isomorphic-ws": "0.1.5",
+    "@libsql/linux-x64-gnu": "0.5.22",
+    "@neon-rs/load": "0.0.4",
+    "detect-libc": "2.0.2",
+    "drizzle-orm": "0.44.5",
+    "js-base64": "3.7.8",
+    "libsql": "0.5.20",
+    "promise-limit": "2.7.0",
+    "ws": "8.18.3"
+  }
+}
