@@ -6,7 +6,6 @@ import { mkdir, symlink } from 'node:fs/promises'
 import { dirname, relative } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
 import type { Graph } from '../graph.ts'
-import type { Edge } from '../edge.ts'
 import type { Node } from '../node.ts'
 import type { ReifyOptions } from './index.ts'
 
@@ -100,12 +99,12 @@ export const internalHoist = async (
     const pickNode = pickNodeToHoist(nodes)
     if (pickNode) {
       links.set(name, pickNode)
-      const otherNames: string[] = [...pickNode.edgesIn].map(
-        (e: Edge): string => e.name,
-      )
-      for (const otherName of otherNames) {
-        if (otherName !== name && !links.has(otherName)) {
-          links.set(otherName, pickNode)
+      if (pickNode.edgesIn.size > 0) {
+        for (const edgeIn of pickNode.edgesIn) {
+          const otherName = edgeIn.name
+          if (otherName !== name && !links.has(otherName)) {
+            links.set(otherName, pickNode)
+          }
         }
       }
     }
