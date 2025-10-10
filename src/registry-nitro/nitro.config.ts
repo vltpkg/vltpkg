@@ -72,6 +72,17 @@ export default defineNitroConfig({
       ],
     },
   },
+  experimental: {
+    database: true,
+  },
+  database: {
+    default: {
+      connector: 'sqlite',
+      options: {
+        url: 'file:.data/db.sqlite',
+      },
+    },
+  },
   storage: {
     packages: {
       driver: getDriver('packages', buildEnv),
