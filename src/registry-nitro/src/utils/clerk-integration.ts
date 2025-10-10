@@ -1,6 +1,6 @@
 /**
  * Clerk Integration Utilities
- * 
+ *
  * This file contains utilities for integrating with Clerk authentication.
  * It provides a proper implementation for token verification and user management.
  */
@@ -48,21 +48,46 @@ export const verifyClerkToken = async (
 }
 
 /**
- * Alternative: Verify a JWT token directly (if using Clerk JWTs)
+ * Verify a Clerk session token and get user information
+ * This handles the token that comes back from Clerk authentication
  */
 export const verifyClerkJWT = async (
   token: string,
 ): Promise<{ sub: string; email?: string }> => {
   try {
-    // Use Clerk's JWT verification
-    const payload = await clerk.verifyToken(token)
+    // If the token is a placeholder, we need to handle the redirect flow differently
+    if (token === '__CLERK_TOKEN__') {
+      throw new Error(
+        'Token placeholder not replaced - check Clerk redirect configuration',
+      )
+    }
 
+    // Try to verify as a session token first
+    try {
+      const session = await clerk.verifySession(token)
+      if (session) {
+        const user = await clerk.users.getUser(session.userId)
+        return {
+          sub: user.id,
+          email: user.emailAddresses[0]?.emailAddress,
+        }
+      }
+    } catch (sessionError) {
+      // If session verification fails, try JWT verification
+      console.log(
+        'Session verification failed, trying JWT:',
+        sessionError,
+      )
+    }
+
+    // Try JWT verification as fallback
+    const payload = await clerk.verifyToken(token)
     return {
       sub: payload.sub,
       email: payload.email,
     }
   } catch (error) {
-    throw new Error(`Clerk JWT verification failed: ${error}`)
+    throw new Error(`Clerk token verification failed: ${error}`)
   }
 }
 
@@ -99,7 +124,9 @@ export const getUserScopes = async (
  * Check if user has write access to packages
  * Implement your business logic here
  */
-const checkWriteAccess = async (user: ClerkUser): Promise<boolean> => {
+const checkWriteAccess = async (
+  user: ClerkUser,
+): Promise<boolean> => {
   // Example: Check if user is in a specific organization
   // const orgs = await clerk.users.getOrganizationMemberships(user.id)
   // return orgs.some(org => org.organization.slug === 'your-org')
@@ -112,7 +139,9 @@ const checkWriteAccess = async (user: ClerkUser): Promise<boolean> => {
  * Check if user has admin access
  * Implement your business logic here
  */
-const checkAdminAccess = async (user: ClerkUser): Promise<boolean> => {
+const checkAdminAccess = async (
+  user: ClerkUser,
+): Promise<boolean> => {
   // Example: Check user metadata or organization role
   // const user = await clerk.users.getUser(user.id)
   // return user.publicMetadata?.role === 'admin'

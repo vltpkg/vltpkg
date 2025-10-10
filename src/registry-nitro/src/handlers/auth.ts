@@ -6,14 +6,11 @@ import {
   setResponseStatus,
   sendRedirect,
 } from 'h3'
-import { drizzle } from 'drizzle-orm/libsql'
 import type { EventHandler } from 'h3'
-import { useDatabase } from 'nitro/runtime'
 import { randomBytes } from 'node:crypto'
 import * as Schema from '../db/schema.ts'
 import { eq } from 'drizzle-orm'
-import type { LibSQLDatabase } from 'drizzle-orm/libsql'
-import type { DrizzleD1Database } from 'drizzle-orm/d1'
+import { getDb } from '../db/libsql.ts'
 import {
   verifyClerkJWT,
   getUserScopes,
@@ -37,14 +34,7 @@ const generateSessionId = (): string => {
   return randomBytes(16).toString('hex')
 }
 
-/**
- * Get database instance based on environment
- */
-const getDb = (): LibSQLDatabase | DrizzleD1Database => {
-  const db = useDatabase('default')
-  console.log(db)
-  return drizzle(db)
-}
+// Database instance is imported from ../db/libsql.ts
 
 /**
  * Initiate login flow
@@ -128,61 +118,22 @@ export const loginCallbackHandler: EventHandler = eventHandler(
       throw new HTTPError('Session expired', { status: 401 })
     }
 
-    // Check if we have a Clerk session token
+    // Check if we have a Clerk session token (after authentication)
     const clerkSessionToken = query.clerk_token as string | undefined
 
     if (!clerkSessionToken) {
-      // Redirect to Clerk login
-      // You'll need to set up Clerk with proper redirect URLs
+      // No token yet - redirect directly to Clerk authentication
       const protocol =
         event.node?.req.headers['x-forwarded-proto'] || 'http'
       const host = event.node?.req.headers.host || 'localhost:3000'
-      const redirectUrl = `${protocol}://${host}/-/v1/login/callback?sessionId=${sessionId}`
+      const callbackUrl = `${protocol}://${host}/-/v1/login/callback?sessionId=${sessionId}`
 
-      // For now, return HTML that redirects to Clerk
-      // In production, you'd integrate Clerk's frontend components
-      return `
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login to Registry</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
-    }
-    .container {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      max-width: 400px;
-    }
-    h1 { margin: 0 0 1rem 0; }
-    p { color: #666; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🔐 Authenticate to Registry</h1>
-    <p>You'll be redirected to complete authentication...</p>
-    <p><small>Session ID: ${sessionId}</small></p>
-  </div>
-  <script>
-    // TODO: Integrate Clerk's authentication flow here
-    // For now, this is a placeholder
-    console.log('Redirecting to Clerk authentication');
-    console.log('Redirect URL:', '${redirectUrl}');
-  </script>
-</body>
-</html>
-      `
+      // Build Clerk login URL with redirect back to our callback
+      const clerkLoginUrl = new URL('https://accounts.vlt.io/sign-in')
+      clerkLoginUrl.searchParams.set('redirect_url', callbackUrl)
+
+      // Redirect directly to Clerk
+      return sendRedirect(event, clerkLoginUrl.toString())
     }
 
     // Verify the Clerk session token
@@ -318,30 +269,54 @@ export const loginPollHandler: EventHandler = eventHandler(
 )
 
 /**
- * Verify authentication token
- * Used by middleware to check if a request is authenticated
+ * Login completion endpoint
+ * GET /-/v1/login/done?sessionId=xxx
+ *
+ * Returns JSON response for npm client after authentication
  */
-export const verifyToken = async (
-  token: string,
-): Promise<Schema.Token | null> => {
-  const db = getDb()
-  const [tokenRecord] = await db
-    .select()
-    .from(Schema.tokens)
-    .where(eq(Schema.tokens.token, token))
-    .limit(1)
+export const loginDoneHandler: EventHandler = eventHandler(
+  async event => {
+    const query = getQuery(event)
+    const sessionId = query.sessionId as string
 
-  if (!tokenRecord) {
-    return null
-  }
+    if (!sessionId) {
+      throw new HTTPError('Missing sessionId', { status: 400 })
+    }
 
-  // Check if token is expired
-  if (
-    tokenRecord.expires &&
-    Date.now() > Number(tokenRecord.expires)
-  ) {
-    return null
-  }
+    // Check if the session exists and has a token
+    const db = getDb()
+    const [session] = await db
+      .select()
+      .from(Schema.loginSessions)
+      .where(eq(Schema.loginSessions.sessionId, sessionId))
+      .limit(1)
 
-  return tokenRecord
-}
+    if (!session) {
+      throw new HTTPError('Invalid or expired session', {
+        status: 404,
+      })
+    }
+
+    // Check if session is expired
+    if (Date.now() > Number(session.expires)) {
+      throw new HTTPError('Session expired', { status: 401 })
+    }
+
+    // If token is not ready yet, return pending status
+    if (!session.token) {
+      setResponseStatus(event, 202) // Accepted but not complete
+      return {
+        message: 'Authentication in progress',
+        status: 'pending',
+      }
+    }
+
+    // Return success with token info
+    return {
+      message: 'Authentication successful',
+      status: 'complete',
+      token: session.token,
+      userId: session.clerkUserId,
+    }
+  },
+)

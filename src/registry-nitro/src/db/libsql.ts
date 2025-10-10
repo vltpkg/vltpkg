@@ -1,8 +1,8 @@
 import { drizzle } from 'drizzle-orm/libsql'
+import { createClient } from '@libsql/client'
 
-export const getDb = () =>
-  drizzle({
-    connection: {
-      url: 'file:.data/db.sqlite',
-    },
-  })
+const client = createClient({
+  url: 'file:.data/db.sqlite',
+})
+
+export const getDb = () => drizzle(client)
