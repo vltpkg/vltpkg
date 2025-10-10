@@ -176,7 +176,7 @@ const checkExisting = async (
   remover: RollbackRemove,
 ) => {
   const target = await entry.readlink()
-  const { id } = links.get(name) ?? {}
+  const { id } = links.get(name) /* c8 ignore next */ ?? {}
   if (
     !target ||
     !id ||
