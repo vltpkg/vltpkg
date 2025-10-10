@@ -98,14 +98,18 @@ export const internalHoist = async (
   for (const [name, nodes] of graph.nodesByName) {
     const pickNode = pickNodeToHoist(nodes)
     if (pickNode) {
-      links.set(name, pickNode)
+      let picked = false
       if (pickNode.edgesIn.size > 0) {
         for (const edgeIn of pickNode.edgesIn) {
           const otherName = edgeIn.name
           if (otherName !== name && !links.has(otherName)) {
+            picked = true
             links.set(otherName, pickNode)
           }
         }
+      }
+      if (!picked) {
+        links.set(name, pickNode)
       }
     }
   }

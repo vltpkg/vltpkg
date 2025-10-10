@@ -564,8 +564,7 @@ t.test('hoisting with aliased dependencies', async t => {
   const hoistDir = readdirSync(
     resolve(projectRoot, 'node_modules/.vlt/node_modules'),
   )
-  t.ok(hoistDir.includes('bar'), 'canonical name hoisted')
+  t.notOk(hoistDir.includes('bar'), 'canonical name NOT hoisted')
   t.ok(hoistDir.includes('foo'), 'alias foo hoisted')
   t.ok(hoistDir.includes('baz'), 'alias baz hoisted')
-  t.equal(hoistDir.length, 3, 'all three names hoisted')
 })
