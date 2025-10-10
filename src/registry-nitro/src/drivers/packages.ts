@@ -1,6 +1,6 @@
 import { defineDriver } from 'unstorage'
 import * as Schema from '../db/schema.ts'
-import { eq } from 'drizzle-orm'
+import { eq, like, sql } from 'drizzle-orm'
 import type { LibSQLDatabase } from 'drizzle-orm/libsql'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import { text } from 'stream/consumers'
@@ -53,24 +53,24 @@ export const definePackagesDriver = (
 
           const packument = JSON.parse(packumentRow.packument)
 
-          // const versionRows = await getDb()
-          //   .select()
-          //   .from(Schema.versions)
-          //   .where(like(Schema.versions.spec, `${packageName}@%`))
-          //   .execute()
+          const versionRows = await getDb()
+            .select()
+            .from(Schema.versions)
+            .where(like(Schema.versions.spec, `${packageName}@%`))
+            .execute()
 
-          // if (versionRows.length === 0) {
-          //   return undefined
-          // }
+          if (versionRows.length === 0) {
+            return undefined
+          }
 
           body = {
             ...packument,
-            // versions: Object.fromEntries(
-            //   versionRows.map(version => [
-            //     version.spec.split('@').pop()!,
-            //     JSON.parse(version.manifest),
-            //   ]),
-            // ),
+            versions: Object.fromEntries(
+              versionRows.map(version => [
+                version.spec.split('@').pop()!,
+                JSON.parse(version.manifest),
+              ]),
+            ),
           }
         } else if (isVersion) {
           const packageVersion = response.package_version!
@@ -145,8 +145,9 @@ export const definePackagesDriver = (
           })
 
         if (isPackage) {
-          // const { versions, ...packument } = body
-          const stringifiedPackument = JSON.stringify(body)
+          const { versions, ...packument } = body
+
+          const stringifiedPackument = JSON.stringify(packument)
           await getDb()
             .insert(Schema.packages)
             .values({
@@ -161,33 +162,33 @@ export const definePackagesDriver = (
             })
 
           // Insert versions in chunks to avoid query length limits
-          // const versionEntries = Object.entries(versions).map(
-          //   ([version, manifest]) => ({
-          //     spec: `${name}@${version}`,
-          //     manifest: JSON.stringify(manifest),
-          //   }),
-          // )
+          const versionEntries = Object.entries(versions).map(
+            ([version, manifest]) => ({
+              spec: `${name}@${version}`,
+              manifest: JSON.stringify(manifest),
+            }),
+          )
 
-          // // Make sizing dynamic based on env. Cloudflare can handle less than Node.
-          // const CHUNK_SIZE = 250
-          // for (
-          //   let i = 0;
-          //   i < versionEntries.length;
-          //   i += CHUNK_SIZE
-          // ) {
-          //   const chunk = versionEntries.slice(i, i + CHUNK_SIZE)
-          //   await getDb()
-          //     .insert(Schema.versions)
-          //     .values(chunk)
-          //     .onConflictDoUpdate({
-          //       target: Schema.versions.spec,
-          //       set: {
-          //         manifest: sql.raw(
-          //           `excluded.${Schema.versions.manifest.name}`,
-          //         ),
-          //       },
-          //     })
-          // }
+          // Make sizing dynamic based on env. Cloudflare can handle less than Node.
+          const CHUNK_SIZE = 250
+          for (
+            let i = 0;
+            i < versionEntries.length;
+            i += CHUNK_SIZE
+          ) {
+            const chunk = versionEntries.slice(i, i + CHUNK_SIZE)
+            await getDb()
+              .insert(Schema.versions)
+              .values(chunk)
+              .onConflictDoUpdate({
+                target: Schema.versions.spec,
+                set: {
+                  manifest: sql.raw(
+                    `excluded.${Schema.versions.manifest.name}`,
+                  ),
+                },
+              })
+          }
         }
 
         if (isVersion) {
