@@ -102,11 +102,16 @@ const formatNodes = (
       lockfileNode[7] = node.platform as LockfilePlatform
     }
 
+    // Save bin data if available
+    if (node.bins && Object.keys(node.bins).length) {
+      lockfileNode[8] = node.bins
+    }
+
     // Save build state data if requested
     if (saveBuildData) {
       const buildState = getBuildStateFromNode(node)
       if (buildState !== undefined) {
-        lockfileNode[8] = buildState
+        lockfileNode[9] = buildState
       }
     }
 

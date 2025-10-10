@@ -24,6 +24,7 @@ Node [@vltpkg/graph.Node] {
   version: '1.0.0',
   resolved: undefined,
   platform: undefined,
+  bins: undefined,
   built: false,
   buildState: 'none'
 }

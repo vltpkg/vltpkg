@@ -19,7 +19,7 @@ const fooManifest = {
 const barManifest = {
   name: 'bar',
   version: '1.2.3',
-  bin: './bar.js',
+  bin: { bar: 'bar.js' },
 }
 
 const mockRemover = {
@@ -118,6 +118,7 @@ t.test('posix', async t => {
       barManifest,
     ),
   )
+  edge.to!.bins = { bar: 'bar.js' }
   const scurry = new PathScurry(projectRoot)
 
   await deleteEdge(edge, scurry, mockRemover)
@@ -171,6 +172,7 @@ t.test('win32', async t => {
       barManifest,
     ),
   )
+  edge.to!.bins = { bar: 'bar.js' }
   const scurry = new PathScurry(projectRoot)
 
   await deleteEdge(edge, scurry, mockRemover)

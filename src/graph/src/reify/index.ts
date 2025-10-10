@@ -31,6 +31,7 @@ import { copyFileSync } from 'node:fs'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import type { NodeLike } from '@vltpkg/types'
+import { binChmodAll } from './bin-chmod.ts'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 
@@ -198,7 +199,6 @@ const reify_ = async (
   // create all node_modules symlinks, and link bins to nm/.bin
   const edgeActions: Promise<unknown>[] = addEdges(
     diff,
-    packageJson,
     scurry,
     remover,
   )
@@ -215,6 +215,9 @@ const reify_ = async (
     diff.to,
     allowScripts,
   )
+
+  // ensure that all added bins are chmod +x
+  await binChmodAll(diff.nodes.add, scurry)
 
   // run install lifecycle scripts and link any binary files
   await build(diff, packageJson, scurry, allowScriptsNodes)

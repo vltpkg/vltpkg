@@ -43,6 +43,7 @@ import {
   isRecordStringT,
   longDependencyTypes,
   normalizeBugs,
+  normalizeBinPaths,
   normalizeContributors,
   normalizeFunding,
   normalizeKeywords,
@@ -3012,6 +3013,7 @@ t.test('normalizeManifest with new fields', t => {
       engines: { node: '>=18.0.0', npm: '^7.0.0' },
       os: 'linux',
       cpu: ['x64', 'arm64'],
+      bin: { cli: 'bin/cli.js' },
     }
     const result = normalizeManifest(manifest)
     t.equal(
@@ -3022,6 +3024,7 @@ t.test('normalizeManifest with new fields', t => {
     t.same(result.engines, { node: '>=18.0.0', npm: '^7.0.0' })
     t.same(result.os, ['linux'])
     t.same(result.cpu, ['x64', 'arm64'])
+    t.same(result.bin, { cli: 'bin/cli.js' })
     t.end()
   })
 
@@ -3112,4 +3115,32 @@ t.test('isNormalizedManifest with new fields', async t => {
   )
 
   t.end()
+})
+
+t.test('normalizeBinPaths', async t => {
+  t.strictSame(
+    normalizeBinPaths({
+      name: 'unscoped',
+      bin: 'blah.js',
+    }),
+    { unscoped: 'blah.js' },
+  )
+
+  t.strictSame(
+    normalizeBinPaths({
+      name: '@scoped/pkg',
+      bin: 'blah.js',
+    }),
+    { pkg: 'blah.js' },
+  )
+
+  t.strictSame(
+    normalizeBinPaths({
+      name: 'unscoped',
+      bin: { x: 'y.js' },
+    }),
+    { x: 'y.js' },
+  )
+
+  t.strictSame(normalizeBinPaths({}), undefined)
 })

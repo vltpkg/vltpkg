@@ -261,6 +261,7 @@ t.test('build with target option', async t => {
               },
               null,
               null,
+              null,
               1, // buildState: needed
             ],
             [testPkgId2]: [
@@ -273,6 +274,7 @@ t.test('build with target option', async t => {
                 name: 'other-pkg',
                 version: '1.0.0',
               },
+              null,
               null,
               null,
               1, // buildState: needed
@@ -373,6 +375,7 @@ t.test('build with optional dependencies that fail', async t => {
                     install: 'exit 1',
                   },
                 },
+                null,
                 null,
                 null,
                 1, // buildState: needed
