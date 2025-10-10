@@ -1,6 +1,8 @@
 import { getRequestHeader, HTTPError } from 'h3'
 import type { H3Event, EventHandler } from 'h3'
-import { verifyToken } from '../handlers/auth.ts'
+import * as Schema from '../db/schema.ts'
+import { eq } from 'drizzle-orm'
+import { getDb } from '../db/libsql.ts'
 
 /**
  * Extract bearer token from Authorization header
@@ -20,6 +22,35 @@ const extractToken = (event: H3Event): string | null => {
 
   // Also support plain token for backwards compatibility
   return authHeader
+}
+
+/**
+ * Verify authentication token
+ * Used by middleware to check if a request is authenticated
+ */
+const verifyToken = async (
+  token: string,
+): Promise<Schema.Token | null> => {
+  const db = getDb()
+  const [tokenRecord] = await db
+    .select()
+    .from(Schema.tokens)
+    .where(eq(Schema.tokens.token, token))
+    .limit(1)
+
+  if (!tokenRecord) {
+    return null
+  }
+
+  // Check if token is expired
+  if (
+    tokenRecord.expires &&
+    Date.now() > Number(tokenRecord.expires)
+  ) {
+    return null
+  }
+
+  return tokenRecord
 }
 
 /**
