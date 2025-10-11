@@ -46,6 +46,10 @@ vi.mock('@/components/navigation/linear-menu/data.ts', () => ({
   ],
 }))
 
+vi.mock('@/components/auth/user-linear-menu.tsx', () => ({
+  UserLinearMenu: 'gui-user-linear-menu',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
