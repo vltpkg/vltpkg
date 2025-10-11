@@ -52,6 +52,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "nitro prepare",
+    "preprepare": "node dev/pre-prepare.mjs",
     "serve": "node .output/server/index.mjs",
     "posttest": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
