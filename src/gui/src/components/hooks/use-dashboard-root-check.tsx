@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.ts'
 import { getFromConfig } from '@/lib/vlt-config.ts'
-import { hasLocalServerFeatures } from '@/lib/environment.ts'
+import { isHostedEnvironment } from '@/lib/environment.ts'
 
 export const useDashboardRootCheck = (): {
   hasDashboard: boolean
   isLoading: boolean
   dashboardRoots: string[] | null
-  isHostedMode: boolean
 } => {
   const [hasDashboard, setHasDashboard] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [dashboardRoots, setDashboardRoots] = useState<
     string[] | null
   >(null)
-  const isHostedMode = !hasLocalServerFeatures()
+  const isHostedMode = isHostedEnvironment()
 
   const fetchDashboardRoot = async () => {
     // Skip fetching in hosted environments
@@ -59,5 +58,5 @@ export const useDashboardRootCheck = (): {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useGraphStore.getState().stamp])
 
-  return { hasDashboard, isLoading, dashboardRoots, isHostedMode }
+  return { hasDashboard, isLoading, dashboardRoots }
 }
