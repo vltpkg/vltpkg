@@ -17,7 +17,7 @@ import type {
 } from './utils.ts'
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
-const NODE_ENGINES = '>=22'
+const NODE_ENGINES = '>=22.12.0'
 const PNPM_VERSION = '10.11.0'
 
 type Workspace = WorkspaceBase & {
@@ -272,7 +272,8 @@ const fixLicense = async (ws: Workspace) => {
       break
     }
     case '@vltpkg/gui':
-    case '@vltpkg/vsr': {
+    case '@vltpkg/vsr':
+    case '@vltpkg/vsr-nitro': {
       ws.pj.license = 'FSL-1.1-MIT'
       containsText(ws.pj.license)
       containsVlt()

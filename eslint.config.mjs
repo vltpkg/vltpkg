@@ -317,6 +317,15 @@ export default [
     },
   },
   {
+    name: `${NAME}/registry-nitro`,
+    files: [`src/registry-nitro/**/*${extGlobs.ts}`],
+    rules: {
+      ...unsafeRules('off'),
+      'no-console': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+  {
     name: `${NAME}/docs`,
     files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {
