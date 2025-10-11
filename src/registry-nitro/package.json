@@ -23,15 +23,16 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250829.0",
-    "@neon-rs/load": "^0.0.4",
-    "drizzle-kit": "^0.31.4",
-    "wrangler": "^4.33.1",
     "@eslint/js": "catalog:",
+    "@neon-rs/load": "^0.0.4",
     "@types/node": "catalog:",
+    "drizzle-kit": "^0.31.4",
     "eslint": "catalog:",
+    "if-env": "^1.0.4",
     "prettier": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "wrangler": "^4.33.1"
   },
   "license": "FSL-1.1-MIT",
   "engines": {
@@ -51,7 +52,7 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepare": "nitro prepare",
+    "prepare": "if-env OS=Windows_NT || nitro prepare",
     "preprepare": "node dev/pre-prepare.mjs",
     "serve": "node .output/server/index.mjs",
     "posttest": "tsc --noEmit",
