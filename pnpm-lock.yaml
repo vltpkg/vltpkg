@@ -1902,6 +1902,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
       foreground-child:
         specifier: ^3.3.1
         version: 3.3.1
