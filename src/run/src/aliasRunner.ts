@@ -40,6 +40,7 @@ export async function getNodeGypShim(): Promise<string> {
 
   // Make executable on Unix systems
   if (process.platform !== 'win32') {
+    /* c8 ignore next 2 - unix-only */
     await chmod(shimFile, 0o755)
   }
 
