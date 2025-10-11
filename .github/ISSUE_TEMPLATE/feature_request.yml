@@ -1,7 +1,7 @@
 name: ✨ Feature Request
 description: Propose a new feature or enhancement
-title: "[FEATURE] "
-labels: ["enhancement", "feature"]
+title: '[FEATURE] '
+labels: ['enhancement', 'feature']
 assignees: []
 body:
   - type: markdown
@@ -15,7 +15,7 @@ body:
     attributes:
       label: 📋 Description
       description: Provide a clear and concise description of the feature you'd like to see implemented.
-      placeholder: "Describe the feature..."
+      placeholder: 'Describe the feature...'
     validations:
       required: true
 
@@ -33,7 +33,7 @@ body:
     attributes:
       label: 💡 Proposed Solution
       description: Describe the solution you'd like to see implemented.
-      placeholder: "I would like to see..."
+      placeholder: 'I would like to see...'
     validations:
       required: true
 
@@ -51,7 +51,7 @@ body:
     attributes:
       label: 🎨 Design Considerations
       description: Any specific design requirements, UI/UX considerations, or architectural concerns?
-      placeholder: "Design requirements and considerations..."
+      placeholder: 'Design requirements and considerations...'
     validations:
       required: false
 
@@ -60,7 +60,7 @@ body:
     attributes:
       label: 🔍 Research & Prior Art
       description: Any relevant research, existing implementations, or prior art to consider?
-      placeholder: "Links to similar implementations, research papers, or reference materials..."
+      placeholder: 'Links to similar implementations, research papers, or reference materials...'
     validations:
       required: false
 
@@ -98,7 +98,7 @@ body:
       options:
         - label: Feature implemented and working as described
         - label: Unit tests written and passing
-        - label: Integration tests written and passing  
+        - label: Integration tests written and passing
         - label: Documentation updated
         - label: Code reviewed and approved
         - label: Performance impact assessed
@@ -111,7 +111,7 @@ body:
     attributes:
       label: 📎 Additional Context
       description: Add any other context, screenshots, mockups, or examples about the feature request.
-      placeholder: "Any additional information that would help..."
+      placeholder: 'Any additional information that would help...'
     validations:
       required: false
 

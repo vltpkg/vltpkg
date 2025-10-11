@@ -1,7 +1,7 @@
 name: 🔧 Chore
 description: Maintenance tasks, refactoring, or technical improvements
-title: "[CHORE] "
-labels: ["chore", "maintenance"]
+title: '[CHORE] '
+labels: ['chore', 'maintenance']
 assignees: []
 body:
   - type: markdown
@@ -15,7 +15,7 @@ body:
     attributes:
       label: 📋 Description
       description: Provide a clear description of the maintenance task or improvement needed.
-      placeholder: "Describe the chore/maintenance task..."
+      placeholder: 'Describe the chore/maintenance task...'
     validations:
       required: true
 
@@ -44,7 +44,7 @@ body:
     attributes:
       label: 🎯 Motivation
       description: Why is this chore necessary? What problem does it solve or what improvement does it provide?
-      placeholder: "This is needed because..."
+      placeholder: 'This is needed because...'
     validations:
       required: true
 
@@ -53,7 +53,7 @@ body:
     attributes:
       label: 🎌 Scope of Work
       description: What specific areas of the codebase will be affected?
-      placeholder: "Files/modules/components that will be modified..."
+      placeholder: 'Files/modules/components that will be modified...'
     validations:
       required: true
 
@@ -88,7 +88,7 @@ body:
     attributes:
       label: ⚠️ Breaking Changes
       description: Will this chore introduce any breaking changes? If so, describe them.
-      placeholder: "Any breaking changes or migration steps..."
+      placeholder: 'Any breaking changes or migration steps...'
     validations:
       required: false
 
@@ -97,7 +97,7 @@ body:
     attributes:
       label: 🧪 Testing Strategy
       description: How will you ensure this chore doesn't break existing functionality?
-      placeholder: "Testing approach and validation steps..."
+      placeholder: 'Testing approach and validation steps...'
     validations:
       required: false
 
@@ -122,7 +122,7 @@ body:
     attributes:
       label: 🔗 Dependencies
       description: Are there any dependencies or prerequisites for this chore?
-      placeholder: "Dependencies on other issues, external factors, etc..."
+      placeholder: 'Dependencies on other issues, external factors, etc...'
     validations:
       required: false
 
@@ -131,7 +131,7 @@ body:
     attributes:
       label: ⏱️ Estimated Timeline
       description: How long do you estimate this chore will take?
-      placeholder: "Estimated time to complete..."
+      placeholder: 'Estimated time to complete...'
     validations:
       required: false
 
@@ -140,7 +140,7 @@ body:
     attributes:
       label: 📎 Additional Context
       description: Any other relevant information, links, or context.
-      placeholder: "Links to related issues, documentation, or resources..."
+      placeholder: 'Links to related issues, documentation, or resources...'
     validations:
       required: false
 

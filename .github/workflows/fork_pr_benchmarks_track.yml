@@ -12,7 +12,6 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-
       - name: Download Benchmark Results
         uses: dawidd6/action-download-artifact@v6
         with:
