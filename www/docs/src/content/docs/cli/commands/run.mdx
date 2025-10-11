@@ -192,8 +192,7 @@ Defaults to `true` when using `--scope`, `--workspace`,
 
 ### `--scope`, `-s`
 
-Filter packages using a [DSS query](/cli/dependency-selectors)
-selector.
+Filter packages using a [DSS query](/cli/selectors) selector.
 
 ```bash
 vlt run test --scope=":root > *"  # Direct dependencies only
@@ -292,6 +291,6 @@ vlt run deploy --dry-run --recursive
   enhanced PATH
 - [`vlt run-exec`](/cli/commands/run-exec) - Intelligently choose
   between run and exec
-- [Package Scripts](/cli/scripts) - Learn more about package.json
-  scripts
-- [Workspaces](/workspaces) - Working with monorepos
+- [Workspaces](/cli/selectors) - Dependency Selector Syntax query
+  language reference
+- [Workspaces](/cli/workspaces) - Working with monorepos
