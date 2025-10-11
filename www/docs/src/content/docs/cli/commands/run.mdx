@@ -6,7 +6,9 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components'
 
-Run a script defined in your `package.json` file. Scripts are the commands you define to automate common tasks like building, testing, or starting your application.
+Run a script defined in your `package.json` file. Scripts are the
+commands you define to automate common tasks like building, testing,
+or starting your application.
 
 ## Usage
 
@@ -24,7 +26,9 @@ r, run-script
 
 ## Description
 
-The `vlt run` command executes scripts from the `scripts` section of your `package.json` file. If you don't specify a script name, it lists all available scripts in the current package.
+The `vlt run` command executes scripts from the `scripts` section of
+your `package.json` file. If you don't specify a script name, it lists
+all available scripts in the current package.
 
 ### Basic Example
 
@@ -53,14 +57,21 @@ vlt run
 
 When you run a script, vlt:
 
-1. **Adds `node_modules/.bin` to PATH** - All locally-installed binaries become available without the `node_modules/.bin/` prefix
-2. **Runs pre/post scripts** - Automatically executes `pre<script>` before and `post<script>` after your main script
-3. **Sets environment variables** - Provides useful variables like `npm_lifecycle_event`, `npm_lifecycle_script`, and `npm_package_json`
-4. **Executes in the package root** - Scripts always run from your package.json directory, regardless of your current working directory
+1. **Adds `node_modules/.bin` to PATH** - All locally-installed
+   binaries become available without the `node_modules/.bin/` prefix
+2. **Runs pre/post scripts** - Automatically executes `pre<script>`
+   before and `post<script>` after your main script
+3. **Sets environment variables** - Provides useful variables like
+   `npm_lifecycle_event`, `npm_lifecycle_script`, and
+   `npm_package_json`
+4. **Executes in the package root** - Scripts always run from your
+   package.json directory, regardless of your current working
+   directory
 
 ## Passing Arguments
 
-Arguments after the script name are passed directly to your script. Use `--` to separate vlt options from script arguments:
+Arguments after the script name are passed directly to your script.
+Use `--` to separate vlt options from script arguments:
 
 ```bash
 # Pass --grep to the test script
@@ -84,15 +95,21 @@ vlt automatically runs `pre` and `post` scripts if they exist:
 }
 ```
 
-Running `vlt run build` executes all three scripts in order: `prebuild` → `build` → `postbuild`.
+Running `vlt run build` executes all three scripts in order:
+`prebuild` → `build` → `postbuild`.
 
 ## node-gyp Support
 
-vlt automatically provides `node-gyp` support for packages that need to compile native addons. When a script references `node-gyp`, vlt creates a shim that redirects those calls to `vlx node-gyp@latest`, so you don't need to manually install node-gyp globally.
+vlt automatically provides `node-gyp` support for packages that need
+to compile native addons. When a script references `node-gyp`, vlt
+creates a shim that redirects those calls to `vlx node-gyp@latest`, so
+you don't need to manually install node-gyp globally.
 
 This works transparently for:
+
 - Direct calls: `"install": "node-gyp rebuild"`
-- Complex commands: `"build": "echo 'start' && node-gyp configure && echo 'done'"`
+- Complex commands:
+  `"build": "echo 'start' && node-gyp configure && echo 'done'"`
 - All platforms: Unix/Linux/macOS and Windows
 
 ## Workspaces
@@ -124,7 +141,8 @@ vlt run test --workspace-group=frontend
 
 ### Advanced filtering with Queries
 
-Use [DSS queries](/cli/dependency-selectors) to target specific packages:
+Use [DSS queries](/cli/dependency-selectors) to target specific
+packages:
 
 ```bash
 # Run tests only for packages matching a pattern
@@ -135,7 +153,8 @@ vlt run --scope=":has([name^='@myapp/'])" test
 
 ### `--workspace`, `-w`
 
-Run the script in specific workspace(s). Can be a path or glob pattern matching workspace directories.
+Run the script in specific workspace(s). Can be a path or glob pattern
+matching workspace directories.
 
 ```bash
 vlt run build -w packages/app -w packages/lib
@@ -143,7 +162,8 @@ vlt run build -w packages/app -w packages/lib
 
 ### `--workspace-group`, `-g`
 
-Run the script in named workspace groups defined in your project configuration.
+Run the script in named workspace groups defined in your project
+configuration.
 
 ```bash
 vlt run test -g frontend -g api
@@ -151,7 +171,8 @@ vlt run test -g frontend -g api
 
 ### `--recursive`, `-r`
 
-Run the script across all workspaces. Implied when using `--workspace` or `--workspace-group`.
+Run the script across all workspaces. Implied when using `--workspace`
+or `--workspace-group`.
 
 ```bash
 vlt run build --recursive
@@ -159,17 +180,20 @@ vlt run build --recursive
 
 ### `--if-present`
 
-Don't fail if the script doesn't exist. Useful when running scripts across workspaces where not all packages have the same scripts.
+Don't fail if the script doesn't exist. Useful when running scripts
+across workspaces where not all packages have the same scripts.
 
 ```bash
 vlt run build --recursive --if-present
 ```
 
-Defaults to `true` when using `--scope`, `--workspace`, `--workspace-group`, or `--recursive`.
+Defaults to `true` when using `--scope`, `--workspace`,
+`--workspace-group`, or `--recursive`.
 
 ### `--scope`, `-s`
 
-Filter packages using a [DSS query](/cli/dependency-selectors) selector.
+Filter packages using a [DSS query](/cli/dependency-selectors)
+selector.
 
 ```bash
 vlt run test --scope=":root > *"  # Direct dependencies only
@@ -177,7 +201,8 @@ vlt run test --scope=":root > *"  # Direct dependencies only
 
 ### `--bail`, `-b` / `--no-bail`, `-B`
 
-Control whether to stop on first failure when running across multiple workspaces. Defaults to `true` (stop on failure).
+Control whether to stop on first failure when running across multiple
+workspaces. Defaults to `true` (stop on failure).
 
 ```bash
 # Continue running even if some packages fail
@@ -186,7 +211,8 @@ vlt run test --recursive --no-bail
 
 ### `--script-shell`
 
-Override the shell used to run scripts. By default, uses `/bin/sh` on Unix-like systems and `cmd.exe` on Windows.
+Override the shell used to run scripts. By default, uses `/bin/sh` on
+Unix-like systems and `cmd.exe` on Windows.
 
 ```bash
 vlt run build --script-shell=/bin/bash
@@ -204,7 +230,8 @@ vlt run build --dry-run
 
 vlt sets several environment variables that your scripts can access:
 
-- `npm_lifecycle_event` - The name of the script being run (e.g., "build")
+- `npm_lifecycle_event` - The name of the script being run (e.g.,
+  "build")
 - `npm_lifecycle_script` - The actual command from package.json
 - `npm_package_json` - Full path to the package.json file
 - `NODE` - Path to the node executable
@@ -261,7 +288,10 @@ vlt run deploy --dry-run --recursive
 
 ## See Also
 
-- [`vlt exec`](/cli/commands/exec) - Run arbitrary commands with enhanced PATH
-- [`vlt run-exec`](/cli/commands/run-exec) - Intelligently choose between run and exec
-- [Package Scripts](/cli/scripts) - Learn more about package.json scripts
+- [`vlt exec`](/cli/commands/exec) - Run arbitrary commands with
+  enhanced PATH
+- [`vlt run-exec`](/cli/commands/run-exec) - Intelligently choose
+  between run and exec
+- [Package Scripts](/cli/scripts) - Learn more about package.json
+  scripts
 - [Workspaces](/workspaces) - Working with monorepos
