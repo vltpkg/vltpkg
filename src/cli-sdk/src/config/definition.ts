@@ -52,10 +52,15 @@ const aliases = {
   i: 'install',
   add: 'install',
   rm: 'uninstall',
-  u: 'uninstall',
+  u: 'update',
+  p: 'pkg',
+  pub: 'publish',
+  q: 'query',
+  b: 'build',
   r: 'run',
   'run-script': 'run',
   rx: 'run-exec',
+  s: 'serve',
   x: 'exec',
   xl: 'exec-local',
   h: 'help',
@@ -695,6 +700,10 @@ export const definition = j
     help: {
       short: 'h',
       description: 'Print helpful information',
+    },
+    all: {
+      short: 'a',
+      description: 'Show all commands, bins, and flags',
     },
   })
 
