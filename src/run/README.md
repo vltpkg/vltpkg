@@ -140,11 +140,11 @@ import {
 
 // Get the path to the shim file
 const shimPath = await getNodeGypShim()
-// e.g., '/home/user/.run/vlt/node-gyp'
+// e.g., '/home/user/.run/vlt/run/node-gyp'
 
 // Get the directory containing the shim (for PATH injection)
 const shimDir = await getNodeGypShimDir()
-// e.g., '/home/user/.run/vlt'
+// e.g., '/home/user/.run/vlt/run'
 
 // Check if a command contains node-gyp references
 const needsShim = hasNodeGypReference('node-gyp rebuild')
