@@ -17,6 +17,10 @@ import { Labels } from '@/app/labels.tsx'
 import { Queries } from '@/app/queries.tsx'
 import { SettingsView } from '@/app/settings/index.tsx'
 
+/** Auth */
+import { SignIn } from '@/app/auth/sign-in.tsx'
+import { SignUp } from '@/app/auth/sign-up.tsx'
+
 /** Explorer Tabs */
 import { OverviewTabContent } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import { TabsJsonContent } from '@/components/explorer-grid/selected-item/tabs-json.tsx'
@@ -100,6 +104,19 @@ export const routes: RouteObject[] = [
       {
         index: true,
         element: <Dashboard />,
+      },
+      {
+        path: 'auth',
+        children: [
+          {
+            path: 'sign-in',
+            element: <SignIn />,
+          },
+          {
+            path: 'sign-up',
+            element: <SignUp />,
+          },
+        ],
       },
       {
         path: 'explore',

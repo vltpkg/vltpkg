@@ -44,5 +44,7 @@ exports[`LinearMenu renders default 1`] = `
     </span>
   </a>
 </div>
+<gui-user-linear-menu>
+</gui-user-linear-menu>
 
 `;

@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`render default 1`] = `
+
+<div>
+  <section class="flex min-h-screen items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-semibold">
+        Redirecting to sign in...
+      </h2>
+      <div class="mx-auto mt-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white">
+      </div>
+    </div>
+  </section>
+</div>
+
+`;
+
+exports[`render when already signed in 1`] = `
+
+<div>
+  <section class="flex min-h-screen items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-semibold">
+        Redirecting to sign in...
+      </h2>
+      <div class="mx-auto mt-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white">
+      </div>
+    </div>
+  </section>
+</div>
+
+`;

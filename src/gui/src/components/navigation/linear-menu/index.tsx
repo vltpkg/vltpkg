@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import {
   Popover,
   PopoverContent,
@@ -6,17 +7,22 @@ import {
 import { cn } from '@/lib/utils.ts'
 import { ChevronDown } from 'lucide-react'
 import { menuData } from '@/components/navigation/linear-menu/data.ts'
+import { UserLinearMenu } from '@/components/auth/user-linear-menu.tsx'
+
 import type { MenuItem } from '@/components/navigation/linear-menu/data.ts'
 
 export const LinearMenu = () => {
   return (
-    <div className="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm dark:bg-neutral-950 md:flex">
-      {menuData.map(item =>
-        item.children ?
-          <MenuGroup key={item.title} item={item} />
-        : <MenuLink key={item.title} item={item} />,
-      )}
-    </div>
+    <Fragment>
+      <div className="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm dark:bg-neutral-950 md:flex">
+        {menuData.map(item =>
+          item.children ?
+            <MenuGroup key={item.title} item={item} />
+          : <MenuLink key={item.title} item={item} />,
+        )}
+      </div>
+      <UserLinearMenu />
+    </Fragment>
   )
 }
 

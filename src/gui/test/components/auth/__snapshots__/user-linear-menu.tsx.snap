@@ -1,0 +1,395 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`render default not signed in 1`] = `
+
+<div>
+  <div class="flex items-center gap-3">
+    <gui-tooltip-provider>
+      <gui-tooltip>
+        <gui-tooltip-trigger aschild="true">
+          <gui-button
+            classname="rounded-xl border px-3 py-1 hover:border-neutral-300 hover:bg-neutral-200 hover:dark:border-neutral-800 hover:dark:bg-neutral-900"
+            variant="outline"
+          >
+            <span>
+              Log In
+            </span>
+          </gui-button>
+        </gui-tooltip-trigger>
+        <gui-tooltip-portal>
+          <gui-tooltip-content>
+            Sign in to your account
+          </gui-tooltip-content>
+        </gui-tooltip-portal>
+      </gui-tooltip>
+    </gui-tooltip-provider>
+    <gui-tooltip-provider>
+      <gui-tooltip>
+        <gui-tooltip-trigger aschild="true">
+          <gui-button
+            classname="rounded-xl px-3 py-1"
+            variant="default"
+          >
+            <span>
+              Sign Up
+            </span>
+          </gui-button>
+        </gui-tooltip-trigger>
+        <gui-tooltip-portal>
+          <gui-tooltip-content>
+            Sign up for an account
+          </gui-tooltip-content>
+        </gui-tooltip-portal>
+      </gui-tooltip>
+    </gui-tooltip-provider>
+  </div>
+</div>
+
+`;
+
+exports[`render when signed in 1`] = `
+
+<div>
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <gui-dropdown-menu>
+          <gui-dropdown-menu-trigger aschild="true">
+            <gui-button
+              classname="group/login size-10 items-center justify-center rounded-xl border-none bg-transparent p-0"
+              variant="outline"
+            >
+              <div class="flex aspect-square size-10 items-center justify-center rounded-xl border border-muted bg-white dark:bg-black">
+                <span class="text-sm font-medium uppercase">
+                  JD
+                </span>
+              </div>
+            </gui-button>
+          </gui-dropdown-menu-trigger>
+          <gui-dropdown-menu-content
+            align="end"
+            classname="min-w-[200px] rounded-xl"
+          >
+            <div class="flex cursor-default items-center gap-3 px-2 py-2">
+              <div class="flex aspect-square size-8 items-center justify-center rounded-lg border border-muted bg-white dark:bg-black">
+                <span class="text-base font-medium uppercase">
+                  JD
+                </span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <p class="text-sm font-medium text-foreground">
+                  John Doe
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  john@example.com
+                </p>
+              </div>
+            </div>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+                My Account
+              </gui-dropdown-menu-label>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Profile
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-user-icon classname="transition-colors duration-100">
+                  </gui-user-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Settings
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-config-icon classname="transition-colors duration-100">
+                  </gui-config-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+                Resources
+              </gui-dropdown-menu-label>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  GitHub
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-github-icon classname="transition-colors duration-100">
+                  </gui-github-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Support
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-book-open-icon classname="transition-colors duration-100">
+                  </gui-book-open-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Logout
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-log-out-icon classname="transition-colors duration-100">
+                  </gui-log-out-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+          </gui-dropdown-menu-content>
+        </gui-dropdown-menu>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          John Doe
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+</div>
+
+`;
+
+exports[`render when signed in with user image 1`] = `
+
+<div>
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <gui-dropdown-menu>
+          <gui-dropdown-menu-trigger aschild="true">
+            <gui-button
+              classname="group/login size-10 items-center justify-center rounded-xl border-none bg-transparent p-0"
+              variant="outline"
+            >
+              <div class="flex size-10 items-center justify-center">
+                <img
+                  src="https://example.com/avatar.jpg"
+                  alt="JS"
+                  class="size-10 rounded-xl border border-muted grayscale transition-colors duration-100 group-hover/login:grayscale-0"
+                >
+              </div>
+            </gui-button>
+          </gui-dropdown-menu-trigger>
+          <gui-dropdown-menu-content
+            align="end"
+            classname="min-w-[200px] rounded-xl"
+          >
+            <div class="flex cursor-default items-center gap-3 px-2 py-2">
+              <img
+                src="https://example.com/avatar.jpg"
+                alt="JS"
+                class="aspect-square size-8 rounded-lg border border-muted object-cover grayscale"
+              >
+              <div class="flex flex-col gap-0.5">
+                <p class="text-sm font-medium text-foreground">
+                  Jane Smith
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  jane@example.com
+                </p>
+              </div>
+            </div>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+                My Account
+              </gui-dropdown-menu-label>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Profile
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-user-icon classname="transition-colors duration-100">
+                  </gui-user-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Settings
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-config-icon classname="transition-colors duration-100">
+                  </gui-config-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+                Resources
+              </gui-dropdown-menu-label>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  GitHub
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-github-icon classname="transition-colors duration-100">
+                  </gui-github-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Support
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-book-open-icon classname="transition-colors duration-100">
+                  </gui-book-open-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Logout
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-log-out-icon classname="transition-colors duration-100">
+                  </gui-log-out-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+          </gui-dropdown-menu-content>
+        </gui-dropdown-menu>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          Jane Smith
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+</div>
+
+`;
+
+exports[`render when signed in with username only 1`] = `
+
+<div>
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <gui-dropdown-menu>
+          <gui-dropdown-menu-trigger aschild="true">
+            <gui-button
+              classname="group/login size-10 items-center justify-center rounded-xl border-none bg-transparent p-0"
+              variant="outline"
+            >
+              <div class="flex aspect-square size-10 items-center justify-center rounded-xl border border-muted bg-white dark:bg-black">
+                <span class="text-sm font-medium uppercase">
+                  T
+                </span>
+              </div>
+            </gui-button>
+          </gui-dropdown-menu-trigger>
+          <gui-dropdown-menu-content
+            align="end"
+            classname="min-w-[200px] rounded-xl"
+          >
+            <div class="flex cursor-default items-center gap-3 px-2 py-2">
+              <div class="flex aspect-square size-8 items-center justify-center rounded-lg border border-muted bg-white dark:bg-black">
+                <span class="text-base font-medium uppercase">
+                  T
+                </span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <p class="text-sm font-medium text-foreground">
+                  testuser
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  test@example.com
+                </p>
+              </div>
+            </div>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+                My Account
+              </gui-dropdown-menu-label>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Profile
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-user-icon classname="transition-colors duration-100">
+                  </gui-user-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Settings
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-config-icon classname="transition-colors duration-100">
+                  </gui-config-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+                Resources
+              </gui-dropdown-menu-label>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  GitHub
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-github-icon classname="transition-colors duration-100">
+                  </gui-github-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Support
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-book-open-icon classname="transition-colors duration-100">
+                  </gui-book-open-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+            <gui-dropdown-menu-separator>
+            </gui-dropdown-menu-separator>
+            <gui-dropdown-menu-group>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Logout
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-log-out-icon classname="transition-colors duration-100">
+                  </gui-log-out-icon>
+                </div>
+              </gui-dropdown-menu-item>
+            </gui-dropdown-menu-group>
+          </gui-dropdown-menu-content>
+        </gui-dropdown-menu>
+      </gui-tooltip-trigger>
+      <gui-tooltip-portal>
+        <gui-tooltip-content>
+          User menu
+        </gui-tooltip-content>
+      </gui-tooltip-portal>
+    </gui-tooltip>
+  </gui-tooltip-provider>
+</div>
+
+`;
