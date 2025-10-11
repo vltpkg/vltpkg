@@ -11,8 +11,14 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        fixture: ["vue"]
-        variation: ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"]
+        fixture: ['vue']
+        variation:
+          [
+            'cache-lockfile',
+            'cache-lockfile-node-modules',
+            'clean',
+            'lockfile',
+          ]
     env:
       BENCH_WARMUP: '2'
       BENCH_RUNS: '10'
