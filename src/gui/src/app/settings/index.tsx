@@ -38,7 +38,7 @@ const handleDashboardRootRemove = async (
 export const SettingsView = () => {
   const { theme, setTheme } = useTheme()
   const updateStamp = useGraphStore(state => state.updateStamp)
-  const { dashboardRoots } = useDashboardRootCheck()
+  const { dashboardRoots, isHostedMode } = useDashboardRootCheck()
   const [_, setForceRerender] = useState<number>(0)
   const { toast } = useToast()
 
@@ -78,56 +78,58 @@ export const SettingsView = () => {
             ],
           }}
         />
-        <SettingField
-          name="Dashboard root"
-          description="The root directory for the dashboard"
-          content={
-            dashboardRoots && dashboardRoots.length > 0 ?
-              <div className="mt-2 flex w-full flex-wrap gap-2">
-                {dashboardRoots.map((root, idx) => (
-                  <InlineCode
-                    key={`${root}-${idx}`}
-                    className="mx-0 inline-flex items-center gap-1.5">
-                    {root}
-                    <Button
-                      size="icon"
-                      className="mb-0.5 size-4 rounded-sm bg-neutral-100 text-muted-foreground hover:bg-neutral-200 hover:text-foreground dark:bg-neutral-800 dark:text-muted-foreground dark:hover:bg-neutral-700 dark:hover:text-foreground [&_svg]:size-3"
-                      onClick={() =>
-                        handleDashboardRootRemove(
-                          root,
-                          updateStamp,
-                          rerender,
-                          toast,
-                        )
-                      }>
-                      <X />
-                    </Button>
-                  </InlineCode>
-                ))}
-              </div>
-            : undefined
-          }
-          field={{
-            type: 'directory',
-            onSelect: item => {
-              void (async () => {
-                await setToConfig({
-                  which: 'user',
-                  pairs: [
-                    {
-                      key: 'dashboard-root',
-                      value: JSON.stringify([item.path]),
-                    },
-                  ],
-                })
-                // reload dashboard.json
-                updateStamp()
-                // force rerender to show the new root
-                rerender()
-              })()
-            },
-          }}
-        />
+        {!isHostedMode && (
+          <SettingField
+            name="Dashboard root"
+            description="The root directory for the dashboard"
+            content={
+              dashboardRoots && dashboardRoots.length > 0 ?
+                <div className="mt-2 flex w-full flex-wrap gap-2">
+                  {dashboardRoots.map((root, idx) => (
+                    <InlineCode
+                      key={`${root}-${idx}`}
+                      className="mx-0 inline-flex items-center gap-1.5">
+                      {root}
+                      <Button
+                        size="icon"
+                        className="mb-0.5 size-4 rounded-sm bg-neutral-100 text-muted-foreground hover:bg-neutral-200 hover:text-foreground dark:bg-neutral-800 dark:text-muted-foreground dark:hover:bg-neutral-700 dark:hover:text-foreground [&_svg]:size-3"
+                        onClick={() =>
+                          handleDashboardRootRemove(
+                            root,
+                            updateStamp,
+                            rerender,
+                            toast,
+                          )
+                        }>
+                        <X />
+                      </Button>
+                    </InlineCode>
+                  ))}
+                </div>
+              : undefined
+            }
+            field={{
+              type: 'directory',
+              onSelect: item => {
+                void (async () => {
+                  await setToConfig({
+                    which: 'user',
+                    pairs: [
+                      {
+                        key: 'dashboard-root',
+                        value: JSON.stringify([item.path]),
+                      },
+                    ],
+                  })
+                  // reload dashboard.json
+                  updateStamp()
+                  // force rerender to show the new root
+                  rerender()
+                })()
+              },
+            }}
+          />
+        )}
       </SettingSection>
     </SettingWrapper>
   )
