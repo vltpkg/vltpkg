@@ -8,8 +8,6 @@ exports[`renders Header for route / 1`] = `
     </gui-vlt-icon>
   </div>
   <div class="flex w-full">
-    <gui-dashboard-header>
-    </gui-dashboard-header>
   </div>
   <gui-linear-menu>
   </gui-linear-menu>

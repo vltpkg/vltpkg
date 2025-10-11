@@ -34,8 +34,7 @@ export const Dashboard = () => {
   )
   const stamp = useGraphStore(state => state.stamp)
   const updateStamp = useGraphStore(state => state.updateStamp)
-  const { hasDashboard, isLoading, isHostedMode } =
-    useDashboardRootCheck()
+  const { hasDashboard, isLoading } = useDashboardRootCheck()
 
   useEffect(() => {
     startDashboardData({
@@ -48,34 +47,6 @@ export const Dashboard = () => {
 
   if (isLoading) {
     return <LoadingDashboard />
-  }
-
-  // Show hosted mode message
-  if (isHostedMode) {
-    return (
-      <>
-        <div className="flex h-full flex-col items-center justify-center px-8 py-4">
-          <div className="max-w-2xl text-center">
-            <h1 className="mb-4 text-2xl font-semibold">
-              Hosted Demo Mode
-            </h1>
-            <p className="mb-4 text-muted-foreground">
-              This is a static hosted version of the VLT GUI. The
-              dashboard requires a local VLT server to display project
-              data.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              To use the full dashboard features, please run the GUI
-              locally with{' '}
-              <code className="rounded bg-muted px-2 py-1">
-                vlt gui
-              </code>
-              .
-            </p>
-          </div>
-        </div>
-      </>
-    )
   }
 
   if (!hasDashboard) {

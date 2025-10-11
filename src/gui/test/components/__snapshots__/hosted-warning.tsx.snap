@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HostedWarning view 1`] = `
+
+<div class="flex h-full w-full flex-col items-center justify-center px-8 py-4">
+  <div class="flex flex-col items-start justify-start gap-4">
+    <h1 class="text-3xl font-medium tracking-tight">
+      Hosted Demo Mode
+    </h1>
+    <p class="text-balanced text-muted-foreground">
+      This is a static hosted version of the vlt registry.
+      <br>
+      The application requires a local vlt server to display local project data.
+      <br>
+      To use the full dashboard features, please run the gui locally with
+      <gui-inline-code>
+        vlt serve
+      </gui-inline-code>
+      .
+    </p>
+    <gui-button
+      aschild="true"
+      size="sm"
+      variant="outline"
+      classname="rounded-2xl border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-muted hover:dark:bg-neutral-900"
+    >
+      <gui-router-link
+        to="https://docs.vlt.sh/cli"
+        target="_blank"
+      >
+        Install the Client
+        <div class="flex size-5 items-center justify-center rounded-md border border-neutral-300 bg-white text-muted-foreground dark:border-muted dark:bg-black [&amp;_svg]:size-3">
+          <gui-arrow-up-right-icon>
+          </gui-arrow-up-right-icon>
+        </div>
+      </gui-router-link>
+    </gui-button>
+  </div>
+</div>
+
+`;

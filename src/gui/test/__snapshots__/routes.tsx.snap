@@ -10,8 +10,6 @@ exports[`renders Layout for the "/" view 1`] = `
       <gui-app-sidebar>
       </gui-app-sidebar>
       <gui-sidebar-inset>
-        <gui-dashboard>
-        </gui-dashboard>
       </gui-sidebar-inset>
       <gui-toaster>
       </gui-toaster>
