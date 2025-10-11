@@ -1,11 +1,16 @@
 import { rm } from 'node:fs/promises'
 import { join } from 'node:path'
+import { XDG } from '@vltpkg/xdg'
 import t from 'tap'
 import {
   getNodeGypShim,
   getNodeGypShimDir,
   hasNodeGypReference,
 } from '../src/aliasRunner.ts'
+
+// cleans up any existing shim before tests
+const shimPath = join(new XDG('vlt').runtime('run'), 'node-gyp')
+await rm(shimPath, { force: true }).catch(() => {})
 
 t.test('hasNodeGypReference', async t => {
   t.test('detects node-gyp in simple commands', async t => {

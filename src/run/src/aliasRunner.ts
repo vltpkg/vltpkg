@@ -18,6 +18,7 @@ export async function getNodeGypShim(): Promise<string> {
   // Check if shim already exists
   try {
     await stat(shimFile)
+    /* c8 ignore next 2 - hard to test */
     shimPath = shimFile
     return shimPath
   } catch {
