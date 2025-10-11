@@ -13,8 +13,8 @@ import { statSync } from 'node:fs'
 import { delimiter, resolve, sep } from 'node:path'
 import { walkUp } from 'walk-up-path'
 import {
-  runWithNodeGypAlias,
-  checkBashAvailable,
+  getNodeGypShimDir,
+  hasNodeGypReference,
 } from './aliasRunner.ts'
 
 /** map of which node_modules/.bin folders exist */
@@ -37,39 +37,23 @@ const dirExists = (p: string) => {
 const nmBin = `${sep}node_modules${sep}.bin`
 
 /**
- * Determines if we should use the node-gyp alias for shell execution
- */
-const shouldUseNodeGypAlias = (
-  arg0: string,
-  shell: boolean | string,
-): boolean => {
-  // Only use alias for shell execution
-  if (!shell) return false
-
-  // Check if bash is available
-  if (!checkBashAvailable()) return false
-
-  // Use alias if the command contains node-gyp
-  // This covers both simple commands like "node-gyp rebuild"
-  // and complex commands like "echo 'before' && node-gyp rebuild"
-  const hasNodeGyp = arg0.includes('node-gyp')
-
-  return hasNodeGyp
-}
-
-/**
- * Add all exsting `node_modules/.bin` folders to the PATH that
+ * Add all existing `node_modules/.bin` folders to the PATH that
  * exist between the cwd and the projectRoot, so dependency bins
  * are found, with closer paths higher priority.
+ *
+ * If command contains node-gyp reference, also inject the shim directory
+ * as a fallback (after all existing PATH entries).
  */
-const addPaths = (
+const addPaths = async (
   projectRoot: string,
   cwd: string,
   env: NodeJS.ProcessEnv,
-): NodeJS.ProcessEnv => {
+  command?: string,
+): Promise<NodeJS.ProcessEnv> => {
   const { PATH = '' } = env
   const PATHsplit = PATH.split(delimiter)
   const paths = new Set<string>()
+
   // anything in the PATH that already has node_modules/.bin is a thing
   // we put there, perhaps for the vlx exec cache usage
   for (const p of PATHsplit) {
@@ -86,6 +70,19 @@ const addPaths = (
     /* c8 ignore next - pretty rare to have an empty entry */
     if (p) paths.add(p)
   }
+
+  // If command has node-gyp, inject shim directory as fallback (last)
+  if (command && hasNodeGypReference(command)) {
+    try {
+      const shimDir = await getNodeGypShimDir()
+      paths.add(shimDir)
+      /* c8 ignore start */
+    } catch {
+      // Ignore shim creation errors, command will fail naturally if node-gyp is needed
+    }
+    /* c8 ignore stop */
+  }
+
   env.PATH = [...paths].join(delimiter)
   return env
 }
@@ -357,43 +354,22 @@ export const exec = async (
     ...spawnOptions
   } = options
 
-  // Check if we should use node-gyp alias for shell execution
-  if (shouldUseNodeGypAlias(arg0, shell)) {
-    const fullCommand =
-      args.length > 0 ? `${arg0} ${args.join(' ')}` : arg0
-    const status = await runWithNodeGypAlias(fullCommand, {
-      cwd,
-      env: addPaths(projectRoot, cwd, {
-        ...process.env,
-        ...env,
-        FORCE_COLOR: color ? '1' : '0',
-      }),
-      stdio: 'pipe',
-      signal,
-    })
-
-    return {
-      command: arg0,
-      args,
-      cwd,
-      stdout: '',
-      stderr: '',
-      status,
-      signal: null,
-    }
-  }
-
   const p = promiseSpawn(arg0, args, {
     ...spawnOptions,
     shell,
     stdio: 'pipe',
     stdioString: true,
     cwd,
-    env: addPaths(projectRoot, cwd, {
-      ...process.env,
-      ...env,
-      FORCE_COLOR: color ? '1' : '0',
-    }),
+    env: await addPaths(
+      projectRoot,
+      cwd,
+      {
+        ...process.env,
+        ...env,
+        FORCE_COLOR: color ? '1' : '0',
+      },
+      arg0,
+    ),
     windowsHide: true,
   })
   proxySignals(p.process)
@@ -418,31 +394,16 @@ export const execFG = async (
     ...spawnOptions
   } = options
 
-  // Check if we should use node-gyp alias for shell execution
-  if (shouldUseNodeGypAlias(arg0, shell)) {
-    const fullCommand =
-      args.length > 0 ? `${arg0} ${args.join(' ')}` : arg0
-    const status = await runWithNodeGypAlias(fullCommand, {
-      cwd,
-      env: addPaths(projectRoot, cwd, {
-        ...process.env,
-        ...env,
-        FORCE_COLOR: color ? '1' : '0',
-      }),
-      stdio: 'inherit',
-      signal,
-    })
-
-    return {
-      command: arg0,
-      args,
-      cwd,
-      stdout: null,
-      stderr: null,
-      status,
-      signal: null,
-    }
-  }
+  const processEnv = await addPaths(
+    projectRoot,
+    cwd,
+    {
+      ...process.env,
+      ...env,
+      FORCE_COLOR: color ? '1' : '0',
+    },
+    arg0,
+  )
 
   return new Promise<SpawnResultNoStdio>(res => {
     foregroundChild(
@@ -452,11 +413,7 @@ export const execFG = async (
         ...spawnOptions,
         shell,
         cwd,
-        env: addPaths(projectRoot, cwd, {
-          ...process.env,
-          ...env,
-          FORCE_COLOR: color ? '1' : '0',
-        }),
+        env: processEnv,
       },
       (status, signal) => {
         res({
@@ -509,9 +466,9 @@ export const runExecFG = async (
 ): Promise<RunFGResult | SpawnResultNoStdio> =>
   runExecImpl<SpawnResultNoStdio>(options, runFG, execFG)
 
-// Export alias runner utilities
+// Export shim utilities
 export {
-  runWithNodeGypAlias,
-  checkBashAvailable,
-  escapeShellArg,
+  getNodeGypShim,
+  getNodeGypShimDir,
+  hasNodeGypReference,
 } from './aliasRunner.ts'

@@ -6,21 +6,262 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components'
 
-Usage:
+Run a script defined in your `package.json` file. Scripts are the commands you define to automate common tasks like building, testing, or starting your application.
+
+## Usage
 
 <Code
-  code="$ vlt run <script> [args ...]"
+  code="vlt run <script> [args ...]"
   title="Terminal"
   lang="bash"
 />
-
-Run a script defined in 'package.json', passing along any extra
-arguments. Note that vlt config values must be specified _before_ the
-script name, because everything after that is handed off to the script
-process.
 
 ## Aliases
 
 ```
 r, run-script
 ```
+
+## Description
+
+The `vlt run` command executes scripts from the `scripts` section of your `package.json` file. If you don't specify a script name, it lists all available scripts in the current package.
+
+### Basic Example
+
+```json title="package.json"
+{
+  "scripts": {
+    "build": "tsc",
+    "test": "tap",
+    "dev": "tsx watch src/index.ts"
+  }
+}
+```
+
+```bash
+# Run the build script
+vlt run build
+
+# Run the tap binary with arguments (note the -- separator)
+vlt run test -- --grep="pattern"
+
+# List all available scripts
+vlt run
+```
+
+### How it Works
+
+When you run a script, vlt:
+
+1. **Adds `node_modules/.bin` to PATH** - All locally-installed binaries become available without the `node_modules/.bin/` prefix
+2. **Runs pre/post scripts** - Automatically executes `pre<script>` before and `post<script>` after your main script
+3. **Sets environment variables** - Provides useful variables like `npm_lifecycle_event`, `npm_lifecycle_script`, and `npm_package_json`
+4. **Executes in the package root** - Scripts always run from your package.json directory, regardless of your current working directory
+
+## Passing Arguments
+
+Arguments after the script name are passed directly to your script. Use `--` to separate vlt options from script arguments:
+
+```bash
+# Pass --grep to the test script
+vlt run test -- --grep="my-test"
+
+# vlt options come BEFORE the script name
+vlt run --if-present test
+```
+
+## Lifecycle Scripts
+
+vlt automatically runs `pre` and `post` scripts if they exist:
+
+```json title="package.json"
+{
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "postbuild": "cp package.json dist/"
+  }
+}
+```
+
+Running `vlt run build` executes all three scripts in order: `prebuild` → `build` → `postbuild`.
+
+## node-gyp Support
+
+vlt automatically provides `node-gyp` support for packages that need to compile native addons. When a script references `node-gyp`, vlt creates a shim that redirects those calls to `vlx node-gyp@latest`, so you don't need to manually install node-gyp globally.
+
+This works transparently for:
+- Direct calls: `"install": "node-gyp rebuild"`
+- Complex commands: `"build": "echo 'start' && node-gyp configure && echo 'done'"`
+- All platforms: Unix/Linux/macOS and Windows
+
+## Workspaces
+
+Run scripts across multiple workspaces in a monorepo:
+
+### Run in Specific Workspaces
+
+```bash
+# Run in a single workspace a using a query scope
+vlt run --scope="#a:workspace" lint
+
+# Run in multiple workspaces using CLI args
+vlt run test -w packages/app -w packages/lib
+```
+
+### Run in All Workspaces
+
+```bash
+# Run across all workspaces using a query scope
+vlt run lint --scope=":workspace"
+
+# Run across all workspaces using CLI args
+vlt run build --recursive
+
+# Or use workspace groups
+vlt run test --workspace-group=frontend
+```
+
+### Advanced filtering with Queries
+
+Use [DSS queries](/cli/dependency-selectors) to target specific packages:
+
+```bash
+# Run tests only for packages matching a pattern
+vlt run --scope=":has([name^='@myapp/'])" test
+```
+
+## Options
+
+### `--workspace`, `-w`
+
+Run the script in specific workspace(s). Can be a path or glob pattern matching workspace directories.
+
+```bash
+vlt run build -w packages/app -w packages/lib
+```
+
+### `--workspace-group`, `-g`
+
+Run the script in named workspace groups defined in your project configuration.
+
+```bash
+vlt run test -g frontend -g api
+```
+
+### `--recursive`, `-r`
+
+Run the script across all workspaces. Implied when using `--workspace` or `--workspace-group`.
+
+```bash
+vlt run build --recursive
+```
+
+### `--if-present`
+
+Don't fail if the script doesn't exist. Useful when running scripts across workspaces where not all packages have the same scripts.
+
+```bash
+vlt run build --recursive --if-present
+```
+
+Defaults to `true` when using `--scope`, `--workspace`, `--workspace-group`, or `--recursive`.
+
+### `--scope`, `-s`
+
+Filter packages using a [DSS query](/cli/dependency-selectors) selector.
+
+```bash
+vlt run test --scope=":root > *"  # Direct dependencies only
+```
+
+### `--bail`, `-b` / `--no-bail`, `-B`
+
+Control whether to stop on first failure when running across multiple workspaces. Defaults to `true` (stop on failure).
+
+```bash
+# Continue running even if some packages fail
+vlt run test --recursive --no-bail
+```
+
+### `--script-shell`
+
+Override the shell used to run scripts. By default, uses `/bin/sh` on Unix-like systems and `cmd.exe` on Windows.
+
+```bash
+vlt run build --script-shell=/bin/bash
+```
+
+### `--dry-run`
+
+Show what would be executed without actually running the scripts.
+
+```bash
+vlt run build --dry-run
+```
+
+## Environment Variables
+
+vlt sets several environment variables that your scripts can access:
+
+- `npm_lifecycle_event` - The name of the script being run (e.g., "build")
+- `npm_lifecycle_script` - The actual command from package.json
+- `npm_package_json` - Full path to the package.json file
+- `NODE` - Path to the node executable
+- `INIT_CWD` - The directory where you ran `vlt run` from
+- `VLT_*` - All vlt configuration values
+
+## Configuration
+
+Script behavior can be configured in your `vlt.json` file:
+
+```json title="vlt.json"
+{
+  "script-shell": "/bin/bash",
+  "if-present": true,
+  "command": {
+    "run": {
+      "bail": false
+    }
+  }
+}
+```
+
+## Examples
+
+### Run tests with coverage
+
+```bash
+vlt run test -- --coverage
+```
+
+### Build all workspace packages
+
+```bash
+vlt run build --recursive
+```
+
+### Run a script only where it exists
+
+```bash
+vlt run lint --recursive --if-present
+```
+
+### Run with custom shell
+
+```bash
+vlt run build --script-shell=/usr/bin/fish
+```
+
+### Preview what will run
+
+```bash
+vlt run deploy --dry-run --recursive
+```
+
+## See Also
+
+- [`vlt exec`](/cli/commands/exec) - Run arbitrary commands with enhanced PATH
+- [`vlt run-exec`](/cli/commands/run-exec) - Intelligently choose between run and exec
+- [Package Scripts](/cli/scripts) - Learn more about package.json scripts
+- [Workspaces](/workspaces) - Working with monorepos

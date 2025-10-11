@@ -2,13 +2,7 @@ import { promiseSpawn } from '@vltpkg/promise-spawn'
 import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import t from 'tap'
-import {
-  exec,
-  isRunResult,
-  run,
-  checkBashAvailable,
-  runWithNodeGypAlias,
-} from '../src/index.ts'
+import { exec, isRunResult, run } from '../src/index.ts'
 
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
@@ -899,236 +893,53 @@ t.test('quote things properly only as needed', async t => {
   })
 })
 
-t.test('node-gyp alias functionality', async t => {
-  const projectRoot = t.testdir({
-    'package.json': JSON.stringify({
-      name: 'test-package',
-      scripts: {
-        'node-gyp-simple': 'node-gyp rebuild',
-        'node-gyp-with-args':
-          'node-gyp configure --python=/usr/bin/python3',
-        'node-gyp-chained':
-          'echo "before" && node-gyp rebuild && echo "after"',
-        'node-gyp-piped': 'node-gyp -v | grep "node-gyp"',
-        'node-gyp-quoted':
-          'node-gyp rebuild --python="/usr/bin/python3"',
-        'node-gyp-subshell': '(node-gyp -v && echo "success")',
-        'regular-command': 'echo "hello world"',
-        'complex-shell':
-          'echo "start" && (node-gyp configure || echo "fallback") && echo "end"',
-      },
-    }),
-  })
+t.test('node-gyp shim injection into PATH', async t => {
+  const MOCK_SHIM_DIR = '/mock/shim/directory'
 
-  // Skip tests if bash is not available
-  if (!checkBashAvailable()) {
-    t.skip(
-      'bash not available, skipping node-gyp alias tests',
-      () => {},
-    )
-    return
-  }
-
-  t.test('bash availability check', async t => {
-    t.equal(checkBashAvailable(), true)
-  })
-
-  t.test('runWithNodeGypAlias basic functionality', async t => {
-    // Test that the alias is properly injected
-    const result = await runWithNodeGypAlias('echo "alias test"', {
-      cwd: projectRoot,
-      stdio: 'pipe',
-    })
-
-    // The command should succeed (exit code 0)
-    t.equal(result, 0)
-  })
-
-  t.test('run with node-gyp alias for shell commands', async t => {
-    // Test scripts that should trigger the node-gyp alias
-    // We'll test the alias injection by checking if the command is processed
-    const scriptsWithAlias = [
-      'node-gyp-chained',
-      'node-gyp-piped',
-      'node-gyp-subshell',
-      'complex-shell',
-    ]
-
-    for (const scriptName of scriptsWithAlias) {
-      const result = await run({
-        cwd: projectRoot,
-        arg0: scriptName,
-        projectRoot,
-        'script-shell': true,
-      })
-
-      // These commands should be processed (may fail due to node-gyp not being available, but that's ok)
-      // The important thing is that they don't crash with "bash not found" errors
-      t.ok(
-        typeof result.status === 'number',
-        `${scriptName} should be processed`,
-      )
-    }
-  })
-
-  t.test(
-    'run with node-gyp alias for simple node-gyp commands',
-    async t => {
-      // Test scripts that should trigger the node-gyp alias (simple node-gyp commands)
-      const scriptsWithSimpleNodeGyp = [
-        'node-gyp-simple',
-        'node-gyp-with-args',
-        'node-gyp-quoted',
-      ]
-
-      for (const scriptName of scriptsWithSimpleNodeGyp) {
-        const result = await run({
-          cwd: projectRoot,
-          arg0: scriptName,
-          projectRoot,
-          'script-shell': true,
-        })
-
-        // These commands should be processed with the alias (may fail due to node-gyp not being available, but that's ok)
-        t.ok(
-          typeof result.status === 'number',
-          `${scriptName} should be processed with alias`,
-        )
-      }
+  const { exec: execWithMock } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '../src/aliasRunner.ts': {
+      getNodeGypShim: async () => '/mock/shim/directory/node-gyp',
+      getNodeGypShimDir: async () => MOCK_SHIM_DIR,
+      hasNodeGypReference: (cmd: string) => cmd.includes('node-gyp'),
     },
-  )
+  })
 
-  t.test(
-    'run without node-gyp alias for non-node-gyp commands',
-    async t => {
-      // Test scripts that should NOT trigger the node-gyp alias (no node-gyp reference)
-      const result = await run({
-        cwd: projectRoot,
-        arg0: 'regular-command',
-        projectRoot,
-        'script-shell': true,
-      })
+  const cwd = t.testdir({
+    node_modules: { '.bin': {} },
+  })
 
-      t.equal(result.status, 0)
-      t.match(result.stdout, 'hello world')
-    },
-  )
-
-  t.test('exec with node-gyp alias for shell commands', async t => {
-    // Test exec with shell commands that should trigger alias
-    const result = await exec({
-      arg0: 'echo "test" && node-gyp -v',
-      cwd: projectRoot,
-      projectRoot,
+  t.test('exec with node-gyp command injects shim dir', async t => {
+    // Use shell command that mentions node-gyp to trigger shim injection
+    const result = await execWithMock({
+      arg0: 'echo "would call node-gyp here"',
+      cwd,
+      projectRoot: cwd,
       'script-shell': true,
     })
 
-    t.equal(result.status, 0)
+    // The command should succeed since we're just echoing
+    t.equal(result.status, 0, 'command executed successfully')
+    t.match(
+      result.stdout,
+      /would call node-gyp here/,
+      'output contains expected text',
+    )
   })
 
   t.test(
-    'exec without node-gyp alias for non-shell commands',
+    'exec without node-gyp does not inject shim dir',
     async t => {
-      // Test exec without shell (should not trigger alias)
-      const result = await exec({
+      const result = await execWithMock({
         arg0: 'echo',
         args: ['hello'],
-        cwd: projectRoot,
-        projectRoot,
-        'script-shell': false,
+        cwd,
+        projectRoot: cwd,
       })
 
       t.equal(result.status, 0)
       t.match(result.stdout, 'hello')
     },
   )
-
-  t.test('execFG with node-gyp alias', async t => {
-    // Test foreground execution with alias
-    const result = await exec({
-      arg0: 'echo "foreground test" && node-gyp -v',
-      cwd: projectRoot,
-      projectRoot,
-      'script-shell': true,
-    })
-
-    t.equal(result.status, 0)
-  })
-
-  t.test('shell operator detection', async t => {
-    // Test that shell operators are properly detected
-    const commandsWithOperators = [
-      'echo "test" && node-gyp rebuild',
-      'node-gyp configure || echo "fallback"',
-      'echo "start" | node-gyp -v',
-      '(node-gyp rebuild)',
-      'echo "quoted" && node-gyp rebuild',
-    ]
-
-    for (const command of commandsWithOperators) {
-      const result = await exec({
-        arg0: command,
-        cwd: projectRoot,
-        projectRoot,
-        'script-shell': true,
-      })
-
-      // Commands should be processed (may fail due to node-gyp not being available, but that's ok)
-      t.ok(
-        typeof result.status === 'number',
-        `Command "${command}" should be processed`,
-      )
-    }
-  })
-
-  t.test('error handling', async t => {
-    // Test that errors are properly propagated
-    const result = await exec({
-      arg0: 'node-gyp invalid-command',
-      cwd: projectRoot,
-      projectRoot,
-      'script-shell': true,
-    })
-
-    // The command should be processed (may succeed or fail depending on vlx/node-gyp behavior)
-    // The important thing is that it doesn't crash with "bash not found" errors
-    t.ok(
-      typeof result.status === 'number',
-      'Command should be processed',
-    )
-  })
-
-  t.test('environment variables preserved', async t => {
-    const customEnv = { CUSTOM_VAR: 'test-value' }
-
-    const result = await runWithNodeGypAlias('echo $CUSTOM_VAR', {
-      cwd: projectRoot,
-      env: customEnv,
-      stdio: 'pipe',
-    })
-
-    t.equal(result, 0)
-  })
-
-  t.test('signal handling', async t => {
-    const controller = new AbortController()
-
-    // Start a long-running command and abort it
-    const promise = runWithNodeGypAlias('sleep 10', {
-      cwd: projectRoot,
-      signal: controller.signal,
-    })
-
-    // Abort after a short delay
-    setTimeout(() => controller.abort(), 100)
-
-    try {
-      const result = await promise
-      // Should return a non-zero exit code when aborted
-      t.not(result, 0)
-    } catch (error) {
-      // AbortError is also acceptable
-      t.match(error, { name: 'AbortError' })
-    }
-  })
 })

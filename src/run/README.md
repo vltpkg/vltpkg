@@ -66,40 +66,43 @@ const execResult = await exec({
 ## Node-gyp Shimming
 
 The `@vltpkg/run` package automatically provides node-gyp shimming for
-shell commands that contain `node-gyp` references. This allows
-packages that expect `node-gyp` to be available to work seamlessly
-with vlt's package management system.
+commands that contain `node-gyp` references. This allows packages that
+expect `node-gyp` to be available to work seamlessly with vlt's
+package management system.
 
 ### How it works
 
-When executing shell commands that contain references to `node-gyp`,
-the package will:
+When executing commands that contain references to `node-gyp`, the
+package will:
 
-1. Check if bash is available on the system
-2. If available, inject a bash alias:
-   `alias node-gyp='vlx node-gyp@latest'`
-3. Execute the command in a bash shell with alias expansion enabled
+1. Create a `node-gyp` shim file in the XDG runtime directory
+   (typically `~/.run/vlt/run/node-gyp` on Unix or
+   `%TEMP%\xdg.run\vlt\run\node-gyp.cmd` on Windows)
+2. Inject the shim directory into the command's `PATH` environment
+   variable
+3. The shim redirects all `node-gyp` calls to `vlx node-gyp@latest`
 
-This works for both simple commands like `node-gyp rebuild` and
-complex commands with shell operators like
+The shim is created once per session and cached in memory for
+performance. It works for both simple commands like `node-gyp rebuild`
+and complex commands with shell operators like
 `echo "before" && node-gyp rebuild && echo "after"`.
+
+### Cross-platform support
+
+The shimming system is fully cross-platform:
+
+- **Unix/Linux/macOS**: Creates an executable shell script with
+  shebang (`#!/bin/sh`)
+- **Windows**: Creates a batch file (`.cmd`) that forwards arguments
 
 ### Examples
 
 ```js
-// These commands will automatically use the node-gyp alias:
+// These commands will automatically use the node-gyp shim:
 await run({
   cwd: '/path/to/pkg',
   arg0: 'build', // where build script is: "node-gyp rebuild"
   projectRoot: '/path/to/pkg',
-  'script-shell': true,
-})
-
-await exec({
-  arg0: 'node-gyp rebuild', // Simple command with node-gyp
-  cwd: '/path/to/pkg',
-  projectRoot: '/path/to/pkg',
-  'script-shell': true,
 })
 
 await exec({
@@ -109,34 +112,48 @@ await exec({
   'script-shell': true,
 })
 
-// These commands will NOT use the alias:
+await exec({
+  arg0: 'node-gyp',
+  args: ['configure', '--debug'],
+  cwd: '/path/to/pkg',
+  projectRoot: '/path/to/pkg',
+})
+
+// These commands will NOT use the shim:
 await exec({
   arg0: 'echo "hello"', // No node-gyp reference
   cwd: '/path/to/pkg',
   projectRoot: '/path/to/pkg',
-  'script-shell': true,
-})
-
-await exec({
-  arg0: 'node-gyp rebuild', // Has node-gyp but not shell execution
-  cwd: '/path/to/pkg',
-  projectRoot: '/path/to/pkg',
-  'script-shell': false, // Not shell execution
 })
 ```
 
-### Requirements
+### How to verify the shim
 
-- **Bash**: The shimming requires bash to be available in the system
-  PATH
-- **Shell execution**: Only applies to commands executed with shell
-  enabled (`'script-shell': true`)
-- **Node-gyp detection**: Triggers for any command containing
-  `node-gyp`
+You can access the shim utilities to inspect or verify the setup:
+
+```js
+import {
+  getNodeGypShim,
+  getNodeGypShimDir,
+  hasNodeGypReference,
+} from '@vltpkg/run'
+
+// Get the path to the shim file
+const shimPath = await getNodeGypShim()
+// e.g., '/home/user/.run/vlt/node-gyp'
+
+// Get the directory containing the shim (for PATH injection)
+const shimDir = await getNodeGypShimDir()
+// e.g., '/home/user/.run/vlt'
+
+// Check if a command contains node-gyp references
+const needsShim = hasNodeGypReference('node-gyp rebuild')
+// true
+```
 
 ### Fallback behavior
 
-If bash is not available or the command doesn't meet the criteria for
-shimming, the command will be executed normally without any
-modifications. This ensures compatibility with systems that don't have
-bash installed or for commands that don't need the shimming.
+If the shim cannot be created (e.g., due to filesystem permissions),
+the error is silently caught and the command executes normally. This
+ensures the command fails naturally if `node-gyp` is actually needed
+but not available, providing clear error messages to the user.

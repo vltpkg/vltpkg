@@ -1,66 +1,63 @@
-import { spawn, spawnSync } from 'node:child_process'
+import { XDG } from '@vltpkg/xdg'
+import { chmod, mkdir, stat, writeFile } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
 
-export type RunOpts = {
-  cwd: string
-  env?: NodeJS.ProcessEnv
-  stdio?: 'inherit' | 'pipe' | 'ignore' | any[]
-  signal?: AbortSignal
+const xdg = new XDG('vlt')
+let shimPath: string | undefined
+
+/**
+ * Get or create the node-gyp shim file path
+ * The shim redirects node-gyp calls to vlx node-gyp@latest
+ */
+export async function getNodeGypShim(): Promise<string> {
+  if (shimPath) return shimPath
+
+  const runtimeDir = xdg.runtime('run')
+  const shimFile = join(runtimeDir, 'node-gyp')
+
+  // Check if shim already exists
+  try {
+    await stat(shimFile)
+    shimPath = shimFile
+    return shimPath
+  } catch {
+    // Shim doesn't exist, create it
+  }
+
+  // Create runtime directory if needed
+  await mkdir(runtimeDir, { recursive: true })
+
+  // Create shim that calls vlx
+  /* c8 ignore start - ignore platform-dependent coverage */
+  const shimContent =
+    process.platform === 'win32' ?
+      `@echo off\nvlx node-gyp@latest %*\n`
+    : `#!/bin/sh\nexec vlx node-gyp@latest "$@"\n`
+  /* c8 ignore stop */
+
+  await writeFile(shimFile, shimContent, 'utf8')
+
+  // Make executable on Unix systems
+  if (process.platform !== 'win32') {
+    await chmod(shimFile, 0o755)
+  }
+
+  shimPath = shimFile
+  return shimPath
 }
 
 /**
- * Runs a shell script string via bash -lc, injecting:
- *   alias node-gyp='vlx node-gyp@latest'
- *
- * Works on Linux/macOS/WSL. Requires bash in PATH.
+ * Get the directory containing the node-gyp shim
+ * This can be prepended to PATH to make the shim available
  */
-export function runWithNodeGypAlias(
-  script: string,
-  opts: RunOpts,
-): Promise<number> {
-  const { cwd, env, stdio = 'inherit', signal } = opts
-
-  // Compose a one-line bash payload
-  const bashPayload = [
-    'shopt -s expand_aliases', // enable alias expansion in non-interactive shell
-    "alias node-gyp='vlx node-gyp@latest'", // redirect node-gyp
-    script, // run user script unchanged
-  ].join(' && ')
-
-  const child = spawn('bash', ['-lc', bashPayload], {
-    cwd,
-    env: { ...process.env, ...env },
-    stdio,
-    signal,
-  })
-
-  return new Promise<number>((resolve, reject) => {
-    child.on('error', reject)
-    child.on('exit', (code, signal) => {
-      if (signal) {
-        const map: Record<string, number> = {
-          SIGINT: 130,
-          SIGTERM: 143,
-        }
-        resolve(map[signal] ?? 1)
-      } else {
-        resolve(code ?? 0)
-      }
-    })
-  })
+export async function getNodeGypShimDir(): Promise<string> {
+  const shim = await getNodeGypShim()
+  return dirname(shim)
 }
 
 /**
- * Check if bash is available in PATH
+ * Check if a command contains node-gyp references
  */
-export function checkBashAvailable(): boolean {
-  const result = spawnSync('bash', ['--version'], { stdio: 'ignore' })
-  return result.status === 0
-}
-
-/**
- * Escape shell arguments to prevent injection attacks
- */
-export function escapeShellArg(arg: string): string {
-  // Basic shell escaping - wrap in single quotes and escape single quotes
-  return `'${arg.replace(/'/g, "'\\''")}'`
+export function hasNodeGypReference(command: string): boolean {
+  return command.includes('node-gyp')
 }
