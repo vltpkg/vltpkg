@@ -63,5 +63,6 @@
     "vlxl": "./scripts/bins/vlxl"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "__ok": 1
 }
