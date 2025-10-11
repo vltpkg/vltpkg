@@ -39,10 +39,11 @@ export async function getNodeGypShim(): Promise<string> {
   await writeFile(shimFile, shimContent, 'utf8')
 
   // Make executable on Unix systems
+  /* c8 ignore start - unix-only */
   if (process.platform !== 'win32') {
-    /* c8 ignore next 2 - unix-only */
     await chmod(shimFile, 0o755)
   }
+  /* c8 ignore stop */
 
   shimPath = shimFile
   return shimPath
