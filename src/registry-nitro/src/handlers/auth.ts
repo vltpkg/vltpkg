@@ -320,3 +320,40 @@ export const loginDoneHandler: EventHandler = eventHandler(
     }
   },
 )
+
+/**
+ * Logout/Token revocation endpoint
+ * DELETE /-/user/token/:token
+ * 
+ * Revokes an authentication token (npm logout functionality)
+ */
+export const logoutHandler: EventHandler = eventHandler(
+  async event => {
+    const token = getRouterParam(event, 'token')
+
+    if (!token) {
+      throw new HTTPError('Missing token', { status: 400 })
+    }
+
+    // Find and delete the token from database
+    const db = getDb()
+    const [deletedToken] = await db
+      .delete(Schema.tokens)
+      .where(eq(Schema.tokens.token, token))
+      .returning()
+
+    if (!deletedToken) {
+      throw new HTTPError('Token not found', { status: 404 })
+    }
+
+    // Also clean up any associated login sessions
+    await db
+      .delete(Schema.loginSessions)
+      .where(eq(Schema.loginSessions.token, token))
+
+    return {
+      message: 'Token revoked successfully',
+      token: token.substring(0, 8) + '...' // Show partial token for confirmation
+    }
+  },
+)
