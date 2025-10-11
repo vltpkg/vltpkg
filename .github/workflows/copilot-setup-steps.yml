@@ -1,5 +1,5 @@
 # Steps run before Copilot runs
-name: "Copilot Setup Steps"
+name: 'Copilot Setup Steps'
 on:
   workflow_dispatch:
   push:
