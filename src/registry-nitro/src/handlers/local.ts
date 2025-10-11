@@ -10,6 +10,7 @@ import type { HTTPEvent, EventHandler } from 'h3'
 import { useStorage } from 'nitro/runtime'
 import assert from 'node:assert'
 import { Readable } from 'node:stream'
+import * as ssri from 'ssri'
 
 const assertParam = (event: HTTPEvent, name: string) => {
   const param = getRouterParam(event, name)
@@ -156,11 +157,16 @@ export const putPackageHandler: EventHandler = async event => {
       // Generate tarball key
       const tarballKey = `local___tarball___${joinParams('_', param1, param2, filename)}`
 
+      // Calculate integrity for tarball data
+      const tarballIntegrity = ssri.fromData(tarballBuffer, {
+        algorithms: ['sha512'],
+      })
+
       // Create tarball cache entry
       const tarballEntry = {
         expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 100, // 100 years
         mtime: Date.now(),
-        integrity: `sha512-${Date.now()}`, // TODO: Calculate actual integrity
+        integrity: tarballIntegrity.toString(),
         value: {
           status: 200,
           headers: {
@@ -180,13 +186,19 @@ export const putPackageHandler: EventHandler = async event => {
   const { _attachments, ...packageData } = body
 
   // Convert body to stream for the storage driver
-  const bodyStream = Readable.from([JSON.stringify(packageData)])
+  const packageDataString = JSON.stringify(packageData)
+  const bodyStream = Readable.from([packageDataString])
+
+  // Calculate integrity for package data
+  const packageIntegrity = ssri.fromData(packageDataString, {
+    algorithms: ['sha512'],
+  })
 
   // Create cache entry structure that matches what the driver expects
   const packageEntry = {
     expires: Date.now() + 1000 * 60 * 60 * 24 * 365, // 1 year
     mtime: Date.now(),
-    integrity: `sha512-${Date.now()}`, // TODO: Calculate actual integrity
+    integrity: packageIntegrity.toString(),
     value: {
       status: 200,
       headers: {
