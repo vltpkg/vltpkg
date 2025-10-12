@@ -6,6 +6,9 @@ import Layout from '@/layout.tsx'
 
 vi.mock('react-router', () => ({
   Outlet: 'gui-router-outlet',
+  useLocation: vi.fn().mockReturnValue({
+    pathname: '/',
+  }),
 }))
 
 vi.mock('@/components/navigation/header/index.tsx', () => ({

@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router'
+import { useMemo } from 'react'
+import { useLocation, Outlet } from 'react-router'
 import {
   defaultOpen,
   AppSidebar,
@@ -10,8 +11,28 @@ import {
 import { Toaster } from '@/components/ui/toaster.tsx'
 import { Header } from '@/components/navigation/header/index.tsx'
 import { usePreflight } from '@/components/hooks/use-preflight.tsx'
+import { isHostedEnvironment } from '@/lib/environment.ts'
+import { HostedWarning } from '@/components/hosted-warning.tsx'
 
 const Layout = () => {
+  const isHostedMode = isHostedEnvironment()
+  const { pathname } = useLocation()
+
+  const onRestrictedRoute = useMemo(() => {
+    if (!isHostedMode) return false
+
+    // routes that require local server features
+    const restrictedRoutes = [
+      '/dashboard',
+      '/queries',
+      '/labels',
+      '/create-new-project',
+      '/settings',
+    ]
+
+    return restrictedRoutes.some(route => pathname.startsWith(route))
+  }, [pathname, isHostedMode])
+
   usePreflight()
 
   return (
@@ -20,7 +41,9 @@ const Layout = () => {
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
         <SidebarInset>
-          <Outlet />
+          {onRestrictedRoute ?
+            <HostedWarning />
+          : <Outlet />}
         </SidebarInset>
         <Toaster />
       </SidebarProvider>
