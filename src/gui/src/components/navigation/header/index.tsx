@@ -5,11 +5,17 @@ import { ExplorerHeader } from '@/components/navigation/header/explorer.tsx'
 import { DashboardHeader } from '@/components/navigation/header/dashboard.tsx'
 import { QueriesHeader } from '@/components/navigation/header/queries.tsx'
 import { LabelsHeader } from '@/components/navigation/header/labels.tsx'
+import { SearchHeader } from '@/components/navigation/header/search.tsx'
 import { LinearMenu } from '@/components/navigation/linear-menu/index.tsx'
 import { BreadcrumbHeader } from '@/components/navigation/header/breadcrumb-header.tsx'
 import { isHostedEnvironment } from '@/lib/environment.ts'
+import { cn } from '@/lib/utils.ts'
 
-const Header = () => {
+import type { ComponentProps } from 'react'
+
+type HeaderProps = ComponentProps<'div'>
+
+const Header = ({ className }: HeaderProps) => {
   const { pathname } = useLocation()
   const isHostedMode = isHostedEnvironment()
 
@@ -26,6 +32,9 @@ const Header = () => {
     if (pathname === '/labels' && !isHostedMode) {
       return <LabelsHeader />
     }
+    if (pathname === '/search') {
+      return <SearchHeader />
+    }
     if (pathname.includes('/help')) {
       return <BreadcrumbHeader />
     }
@@ -35,8 +44,12 @@ const Header = () => {
   }, [isHostedMode, pathname])
 
   return (
-    <div className="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-      <div className="hidden aspect-square size-8 items-center justify-center md:flex">
+    <div
+      className={cn(
+        'flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3',
+        className,
+      )}>
+      <div className="flex aspect-square size-8 items-center justify-center">
         <Vlt />
       </div>
       <div className="flex w-full">{headerContent}</div>

@@ -28,6 +28,9 @@ vi.mock('@/components/ui/toaster.tsx', () => ({
 vi.mock('@/components/hooks/use-preflight.tsx', () => ({
   usePreflight: vi.fn(),
 }))
+vi.mock('@/components/navigation/footer/minimal.tsx', () => ({
+  MinimalFooter: 'gui-minimal-footer',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

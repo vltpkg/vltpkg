@@ -5,13 +5,19 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover.tsx'
 import { cn } from '@/lib/utils.ts'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, LayoutDashboard } from 'lucide-react'
 import { menuData } from '@/components/navigation/linear-menu/data.ts'
 import { UserLinearMenu } from '@/components/auth/user-linear-menu.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { useAuth } from '@/components/hooks/use-auth.tsx'
+import { isHostedEnvironment } from '@/lib/environment.ts'
 
 import type { MenuItem } from '@/components/navigation/linear-menu/data.ts'
 
 export const LinearMenu = () => {
+  const { isSignedIn } = useAuth()
+  const isHostedMode = isHostedEnvironment()
+
   return (
     <Fragment>
       <div className="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm dark:bg-neutral-950 md:flex">
@@ -21,6 +27,14 @@ export const LinearMenu = () => {
           : <MenuLink key={item.title} item={item} />,
         )}
       </div>
+      {!isHostedMode && !isSignedIn && (
+        <div className="flex items-center gap-3">
+          <Button variant="outline" className="rounded-xl">
+            <LayoutDashboard />
+            <span>Dashboard</span>
+          </Button>
+        </div>
+      )}
       <UserLinearMenu />
     </Fragment>
   )

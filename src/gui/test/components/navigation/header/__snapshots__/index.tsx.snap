@@ -3,7 +3,7 @@
 exports[`renders Header for route / 1`] = `
 
 <div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+  <div class="flex aspect-square size-8 items-center justify-center">
     <gui-vlt-icon>
     </gui-vlt-icon>
   </div>
@@ -18,7 +18,7 @@ exports[`renders Header for route / 1`] = `
 exports[`renders Header for route /explore 1`] = `
 
 <div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+  <div class="flex aspect-square size-8 items-center justify-center">
     <gui-vlt-icon>
     </gui-vlt-icon>
   </div>
@@ -35,7 +35,7 @@ exports[`renders Header for route /explore 1`] = `
 exports[`renders Header for route /help 1`] = `
 
 <div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+  <div class="flex aspect-square size-8 items-center justify-center">
     <gui-vlt-icon>
     </gui-vlt-icon>
   </div>
@@ -52,7 +52,7 @@ exports[`renders Header for route /help 1`] = `
 exports[`renders Header for route /labels 1`] = `
 
 <div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+  <div class="flex aspect-square size-8 items-center justify-center">
     <gui-vlt-icon>
     </gui-vlt-icon>
   </div>
@@ -69,7 +69,7 @@ exports[`renders Header for route /labels 1`] = `
 exports[`renders Header for route /queries 1`] = `
 
 <div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+  <div class="flex aspect-square size-8 items-center justify-center">
     <gui-vlt-icon>
     </gui-vlt-icon>
   </div>
@@ -86,7 +86,7 @@ exports[`renders Header for route /queries 1`] = `
 exports[`renders Header for route /settings 1`] = `
 
 <div class="flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3">
-  <div class="hidden aspect-square size-8 items-center justify-center md:flex">
+  <div class="flex aspect-square size-8 items-center justify-center">
     <gui-vlt-icon>
     </gui-vlt-icon>
   </div>

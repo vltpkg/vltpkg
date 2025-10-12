@@ -116,7 +116,6 @@ const renderItems = ({
                 data-active={pathname === item.url}
                 className={cn(
                   'whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&>*]:data-[active=true]:text-foreground [&>svg]:data-[active=false]:text-muted-foreground',
-                  item.vltIcon && '[&>svg]:scale-[2]',
                 )}>
                 <Comp
                   to={item.url ? item.url : ''}

@@ -151,6 +151,67 @@ export const ExplorerGrid = () => {
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
   const query = useGraphStore(state => state.query)
+  const isExternalPackage = useGraphStore(
+    state => state.isExternalPackage,
+  )
+  const externalPackageSpec = useGraphStore(
+    state => state.externalPackageSpec,
+  )
+
+  // For external npm packages, create a mock item directly
+  if (isExternalPackage && externalPackageSpec) {
+    // Extract package name and version separately
+    // Handle scoped packages like @scope/package@version correctly
+    let packageName: string
+    let version: string | undefined
+
+    if (externalPackageSpec.startsWith('@')) {
+      // Scoped package: @scope/package or @scope/package@version
+      const parts = externalPackageSpec.split('@')
+      // parts[0] is empty, parts[1] is scope/package, parts[2] is version (if present)
+      packageName = `@${parts[1]}`
+      version = parts[2]
+    } else {
+      // Regular package: package or package@version
+      const atIndex = externalPackageSpec.indexOf('@')
+      if (atIndex !== -1) {
+        packageName = externalPackageSpec.substring(0, atIndex)
+        version = externalPackageSpec.substring(atIndex + 1)
+      } else {
+        packageName = externalPackageSpec
+      }
+    }
+
+    // Create a wrapper object with the version in bareSpec
+    // We can't modify the parsed spec directly as it's frozen
+    const specWithVersion = {
+      bareSpec: version,
+      final: {
+        bareSpec: version,
+        name: packageName,
+        registry: 'https://registry.npmjs.org/',
+      },
+    }
+
+    const externalItem: GridItemData = {
+      id: externalPackageSpec,
+      name: packageName,
+      title: packageName, // Display just the package name, not package@version
+      version: version || '', // Store the version if we have it
+      labels: [],
+      sameItems: false,
+      stacked: false,
+      size: 1,
+      type: 'prod',
+      spec: specWithVersion as unknown as Spec,
+      from: undefined,
+      to: undefined,
+      breadcrumbs: undefined,
+    }
+
+    return <SelectedItem item={externalItem} />
+  }
+
   const items = getItemsData(edges, nodes, query)
 
   if (items.length === 1 && items[0])

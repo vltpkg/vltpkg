@@ -8,9 +8,15 @@ import {
 import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.ts'
-import { fetchDetails } from '@/lib/external-info.ts'
+import {
+  fetchDetails,
+  publicRegistry,
+  readAuthor,
+  retrieveAvatar,
+} from '@/lib/external-info.ts'
 import { PSEUDO_SECURITY_SELECTORS } from '@/lib/constants/index.ts'
 import { generatePath, useNavigate, useParams } from 'react-router'
+import { normalizeManifest } from '@vltpkg/types'
 
 import type {
   SocketCategory,
@@ -30,8 +36,10 @@ import type { PackageScore } from '@vltpkg/security-archive'
 import type {
   NormalizedManifest,
   NormalizedFunding,
+  Packument,
 } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
+import type { Spec } from '@vltpkg/spec/browser'
 
 export type Tab =
   | 'overview'
@@ -481,6 +489,166 @@ export const SelectedItemProvider = ({
       const state = store.getState()
       const item = state.selectedItem
 
+      // For external packages (from search results), use the spec directly
+      if (!item.to && item.spec) {
+        const abortController = new AbortController()
+        const spec = item.spec
+        try {
+          // Fetch the manifest from npm registry
+          let manifest: NormalizedManifest | null = null
+
+          // Get the final spec which contains the parsed information
+          const finalSpec = (spec as Spec).final
+
+          // Extract package name and version from the spec
+          // The spec was created from something like "npm:express@4.21.1"
+          // We need to separate the package name from the version
+          const packageName = item.name // This should just be the package name (e.g., "express")
+
+          const registry = finalSpec.registry || publicRegistry
+
+          if (registry === publicRegistry) {
+            try {
+              const url = new URL(registry)
+              url.pathname = packageName
+
+              const response = await fetch(String(url), {
+                signal: abortController.signal,
+              })
+
+              if (!response.ok) {
+                throw new Error(
+                  `Failed to fetch packument: ${response.status}`,
+                )
+              }
+
+              const packument = (await response.json()) as Packument
+
+              // For external packages, use the version from bareSpec if available, otherwise latest
+              // bareSpec is set when user navigates to a specific version
+              let version: string | undefined
+
+              // Check if bareSpec has a version (not the registry URL)
+              if (
+                finalSpec.bareSpec &&
+                !finalSpec.bareSpec.startsWith('http')
+              ) {
+                version = finalSpec.bareSpec
+              } else {
+                version = packument['dist-tags'].latest
+              }
+
+              const manifestData =
+                version ? packument.versions[version] : undefined
+              if (manifestData) {
+                manifest = normalizeManifest(manifestData)
+
+                // Extract publisher info from _npmUser before it's lost
+                const npmUser =
+                  '_npmUser' in manifestData ?
+                    manifestData._npmUser
+                  : undefined
+                const publisher =
+                  (
+                    npmUser &&
+                    typeof npmUser === 'object' &&
+                    'name' in npmUser
+                  ) ?
+                    readAuthor({
+                      name: String(npmUser.name),
+                      email:
+                        'email' in npmUser ?
+                          String(npmUser.email)
+                        : undefined,
+                      url:
+                        'url' in npmUser ?
+                          String(npmUser.url)
+                        : undefined,
+                    })
+                  : undefined
+
+                // Update store with normalized manifest and publisher info
+                const stateUpdate: Partial<SelectedItemStoreState> = {
+                  manifest,
+                }
+
+                if (publisher) {
+                  stateUpdate.publisher = publisher
+
+                  // Fetch publisher avatar if email is available
+                  if (publisher.email) {
+                    retrieveAvatar(publisher.email)
+                      .then(src => {
+                        store.setState(state => ({
+                          ...state,
+                          publisherAvatar: {
+                            src,
+                            alt:
+                              publisher.name ?
+                                `${publisher.name}'s avatar`
+                              : 'avatar',
+                          },
+                        }))
+                      })
+                      .catch(() => {
+                        // Ignore avatar fetch errors
+                      })
+                  }
+                }
+
+                store.setState(state => ({
+                  ...state,
+                  ...stateUpdate,
+                }))
+              }
+            } catch (err) {
+              console.error(
+                'Failed to fetch external package manifest:',
+                err,
+              )
+            }
+          }
+
+          // Fetch additional details (downloads, stars, etc.)
+          // Pass the normalized manifest with repository info
+          // We need to create a clean spec with just the package name (no npm: prefix)
+          // and the version in bareSpec for fetchDetails to work correctly with the npm API
+
+          // Get the version from finalSpec.bareSpec if it's a valid version, otherwise use the fetched manifest version
+          let versionForDetails = manifest?.version
+          if (
+            finalSpec.bareSpec &&
+            !finalSpec.bareSpec.startsWith('http')
+          ) {
+            versionForDetails = finalSpec.bareSpec
+          }
+
+          // fetchDetails reads spec.name, spec.bareSpec, and spec.registry directly
+          // (not spec.final.*), so we need to set these at the top level
+          const cleanSpec = {
+            ...spec,
+            name: packageName, // e.g., "express" (no npm: prefix, no version)
+            bareSpec: versionForDetails, // e.g., "4.21.1"
+            registry: registry, // e.g., "https://registry.npmjs.org/"
+          }
+
+          for await (const d of fetchDetails(
+            cleanSpec as unknown as Spec,
+            abortController.signal,
+            manifest ?? undefined,
+          )) {
+            store.setState(state => ({
+              ...state,
+              ...d,
+            }))
+          }
+        } finally {
+          abortController.abort()
+        }
+        return
+      }
+
+      // For packages from the graph, use the hydrated dep ID
       if (!item.to?.name) return
 
       const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
@@ -510,6 +678,9 @@ export const SelectedItemProvider = ({
   }, [fetchDetailsAsync, selectedItemStore])
 
   useEffect(() => {
+    // Skip dependency information for external packages (they have no graph context)
+    if (!selectedItem.to) return
+
     void getDependencyInformation(
       q,
       graph,
@@ -522,7 +693,7 @@ export const SelectedItemProvider = ({
       selectedItemStore.getState().setDuplicatedDeps,
       selectedItemStore.getState().setDepFunding,
     )
-  }, [q, graph, query, selectedItemStore])
+  }, [q, graph, query, selectedItem.to, selectedItemStore])
 
   return (
     <SelectedItemContext.Provider value={selectedItemStore}>
@@ -549,35 +720,54 @@ export const useTabNavigation = (): {
   setActiveTab: (tab: Tab) => void
   setActiveSubTab: (subTab: SubTabDependencies, tab?: Tab) => void
 } => {
-  const {
-    query = '',
-    tab,
-    subTab,
-  } = useParams<{
-    query: string
+  const params = useParams<{
+    query?: string
+    package?: string
+    version?: string
     tab: Tab
     subTab?: SubTabDependencies
   }>()
   const navigate = useNavigate()
 
+  // Check if we're on an npm package route (with or without version)
+  const isNpmRoute = !!params.package
+  const hasVersion = !!params.version
+  const routeParam = params.package || params.query || ''
+
   const getConstructedURL = (
-    query: string,
+    routeParam: string,
     tab: Tab,
     subTab?: SubTabDependencies,
   ) => {
-    return generatePath('/explore/:query/:tab/:subTab', {
-      query,
-      tab,
-      subTab:
-        tab === 'dependencies' ?
-          subTab ? subTab
-          : 'insights'
-        : '',
-    })
+    const subTabValue =
+      tab === 'dependencies' ?
+        subTab ? subTab
+        : 'insights'
+      : ''
+
+    if (isNpmRoute) {
+      const basePath =
+        hasVersion ?
+          '/explore/npm/:package/v/:version/:tab/:subTab'
+        : '/explore/npm/:package/:tab/:subTab'
+
+      return generatePath(basePath, {
+        package: routeParam,
+        version: params.version ?? '',
+        tab,
+        subTab: subTabValue,
+      })
+    } else {
+      return generatePath('/explore/:query/:tab/:subTab', {
+        query: routeParam,
+        tab,
+        subTab: subTabValue,
+      })
+    }
   }
 
   const setActiveTab = (tab: Tab) => {
-    const newPath = getConstructedURL(query, tab)
+    const newPath = getConstructedURL(routeParam, tab)
     void navigate(newPath)
   }
 
@@ -585,13 +775,13 @@ export const useTabNavigation = (): {
     subTab: SubTabDependencies,
     tab: Tab = 'dependencies',
   ) => {
-    const newPath = getConstructedURL(query, tab, subTab)
+    const newPath = getConstructedURL(routeParam, tab, subTab)
     void navigate(newPath)
   }
 
   return {
-    tab: tab ?? 'overview',
-    subTab,
+    tab: params.tab ?? 'overview',
+    subTab: params.subTab,
     setActiveTab,
     setActiveSubTab,
   }

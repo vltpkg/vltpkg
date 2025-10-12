@@ -1,5 +1,10 @@
 import { Query, Config } from '@/components/icons/index.ts'
-import { CircleHelp, LayoutDashboard, Library } from 'lucide-react'
+import {
+  CircleHelp,
+  LayoutDashboard,
+  Library,
+  Search,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface MenuItem {
@@ -8,7 +13,6 @@ export interface MenuItem {
   icon?:
     | LucideIcon
     | React.ComponentType<React.SVGProps<SVGSVGElement>>
-  vltIcon?: boolean
   isActive?: boolean
   items?: MenuItem[]
   external?: boolean
@@ -19,15 +23,19 @@ export interface MenuItem {
 
 export const mainMenuItems: MenuItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Home',
     url: '/',
+    icon: Search,
+  },
+  {
+    title: 'Dashboard',
+    url: '/dashboard',
     icon: LayoutDashboard,
   },
   {
     title: 'Queries',
     url: '/queries',
     icon: Query,
-    vltIcon: true,
   },
 ]
 
@@ -35,8 +43,6 @@ export const helpMenuItems: MenuItem[] = [
   {
     title: 'Selectors',
     url: '/help/selectors',
-    vltIcon: true,
-    icon: Query,
   },
 ]
 
@@ -56,14 +62,12 @@ export const footerMenuItems: MenuItem[] = [
       {
         title: 'Selectors',
         url: '/help/selectors',
-        vltIcon: true,
         icon: Query,
       },
       {
         title: 'Documentation',
         url: 'https://docs.vlt.sh',
         icon: Library,
-        external: true,
       },
     ],
   },

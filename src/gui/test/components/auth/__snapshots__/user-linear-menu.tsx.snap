@@ -102,6 +102,24 @@ exports[`render when signed in 1`] = `
               </gui-dropdown-menu-item>
               <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
                 <span class="text-sm font-medium text-foreground">
+                  Dashboard
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-layout-dashboard-icon classname="transition-colors duration-100">
+                  </gui-layout-dashboard-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Queries
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-query-icon classname="transition-colors duration-100">
+                  </gui-query-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
                   Settings
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -219,6 +237,24 @@ exports[`render when signed in with user image 1`] = `
               </gui-dropdown-menu-item>
               <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
                 <span class="text-sm font-medium text-foreground">
+                  Dashboard
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-layout-dashboard-icon classname="transition-colors duration-100">
+                  </gui-layout-dashboard-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Queries
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-query-icon classname="transition-colors duration-100">
+                  </gui-query-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
                   Settings
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -330,6 +366,24 @@ exports[`render when signed in with username only 1`] = `
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
                   <gui-user-icon classname="transition-colors duration-100">
                   </gui-user-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Dashboard
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-layout-dashboard-icon classname="transition-colors duration-100">
+                  </gui-layout-dashboard-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
+                <span class="text-sm font-medium text-foreground">
+                  Queries
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-query-icon classname="transition-colors duration-100">
+                  </gui-query-icon>
                 </div>
               </gui-dropdown-menu-item>
               <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">

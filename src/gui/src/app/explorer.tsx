@@ -1,5 +1,5 @@
 import { transfer } from '@vltpkg/graph/browser'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams, useLocation } from 'react-router'
 import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
@@ -7,7 +7,6 @@ import { useGraphStore } from '@/state/index.ts'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
 import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import { createHostContextsMap } from '@/lib/query-host-contexts.ts'
-import { hasLocalServerFeatures } from '@/lib/environment.ts'
 import type { TransferData, Action, State } from '@/state/types.ts'
 
 export type ExplorerOptions = {
@@ -58,6 +57,8 @@ const startGraphData = async ({
 
 export const Explorer = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const params = useParams<{ package?: string; version?: string }>()
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -73,19 +74,52 @@ export const Explorer = () => {
     state => state.updateSpecOptions,
   )
   const stamp = useGraphStore(state => state.stamp)
-  const isHostedMode = !hasLocalServerFeatures()
+  const updateIsExternalPackage = useGraphStore(
+    state => state.updateIsExternalPackage,
+  )
+  const updateExternalPackageSpec = useGraphStore(
+    state => state.updateExternalPackageSpec,
+  )
+  const updateFocused = useGraphStore(state => state.updateFocused)
+
+  // Detect if we're on the npm package route
+  const isNpmRoute = location.pathname.startsWith('/explore/npm/')
+  const npmPackageName = params.package
+  const npmPackageVersion = params.version
 
   useQueryNavigation()
+
+  // Check if we're viewing an external npm package
+  useEffect(() => {
+    updateIsExternalPackage(isNpmRoute)
+    if (isNpmRoute && npmPackageName) {
+      // Store package name and optional version
+      const spec =
+        npmPackageVersion ?
+          `${npmPackageName}@${npmPackageVersion}`
+        : npmPackageName
+      updateExternalPackageSpec(spec)
+      // Automatically enable focused mode for external packages
+      updateFocused(true)
+    } else {
+      updateExternalPackageSpec(null)
+    }
+  }, [
+    isNpmRoute,
+    npmPackageName,
+    npmPackageVersion,
+    updateIsExternalPackage,
+    updateExternalPackageSpec,
+    updateFocused,
+  ])
 
   // only load graph data when we want to manually update the graph
   // state in the app, to make sure we're controlling it, we use the
   // stamp state as a dependency of `useEffect` to trigger the load.
+  // Skip loading graph data for external packages
   useEffect(() => {
-    // Skip in hosted environments
-    if (isHostedMode) {
-      console.info(
-        'Graph data fetching disabled in hosted environment',
-      )
+    if (isNpmRoute) {
+      // For external npm packages, we don't need to load graph data
       return
     }
 
@@ -102,6 +136,7 @@ export const Explorer = () => {
       updateErrorCause('Failed to initialize explorer.')
     })
   }, [
+    isNpmRoute,
     stamp,
     updateHasDashboard,
     updateGraph,
@@ -110,34 +145,7 @@ export const Explorer = () => {
     updateSpecOptions,
     navigate,
     updateErrorCause,
-    isHostedMode,
   ])
-
-  // Show hosted mode message for explorer
-  if (isHostedMode) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-8 py-4">
-        <div className="max-w-2xl text-center">
-          <h1 className="mb-4 text-2xl font-semibold">
-            Hosted Demo Mode
-          </h1>
-          <p className="mb-4 text-muted-foreground">
-            This is a static hosted version of the VLT GUI. The
-            explorer requires a local VLT server to display project
-            graphs.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            To use the full explorer features, please run the GUI
-            locally with{' '}
-            <code className="rounded bg-muted px-2 py-1">
-              vlt gui
-            </code>
-            .
-          </p>
-        </div>
-      </div>
-    )
-  }
 
   return <ExplorerContent />
 }
@@ -149,6 +157,9 @@ const ExplorerContent = () => {
   const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
+  const isExternalPackage = useGraphStore(
+    state => state.isExternalPackage,
+  )
   const ac = useRef<AbortController>(new AbortController())
 
   // updates the query response state anytime the query changes
@@ -174,6 +185,11 @@ const ExplorerContent = () => {
       updateNodes([])
     })
   }, [query, q, graph, updateEdges, updateNodes])
+
+  // For external packages, skip all checks and go straight to ExplorerGrid
+  if (isExternalPackage) {
+    return <ExplorerGrid />
+  }
 
   // avoids flash of content
   if (!graph) {

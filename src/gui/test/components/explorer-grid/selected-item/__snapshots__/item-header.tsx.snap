@@ -53,6 +53,13 @@ exports[`ItemHeader renders with a package score 1`] = `
                     </gui-tooltip>
                   </gui-tooltip-provider>
                 </div>
+                <gui-data-badge
+                  variant="mono"
+                  content="npm:item@1.0.0"
+                  classnames="[object Object]"
+                  tooltip="[object Object]"
+                >
+                </gui-data-badge>
               </div>
             </div>
             <gui-scroll-bar orientation="horizontal">
@@ -182,6 +189,13 @@ exports[`ItemHeader renders with a version information 1`] = `
                     </gui-tooltip>
                   </gui-tooltip-provider>
                 </div>
+                <gui-data-badge
+                  variant="mono"
+                  content="npm:item@1.0.0"
+                  classnames="[object Object]"
+                  tooltip="[object Object]"
+                >
+                </gui-data-badge>
               </div>
             </div>
             <gui-scroll-bar orientation="horizontal">
@@ -507,6 +521,13 @@ exports[`ItemHeader renders with default item 1`] = `
                     </gui-tooltip>
                   </gui-tooltip-provider>
                 </div>
+                <gui-data-badge
+                  variant="mono"
+                  content="npm:item@1.0.0"
+                  classnames="[object Object]"
+                  tooltip="[object Object]"
+                >
+                </gui-data-badge>
               </div>
             </div>
             <gui-scroll-bar orientation="horizontal">
@@ -610,6 +631,13 @@ exports[`ItemHeader renders with insights 1`] = `
                     </gui-tooltip>
                   </gui-tooltip-provider>
                 </div>
+                <gui-data-badge
+                  variant="mono"
+                  content="npm:item@1.0.0"
+                  classnames="[object Object]"
+                  tooltip="[object Object]"
+                >
+                </gui-data-badge>
               </div>
             </div>
             <gui-scroll-bar orientation="horizontal">

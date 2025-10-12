@@ -17,11 +17,13 @@ vi.mock('lucide-react', () => ({
   User: 'gui-user-icon',
   LogOut: 'gui-log-out-icon',
   BookOpen: 'gui-book-open-icon',
+  LayoutDashboard: 'gui-layout-dashboard-icon',
 }))
 
 vi.mock('@/components/icons/index.ts', () => ({
   Config: 'gui-config-icon',
   Github: 'gui-github-icon',
+  Query: 'gui-query-icon',
 }))
 
 vi.mock('@/components/hooks/use-auth.tsx', () => ({
