@@ -9,6 +9,14 @@
  */
 
 export const isHostedEnvironment = (): boolean => {
+  // Allow forcing hosted mode for development/testing (e.g., auth flows)
+  if (
+    typeof __VLT_FORCE_HOSTED !== 'undefined' &&
+    __VLT_FORCE_HOSTED === '1'
+  ) {
+    return true
+  }
+
   // Check if we're in the browser
   if (typeof window === 'undefined') {
     return false

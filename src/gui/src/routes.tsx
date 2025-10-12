@@ -43,6 +43,9 @@ import { HelpSelectors } from '@/app/help/help-selectors.tsx'
 import { DEFAULT_QUERY } from '@/state/index.ts'
 import { encodeCompressedQuery } from '@/lib/compress-query.ts'
 
+/** Middleware */
+import { authMiddleware } from '@/middleware/auth.ts'
+
 import type { RouteObject } from 'react-router'
 import type {
   Tab,
@@ -101,8 +104,15 @@ export const routes: RouteObject[] = [
     element: <Layout />,
     errorElement: <ErrorFound />,
     children: [
+      // TODO: this route should actually be the `/search` / 'home' view,
+      // this is just a temporary placeholder to keep things logical.
       {
-        index: true,
+        path: '/',
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: '/dashboard',
+        middleware: [authMiddleware],
         element: <Dashboard />,
       },
       {
@@ -149,6 +159,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'create-new-project',
+        middleware: [authMiddleware],
         element: <CreateNewProject />,
       },
       {
@@ -157,10 +168,12 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'labels',
+        middleware: [authMiddleware],
         element: <Labels />,
       },
       {
         path: 'queries',
+        middleware: [authMiddleware],
         element: <Queries />,
       },
       {
@@ -179,6 +192,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'settings',
+        middleware: [authMiddleware],
         element: <Outlet />,
         children: [
           {
