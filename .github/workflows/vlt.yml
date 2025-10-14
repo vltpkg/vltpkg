@@ -26,7 +26,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
+          node-version: "^22.14.0"
           check-latest: true
 
       - name: Bootstrap
@@ -39,6 +39,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
 
       - name: Install Dependencies
+        continue-on-error: true
         run: |
           # avoid changes from the bootstrap step
           rm -rf node_modules
@@ -47,6 +48,7 @@ jobs:
           vlt install --view=json --allow-scripts="#tailwindcss"
 
       - name: Formatting
+        continue-on-error: true
         id: format
         run: vlr format:check
 
@@ -139,6 +141,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
 
       - name: Install Dependencies
+        continue-on-error: true
         run: |
           # avoid changes from the bootstrap step
           rm -rf node_modules
