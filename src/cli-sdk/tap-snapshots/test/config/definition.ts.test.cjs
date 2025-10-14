@@ -9,6 +9,7 @@ exports[`test/config/definition.ts > TAP > commands 1`] = `
 Object {
   "?": "help",
   "add": "install",
+  "b": "build",
   "build": "build",
   "cache": "cache",
   "ci": "ci",
@@ -26,9 +27,12 @@ Object {
   "login": "login",
   "logout": "logout",
   "ls": "list",
+  "p": "pkg",
   "pack": "pack",
   "pkg": "pkg",
+  "pub": "publish",
   "publish": "publish",
+  "q": "query",
   "query": "query",
   "r": "run",
   "rm": "uninstall",
@@ -36,9 +40,10 @@ Object {
   "run-exec": "run-exec",
   "run-script": "run",
   "rx": "run-exec",
+  "s": "serve",
   "serve": "serve",
   "token": "token",
-  "u": "uninstall",
+  "u": "update",
   "uninstall": "uninstall",
   "update": "update",
   "version": "version",
@@ -58,6 +63,11 @@ Object {
       "public",
       "restricted",
     ],
+  },
+  "all": Object {
+    "description": "Show all commands, bins, and flags",
+    "short": "a",
+    "type": "boolean",
   },
   "allow-scripts": Object {
     "description": String(
@@ -500,6 +510,7 @@ Object {
 exports[`test/config/definition.ts > TAP > getSortedCliDefinitions > sorted CLI definitions 1`] = `
 Array [
   "--access=<access>",
+  "--all",
   "--allow-scripts=<query>",
   "--arch=<arch>",
   "--bail",
@@ -559,6 +570,7 @@ Array [
 exports[`test/config/definition.ts > TAP > getSortedKeys > sorted keys 1`] = `
 Array [
   "access",
+  "all",
   "allow-scripts",
   "arch",
   "bail",

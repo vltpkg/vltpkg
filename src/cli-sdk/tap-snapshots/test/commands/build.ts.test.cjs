@@ -32,6 +32,10 @@ Use --target option or provide a query as a positional argument to filter
 packages using DSS query language syntax, otherwise it will target all packages
 with scripts (:scripts) by default.
 
+  Aliases
+
+    ​b
+
   Options
 
     target

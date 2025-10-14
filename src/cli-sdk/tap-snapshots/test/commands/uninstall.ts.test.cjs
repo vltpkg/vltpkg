@@ -20,6 +20,6 @@ package.json appropriately.
 
   Aliases
 
-    ​rm, u
+    ​rm
 
 `

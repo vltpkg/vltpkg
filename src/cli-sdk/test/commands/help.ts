@@ -6,12 +6,19 @@ t.test('basic', async t => {
     '../../src/commands/help.ts'
   )
   const USAGE = usage().usage()
-  t.matchSnapshot(USAGE, 'usage')
+  t.matchSnapshot(USAGE, 'jack usage')
   const result = await command({
     jack: { usage: () => 'usage' },
     positionals: [],
+    values: { all: true },
   } as unknown as LoadedConfig)
-  t.equal(result, 'usage')
+  t.matchSnapshot(result, 'all usage')
+  const result2 = await command({
+    jack: { usage: () => 'usage' },
+    positionals: [],
+    values: { all: false },
+  } as unknown as LoadedConfig)
+  t.matchSnapshot(result2, 'default usage')
 })
 
 t.test('help with command argument', async t => {
@@ -20,6 +27,7 @@ t.test('help with command argument', async t => {
   const result = await command({
     jack: { usage: () => 'general usage' },
     positionals: ['install'],
+    values: {},
   } as unknown as LoadedConfig)
 
   // Should return the actual install command usage, not a mock
@@ -33,6 +41,7 @@ t.test('help with invalid command', async t => {
     await command({
       jack: { usage: () => 'general usage' },
       positionals: ['nonexistent'],
+      values: {},
     } as unknown as LoadedConfig)
     t.fail('should have thrown')
   } catch (err: any) {
@@ -48,6 +57,7 @@ t.test('help with command alias', async t => {
   const result = await command({
     jack: { usage: () => 'general usage' },
     positionals: ['i'],
+    values: {},
   } as unknown as LoadedConfig)
 
   // Should return the actual install command usage, same as 'install'
@@ -64,12 +74,14 @@ t.test(
     const helpResult = await command({
       jack: { usage: () => 'general usage' },
       positionals: ['help'],
+      values: {},
     } as unknown as LoadedConfig)
     t.match(helpResult, /Usage:\s+vlt help/)
 
     const installResult = await command({
       jack: { usage: () => 'general usage' },
       positionals: ['install'],
+      values: {},
     } as unknown as LoadedConfig)
     t.match(installResult, /Usage:\s+vlt install/)
   },
