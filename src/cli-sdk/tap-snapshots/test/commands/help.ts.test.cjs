@@ -6,7 +6,7 @@
  */
 'use strict'
 exports[`test/commands/help.ts > TAP > basic > all usage 1`] = `
-⚡️ vlt /vōlt/ - next-gen package management v0.0.0-32
+⚡️ vlt /vōlt/ - next-gen package management {{VERSION}}
 
 USAGE
 
@@ -77,7 +77,7 @@ Run \`vlt help <command>\` for detailed information about a specific command.
 `
 
 exports[`test/commands/help.ts > TAP > basic > default usage 1`] = `
-⚡️ vlt /vōlt/ next-gen package management v0.0.0-32
+⚡️ vlt /vōlt/ next-gen package management {{VERSION}}
 
 USAGE
 
