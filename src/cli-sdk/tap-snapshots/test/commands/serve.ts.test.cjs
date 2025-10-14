@@ -18,6 +18,10 @@ then the VSR registry will start on port 1337.
 This allows you to develop and test the full vlt ecosystem locally, including
 package publishing and installation from your local registry.
 
+  Aliases
+
+    ​s
+
   Options
 
     port

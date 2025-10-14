@@ -23,9 +23,6 @@ t.test('promptFn', async t => {
   const { promptFn } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts', {
-    chalk: {
-      bold: (s: string) => s,
-    },
     'node:readline/promises': {
       createInterface: (stdin: unknown, stdout: unknown) => {
         t.equal(stdin, process.stdin)
