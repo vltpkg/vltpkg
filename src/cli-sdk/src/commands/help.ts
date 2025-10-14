@@ -28,7 +28,7 @@ export const command: CommandFn<string> = async conf => {
     const colors = conf.values.color ?? process.stdout.isTTY
 
     // Use full custom help if --all flag is set
-    if (conf.get('all')) {
+    if (conf.values.all) {
       return generateFullHelp(colors)
     }
     return generateDefaultHelp(colors)

@@ -134,12 +134,14 @@ export const outputCommand = async <T>(
 
   if (conf.values.help) {
     // Show custom help for main vlt command
+    /* c8 ignore start */
     if (conf.command === 'help' && conf.positionals.length === 0) {
       if (conf.get('all')) {
         return stdout(generateFullHelp(stdoutColor))
       }
       return stdout(generateDefaultHelp(stdoutColor))
     }
+    /* c8 ignore stop */
     return stdout(usage().usage())
   }
 

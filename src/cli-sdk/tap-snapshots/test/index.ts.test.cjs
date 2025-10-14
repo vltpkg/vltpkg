@@ -35,6 +35,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
   Found: --unknown
   Valid Options:
     --access=<access>
+    --all
     --allow-scripts=<query>
     --arch=<arch>
     --bail
@@ -97,6 +98,7 @@ Unknown config option: asdf
   Found: "asdf"
   Valid Options:
     access
+    all
     allow-scripts
     arch
     bail

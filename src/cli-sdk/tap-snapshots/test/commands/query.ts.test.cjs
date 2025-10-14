@@ -166,6 +166,10 @@ graph.
 
 Defaults to listing all dependencies of the project root and workspaces.
 
+  Aliases
+
+    ​q
+
   Examples
 
     Query dependencies declared as "foo"
