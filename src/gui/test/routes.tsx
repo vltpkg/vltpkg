@@ -78,6 +78,13 @@ vi.mock('@/app/settings/index.tsx', () => ({
   SettingsView: 'gui-settings-view',
 }))
 
+vi.mock('@/app/auth/sign-in.tsx', () => ({
+  SignIn: 'gui-sign-in',
+}))
+vi.mock('@/app/auth/sign-up.tsx', () => ({
+  SignUp: 'gui-sign-up',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -151,5 +158,15 @@ test('renders Layout for the "/help/selectors" view', () => {
 
 test('renders Layout for the "/settings/general" view', () => {
   const { container } = renderWithRouter('/settings/general')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders SignIn for the "/auth/sign-in" view', () => {
+  const { container } = renderWithRouter('/auth/sign-in')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders SignUp for the "/auth/sign-up" view', () => {
+  const { container } = renderWithRouter('/auth/sign-up')
   expect(container.innerHTML).toMatchSnapshot()
 })

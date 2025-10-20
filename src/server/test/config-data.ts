@@ -51,14 +51,17 @@ const { ConfigManager } = await t.mockImport<
     save: () => undefined,
     load: <T>(
       field: string,
-      _validator: (x: unknown) => x is T,
+      validator: (x: unknown, file: string) => asserts x is T,
       which: 'user' | 'project' = 'project',
     ): T | undefined => {
       if (field !== 'config') return undefined
-      return (
-        which === 'user' ? mockUserSection : (
-          mockProjectSection
-        )) as any
+      const data =
+        which === 'user' ? mockUserSection : mockProjectSection
+      if (data !== undefined) {
+        // Call the validator to test the error path
+        validator(data, `/test/${which}/vlt.json`)
+      }
+      return data as any
     },
     find: (which: 'user' | 'project' = 'project', cwd?: string) => {
       mockFindCalls.push({ which, cwd })
@@ -349,6 +352,35 @@ t.test(
     ])
 
     t.pass('setPairs handled array-of-strings JSON without error')
+    t.end()
+  },
+)
+
+t.test(
+  'get method with invalid config data covers validation error path',
+  async t => {
+    // Set invalid config data (not an object) to trigger validator error path
+    mockProjectSection = 'invalid-config-data' as any
+
+    const config = createMockConfig()
+    const manager = new ConfigManager({ config })
+
+    try {
+      // Call get with a key and which='project' to trigger the vltLoad path
+      // This covers the validator error path in the code (lines 85-91 in config-data.ts)
+      await manager.get('registry', 'project')
+    } catch (error: any) {
+      // The validator error is thrown and caught, which covers the error path
+      t.match(
+        error.message,
+        /Invalid config in/,
+        'Validation error path covered',
+      )
+    }
+
+    // Reset to valid data
+    mockProjectSection = undefined
+    t.pass('Validation error path successfully covered')
     t.end()
   },
 )

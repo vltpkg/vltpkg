@@ -10,8 +10,6 @@ exports[`renders Layout for the "/" view 1`] = `
       <gui-app-sidebar>
       </gui-app-sidebar>
       <gui-sidebar-inset>
-        <gui-dashboard>
-        </gui-dashboard>
       </gui-sidebar-inset>
       <gui-toaster>
       </gui-toaster>
@@ -159,6 +157,48 @@ exports[`renders Layout for the "/settings/general" view 1`] = `
       <gui-sidebar-inset>
         <gui-settings-view>
         </gui-settings-view>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
+</gui-layout>
+
+`;
+
+exports[`renders SignIn for the "/auth/sign-in" view 1`] = `
+
+<gui-layout>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-sign-in>
+        </gui-sign-in>
+      </gui-sidebar-inset>
+      <gui-toaster>
+      </gui-toaster>
+    </gui-sidebar-provider>
+  </div>
+</gui-layout>
+
+`;
+
+exports[`renders SignUp for the "/auth/sign-up" view 1`] = `
+
+<gui-layout>
+  <div class="flex flex-col">
+    <gui-header>
+    </gui-header>
+    <gui-sidebar-provider defaultopen="true">
+      <gui-app-sidebar>
+      </gui-app-sidebar>
+      <gui-sidebar-inset>
+        <gui-sign-up>
+        </gui-sign-up>
       </gui-sidebar-inset>
       <gui-toaster>
       </gui-toaster>

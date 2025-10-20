@@ -283,7 +283,13 @@ const commandSingle = async (
     }
 
     if (response.statusCode !== 200 && response.statusCode !== 201) {
-      throw error('Failed to publish package', {
+      let extraMsg = ''
+      // special case 404 errors to provide a better hint to the user
+      if (response.statusCode === 404) {
+        extraMsg =
+          ".\n⚠️ Make sure you're logged in and have access to publish the package."
+      }
+      throw error(`Failed to publish package${extraMsg}`, {
         url: publishUrl,
         response,
       })

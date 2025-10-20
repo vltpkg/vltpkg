@@ -17,4 +17,8 @@ Usage:
 Update dependencies to their latest in-range versions. Discards the lockfile and
 resolves dependencies from scratch.
 
+  Aliases
+
+    ​u
+
 `

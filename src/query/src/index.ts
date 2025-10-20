@@ -171,7 +171,6 @@ const securitySelectors = new Set([
   ':obfuscated',
   ':scanned',
   ':score',
-  ':scripts',
   ':sev',
   ':severity',
   ':shell',

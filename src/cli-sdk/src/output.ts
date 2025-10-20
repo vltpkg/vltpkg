@@ -4,12 +4,16 @@ import {
   styleText as utilStyleText,
 } from 'node:util'
 import { createSupportsColor } from 'supports-color'
-import { defaultView, getSortedCliOptionsWithDescriptions } from './config/definition.ts'
+import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
 import type { View, ViewOptions, Views } from './view.ts'
 import { isViewClass } from './view.ts'
+import {
+  generateDefaultHelp,
+  generateFullHelp,
+} from './custom-help.ts'
 
 const supportsColor = (stream: WriteStream) => {
   const res = createSupportsColor(stream, { sniffFlags: false })
@@ -123,14 +127,27 @@ export const outputCommand = async <T>(
 ) => {
   const { usage, views, command } = cliCommand
 
-  if (conf.values.help) {
-    return stdout(usage().heading('Options', 2).description(getSortedCliOptionsWithDescriptions().join('\n'), { pre: true }).usage())
-  }
+  // if (conf.values.help) {
+  //   return stdout(usage().heading('Options', 2).description(getSortedCliOptionsWithDescriptions().join('\n'), { pre: true }).usage())
+  // }
 
   const stdoutColor =
     conf.values.color ?? supportsColor(process.stdout)
   const stderrColor =
     conf.values.color ?? supportsColor(process.stderr)
+
+  if (conf.values.help) {
+    // Show custom help for main vlt command
+    /* c8 ignore start */
+    if (conf.command === 'help' && conf.positionals.length === 0) {
+      if (conf.get('all')) {
+        return stdout(generateFullHelp(stdoutColor))
+      }
+      return stdout(generateDefaultHelp(stdoutColor))
+    }
+    /* c8 ignore stop */
+    return stdout(usage().usage())
+  }
 
   /* c8 ignore start */
   if (stdoutColor) styleTextStdout = styleText

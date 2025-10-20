@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/gui",
   "description": "Look under the hood of a vlt install in HD",
-  "version": "0.0.0-30",
+  "version": "1.0.0-rc.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -48,7 +48,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.8.2",
+    "react-router": "^7.9.4",
     "react-syntax-highlighter": "^15.6.6",
     "react-virtuoso": "^4.14.0",
     "recharts": "^2.15.4",
@@ -62,6 +62,7 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
+    "varlock": "^0.0.15",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

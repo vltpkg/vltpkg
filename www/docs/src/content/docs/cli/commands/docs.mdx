@@ -1,0 +1,160 @@
+---
+title: vlt docs
+sidebar:
+  label: docs
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt docs [<spec>] [--target=<query>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Open documentation for a package in a web browser.
+
+## How It Works
+
+The `vlt docs` command locates and opens the documentation for any
+package in your dependency graph. It follows the following resolution
+strategy to find the best documentation URL:
+
+1. **Homepage field** – Checks the package's `home` property in its
+   `package.json`
+2. **Repository Resolution** – Checks the package's `repository` field
+   in its `package.json`. For known git hosts (GitHub, GitLab,
+   Bitbucket, etc.), generates the canonical documentation URL
+3. **Fallback** – If no repository is found or the git host is
+   unknown, falls back to the npm package page
+
+This means you always get taken to the most relevant documentation.
+
+## Basic Usage
+
+### Open docs for current project
+
+When run without arguments, `vlt docs` reads your local `package.json`
+and opens the documentation for your current project:
+
+<Code code="$ vlt docs" title="Terminal" lang="bash" />
+
+This is particularly useful when working on a project and you want to
+quickly view your own documentation or verify your repository URL is
+correctly configured.
+
+### Open docs for any package
+
+Provide a package spec to open documentation for any package, whether
+it's installed in your project or not:
+
+<Code
+  code={`# Open docs for a specific package
+$ vlt docs express
+
+# Open docs for a specific version
+
+$ vlt docs typescript@5.0.0
+
+# Open docs for a scoped package
+
+$ vlt docs @vltpkg/graph`} title="Terminal" lang="bash" />
+
+The command fetches the package manifest from the registry and
+determines the best documentation URL to open.
+
+### Query packages using --target
+
+Use the `--target` option with DSS query syntax to find documentation
+for packages in your dependency graph:
+
+<Code
+  code={`# Open docs for a specific package in your graph
+$ vlt docs --target="#lodash"
+
+# List documentation URLs for all direct dependencies
+
+$ vlt docs --target=":root > \*"
+
+# Find docs for all packages from a specific scope
+
+$ vlt docs --target="[name^=@types]"`} title="Terminal" lang="bash" />
+
+Note: When the query matches multiple packages, documentation URLs are
+listed instead of being opened automatically.
+
+## Use Cases
+
+### Package Discovery
+
+Quickly research packages:
+
+<Code
+  code={`# Compare test frameworks
+$ vlt docs tap
+$ vlt docs jest
+$ vlt docs vitest`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Debugging and Support
+
+Access documentation when troubleshooting issues:
+
+<Code
+  code={`# Error with a package? Read the docs
+$ vlt docs --target="#problematic-package"
+
+# Need API reference?
+
+$ vlt docs @vltpkg/spec`} title="Terminal" lang="bash" />
+
+### Learning and Exploration
+
+Explore the ecosystem and learn about packages:
+
+<Code
+  code={`# Learn about vlt packages
+$ vlt docs @vltpkg/graph
+$ vlt docs @vltpkg/query
+
+# Explore popular packages
+
+$ vlt docs express $ vlt docs react`} title="Terminal" lang="bash" />
+
+## Options
+
+### `--target=<query>`
+
+Filter packages using DSS query syntax. When a single package matches,
+its documentation opens in your browser. When multiple packages match,
+their documentation URLs are listed.
+
+<Code
+  code={`# Open docs for a single package
+$ vlt docs --target="#express"
+
+# List docs for all direct dependencies
+
+$ vlt docs --target=":root > \*"
+
+# List docs for packages with build scripts
+
+$ vlt docs --target=":scripts"`} title="Terminal" lang="bash" />
+
+## Notes
+
+- The command automatically opens your default web browser for single
+  results
+- Works with any valid package specifier (names, versions, tags, etc.)
+- Does not require the package to be installed when using package
+  specifiers
+- With `--target`, it defaults to only searches packages in your
+  current dependency graph
+- Falls back gracefully to npm package pages when repository info is
+  unavailable
+- Multiple results are displayed as a formatted list instead of
+  opening URLs

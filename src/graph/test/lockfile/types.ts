@@ -16,6 +16,12 @@ import {
   LockfileNodeFlagOptional,
   LockfileNodeFlagDev,
   LockfileNodeFlagDevOptional,
+  getBuildStateFromNode,
+  getBuildStateFromNum,
+  BuildStateNone,
+  BuildStateNeeded,
+  BuildStateBuilt,
+  BuildStateFailed,
 } from '../../src/lockfile/types.ts'
 
 t.test('lockfile type checks', t => {
@@ -23,12 +29,20 @@ t.test('lockfile type checks', t => {
   //@ts-expect-error - missing required properties
   let ld: LockfileData = {}
   ld
-  //@ts-expect-error - options must be an object
-  ld = { options: null, nodes: {}, edges: {} }
+  ld = {
+    //@ts-expect-error - options must be an object
+    options: null,
+    nodes: {},
+    edges: {},
+  }
   //@ts-expect-error - nodes must be a record
   ld = { options: {}, nodes: null, edges: {} }
-  //@ts-expect-error - edges must be a record
-  ld = { options: {}, nodes: {}, edges: null }
+  ld = {
+    options: {},
+    nodes: {},
+    //@ts-expect-error - edges must be a record
+    edges: null,
+  }
 
   // Valid LockfileData
   ld = {
@@ -256,6 +270,89 @@ t.test('lockfile flag utilities', t => {
       t.strictSame(
         roundtrip,
         testCase,
+        `roundtrip for ${JSON.stringify(testCase)}`,
+      )
+    }
+  })
+
+  t.end()
+})
+
+t.test('lockfile build state utilities', t => {
+  t.test('getBuildStateFromNode', async t => {
+    t.equal(
+      getBuildStateFromNode({}),
+      BuildStateNone,
+      'no buildState property',
+    )
+    t.equal(
+      getBuildStateFromNode({ buildState: 'none' }),
+      BuildStateNone,
+      'explicit none buildState',
+    )
+    t.equal(
+      getBuildStateFromNode({ buildState: 'needed' }),
+      BuildStateNeeded,
+      'needed buildState',
+    )
+    t.equal(
+      getBuildStateFromNode({ buildState: 'built' }),
+      BuildStateBuilt,
+      'built buildState',
+    )
+    t.equal(
+      getBuildStateFromNode({ buildState: 'failed' }),
+      BuildStateFailed,
+      'failed buildState',
+    )
+  })
+
+  t.test('getBuildStateFromNum', async t => {
+    t.equal(
+      getBuildStateFromNum(BuildStateNone),
+      'none',
+      'none build state',
+    )
+    t.equal(
+      getBuildStateFromNum(BuildStateNeeded),
+      'needed',
+      'needed build state',
+    )
+    t.equal(
+      getBuildStateFromNum(BuildStateBuilt),
+      'built',
+      'built build state',
+    )
+    t.equal(
+      getBuildStateFromNum(BuildStateFailed),
+      'failed',
+      'failed build state',
+    )
+  })
+
+  t.test('build state constants', async t => {
+    t.equal(BuildStateNone, undefined, 'none build state value')
+    t.equal(BuildStateNeeded, 1, 'needed build state value')
+    t.equal(BuildStateBuilt, 2, 'built build state value')
+    t.equal(BuildStateFailed, 3, 'failed build state value')
+  })
+
+  t.test('roundtrip build state conversion', async t => {
+    const testCases: {
+      buildState: 'none' | 'needed' | 'built' | 'failed'
+    }[] = [
+      { buildState: 'none' },
+      { buildState: 'needed' },
+      { buildState: 'built' },
+      { buildState: 'failed' },
+    ]
+
+    for (const testCase of testCases) {
+      const stateNum = getBuildStateFromNode(testCase)
+      const roundtrip = getBuildStateFromNum(stateNum)
+      t.equal(
+        roundtrip,
+        testCase.buildState,
         `roundtrip for ${JSON.stringify(testCase)}`,
       )
     }

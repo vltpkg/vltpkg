@@ -4,8 +4,13 @@ import { Pool } from '@vltpkg/tar'
 import type { Manifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Workspace } from '@vltpkg/workspaces'
-import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
-import { writeFile } from 'node:fs/promises'
+import {
+  lstatSync,
+  readFileSync,
+  readlinkSync,
+  writeFileSync,
+} from 'node:fs'
+import { readdir, rmdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -27,7 +32,10 @@ const extract = (
   options?: PackageInfoClientOptions &
     PackageInfoClientExtractOptions,
 ) => {
-  return new PackageInfoClient(options).extract(spec, dir, options)
+  return new PackageInfoClient({
+    ...options,
+    cache: t.testdirName,
+  }).extract(spec, dir, options)
 }
 
 const resolve = (
@@ -35,7 +43,10 @@ const resolve = (
   options?: PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 ) => {
-  return new PackageInfoClient(options).resolve(spec, options)
+  return new PackageInfoClient({
+    ...options,
+    cache: t.testdirName,
+  }).resolve(spec, options)
 }
 
 const packument = (
@@ -43,7 +54,10 @@ const packument = (
   options?: PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 ) => {
-  return new PackageInfoClient(options).packument(spec, options)
+  return new PackageInfoClient({
+    ...options,
+    cache: t.testdirName,
+  }).packument(spec, options)
 }
 
 const manifest = (
@@ -51,7 +65,10 @@ const manifest = (
   options?: PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 ) => {
-  return new PackageInfoClient(options).manifest(spec, options)
+  return new PackageInfoClient({
+    ...options,
+    cache: t.testdirName,
+  }).manifest(spec, options)
 }
 
 const fixtures = pathResolve(import.meta.dirname, 'fixtures')
@@ -93,35 +110,35 @@ const server = createServer((req, res) => {
       )
       return res.end(tgzAbbrev)
     }
-    case '/deleted': {
+    case '/abbrev/2.0.0': {
+      const manifest = pakuAbbrev.versions['2.0.0']
+      const json = JSON.stringify(manifest)
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/deleted':
+    case '/deleted/1.0.0': {
       const json = '{"error": "deleted"}'
       res.setHeader('content-length', json.length)
       res.statusCode = 404
       return res.end(json)
     }
-    case '/no-dist': {
+    case '/no-dist':
+    case '/no-dist/1.2.3': {
       const json = JSON.stringify({
-        'dist-tags': { latest: '1.2.3' },
-        versions: {
-          '1.2.3': {
-            name: 'no-dist',
-            version: '1.2.3',
-          },
-        },
+        name: 'no-dist',
+        version: '1.2.3',
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
-    case '/no-tgz': {
+    case '/no-tgz':
+    case '/no-tgz/1.2.3': {
       const json = JSON.stringify({
-        'dist-tags': { latest: '1.2.3' },
-        versions: {
-          '1.2.3': {
-            name: 'no-tgz',
-            version: '1.2.3',
-            dist: {},
-          },
-        },
+        name: 'no-tgz',
+        version: '1.2.3',
+        dist: {},
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
@@ -137,6 +154,17 @@ const server = createServer((req, res) => {
               tarball: `${defaultRegistry}missing.tgz`,
             },
           },
+        },
+      })
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/missing/1.2.3': {
+      const json = JSON.stringify({
+        name: 'missing',
+        version: '1.2.3',
+        dist: {
+          tarball: `${defaultRegistry}missing.tgz`,
         },
       })
       res.setHeader('content-length', json.length)
@@ -443,6 +471,18 @@ t.test('manifest', async t => {
   )
 })
 
+t.test('manifest strips leading semver characters', async t => {
+  // Test that leading characters (=, ^, ~, v) are stripped when using
+  // the registry manifest request shortcut for single version specs
+  for (const prefix of ['=', '^', '~', 'v']) {
+    t.strictSame(
+      await manifest(`abbrev@${prefix}2.0.0`, options),
+      pakuAbbrev.versions['2.0.0'],
+      `${prefix}2.0.0 should strip leading character`,
+    )
+  }
+})
+
 t.test('resolve', async t => {
   // do this with a consistent client so that we cover the memoizing paths
   const pi = new PackageInfoClient({
@@ -719,6 +759,15 @@ t.test('manifest must provide actual dist results', async t => {
   await t.rejects(tarball('deleted@latest', options))
   await t.rejects(tarball('no-tgz@latest', options))
   await t.rejects(tarball('no-dist@latest', options))
+  // Test specific version 404 paths with new routing
+  await t.rejects(resolve('deleted@1.0.0', options))
+  await t.rejects(manifest('deleted@1.0.0', options))
+  await t.rejects(tarball('deleted@1.0.0', options))
+  // Test specific version routes for packages without dist
+  await t.rejects(resolve('no-tgz@1.2.3', options))
+  await t.rejects(tarball('no-tgz@1.2.3', options))
+  await t.rejects(resolve('no-dist@1.2.3', options))
+  await t.rejects(tarball('no-dist@1.2.3', options))
 })
 
 t.test('git spec must have gitRemote', async t => {
@@ -842,8 +891,8 @@ t.test('fails on non-200 response', async t => {
   await t.rejects(manifest('lodash', options))
   await t.rejects(tarball('lodash', options))
   await t.rejects(resolve('lodash', options))
-  await t.rejects(tarball('missing', options))
-  await t.rejects(extract('missing', d, options))
+  await t.rejects(tarball('missing@1.2.3', options))
+  await t.rejects(extract('missing@1.2.3', d, options))
 
   await t.rejects(
     packument(`lodash@${defaultRegistry}lodash.tgz`, options),
@@ -956,6 +1005,377 @@ t.test(
     t.matchSnapshot(await packument(spec))
   },
 )
+
+t.test('cache manifests', async t => {
+  const xdgDir = t.testdirName
+  const opts = {
+    ...options,
+    cache: xdgDir,
+  }
+  // clean up current cache directory
+  await rmdir(pathResolve(xdgDir, 'package-info'), {
+    recursive: true,
+  }).catch(() => {})
+
+  await t.test(
+    'cache hit - manifest returned from cache',
+    async t => {
+      const filesBefore = await readdir(
+        pathResolve(xdgDir, 'package-info'),
+      ).catch(() => [])
+      const pi = new PackageInfoClient(opts)
+      // First call - cache miss, fetches from registry packument
+      const mani1 = await pi.manifest('abbrev@2.0.0')
+      t.strictSame(mani1, pakuAbbrev.versions['2.0.0'])
+
+      // Second call - should hit cache
+      const mani2 = await pi.manifest('abbrev@2.0.0')
+      t.strictSame(
+        mani2,
+        pakuAbbrev.versions['2.0.0'],
+        'cached manifest matches',
+      )
+      t.strictSame(mani1, mani2, 'both calls return same manifest')
+      const filesAfter = await readdir(
+        pathResolve(xdgDir, 'package-info'),
+      ).catch(() => [])
+      t.equal(
+        filesAfter.length,
+        filesBefore.length + 1,
+        'cache directory has one additional file',
+      )
+    },
+  )
+
+  await t.test('caching skipped with before option', async t => {
+    const filesBefore = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+
+    const pi = new PackageInfoClient(opts)
+    const beforeDate = new Date().toISOString()
+
+    // Fetch with before option - should not cache
+    const mani = await pi.manifest('abbrev@2.0.0', {
+      before: beforeDate,
+    })
+    t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+
+    // Verify cache directory doesn't have too many files
+    // (we can't easily verify it's not cached without inspecting internals)
+    const files = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(
+      files.length,
+      filesBefore.length,
+      'cache directory has no additional files',
+    )
+  })
+
+  await t.test('caching skipped with dist tags', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    })
+
+    const pi = new PackageInfoClient(opts)
+    const filesBefore = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+
+    // Use @latest tag - should not cache (dist tags are dynamic)
+    const mani1 = await pi.manifest('abbrev@latest')
+    t.match(mani1, { name: 'abbrev' })
+    await new Promise(resolve => setTimeout(resolve, 10))
+    const files = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(
+      files.length,
+      filesBefore.length,
+      'cache directory has no additional files',
+    )
+
+    // Use specific version - should cache after
+    const mani2 = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(mani2, pakuAbbrev.versions['2.0.0'])
+    await new Promise(resolve => setTimeout(resolve, 10))
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    )
+    t.equal(
+      filesAfter.length,
+      filesBefore.length + 1,
+      'cache directory has one additional file',
+    )
+  })
+
+  await t.test('caching skipped with any range', async t => {
+    const filesBefore = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    const pi = new PackageInfoClient(opts)
+
+    // Use * range - should not cache
+    const mani = await pi.manifest('abbrev@*')
+    t.match(mani, { name: 'abbrev' })
+    await new Promise(resolve => setTimeout(resolve, 10))
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(
+      filesAfter.length,
+      filesBefore.length,
+      'cache directory has no more files',
+    )
+  })
+
+  await t.test(
+    'different cache keys for different options',
+    async t => {
+      // clean up current cache directory
+      await rmdir(pathResolve(xdgDir, 'package-info'), {
+        recursive: true,
+      })
+
+      const filesBefore = await readdir(
+        pathResolve(xdgDir, 'package-info'),
+      ).catch(() => [])
+
+      const pi = new PackageInfoClient(opts)
+
+      // Fetch with different node-version options
+      const mani1 = await pi.manifest('abbrev@2.0.0', {
+        'node-version': '18.0.0',
+      })
+      const mani2 = await pi.manifest('abbrev@2.0.0', {
+        'node-version': '20.0.0',
+      })
+
+      t.strictSame(
+        mani1,
+        pakuAbbrev.versions['2.0.0'],
+        'first manifest matches',
+      )
+      t.strictSame(
+        mani2,
+        pakuAbbrev.versions['2.0.0'],
+        'second manifest matches',
+      )
+
+      // Both should be cached separately
+      const mani1Again = await pi.manifest('abbrev@2.0.0', {
+        'node-version': '18.0.0',
+      })
+      const mani2Again = await pi.manifest('abbrev@2.0.0', {
+        'node-version': '20.0.0',
+      })
+
+      t.strictSame(mani1, mani1Again, 'first cache hit matches')
+      t.strictSame(mani2, mani2Again, 'second cache hit matches')
+
+      const filesAfter = await readdir(
+        pathResolve(xdgDir, 'package-info'),
+      ).catch(() => [])
+      t.equal(
+        filesAfter.length,
+        filesBefore.length + 2,
+        'cache directory has two additional files',
+      )
+    },
+  )
+
+  await t.test('different cache keys for os and arch', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    })
+
+    const filesBefore = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+
+    const pi = new PackageInfoClient(opts)
+
+    // Fetch with different os/arch combinations
+    const mani1 = await pi.manifest('abbrev@2.0.0', {
+      os: 'linux',
+      arch: 'x64',
+    })
+    const mani2 = await pi.manifest('abbrev@2.0.0', {
+      os: 'darwin',
+      arch: 'arm64',
+    })
+
+    t.strictSame(
+      mani1,
+      pakuAbbrev.versions['2.0.0'],
+      'linux/x64 manifest matches',
+    )
+    t.strictSame(
+      mani2,
+      pakuAbbrev.versions['2.0.0'],
+      'darwin/arm64 manifest matches',
+    )
+
+    // Verify they're cached separately by fetching again
+    const mani1Again = await pi.manifest('abbrev@2.0.0', {
+      os: 'linux',
+      arch: 'x64',
+    })
+    const mani2Again = await pi.manifest('abbrev@2.0.0', {
+      os: 'darwin',
+      arch: 'arm64',
+    })
+
+    t.strictSame(mani1, mani1Again, 'linux/x64 cache hit')
+    t.strictSame(mani2, mani2Again, 'darwin/arm64 cache hit')
+
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(
+      filesAfter.length,
+      filesBefore.length + 2,
+      'cache directory has two additional files',
+    )
+  })
+
+  await t.test('cache only applies to registry specs', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    })
+
+    const pi = new PackageInfoClient(opts)
+
+    // Git specs should not be cached
+    const maniGit = await pi.manifest(
+      'x@git+' + pathToFileURL(repo).toString(),
+    )
+    t.match(maniGit, { name: 'abbrev', version: '2.0.0' })
+
+    // File specs should not be cached
+    const maniFile = await pi.manifest(`abbrev@${tgzFile}`)
+    t.match(maniFile, { name: 'abbrev', version: '2.0.0' })
+
+    // Only registry specs should be cached
+    const maniRegistry = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(maniRegistry, pakuAbbrev.versions['2.0.0'])
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(
+      filesAfter.length,
+      1,
+      'cache directory should have only one file',
+    )
+  })
+
+  await t.test(
+    'cache survives invalid JSON write errors',
+    async t => {
+      const { PackageInfoClient: MockPIC } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        'node:fs/promises': {
+          ...(await import('node:fs/promises')),
+          writeFile: async () => {
+            throw new Error('write failed')
+          },
+        },
+      })
+      // clean up current cache directory
+      await rmdir(pathResolve(xdgDir, 'package-info'), {
+        recursive: true,
+      })
+
+      const pi = new MockPIC(opts)
+      // Should still work even if cache write fails
+      const mani = await pi.manifest('abbrev@2.0.0')
+      t.strictSame(
+        mani,
+        pakuAbbrev.versions['2.0.0'],
+        'manifest fetched despite cache write failure',
+      )
+      // these promises are not awaited in the implementation so here
+      // we need to wait a bit to make sure the folder was created
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const filesAfter = await readdir(
+        pathResolve(xdgDir, 'package-info'),
+      ).catch(() => [])
+      t.equal(filesAfter.length, 0, 'cache directory is empty')
+    },
+  )
+
+  await t.test('create cache directory if missing', async t => {
+    const pi = new PackageInfoClient(opts)
+
+    // clean up the full cache directory
+    await rmdir(pathResolve(xdgDir), { recursive: true })
+
+    const mani = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+
+    // these promises are not awaited in the implementation so here
+    // we need to wait a bit to make sure the folder was created
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(filesAfter.length, 1, 'cache directory was created')
+  })
+
+  await t.test('expired cache entry', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    }).catch(() => {})
+
+    const pi = new PackageInfoClient(opts)
+    const spec = Spec.parseArgs('abbrev@2.0.0', opts)
+    const mani = await pi.manifest(spec)
+    t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(filesAfter.length, 1, 'cache directory was created')
+
+    // modify the cache entry to make it expired
+    const cachePath = pathResolve(
+      xdgDir,
+      'package-info',
+      pi._manifestCachePath(
+        spec,
+        opts as PackageInfoClientRequestOptions,
+      )!,
+    )
+    const cacheContent = readFileSync(cachePath, 'utf8')
+    const cacheJson = JSON.parse(cacheContent)
+    cacheJson.__VLT_MANIFEST_CACHE_TIMESTAMP =
+      Date.now() - 1000 * 60 * 60 * 24
+    writeFileSync(cachePath, JSON.stringify(cacheJson), 'utf8')
+
+    // the real check here is code coverage that we only get
+    // if we run L502-L504 that removes the expired cache file
+    const maniAgain = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(maniAgain, pakuAbbrev.versions['2.0.0'])
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // still has a single entry at the end
+    const filesAfterAgain = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(filesAfterAgain.length, 1, 'cache directory was created')
+  })
+})
 
 t.test('path git selector', async t => {
   const pkg = {

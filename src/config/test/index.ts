@@ -144,6 +144,13 @@ t.test('del', async t => {
       t.strictSame(conf.deletedKeys, [which, ['registry']])
     })
   }
+
+  t.test('all (defaults to project)', async t => {
+    const { conf } = await run(t, ['del', 'registry'], {
+      config: 'all',
+    })
+    t.strictSame(conf.deletedKeys, ['project', ['registry']])
+  })
   t.test('must specify key(s)', async t => {
     await t.rejects(run(t, ['del'], { config: 'user' }), {
       message: 'At least one key is required',
@@ -253,6 +260,14 @@ t.test('edit', async t => {
       t.equal(edited, which)
     })
   }
+
+  t.test('all (defaults to project)', async t => {
+    await run(t, ['edit'], {
+      config: 'all',
+      editor: 'EDITOR --passes-flags-to-args',
+    })
+    t.equal(edited, 'project')
+  })
   t.test('no editor', async t => {
     await t.rejects(run(t, ['edit'], { editor: '' }))
     await t.rejects(
@@ -280,6 +295,11 @@ t.test('set', async t => {
       t.strictSame(conf.addedConfig, ['user', {}])
     },
   )
+
+  t.test('nothing to set with all (defaults to project)', async t => {
+    const { conf } = await run(t, ['set'], { config: 'all' })
+    t.strictSame(conf.addedConfig, ['project', {}])
+  })
   for (const which of ['user', 'project']) {
     t.test(which, async t => {
       const { conf } = await run(
@@ -293,6 +313,18 @@ t.test('set', async t => {
       ])
     })
   }
+
+  t.test('all (defaults to project)', async t => {
+    const { conf } = await run(
+      t,
+      ['set', 'registry=https://example.com/'],
+      { config: 'all' },
+    )
+    t.strictSame(conf.addedConfig, [
+      'project',
+      { registry: 'https://example.com/' },
+    ])
+  })
 
   t.test('invalid key', async t => {
     await t.rejects(run(t, ['set', 'garbage=value'], {}), {
@@ -333,7 +365,7 @@ t.test('set', async t => {
       cause: {
         code: 'ECONFIG',
         found: 'asdf',
-        validOptions: ['user', 'project'],
+        validOptions: ['all', 'user', 'project'],
       },
     })
   })
@@ -381,6 +413,82 @@ t.test('set', async t => {
         [
           'set',
           'registry=https://example.com/',
+          'registries.local=http://localhost:1337',
+        ],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+    })
+
+    t.test('nested properties (non-record fields)', async t => {
+      const { conf } = await run(
+        t,
+        ['set', 'command.build.target=#esbuild'],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'project')
+      t.strictSame(configData, {
+        command: {
+          build: {
+            target: '#esbuild',
+          },
+        },
+      })
+    })
+
+    t.test('multiple nested properties', async t => {
+      const { conf } = await run(
+        t,
+        [
+          'set',
+          'command.build.target=#esbuild',
+          'command.install.force=true',
+        ],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'project')
+      t.strictSame(configData, {
+        command: {
+          build: {
+            target: '#esbuild',
+          },
+          install: {
+            force: 'true',
+          },
+        },
+      })
+    })
+
+    t.test('deeply nested properties', async t => {
+      const { conf } = await run(t, ['set', 'a.b.c.d.e=value'], {
+        config: 'user',
+      })
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'user')
+      t.strictSame(configData, {
+        a: {
+          b: {
+            c: {
+              d: {
+                e: 'value',
+              },
+            },
+          },
+        },
+      })
+    })
+
+    t.test('mixed nested properties and record fields', async t => {
+      const { conf } = await run(
+        t,
+        [
+          'set',
+          'command.build.target=#esbuild',
           'registries.local=http://localhost:1337',
         ],
         { config: 'project' },

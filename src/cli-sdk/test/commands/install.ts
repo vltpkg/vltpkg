@@ -1,6 +1,5 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { Graph } from '@vltpkg/graph'
 
 const options = {}
 let log = ''
@@ -13,7 +12,9 @@ const Command = await t.mockImport<
     async install() {
       log += 'install\n'
       return {
-        graph: {},
+        graph: {
+          toJSON: () => ({}),
+        },
       }
     },
   },
@@ -39,6 +40,7 @@ await Command.command({
   positionals: [],
   values: {},
   options,
+  get: () => undefined,
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should call install with expected options')
 
@@ -47,14 +49,66 @@ await Command.command({
   positionals: ['abbrev@2'],
   values: { 'save-dev': true },
   options,
+  get: () => undefined,
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should install adding a new dependency')
 
 t.strictSame(
   Command.views.json({
-    toJSON: () => ({ install: true }),
-  } as unknown as Graph),
-  { install: true },
+    graph: {
+      toJSON: () => ({
+        lockfileVersion: 0,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+    } as any,
+  }),
+  {
+    graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },
+  },
+  'json view without buildQueue should only include graph',
+)
+
+// Test JSON view with buildQueue
+t.strictSame(
+  Command.views.json({
+    buildQueue: ['··foo@1.0.0' as any, '··bar@2.0.0' as any],
+    graph: {
+      toJSON: () => ({
+        lockfileVersion: 0,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+    } as any,
+  }),
+  {
+    buildQueue: ['··foo@1.0.0', '··bar@2.0.0'],
+    message:
+      '2 packages that will need to be built, run "vlt build" to complete the install.',
+    graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },
+  },
+  'json view with buildQueue should include buildQueue, message, and graph',
+)
+
+// Test JSON view with empty buildQueue (should not include buildQueue or message)
+t.strictSame(
+  Command.views.json({
+    buildQueue: [],
+    graph: {
+      toJSON: () => ({
+        lockfileVersion: 0,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+    } as any,
+  }),
+  {
+    graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },
+  },
+  'json view with empty buildQueue should only include graph',
 )
 
 t.test('frozen-lockfile flag', async t => {
@@ -87,6 +141,53 @@ t.test('frozen-lockfile flag', async t => {
           log += `add packages: ${add.size}\n`
         }
         return {
+          graph: {
+            toJSON: () => ({}),
+          },
+        }
+      },
+      asDependency: (dep: any) => dep,
+    },
+  })
+
+  await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+
+  t.match(
+    log,
+    /install frozenLockfile=true/,
+    'should pass frozenLockfile to install',
+  )
+})
+
+t.test('lockfile-only flag', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+  })
+
+  const options = {
+    projectRoot: dir,
+    'lockfile-only': true,
+  }
+
+  let log = ''
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install(opts: any, add: any) {
+        log += `install lockfileOnly=${opts.lockfileOnly}\n`
+        if (add && add.size > 0) {
+          log += `add packages: ${add.size}\n`
+        }
+        return {
           graph: {},
         }
       },
@@ -98,11 +199,12 @@ t.test('frozen-lockfile flag', async t => {
     positionals: [],
     values: {},
     options,
+    get: () => undefined,
   } as unknown as LoadedConfig)
 
   t.match(
     log,
-    /install frozenLockfile=true/,
-    'should pass frozenLockfile to install',
+    /install lockfileOnly=true/,
+    'should pass lockfileOnly to install',
   )
 })

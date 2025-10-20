@@ -13,7 +13,7 @@ type VltJsonModule = {
   unload: (which?: 'user' | 'project') => void
   load: <T>(
     field: string,
-    validator: (x: unknown) => x is T,
+    validator: (x: unknown, file: string) => asserts x is T,
     which?: 'user' | 'project',
   ) => T | undefined
   find: (
@@ -52,7 +52,7 @@ export class ConfigManager {
     return listConfigValues(this.config)
   }
 
-  async get(key?: string, which?: WhichConfig) {
+  async get(key?: string, which?: WhichConfig | 'all') {
     let configSection: Record<string, unknown> | undefined
 
     // Clear vlt-json caches to ensure fresh file reads
@@ -67,7 +67,7 @@ export class ConfigManager {
       unload('project')
 
       // Ensure vlt-json resolves the project vlt.json using our known root
-      if (!which || which === 'project') {
+      if (!which || which === 'project' || which === 'all') {
         /* c8 ignore next */
         try {
           vltFind('project', this.config.projectRoot)
@@ -76,11 +76,22 @@ export class ConfigManager {
       }
 
       // Read the config section directly from vlt.json
+      // Convert 'all' to 'project' for the load function (merged config is handled elsewhere)
+      /* c8 ignore next 2 */
+      const effectiveWhich =
+        which === 'all' ? 'project' : (which ?? 'project')
       configSection = vltLoad(
         'config',
-        (x: unknown): x is Record<string, unknown> =>
-          x != null && typeof x === 'object',
-        which ?? 'project',
+        (
+          x: unknown,
+          file: string,
+        ): asserts x is Record<string, unknown> => {
+          if (x != null && typeof x === 'object') {
+            return
+          }
+          throw new Error(`Invalid config in ${file}`)
+        },
+        effectiveWhich,
       )
       /* c8 ignore next */
     } catch {}
@@ -123,12 +134,16 @@ export class ConfigManager {
 
   async setValues(
     values: Record<string, string | string[]>,
-    which?: WhichConfig,
+    which?: WhichConfig | 'all',
   ) {
     const freshConfig = await reloadConfig(this.config.projectRoot)
 
     // Get which config file to write to (user or project)
-    const selected: WhichConfig = which ?? freshConfig.get('config')
+    // Convert 'all' to 'project' for write operations
+    const configValue = which ?? freshConfig.get('config')
+    /* c8 ignore next 2 */
+    const selected: WhichConfig =
+      configValue === 'all' ? 'project' : configValue
 
     // Instead of using setConfigValue (which uses stale jackspeak parser),
     // write directly to config file using addConfigToFile
@@ -162,15 +177,15 @@ export class ConfigManager {
     return this.setValues(values, which)
   }
 
-  async set(key: string, value: string, which?: WhichConfig) {
+  async set(key: string, value: string, which?: WhichConfig | 'all') {
     return this.setValues({ [key]: value }, which)
   }
 
-  async delete(key: string, which?: WhichConfig) {
+  async delete(key: string, which?: WhichConfig | 'all') {
     return this.deleteMany([key], which)
   }
 
-  async deleteMany(keys: string[], which?: WhichConfig) {
+  async deleteMany(keys: string[], which?: WhichConfig | 'all') {
     // Clear vlt-json caches to ensure fresh file reads
     try {
       const { unload } = (await import(
@@ -190,7 +205,11 @@ export class ConfigManager {
     )
 
     // Get which config file to write to (user or project)
-    const selected: WhichConfig = which ?? freshConfig.get('config')
+    // Convert 'all' to 'project' for write operations
+    const configValue = which ?? freshConfig.get('config')
+    /* c8 ignore next 2 */
+    const selected: WhichConfig =
+      configValue === 'all' ? 'project' : configValue
 
     // Instead of using delConfigValue (which uses stale jackspeak parser),
     // delete directly from config file using deleteConfigKeys

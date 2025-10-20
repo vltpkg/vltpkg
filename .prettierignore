@@ -8,6 +8,7 @@
 /tap-snapshots
 /test/fixtures/**/*.json
 /.*/
+!/.github/
 
 /src/*/.*/
 /src/*/dist

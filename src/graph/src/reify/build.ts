@@ -4,25 +4,39 @@
 
 import type { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
-import { statSync, existsSync } from 'node:fs'
-import { chmod } from 'node:fs/promises'
 import { graphRun } from 'graph-run'
 import type { PathScurry } from 'path-scurry'
+import type { DepID } from '@vltpkg/dep-id'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
 import { nonEmptyList } from '../non-empty-list.ts'
-import { binPaths } from './bin-paths.ts'
 import { optionalFail } from './optional-fail.ts'
+import { binChmod } from './bin-chmod.ts'
+
+/**
+ * Returns an object mapping registries to the names of the packages built.
+ */
+export type BuildResult = {
+  success: Node[]
+  failure: Node[]
+}
 
 export const build = async (
   diff: Diff,
   packageJson: PackageJson,
   scurry: PathScurry,
-) => {
+  allowScriptsNodes: Set<DepID>,
+): Promise<BuildResult> => {
   const graph = diff.to
   const nodes = nonEmptyList([...graph.importers])
+  const res: BuildResult = { success: [], failure: [] }
+
+  // determine if scripts should run - check if node is in allowed set
+  const shouldRunScripts = (node: Node): boolean =>
+    allowScriptsNodes.has(node.id)
+
   /* c8 ignore next - all graphs have at least one importer */
-  if (!nodes) return
+  if (!nodes) return res
 
   await graphRun<Node, unknown>({
     graph: nodes,
@@ -33,12 +47,33 @@ export const build = async (
       // most recent build.
       // For now, just always build all importers, because we don't
       // track all that other stuff.
-      if (!node.importer && !diff.nodes.add.has(node)) return
 
-      await visit(packageJson, scurry, node, signal, path).then(
-        x => x,
-        optionalFail(diff, node),
+      if (
+        !node.importer &&
+        (!diff.nodes.add.has(node) || !shouldRunScripts(node))
       )
+        return
+
+      try {
+        await visit(packageJson, scurry, node, signal, path)
+        if (!node.importer) {
+          node.buildState = 'built'
+          res.success.push(node)
+        }
+        /* c8 ignore start - windows on CI is missing those tests */
+      } catch (err) {
+        // Check if this is an optional failure that was handled
+        if (node.optional) {
+          node.buildState = 'failed'
+          res.failure.push(node)
+          // Let optionalFail handle the error
+          await Promise.reject(err).catch(optionalFail(diff, node))
+        } else {
+          // Re-throw non-optional failures
+          throw err
+        }
+      }
+      /* c8 ignore stop */
     },
 
     getDeps: node => {
@@ -50,6 +85,8 @@ export const build = async (
       return deps
     },
   })
+
+  return res
 }
 
 const visit = async (
@@ -59,6 +96,10 @@ const visit = async (
   signal: AbortSignal,
   _path: Node[],
 ): Promise<void> => {
+  // at this point we might have to read the manifest from disk if it's
+  // currently nullish, that could happen in a scenario where the ideal
+  // graph is from a lockfile and there's no actual graph available
+  // to hydrate the manifest data from.
   node.manifest ??= packageJson.read(node.resolvedLocation(scurry))
   const { manifest } = node
   const { scripts = {} } = manifest
@@ -104,26 +145,5 @@ const visit = async (
     })
   }
 
-  const chmods: Promise<unknown>[] = []
-  for (const bin of Object.values(binPaths(manifest))) {
-    const path = scurry.resolve(
-      `${node.resolvedLocation(scurry)}/${bin}`,
-    )
-    // only try to make executable if the file exists
-    if (existsSync(path)) {
-      chmods.push(makeExecutable(path))
-    }
-  }
-  await Promise.all(chmods)
-}
-
-// 0 is "not yet set"
-// This is defined by doing `0o111 | <mode>` so that systems
-// that create files group-writable result in 0o775 instead of 0o755
-let execMode = 0
-const makeExecutable = async (path: string) => {
-  if (!execMode) {
-    execMode = (statSync(path).mode & 0o777) | 0o111
-  }
-  await chmod(path, execMode)
+  await binChmod(node, scurry)
 }

@@ -11,9 +11,16 @@ import {
 } from 'react'
 import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
+import type { InstallResult } from '../install.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
+}
+
+const labels: Record<Events['graphStep']['step'], string> = {
+  build: 'resolving dependencies',
+  actual: '',
+  reify: 'extracting files',
 }
 
 const GraphStep = ({ text, step }: { text: string; step: Step }) => {
@@ -33,6 +40,7 @@ const GraphStep = ({ text, step }: { text: string; step: Step }) => {
 
 const App = ({ trailer }: { trailer?: string }) => {
   const [requests, setRequests] = useState(0)
+  const [cacheHit, setCacheHit] = useState(0)
 
   const [steps, setSteps] = useState<
     Record<Events['graphStep']['step'], Step>
@@ -49,9 +57,15 @@ const App = ({ trailer }: { trailer?: string }) => {
   })
 
   useEffect(() => {
-    const update = () => setRequests(p => p + 1)
-    emitter.on('request', update)
-    return () => emitter.off('request', update)
+    const updateRequests = ({ state }: Events['request']) => {
+      if (state === 'start') {
+        setRequests(p => p + 1)
+      } else if (state === 'cache' || state === 'stale') {
+        setCacheHit(p => p + 1)
+      }
+    }
+    emitter.on('request', updateRequests)
+    return () => emitter.off('request', updateRequests)
   }, [])
 
   useEffect(() => {
@@ -77,16 +91,23 @@ const App = ({ trailer }: { trailer?: string }) => {
       ...(['build', 'actual', 'reify'] as const).map(
         (step, idx, list) => {
           const separator = idx === list.length - 1 ? '' : ' > '
+          const label = labels[step]
+          if (!label) return null
           return $(
             Text,
             { key: step },
-            $(GraphStep, { text: step, step: steps[step] }),
+            $(GraphStep, { text: label, step: steps[step] }),
             $(Text, { color: 'gray' }, separator),
           )
         },
       ),
     ),
-    requests > 0 ? $(Text, null, `${requests} requests`) : null,
+    cacheHit > 0 ?
+      $(Text, null, `${cacheHit} cache hit${cacheHit > 1 ? 's' : ''}`)
+    : null,
+    requests > 0 ?
+      $(Text, null, `${requests} request${requests > 1 ? 's' : ''}`)
+    : null,
     trailer ? $(Text, null, trailer) : null,
   )
 }
@@ -98,8 +119,18 @@ export class InstallReporter extends ViewClass {
     this.#instance = render($(App))
   }
 
-  async done(_result: unknown, { time }: { time: number }) {
-    this.#instance?.rerender($(App, { trailer: `Done in ${time}ms` }))
+  async done(_result: InstallResult, { time }: { time: number }) {
+    let out = `Done in ${time}ms`
+
+    // prints a very complete message explaining users the next steps
+    // in case there are packages to be built
+    if (_result.buildQueue?.length) {
+      out += `\n\n📦 ${_result.buildQueue.length} packages have install scripts defined & were not fully built\n`
+      out += '🔎 Run `vlt query :scripts` to list them\n'
+      out +=
+        '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
+    }
+    this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }
 

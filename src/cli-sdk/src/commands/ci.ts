@@ -1,9 +1,11 @@
-import type { Graph } from '@vltpkg/graph'
-import { commandUsage } from '../config/usage.ts'
-import type { CommandFn, CommandUsage } from '../index.ts'
 import { install } from '@vltpkg/graph'
-import type { Views } from '../view.ts'
+import { commandUsage } from '../config/usage.ts'
 import { InstallReporter } from './install/reporter.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
+import type { Views } from '../view.ts'
+import type { InstallResult } from './install.ts'
+
+export type CIResult = Omit<InstallResult, 'buildQueue'>
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -19,18 +21,21 @@ export const usage: CommandUsage = () =>
   })
 
 export const views = {
-  json: g => g.toJSON(),
+  json: i => i.graph.toJSON(),
   human: InstallReporter,
-} as const satisfies Views<Graph>
+} as const satisfies Views<CIResult>
 
-export const command: CommandFn<Graph> = async conf => {
+export const command: CommandFn<CIResult> = async conf => {
   const ciOptions = {
     ...conf.options,
+    // allow all scripts by default on ci (unless user specifies a filter)
+    allowScripts: conf.get('allow-scripts') ?? '*',
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,
+    lockfileOnly: conf.options['lockfile-only'],
   }
 
   const { graph } = await install(ciOptions)
-  return graph
+  return { graph }
 }

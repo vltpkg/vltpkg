@@ -35,12 +35,14 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
   Found: --unknown
   Valid Options:
     --access=<access>
+    --all
+    --allow-scripts=<query>
     --arch=<arch>
     --bail
     --before=<date>
     --cache=<path>
     --color
-    --config=<user | project>
+    --config=<all | user | project>
     --dashboard-root=<path>
     --dry-run
     --editor=<program>
@@ -59,6 +61,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --identity=<name>
     --if-present
     --jsr-registries=<name=url>
+    --lockfile-only
     --no-bail
     --no-color
     --node-version=<version>
@@ -75,12 +78,12 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --save-optional
     --save-peer
     --save-prod
-    --scope=<scope>
+    --scope=<query>
     --scope-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
-    --target=<target>
+    --target=<query>
     --version
     --view=<output>
     --workspace=<ws>
@@ -95,6 +98,8 @@ Unknown config option: asdf
   Found: "asdf"
   Valid Options:
     access
+    all
+    allow-scripts
     arch
     bail
     before
@@ -119,6 +124,7 @@ Unknown config option: asdf
     identity
     if-present
     jsr-registries
+    lockfile-only
     no-bail
     no-color
     node-version

@@ -7,6 +7,7 @@
 'use strict'
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes > should load node missing name and version 1`] = `
 Object {
+  "buildState": "none",
   "confused": false,
   "dev": false,
   "id": "··lorem",
@@ -27,6 +28,7 @@ Object {
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes > should load nodes into graph 1`] = `
 Array [
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "file·.",
@@ -46,6 +48,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "file·linked",
@@ -62,6 +65,7 @@ Array [
     "version": undefined,
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "··foo@1.0.0",
@@ -78,6 +82,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "··edge-case@",
@@ -94,6 +99,7 @@ Array [
     "version": undefined,
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "··bar@1.0.0",
@@ -110,6 +116,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "··baz@1.0.0",
@@ -128,8 +135,34 @@ Array [
 ]
 `
 
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with buildState > should load nodes with correct buildState values 1`] = `
+Array [
+  Object {
+    "buildState": "built",
+    "id": "··already-built@1.0.0",
+    "name": "already-built",
+  },
+  Object {
+    "buildState": "failed",
+    "id": "··failed-build@1.0.0",
+    "name": "failed-build",
+  },
+  Object {
+    "buildState": "needed",
+    "id": "··needs-build@1.0.0",
+    "name": "needs-build",
+  },
+  Object {
+    "buildState": "none",
+    "id": "··no-build@1.0.0",
+    "name": "no-build",
+  },
+]
+`
+
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes with confused manifest > should load node with confused manifest 1`] = `
 Object {
+  "buildState": "none",
   "confused": true,
   "dev": false,
   "id": "··foo@1.0.0",
@@ -221,6 +254,7 @@ Array [
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes with manifest > should load nodes into graph with manifest data 1`] = `
 Array [
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "file·.",
@@ -240,6 +274,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": true,
     "id": "··bar@1.0.0",
@@ -259,6 +294,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": true,
     "id": "··foo@1.0.0",
@@ -281,6 +317,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "buildState": "none",
     "confused": false,
     "dev": false,
     "id": "·custom·baz@1.0.0",
@@ -341,6 +378,47 @@ Array [
     "optional": false,
     "resolved": "https://registry.npmjs.org/standalone/-/standalone-1.0.0.tgz",
     "version": "1.0.0",
+  },
+]
+`
+
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with platform and bin > should load nodes with platform and bin data 1`] = `
+Array [
+  Object {
+    "bins": Object {
+      "alt-name": "./bin/alt.js",
+      "pkg-with-bin": "./bin/cli.js",
+    },
+    "id": "··pkg-with-bin@1.0.0",
+    "name": "pkg-with-bin",
+    "platform": Object {
+      "cpu": Array [
+        "x64",
+        "arm64",
+      ],
+      "engines": Object {
+        "node": ">=18.0.0",
+      },
+      "os": Array [
+        "linux",
+        "darwin",
+      ],
+    },
+  },
+  Object {
+    "bins": Object {
+      "platform-pkg": "./index.js",
+    },
+    "id": "··platform-pkg@2.0.0",
+    "name": "platform-pkg",
+    "platform": Object {
+      "cpu": "x64",
+      "engines": Object {
+        "node": ">=20.0.0",
+        "npm": ">=10.0.0",
+      },
+      "os": "win32",
+    },
   },
 ]
 `

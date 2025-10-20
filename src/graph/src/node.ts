@@ -17,6 +17,7 @@ import type {
   NodeLike,
 } from '@vltpkg/types'
 import { Edge } from './edge.ts'
+import type { Graph } from './graph.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { GraphModifier } from './modifiers.ts'
@@ -92,6 +93,11 @@ export class Node implements NodeLike {
   confused = false
 
   /**
+   * True if this node has been extracted to the file system.
+   */
+  extracted = false
+
+  /**
    * List of edges coming into this node.
    */
   edgesIn = new Set<Edge>()
@@ -126,7 +132,7 @@ export class Node implements NodeLike {
   /**
    * A reference to the graph this node is a part of.
    */
-  graph: GraphLike
+  graph: Graph
 
   /**
    * The manifest integrity value.
@@ -195,6 +201,25 @@ export class Node implements NodeLike {
   }
 
   /**
+   * Record of binary names to their paths in the package, if any.
+   */
+  bins?: Record<string, string>
+
+  /**
+   * True if this node has been built as part of the reify step.
+   */
+  built = false
+
+  /**
+   * Build state of this node - tracks whether it needs building, has been built, or failed.
+   * - 'none': No build state (default)
+   * - 'needed': Node needs to be built
+   * - 'built': Node has been successfully built
+   * - 'failed': Node build has failed
+   */
+  buildState: 'none' | 'needed' | 'built' | 'failed' = 'none'
+
+  /**
    * The file system location for this node.
    */
   get location(): string {
@@ -260,7 +285,7 @@ export class Node implements NodeLike {
       }
       this.id = getId(spec, manifest)
     }
-    this.graph = options.graph
+    this.graph = options.graph as Graph
     this.manifest = manifest
 
     this.#name = name || this.manifest?.name
@@ -411,6 +436,7 @@ export class Node implements NodeLike {
       confused: this.confused,
       modifier: this.modifier,
       platform: this.platform,
+      buildState: this.buildState,
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),

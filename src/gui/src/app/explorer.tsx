@@ -7,6 +7,7 @@ import { useGraphStore } from '@/state/index.ts'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
 import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import { createHostContextsMap } from '@/lib/query-host-contexts.ts'
+import { hasLocalServerFeatures } from '@/lib/environment.ts'
 import type { TransferData, Action, State } from '@/state/types.ts'
 
 export type ExplorerOptions = {
@@ -72,6 +73,7 @@ export const Explorer = () => {
     state => state.updateSpecOptions,
   )
   const stamp = useGraphStore(state => state.stamp)
+  const isHostedMode = !hasLocalServerFeatures()
 
   useQueryNavigation()
 
@@ -79,6 +81,14 @@ export const Explorer = () => {
   // state in the app, to make sure we're controlling it, we use the
   // stamp state as a dependency of `useEffect` to trigger the load.
   useEffect(() => {
+    // Skip in hosted environments
+    if (isHostedMode) {
+      console.info(
+        'Graph data fetching disabled in hosted environment',
+      )
+      return
+    }
+
     startGraphData({
       updateHasDashboard,
       updateGraph,
@@ -100,7 +110,34 @@ export const Explorer = () => {
     updateSpecOptions,
     navigate,
     updateErrorCause,
+    isHostedMode,
   ])
+
+  // Show hosted mode message for explorer
+  if (isHostedMode) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center px-8 py-4">
+        <div className="max-w-2xl text-center">
+          <h1 className="mb-4 text-2xl font-semibold">
+            Hosted Demo Mode
+          </h1>
+          <p className="mb-4 text-muted-foreground">
+            This is a static hosted version of the VLT GUI. The
+            explorer requires a local VLT server to display project
+            graphs.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            To use the full explorer features, please run the GUI
+            locally with{' '}
+            <code className="rounded bg-muted px-2 py-1">
+              vlt gui
+            </code>
+            .
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return <ExplorerContent />
 }

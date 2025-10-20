@@ -23,9 +23,6 @@ t.test('promptFn', async t => {
   const { promptFn } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts', {
-    chalk: {
-      bold: (s: string) => s,
-    },
     'node:readline/promises': {
       createInterface: (stdin: unknown, stdout: unknown) => {
         t.equal(stdin, process.stdin)
@@ -87,7 +84,11 @@ t.test('command', async t => {
       ) => {
         calledResolve = true
         t.strictSame(args, ['a', 'b', 'c'])
-        t.strictSame(options, { ...mockOptions, query: undefined })
+        t.strictSame(options, {
+          ...mockOptions,
+          query: undefined,
+          allowScripts: ':not(*)',
+        })
         return 'arg0'
       },
     },
@@ -96,6 +97,7 @@ t.test('command', async t => {
   const conf = {
     positionals: ['a', 'b', 'c'],
     options: mockOptions,
+    get: (_key: string) => undefined,
   } as unknown as LoadedConfig
   t.equal(await command(conf), result)
   t.equal(calledResolve, true)

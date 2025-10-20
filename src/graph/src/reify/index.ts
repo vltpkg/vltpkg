@@ -1,8 +1,9 @@
 import { graphStep } from '@vltpkg/output'
 import type { PackageInfoClient } from '@vltpkg/package-info'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
 import { callLimit } from 'promise-call-limit'
+import type { DepID } from '@vltpkg/dep-id'
 import type { LoadOptions } from '../actual/load.ts'
 import { load as loadActual } from '../actual/load.ts'
 import type {
@@ -11,7 +12,6 @@ import type {
 } from '../dependencies.ts'
 import { Diff } from '../diff.ts'
 import type { Graph } from '../graph.ts'
-import { lockfile } from '../index.ts'
 import type { GraphModifier } from '../modifiers.ts'
 import {
   lockfileData,
@@ -22,33 +22,102 @@ import { addEdges } from './add-edges.ts'
 import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
+import { checkNeededBuild } from './check-needed-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
+import { Query } from '@vltpkg/query'
+import { SecurityArchive } from '@vltpkg/security-archive'
+import type { NodeLike } from '@vltpkg/types'
+import { binChmodAll } from './bin-chmod.ts'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
+
+/**
+ * Filter nodes using a DSS query string
+ */
+const filterNodesByQuery = async (
+  graph: Graph,
+  allowScriptsQuery?: string,
+): Promise<Set<DepID>> => {
+  // shortcut no packages included
+  if (
+    allowScriptsQuery === ':not(*)' /* c8 ignore next */ ||
+    !allowScriptsQuery
+  ) {
+    return new Set()
+  }
+  // shortcut all packages included
+  if (allowScriptsQuery === '*') {
+    return new Set(graph.nodes.keys())
+  }
+  /* c8 ignore start */
+  const securityArchive =
+    Query.hasSecuritySelectors(allowScriptsQuery) ?
+      await SecurityArchive.start({
+        nodes: [...graph.nodes.values()],
+      })
+    : undefined
+  /* c8 ignore stop */
+
+  const edges = graph.edges
+  const nodes = new Set<NodeLike>(graph.nodes.values())
+  const importers = graph.importers
+
+  const query = new Query({
+    edges,
+    nodes,
+    importers,
+    securityArchive,
+  })
+
+  const { nodes: resultNodes } = await query.search(
+    allowScriptsQuery,
+    {
+      signal: new AbortController().signal,
+    },
+  )
+
+  return new Set(resultNodes.map(node => node.id))
+}
 
 // - [ ] depid's with peer resolutions
 // - [ ] depid shortening
 
 export type ReifyOptions = LoadOptions & {
   add?: AddImportersDependenciesMap
+  allowScripts: string
   remove?: RemoveImportersDependenciesMap
   graph: Graph
   actual?: Graph
   packageInfo: PackageInfoClient
   modifiers?: GraphModifier
+  remover: RollbackRemove
+}
+
+export type ReifyResult = {
+  /**
+   * The diff object that was used to reify the project.
+   */
+  diff: Diff
+  /**
+   * Optional queue of DepIDs that requires building (running lifecycle scripts
+   * and binary linking) after the reification is complete.
+   */
+  buildQueue?: DepID[]
 }
 
 /**
  * Make the current project match the supplied graph.
  */
-export const reify = async (options: ReifyOptions) => {
+export const reify = async (
+  options: ReifyOptions,
+): Promise<ReifyResult> => {
   const done = graphStep('reify')
 
-  const { graph, scurry } = options
+  const { graph, scurry, remover } = options
 
   const actual =
     options.actual ??
@@ -58,20 +127,23 @@ export const reify = async (options: ReifyOptions) => {
     })
 
   const diff = new Diff(actual, graph)
-  const skipOptionalOnly =
-    !options.add?.modifiedDependencies && diff.optionalOnly
+  const noModifiedDependencies =
+    !options.add?.modifiedDependencies &&
+    !options.remove?.modifiedDependencies
+  const skipOptionalOnly = noModifiedDependencies && diff.optionalOnly
+  const res: ReifyResult = { diff }
   if (!diff.hasChanges() || skipOptionalOnly) {
     // nothing to do, so just return the diff
     done()
-    return diff
+    return res
   }
 
-  const remover = new RollbackRemove()
   let success = false
   try {
-    await reify_(options, diff, remover)
+    const { buildQueue } = await reify_(options, diff, remover)
     remover.confirm()
     success = true
+    res.buildQueue = buildQueue
   } finally {
     /* c8 ignore start */
     if (!success) {
@@ -82,15 +154,23 @@ export const reify = async (options: ReifyOptions) => {
 
   done()
 
-  return diff
+  return res
 }
 
 const reify_ = async (
   options: ReifyOptions,
   diff: Diff,
   remover: RollbackRemove,
-) => {
-  const { add, remove, packageInfo, packageJson, scurry } = options
+): Promise<Omit<ReifyResult, 'diff'>> => {
+  const res: Omit<ReifyResult, 'diff'> = {}
+  const {
+    add,
+    remove,
+    packageInfo,
+    packageJson,
+    scurry,
+    allowScripts,
+  } = options
   const saveImportersPackageJson =
     /* c8 ignore next */
     add?.modifiedDependencies || remove?.modifiedDependencies ?
@@ -121,7 +201,6 @@ const reify_ = async (
   // create all node_modules symlinks, and link bins to nm/.bin
   const edgeActions: Promise<unknown>[] = addEdges(
     diff,
-    packageJson,
     scurry,
     remover,
   )
@@ -129,11 +208,27 @@ const reify_ = async (
 
   await internalHoist(diff.to, options, remover)
 
-  // run lifecycles and chmod bins
-  await build(diff, packageJson, scurry)
+  // looks up all nodes setting buildState = 'needed'
+  // on nodes that require building
+  checkNeededBuild({ diff })
 
-  // save the lockfile
-  lockfile.save(options)
+  // Filter nodes allowed to run scripts if allowScripts query is provided
+  const allowScriptsNodes = await filterNodesByQuery(
+    diff.to,
+    allowScripts,
+  )
+
+  // ensure that all added bins are chmod +x
+  await binChmodAll(diff.nodes.add, scurry)
+
+  // run install lifecycle scripts and link any binary files
+  await build(diff, packageJson, scurry, allowScriptsNodes)
+
+  // set the buildQueue on the result object containing
+  // an array with all the ids of nodes that need building
+  res.buildQueue = [...diff.nodes.add]
+    .filter(node => node.buildState === 'needed')
+    .map(node => node.id)
 
   // if we had to change the actual graph along the way,
   // make sure we do not leave behind any unreachable nodes
@@ -169,4 +264,7 @@ const reify_ = async (
       scurry.resolve('node_modules/.vlt/vlt.json'),
     )
   }
+
+  // returns the result object
+  return res
 }

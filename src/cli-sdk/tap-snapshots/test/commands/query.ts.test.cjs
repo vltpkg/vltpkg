@@ -87,6 +87,7 @@ exports[`test/commands/query.ts > TAP > query > --target option > should work wi
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -164,6 +165,10 @@ the output. Using both options allows you to render subgraphs of the dependency
 graph.
 
 Defaults to listing all dependencies of the project root and workspaces.
+
+  Aliases
+
+    ​q
 
   Examples
 
@@ -275,6 +280,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -300,6 +306,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -328,6 +335,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -356,6 +364,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -388,6 +397,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -418,6 +428,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -443,6 +454,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -487,6 +499,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -512,6 +525,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }
@@ -537,6 +551,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "dev": false,
       "optional": false,
       "confused": false,
+      "buildState": "none",
       "insights": {
         "scanned": false
       }

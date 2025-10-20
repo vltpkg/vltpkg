@@ -1,7 +1,7 @@
 name: 📚 Documentation
 description: Improve or create documentation
-title: "[DOCS] "
-labels: ["documentation", "enhancement"]
+title: '[DOCS] '
+labels: ['documentation', 'enhancement']
 assignees: []
 body:
   - type: markdown
@@ -15,7 +15,7 @@ body:
     attributes:
       label: 📋 Description
       description: Describe what documentation needs to be created, updated, or improved.
-      placeholder: "Describe the documentation work needed..."
+      placeholder: 'Describe the documentation work needed...'
     validations:
       required: true
 
@@ -63,7 +63,7 @@ body:
     attributes:
       label: 📄 Current State
       description: What is the current state of the documentation (if any exists)?
-      placeholder: "Describe existing documentation or lack thereof..."
+      placeholder: 'Describe existing documentation or lack thereof...'
     validations:
       required: false
 
@@ -72,7 +72,7 @@ body:
     attributes:
       label: 👥 Target Audience
       description: Who is the intended audience for this documentation?
-      placeholder: "End users, developers, contributors, specific teams..."
+      placeholder: 'End users, developers, contributors, specific teams...'
     validations:
       required: true
 
@@ -120,7 +120,7 @@ body:
     attributes:
       label: 🔍 Research Required
       description: What research or investigation is needed before writing?
-      placeholder: "Information gathering, SME interviews, code analysis..."
+      placeholder: 'Information gathering, SME interviews, code analysis...'
     validations:
       required: false
 
@@ -163,7 +163,7 @@ body:
     attributes:
       label: 🔗 Existing Resources
       description: Are there any existing resources, references, or related documentation?
-      placeholder: "Links to related docs, reference materials, or similar examples..."
+      placeholder: 'Links to related docs, reference materials, or similar examples...'
     validations:
       required: false
 
@@ -172,7 +172,7 @@ body:
     attributes:
       label: 🎯 Success Criteria
       description: How will you measure the success of this documentation?
-      placeholder: "User feedback, reduced support tickets, adoption metrics..."
+      placeholder: 'User feedback, reduced support tickets, adoption metrics...'
     validations:
       required: false
 
@@ -181,7 +181,7 @@ body:
     attributes:
       label: 📎 Additional Context
       description: Any other relevant information or context.
-      placeholder: "Additional requirements, constraints, or considerations..."
+      placeholder: 'Additional requirements, constraints, or considerations...'
     validations:
       required: false
 

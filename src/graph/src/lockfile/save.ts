@@ -12,7 +12,7 @@ import {
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { getFlagNumFromNode } from './types.ts'
+import { getFlagNumFromNode, getBuildStateFromNode } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { Edge } from '../edge.ts'
@@ -41,11 +41,16 @@ export type SaveOptions = SpecOptions & {
    * Should it save manifest data in the lockfile?
    */
   saveManifests?: boolean
+  /**
+   * Should it save build state data in the lockfile?
+   */
+  saveBuildData?: boolean
 }
 
 const formatNodes = (
   nodes: Iterable<Node>,
   saveManifests?: boolean,
+  saveBuildData?: boolean,
   registry?: string,
 ) => {
   // we do not store importers in the lockfile, though we do store
@@ -97,6 +102,19 @@ const formatNodes = (
       lockfileNode[7] = node.platform as LockfilePlatform
     }
 
+    // Save bin data if available
+    if (node.bins && Object.keys(node.bins).length) {
+      lockfileNode[8] = node.bins
+    }
+
+    // Save build state data if requested
+    if (saveBuildData) {
+      const buildState = getBuildStateFromNode(node)
+      if (buildState !== undefined) {
+        lockfileNode[9] = buildState
+      }
+    }
+
     res[node.id] = lockfileNode
   }
   return res
@@ -145,6 +163,7 @@ export const lockfileData = ({
   registry,
   registries,
   saveManifests,
+  saveBuildData,
   'scope-registries': scopeRegistries,
   'jsr-registries': jsrRegistries,
 }: SaveOptions): LockfileData => {
@@ -201,7 +220,12 @@ export const lockfileData = ({
         { 'git-host-archives': cleanGitHostArchives }
       : undefined),
     },
-    nodes: formatNodes(graph.nodes.values(), saveManifests, registry),
+    nodes: formatNodes(
+      graph.nodes.values(),
+      saveManifests,
+      saveBuildData,
+      registry,
+    ),
     edges: formatEdges(graph.edges),
   }
 }
@@ -239,10 +263,14 @@ export const save = (
 }
 
 export const saveHidden = (
-  options: Omit<SaveOptions, 'saveManifests'>,
+  options: Omit<SaveOptions, 'saveManifests' | 'saveBuildData'>,
 ): void => {
   const { graph } = options
-  const data = lockfileData({ ...options, saveManifests: true })
+  const data = lockfileData({
+    ...options,
+    saveManifests: true,
+    saveBuildData: true,
+  })
   const fileName = resolve(
     graph.projectRoot,
     'node_modules/.vlt-lock.json',

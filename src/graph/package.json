@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/graph",
   "description": "A library that helps understanding & expressing what happens on an install",
-  "version": "0.0.0-30",
+  "version": "1.0.0-rc.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -31,6 +31,7 @@
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/pick-manifest": "workspace:*",
+    "@vltpkg/query": "workspace:*",
     "@vltpkg/rollback-remove": "workspace:*",
     "@vltpkg/run": "workspace:*",
     "@vltpkg/satisfies": "workspace:*",

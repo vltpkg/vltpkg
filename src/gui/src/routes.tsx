@@ -17,6 +17,10 @@ import { Labels } from '@/app/labels.tsx'
 import { Queries } from '@/app/queries.tsx'
 import { SettingsView } from '@/app/settings/index.tsx'
 
+/** Auth */
+import { SignIn } from '@/app/auth/sign-in.tsx'
+import { SignUp } from '@/app/auth/sign-up.tsx'
+
 /** Explorer Tabs */
 import { OverviewTabContent } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import { TabsJsonContent } from '@/components/explorer-grid/selected-item/tabs-json.tsx'
@@ -38,6 +42,9 @@ import { HelpSelectors } from '@/app/help/help-selectors.tsx'
 /** Query Helpers */
 import { DEFAULT_QUERY } from '@/state/index.ts'
 import { encodeCompressedQuery } from '@/lib/compress-query.ts'
+
+/** Middleware */
+import { authMiddleware } from '@/middleware/auth.ts'
 
 import type { RouteObject } from 'react-router'
 import type {
@@ -97,9 +104,29 @@ export const routes: RouteObject[] = [
     element: <Layout />,
     errorElement: <ErrorFound />,
     children: [
+      // TODO: this route should actually be the `/search` / 'home' view,
+      // this is just a temporary placeholder to keep things logical.
       {
-        index: true,
+        path: '/',
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: '/dashboard',
+        middleware: [authMiddleware],
         element: <Dashboard />,
+      },
+      {
+        path: 'auth',
+        children: [
+          {
+            path: 'sign-in',
+            element: <SignIn />,
+          },
+          {
+            path: 'sign-up',
+            element: <SignUp />,
+          },
+        ],
       },
       {
         path: 'explore',
@@ -132,6 +159,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'create-new-project',
+        middleware: [authMiddleware],
         element: <CreateNewProject />,
       },
       {
@@ -140,10 +168,12 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'labels',
+        middleware: [authMiddleware],
         element: <Labels />,
       },
       {
         path: 'queries',
+        middleware: [authMiddleware],
         element: <Queries />,
       },
       {
@@ -162,6 +192,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'settings',
+        middleware: [authMiddleware],
         element: <Outlet />,
         children: [
           {

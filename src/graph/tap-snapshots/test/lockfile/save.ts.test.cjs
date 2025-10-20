@@ -233,6 +233,252 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 `
 
+exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuildData: true > lockfile with buildState data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··bar@1.0.0": [
+      0,
+      "bar",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      2
+    ],
+    "··baz@1.0.0": [
+      0,
+      "baz",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      3
+    ],
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      1
+    ],
+    "··qux@1.0.0": [
+      0,
+      "qux",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ]
+  },
+  "edges": {
+    "file·. bar": "prod ^1.0.0 ··bar@1.0.0",
+    "file·. baz": "prod ^1.0.0 ··baz@1.0.0",
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+    "file·. qux": "prod ^1.0.0 ··qux@1.0.0"
+  }
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save buildState data > save without saveBuildData (default) > lockfile without buildState data 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··bar@1.0.0": [
+      0,
+      "bar",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ],
+    "··baz@1.0.0": [
+      0,
+      "baz",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ],
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ],
+    "··qux@1.0.0": [
+      0,
+      "qux",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ]
+  },
+  "edges": {
+    "file·. bar": "prod ^1.0.0 ··bar@1.0.0",
+    "file·. baz": "prod ^1.0.0 ··baz@1.0.0",
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+    "file·. qux": "prod ^1.0.0 ··qux@1.0.0"
+  }
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHidden() with buildState > save() output with buildState 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··bar@1.0.0": [
+      0,
+      "bar",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      2
+    ],
+    "··baz@1.0.0": [
+      0,
+      "baz",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      3
+    ],
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      1
+    ],
+    "··qux@1.0.0": [
+      0,
+      "qux",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+    ]
+  },
+  "edges": {
+    "file·. bar": "prod ^1.0.0 ··bar@1.0.0",
+    "file·. baz": "prod ^1.0.0 ··baz@1.0.0",
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+    "file·. qux": "prod ^1.0.0 ··qux@1.0.0"
+  }
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHidden() with buildState > saveHidden() output with buildState 1`] = `
+{
+  "lockfileVersion": 0,
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··bar@1.0.0": [
+      0,
+      "bar",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      {
+        "name": "bar",
+        "version": "1.0.0",
+        "dist": {
+          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+        }
+      },
+      null,
+      null,
+      null,
+      2
+    ],
+    "··baz@1.0.0": [
+      0,
+      "baz",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      {
+        "name": "baz",
+        "version": "1.0.0",
+        "dist": {
+          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+        }
+      },
+      null,
+      null,
+      null,
+      3
+    ],
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      {
+        "name": "foo",
+        "version": "1.0.0",
+        "dist": {
+          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+        }
+      },
+      null,
+      null,
+      null,
+      1
+    ],
+    "··qux@1.0.0": [
+      0,
+      "qux",
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      {
+        "name": "qux",
+        "version": "1.0.0",
+        "dist": {
+          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+        }
+      }
+    ]
+  },
+  "edges": {
+    "file·. bar": "prod ^1.0.0 ··bar@1.0.0",
+    "file·. baz": "prod ^1.0.0 ··baz@1.0.0",
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0",
+    "file·. qux": "prod ^1.0.0 ··qux@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > save platform data for optional dependencies > lockfile with platform data for optional dependencies 1`] = `
 {
   "lockfileVersion": 0,
@@ -270,7 +516,15 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
     "··foo@1.0.0": [
       0,
       "foo",
-      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
+      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+      null,
+      null,
+      null,
+      null,
+      null,
+      {
+        "foo": "foo.js"
+      }
     ]
   },
   "edges": {

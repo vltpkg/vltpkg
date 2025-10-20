@@ -439,6 +439,11 @@ export type NormalizedCpu = string[]
 export type NormalizedBugs = NormalizedBugsEntry[]
 
 /**
+ * Normalized bin - always a record of string to string
+ */
+export type NormalizedBin = Record<string, string>
+
+/**
  * Helper function to normalize a single {@link Bugs} entry.
  */
 const normalizeSingleBug = (bug: unknown): NormalizedBugsEntry[] => {
@@ -703,6 +708,24 @@ export const isNormalizedCpu = (o: unknown): o is NormalizedCpu => {
   )
 }
 
+/**
+ * Normalizes the bin paths.
+ */
+export const normalizeBinPaths = (
+  manifest: Pick<Manifest, 'bin' | 'name'>,
+): Record<string, string> | undefined => {
+  const { name, bin } = manifest
+
+  if (bin) {
+    if (name && typeof bin === 'string') {
+      const [_scope, pkg] = parseScope(name)
+      return { [pkg]: bin }
+    } else if (typeof bin === 'object') {
+      return bin
+    }
+  }
+}
+
 export type Manifest = {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
@@ -785,6 +808,7 @@ export type NormalizedFields = {
   engines: NormalizedEngines | undefined
   os: NormalizedOs | undefined
   cpu: NormalizedCpu | undefined
+  bin: NormalizedBin | undefined
 }
 
 /**
@@ -1083,6 +1107,7 @@ export const normalizeManifest = <
   const normalizedEngines = normalizeEngines(manifest.engines)
   const normalizedOs = normalizeOs(manifest.os)
   const normalizedCpu = normalizeCpu(manifest.cpu)
+  const normalizedBin = normalizeBinPaths(manifest)
 
   // holds the same object reference but renames the variable here
   // so that it's simpler to cast it to the normalized type
@@ -1134,6 +1159,12 @@ export const normalizeManifest = <
     normalizedManifest.cpu = normalizedCpu
   } else {
     delete normalizedManifest.cpu
+  }
+
+  if (normalizedBin) {
+    normalizedManifest.bin = normalizedBin
+  } else {
+    delete normalizedManifest.bin
   }
 
   // Remove maintainers field if it exists in the raw manifest
@@ -1407,6 +1438,11 @@ export type GraphLike = {
     name?: string,
     version?: string,
   ) => NodeLike
+  removeNode(
+    node: NodeLike,
+    replacement?: NodeLike,
+    keepEdges?: boolean,
+  ): void
 }
 
 export type NodeLike = {
@@ -1435,6 +1471,10 @@ export type NodeLike = {
     os?: string[] | string
     cpu?: string[] | string
   }
+  bins?: Record<string, string>
+  buildState?: 'none' | 'needed' | 'built' | 'failed'
+  buildAllowed?: boolean
+  buildBlocked?: boolean
   options: SpecOptions
   toJSON: () => Pick<
     NodeLike,
@@ -1451,6 +1491,9 @@ export type NodeLike = {
     | 'optional'
     | 'confused'
     | 'platform'
+    | 'buildState'
+    | 'buildAllowed'
+    | 'buildBlocked'
   > & {
     rawManifest?: NodeLike['manifest']
   }
@@ -1464,4 +1507,17 @@ export type NodeLike = {
     spec: Spec,
     confused?: NormalizedManifest,
   ): void
+}
+
+/**
+ * Parse a scoped package name into its scope and name components.
+ */
+export const parseScope = (
+  scoped: string,
+): [string | undefined, string] => {
+  if (scoped.startsWith('@')) {
+    const [scope, name, ...rest] = scoped.split('/')
+    if (scope && name && rest.length === 0) return [scope, name]
+  }
+  return [undefined, scoped]
 }

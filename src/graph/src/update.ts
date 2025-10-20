@@ -9,9 +9,11 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
 import { Graph } from './graph.ts'
 import { graphStep } from '@vltpkg/output'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
+  allowScripts: string
 }
 
 export const update = async (options: UpdateOptions) => {
@@ -30,30 +32,42 @@ export const update = async (options: UpdateOptions) => {
   }
 
   const modifiers = GraphModifier.maybeLoad(options)
+  const remover = new RollbackRemove()
 
-  const done = graphStep('build')
-  const graph = await buildIdealFromStartingGraph({
-    ...options,
-    add: Object.assign(new Map(), { modifiedDependencies: false }),
-    remove: Object.assign(new Map(), { modifiedDependencies: false }),
-    graph: new Graph({ ...options, mainManifest }),
-    modifiers,
-  })
-  done()
+  try {
+    const done = graphStep('build')
+    const graph = await buildIdealFromStartingGraph({
+      ...options,
+      add: Object.assign(new Map(), { modifiedDependencies: false }),
+      remove: Object.assign(new Map(), {
+        modifiedDependencies: false,
+      }),
+      graph: new Graph({ ...options, mainManifest }),
+      modifiers,
+      remover,
+    })
+    done()
 
-  const act = actualLoad({
-    ...options,
-    mainManifest,
-    loadManifests: true,
-  })
+    const act = actualLoad({
+      ...options,
+      mainManifest,
+      loadManifests: true,
+    })
 
-  const diff = await reify({
-    ...options,
-    actual: act,
-    graph,
-    loadManifests: true,
-    modifiers,
-  })
+    const { buildQueue, diff } = await reify({
+      ...options,
+      actual: act,
+      graph,
+      loadManifests: true,
+      modifiers,
+      remover,
+    })
 
-  return { graph, diff }
+    return { buildQueue, graph, diff }
+    /* c8 ignore start */
+  } catch (err) {
+    await remover.rollback().catch(() => {})
+    throw err
+  }
+  /* c8 ignore stop */
 }

@@ -20,9 +20,11 @@ export const defaultEditor = () =>
   : 'vi')
 
 const canonicalCommands = {
+  build: 'build',
   cache: 'cache',
   ci: 'ci',
   config: 'config',
+  docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
   help: 'help',
@@ -51,15 +53,19 @@ const aliases = {
   i: 'install',
   add: 'install',
   rm: 'uninstall',
-  u: 'uninstall',
+  u: 'update',
+  p: 'pkg',
+  pub: 'publish',
+  q: 'query',
+  b: 'build',
   r: 'run',
   'run-script': 'run',
   rx: 'run-exec',
+  s: 'serve',
   x: 'exec',
   xl: 'exec-local',
   h: 'help',
   '?': 'help',
-  conf: 'config',
   ls: 'list',
   xc: 'exec-cache',
 } as const
@@ -427,11 +433,13 @@ export const definition = j
   .opt({
     scope: {
       short: 's',
+      hint: 'query',
       description:
         'Set to filter the scope of an operation using a DSS Query.',
     },
     target: {
       short: 't',
+      hint: 'query',
       description:
         'Set to select packages using a DSS Query selector.',
     },
@@ -478,11 +486,16 @@ export const definition = j
 
   .opt({
     config: {
-      hint: 'user | project',
-      description: `Specify whether to operate on user-level or project-level
-                    configuration files when running \`vlt config\` commands.`,
-      validOptions: ['user', 'project'] as const,
-      default: 'project',
+      hint: 'all | user | project',
+      description: `Specify which configuration to show or operate on when running
+                    \`vlt config\` commands. For read operations (get, pick, list):
+                    \`all\` shows merged configuration from both user and project
+                    files (default). For write operations (set, delete, edit):
+                    defaults to \`project\`. \`user\` shows/modifies only user-level
+                    configuration, \`project\` shows/modifies only project-level
+                    configuration.`,
+      validOptions: ['all', 'user', 'project'] as const,
+      default: 'all',
     },
 
     editor: {
@@ -632,6 +645,23 @@ export const definition = j
       description:
         'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
     },
+    'lockfile-only': {
+      description:
+        'Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.',
+    },
+  })
+  .opt({
+    'allow-scripts': {
+      hint: 'query',
+      description: `Filter which packages are allowed to run lifecycle scripts using DSS query syntax.
+                    When provided, only packages matching the query will execute their
+                    install, preinstall, postinstall, prepare, preprepare, and postprepare scripts.
+                    Defaults to ':not(*)' which means no scripts will be run.
+                    
+                    Example: --allow-scripts=":root > *, #my-package"
+                    Runs scripts only for direct dependencies of the current project and any occurrences
+                    of a specific dependency with the name "my-package" anywhere in the dependency graph.`,
+    },
   })
   .opt({
     access: {
@@ -671,6 +701,10 @@ export const definition = j
     help: {
       short: 'h',
       description: 'Print helpful information',
+    },
+    all: {
+      short: 'a',
+      description: 'Show all commands, bins, and flags',
     },
   })
 

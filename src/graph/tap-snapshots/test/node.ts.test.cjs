@@ -8,6 +8,7 @@
 exports[`test/node.ts > TAP > Node > should print with special tag name 1`] = `
 Node [@vltpkg/graph.Node] {
   confused: false,
+  extracted: false,
   edgesIn: Set(0) {},
   edgesOut: Map(0) {},
   workspaces: undefined,
@@ -22,7 +23,10 @@ Node [@vltpkg/graph.Node] {
   modifier: undefined,
   version: '1.0.0',
   resolved: undefined,
-  platform: undefined
+  platform: undefined,
+  bins: undefined,
+  built: false,
+  buildState: 'none'
 }
 `
 
@@ -40,7 +44,8 @@ exports[`test/node.ts > TAP > Node > should serialize node to JSON 1`] = `
   "projectRoot": "{ROOT}",
   "dev": false,
   "optional": false,
-  "confused": false
+  "confused": false,
+  "buildState": "none"
 }
 `
 
@@ -90,6 +95,7 @@ workspace:a
 
 exports[`test/node.ts > TAP > rawManifest getter and setter > should serialize node to JSON 1`] = `
 Object {
+  "buildState": "none",
   "confused": true,
   "dev": false,
   "id": "··foo@1.0.0",

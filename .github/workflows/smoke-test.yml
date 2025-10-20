@@ -56,7 +56,6 @@ jobs:
 
           echo "value=false" >> "$GITHUB_OUTPUT"
 
-
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
     needs: pre-check
@@ -74,20 +73,12 @@ jobs:
           - name: macOS
             os: macos-latest
             shell: bash
-          - name: macOS Intel
-            os: macos-13
-            shell: bash
           - name: Windows
             os: windows-latest
             shell: bash
-          - name: Windows Powershell
-            os: windows-latest
-            shell: powershell
         exclude:
           - node-version: '24.x'
           - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
-          - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
-          - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
       fail-fast: false
 
     steps:

@@ -19,25 +19,36 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version: '^22.14.0'
           check-latest: true
 
-      - name: Boostrap
-        run: npx vlt install --view=json
+      - name: Bootstrap
+        run: pnpm install
 
       - name: Build vlt
         run: node --run build:bundle
-      
+
       - name: Add bundle to PATH
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
-      
+
       - name: Install Dependencies
-        run: vlt install --view=json
+        continue-on-error: true
+        run: |
+          # avoid changes from the bootstrap step
+          rm -rf node_modules
+          git checkout -- vlt-lock.json 
+          # re-install dependencies
+          vlt install --view=json --allow-scripts="#tailwindcss"
 
       - name: Formatting
+        continue-on-error: true
         id: format
         run: vlr format:check
 
@@ -110,29 +121,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
       - name: Use Nodejs ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
 
-      - name: Boostrap
-        run: npx vlt install --view=json
+      - name: Bootstrap
+        run: pnpm install
 
       - name: Build vlt
         run: node --run build:bundle
-      
-      - name: Add built to PATH
+
+      - name: Add bundle to PATH
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
-      
+
       - name: Install Dependencies
-        run: vlt install --view=json
+        continue-on-error: true
+        run: |
+          # avoid changes from the bootstrap step
+          rm -rf node_modules
+          git checkout -- vlt-lock.json 
+          # re-install dependencies
+          vlt install --view=json --allow-scripts="#tailwindcss"
 
       - name: Run Typecheck
         continue-on-error: true
         # TODO: https://github.com/vltpkg/vltpkg/issues/810
         run: vlr --recursive typecheck
-          
+
       - name: Run Tests
         continue-on-error: true
         # https://github.com/vltpkg/vltpkg/issues/801

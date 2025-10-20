@@ -3,6 +3,10 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../load-command.ts'
 import { loadCommand } from '../load-command.ts'
 import { getCommand, getSortedCliOptionsWithDescriptions } from '../config/definition.ts'
+import {
+  generateDefaultHelp,
+  generateFullHelp,
+} from '../custom-help.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -20,7 +24,14 @@ export const usage: CommandUsage = () =>
 export const command: CommandFn<string> = async conf => {
   // If no positional arguments, show general help
   if (conf.positionals.length === 0) {
-    return conf.jack.usage()
+    // Check for color support (prefer explicit config, fall back to TTY detection)
+    const colors = conf.values.color ?? process.stdout.isTTY
+
+    // Use full custom help if --all flag is set
+    if (conf.values.all) {
+      return generateFullHelp(colors)
+    }
+    return generateDefaultHelp(colors)
   }
 
   // Get the command name from the first positional argument

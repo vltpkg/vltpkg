@@ -892,3 +892,54 @@ t.test('quote things properly only as needed', async t => {
     stderr: '',
   })
 })
+
+t.test('node-gyp shim injection into PATH', async t => {
+  const MOCK_SHIM_DIR = '/mock/shim/directory'
+
+  const { exec: execWithMock } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '../src/aliasRunner.ts': {
+      getNodeGypShim: async () => '/mock/shim/directory/node-gyp',
+      getNodeGypShimDir: async () => MOCK_SHIM_DIR,
+      hasNodeGypReference: (cmd: string) => cmd.includes('node-gyp'),
+    },
+  })
+
+  const cwd = t.testdir({
+    node_modules: { '.bin': {} },
+  })
+
+  t.test('exec with node-gyp command injects shim dir', async t => {
+    // Use shell command that mentions node-gyp to trigger shim injection
+    const result = await execWithMock({
+      arg0: 'echo "would call node-gyp here"',
+      cwd,
+      projectRoot: cwd,
+      'script-shell': true,
+    })
+
+    // The command should succeed since we're just echoing
+    t.equal(result.status, 0, 'command executed successfully')
+    t.match(
+      result.stdout,
+      /would call node-gyp here/,
+      'output contains expected text',
+    )
+  })
+
+  t.test(
+    'exec without node-gyp does not inject shim dir',
+    async t => {
+      const result = await execWithMock({
+        arg0: 'echo',
+        args: ['hello'],
+        cwd,
+        projectRoot: cwd,
+      })
+
+      t.equal(result.status, 0)
+      t.match(result.stdout, 'hello')
+    },
+  )
+})

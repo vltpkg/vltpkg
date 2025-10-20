@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/run",
   "description": "Run package.json scripts and execute commands",
-  "version": "0.0.0-30",
+  "version": "1.0.0-rc.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -24,6 +24,7 @@
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "@vltpkg/xdg": "workspace:*",
     "foreground-child": "^3.3.1",
     "walk-up-path": "catalog:"
   },

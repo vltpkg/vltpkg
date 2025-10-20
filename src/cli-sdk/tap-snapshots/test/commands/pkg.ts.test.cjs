@@ -37,6 +37,10 @@ Usage:
 
 Get or manipulate package.json values
 
+  Aliases
+
+    ​p
+
   Subcommands
 
     get

@@ -1,3 +1,4 @@
+import 'varlock/auto-load'
 import { spawn } from 'node:child_process'
 import * as esbuild from 'esbuild'
 import { rm, mkdir, cp } from 'node:fs/promises'
@@ -42,6 +43,7 @@ const js = async () => {
     logLevel: 'info',
     define: {
       'process.env.NODE_ENV': `"${argv.production ? 'production' : 'development'}"`,
+      __VLT_FORCE_HOSTED: `"${process.env.__VLT_FORCE_HOSTED || ''}"`,
     },
   } satisfies esbuild.BuildOptions
   if (argv.watch) {

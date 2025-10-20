@@ -78,6 +78,7 @@ t.test('start listening', async t => {
     projectRoot: resolve(dir, 'projects/x'),
     scurry: new PathScurry(dir),
     packageInfo: new PackageInfoClient(),
+    allowScripts: '*',
   }
 
   const s1 = createServer({
@@ -277,6 +278,7 @@ t.test(
       scurry: new PathScurry(dir),
       packageInfo: new PackageInfoClient(),
       publicDir: resolve(dir, 's/public'),
+      allowScripts: '*',
     }
 
     const s = createServer(opts as unknown as VltServerOptions)

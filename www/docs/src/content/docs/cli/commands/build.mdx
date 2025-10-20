@@ -1,0 +1,217 @@
+---
+title: vlt build
+sidebar:
+  label: build
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt build [options]" title="Terminal" lang="bash" />
+
+The `vlt build` command represents a fundamental shift in how
+JavaScript package managers handle post-installation tasks. By
+separating the build phase from installation, `vlt` gives you
+unprecedented control over which packages run lifecycle scripts in
+your project.
+
+## Breaking the Traditional Model
+
+Traditional package managers conflate installation with building –
+when you run `npm install`, packages are downloaded, extracted, and
+their lifecycle scripts run automatically. This monolithic approach
+has several drawbacks:
+
+- **Security risks**: Malicious packages can execute arbitrary code
+  during installation
+- **Limited control**: You can't selectively enable or disable scripts
+  for specific packages
+
+With `vlt`, we've reimagined this process as two distinct phases:
+
+1. **`vlt install`** – Downloads and extracts packages into
+   `node_modules`
+2. **`vlt build`** – Runs lifecycle scripts and performs additional
+   binary linking when needed
+
+This separation leverages the full power of our Dependency Selector
+Syntax (DSS) query language, allowing you to precisely control which
+packages are allowed to execute scripts.
+
+## Basic Usage
+
+The simplest workflow mirrors traditional package managers but with
+explicit steps:
+
+<Code
+  code={`# Step 1: Install packages (no scripts run)
+$ vlt install
+
+# Step 2: Build all packages that need building
+
+$ vlt build`} title="Terminal" lang="bash" />
+
+The build process is idempotent – it only performs work that's
+actually needed based on the current state of your dependency graph.
+If a package has already been built, `vlt build` skips it
+automatically.
+
+## Selective Building with DSS Queries
+
+The real power of `vlt build` comes from its integration with our
+query language. You can use any DSS selector to target specific
+packages as a positional argument to the `vlt build` command:
+
+<Code
+  code={`# Build only packages matching a specific target query
+$ vlt build ":root > *"
+
+# Build all packages except those marked as dev dependencies
+
+$ vlt build ":not(:dev)"`} title="Terminal" lang="bash" />
+
+### Using the target option
+
+Use the `--target` option to control precisely which packages to
+build. This gives you fine-grained control over script execution:
+
+<Code
+  code={`# Build only a specific package
+$ vlt build --target="#my-package"
+
+# Build everything except packages with no author
+
+$ vlt build --target=":not([author])"`} title="Terminal" lang="bash"
+/>
+
+If you want to persist target configuration you can store it to your
+`vlt.json` config file using the `vlt config` command:
+
+<Code
+  code={`# Persists a target query to the project vlt.json file
+$ vlt config set "command.build.target=<query>"
+
+# Build (with no args) uses the target info from vlt.json
+
+$ vlt build`} title="Terminal" lang="bash" />
+
+## Default build target
+
+By default `vlt build` uses a target value of
+`:scripts:not(:built):not(:malware)` targetting only not build
+packages that have lifecycle scripts and do not have any malware
+alerts associated with it.
+
+## Examples
+
+### Excluding malware and any package not from a specific scope
+
+In this example we're only allowing scripts from packages that do not
+have a `malware` alert associated to it and packages from a specific,
+well known scope name.
+
+<Code
+  code={`# Install without running any scripts
+$ vlt install
+
+# Look up if there are packages with malware alerts in my current install
+
+$ vlt query ":malware"
+
+# Look up what packages have build scripts and are not from a known scope
+
+$ vlt query ":scripts:not([name^=@myscope])"
+
+# Build only packages from my known scope that are NOT flagged as malware
+
+$ vlt build --target="\*[name^=@myscope]:not(:malware)"`}
+title="Terminal" lang="bash" />
+
+### Exact dependency names
+
+Maybe you only trust certain critical build tools to run scripts:
+
+<Code
+  code={`# Install packages
+$ vlt install
+
+# Only build the specific tools you trust
+
+$ vlt build --target="#esbuild, #typescript"`} title="Terminal"
+lang="bash" />
+
+## Options
+
+### `--target`
+
+The `--target` option accepts any valid DSS query to filter which
+packages to build:
+
+<Code
+  code={`# Build only direct dependencies
+$ vlt build --target=":root > *"
+
+# Build only packages with native bindings
+
+$ vlt build --target=":has-binary"`} title="Terminal" lang="bash" />
+
+It's usage is interchangeable with a positional argument, you should
+use either one or the other.
+
+### Build State Persistence
+
+The build state is tracked in vlt's `node_modules` metadata. Each
+package node stores its build state (`needed`, `built`, or `failed`).
+
+It's possible to retrieve the already built files using the `:built`
+query selector:
+
+<Code
+  code={`# Query all built packages
+$ vlt query ":built"
+
+# Return all packages that have scripts that needs to be built
+
+$ vlt query ":scripts:not(:built)"`} title="Terminal" lang="bash" />
+
+## Best Practices
+
+1. **Start with `vlt install`** – Always install first, then decide
+   what to build
+2. **Use queries for precision** – Target specific packages or
+   patterns rather than building everything
+3. **Persist your choices** – Save your target query to `vlt.json` for
+   consistent builds
+4. **Review regularly** – Periodically audit your target query to
+   ensure it matches your security requirements, continuing to
+   maintain and evolve it as you add and update packages
+
+## Migration from Traditional Package Managers
+
+If you're coming from npm, running install followed by build is the
+functional equivalent of the traditional package manager behavior:
+
+<Code
+  code={`# Traditional approach
+$ vlt install
+$ vlt build`}
+  title="Terminal"
+  lang="bash"
+/>
+
+The difference being that, as mentioned previously, `vlt build` by
+default protects you from running scripts of dependencies with known
+malware.
+
+If you are really trying to emulate the legacy npm behavior of running
+all lifecycle scripts, you can use the `--allow-scripts="*"` options
+to opt-in to all scripts and have the `vlt` client work as a
+traditional package manager would:
+
+<Code
+  code={`# Bad: Legacy npm-style installation (not recommended)
+$ vlt install --allow-scripts="*"`}
+  title="Terminal"
+  lang="bash"
+/>

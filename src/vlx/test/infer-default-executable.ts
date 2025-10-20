@@ -4,14 +4,6 @@ import { inferDefaultExecutable } from '../src/infer-default-executable.ts'
 t.strictSame(
   inferDefaultExecutable({
     name: 'xyz',
-    bin: 'blah.js',
-  }),
-  ['xyz', 'blah.js'],
-)
-
-t.strictSame(
-  inferDefaultExecutable({
-    name: 'xyz',
     bin: { single: 'blah.js' },
   }),
   ['single', 'blah.js'],

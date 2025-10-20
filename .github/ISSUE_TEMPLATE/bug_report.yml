@@ -1,7 +1,7 @@
 name: 🐛 Bug Report
 description: Report a bug or unexpected behavior
-title: "[BUG] "
-labels: ["bug", "needs-triage"]
+title: '[BUG] '
+labels: ['bug', 'needs-triage']
 assignees: []
 body:
   - type: markdown
@@ -15,7 +15,7 @@ body:
     attributes:
       label: 📋 Bug Description
       description: A clear and concise description of the bug.
-      placeholder: "Describe what the bug is..."
+      placeholder: 'Describe what the bug is...'
     validations:
       required: true
 
@@ -24,7 +24,7 @@ body:
     attributes:
       label: ✅ Expected Behavior
       description: What did you expect to happen?
-      placeholder: "I expected..."
+      placeholder: 'I expected...'
     validations:
       required: true
 
@@ -33,7 +33,7 @@ body:
     attributes:
       label: ❌ Actual Behavior
       description: What actually happened instead?
-      placeholder: "Instead, what happened was..."
+      placeholder: 'Instead, what happened was...'
     validations:
       required: true
 
@@ -74,7 +74,7 @@ body:
     attributes:
       label: 📜 Error Logs/Console Output
       description: Please paste any relevant error messages or console output
-      placeholder: "Paste error logs here..."
+      placeholder: 'Paste error logs here...'
       render: shell
     validations:
       required: false
@@ -84,7 +84,7 @@ body:
     attributes:
       label: 🔬 Minimal Reproduction Case
       description: If possible, provide a minimal code example that reproduces the issue
-      placeholder: "Minimal code example..."
+      placeholder: 'Minimal code example...'
       render: javascript
     validations:
       required: false
@@ -145,7 +145,7 @@ body:
     attributes:
       label: 🛠️ Workaround
       description: Have you found any workaround for this issue?
-      placeholder: "Temporary workaround (if any)..."
+      placeholder: 'Temporary workaround (if any)...'
     validations:
       required: false
 
@@ -154,7 +154,7 @@ body:
     attributes:
       label: 📎 Additional Context
       description: Add any other context about the problem here (screenshots, related issues, etc.)
-      placeholder: "Any additional information..."
+      placeholder: 'Any additional information...'
     validations:
       required: false
 

@@ -2,8 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from '@/components/ui/theme-provider.tsx'
 import { Router } from '@/routes.tsx'
+import { useAuth } from '@/components/hooks/use-auth.tsx'
 
-const App = () => <Router />
+const App = () => {
+  // Initialize auth on mount
+  useAuth()
+  return <Router />
+}
 
 const rootElement = document.getElementById('app')
 if (rootElement) {

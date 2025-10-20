@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cli-sdk",
   "description": "The source for the vlt CLI",
-  "version": "0.0.0-30",
+  "version": "1.0.0-rc.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -48,7 +48,9 @@
     "@vltpkg/workspaces": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.6",
+    "chalk": "^5.6.2",
     "graph-run": "catalog:",
+    "hosted-git-info": "^8.1.0",
     "ink": "^6.2.2",
     "ink-spinner": "^5.0.0",
     "jackspeak": "^4.1.1",
@@ -56,6 +58,7 @@
     "minimatch": "catalog:",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
+    "polite-json": "catalog:",
     "pretty-bytes": "^7.0.1",
     "react": "^19.1.1",
     "react-devtools-core": "^4.28.5",

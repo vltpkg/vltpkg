@@ -20,7 +20,14 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··foo@1.0.0': [ 0, 'foo', <3 empty items>, { name: 'foo', version: '1.0.0' } ],
+    '··foo@1.0.0': [
+      0,
+      'foo',
+      <3 empty items>,
+      { name: 'foo', version: '1.0.0', bin: [Object] },
+      <2 empty items>,
+      { foo: './bin.js' }
+    ],
     'file·a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ],
     'git·github%3Afoo§bar·': [ 0, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ]
   },
@@ -44,7 +51,14 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··foo@1.0.0': [ 0, 'foo', <3 empty items>, { name: 'foo', version: '1.0.0' } ],
+    '··foo@1.0.0': [
+      0,
+      'foo',
+      <3 empty items>,
+      { name: 'foo', version: '1.0.0', bin: [Object] },
+      <2 empty items>,
+      { foo: './bin.js' }
+    ],
     'file·a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ]
   },
   edges: {
@@ -67,7 +81,14 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··foo@1.0.0': [ 0, 'foo', <3 empty items>, { name: 'foo', version: '1.0.0' } ]
+    '··foo@1.0.0': [
+      0,
+      'foo',
+      <3 empty items>,
+      { name: 'foo', version: '1.0.0', bin: [Object] },
+      <2 empty items>,
+      { foo: './bin.js' }
+    ]
   },
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
@@ -94,7 +115,14 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
       <3 empty items>,
       { name: 'baz', version: '1.0.0', dist: [Object] }
     ],
-    '··foo@1.0.0': [ 0, 'foo', <3 empty items>, { name: 'foo', version: '1.0.0' } ]
+    '··foo@1.0.0': [
+      0,
+      'foo',
+      <3 empty items>,
+      { name: 'foo', version: '1.0.0', bin: [Object] },
+      <2 empty items>,
+      { foo: './bin.js' }
+    ]
   },
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
@@ -109,9 +137,13 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
 Set {
   &ref_1 Node {
+    "bins": undefined,
+    "buildState": "none",
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
+    "extracted": false,
     "graph": "Graph {}",
     "id": "file·.",
     "importer": true,
@@ -221,9 +253,13 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "bins": undefined,
+          "buildState": "none",
+          "built": false,
           "confused": false,
           "edgesIn": Set {},
           "edgesOut": Map {},
+          "extracted": false,
           "graph": "Graph {}",
           "id": "workspace·packages§b",
           "importer": true,
@@ -338,9 +374,13 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "bins": undefined,
+          "buildState": "none",
+          "built": false,
           "confused": false,
           "edgesIn": Set {},
           "edgesOut": Map {},
+          "extracted": false,
           "graph": "Graph {}",
           "id": "workspace·packages§a",
           "importer": true,
@@ -365,9 +405,13 @@ Set {
     },
   },
   Node {
+    "bins": undefined,
+    "buildState": "none",
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
+    "extracted": false,
     "graph": "Graph {}",
     "id": "workspace·packages§b",
     "importer": true,
@@ -388,9 +432,13 @@ Set {
     "workspaces": undefined,
   },
   Node {
+    "bins": undefined,
+    "buildState": "none",
+    "built": false,
     "confused": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
+    "extracted": false,
     "graph": "Graph {}",
     "id": "workspace·packages§a",
     "importer": true,

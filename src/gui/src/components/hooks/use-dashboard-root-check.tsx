@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.ts'
 import { getFromConfig } from '@/lib/vlt-config.ts'
+import { isHostedEnvironment } from '@/lib/environment.ts'
 
 export const useDashboardRootCheck = (): {
   hasDashboard: boolean
@@ -12,8 +13,19 @@ export const useDashboardRootCheck = (): {
   const [dashboardRoots, setDashboardRoots] = useState<
     string[] | null
   >(null)
+  const isHostedMode = isHostedEnvironment()
 
   const fetchDashboardRoot = async () => {
+    // Skip fetching in hosted environments
+    if (isHostedMode) {
+      setIsLoading(false)
+      setHasDashboard(false)
+      console.info(
+        'Dashboard root check skipped in hosted environment',
+      )
+      return
+    }
+
     try {
       setIsLoading(true)
       const result = (await getFromConfig({

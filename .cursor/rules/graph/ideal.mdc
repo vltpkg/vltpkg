@@ -30,6 +30,7 @@ actions:
       2. Merging user-provided `add`/`remove` requests with importer manifest deltas.
       3. Expanding dependencies by fetching manifests/artifacts and recursively placing packages.
       4. Reusing existing nodes that satisfy specs to minimize network and duplication.
+      5. Optionally extracting tarballs during graph construction for improved performance (early extraction).
 
       Entry point: `src/graph/src/ideal/build.ts` → `ideal.build(options)`
 
@@ -64,6 +65,16 @@ actions:
       - Recursively descends into each newly placed node's dependencies, applying `@vltpkg/spec` parsing and honoring modifiers if present.
       - Ensures added nodes have consistent `registry`, `resolved`, and `integrity` fields as available.
 
+  - type: architecture_guide
+    message: |
+      ## Early Extraction Feature (`append-nodes.ts`)
+
+      - When an `actual` graph is provided to the build process, the Ideal builder can perform early extraction of tarballs.
+      - As nodes are placed into the graph, if they don't exist in the actual graph and are destined for the vlt store, extraction begins immediately.
+      - Extraction happens in parallel with graph construction, improving overall install performance.
+      - The `node.extracted` property tracks whether a node has been extracted to avoid duplicate extractions.
+      - This optimization is particularly beneficial when no cached information is available.
+
   - type: integration_guide
     message: |
       ## Options and Inputs
@@ -72,6 +83,7 @@ actions:
       - `packageInfo: PackageInfoClient` — Required for remote manifest and artifact retrieval.
       - `add?: AddImportersDependenciesMap` — Explicit dependencies to add per importer.
       - `remove?: RemoveImportersDependenciesMap` — Explicit dependency names to remove per importer.
+      - `actual?: Graph` — Optional actual graph to enable early extraction optimization during ideal graph construction.
       - Modifiers integration — If `modifiers` are provided, selectors can adjust specs during resolution; Ideal builder will then record modifier info on nodes for downstream awareness.
 
       ### Behavior and Guarantees
@@ -101,9 +113,22 @@ examples:
       const g = await ideal.build({ projectRoot, packageInfo, packageJson, scurry, add, remove })
     output: "Importer deltas merged with user-provided add/remove and expanded"
 
+  - input: |
+      // Build ideal with early extraction optimization
+      import { ideal, actual } from '@vltpkg/graph'
+      const actualGraph = actual.load({ projectRoot, packageJson, scurry })
+      const idealGraph = await ideal.build({ 
+        projectRoot, 
+        packageInfo, 
+        packageJson, 
+        scurry,
+        actual: actualGraph 
+      })
+    output: "Ideal graph built with early tarball extraction for improved performance"
+
 metadata:
   priority: high
-  version: 1.0
+  version: 1.1
   tags:
     - graph
     - ideal

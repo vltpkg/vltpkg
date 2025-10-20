@@ -1,4 +1,5 @@
 import type { Action, State } from '@/state/types.ts'
+import { hasLocalServerFeatures } from '@/lib/environment.ts'
 
 export type RequestDataOptions = {
   stamp: State['stamp']
@@ -40,6 +41,14 @@ export const startDashboardData = ({
   updateErrorCause,
   stamp,
 }: StartDashboardDataOptions) => {
+  // Skip in hosted environments
+  if (!hasLocalServerFeatures()) {
+    console.info(
+      'Dashboard data fetching disabled in hosted environment',
+    )
+    return
+  }
+
   async function _startDashboard() {
     const dashboardData = await requestData<State['dashboard']>({
       url: '/dashboard.json',
@@ -68,6 +77,12 @@ export const startAppData = ({
   navigate,
   stamp,
 }: StartAppDataOptions) => {
+  // Skip in hosted environments
+  if (!hasLocalServerFeatures()) {
+    console.info('App data fetching disabled in hosted environment')
+    return
+  }
+
   async function _startAppData() {
     const appData = await requestData<State['appData']>({
       url: '/app-data.json',

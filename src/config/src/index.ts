@@ -27,7 +27,10 @@ export const del = async (conf: LoadedConfig) => {
     })
   }
 
-  await conf.deleteConfigKeys(conf.get('config'), fields)
+  const configOption = conf.get('config')
+  const whichConfig =
+    configOption === 'all' ? 'project' : configOption
+  await conf.deleteConfigKeys(whichConfig, fields)
 }
 
 export const get = async (conf: LoadedConfig) => {
@@ -74,7 +77,10 @@ export const edit = async (conf: LoadedConfig) => {
   if (!command) {
     throw error(`editor is empty`)
   }
-  await conf.editConfigFile(conf.get('config'), file => {
+  const configOption = conf.get('config')
+  const whichConfig =
+    configOption === 'all' ? 'project' : configOption
+  await conf.editConfigFile(whichConfig, file => {
     args.push(file)
     const res = spawnSync(command, args, {
       stdio: 'inherit',
@@ -93,11 +99,15 @@ export const set = async (conf: LoadedConfig) => {
   const pairs = conf.positionals.slice(1)
   if (!pairs.length) {
     // Create an empty config file
-    await conf.addConfigToFile(conf.get('config'), {})
+    const configOption = conf.get('config')
+    const whichConfig =
+      configOption === 'all' ? 'project' : configOption
+    await conf.addConfigToFile(whichConfig, {})
     return
   }
 
-  const which = conf.get('config')
+  const configOption = conf.get('config')
+  const which = configOption === 'all' ? 'project' : configOption
 
   // separate dot-prop paths from simple keys for different handling
   // any keys that include a dot (.) will be treated as dotPropPairs
@@ -148,23 +158,45 @@ export const set = async (conf: LoadedConfig) => {
     }
   }
 
-  // Handle dot-prop paths for record fields
+  // Handle dot-prop paths for record fields and nested properties
   if (dotPropPairs.length > 0) {
-    for (const { field, subKey, value } of dotPropPairs) {
+    // Separate record fields from nested properties
+    const recordPairs: {
+      field: string
+      subKey: string
+      value: string
+    }[] = []
+    const nestedProps: { key: string; value: string }[] = []
+
+    for (const { key, field, subKey, value } of dotPropPairs) {
       if (isRecordField(field)) {
-        // For record fields, we add entries in the format field=key=value
-        const recordPair = `${field}=${subKey}=${value}`
-        try {
-          const parsed = conf.jack.parseRaw([
-            `--${recordPair}`,
-          ]).values
-          await conf.addConfigToFile(which, pairsToRecords(parsed))
-          /* c8 ignore start */
-        } catch (err) {
-          handleSetError([recordPair], err)
-        }
-        /* c8 ignore end */
+        recordPairs.push({ field, subKey, value })
+      } else {
+        nestedProps.push({ key, value })
       }
+    }
+
+    // Handle record fields
+    for (const { field, subKey, value } of recordPairs) {
+      // For record fields, we add entries in the format field=key=value
+      const recordPair = `${field}=${subKey}=${value}`
+      try {
+        const parsed = conf.jack.parseRaw([`--${recordPair}`]).values
+        await conf.addConfigToFile(which, pairsToRecords(parsed))
+        /* c8 ignore start */
+      } catch (err) {
+        handleSetError([recordPair], err)
+      }
+      /* c8 ignore end */
+    }
+
+    // Handle nested properties using dot-prop
+    if (nestedProps.length > 0) {
+      const nested: Record<string, any> = {}
+      for (const { key, value } of nestedProps) {
+        dotProp.set(nested, key, value)
+      }
+      await conf.addConfigToFile(which, nested)
     }
   }
 }

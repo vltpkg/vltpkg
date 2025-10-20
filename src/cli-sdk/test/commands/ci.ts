@@ -1,6 +1,6 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { Graph } from '@vltpkg/graph'
+import type { CIResult } from '../../src/commands/ci.ts'
 
 const options = {}
 let log = ''
@@ -30,6 +30,7 @@ t.test('command execution', async t => {
     positionals: [],
     values: {},
     options,
+    get: () => undefined,
   } as unknown as LoadedConfig)
   t.matchSnapshot(
     log,
@@ -41,8 +42,10 @@ t.test('views', t => {
   // Test json view
   t.strictSame(
     Command.views.json({
-      toJSON: () => ({ ci: true }),
-    } as unknown as Graph),
+      graph: {
+        toJSON: () => ({ ci: true }),
+      },
+    } as unknown as CIResult),
     { ci: true },
     'json view returns graph.toJSON()',
   )
@@ -75,5 +78,39 @@ t.test('command description and examples', t => {
     'mentions expect-lockfile',
   )
 
+  t.end()
+})
+
+t.test('lockfile-only flag', async t => {
+  const options = {
+    'lockfile-only': true,
+  }
+
+  let log = ''
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/ci.ts')
+  >('../../src/commands/ci.ts', {
+    '@vltpkg/graph': {
+      async install(opts: any) {
+        log += `install expectLockfile=${opts.expectLockfile} cleanInstall=${opts.cleanInstall} lockfileOnly=${opts.lockfileOnly}\n`
+        return {
+          graph: {},
+        }
+      },
+    },
+  })
+
+  await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+
+  t.match(
+    log,
+    /install expectLockfile=true cleanInstall=true lockfileOnly=true/,
+    'should pass lockfileOnly along with other ci options',
+  )
   t.end()
 })
