@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
+import { styleText as utilStyleText } from 'node:util'
 
 export const defaultView =
   // If stdout is a TTY, use human output
@@ -681,6 +682,88 @@ export const getSortedCliOptions = () => {
     if (!def) throw error('invalid key found', { found: k })
     if (def.type === 'boolean') return `--${k}`
     return `--${k}=<${def.hint ?? k}>`
+  })
+}
+
+export function getSortedCliOptionsWithDescriptions() {
+  const isTTY = process.stdout.isTTY
+  const defs = definition.toJSON()
+
+  const toShortPlain = (key: string) => {
+    const def = defs[key as keyof typeof defs]
+    return def?.short ? `-${def.short},` : ' '
+  }
+
+  const toNamePlain = (key: string) => {
+    const def = defs[key as keyof typeof defs]
+    const hint = def?.type === 'boolean' ? '' : `=<${def?.hint ?? key}>`
+    return `--${key}${hint}`
+  }
+
+  const keys = getSortedKeys()
+  // build rows for measuring and rendering
+  const shortPlains = keys.map(k => toShortPlain(k))
+  const namePlains = keys.map(k => toNamePlain(k))
+  const shortStyleds = keys.map(k => {
+    const s = toShortPlain(k)
+    return isTTY && s.trim() ? utilStyleText(['bold'], s, { validateStream: false }) : s
+  })
+  const nameStyleds = keys.map(k => {
+    const def = defs[k as keyof typeof defs]
+    const plain = toNamePlain(k)
+    if (!isTTY) return plain
+    if (def?.type === 'boolean') {
+      return utilStyleText(['bold'], plain, { validateStream: false })
+    }
+    const eqIdx = plain.indexOf('=')
+    if (eqIdx === -1) return utilStyleText(['bold'], plain, { validateStream: false })
+    const main = plain.slice(0, eqIdx)
+    const hint = plain.slice(eqIdx)
+    return (
+      utilStyleText(['bold'], main, { validateStream: false }) +
+      utilStyleText(['dim'], hint, { validateStream: false })
+    )
+  })
+
+  // column sizing similar to the reference implementation
+  const FIRST_PADDING_LEFT = 0
+  const FIRST_PADDING_RIGHT = 0
+  const NAME_PADDING_LEFT = 1
+  const NAME_PADDING_RIGHT = 2
+  const DESC_PADDING_LEFT = 0
+  const DESC_PADDING_RIGHT = 0
+
+  const firstColWidth = Math.max(shortPlains.reduce((m, s) => Math.max(m, s.length), 0), 3)
+  const nameColWidth = Math.max(namePlains.reduce((m, s) => Math.max(m, s.length), 0), 19)
+  const padRight = (txt: string, plainLen: number, widthTarget: number) =>
+    `${txt}${' '.repeat(Math.max(0, widthTarget - plainLen))}`
+  const padLeft = (txt: string, plainLen: number, widthTarget: number) =>
+    ' '.repeat(Math.max(0, widthTarget - plainLen)) + txt
+
+  return keys.map((k: string, i) => {
+    const def = defs[k]
+    /* c8 ignore next */
+    if (!def) throw error('invalid key found', { found: k })
+
+    const shortPlain = shortPlains[i] ?? ' '
+    const shortStyled = shortStyleds[i] ?? ' '
+    const namePlain = namePlains[i] ?? ''
+    const nameStyled = nameStyleds[i] ?? ''
+    const desc = (def.description ?? '').replace(/\s+/g, ' ').trim()
+
+    const firstPadL = ' '.repeat(FIRST_PADDING_LEFT)
+    const firstCol = padLeft(shortStyled, shortPlain.length, firstColWidth)
+    const firstPadR = ' '.repeat(FIRST_PADDING_RIGHT)
+
+    const namePadL = ' '.repeat(NAME_PADDING_LEFT)
+    const nameCol = padRight(nameStyled, namePlain.length, nameColWidth)
+    const namePadR = ' '.repeat(NAME_PADDING_RIGHT)
+
+    const descPadL = ' '.repeat(DESC_PADDING_LEFT)
+    const descPadR = ' '.repeat(DESC_PADDING_RIGHT)
+
+    const line = `${firstPadL}${firstCol}${firstPadR}${namePadL}${nameCol}${namePadR}${descPadL}${desc}${descPadR}`
+    return line.replace(/\s+$/u, '')
   })
 }
 

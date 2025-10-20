@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../load-command.ts'
 import { loadCommand } from '../load-command.ts'
-import { getCommand } from '../config/definition.ts'
+import { getCommand, getSortedCliOptionsWithDescriptions } from '../config/definition.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -34,6 +34,6 @@ export const command: CommandFn<string> = async conf => {
     })
   }
 
-  const command = await loadCommand(canonicalCmd)
-  return command.usage().usage()
+  const c = await loadCommand(canonicalCmd)
+  return c.usage().heading('Options', 2).description(getSortedCliOptionsWithDescriptions().join('\n'), { pre: true }).usage()
 }

@@ -4,7 +4,7 @@ import {
   styleText as utilStyleText,
 } from 'node:util'
 import { createSupportsColor } from 'supports-color'
-import { defaultView } from './config/definition.ts'
+import { defaultView, getSortedCliOptionsWithDescriptions } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
@@ -124,7 +124,7 @@ export const outputCommand = async <T>(
   const { usage, views, command } = cliCommand
 
   if (conf.values.help) {
-    return stdout(usage().usage())
+    return stdout(usage().heading('Options', 2).description(getSortedCliOptionsWithDescriptions().join('\n'), { pre: true }).usage())
   }
 
   const stdoutColor =
