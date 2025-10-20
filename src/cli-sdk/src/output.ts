@@ -127,10 +127,6 @@ export const outputCommand = async <T>(
 ) => {
   const { usage, views, command } = cliCommand
 
-  // if (conf.values.help) {
-  //   return stdout(usage().heading('Options', 2).description(getSortedCliOptionsWithDescriptions().join('\n'), { pre: true }).usage())
-  // }
-
   const stdoutColor =
     conf.values.color ?? supportsColor(process.stdout)
   const stderrColor =
