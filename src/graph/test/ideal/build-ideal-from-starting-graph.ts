@@ -59,6 +59,46 @@ const missingManifest = {
   name: 'missing',
   version: '1.0.0',
 }
+const esbuildManifest = {
+  name: 'esbuild',
+  version: '0.25.11',
+  optionalDependencies: {
+    '@esbuild/darwin-arm64': '0.25.11',
+    '@esbuild/linux-x64': '0.25.11',
+    '@esbuild/win32-x64': '0.25.11',
+  },
+}
+const esbuildDarwinArm64Manifest = {
+  name: '@esbuild/darwin-arm64',
+  version: '0.25.11',
+  os: ['darwin'],
+  cpu: ['arm64'],
+  dist: {
+    integrity:
+      'sha512-VekY0PBCukppoQrycFxUqkCojnTQhdec0vevUL/EDOCnXd9LKWqD/bHwMPzigIJXPhC59Vd1WFIL57SKs2mg4w==',
+  },
+}
+const esbuildLinuxX64Manifest = {
+  name: '@esbuild/linux-x64',
+  version: '0.25.11',
+  os: ['linux'],
+  cpu: ['x64'],
+  dist: {
+    integrity:
+      'sha512-Qr8AzcplUhGvdyUF08A1kHU3Vr2O88xxP0Tm8GcdVOUm25XYcMPp2YqSVHbLuXzYQMf9Bh/iKx7YPqECs6ffLA==',
+  },
+}
+const esbuildWin32X64Manifest = {
+  name: '@esbuild/win32-x64',
+  version: '0.25.11',
+  os: ['win32'],
+  cpu: ['x64'],
+  dist: {
+    integrity:
+      'sha512-D7Hpz6A2L4hzsRpPaCYkQnGOotdUpDzSGRIv9I+1ITdHROSFUWW95ZPZWQmGka1Fg7W3zFJowyn9WGwMJ0+KPA==',
+  },
+}
+
 const packageInfo = {
   async manifest(spec: Spec, options?: any) {
     if (spec.type === 'git') {
@@ -69,6 +109,15 @@ const packageInfo = {
         return bazManifest
       case 'missing':
         return missingManifest
+      case 'esbuild':
+        return esbuildManifest
+      case '@esbuild/darwin-arm64':
+        // Only return manifest for darwin-arm64 (simulates macos as the current platform)
+        return esbuildDarwinArm64Manifest
+      case '@esbuild/linux-x64':
+        return esbuildLinuxX64Manifest
+      case '@esbuild/win32-x64':
+        return esbuildWin32X64Manifest
       case 'linked':
       case 'link':
         return new PackageInfoClient(options).manifest(spec, options)
@@ -76,7 +125,8 @@ const packageInfo = {
         return null
     }
   },
-} as PackageInfoClient
+  async extract(): Promise<void> {},
+} as unknown as PackageInfoClient
 
 t.test('build from a virtual graph', async t => {
   const lockfileData: LockfileData = {
@@ -578,6 +628,57 @@ t.test('build from an actual graph', async t => {
     remove: new Map([
       [joinDepIDTuple(['file', '.']), new Set(['bar'])],
     ]) as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+
+  t.matchSnapshot(objectLikeOutput(graph))
+})
+
+t.test('optional subdeps binary distribution strategy', async t => {
+  const lockfileData: LockfileData = {
+    lockfileVersion: 0,
+    options: {},
+    nodes: {} as Record<DepID, LockfileNode>,
+    edges: {} as LockfileEdges,
+  }
+  const mainManifest = {
+    name: 'test-optional-strat',
+    version: '1.0.0',
+    dependencies: {
+      esbuild: '*',
+    },
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+    'package.json': JSON.stringify(mainManifest),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const actual = loadActual({
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    projectRoot,
+    loadManifests: true,
+    ...configData,
+  })
+
+  const virtual = loadVirtual({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  const graph = await buildIdealFromStartingGraph({
+    ...configData,
+    projectRoot,
+    packageInfo,
+    scurry: new PathScurry(projectRoot),
+    actual,
+    graph: virtual,
+    add: new Map() as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
     remover: new RollbackRemove(),
   })
 
