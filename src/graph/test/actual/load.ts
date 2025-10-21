@@ -1,3 +1,4 @@
+import { rmSync } from 'fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
@@ -29,9 +30,10 @@ t.test('load actual', async t => {
   t.chdir(projectRoot)
   unload('project')
 
+  const scurry = new PathScurry(projectRoot)
   const fullGraph = load({
     projectRoot,
-    scurry: new PathScurry(projectRoot),
+    scurry,
     packageJson: new PackageJson(),
     monorepo: Monorepo.maybeLoad(projectRoot),
     loadManifests: true,
@@ -50,10 +52,15 @@ t.test('load actual', async t => {
     'should load an actual graph containing missing deps info',
   )
 
+  // remove any hidden lockfile to test loading without manifests
+  rmSync(scurry.resolve('node_modules/.vlt-lock.json'), {
+    recursive: true,
+  })
+
   t.matchSnapshot(
     objectLikeOutput(
       load({
-        scurry: new PathScurry(projectRoot),
+        scurry,
         packageJson: new PackageJson(),
         monorepo: Monorepo.maybeLoad(projectRoot),
         projectRoot,
@@ -130,10 +137,11 @@ t.test('cycle', async t => {
   })
   t.chdir(projectRoot)
   unload('project')
+  const scurry = new PathScurry(projectRoot)
   t.matchSnapshot(
     objectLikeOutput(
       load({
-        scurry: new PathScurry(projectRoot),
+        scurry,
         packageJson: new PackageJson(),
         monorepo: Monorepo.maybeLoad(projectRoot),
         projectRoot,
@@ -143,10 +151,16 @@ t.test('cycle', async t => {
     ),
     'should load an actual graph with cycle containing missing deps info',
   )
+
+  // remove any hidden lockfile to test loading without manifests
+  rmSync(scurry.resolve('node_modules/.vlt-lock.json'), {
+    recursive: true,
+  })
+
   t.matchSnapshot(
     objectLikeOutput(
       load({
-        scurry: new PathScurry(projectRoot),
+        scurry,
         packageJson: new PackageJson(),
         monorepo: Monorepo.maybeLoad(projectRoot),
         projectRoot,
