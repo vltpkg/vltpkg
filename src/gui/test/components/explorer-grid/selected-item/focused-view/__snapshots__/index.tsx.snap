@@ -20,6 +20,7 @@ exports[`FocusedView renders default 1`] = `
         </gui-selected-item-tabs>
       </div>
       <gui-focused-aside
+        classname="mt-4 md:mt-0"
         dependencies
         uninstalleddependencies
       >

@@ -7,7 +7,7 @@ exports[`SelectedItem renders default 1`] = `
     class="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4"
     style="opacity: 1; filter: blur(0px);"
   >
-    <div class="relative col-span-2">
+    <div class="relative col-span-full md:col-span-2">
       <gui-overview-sidebar
         dependencies
         workspaces
@@ -16,7 +16,7 @@ exports[`SelectedItem renders default 1`] = `
       >
       </gui-overview-sidebar>
     </div>
-    <div class="col-span-4">
+    <div class="col-span-full md:col-span-4">
       <div class="flex items-center justify-between">
         <gui-grid-header>
           Selected
@@ -29,7 +29,7 @@ exports[`SelectedItem renders default 1`] = `
         </gui-selected-item>
       </div>
     </div>
-    <div class="col-span-2">
+    <div class="col-span-full md:col-span-2">
     </div>
   </div>
 </section>

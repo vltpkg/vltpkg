@@ -35,6 +35,12 @@ export type Action = {
     queryInputFocused: State['queryInputFocused'],
   ) => void
   updateFocused: (focused: State['focused']) => void
+  updateIsExternalPackage: (
+    isExternalPackage: State['isExternalPackage'],
+  ) => void
+  updateExternalPackageSpec: (
+    externalPackageSpec: State['externalPackageSpec'],
+  ) => void
   reset: () => void
   saveQuery: (item: SavedQuery) => void
   updateSavedQuery: (savedQuery: SavedQuery) => void
@@ -178,6 +184,14 @@ export type State = {
    * Whether the query builder is displayed.
    */
   queryBuilderDisplay: boolean
+  /**
+   * Whether we're viewing an external package (from search results).
+   */
+  isExternalPackage: boolean
+  /**
+   * The external package spec being viewed (e.g., 'npm:package@version').
+   */
+  externalPackageSpec: string | null
 }
 
 export type DashboardTools =
