@@ -6,7 +6,7 @@
  */
 'use strict'
 exports[`test/ideal/get-importer-specs.ts > TAP > empty graph and something to add > should result in only added specs 1`] = `
-AddImportersDependenciesMapImpl(1) [Map] {
+AddImportersDependenciesMapImpl(1) {
   'file·.' => Map(2) {
     'bar' => { spec: Spec {bar@custom:bar@^1.1.1}, type: 'dev' },
     'foo' => { spec: Spec {foo@^1.1.1}, type: 'prod' }
@@ -20,7 +20,7 @@ AddImportersDependenciesMapImpl {}
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and new things to add > should have root specs along with the added ones 1`] = `
-AddImportersDependenciesMapImpl(1) [Map] {
+AddImportersDependenciesMapImpl(1) {
   'file·.' => Map(3) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^1.0.0}, type: 'dev' },
@@ -31,7 +31,7 @@ AddImportersDependenciesMapImpl(1) [Map] {
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and nothing to add > should have root specs added only 1`] = `
-AddImportersDependenciesMapImpl(1) [Map] {
+AddImportersDependenciesMapImpl(1) {
   'file·.' => Map(2) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^1.0.0}, type: 'dev' }
@@ -42,10 +42,8 @@ AddImportersDependenciesMapImpl(1) [Map] {
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to remove > should removed entries missing from manifest file 1`] = `
 {
-  add: AddImportersDependenciesMapImpl(0) [Map] {
-    modifiedDependencies: false
-  },
-  remove: RemoveImportersDependenciesMapImpl(1) [Map] {
+  add: AddImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  remove: RemoveImportersDependenciesMapImpl(1) {
     'file·.' => Set(1) { 'foo' },
     modifiedDependencies: true
   }
@@ -53,14 +51,14 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to r
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to update > should have the updated root spec 1`] = `
-AddImportersDependenciesMapImpl(1) [Map] {
+AddImportersDependenciesMapImpl(1) {
   'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } },
   modifiedDependencies: true
 }
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces and something to add > should have root and workspaces nodes with specs to add 1`] = `
-AddImportersDependenciesMapImpl(3) [Map] {
+AddImportersDependenciesMapImpl(3) {
   'file·.' => Map(2) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^2.0.0}, type: 'prod' }
@@ -79,10 +77,8 @@ AddImportersDependenciesMapImpl(3) [Map] {
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces and somethings to remove > should have root and workspaces nodes with specs to remove 1`] = `
 {
-  add: AddImportersDependenciesMapImpl(0) [Map] {
-    modifiedDependencies: false
-  },
-  remove: RemoveImportersDependenciesMapImpl(2) [Map] {
+  add: AddImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  remove: RemoveImportersDependenciesMapImpl(2) {
     'workspace·packages§a' => Set(1) { 'bar' },
     'workspace·packages§b' => Set(1) { 'a' },
     modifiedDependencies: true
@@ -92,12 +88,10 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
 
 exports[`test/ideal/get-importer-specs.ts > TAP > installing over a dangling edge > should add the missing dep 1`] = `
 {
-  add: AddImportersDependenciesMapImpl(1) [Map] {
+  add: AddImportersDependenciesMapImpl(1) {
     'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' } },
     modifiedDependencies: true
   },
-  remove: RemoveImportersDependenciesMapImpl(0) [Map] {
-    modifiedDependencies: false
-  }
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false }
 }
 `
