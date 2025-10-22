@@ -69,7 +69,7 @@ export const command: CommandFn<ServeResult> = async (
 
   // Start the GUI server first
   stdout('Starting UI server...')
-  const server = await startGUI(conf, '/')
+  const server = await startGUI(conf)
   const actualGuiPort = server.port
 
   if (!actualGuiPort) {
