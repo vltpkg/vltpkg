@@ -151,6 +151,36 @@ export const ExplorerGrid = () => {
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
   const query = useGraphStore(state => state.query)
+  const isExternalPackage = useGraphStore(
+    state => state.isExternalPackage,
+  )
+  const externalPackageSpec = useGraphStore(
+    state => state.externalPackageSpec,
+  )
+  const specOptions = useGraphStore(state => state.specOptions)
+
+  // For external npm packages, create a mock item directly
+  if (isExternalPackage && externalPackageSpec) {
+    const spec = Spec.parseArgs(externalPackageSpec, specOptions)
+    const externalItem: GridItemData = {
+      id: externalPackageSpec,
+      name: spec.name,
+      title: spec.name, // Display just the package name, not package@version
+      version: spec.bareSpec || '', // Store the version if we have it
+      labels: [],
+      sameItems: false,
+      stacked: false,
+      size: 1,
+      type: 'prod',
+      spec,
+      from: undefined,
+      to: undefined,
+      breadcrumbs: undefined,
+    }
+
+    return <SelectedItem item={externalItem} />
+  }
+
   const items = getItemsData(edges, nodes, query)
 
   if (items.length === 1 && items[0])

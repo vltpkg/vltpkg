@@ -44,9 +44,31 @@ const SpecOrigin = ({
   specOptions,
 }: {
   item: GridItemData
-  specOptions: SpecOptionsFilled
+  specOptions?: SpecOptionsFilled
 }) => {
-  if (item.to && !item.to.mainImporter) {
+  // Get the manifest version for external packages
+  const manifest = useSelectedItemStore(state => state.manifest)
+
+  // For external packages (no item.to), show npm registry badge
+  if (!item.to) {
+    // Use manifest version if available, fallback to item.version
+    const version = manifest?.version || item.version
+
+    return (
+      <DataBadge
+        variant="mono"
+        content={`npm:${item.name}@${version}`}
+        classNames={{
+          wrapperClassName: 'truncate overflow-hidden',
+        }}
+        tooltip={{
+          content: defaultRegistry,
+        }}
+      />
+    )
+  }
+
+  if (!item.to.mainImporter && specOptions) {
     const [depType, ref] = splitDepID(item.to.id)
     switch (depType) {
       case 'registry': {
@@ -57,7 +79,7 @@ const SpecOrigin = ({
             return (
               <DataBadge
                 variant="mono"
-                content={`${item.title}@${item.version}`}
+                content={`${item.name}@${item.version}`}
                 classNames={{
                   wrapperClassName: 'truncate overflow-hidden',
                 }}
@@ -71,7 +93,7 @@ const SpecOrigin = ({
         return (
           <DataBadge
             variant="mono"
-            content={`${ref || 'npm'}:${item.title}@${item.version}`}
+            content={`${ref || 'npm'}:${item.name}@${item.version}`}
             classNames={{
               wrapperClassName: 'truncate overflow-hidden',
             }}
@@ -310,7 +332,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
                   <PackageNewerVersionsAvailable />
                 </div>
 
-                {specOptions && (
+                {(specOptions ?? !selectedItem.to) && (
                   <SpecOrigin
                     item={selectedItem}
                     specOptions={specOptions}

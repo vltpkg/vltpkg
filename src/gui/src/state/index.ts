@@ -81,6 +81,8 @@ const initialState: State = {
   focused: JSON.parse(
     localStorage.getItem('focused') ?? 'false',
   ) as boolean,
+  isExternalPackage: false,
+  externalPackageSpec: null,
   savedQueries: JSON.parse(
     localStorage.getItem('saved-queries') || '[]',
   ) as State['savedQueries'],
@@ -132,6 +134,12 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ focused }))
       localStorage.setItem('focused', JSON.stringify(focused))
     },
+    updateIsExternalPackage: (
+      isExternalPackage: State['isExternalPackage'],
+    ) => set(() => ({ isExternalPackage })),
+    updateExternalPackageSpec: (
+      externalPackageSpec: State['externalPackageSpec'],
+    ) => set(() => ({ externalPackageSpec })),
     reset: () => set(initialState),
     updateQueryBuilderOpen: (
       queryBuilderOpen: State['queryBuilderOpen'],

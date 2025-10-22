@@ -53,7 +53,7 @@ t.test('getDefaultStartingRoute', async t => {
       scurry,
       projectRoot: resolve(dir, 'linky'),
     }),
-    `/`,
+    `/dashboard`,
   )
 
   // Test with no package.json (should return root regardless of queryString)
@@ -63,7 +63,7 @@ t.test('getDefaultStartingRoute', async t => {
       scurry,
       projectRoot: dir,
     }),
-    `/`,
+    `/dashboard`,
   )
 
   // Test with startingRoute (should override queryString)
@@ -137,7 +137,7 @@ t.test('startGUI()', async t => {
     '@vltpkg/url-open': {
       urlOpen: (url: string) => {
         urlOpened = true
-        t.equal(url, 'server-address/')
+        t.equal(url, 'server-address/dashboard')
       },
     },
   })
@@ -258,7 +258,7 @@ t.test('startGUI() with --target option', async t => {
 
     await startGUI(conf)
     t.equal(urlOpened, true)
-    t.equal(openedUrl, 'server-address/')
+    t.equal(openedUrl, 'server-address/dashboard')
   })
 
   t.test('with complex DSS query target', async t => {

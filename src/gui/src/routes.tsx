@@ -16,6 +16,8 @@ import { Explorer } from '@/app/explorer.tsx'
 import { Labels } from '@/app/labels.tsx'
 import { Queries } from '@/app/queries.tsx'
 import { SettingsView } from '@/app/settings/index.tsx'
+import { Search } from '@/app/search/index.tsx'
+import { SearchResults } from '@/app/search/search-results.tsx'
 
 /** Auth */
 import { SignIn } from '@/app/auth/sign-in.tsx'
@@ -104,16 +106,22 @@ export const routes: RouteObject[] = [
     element: <Layout />,
     errorElement: <ErrorFound />,
     children: [
-      // TODO: this route should actually be the `/search` / 'home' view,
-      // this is just a temporary placeholder to keep things logical.
       {
-        path: '/',
-        element: <Navigate to="/dashboard" replace />,
+        index: true,
+        element: <Search />,
       },
       {
-        path: '/dashboard',
+        path: 'dashboard',
         middleware: [authMiddleware],
         element: <Dashboard />,
+      },
+      {
+        path: 'search',
+        element: <SearchResults />,
+      },
+      {
+        path: 'home',
+        element: <Navigate to="/" replace />,
       },
       {
         path: 'auth',
@@ -138,6 +146,46 @@ export const routes: RouteObject[] = [
         ),
       },
       {
+        path: 'explore/npm/:package',
+        element: <Explorer />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="overview" replace />,
+          },
+          {
+            path: ':tab/*',
+            element: <TabRouter />,
+            children: [
+              {
+                path: ':subTab',
+                element: <SubTabRouter />,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: 'explore/npm/:package/v/:version',
+        element: <Explorer />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="overview" replace />,
+          },
+          {
+            path: ':tab/*',
+            element: <TabRouter />,
+            children: [
+              {
+                path: ':subTab',
+                element: <SubTabRouter />,
+              },
+            ],
+          },
+        ],
+      },
+      {
         path: 'explore/:query',
         element: <Explorer />,
         children: [
@@ -156,6 +204,10 @@ export const routes: RouteObject[] = [
             ],
           },
         ],
+      },
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
       },
       {
         path: 'create-new-project',

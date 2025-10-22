@@ -13,6 +13,7 @@ import { Header } from '@/components/navigation/header/index.tsx'
 import { usePreflight } from '@/components/hooks/use-preflight.tsx'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 import { HostedWarning } from '@/components/hosted-warning.tsx'
+import { MinimalFooter } from '@/components/navigation/footer/minimal.tsx'
 
 const Layout = () => {
   const isHostedMode = isHostedEnvironment()
@@ -34,6 +35,17 @@ const Layout = () => {
   }, [pathname, isHostedMode])
 
   usePreflight()
+
+  if (pathname === '/' || pathname.includes('/search')) {
+    return (
+      <div className="flex flex-col">
+        <Header className="fixed top-0 bg-transparent" />
+        <Outlet />
+        <MinimalFooter />
+        <Toaster />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col">

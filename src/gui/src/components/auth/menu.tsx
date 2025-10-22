@@ -1,5 +1,5 @@
-import { User, LogOut, BookOpen } from 'lucide-react'
-import { Config, Github } from '@/components/icons/index.ts'
+import { User, LogOut, BookOpen, LayoutDashboard } from 'lucide-react'
+import { Config, Query, Github } from '@/components/icons/index.ts'
 
 import type { LucideIcon } from 'lucide-react'
 
@@ -23,6 +23,16 @@ export const menuItems: MenuGroup[] = [
         label: 'Profile',
         icon: User,
         action: 'profile',
+      },
+      {
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        to: '/dashboard',
+      },
+      {
+        label: 'Queries',
+        icon: Query,
+        to: '/queries',
       },
       {
         to: '/settings',

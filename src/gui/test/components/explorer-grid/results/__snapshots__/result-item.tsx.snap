@@ -43,7 +43,7 @@ exports[`ResultItem render stacked many 1`] = `
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
           <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-lg border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
+            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
             data-state="closed"
           >
             <span class="pt-0.5">
@@ -88,7 +88,7 @@ exports[`ResultItem render stacked two 1`] = `
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
           <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-lg border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
+            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
             data-state="closed"
           >
             <span class="pt-0.5">
@@ -131,7 +131,7 @@ exports[`ResultItem render with item 1`] = `
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
           <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-lg border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
+            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
             data-state="closed"
           >
             <span class="pt-0.5">
@@ -174,7 +174,7 @@ exports[`ResultItem render with type 1`] = `
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
           <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-lg border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
+            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
             data-state="closed"
           >
             <span class="pt-0.5">
@@ -189,7 +189,7 @@ exports[`ResultItem render with type 1`] = `
           </button>
         </div>
         <div class="flex flex-row flex-wrap items-center gap-3">
-          <div class="group font-sans h-[30px] relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-lg border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+          <div class="group font-sans h-[30px] relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
             <span
               data-id="info-badge-value"
               class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.5rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)] lowercase left-[-0.3rem]"

@@ -57,6 +57,7 @@ export const FocusedView = ({
           </div>
 
           <FocusedAside
+            className="mt-4 md:mt-0"
             dependencies={dependencies}
             onDependencyClick={onDependencyClick}
             uninstalledDependencies={uninstalledDependencies}

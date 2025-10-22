@@ -23,6 +23,8 @@ import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn().mockReturnValue(vi.fn()),
+  useLocation: vi.fn().mockReturnValue({ pathname: '/explore' }),
+  useParams: vi.fn().mockReturnValue({ params: { package: 'acme' } }),
 }))
 
 vi.mock('@/components/hooks/use-query-navigation.tsx', () => ({

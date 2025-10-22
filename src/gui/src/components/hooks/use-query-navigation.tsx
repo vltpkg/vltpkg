@@ -21,6 +21,9 @@ export const useQueryNavigation = () => {
   const query = useGraphStore(state => state.query)
   const updateQuery = useGraphStore(state => state.updateQuery)
 
+  // Skip query navigation for npm package routes
+  const isNpmRoute = location.pathname.startsWith('/explore/npm/')
+
   /**
    * Prevent navigation loops between:
    * url -> zustand -> url
@@ -38,6 +41,8 @@ export const useQueryNavigation = () => {
    * and call `updateQuery` to update the query in zustand
    */
   useEffect(() => {
+    if (isNpmRoute) return // Skip for npm routes
+
     if (encodedQueryURL) {
       const decodedQueryURL = decodeCompressedQuery(encodedQueryURL)
       if (decodedQueryURL !== query) {
@@ -45,7 +50,7 @@ export const useQueryNavigation = () => {
         updateQuery(decodedQueryURL)
       }
     }
-  }, [encodedQueryURL, updateQuery]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [encodedQueryURL, updateQuery, isNpmRoute]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Runs when the zustand query or some routing parameters change.
@@ -59,6 +64,8 @@ export const useQueryNavigation = () => {
    * This keeps the url updated when the query changes in zustand.
    */
   useEffect(() => {
+    if (isNpmRoute) return // Skip for npm routes
+
     if (skipNextNavigation.current) {
       skipNextNavigation.current = false
       return
@@ -79,5 +86,6 @@ export const useQueryNavigation = () => {
     tab,
     subTab,
     encodedQueryURL,
+    isNpmRoute,
   ])
 }

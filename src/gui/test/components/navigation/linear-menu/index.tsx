@@ -11,6 +11,7 @@ vi.mock('@/components/ui/popover.tsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
+  LayoutDashboard: 'gui-layout-dashboard-icon',
   ChevronDown: 'gui-chevron-down',
   Smile: 'gui-smile-icon',
 }))

@@ -48,6 +48,8 @@ import {
 } from '@/components/ui/chart.tsx'
 import { Bar, BarChart, XAxis, CartesianGrid } from 'recharts'
 import { NumberFlow } from '@/components/number-flow.tsx'
+import { useNavigate, useParams } from 'react-router'
+import { useGraphStore } from '@/state/index.ts'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { Separator } from '@/components/ui/separator.tsx'
 import { Virtuoso } from 'react-virtuoso'
@@ -264,8 +266,27 @@ const VersionItem = memo(
       downloadsPerVersion,
     } = versionInfo
 
+    const navigate = useNavigate()
+    const params = useParams<{ package?: string; query?: string }>()
+    const isExternalPackage = useGraphStore(
+      state => state.isExternalPackage,
+    )
+
+    const handleVersionClick = () => {
+      if (isExternalPackage && params.package) {
+        void navigate(`/explore/npm/${params.package}/v/${version}`)
+      }
+    }
+
     return (
-      <div className="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground first:border-t-[0px] xl:grid xl:gap-3 xl:py-1.5">
+      <div
+        onClick={handleVersionClick}
+        className={cn(
+          'group/item flex grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground first:border-t-[0px] xl:grid xl:gap-3 xl:py-1.5',
+          isExternalPackage &&
+            'cursor-default transition-colors hover:bg-muted/50',
+          !isExternalPackage && 'cursor-default',
+        )}>
         <div className="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
           <p className="text-sm font-medium text-muted-foreground xl:hidden">
             Version

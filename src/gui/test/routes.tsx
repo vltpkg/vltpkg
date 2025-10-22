@@ -17,9 +17,10 @@ vi.mock('react-router', async () => {
 vi.mock('@/components/navigation/header/index.tsx', () => ({
   Header: 'gui-header',
 }))
-vi.mock('@/components/navigation/footer.tsx', () => ({
-  Footer: 'gui-footer',
+vi.mock('@/components/navigation/footer/minimal.tsx', () => ({
+  MinimalFooter: 'gui-minimal-footer',
 }))
+
 vi.mock('@/components/navigation/sidebar/index.tsx', () => ({
   defaultOpen: true,
   AppSidebar: 'gui-app-sidebar',
@@ -83,6 +84,9 @@ vi.mock('@/app/auth/sign-in.tsx', () => ({
 }))
 vi.mock('@/app/auth/sign-up.tsx', () => ({
   SignUp: 'gui-sign-up',
+}))
+vi.mock('@/app/search/index.tsx', () => ({
+  Search: 'gui-search',
 }))
 
 expect.addSnapshotSerializer({
