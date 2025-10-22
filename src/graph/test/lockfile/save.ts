@@ -4,7 +4,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { Edge } from '../../src/edge.ts'
@@ -1036,4 +1036,52 @@ t.test('save buildState data', async t => {
       'saveHidden() output with buildState',
     )
   })
+})
+
+t.test('saveHidden skips when graph has no manifest', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  // Create a node with minimal manifest (name only) and explicit DepID
+  // This simulates a node without full manifest data
+  const depId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@^1.0.0'),
+    { name: 'foo' } as any,
+    depId,
+  )
+  if (!foo) throw new Error('Missing foo package')
+  foo.setResolved()
+
+  // Remove the manifest from the graph's manifest map to simulate missing manifest
+  graph.manifests.delete(depId)
+  foo.manifest = undefined
+
+  // Call saveHidden - should not create file due to missing manifest
+  saveHidden({ ...configData, graph })
+
+  const hiddenLockfilePath = resolve(
+    projectRoot,
+    'node_modules/.vlt-lock.json',
+  )
+
+  t.notOk(
+    existsSync(hiddenLockfilePath),
+    'hidden lockfile should not be created when manifest is missing',
+  )
 })

@@ -44,6 +44,10 @@ export type LoadOptions = SpecOptions & {
    * Load only importers into the graph if the modifiers have changed.
    */
   skipLoadingNodesOnModifiersChange?: boolean
+  /**
+   * Whether to throw an error if a manifest is missing when loading nodes.
+   */
+  throwOnMissingManifest?: boolean
 }
 
 const loadLockfile = (projectRoot: string, lockfilePath: string) =>
@@ -63,6 +67,8 @@ export const load = (options: LoadOptions): Graph => {
 
 export const loadHidden = (options: LoadOptions): Graph => {
   const { projectRoot } = options
+  // Ensure that missing manifests throw an error when loading hidden lockfiles
+  options.throwOnMissingManifest = true
   return loadObject(
     options,
     loadLockfile(projectRoot, 'node_modules/.vlt-lock.json'),
@@ -158,6 +164,7 @@ export const loadObject = (
       lockfileData.nodes,
       mergedOptions,
       options.actual,
+      options.throwOnMissingManifest,
     )
     loadEdges(graph, lockfileData.edges, mergedOptions)
   }

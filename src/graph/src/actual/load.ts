@@ -9,6 +9,7 @@ import {
 } from '../dependencies.ts'
 import { Graph } from '../graph.ts'
 import { loadHidden } from '../lockfile/load.ts'
+import { saveHidden } from '../lockfile/save.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -512,6 +513,12 @@ export const load = (options: LoadOptions): Graph => {
 
     // Clean up any pending modifier entries that were never completed
     modifiers?.rollbackActiveEntries()
+
+    // caches the load result to the hidden lockfile when enabled
+    saveHidden({
+      ...options,
+      graph,
+    })
   }
 
   done()

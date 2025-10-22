@@ -100,10 +100,12 @@ t.test('install', async t => {
 })
 
 t.test('install with no package.json file in cwd', async t => {
-  const dir = t.testdir({})
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({}, null, 2),
+  })
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     allowScripts: ':not(*)',
@@ -143,10 +145,12 @@ t.test('install with no package.json file in cwd', async t => {
 })
 
 t.test('unknown error reading package.json', async t => {
-  const dir = t.testdir({})
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({}, null, 2),
+  })
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: {
       read() {
         throw new Error('ERR')
@@ -198,7 +202,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       expectLockfile: true,
@@ -262,7 +266,7 @@ t.test('install with cleanInstall option (ci command)', async t => {
 
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     expectLockfile: true,
@@ -317,7 +321,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       expectLockfile: true,
@@ -369,7 +373,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -425,7 +429,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -469,7 +473,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -545,7 +549,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -616,7 +620,7 @@ t.test('install with frozenLockfile and spec changes', async t => {
 
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     frozenLockfile: true,
@@ -718,7 +722,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -770,7 +774,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       expectLockfile: true,
@@ -854,7 +858,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -922,11 +926,12 @@ t.test(
         nodes: {},
         edges: {},
       }),
+      'vlt.json': JSON.stringify({}, null, 2),
     })
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: {
         read: () => {
           throw Object.assign(
@@ -1010,11 +1015,12 @@ t.test(
         nodes: {},
         edges: {},
       }),
+      'vlt.json': JSON.stringify({}, null, 2),
     })
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: {
         read: () => {
           throw new Error('Permission denied')
@@ -1067,7 +1073,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       frozenLockfile: true,
@@ -1149,7 +1155,7 @@ t.test('install with expectLockfile but no node_modules', async t => {
 
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     expectLockfile: true,
@@ -1216,7 +1222,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       expectLockfile: true,
@@ -1289,7 +1295,7 @@ t.test('install with lockfileOnly option', async t => {
 
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     lockfileOnly: true,
@@ -1357,7 +1363,7 @@ t.test('lockfileOnly incompatible with cleanInstall', async t => {
 
   const options = {
     projectRoot: dir,
-    scurry: new PathScurry(),
+    scurry: new PathScurry(dir),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
     lockfileOnly: true,
@@ -1387,7 +1393,7 @@ t.test(
 
     const options = {
       projectRoot: dir,
-      scurry: new PathScurry(),
+      scurry: new PathScurry(dir),
       packageJson: new PackageJson(),
       packageInfo: mockPackageInfo,
       lockfileOnly: true,

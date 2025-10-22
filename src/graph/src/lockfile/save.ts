@@ -27,6 +27,7 @@ import type {
   LockfilePlatform,
 } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
+import { error } from '@vltpkg/error-cause'
 
 export type SaveOptions = SpecOptions & {
   /**
@@ -45,6 +46,10 @@ export type SaveOptions = SpecOptions & {
    * Should it save build state data in the lockfile?
    */
   saveBuildData?: boolean
+  /**
+   * Should it throw an error if a manifest is missing?
+   */
+  throwOnMissingManifest?: boolean
 }
 
 const formatNodes = (
@@ -52,6 +57,7 @@ const formatNodes = (
   saveManifests?: boolean,
   saveBuildData?: boolean,
   registry?: string,
+  throwOnMissingManifest?: boolean,
 ) => {
   // we do not store importers in the lockfile, though we do store
   // their edges. when we load, we always read workspaces/main fresh.
@@ -95,6 +101,11 @@ const formatNodes = (
           node.rawManifest,
         )
       }
+    }
+
+    // Throw an error if a manifest is missing and the option is enabled
+    if (throwOnMissingManifest && !node.manifest) {
+      throw error(`Missing manifest for node ${node.id}.`)
     }
 
     // Always save platform data for optional dependencies if available
@@ -166,6 +177,7 @@ export const lockfileData = ({
   saveBuildData,
   'scope-registries': scopeRegistries,
   'jsr-registries': jsrRegistries,
+  throwOnMissingManifest,
 }: SaveOptions): LockfileData => {
   const cleanGitHosts =
     isRecordStringString(gitHosts) ?
@@ -225,6 +237,7 @@ export const lockfileData = ({
       saveManifests,
       saveBuildData,
       registry,
+      throwOnMissingManifest,
     ),
     edges: formatEdges(graph.edges),
   }
@@ -266,11 +279,19 @@ export const saveHidden = (
   options: Omit<SaveOptions, 'saveManifests' | 'saveBuildData'>,
 ): void => {
   const { graph } = options
-  const data = lockfileData({
-    ...options,
-    saveManifests: true,
-    saveBuildData: true,
-  })
+  let data: LockfileData | undefined
+
+  try {
+    data = lockfileData({
+      ...options,
+      saveManifests: true,
+      saveBuildData: true,
+      throwOnMissingManifest: true,
+    })
+  } catch {}
+
+  if (!data) return
+
   const fileName = resolve(
     graph.projectRoot,
     'node_modules/.vlt-lock.json',
