@@ -132,6 +132,46 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
 ]
 `
 
+exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > optional subdeps binary distribution strategy > must match snapshot 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(esbuild@*) -prod-> to: Node {
+        id: '··esbuild@0.25.11',
+        location: './node_modules/.vlt/··esbuild@0.25.11/node_modules/esbuild',
+        resolved: 'https://registry.npmjs.org/esbuild/-/esbuild-0.25.11.tgz',
+        edgesOut: [
+          Edge spec(@esbuild/darwin-arm64@0.25.11) -optional-> to: Node {
+            id: '··@esbuild§darwin-arm64@0.25.11',
+            location: './node_modules/.vlt/··@esbuild§darwin-arm64@0.25.11/node_modules/@esbuild/darwin-arm64',
+            optional: true,
+            resolved: 'https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.11.tgz',
+            integrity: 'sha512-VekY0PBCukppoQrycFxUqkCojnTQhdec0vevUL/EDOCnXd9LKWqD/bHwMPzigIJXPhC59Vd1WFIL57SKs2mg4w=='
+          },
+          Edge spec(@esbuild/linux-x64@0.25.11) -optional-> to: Node {
+            id: '··@esbuild§linux-x64@0.25.11',
+            location: './node_modules/.vlt/··@esbuild§linux-x64@0.25.11/node_modules/@esbuild/linux-x64',
+            optional: true,
+            resolved: 'https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.11.tgz',
+            integrity: 'sha512-Qr8AzcplUhGvdyUF08A1kHU3Vr2O88xxP0Tm8GcdVOUm25XYcMPp2YqSVHbLuXzYQMf9Bh/iKx7YPqECs6ffLA=='
+          },
+          Edge spec(@esbuild/win32-x64@0.25.11) -optional-> to: Node {
+            id: '··@esbuild§win32-x64@0.25.11',
+            location: './node_modules/.vlt/··@esbuild§win32-x64@0.25.11/node_modules/@esbuild/win32-x64',
+            optional: true,
+            resolved: 'https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.11.tgz',
+            integrity: 'sha512-D7Hpz6A2L4hzsRpPaCYkQnGOotdUpDzSGRIv9I+1ITdHROSFUWW95ZPZWQmGka1Fg7W3zFJowyn9WGwMJ0+KPA=='
+          }
+        ]
+      }
+    ]
+  }
+]
+`
+
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > remove from manifest file only > must match snapshot 1`] = `
 [ Node { id: 'file·.', location: '.', importer: true } ]
 `

@@ -314,7 +314,8 @@ const processPlacementTasks = async (
       actual &&
       scurry &&
       packageInfo &&
-      node.inVltStore()
+      node.inVltStore() &&
+      !node.isOptional()
     ) {
       /* c8 ignore start */
       if (seenExtracted?.has(node.id)) {
