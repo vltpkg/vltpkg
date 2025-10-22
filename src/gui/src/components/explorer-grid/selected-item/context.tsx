@@ -16,6 +16,7 @@ import {
 } from '@/lib/external-info.ts'
 import { PSEUDO_SECURITY_SELECTORS } from '@/lib/constants/index.ts'
 import { generatePath, useNavigate, useParams } from 'react-router'
+import { Spec } from '@vltpkg/spec/browser'
 import { normalizeManifest } from '@vltpkg/types'
 
 import type {
@@ -39,7 +40,6 @@ import type {
   Packument,
 } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
-import type { Spec } from '@vltpkg/spec/browser'
 
 export type Tab =
   | 'overview'
@@ -499,6 +499,7 @@ export const SelectedItemProvider = ({
 
           // Get the final spec which contains the parsed information
           const finalSpec = (spec as Spec).final
+          let manifestHydratedSpec: Spec | undefined
 
           // Extract package name and version from the spec
           // The spec was created from something like "npm:express@4.21.1"
@@ -542,6 +543,13 @@ export const SelectedItemProvider = ({
                 version ? packument.versions[version] : undefined
               if (manifestData) {
                 manifest = normalizeManifest(manifestData)
+
+                // use a spec with the info from the response manifest
+                manifestHydratedSpec = Spec.parse(
+                  manifest.name || finalSpec.name,
+                  manifest.version || finalSpec.bareSpec,
+                  specOptions,
+                )
 
                 // Extract publisher info from _npmUser before it's lost
                 const npmUser =
@@ -613,27 +621,8 @@ export const SelectedItemProvider = ({
           // Pass the normalized manifest with repository info
           // We need to create a clean spec with just the package name (no npm: prefix)
           // and the version in bareSpec for fetchDetails to work correctly with the npm API
-
-          // Get the version from finalSpec.bareSpec if it's a valid version, otherwise use the fetched manifest version
-          let versionForDetails = manifest?.version
-          if (
-            finalSpec.bareSpec &&
-            !finalSpec.bareSpec.startsWith('http')
-          ) {
-            versionForDetails = finalSpec.bareSpec
-          }
-
-          // fetchDetails reads spec.name, spec.bareSpec, and spec.registry directly
-          // (not spec.final.*), so we need to set these at the top level
-          const cleanSpec = {
-            ...spec,
-            name: packageName, // e.g., "express" (no npm: prefix, no version)
-            bareSpec: versionForDetails, // e.g., "4.21.1"
-            registry: registry, // e.g., "https://registry.npmjs.org/"
-          }
-
           for await (const d of fetchDetails(
-            cleanSpec as unknown as Spec,
+            manifestHydratedSpec ?? finalSpec,
             abortController.signal,
             manifest ?? undefined,
           )) {
@@ -651,6 +640,9 @@ export const SelectedItemProvider = ({
       // For packages from the graph, use the hydrated dep ID
       if (!item.to?.name) return
 
+      console.log('item.to.id', item.to.id)
+      console.log('item.to.name', item.to.name)
+      console.log('specOptions', specOptions)
       const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
       const manifest = item.to.manifest ?? {}
       const abortController = new AbortController()

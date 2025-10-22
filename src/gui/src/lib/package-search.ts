@@ -26,10 +26,6 @@ const fetchRegistrySearch = async <
   const url = `${endpoint}?${queryParams}`
 
   const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'User-Agent': 'vlt-gui-search/1.0',
-    },
     signal,
   })
 
