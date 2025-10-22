@@ -813,3 +813,48 @@ t.test('load nodes with platform and bin', async t => {
     'should load nodes with platform and bin data',
   )
 })
+
+t.test('throwOnMissingManifest option', async t => {
+  const graph = new Graph({
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+    },
+    projectRoot: t.testdirName,
+  })
+
+  // Node with no manifest
+  const nodes = {
+    [joinDepIDTuple(['registry', '', 'no-manifest@1.0.0'])]: [
+      0,
+      'no-manifest',
+      'sha512-nomanifest==',
+      null,
+      null,
+      null, // manifest is null
+    ],
+  } as LockfileData['nodes']
+
+  // Should throw when throwOnMissingManifest is true
+  try {
+    loadNodes(graph, nodes, {}, undefined, true)
+    t.fail('should have thrown')
+  } catch (err: any) {
+    t.match(
+      err.message,
+      /Missing manifest for node.*no-manifest@1\.0\.0 and no reference node found/,
+      'should throw with correct error message',
+    )
+    t.same(
+      err,
+      /Missing manifest for node/,
+      'should have missing manifest error msg',
+    )
+  }
+
+  // Should not throw when throwOnMissingManifest is false/undefined
+  t.doesNotThrow(
+    () => loadNodes(graph, nodes, {}),
+    'should not throw when throwOnMissingManifest is not set',
+  )
+})
