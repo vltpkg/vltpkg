@@ -8,6 +8,8 @@ import { reify } from './reify/index.ts'
 import { lockfile } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { existsSync, rmSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 export type UninstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -66,6 +68,14 @@ export const uninstall = async (
     /* c8 ignore start */
   } catch (err) {
     await remover.rollback().catch(() => {})
+    // Remove hidden lockfile on failure
+    const hiddenLockfile = resolve(
+      options.projectRoot,
+      'node_modules/.vlt-lock.json',
+    )
+    if (existsSync(hiddenLockfile)) {
+      rmSync(hiddenLockfile, { force: true })
+    }
     throw err
   }
   /* c8 ignore stop */
