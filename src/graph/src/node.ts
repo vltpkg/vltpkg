@@ -220,6 +220,13 @@ export class Node implements NodeLike {
   buildState: 'none' | 'needed' | 'built' | 'failed' = 'none'
 
   /**
+   * Deterministic unique string used to identify (and ultimately duplicate)
+   * nodes that are affected by a peer context set modified resolution.
+   * These are appended to the node {@link DepID} as the `extra` suffix.
+   */
+  peerRef?: string
+
+  /**
    * The file system location for this node.
    */
   get location(): string {

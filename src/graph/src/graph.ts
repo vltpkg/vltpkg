@@ -39,7 +39,7 @@ const getMap = <T extends Map<any, any>>(m?: T) =>
 const getResolutionCacheKey = (
   spec: Spec,
   location: string,
-  queryModifier: string,
+  extra: string,
 ): string => {
   const f = spec.final
   // if it's a file: dep, then the fromNode location matters
@@ -53,7 +53,7 @@ const getResolutionCacheKey = (
     : f.gitRemote ?
       `${cacheKeySeparator}git` + `${cacheKeySeparator}${f.gitRemote}`
     : `${cacheKeySeparator}${f.type}`
-  const modifierSuffix = `${cacheKeySeparator}${queryModifier}`
+  const modifierSuffix = `${cacheKeySeparator}${extra}`
   return fromPrefix + String(f) + typePrecisionKey + modifierSuffix
 }
 
@@ -283,13 +283,9 @@ export class Graph implements GraphLike {
   /**
    * Find an existing node to satisfy a dependency
    */
-  findResolution(spec: Spec, fromNode: Node, queryModifier = '') {
+  findResolution(spec: Spec, fromNode: Node, extra = '') {
     const f = spec.final
-    const sf = getResolutionCacheKey(
-      f,
-      fromNode.location,
-      queryModifier,
-    )
+    const sf = getResolutionCacheKey(f, fromNode.location, extra)
     const cached = this.resolutions.get(sf)
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
@@ -484,12 +480,12 @@ export class Graph implements GraphLike {
   /**
    * Removes the resolved node of a given edge.
    */
-  removeEdgeResolution(edge: Edge, queryModifier = '') {
+  removeEdgeResolution(edge: Edge, extra = '') {
     const node = edge.to
     const resolutionKey = getResolutionCacheKey(
       edge.spec,
       edge.from.location,
-      queryModifier,
+      extra,
     )
     if (node) {
       edge.to = undefined
