@@ -56,7 +56,7 @@ const js = async () => {
 }
 
 const css = async () => {
-  const tailwind = await which('tailwind', {
+  const tailwind = await which('tailwindcss', {
     path: join(cwd, 'node_modules/.bin'),
   })
   await new Promise<void>((res, rej) => {
@@ -64,9 +64,9 @@ const css = async () => {
       tailwind,
       [
         '-i',
-        join(srcdir, 'main.css'),
+        join(srcdir, 'styles/main.css'),
         '-o',
-        join(outdir, 'main.css'),
+        join(outdir, 'styles/main.css'),
         ...(argv.watch ? ['--watch'] : []),
         ...(argv.production ? ['--minify'] : []),
       ],
