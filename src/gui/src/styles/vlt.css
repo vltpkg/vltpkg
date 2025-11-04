@@ -55,4 +55,5 @@
   --font-courier: courier, monospace;
 }
 
-@theme inline {}
+@theme inline {
+}
