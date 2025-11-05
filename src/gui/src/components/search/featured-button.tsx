@@ -45,7 +45,7 @@ const FeaturedButton = forwardRef<
           : 'secondary'
         }
         className={cn(
-          'group/featured-button cursor-default items-center gap-2 rounded-xl px-3 text-muted-foreground no-underline transition-colors duration-100 hover:text-foreground',
+          'group/featured-button text-muted-foreground hover:text-foreground cursor-default items-center gap-2 rounded-xl px-3 no-underline transition-colors duration-100',
           variant === 'primary' && 'text-foreground',
           className,
         )}
@@ -60,7 +60,7 @@ const FeaturedButton = forwardRef<
           )}
           <span>{label}</span>
           {variant === 'external' && (
-            <div className="flex size-4 items-center justify-center rounded-sm border border-muted bg-white text-muted-foreground transition-colors duration-100 group-hover/featured-button:text-foreground dark:bg-black [&_svg]:size-3">
+            <div className="border-muted text-muted-foreground group-hover/featured-button:text-foreground flex size-4 items-center justify-center rounded-sm border bg-white transition-colors duration-100 dark:bg-black [&_svg]:size-3">
               <ArrowUpRight />
             </div>
           )}

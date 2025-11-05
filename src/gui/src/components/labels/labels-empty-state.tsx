@@ -45,12 +45,12 @@ const LabelsEmptyState = () => {
                   repeat: Infinity,
                   delay: 1.5,
                 }}
-                className="absolute h-[150px] w-[150px] rounded-full border-[1px] border-muted"
+                className="border-muted absolute h-[150px] w-[150px] rounded-full border-[1px]"
               />
 
-              <div className="absolute z-[2] flex h-[42px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-card dark:from-card/0 dark:to-card/100">
+              <div className="to-card dark:from-card/0 dark:to-card/100 absolute z-[2] flex h-[42px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white">
                 <div className="flex h-[40px] w-[398px] items-center justify-center rounded-[7px]">
-                  <span className="tracking absolute my-auto mr-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-sm text-transparent dark:from-card dark:to-neutral-500">
+                  <span className="tracking dark:from-card absolute my-auto mr-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-sm text-transparent dark:to-neutral-500">
                     Need to update insecure packages
                   </span>
                   <motion.div

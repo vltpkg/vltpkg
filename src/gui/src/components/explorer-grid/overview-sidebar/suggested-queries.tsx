@@ -66,7 +66,7 @@ export const SuggestedQueries = ({
   return (
     <div
       className={cn(
-        'my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed border-muted bg-white p-3 dark:bg-muted-foreground/5',
+        'border-muted dark:bg-muted-foreground/5 my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed bg-white p-3',
         className,
       )}>
       <div className="flex w-full items-center justify-between">
@@ -94,7 +94,7 @@ export const SuggestedQueries = ({
               opacity: 1,
             }}
             exit={{ height: 0, filter: 'blur(1px)', opacity: 0 }}
-            className="flex flex-col divide-y-[1px] divide-muted">
+            className="divide-muted flex flex-col divide-y-[1px]">
             {queries.map(query => {
               const tokens = Query.getQueryTokens(query.query)
               return (
@@ -102,19 +102,19 @@ export const SuggestedQueries = ({
                   key={query.name}
                   data-testid={query.name}
                   className="flex flex-col gap-1 py-3">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-foreground text-sm font-medium">
                     {query.name}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {query.description}
                   </p>
                   <div
                     role="button"
                     onClick={() => runQuery(query.query)}
-                    className="duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-lg border-[1px] border-muted bg-background px-2 py-1.5 transition-colors hover:border-muted-foreground/50">
+                    className="group border-muted bg-background hover:border-muted-foreground/50 mt-1 flex cursor-default items-center gap-2 rounded-lg border-[1px] px-2 py-1.5 transition-colors duration-250">
                     <Search
                       size={16}
-                      className="duration-250 text-muted-foreground transition-colors group-hover:text-foreground"
+                      className="text-muted-foreground group-hover:text-foreground transition-colors duration-250"
                     />
                     <div className="flex">
                       {tokens.map((segment, idx) => (
@@ -125,7 +125,7 @@ export const SuggestedQueries = ({
                     </div>
                     <CornerDownRight
                       size={16}
-                      className="duration-250 ml-auto text-muted-foreground/40 transition-colors group-hover:text-foreground"
+                      className="text-muted-foreground/40 group-hover:text-foreground ml-auto transition-colors duration-250"
                     />
                   </div>
                 </div>

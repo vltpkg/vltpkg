@@ -260,14 +260,14 @@ const ArgumentDialog = memo(
                 <div className="flex shrink flex-col gap-1">
                   <label
                     htmlFor="operator"
-                    className="block text-xs text-muted-foreground">
+                    className="text-muted-foreground block text-xs">
                     operator
                   </label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         id="operator"
-                        className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
+                        className="border-muted text-foreground h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:duration-250 [&>svg]:data-[state=open]:rotate-90">
                         <span>
                           {operator ?
                             operator.label
@@ -298,7 +298,7 @@ const ArgumentDialog = memo(
               <div className="flex w-full grow flex-col gap-1">
                 <label
                   htmlFor="argument"
-                  className="block text-xs text-muted-foreground">
+                  className="text-muted-foreground block text-xs">
                   value
                 </label>
                 {argument?.values && argument.values.length > 0 ?
@@ -306,7 +306,7 @@ const ArgumentDialog = memo(
                     <DropdownMenuTrigger asChild>
                       <Button
                         id="argument"
-                        className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
+                        className="border-muted text-foreground h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:duration-250 [&>svg]:data-[state=open]:rotate-90">
                         <span>
                           {selectedValue ?? 'Select a value'}
                         </span>
@@ -335,7 +335,7 @@ const ArgumentDialog = memo(
                         `Enter a value for ${argument.label}`
                       : 'Enter value'
                     }
-                    className="h-8 w-full border-[1px] border-muted bg-white dark:bg-neutral-800"
+                    className="border-muted h-8 w-full border-[1px] bg-white dark:bg-neutral-800"
                     autoFocus
                   />
                 }
@@ -344,7 +344,7 @@ const ArgumentDialog = memo(
                 <div className="flex shrink flex-col gap-1">
                   <label
                     htmlFor="flag"
-                    className="block text-xs text-muted-foreground">
+                    className="text-muted-foreground block text-xs">
                     flag
                   </label>
 
@@ -352,7 +352,7 @@ const ArgumentDialog = memo(
                     <DropdownMenuTrigger asChild>
                       <Button
                         id="flag"
-                        className="[&>svg]:duration-250 h-8 w-fit border-[1px] border-muted bg-white text-foreground hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
+                        className="border-muted text-foreground h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:duration-250 [&>svg]:data-[state=open]:rotate-90">
                         <span>
                           {flag ? flag.label : 'Select a flag'}
                         </span>
@@ -380,7 +380,7 @@ const ArgumentDialog = memo(
               )}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {token.description}
           </p>
           <DialogFooter>
@@ -534,7 +534,7 @@ const Item = memo(
         : <DropdownMenu>
             <DropdownMenuTrigger className="inline-flex w-full cursor-default items-center justify-between">
               {label}
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               side="right"
@@ -545,7 +545,7 @@ const Item = memo(
                 e.stopPropagation()
               }}>
               <div className="px-2 py-1.5">
-                <h4 className="text-xs font-medium text-muted-foreground">
+                <h4 className="text-muted-foreground text-xs font-medium">
                   {options.label}
                 </h4>
               </div>
@@ -564,8 +564,8 @@ const Item = memo(
                 />
               ))}
               {hoveredNestedItem && (
-                <div className="border-t-[1px] border-muted px-3 py-2">
-                  <p className="text-sm text-muted-foreground">
+                <div className="border-muted border-t-[1px] px-3 py-2">
+                  <p className="text-muted-foreground text-sm">
                     {hoveredNestedItem.description}
                   </p>
                 </div>
@@ -706,7 +706,7 @@ export const BuilderCombobox = memo(
                 <Button
                   data-testid="query-builder-open"
                   variant="default"
-                  className="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700">
+                  className="border-muted text-muted-foreground aspect-square size-6 rounded-md border-[1px] bg-transparent p-0 hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700">
                   <Plus />
                 </Button>
               </PopoverTrigger>
@@ -727,7 +727,7 @@ export const BuilderCombobox = memo(
             }
           }}
           align="start"
-          className="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none">
+          className="group w-[400px] rounded-lg border-none bg-transparent p-0 shadow-none select-none">
           <motion.div
             drag
             dragConstraints={constraints}
@@ -736,7 +736,7 @@ export const BuilderCombobox = memo(
             dragControls={controls}
             dragListener={false}
             style={{ touchAction: 'none' }}
-            className="rounded-lg border border-muted bg-popover shadow-lg">
+            className="border-muted bg-popover rounded-lg border shadow-lg">
             <Command>
               <div className="relative">
                 <CommandInput
@@ -750,8 +750,8 @@ export const BuilderCombobox = memo(
                     e.stopPropagation()
                     controls.start(e)
                   }}
-                  className="absolute right-2 top-2">
-                  <GripVertical className="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground" />
+                  className="absolute top-2 right-2">
+                  <GripVertical className="text-muted-foreground hover:text-foreground active:text-foreground relative size-4 opacity-0 transition-colors transition-opacity duration-250 group-hover:opacity-100 hover:cursor-grab active:cursor-grabbing" />
                 </div>
               </div>
               <CommandList>
@@ -774,8 +774,8 @@ export const BuilderCombobox = memo(
             </Command>
 
             {hoveredItem && (
-              <div className="border-t-[1px] border-muted px-3 py-2">
-                <p className="text-sm text-muted-foreground">
+              <div className="border-muted border-t-[1px] px-3 py-2">
+                <p className="text-muted-foreground text-sm">
                   {hoveredItem.description}
                 </p>
               </div>

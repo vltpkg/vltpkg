@@ -90,13 +90,13 @@ export const CreateNewProjectContent = ({
   }
 
   return (
-    <div className="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card">
+    <div className="bg-card z-[3] flex w-full rounded-md border-[1px] border-dashed">
       <form
-        className="relative w-1/2 space-y-6 border-r-[1px] border-solid border-dashed"
+        className="relative w-1/2 space-y-6 border-r-[1px] border-dashed border-solid"
         onSubmit={formSubmit}>
         <div className="mb-12 flex flex-col gap-2 px-8 pt-8">
           <h5 className="text-xl font-medium">Project details</h5>
-          <p className="text-sm italic text-muted-foreground/50">
+          <p className="text-muted-foreground/50 text-sm italic">
             Required fields are marked with an asterisk (*).
           </p>
         </div>
@@ -176,47 +176,47 @@ export const CreateNewProjectContent = ({
       </form>
 
       <div className="relative h-full w-1/2">
-        <div className="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80" />
+        <div className="bg-gradient-radial from-card/20 to-card/80 absolute inset-0 z-[10] h-full w-full" />
         <System className="h-full w-full">
           <Grid rows={7} columns={7} ref={containerRef}>
             <Cell column={2} row={2} ref={nextRef}>
-              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
                 <div className="flex items-center justify-center shadow-inner">
-                  <Next className="size-12 text-muted-foreground/80" />
+                  <Next className="text-muted-foreground/80 size-12" />
                 </div>
               </div>
             </Cell>
 
             <Cell column={6} row={2} ref={nuxtRef}>
-              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
                 <div className="flex items-center justify-center shadow-inner">
-                  <Nuxt className="size-12 text-muted-foreground/80" />
+                  <Nuxt className="text-muted-foreground/80 size-12" />
                 </div>
               </div>
             </Cell>
 
             <Cell column={2} row={6} ref={vercelRef}>
-              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
                 <div className="flex items-center justify-center shadow-inner">
-                  <Vercel className="size-12 text-muted-foreground/80" />
+                  <Vercel className="text-muted-foreground/80 size-12" />
                 </div>
               </div>
             </Cell>
 
             <Cell column={6} row={6} ref={nodeRef}>
-              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
                 <div className="flex h-full w-full items-center justify-center shadow-inner">
-                  <Node className="size-12 fill-muted-foreground/80" />
+                  <Node className="fill-muted-foreground/80 size-12" />
                 </div>
               </div>
             </Cell>
 
             <Cell column={4} row={4} ref={vltRef}>
-              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card p-2 shadow-inner">
+              <div className="border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed p-2 shadow-inner">
                 <div className="flex items-center justify-center">
                   <svg
                     width="24"
-                    className="size-16 text-muted-foreground"
+                    className="text-muted-foreground size-16"
                     height="24"
                     viewBox="0 0 24 24"
                     fill="none"

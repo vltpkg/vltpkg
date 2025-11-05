@@ -30,7 +30,7 @@ const AsideHeader = ({ children, className }: AsideProps) => {
   return (
     <h4
       className={cn(
-        'text-sm font-medium capitalize text-muted-foreground',
+        'text-muted-foreground text-sm font-medium capitalize',
         className,
       )}>
       {children}
@@ -167,11 +167,11 @@ const AsideItem = ({
         }
       : {})}
       className={cn(
-        'flex items-center text-nowrap text-sm text-foreground',
+        'text-foreground flex items-center text-sm text-nowrap',
         !isLink && 'gap-2',
         className,
       )}>
-      <span className="flex items-center justify-center empty:hidden [&>svg]:text-muted-foreground">
+      <span className="[&>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
         {Icon && copyToClipboard && (
           <CopyIcon copied={copied} hovered={hovered} icon={Icon} />
         )}

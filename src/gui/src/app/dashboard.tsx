@@ -90,12 +90,12 @@ export const Dashboard = () => {
 
 const LoadingDashboard = () => (
   <div className="flex h-full flex-col px-8 py-4">
-    <div className="flex w-full max-w-8xl flex-col">
+    <div className="max-w-8xl flex w-full flex-col">
       <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 24 }).map((_, idx) => (
           <Skeleton
             key={idx}
-            className="h-[150px] w-full rounded-lg border bg-muted/50"
+            className="bg-muted/50 h-[150px] w-full rounded-lg border"
           />
         ))}
       </div>

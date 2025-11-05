@@ -66,7 +66,7 @@ export const SettingSection = ({
   return (
     <section
       className={cn('flex cursor-default flex-col gap-4', className)}>
-      <h3 className="text-sm font-medium text-muted-foreground">
+      <h3 className="text-muted-foreground text-sm font-medium">
         {title}
       </h3>
       <fieldset className={cn('group')}>{children}</fieldset>
@@ -164,16 +164,16 @@ export const SettingField = ({
     <div
       data-setting="field"
       className={cn(
-        'flex flex-col border-[1px] bg-card p-4',
+        'bg-card flex flex-col border-[1px] p-4',
         styles,
         className,
       )}>
       <div className="flex justify-between">
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-foreground">
+          <p className="text-foreground text-sm font-medium">
             {name}
           </p>
-          <p className="text-xs font-medium text-muted-foreground">
+          <p className="text-muted-foreground text-xs font-medium">
             {description}
           </p>
         </div>
@@ -222,7 +222,7 @@ const DropdownField = ({
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&_svg]:size-4',
+            'group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&_svg]:size-4',
             className,
           )}>
           {defaultValue?.icon && (
@@ -277,7 +277,7 @@ const ToggleField = ({
     <div
       onClick={() => toggleSetting(!active)}
       className={cn(
-        'duration-250 grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors',
+        'grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors duration-250',
         active ?
           'border-green-500/50 bg-green-500 dark:border-green-600/50 dark:bg-green-900'
         : 'border-muted-foreground/25 bg-secondary',
@@ -290,7 +290,7 @@ const ToggleField = ({
           />
         : <motion.div
             layoutId="toggle-setting"
-            className="size-4 self-center justify-self-start rounded-full bg-muted-foreground/50"
+            className="bg-muted-foreground/50 size-4 self-center justify-self-start rounded-full"
           />
         }
       </AnimatePresence>

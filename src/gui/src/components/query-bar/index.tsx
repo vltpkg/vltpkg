@@ -141,7 +141,7 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
             autoCapitalize="off"
             ref={inputRef}
             className={cn(
-              'rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-muted-foreground/5 dark:caret-white',
+              'dark:bg-muted-foreground/5 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:caret-white',
               startContent && 'pl-10',
               endContent && 'pr-32',
               className,

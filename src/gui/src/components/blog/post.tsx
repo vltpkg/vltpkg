@@ -66,14 +66,14 @@ export const BlogPost = forwardRef<HTMLAnchorElement, BlogPostProps>(
           <div
             className={cn(
               isFeatured ?
-                'mb-3 mt-4 flex flex-col gap-2'
-              : 'mb-1 mt-3',
+                'mt-4 mb-3 flex flex-col gap-2'
+              : 'mt-3 mb-1',
             )}>
             <p className={cn('text-md', isFeatured && 'text-2xl')}>
               {title}
             </p>
             {isFeatured && (
-              <p className="w-full !text-lg text-muted-foreground md:w-2/3">
+              <p className="text-muted-foreground w-full !text-lg md:w-2/3">
                 {summary}
               </p>
             )}
@@ -81,7 +81,7 @@ export const BlogPost = forwardRef<HTMLAnchorElement, BlogPostProps>(
           <div className="inline-flex items-center">
             <p
               className={cn(
-                'text-sm text-muted-foreground',
+                'text-muted-foreground text-sm',
                 isFeatured && 'text-md',
               )}>
               {format(date, 'LLL do, yyyy')}

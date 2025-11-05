@@ -71,7 +71,7 @@ export const ThemeSwitcher = forwardRef<
           size="sm"
           variant="ghost"
           className={cn(
-            'group/trigger h-8 w-[100px] rounded-xl text-muted-foreground hover:text-foreground',
+            'group/trigger text-muted-foreground hover:text-foreground h-8 w-[100px] rounded-xl',
             'data-[state=open]:text-foreground',
             'dark:data-[state=open]:border-neutral-800 dark:data-[state=open]:bg-neutral-900',
             'data-[state=open]:border-neutral-200 data-[state=open]:bg-neutral-100',
@@ -97,7 +97,7 @@ export const ThemeSwitcher = forwardRef<
           <DropdownMenuItem
             key={`${o.theme}-${idx}`}
             onClick={() => updateTheme(o.theme)}
-            className="group/option h-8 rounded-xl text-muted-foreground hover:text-foreground">
+            className="group/option text-muted-foreground hover:text-foreground h-8 rounded-xl">
             <o.icon
               className={cn(
                 'fill-neutral-500 stroke-neutral-500 transition-colors duration-100',

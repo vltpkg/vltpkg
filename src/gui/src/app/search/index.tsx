@@ -27,9 +27,9 @@ export const Search = () => {
   return (
     <section className="flex flex-col items-center justify-center gap-4">
       <div className="relative mt-[64px] flex h-[calc(100svh-80px-64px)] w-full flex-col items-center justify-center">
-        <h1 className="absolute z-[1] mb-52 whitespace-pre-line bg-gradient-to-b from-neutral-700 to-neutral-400 bg-clip-text text-center text-7xl tracking-tight text-transparent dark:from-neutral-200 dark:to-neutral-500 md:mb-36">{`Build for the future\nof JavaScript *`}</h1>
+        <h1 className="absolute z-[1] mb-52 bg-gradient-to-b from-neutral-700 to-neutral-400 bg-clip-text text-center text-7xl tracking-tight whitespace-pre-line text-transparent md:mb-36 dark:from-neutral-200 dark:to-neutral-500">{`Build for the future\nof JavaScript *`}</h1>
         <SearchBar className="z-[3]" />
-        <div className="absolute z-[2] h-14 w-[25rem] rounded-full bg-gradient-radial from-white to-white/10 blur-md dark:from-neutral-950 dark:to-neutral-950/10" />
+        <div className="bg-gradient-radial absolute z-[2] h-14 w-[25rem] rounded-full from-white to-white/10 blur-md dark:from-neutral-950 dark:to-neutral-950/10" />
         <div className="absolute mt-24 flex scale-90 items-center gap-4">
           {options.map((option, idx) => (
             <FeaturedButton

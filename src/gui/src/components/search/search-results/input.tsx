@@ -55,7 +55,7 @@ export const SearchResultsInput = forwardRef<
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.15 }}
               className="absolute right-11 flex items-center justify-center">
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground size-4 animate-spin" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -64,7 +64,7 @@ export const SearchResultsInput = forwardRef<
           variant="secondary"
           onClick={onButtonClick}
           className={cn(
-            'absolute right-1 ml-auto size-8 rounded-xl p-0 text-muted-foreground [&_svg]:size-5',
+            'text-muted-foreground absolute right-1 ml-auto size-8 rounded-xl p-0 [&_svg]:size-5',
             button,
           )}>
           <Search />

@@ -31,7 +31,7 @@ const RootButton = ({ className }: RootButtonProps) => {
             onClick={onClick}
             size="icon"
             className={cn(
-              'rounded-sm border-[1px] border-muted bg-card text-muted-foreground hover:bg-card/50 dark:bg-card dark:hover:bg-card/50',
+              'border-muted bg-card text-muted-foreground hover:bg-card/50 dark:bg-card dark:hover:bg-card/50 rounded-sm border-[1px]',
               className,
             )}>
             <House />

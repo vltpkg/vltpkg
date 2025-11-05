@@ -70,7 +70,7 @@ export const PackageContentItem = ({
             {Icon && (
               <div className="flex size-4 items-center justify-center">
                 <Icon
-                  className="size-4 text-muted-foreground"
+                  className="text-muted-foreground size-4"
                   strokeWidth={1}
                 />
               </div>
@@ -80,12 +80,12 @@ export const PackageContentItem = ({
             </p>
           </div>
           <div className="col-span-3 flex justify-center">
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-muted-foreground text-sm font-medium">
               {item.type !== 'none' && item.type}
             </p>
           </div>
           <div className="col-span-3 flex justify-end text-right">
-            <p className="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+            <p className="text-muted-foreground font-mono text-sm font-medium tabular-nums">
               {item.type !== 'none' ?
                 item.size && item.size !== 0 ?
                   formatDownloadSize(item.size)

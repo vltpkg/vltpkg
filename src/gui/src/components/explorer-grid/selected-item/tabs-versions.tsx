@@ -98,7 +98,7 @@ const VersionHeaderButton = ({
 }) => {
   return (
     <button
-      className="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&>svg]:size-4"
+      className="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&>svg]:size-4"
       onClick={onClick}>
       {children}
     </button>
@@ -282,13 +282,13 @@ const VersionItem = memo(
       <div
         onClick={handleVersionClick}
         className={cn(
-          'group/item flex grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground first:border-t-[0px] xl:grid xl:gap-3 xl:py-1.5',
+          'group/item text-foreground flex grid-cols-12 flex-col gap-3 rounded-sm py-4 first:border-t-[0px] xl:grid xl:gap-3 xl:py-1.5',
           isExternalPackage &&
-            'cursor-default transition-colors hover:bg-muted/50',
+            'hover:bg-muted/50 cursor-default transition-colors',
           !isExternalPackage && 'cursor-default',
         )}>
         <div className="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
-          <p className="text-sm font-medium text-muted-foreground xl:hidden">
+          <p className="text-muted-foreground text-sm font-medium xl:hidden">
             Version
           </p>
           <DataBadge
@@ -305,7 +305,7 @@ const VersionItem = memo(
         <div className="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-end xl:justify-center xl:gap-0 xl:text-center">
           {unpackedSize && (
             <>
-              <p className="text-sm font-medium text-muted-foreground xl:hidden">
+              <p className="text-muted-foreground text-sm font-medium xl:hidden">
                 Size
               </p>
               <p className="font-mono text-sm">
@@ -317,23 +317,23 @@ const VersionItem = memo(
         <div className="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
           {publishedDate && (
             <>
-              <p className="text-sm font-medium text-muted-foreground xl:hidden">
+              <p className="text-muted-foreground text-sm font-medium xl:hidden">
                 Published Date
               </p>
               <div className="flex gap-2 xl:hidden">
                 <Avatar className="size-5">
                   <AvatarImage
-                    className="rounded-sm outline outline-[1px] outline-border"
+                    className="outline-border rounded-sm outline outline-[1px]"
                     src={publishedAuthor?.avatar}
                   />
                   {publishedAuthor?.avatar && (
-                    <AvatarFallback className="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+                    <AvatarFallback className="bg-secondary outline-border h-5 h-full w-5 w-full rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800" />
                   )}
                 </Avatar>
                 <p className="col-span-4 font-mono text-sm">
                   {publishedAuthor?.name}
                 </p>
-                <p className="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
+                <p className="text-muted-foreground ml-2 inline-flex font-mono text-sm xl:hidden">
                   {formatDistanceStrict(publishedDate, new Date(), {
                     addSuffix: true,
                   })}
@@ -366,7 +366,7 @@ const VersionItem = memo(
           )}>
           {downloadsPerVersion && (
             <>
-              <p className="text-sm font-medium text-muted-foreground xl:hidden">
+              <p className="text-muted-foreground text-sm font-medium xl:hidden">
                 Downloads
               </p>
               <p className="font-mono text-sm">
@@ -379,11 +379,11 @@ const VersionItem = memo(
           <div className="flex w-full items-center justify-center gap-2">
             <Avatar className="flex size-5 items-center justify-center">
               <AvatarImage
-                className="rounded-sm outline outline-[1px] outline-border"
+                className="outline-border rounded-sm outline outline-[1px]"
                 src={publishedAuthor?.avatar}
               />
               {publishedAuthor?.avatar && (
-                <AvatarFallback className="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+                <AvatarFallback className="bg-secondary outline-border h-full w-full rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800" />
               )}
             </Avatar>
             <TooltipProvider>
@@ -412,14 +412,14 @@ VersionItem.displayName = 'VersionItem'
 const EmptyState = ({ message }: { message: string }) => (
   <div className="flex h-full min-h-64 w-full items-center justify-center overflow-hidden">
     <div className="flex flex-col items-center justify-center gap-3 text-center">
-      <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+      <div className="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
         <History
           className="absolute z-[4] size-14 text-neutral-500"
           strokeWidth={1.25}
         />
       </div>
       <div className="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
-        <p className="w-full text-pretty text-sm text-muted-foreground">
+        <p className="text-muted-foreground w-full text-sm text-pretty">
           {message}
         </p>
       </div>
@@ -459,15 +459,15 @@ const DownloadGraph = () => {
   )
 
   return (
-    <div className="mb-3 border-b-[1px] border-muted pb-1">
+    <div className="border-muted mb-3 border-b-[1px] pb-1">
       <div className="flex cursor-default justify-between">
         <div className="flex flex-col gap-0.5">
           <TooltipProvider>
-            <h3 className="inline-flex items-center gap-1 align-baseline text-base font-medium text-foreground">
+            <h3 className="text-foreground inline-flex items-center gap-1 align-baseline text-base font-medium">
               Package Downloads
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="cursor-default text-muted-foreground">
+                  <span className="text-muted-foreground cursor-default">
                     <CircleHelp strokeWidth={2} size={16} />
                   </span>
                 </TooltipTrigger>
@@ -479,11 +479,11 @@ const DownloadGraph = () => {
               </Tooltip>
             </h3>
           </TooltipProvider>
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="text-muted-foreground font-mono text-xs">
             {totalDownloads.toLocaleString()}
           </p>
         </div>
-        <p className="align-baseline text-sm text-muted-foreground">
+        <p className="text-muted-foreground align-baseline text-sm">
           {format(downloadsLastYear.start, 'MMMM yyyy')}
           {' - '}
           {format(downloadsLastYear.end, 'MMMM yyyy')}
@@ -663,7 +663,7 @@ export const VersionsTabContent = () => {
           <div className="mb-3 flex items-center gap-2">
             <div className="relative flex w-full items-center justify-start">
               <Search
-                className="absolute ml-3 text-muted-foreground"
+                className="text-muted-foreground absolute ml-3"
                 size={16}
               />
               <Input
@@ -748,7 +748,7 @@ export const VersionsTabContent = () => {
                           style={{
                             originY: '0px',
                           }}
-                          className="relative inline-flex h-fit cursor-default items-center overflow-hidden whitespace-nowrap rounded-full border-[1px] border-muted-foreground/20 bg-white py-1 text-xs font-medium text-foreground dark:bg-muted-foreground/5"
+                          className="border-muted-foreground/20 text-foreground dark:bg-muted-foreground/5 relative inline-flex h-fit cursor-default items-center overflow-hidden rounded-full border-[1px] bg-white py-1 text-xs font-medium whitespace-nowrap"
                           key={`filter-${filter.id}-${idx}`}>
                           <span className="px-3">{filter.label}</span>
                         </motion.div>
@@ -775,12 +775,12 @@ export const VersionsTabContent = () => {
                   <div className="relative">
                     {isScrolling && (
                       <>
-                        <div className="absolute -inset-x-6 top-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-b from-card" />
+                        <div className="from-card absolute -inset-x-6 top-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-b" />
                       </>
                     )}
                     {!isScrolledBottom && (
                       <>
-                        <div className="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card" />
+                        <div className="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t" />
                       </>
                     )}
 
@@ -790,7 +790,7 @@ export const VersionsTabContent = () => {
                       }}
                       ref={virtuosoRef}
                       rangeChanged={handleRangeChange}
-                      className="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+                      className="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
                       data={filteredVersions}
                       itemContent={(i, version) => {
                         const downloads =

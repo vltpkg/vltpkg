@@ -65,7 +65,7 @@ const SidebarHeader = () => {
             span: 'text-muted-foreground',
           }}
         />
-        <span className="font-mono text-sm tabular-nums text-muted-foreground">
+        <span className="text-muted-foreground font-mono text-sm tabular-nums">
           /
         </span>
         <NumberFlow

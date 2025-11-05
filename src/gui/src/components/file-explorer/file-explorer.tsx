@@ -273,11 +273,11 @@ const FileExplorerViewChanger = () => {
       <DropdownMenuTrigger asChild>
         <FileExplorerButton
           variant="default"
-          className="h-8 w-fit min-w-fit border-transparent text-neutral-500 hover:border-muted hover:bg-transparent hover:text-foreground [&>.chevron]:data-[state=open]:rotate-90">
+          className="hover:border-muted hover:text-foreground h-8 w-fit min-w-fit border-transparent text-neutral-500 hover:bg-transparent [&>.chevron]:data-[state=open]:rotate-90">
           {view === 'grid' ?
             <LayoutGrid />
           : <List />}
-          <ChevronRight className="chevron duration-250 transition-transform" />
+          <ChevronRight className="chevron transition-transform duration-250" />
         </FileExplorerButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent onCloseAutoFocus={e => e.preventDefault()}>
@@ -323,7 +323,7 @@ const FileExplorerContent = React.forwardRef<
               ease: 'easeInOut',
             }}
             className={cn(
-              'relative z-[51] flex h-[600px] max-h-[600px] min-h-0 w-[900px] flex-col justify-between rounded-xl bg-background shadow-sm dark:border dark:border-muted dark:bg-neutral-950',
+              'bg-background dark:border-muted relative z-[51] flex h-[600px] max-h-[600px] min-h-0 w-[900px] flex-col justify-between rounded-xl shadow-sm dark:border dark:bg-neutral-950',
               className,
             )}
             {...props}>
@@ -395,7 +395,7 @@ const FileExplorerHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     className={cn(
-      'grid grid-cols-12 items-center border-b border-muted px-2 py-2',
+      'border-muted grid grid-cols-12 items-center border-b px-2 py-2',
       className,
     )}
     ref={ref}
@@ -411,7 +411,7 @@ const FileExplorerFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'grid grid-cols-12 items-center border-t border-muted px-4 py-3',
+      'border-muted grid grid-cols-12 items-center border-t px-4 py-3',
       className,
     )}
     {...props}>
@@ -465,7 +465,7 @@ const FileExplorerAside = React.forwardRef<
     <aside
       ref={ref}
       className={cn(
-        'col-span-3 h-full min-h-0 flex-col gap-1 border-r border-muted bg-neutral-100 px-1.5 py-2 pr-2 dark:bg-neutral-900',
+        'border-muted col-span-3 h-full min-h-0 flex-col gap-1 border-r bg-neutral-100 px-1.5 py-2 pr-2 dark:bg-neutral-900',
         asideVisible ? 'flex' : 'hidden',
         className,
       )}>
@@ -533,30 +533,30 @@ const FileExplorerMainContent = ({
         )}
         scrollBarThumbClassName="bg-neutral-500">
         {filteredItems.length === 0 ?
-          <div className="flex h-full w-full items-center justify-center p-4 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex h-full w-full items-center justify-center p-4 text-sm">
             {searchValue.trim() ?
               <div className="flex h-full w-full flex-col items-center justify-center">
                 <div className="flex flex-col items-center justify-center gap-3">
                   <div className="relative flex items-center justify-center">
-                    <Frown className="size-10 text-muted-foreground" />
-                    <div className="absolute size-16 h-16 w-16 rounded-full border border-muted/70 bg-muted/60" />
+                    <Frown className="text-muted-foreground size-10" />
+                    <div className="border-muted/70 bg-muted/60 absolute size-16 h-16 w-16 rounded-full border" />
                   </div>
                   <div className="mt-2 flex flex-col items-center justify-center text-center">
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-foreground text-sm font-medium">
                       No items matching:
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {searchValue.trim()}
                     </p>
                   </div>
                 </div>
               </div>
-            : <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-sm text-muted-foreground">
+            : <div className="text-muted-foreground flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-sm">
                 <div className="relative flex items-center justify-center">
-                  <Frown className="size-10 text-muted-foreground" />
-                  <div className="absolute size-16 h-16 w-16 rounded-full border border-muted/70 bg-muted/60" />
+                  <Frown className="text-muted-foreground size-10" />
+                  <div className="border-muted/70 bg-muted/60 absolute size-16 h-16 w-16 rounded-full border" />
                 </div>
-                <p className="mt-2 text-sm font-medium text-foreground">
+                <p className="text-foreground mt-2 text-sm font-medium">
                   No items to display
                 </p>
               </div>
@@ -637,7 +637,7 @@ const FileExplorerGridItem = ({
   return (
     <div
       className={cn(
-        'duration-250 group col-span-3 flex cursor-default select-none flex-col items-center justify-center gap-1 rounded-lg p-2',
+        'group col-span-3 flex cursor-default flex-col items-center justify-center gap-1 rounded-lg p-2 duration-250 select-none',
         isSelected ?
           'bg-neutral-200 dark:bg-neutral-900'
         : 'bg-transparent',
@@ -645,7 +645,7 @@ const FileExplorerGridItem = ({
       )}
       onClick={onClick}
       onDoubleClick={onDoubleClick}>
-      <div className="duration-250 flex items-center justify-center rounded-lg p-1 transition-colors group-hover:bg-neutral-200 dark:group-hover:bg-neutral-900 [&>svg]:size-20">
+      <div className="flex items-center justify-center rounded-lg p-1 transition-colors duration-250 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-900 [&>svg]:size-20">
         <Icon
           className={cn(
             '',
@@ -659,7 +659,7 @@ const FileExplorerGridItem = ({
       <div className="flex items-center justify-center">
         <p
           className={cn(
-            'text-wrap break-all text-center text-sm font-normal',
+            'text-center text-sm font-normal text-wrap break-all',
             isSelected ?
               'rounded bg-blue-300 px-1 text-white dark:bg-blue-500'
             : 'text-foreground',
@@ -739,12 +739,12 @@ const FileExplorerSearch = () => {
           exit={{ opacity: 0, width: 0, filter: 'blur(2px)' }}
           transition={{ type: 'spring', bounce: 0.1, duration: 0.3 }}
           className={cn(
-            'relative h-8 overflow-hidden rounded-lg border border-muted',
+            'border-muted relative h-8 overflow-hidden rounded-lg border',
             inputHasFocus &&
               'outline outline-2 outline-offset-1 outline-blue-300',
           )}>
           <div className="flex items-center justify-center">
-            <Search className="absolute inset-0 left-2 my-auto size-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute inset-0 left-2 my-auto size-4" />
           </div>
           <Input
             autoFocus={true}
@@ -759,7 +759,7 @@ const FileExplorerSearch = () => {
             onChange={e => setSearchValue(e.target.value)}
             placeholder="Search"
             className={cn(
-              'h-8 w-48 rounded-lg border-transparent bg-transparent pl-8 pr-2 text-sm dark:border-transparent dark:bg-transparent',
+              'h-8 w-48 rounded-lg border-transparent bg-transparent pr-2 pl-8 text-sm dark:border-transparent dark:bg-transparent',
               '!ring-offset-0 focus-visible:!ring-0',
             )}
           />
@@ -799,7 +799,7 @@ const FileExplorerHeaderTitle = () => {
       {query ?
         <>
           Search:
-          <span className="ml-1 text-muted-foreground">{query}</span>
+          <span className="text-muted-foreground ml-1">{query}</span>
         </>
       : currentPath ?
         currentPath.split('/').pop()
@@ -965,7 +965,7 @@ const FileExplorerDialog = ({
               <React.Fragment key={idx}>
                 <FileExplorerAsideRootItem item={item} />
                 {idx < rootDirs.length - 1 && (
-                  <div className="h-[1px] w-full rounded-full bg-muted" />
+                  <div className="bg-muted h-[1px] w-full rounded-full" />
                 )}
               </React.Fragment>
             ))}
