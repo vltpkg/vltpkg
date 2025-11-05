@@ -5,7 +5,7 @@ exports[`ContributorList renders with less than 6 contributors 1`] = `
 <div class="flex cursor-default flex-col gap-2 px-6 pb-4">
   <gui-tooltip-provider>
     <gui-tooltip delayduration="150">
-      <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+      <gui-tooltip-trigger classname="text-muted-foreground inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize">
         Contributors
         <span>
           <gui-circle-help-icon size="16">
@@ -56,7 +56,7 @@ exports[`ContributorList renders with less than 6 contributors 1`] = `
       </gui-avatar>
     </div>
     <gui-button
-      classname="duration-250 font-muted-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal text-foreground transition-colors hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
+      classname="font-muted-foreground text-foreground hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal transition-colors duration-250 dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
       variant="default"
     >
       See all contributors
@@ -75,7 +75,7 @@ exports[`ContributorList renders with more than 6 contributors 1`] = `
 <div class="flex cursor-default flex-col gap-2 px-6 pb-4">
   <gui-tooltip-provider>
     <gui-tooltip delayduration="150">
-      <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+      <gui-tooltip-trigger classname="text-muted-foreground inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize">
         Contributors
         <span>
           <gui-circle-help-icon size="16">
@@ -157,14 +157,14 @@ exports[`ContributorList renders with more than 6 contributors 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex size-6 items-center justify-center rounded-full bg-background p-0.5 outline outline-[1px] outline-neutral-200 dark:outline-neutral-700">
-        <span class="font-mono text-xxs font-medium tabular-nums text-muted-foreground">
+      <div class="bg-background flex size-6 items-center justify-center rounded-full p-0.5 outline outline-[1px] outline-neutral-200 dark:outline-neutral-700">
+        <span class="text-xxs text-muted-foreground font-mono font-medium tabular-nums">
           +1
         </span>
       </div>
     </div>
     <gui-button
-      classname="duration-250 font-muted-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal text-foreground transition-colors hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
+      classname="font-muted-foreground text-foreground hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal transition-colors duration-250 dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
       variant="default"
     >
       See all contributors
@@ -183,7 +183,7 @@ exports[`ContributorTabContent renders with contributors 1`] = `
 <gui-tabs-content value="contributors">
   <section class="flex flex-col gap-4 py-4">
     <div class="flex items-center gap-3 px-6">
-      <gui-button classname="inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] border-muted bg-transparent px-3 py-1 text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900">
+      <gui-button classname="border-muted text-foreground inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] bg-transparent px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900">
         <gui-arrow-left-icon>
         </gui-arrow-left-icon>
         <span>
@@ -192,7 +192,7 @@ exports[`ContributorTabContent renders with contributors 1`] = `
       </gui-button>
       <gui-tooltip-provider>
         <gui-tooltip delayduration="150">
-          <gui-tooltip-trigger classname="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+          <gui-tooltip-trigger classname="text-muted-foreground inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize">
             4 contributors
             <span>
               <gui-circle-help-icon size="16">
@@ -210,7 +210,7 @@ exports[`ContributorTabContent renders with contributors 1`] = `
     <div class="flex flex-col gap-2">
       <div
         role="button"
-        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        class="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800"
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
@@ -223,18 +223,18 @@ exports[`ContributorTabContent renders with contributors 1`] = `
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
+        <div class="text-foreground flex flex-col justify-center text-sm">
           <p class="font-medium text-neutral-900 dark:text-neutral-200">
             John Doe
           </p>
-          <p class="text-xs text-muted-foreground">
+          <p class="text-muted-foreground text-xs">
             johndoe@acme.com
           </p>
         </div>
       </div>
       <div
         role="button"
-        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        class="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800"
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
@@ -247,18 +247,18 @@ exports[`ContributorTabContent renders with contributors 1`] = `
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
+        <div class="text-foreground flex flex-col justify-center text-sm">
           <p class="font-medium text-neutral-900 dark:text-neutral-200">
             Jane Doe
           </p>
-          <p class="text-xs text-muted-foreground">
+          <p class="text-muted-foreground text-xs">
             janedoe@acme.com
           </p>
         </div>
       </div>
       <div
         role="button"
-        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        class="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800"
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
@@ -271,18 +271,18 @@ exports[`ContributorTabContent renders with contributors 1`] = `
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
+        <div class="text-foreground flex flex-col justify-center text-sm">
           <p class="font-medium text-neutral-900 dark:text-neutral-200">
             John Smith
           </p>
-          <p class="text-xs text-muted-foreground">
+          <p class="text-muted-foreground text-xs">
             johnsmith@acme.com
           </p>
         </div>
       </div>
       <div
         role="button"
-        class="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        class="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800"
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
@@ -295,11 +295,11 @@ exports[`ContributorTabContent renders with contributors 1`] = `
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
+        <div class="text-foreground flex flex-col justify-center text-sm">
           <p class="font-medium text-neutral-900 dark:text-neutral-200">
             Sarah Davis
           </p>
-          <p class="text-xs text-muted-foreground">
+          <p class="text-muted-foreground text-xs">
             sarahdavis@acme.com
           </p>
         </div>

@@ -4,7 +4,7 @@ exports[`SelectedItem renders default 1`] = `
 
 <section>
   <div
-    class="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4"
+    class="max-w-8xl grid w-full grid-cols-8 gap-4 px-8 py-4"
     style="opacity: 1; filter: blur(0px);"
   >
     <div class="relative col-span-full md:col-span-2">

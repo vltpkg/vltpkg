@@ -2,8 +2,8 @@
 
 exports[`Item > renders attribute node 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-blue-800 after:bg-blue-600/20 dark:text-blue-400 after:dark:bg-blue-600/15 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       name
     </span>
@@ -11,7 +11,7 @@ exports[`Item > renders attribute node 1`] = `
       pkg
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -21,8 +21,8 @@ exports[`Item > renders attribute node 1`] = `
 
 exports[`Item > renders attribute pseudo :attr with child string 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-purple-800 after:bg-purple-600/20 dark:text-purple-400 after:dark:bg-purple-600/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       with attribute
     </span>
@@ -30,7 +30,7 @@ exports[`Item > renders attribute pseudo :attr with child string 1`] = `
       license
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -40,13 +40,13 @@ exports[`Item > renders attribute pseudo :attr with child string 1`] = `
 
 exports[`Item > renders combinator node 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-gray-800 after:bg-gray-500/20 dark:text-gray-300 after:dark:bg-gray-500/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       and direct dependencies with
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -56,13 +56,13 @@ exports[`Item > renders combinator node 1`] = `
 
 exports[`Item > renders comma token as group label 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-gray-800 after:bg-gray-500/20 dark:text-gray-300 after:dark:bg-gray-500/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       and
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -72,8 +72,8 @@ exports[`Item > renders comma token as group label 1`] = `
 
 exports[`Item > renders functional pseudo :is with child 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-purple-800 after:bg-purple-600/20 dark:text-purple-400 after:dark:bg-purple-600/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       and matches
     </span>
@@ -81,7 +81,7 @@ exports[`Item > renders functional pseudo :is with child 1`] = `
       a
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -91,8 +91,8 @@ exports[`Item > renders functional pseudo :is with child 1`] = `
 
 exports[`Item > renders id node as identifier 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-gray-800 after:bg-gray-500/20 dark:text-gray-300 after:dark:bg-gray-500/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       name
     </span>
@@ -100,7 +100,7 @@ exports[`Item > renders id node as identifier 1`] = `
       foo
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -110,13 +110,13 @@ exports[`Item > renders id node as identifier 1`] = `
 
 exports[`Item > renders relationship pseudo :dev 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-purple-800 after:bg-purple-600/20 dark:text-purple-400 after:dark:bg-purple-600/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       Development dependencies
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -126,8 +126,8 @@ exports[`Item > renders relationship pseudo :dev 1`] = `
 
 exports[`Item > renders state pseudo :outdated with child string 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-purple-800 after:bg-purple-600/20 dark:text-purple-400 after:dark:bg-purple-600/20 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       outdated
     </span>
@@ -135,7 +135,7 @@ exports[`Item > renders state pseudo :outdated with child string 1`] = `
       true
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>
@@ -145,13 +145,13 @@ exports[`Item > renders state pseudo :outdated with child string 1`] = `
 
 exports[`Item > renders tag node 1`] = `
 
-<div class="inline-flex items-center rounded-lg border-[1px] border-muted [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
-  <div class="content inline-flex divide-x-[1px] divide-popover">
+<div class="inline-flex items-center border-muted rounded-lg border-[1px] [&amp;:has(>.content:empty)_>.close-button]:border-l-[0px]">
+  <div class="content divide-popover inline-flex divide-x-[1px]">
     <span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-emerald-800 after:bg-emerald-600/20 dark:text-emerald-400 after:dark:bg-emerald-600/15 inline-flex items-center px-1 leading-6 first:after:rounded-l-[7px] first:after:rounded-r-none odd:after:rounded-none first:odd:after:rounded-l-[7px] even:after:rounded-none">
       a
     </span>
   </div>
-  <gui-button classname="close-button duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors hover:!bg-neutral-200 hover:text-foreground dark:bg-transparent dark:hover:!bg-neutral-600">
+  <gui-button classname="close-button border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250 hover:text-foreground hover:!bg-neutral-200 dark:bg-transparent dark:hover:!bg-neutral-600">
     <gui-x-icon>
     </gui-x-icon>
   </gui-button>

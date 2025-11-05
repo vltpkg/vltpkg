@@ -6,7 +6,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700 [&amp;>.option-icon]:text-foreground"
+    classname="[&amp;_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50 rounded-xl border text-sm transition-colors duration-150 [&amp;>.option-icon]:text-foreground border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700"
   >
     <gui-list-icon classname="option-icon size-4">
     </gui-list-icon>
@@ -23,7 +23,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+    classname="[&amp;_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50 rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
   >
     <gui-layers-icon classname="option-icon size-4">
     </gui-layers-icon>
@@ -40,7 +40,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+    classname="[&amp;_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50 rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
   >
     <gui-send-to-back-icon classname="option-icon size-4">
     </gui-send-to-back-icon>
@@ -57,7 +57,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+    classname="[&amp;_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50 rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
   >
     <gui-gallery-vertical-end-icon classname="option-icon size-4">
     </gui-gallery-vertical-end-icon>
@@ -74,7 +74,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+    classname="[&amp;_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50 rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
   >
     <gui-blocks-icon classname="option-icon size-4">
     </gui-blocks-icon>
@@ -91,7 +91,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="inline-flex items-center gap-3 disabled:opacity-50 [&amp;_svg]:text-muted-foreground rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
+    classname="[&amp;_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50 rounded-xl border text-sm transition-colors duration-150 border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800"
   >
     <gui-circle-gauge-icon classname="option-icon size-4">
     </gui-circle-gauge-icon>
