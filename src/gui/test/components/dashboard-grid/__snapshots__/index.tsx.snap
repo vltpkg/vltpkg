@@ -9,7 +9,7 @@ exports[`dashboard-grid render default 1`] = `
         No projects found
       </h2>
       <div class="flex flex-col items-center justify-center gap-2">
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           We couldn't find any projects in the following configured dashboard roots:
         </p>
         <div class="mt-2 flex flex-wrap gap-2">
@@ -89,7 +89,7 @@ exports[`dashboard-grid with results 1`] = `
 <div>
   <div class="flex h-full flex-col px-8 py-4">
     <div
-      class="flex w-full max-w-8xl flex-col"
+      class="max-w-8xl flex w-full flex-col"
       style="opacity: 1; transform: none;"
     >
       <p class="mb-4 text-sm font-semibold">

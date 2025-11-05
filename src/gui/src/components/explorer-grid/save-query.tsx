@@ -65,12 +65,12 @@ const SaveQueryButton = () => {
           <Tooltip>
             <TooltipTrigger
               asChild
-              className="flex size-6 cursor-default items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 transition-colors hover:bg-neutral-300 dark:border-neutral-700 dark:bg-muted dark:hover:bg-neutral-700">
+              className="dark:bg-muted flex size-6 cursor-default items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 transition-colors hover:bg-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700">
               <div
                 onClick={() =>
                   setShowSaveQueryPopover(!showSaveQueryPopover)
                 }
-                className="inline-flex size-5 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[15px] [&_svg]:shrink-0">
+                className="border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex size-5 items-center justify-center gap-2 rounded-md border text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[15px] [&_svg]:shrink-0">
                 <Star ref={scope} fill={starColor} />
               </div>
             </TooltipTrigger>
@@ -231,7 +231,7 @@ const SaveQueryPopover = ({
           {savedQuery ? 'Edit Query' : 'Added Query!'}
         </CardTitle>
       </CardHeader>
-      <div className="flex flex-col gap-2 border-t-[1px] border-muted-foreground/20 px-6 py-4">
+      <div className="border-muted-foreground/20 flex flex-col gap-2 border-t-[1px] px-6 py-4">
         <Label className="border-none p-0 font-medium">Name</Label>
         <Input
           type="text"

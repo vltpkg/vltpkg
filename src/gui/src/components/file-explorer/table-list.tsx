@@ -70,9 +70,9 @@ export const ViewOptions = () => {
       <DropdownMenuTrigger asChild>
         <FileExplorerButton
           variant="default"
-          className="h-8 w-fit min-w-fit border-transparent text-neutral-500 hover:border-muted hover:bg-transparent hover:text-foreground [&>.chevron]:data-[state=open]:rotate-90">
-          <ViewOptionsIcon className="size-4 text-muted-foreground" />
-          <ChevronRight className="chevron duration-250 transition-transform" />
+          className="hover:border-muted hover:text-foreground h-8 w-fit min-w-fit border-transparent text-neutral-500 hover:bg-transparent [&>.chevron]:data-[state=open]:rotate-90">
+          <ViewOptionsIcon className="text-muted-foreground size-4" />
+          <ChevronRight className="chevron transition-transform duration-250" />
         </FileExplorerButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent onCloseAutoFocus={e => e.preventDefault()}>
@@ -134,7 +134,7 @@ const NameCellInner = ({
       <div className="aspect-square size-4">
         {canExpand && (
           <button
-            className="cursor-default p-0 text-neutral-500 hover:text-foreground"
+            className="hover:text-foreground cursor-default p-0 text-neutral-500"
             onClick={e => {
               e.stopPropagation()
               onToggle(item)
@@ -236,7 +236,7 @@ const NestedRows = ({
                 </div>
               </TableCell>
               {visible('modified') && (
-                <TableCell className="px-2 py-1 text-sm text-muted-foreground">
+                <TableCell className="text-muted-foreground px-2 py-1 text-sm">
                   <TooltipProvider>
                     <Tooltip delayDuration={150}>
                       <TooltipTrigger asChild>
@@ -261,14 +261,14 @@ const NestedRows = ({
                 </TableCell>
               )}
               {visible('size') && (
-                <TableCell className="px-2 py-1 text-sm text-muted-foreground">
+                <TableCell className="text-muted-foreground px-2 py-1 text-sm">
                   {item.size === 0 || !item.size ?
                     '-'
                   : formatDownloadSize(item.size)}
                 </TableCell>
               )}
               {visible('kind') && (
-                <TableCell className="px-2 py-1 text-sm text-muted-foreground">
+                <TableCell className="text-muted-foreground px-2 py-1 text-sm">
                   {item.type}
                 </TableCell>
               )}
@@ -425,7 +425,7 @@ export const TableList = ({
         return (
           <TooltipProvider>
             <Tooltip delayDuration={150}>
-              <TooltipTrigger className="w-fit max-w-[150px] cursor-default truncate text-muted-foreground">
+              <TooltipTrigger className="text-muted-foreground w-fit max-w-[150px] cursor-default truncate">
                 {`${date} at ${time}`}
               </TooltipTrigger>
               <TooltipPortal>
@@ -554,7 +554,7 @@ export const TableList = ({
 
   return (
     <Table className="relative" data-test-id="file-explorer-table">
-      <TableHeader className="sticky top-0 z-10 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <TableHeader className="bg-background/90 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 backdrop-blur">
         {table.getHeaderGroups().map(headerGroup => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map(header => (
@@ -608,7 +608,7 @@ export const TableList = ({
                     <TableRow>
                       <TableCell
                         colSpan={columns.length}
-                        className="bg-neutral-100 px-2 py-1 text-sm text-muted-foreground"
+                        className="text-muted-foreground bg-neutral-100 px-2 py-1 text-sm"
                       />
                     </TableRow>
                   : <NestedRows

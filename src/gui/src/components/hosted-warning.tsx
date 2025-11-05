@@ -36,10 +36,10 @@ export const HostedWarning = forwardRef<
           asChild
           size="sm"
           variant="outline"
-          className="rounded-2xl border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-muted hover:dark:bg-neutral-900">
+          className="dark:border-muted rounded-2xl border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 hover:dark:bg-neutral-900">
           <Link to="https://docs.vlt.sh/cli" target="_blank">
             Install the Client
-            <div className="flex size-5 items-center justify-center rounded-md border border-neutral-300 bg-white text-muted-foreground dark:border-muted dark:bg-black [&_svg]:size-3">
+            <div className="text-muted-foreground dark:border-muted flex size-5 items-center justify-center rounded-md border border-neutral-300 bg-white dark:bg-black [&_svg]:size-3">
               <ArrowUpRight />
             </div>
           </Link>

@@ -156,7 +156,7 @@ export const ItemHeader = ({
       <div className={cn('flex w-full flex-col', contentClassName)}>
         <div
           className={cn(
-            'flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden',
+            'border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden',
             breadcrumbs ? 'justify-between' : 'justify-end',
             breadCrumbWrapperClassName,
           )}>
@@ -185,13 +185,13 @@ const ItemBreadcrumbs = () => {
       className="relative flex w-full items-center overflow-hidden overflow-x-scroll">
       <div
         className={cn(
-          'pointer-events-none absolute bottom-0 right-0 top-0 z-[100] h-full w-6 rounded-r-xl bg-gradient-to-l',
+          'pointer-events-none absolute top-0 right-0 bottom-0 z-[100] h-full w-6 rounded-r-xl bg-gradient-to-l',
           focused ? 'from-background' : 'from-card',
         )}
       />
       <div
         className={cn(
-          'pointer-events-none absolute bottom-0 left-0 top-0 z-[100] h-full w-6 rounded-l-xl bg-gradient-to-r',
+          'pointer-events-none absolute top-0 bottom-0 left-0 z-[100] h-full w-6 rounded-l-xl bg-gradient-to-r',
           focused ? 'from-background' : 'from-card',
         )}
       />
@@ -255,13 +255,13 @@ const PackageImage = () => {
   return (
     <Avatar className="aspect-square size-16">
       <AvatarImage
-        className="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+        className="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
         src={favicon?.src}
         alt={favicon?.alt ?? 'Package Icon'}
       />
       <AvatarFallback className="flex aspect-square size-16 h-full w-full items-center justify-center rounded-xl border-[1px]">
         {selectedItem.to?.mainImporter ?
-          <div className="flex h-full w-full items-center justify-center rounded-xl bg-muted p-4">
+          <div className="bg-muted flex h-full w-full items-center justify-center rounded-xl p-4">
             <Home
               size={32}
               strokeWidth={1.25}
@@ -325,7 +325,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
                 <div className="flex items-center gap-2">
                   <h1 className="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     {selectedItem.title}
-                    <span className="ml-2 font-courier text-sm text-muted-foreground">
+                    <span className="font-courier text-muted-foreground ml-2 text-sm">
                       {selectedItem.version}
                     </span>
                   </h1>
@@ -384,15 +384,15 @@ const Publisher = ({ className }: { className?: string }) => {
       <div className="flex items-center gap-2">
         <Avatar>
           <AvatarImage
-            className="size-5 rounded-sm border-[1px] border-border"
+            className="border-border size-5 rounded-sm border-[1px]"
             src={publisherAvatar?.src}
             alt={publisherAvatar?.alt ?? 'Publisher Avatar'}
           />
-          <AvatarFallback className="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+          <AvatarFallback className="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800" />
         </Avatar>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+            <TooltipTrigger className="text-baseline text-muted-foreground cursor-default text-xs font-medium">
               Published by:{' '}
               <span className="text-foreground">
                 {publisher.name}
@@ -421,8 +421,8 @@ const Publisher = ({ className }: { className?: string }) => {
       </div>
       {downloadCount && (
         <div className="flex items-center gap-2">
-          <p className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span className="mr-1 text-foreground">
+          <p className="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span className="text-foreground mr-1">
               {downloadCount}
             </span>
             Downloads last week

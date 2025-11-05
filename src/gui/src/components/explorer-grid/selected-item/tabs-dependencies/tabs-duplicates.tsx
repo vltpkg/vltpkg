@@ -52,13 +52,13 @@ export const DuplicatesTabContent = () => {
     <MotionTabsContent {...tabMotion} value="duplicates">
       {duplicatedDeps && duplicatedDepCount > 0 ?
         <div className="px-6 pt-4">
-          <div className="relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3">
-            <p className="font-regular text-xs tracking-wide text-muted-foreground">
+          <div className="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3">
+            <p className="font-regular text-muted-foreground text-xs tracking-wide">
               Packages with multiple versions
             </p>
-            <p className="font-mono text-2xl font-medium tabular-nums text-foreground">
+            <p className="text-foreground font-mono text-2xl font-medium tabular-nums">
               {duplicatedDepCount}
-              <span className="ml-0.5 text-muted-foreground/80">
+              <span className="text-muted-foreground/80 ml-0.5">
                 /{totalDepCount}
               </span>
             </p>
@@ -69,16 +69,16 @@ export const DuplicatesTabContent = () => {
               return (
                 <div
                   key={`${name}-${info.count}`}
-                  className="flex h-fit flex-col rounded-lg border-[1px] border-muted">
+                  className="border-muted flex h-fit flex-col rounded-lg border-[1px]">
                   <div
                     role="button"
                     onClick={() => queryDuplicatedDeps(name)}
-                    className="duration-250 flex h-fit cursor-default items-start gap-2 border-b-[1px] border-muted px-3 py-3 transition-colors hover:bg-secondary/60">
+                    className="border-muted hover:bg-secondary/60 flex h-fit cursor-default items-start gap-2 border-b-[1px] px-3 py-3 transition-colors duration-250">
                     <DataBadge
                       variant="count"
                       content={String(info.count)}
                     />
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-foreground text-sm font-medium">
                       {name}
                     </p>
                   </div>
@@ -90,7 +90,7 @@ export const DuplicatesTabContent = () => {
                           queryDuplicatedDeps(name, version)
                         }
                         key={`${version}-${idx}`}
-                        className="duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums text-muted-foreground transition-colors last-of-type:rounded-b-md hover:bg-secondary/60 hover:text-foreground">
+                        className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md">
                         v{version}
                       </li>
                     ))}

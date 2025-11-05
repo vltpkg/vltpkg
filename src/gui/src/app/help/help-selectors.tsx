@@ -28,7 +28,7 @@ export type SelectorInTable = Omit<
 export const HelpSelectors = () => {
   return (
     <section className="flex h-full w-full flex-col">
-      <div className="flex max-w-8xl flex-col pt-8">
+      <div className="max-w-8xl flex flex-col pt-8">
         <div className="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
           <Markdown>{selectorsContent}</Markdown>
         </div>

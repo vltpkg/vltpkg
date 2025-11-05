@@ -46,7 +46,7 @@ const Header = ({ className }: HeaderProps) => {
   return (
     <div
       className={cn(
-        'flex h-16 w-full cursor-default items-center justify-between gap-5 bg-sidebar px-4 py-3',
+        'bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3',
         className,
       )}>
       <div className="flex aspect-square size-8 items-center justify-center">

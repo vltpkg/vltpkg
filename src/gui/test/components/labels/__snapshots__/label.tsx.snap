@@ -2,7 +2,7 @@
 
 exports[`label > should render correctly 1`] = `
 
-<div class="group rounded-xl border-[1px] bg-card transition-opacity hover:bg-card-accent border-muted">
+<div class="group bg-card hover:bg-card-accent rounded-xl border-[1px] transition-opacity border-muted">
   <div class="flex grid grid-cols-8 items-center px-3 py-2">
     <div class="col-span-2 flex items-center gap-3">
       <gui-checkbox
@@ -36,7 +36,7 @@ exports[`label > should render correctly 1`] = `
     <div class="flex items-center justify-end">
       <gui-button
         variant="outline"
-        classname="h-[2rem] rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
+        classname="border-muted-foreground/25 h-[2rem] rounded-lg border border-[1px] px-3 text-sm"
       >
         Edit
       </gui-button>

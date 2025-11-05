@@ -4,12 +4,12 @@ exports[`dashboard-item renders correctly 1`] = `
 
 <div
   role="link"
-  class="group/card duration-250 group relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] bg-card transition-colors hover:border-muted hover:bg-card-accent"
+  class="group/card group bg-card hover:border-muted hover:bg-card-accent relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] transition-colors duration-250"
 >
   <div class="flex justify-end px-3 py-3">
     <gui-tooltip-provider delayduration="150">
       <gui-tooltip>
-        <gui-tooltip-trigger classname="cursor-default text-xxs text-muted-foreground">
+        <gui-tooltip-trigger classname="text-xxs text-muted-foreground cursor-default">
           November 1st, 2024
         </gui-tooltip-trigger>
         <gui-tooltip-content
@@ -28,10 +28,10 @@ exports[`dashboard-item renders correctly 1`] = `
       project-foo
     </gui-card-title>
   </div>
-  <div class="duration-250 flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors group-hover/card:border-muted">
+  <div class="group-hover/card:border-muted flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors duration-250">
     <gui-tooltip-provider delayduration="150">
       <gui-tooltip>
-        <gui-tooltip-trigger classname="grow cursor-default truncate text-left text-xs text-muted-foreground">
+        <gui-tooltip-trigger classname="text-muted-foreground grow cursor-default truncate text-left text-xs">
           ~/project-foo
         </gui-tooltip-trigger>
         <gui-tooltip-content

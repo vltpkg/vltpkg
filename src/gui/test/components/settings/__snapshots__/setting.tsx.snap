@@ -4,21 +4,21 @@ exports[`SettingField renders as a dropdown 1`] = `
 
 <div
   data-setting="field"
-  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
   <div class="flex justify-between">
     <div class="flex flex-col gap-1">
-      <p class="text-sm font-medium text-foreground">
+      <p class="text-foreground text-sm font-medium">
         Dropdown option
       </p>
-      <p class="text-xs font-medium text-muted-foreground">
+      <p class="text-muted-foreground text-xs font-medium">
         This is a dropdown option
       </p>
     </div>
     <div class="flex">
       <gui-dropdown-menu>
         <gui-dropdown-menu-trigger aschild="true">
-          <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+          <button class="group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
             <span>
               Select an option
             </span>
@@ -45,14 +45,14 @@ exports[`SettingField renders as a file explorer 1`] = `
 
 <div
   data-setting="field"
-  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
   <div class="flex justify-between">
     <div class="flex flex-col gap-1">
-      <p class="text-sm font-medium text-foreground">
+      <p class="text-foreground text-sm font-medium">
         File explorer option
       </p>
-      <p class="text-xs font-medium text-muted-foreground">
+      <p class="text-muted-foreground text-xs font-medium">
         This is a file explorer option
       </p>
     </div>
@@ -69,20 +69,20 @@ exports[`SettingField renders as a toggle 1`] = `
 
 <div
   data-setting="field"
-  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
   <div class="flex justify-between">
     <div class="flex flex-col gap-1">
-      <p class="text-sm font-medium text-foreground">
+      <p class="text-foreground text-sm font-medium">
         Toggle option
       </p>
-      <p class="text-xs font-medium text-muted-foreground">
+      <p class="text-muted-foreground text-xs font-medium">
         This is a toggle option
       </p>
     </div>
     <div class="flex">
-      <div class="duration-250 grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors border-muted-foreground/25 bg-secondary">
-        <div class="size-4 self-center justify-self-start rounded-full bg-muted-foreground/50">
+      <div class="grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors duration-250 border-muted-foreground/25 bg-secondary">
+        <div class="bg-muted-foreground/50 size-4 self-center justify-self-start rounded-full">
         </div>
       </div>
     </div>
@@ -95,14 +95,14 @@ exports[`SettingField renders as an input 1`] = `
 
 <div
   data-setting="field"
-  class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+  class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
 >
   <div class="flex justify-between">
     <div class="flex flex-col gap-1">
-      <p class="text-sm font-medium text-foreground">
+      <p class="text-foreground text-sm font-medium">
         input option
       </p>
-      <p class="text-xs font-medium text-muted-foreground">
+      <p class="text-muted-foreground text-xs font-medium">
         This is an input option
       </p>
     </div>
@@ -121,7 +121,7 @@ exports[`SettingField renders as an input 1`] = `
 exports[`SettingSection renders with title 1`] = `
 
 <section class="flex cursor-default flex-col gap-4">
-  <h3 class="text-sm font-medium text-muted-foreground">
+  <h3 class="text-muted-foreground text-sm font-medium">
     Test Section
   </h3>
   <fieldset class="group">
@@ -135,27 +135,27 @@ exports[`SettingSplit correctly splits the section 1`] = `
 <div class="grid grid-cols-12 px-4 py-8 md:py-16 lg:px-0">
   <div class="col-span-12 col-start-1 flex flex-col gap-6 md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-4">
     <section class="flex cursor-default flex-col gap-4">
-      <h3 class="text-sm font-medium text-muted-foreground">
+      <h3 class="text-muted-foreground text-sm font-medium">
         Mock test
       </h3>
       <fieldset class="group">
         <div
           data-setting="field"
-          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
           <div class="flex justify-between">
             <div class="flex flex-col gap-1">
-              <p class="text-sm font-medium text-foreground">
+              <p class="text-foreground text-sm font-medium">
                 Mock field
               </p>
-              <p class="text-xs font-medium text-muted-foreground">
+              <p class="text-muted-foreground text-xs font-medium">
                 This is a mock field for testing
               </p>
             </div>
             <div class="flex">
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger aschild="true">
-                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                  <button class="group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
                     <span>
                       Option 1
                     </span>
@@ -180,21 +180,21 @@ exports[`SettingSplit correctly splits the section 1`] = `
         </div>
         <div
           data-setting="field"
-          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
           <div class="flex justify-between">
             <div class="flex flex-col gap-1">
-              <p class="text-sm font-medium text-foreground">
+              <p class="text-foreground text-sm font-medium">
                 Mock field
               </p>
-              <p class="text-xs font-medium text-muted-foreground">
+              <p class="text-muted-foreground text-xs font-medium">
                 This is a mock field for testing
               </p>
             </div>
             <div class="flex">
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger aschild="true">
-                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                  <button class="group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
                     <span>
                       Option 1
                     </span>
@@ -219,21 +219,21 @@ exports[`SettingSplit correctly splits the section 1`] = `
         </div>
         <div
           data-setting="field"
-          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
           <div class="flex justify-between">
             <div class="flex flex-col gap-1">
-              <p class="text-sm font-medium text-foreground">
+              <p class="text-foreground text-sm font-medium">
                 Mock field
               </p>
-              <p class="text-xs font-medium text-muted-foreground">
+              <p class="text-muted-foreground text-xs font-medium">
                 This is a mock field for testing
               </p>
             </div>
             <div class="flex">
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger aschild="true">
-                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                  <button class="group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
                     <span>
                       Option 1
                     </span>
@@ -263,21 +263,21 @@ exports[`SettingSplit correctly splits the section 1`] = `
         </div>
         <div
           data-setting="field"
-          class="flex flex-col border-[1px] bg-card p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
+          class="bg-card flex flex-col border-[1px] p-4 first:rounded-t-xl last:rounded-b-xl [&amp;:not(:first-child):not(last-child)]:border-t-[0px] [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:mt-4 [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:rounded-t-xl [fieldset:has([data-setting=split])>div[data-setting=split]+&amp;]:border-t-[1px] [&amp;:has(+[data-setting=split])]:rounded-b-xl"
         >
           <div class="flex justify-between">
             <div class="flex flex-col gap-1">
-              <p class="text-sm font-medium text-foreground">
+              <p class="text-foreground text-sm font-medium">
                 Mock field
               </p>
-              <p class="text-xs font-medium text-muted-foreground">
+              <p class="text-muted-foreground text-xs font-medium">
                 This is a mock field for testing
               </p>
             </div>
             <div class="flex">
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger aschild="true">
-                  <button class="duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] border-border px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
+                  <button class="group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&amp;_svg]:size-4">
                     <span>
                       Option 1
                     </span>

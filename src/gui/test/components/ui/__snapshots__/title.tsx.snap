@@ -3,7 +3,7 @@
 exports[`title render custom class 1`] = `
 
 <div>
-  <h3 class="text-2xl font-semibold leading-none tracking-tight custom-class">
+  <h3 class="text-2xl leading-none font-semibold tracking-tight custom-class">
   </h3>
 </div>
 
@@ -12,7 +12,7 @@ exports[`title render custom class 1`] = `
 exports[`title render default 1`] = `
 
 <div>
-  <h3 class="text-2xl font-semibold leading-none tracking-tight">
+  <h3 class="text-2xl leading-none font-semibold tracking-tight">
   </h3>
 </div>
 

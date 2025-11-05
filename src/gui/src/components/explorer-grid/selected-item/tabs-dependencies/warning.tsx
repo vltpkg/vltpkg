@@ -26,7 +26,7 @@ export const Warning = ({
       role="button"
       {...(onClick ? { onClick } : undefined)}
       className={cn(
-        'duration-250 flex cursor-default items-center justify-between rounded-lg border-[1px] bg-transparent px-3 py-2 transition-colors',
+        'flex cursor-default items-center justify-between rounded-lg border-[1px] bg-transparent px-3 py-2 transition-colors duration-250',
         alertStyles[severity].background,
         alertStyles[severity].border,
         className,
@@ -34,7 +34,7 @@ export const Warning = ({
       {!hideIcon && (
         <span
           className={cn(
-            'mb-0.5 mr-1.5 flex items-center justify-center',
+            'mr-1.5 mb-0.5 flex items-center justify-center',
             alertStyles[severity].text,
           )}>
           <Icon size={16} />

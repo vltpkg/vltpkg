@@ -226,7 +226,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
               filter: 'blur(2px)',
             }}
             transition={{ ease: 'easeInOut', duration: 0.25 }}
-            className="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4">
+            className="max-w-8xl grid w-full grid-cols-8 gap-4 px-8 py-4">
             <div className="relative col-span-full md:col-span-2">
               <OverviewSidebar
                 dependencies={dependencies}

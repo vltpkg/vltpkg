@@ -64,7 +64,7 @@ const QueryBuilderButton = ({ onClick }: { onClick: () => void }) => {
           <TooltipTrigger asChild>
             <Button
               onClick={onClick}
-              className="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
+              className="bg-input text-muted-foreground hover:text-accent-foreground flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm p-0 transition-colors duration-250 hover:bg-neutral-300 dark:hover:bg-neutral-700 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
               <UnfoldVertical />
             </Button>
           </TooltipTrigger>
@@ -173,9 +173,9 @@ const QueryBuilderUi = () => {
   return createPortal(
     <section
       className={cn(
-        'absolute inset-x-0 top-10 z-[50] flex w-full rounded-b-xl border border-t-0 border-muted bg-popover shadow-lg',
+        'border-muted bg-popover absolute inset-x-0 top-10 z-[10000] flex w-full rounded-b-xl border border-t-0 shadow-lg',
         queryInputFocused &&
-          'after:absolute after:-inset-[5px] after:rounded-[14px] after:rounded-t-none after:border-x-[2px] after:border-b-[2px] after:border-ring after:content-[""]',
+          'after:border-ring after:absolute after:-inset-[5px] after:rounded-[14px] after:rounded-t-none after:border-x-[2px] after:border-b-[2px] after:content-[""]',
       )}>
       <div className="relative flex w-full gap-2 px-3 py-3">
         <BuilderCombobox setNodes={setNodes} nodes={nodes} />
@@ -191,8 +191,8 @@ const QueryBuilderUi = () => {
           </div>
         )}
         {nodes === undefined && query.trim().length === 0 && (
-          <div className="inline-flex h-6 items-center rounded-md border border-dashed border-muted-foreground/50 bg-neutral-50 px-2 dark:bg-neutral-800">
-            <p className="text-sm leading-6 text-muted-foreground/80">
+          <div className="border-muted-foreground/50 inline-flex h-6 items-center rounded-md border border-dashed bg-neutral-50 px-2 dark:bg-neutral-800">
+            <p className="text-muted-foreground/80 text-sm leading-6">
               No items present
             </p>
           </div>
@@ -202,7 +202,7 @@ const QueryBuilderUi = () => {
         <div
           id="query-builder-focus-guard"
           onClick={handleFocusGuardClick}
-          className="fixed inset-0 z-[2] bg-transparent"
+          className="fixed inset-0 z-[10000] bg-transparent"
         />,
         document.body,
       )}

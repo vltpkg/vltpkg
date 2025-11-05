@@ -23,7 +23,7 @@ export const SortingHeader = ({
       onClick={onClick}
       data-dir={dir}
       className={cn(
-        'group flex h-7 items-center gap-2 rounded-xl border-transparent transition-colors duration-100 [&_svg]:text-muted-foreground [&_svg]:transition-colors [&_svg]:duration-100',
+        'group [&_svg]:text-muted-foreground flex h-7 items-center gap-2 rounded-xl border-transparent transition-colors duration-100 [&_svg]:transition-colors [&_svg]:duration-100',
         'bg-neutral-100 hover:border-neutral-300 hover:bg-neutral-200',
         'dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800',
       )}>
@@ -31,7 +31,7 @@ export const SortingHeader = ({
         <Icon className="size-5 group-hover:text-black group-hover:dark:text-white" />
       )}
 
-      <span className="text-sm font-medium text-muted-foreground transition-colors duration-100 group-hover:text-black group-hover:dark:text-white">
+      <span className="text-muted-foreground text-sm font-medium transition-colors duration-100 group-hover:text-black group-hover:dark:text-white">
         {label}
       </span>
 

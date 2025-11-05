@@ -144,7 +144,7 @@ export const LabelSelect = ({
         </CommandGroup>
       </CommandList>
       <Button
-        className="rounded-[7px] border-none text-neutral-500 hover:text-primary"
+        className="hover:text-primary rounded-[7px] border-none text-neutral-500"
         variant="outline"
         size="sm"
         asChild>
