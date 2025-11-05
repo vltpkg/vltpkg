@@ -90,7 +90,7 @@ export const Label = ({
   return (
     <div
       className={cn(
-        'group rounded-xl border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent',
+        'group bg-card hover:bg-card-accent rounded-xl border border-[1px] transition-colors transition-opacity',
         isExpanded ? 'border-muted-foreground' : 'border-muted',
       )}>
       <div className="flex grid grid-cols-8 items-center px-3 py-2">
@@ -99,7 +99,7 @@ export const Label = ({
             onCheckedChange={() => handleSelect(queryLabel)}
             checked={checked}
             className={cn(
-              'border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100',
+              'border-muted-foreground/25 group-hover:border-muted-foreground/50 opacity-0 group-hover:opacity-100',
               checked ? 'opacity-100' : 'opacity-0',
             )}
           />
@@ -127,7 +127,7 @@ export const Label = ({
         <div className="flex items-center justify-end">
           <Button
             variant="outline"
-            className="h-[2rem] rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
+            className="border-muted-foreground/25 h-[2rem] rounded-lg border border-[1px] px-3 text-sm"
             onClick={handleEdit}>
             {isExpanded ? 'Close' : 'Edit'}
           </Button>
@@ -136,7 +136,7 @@ export const Label = ({
 
       {/* expanded */}
       {isExpanded && (
-        <div className="mb-3 flex flex-col border-t-[1px] border-muted-foreground/25 px-3 py-2 pt-6">
+        <div className="border-muted-foreground/25 mb-3 flex flex-col border-t-[1px] px-3 py-2 pt-6">
           <div className="flex gap-3">
             <div className="flex flex-col gap-2">
               <FormLabel className="border-none text-sm font-medium">

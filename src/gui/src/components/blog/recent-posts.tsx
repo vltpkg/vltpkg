@@ -16,7 +16,7 @@ export const RecentBlogPosts = ({
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <p className="text-sm font-medium text-muted-foreground">
+      <p className="text-muted-foreground text-sm font-medium">
         Latest news
       </p>
       <section

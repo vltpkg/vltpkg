@@ -211,7 +211,7 @@ const TabsTrigger = React.forwardRef<
               <motion.div
                 layoutId={`tabs-highlight-${uniqueId ?? 'default'}`}
                 layout
-                className="absolute w-full bg-primary"
+                className="bg-primary absolute w-full"
                 style={{
                   bottom: -4,
                   height: 2,
@@ -239,7 +239,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      'ring-offset-background focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
       className,
     )}
     {...props}

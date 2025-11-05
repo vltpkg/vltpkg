@@ -14,7 +14,7 @@ exports[`add-dependencies-popover error 1`] = `
     </gui-card-title>
   </div>
 </gui-card-header>
-<div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
+<div class="border-muted-foreground/20 flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] p-6">
   <p class="text-sm">
     a mock error occured
   </p>
@@ -67,7 +67,7 @@ exports[`add-dependencies-popover render default 1`] = `
     </gui-card-title>
   </div>
 </gui-card-header>
-<form class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
+<form class="border-muted-foreground/20 flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] p-6">
   <gui-label
     htmlfor="package-name"
     classname="ml-1"
@@ -86,7 +86,7 @@ exports[`add-dependencies-popover render default 1`] = `
   </gui-input>
   <gui-label
     htmlfor="package-version"
-    classname="ml-1 mt-2"
+    classname="mt-2 ml-1"
   >
     Version | Spec
   </gui-label>
@@ -101,7 +101,7 @@ exports[`add-dependencies-popover render default 1`] = `
   </gui-input>
   <gui-label
     htmlfor="package-type"
-    classname="ml-1 mt-2"
+    classname="mt-2 ml-1"
   >
     Type
   </gui-label>
@@ -127,7 +127,7 @@ exports[`add-dependencies-popover render default 1`] = `
   </gui-select>
   <div class="flex w-full justify-end">
     <gui-button
-      classname="mr-2 mt-2"
+      classname="mt-2 mr-2"
       role="cancel"
       variant="secondary"
       tabindex="4"

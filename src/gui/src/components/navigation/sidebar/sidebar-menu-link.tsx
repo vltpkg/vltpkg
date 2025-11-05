@@ -115,13 +115,13 @@ const renderItems = ({
                 isActive={pathname === item.url}
                 data-active={pathname === item.url}
                 className={cn(
-                  'whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&>*]:data-[active=true]:text-foreground [&>svg]:data-[active=false]:text-muted-foreground',
+                  'data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&>*]:data-[active=true]:text-foreground [&>svg]:data-[active=false]:text-muted-foreground whitespace-nowrap data-[active=true]:bg-neutral-200/75',
                 )}>
                 <Comp
                   to={item.url ? item.url : ''}
                   onClick={item.onClick}
                   role="button"
-                  className="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-colors transition-opacity hover:bg-transparent data-[state=open]:hover:bg-transparent">
+                  className="group/sidebar-button text-muted-foreground w-full cursor-default transition-colors transition-opacity duration-250 hover:bg-transparent data-[state=open]:hover:bg-transparent">
                   {item.icon && (
                     <item.icon style={{ zIndex: depth + 1 }} />
                   )}
@@ -131,7 +131,7 @@ const renderItems = ({
                     {item.title}
                   </span>
                   {item.externalIcon && item.external && (
-                    <ArrowUpRight className="duration-250 z-[3] ml-auto transition-transform group-hover/sidebar-button:-translate-y-0.5 group-hover/sidebar-button:translate-x-0.5" />
+                    <ArrowUpRight className="z-[3] ml-auto transition-transform duration-250 group-hover/sidebar-button:translate-x-0.5 group-hover/sidebar-button:-translate-y-0.5" />
                   )}
                   {item.items?.length && (
                     <>

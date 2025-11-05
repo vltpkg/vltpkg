@@ -55,7 +55,7 @@ const ViewSwitcherButton = ({
       variant="outline"
       size="sm"
       className={cn(
-        'group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150',
+        'group/view-switcher text-muted-foreground relative h-6 rounded-lg border-none text-sm font-medium transition-colors duration-150',
         'bg-transparent',
         'dark:bg-transparent',
         className,

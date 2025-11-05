@@ -231,23 +231,23 @@ export const InsightsTabContent = () => {
               role={hasUnscannedDeps ? 'button' : undefined}
               onClick={() => queryUnscannedDeps()}
               className={cn(
-                'duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors',
+                'border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors duration-250',
                 hasUnscannedDeps &&
                   'hover:border-muted-foreground/30 hover:bg-secondary/60',
               )}>
-              <p className="font-regular text-xs tracking-wide text-muted-foreground">
+              <p className="font-regular text-muted-foreground text-xs tracking-wide">
                 Dependencies scanned
               </p>
-              <p className="font-mono text-2xl font-medium tabular-nums text-foreground">
+              <p className="text-foreground font-mono text-2xl font-medium tabular-nums">
                 {scannedDeps}
-                <span className="ml-0.5 text-muted-foreground/80">
+                <span className="text-muted-foreground/80 ml-0.5">
                   /{depCount}
                 </span>
               </p>
 
               {hasUnscannedDeps && scannedDeps !== undefined && (
                 <>
-                  <div className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
+                  <div className="absolute -top-3 -right-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
                     <AlertTriangle className="mb-0.5 size-4 text-yellow-500" />
                   </div>
                   <p className="text-xs font-medium text-yellow-500">
@@ -263,17 +263,17 @@ export const InsightsTabContent = () => {
             </div>
 
             {averageScore !== undefined && (
-              <div className="relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3">
-                <p className="font-regular text-xs tracking-wide text-muted-foreground">
+              <div className="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3">
+                <p className="font-regular text-muted-foreground text-xs tracking-wide">
                   Average package score
                 </p>
                 <p
-                  className="font-mono text-2xl font-medium tabular-nums text-foreground"
+                  className="text-foreground font-mono text-2xl font-medium tabular-nums"
                   style={{
                     color: textColor,
                   }}>
                   {averageScore}
-                  <span className="ml-0.5 text-muted-foreground/80">
+                  <span className="text-muted-foreground/80 ml-0.5">
                     /100
                   </span>
                 </p>
@@ -301,7 +301,7 @@ export const InsightsTabContent = () => {
             )}
           </div>
           {depWarnings && totalDepWarnings > 0 ?
-            <Table className="border-t-[1px] border-muted">
+            <Table className="border-muted border-t-[1px]">
               <TableHeader>
                 {table.getHeaderGroups().map(headerGroup => (
                   <TableRow key={headerGroup.id}>
@@ -353,7 +353,7 @@ export const InsightsTabContent = () => {
                   ))
                 : <TableRow>
                     <TableCell>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No warnings found
                       </p>
                     </TableCell>

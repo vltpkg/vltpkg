@@ -6,7 +6,7 @@ exports[`ViewSwitcher renders with code active 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+    classname="group/view-switcher text-muted-foreground relative h-6 rounded-lg border-none text-sm font-medium transition-colors duration-150 bg-transparent dark:bg-transparent"
   >
     <span class="z-[2] inline-flex items-center gap-2">
       <gui-code-icon>
@@ -21,7 +21,7 @@ exports[`ViewSwitcher renders with code active 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+    classname="group/view-switcher text-muted-foreground relative h-6 rounded-lg border-none text-sm font-medium transition-colors duration-150 bg-transparent dark:bg-transparent"
   >
     <span class="z-[2] inline-flex items-center gap-2">
       <gui-heading1-icon>
@@ -41,7 +41,7 @@ exports[`ViewSwitcher renders with preview active 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+    classname="group/view-switcher text-muted-foreground relative h-6 rounded-lg border-none text-sm font-medium transition-colors duration-150 bg-transparent dark:bg-transparent"
   >
     <span class="z-[2] inline-flex items-center gap-2">
       <gui-code-icon>
@@ -54,7 +54,7 @@ exports[`ViewSwitcher renders with preview active 1`] = `
   <gui-button
     variant="outline"
     size="sm"
-    classname="group/view-switcher relative h-6 rounded-lg border-none text-sm font-medium text-muted-foreground transition-colors duration-150 bg-transparent dark:bg-transparent"
+    classname="group/view-switcher text-muted-foreground relative h-6 rounded-lg border-none text-sm font-medium transition-colors duration-150 bg-transparent dark:bg-transparent"
   >
     <span class="z-[2] inline-flex items-center gap-2">
       <gui-heading1-icon>

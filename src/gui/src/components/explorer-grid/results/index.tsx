@@ -27,7 +27,7 @@ export const Results = ({
   return (
     <ResultsProvider allItems={allItems}>
       <section className="flex h-full flex-col">
-        <div className="mx-auto mt-2 w-full max-w-8xl grow px-8 py-4">
+        <div className="max-w-8xl mx-auto mt-2 w-full grow px-8 py-4">
           <ResultsHeader />
           <ResultsList className="mt-4" />
         </div>
@@ -43,7 +43,7 @@ const ResultsHeader = () => {
     <div className="flex flex-col gap-3">
       <h3 className="inline-flex items-baseline gap-2 text-lg">
         Results
-        <span className="font-mono text-sm tabular-nums text-muted-foreground">
+        <span className="text-muted-foreground font-mono text-sm tabular-nums">
           ({allItems.length})
         </span>
       </h3>
@@ -71,7 +71,7 @@ const ResultsFooter = () => {
   if (allItems.length === 0) return null
 
   return (
-    <div className="mx-auto grid w-full max-w-8xl grid-cols-12 items-center px-8 py-4">
+    <div className="max-w-8xl mx-auto grid w-full grid-cols-12 items-center px-8 py-4">
       <ResultPageOptions className="col-span-3" />
       <ResultsPaginationNavigation className="col-span-6 col-start-4" />
     </div>

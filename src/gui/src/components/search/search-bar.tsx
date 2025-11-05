@@ -188,7 +188,7 @@ const SearchInput = ({ className }: SearchInputProps) => {
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.15 }}
             className="absolute right-11 flex items-center justify-center">
-            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground size-4 animate-spin" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -200,7 +200,7 @@ const SearchInput = ({ className }: SearchInputProps) => {
         size="sm"
         variant="ghost"
         onClick={handleButtonClick}
-        className="absolute right-0.5 size-9 rounded-full border border-muted p-0 text-muted-foreground [&>svg]:size-7">
+        className="border-muted text-muted-foreground absolute right-0.5 size-9 rounded-full border p-0 [&>svg]:size-7">
         <Search />
       </MotionButton>
     </motion.div>
@@ -288,13 +288,13 @@ const SearchBarModal = ({ wrapperRef }: SearchBarModalProps) => {
       {hasResults && (
         <motion.div
           {...modalMotion}
-          className="absolute top-10 z-[4] flex h-[300px] w-[35rem] flex-col rounded-2xl rounded-t-none border border-t-[0px] border-muted bg-white dark:bg-neutral-900">
+          className="border-muted absolute top-10 z-[4] flex h-[300px] w-[35rem] flex-col rounded-2xl rounded-t-none border border-t-[0px] bg-white dark:bg-neutral-900">
           <div
             ref={scrollContainerRef}
             className="flex max-h-[calc(300px-36px)] grow flex-col gap-4 overflow-y-scroll px-4 py-2">
             {isLoading ?
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Searching packages...
                 </p>
               </div>
@@ -312,7 +312,7 @@ const SearchBarModal = ({ wrapperRef }: SearchBarModalProps) => {
                 />
               ))
             : <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No packages found
                 </p>
               </div>
@@ -349,7 +349,7 @@ const SearchLegend = () => {
   ]
 
   return (
-    <div className="flex items-center justify-end gap-4 rounded-b-2xl border-t border-muted bg-neutral-100/50 px-4 py-2 dark:bg-neutral-900">
+    <div className="border-muted flex items-center justify-end gap-4 rounded-b-2xl border-t bg-neutral-100/50 px-4 py-2 dark:bg-neutral-900">
       {legendItems.map((item, idx) => {
         return (
           <div
@@ -360,22 +360,22 @@ const SearchLegend = () => {
                 item.icon.map((Icon, idx) => (
                   <div
                     key={`${item.label}-icon-${idx}`}
-                    className="flex size-4 items-center justify-center rounded-sm border border-muted bg-white dark:bg-neutral-950 [&_svg]:size-3">
+                    className="border-muted flex size-4 items-center justify-center rounded-sm border bg-white dark:bg-neutral-950 [&_svg]:size-3">
                     <Icon className="text-muted-foreground" />
                   </div>
                 ))
               : typeof item.icon === 'string' ?
-                <div className="flex h-4 items-center justify-center rounded-sm border border-muted bg-white px-2 dark:bg-neutral-950">
-                  <span className="font-mono text-xs text-muted-foreground">
+                <div className="border-muted flex h-4 items-center justify-center rounded-sm border bg-white px-2 dark:bg-neutral-950">
+                  <span className="text-muted-foreground font-mono text-xs">
                     {item.icon}
                   </span>
                 </div>
-              : <div className="flex size-4 items-center justify-center rounded-sm border border-muted bg-white dark:bg-neutral-950 [&_svg]:size-3">
+              : <div className="border-muted flex size-4 items-center justify-center rounded-sm border bg-white dark:bg-neutral-950 [&_svg]:size-3">
                   <item.icon className="text-muted-foreground" />
                 </div>
               }
             </div>
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-muted-foreground text-sm font-medium">
               {item.label}
             </span>
           </div>

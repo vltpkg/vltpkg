@@ -161,7 +161,7 @@ export const SavedQueryItem = ({
   return (
     <div
       className={cn(
-        'group flex flex-col rounded-xl border border-[1px] bg-card transition-colors transition-opacity hover:bg-card-accent',
+        'group bg-card hover:bg-card-accent flex flex-col rounded-xl border border-[1px] transition-colors transition-opacity',
         isExpanded ? 'border-muted-foreground' : 'border-muted',
       )}>
       <div className="grid grid-cols-12 gap-4 px-3 py-2">
@@ -170,7 +170,7 @@ export const SavedQueryItem = ({
             checked={checked}
             onCheckedChange={() => handleSelect(item)}
             className={cn(
-              'border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100',
+              'border-muted-foreground/25 group-hover:border-muted-foreground/50 opacity-0 group-hover:opacity-100',
               checked && 'opacity-100',
             )}
           />
@@ -206,14 +206,14 @@ export const SavedQueryItem = ({
         <div className="col-span-2 flex items-center justify-end gap-4">
           <Button
             variant="outline"
-            className="h-8 rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
+            className="border-muted-foreground/25 h-8 rounded-lg border border-[1px] px-3 text-sm"
             onClick={handleEdit}>
             {isExpanded ? 'Close' : 'Edit'}
           </Button>
           {editContext.trim() !== '' && (
             <Button
               variant="outline"
-              className="h-8 rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
+              className="border-muted-foreground/25 h-8 rounded-lg border border-[1px] px-3 text-sm"
               role="link"
               onClick={() => void runQuery()}>
               <span>Run</span>
@@ -225,7 +225,7 @@ export const SavedQueryItem = ({
 
       {/* expanded */}
       {isExpanded && (
-        <div className="flex flex-col border-t-[1px] border-muted-foreground/25 px-3 py-2">
+        <div className="border-muted-foreground/25 flex flex-col border-t-[1px] px-3 py-2">
           {/* form */}
           <div className="my-3 mb-6 flex gap-3">
             <div className="flex flex-col gap-2">

@@ -67,13 +67,13 @@ export const Toggle = ({
     <div className={cn('flex w-fit', wrapperClassName)}>
       <div
         className={cn(
-          'relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5',
+          'border-muted dark:bg-muted-foreground/5 relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] bg-white p-1',
           toggleClassName,
         )}>
         {/* the toggle slider */}
         <motion.div
           className={cn(
-            'absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted',
+            'bg-muted absolute h-[2rem] w-[2rem] rounded-[4px]',
             sliderClassName,
           )}
           animate={{

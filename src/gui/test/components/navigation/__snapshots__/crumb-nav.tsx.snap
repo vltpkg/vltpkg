@@ -5,7 +5,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :root
@@ -19,7 +19,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #a
@@ -33,7 +33,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #b
@@ -47,7 +47,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #c
@@ -76,7 +76,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :root
@@ -90,7 +90,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #a
@@ -104,7 +104,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #b
@@ -118,7 +118,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #c
@@ -132,7 +132,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #d
@@ -146,7 +146,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #e
@@ -160,7 +160,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #f
@@ -174,7 +174,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #g
@@ -188,7 +188,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #h
@@ -232,7 +232,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :project
@@ -246,7 +246,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #express
@@ -260,7 +260,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #lodash
@@ -289,7 +289,7 @@ exports[`CrumbNav component > renders multiple breadcrumb items with separators 
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :root
@@ -303,7 +303,7 @@ exports[`CrumbNav component > renders multiple breadcrumb items with separators 
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #express
@@ -347,7 +347,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :root
@@ -368,7 +368,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
   </button>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #g
@@ -382,7 +382,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #h
@@ -411,7 +411,7 @@ exports[`CrumbNav component > renders with custom className 1`] = `
 <nav class="flex items-center gap-1 custom-nav-class">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #express
@@ -440,7 +440,7 @@ exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :workspace
@@ -469,7 +469,7 @@ exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
 <nav class="flex items-center gap-1">
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
     >
       :root
@@ -490,7 +490,7 @@ exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
   </button>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #g
@@ -504,7 +504,7 @@ exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
   </gui-chevron-right-icon>
   <button class="inline-flex">
     <gui-query-token
-      classname="px-1.5 duration-250 opacity-75 transition-opacity hover:opacity-100"
+      classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
     >
       #h

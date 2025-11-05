@@ -22,12 +22,12 @@ export const BreadcrumbHeader = () => {
       {paths.map((crumb, idx) => (
         <Fragment key={idx}>
           {idx !== 0 && (
-            <ChevronRight className="mx-0.5 size-4 text-muted-foreground" />
+            <ChevronRight className="text-muted-foreground mx-0.5 size-4" />
           )}
           <button
             onClick={() => navigateCrumbs(idx)}
             className={cn(
-              'duration-250 cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize text-muted-foreground transition-colors hover:bg-neutral-200 hover:text-foreground dark:hover:bg-neutral-800',
+              'text-muted-foreground hover:text-foreground cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize transition-colors duration-250 hover:bg-neutral-200 dark:hover:bg-neutral-800',
               idx === paths.length - 1 && 'text-foreground',
             )}>
             {crumb}

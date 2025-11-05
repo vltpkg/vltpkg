@@ -41,7 +41,7 @@ export const TablePageSelect = ({
     <Select onValueChange={v => setSelectedValue(Number(v))}>
       <SelectTrigger className="w-[110px]">
         <SelectValue
-          className="placeholder:text-sm placeholder:font-normal placeholder:text-muted-foreground"
+          className="placeholder:text-muted-foreground placeholder:text-sm placeholder:font-normal"
           placeholder={`Show ${pagination.pageSize}`}
         />
       </SelectTrigger>

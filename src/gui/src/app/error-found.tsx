@@ -23,7 +23,7 @@ export const ErrorFound = () => {
       )}>
       <div className="relative -mt-32 flex flex-col items-center justify-center">
         <div className="relative flex flex-col gap-8">
-          <div className="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black" />
+          <div className="bg-gradient-radial absolute inset-0 z-[2] from-white/0 via-transparent to-white dark:from-black/0 dark:to-black" />
           <div className="flex gap-8 opacity-20">
             <DashboardMiniView />
             <QueryMiniView />
@@ -65,7 +65,7 @@ export const ErrorFound = () => {
           </div>
         </div>
 
-        <div className="absolute -bottom-6 -left-6 -right-6 z-[1] h-[150px] bg-gradient-radial from-white to-white/0 dark:from-black dark:to-black/0" />
+        <div className="bg-gradient-radial absolute -right-6 -bottom-6 -left-6 z-[1] h-[150px] from-white to-white/0 dark:from-black dark:to-black/0" />
       </div>
     </section>
   )

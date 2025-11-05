@@ -35,15 +35,15 @@ exports[`filter-button renders default 1`] = `
           </div>
           <gui-input
             value
-            classname="relative h-[30px] pl-[30px] pr-[70px] ring-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            classname="relative h-[30px] pr-[70px] pl-[30px] ring-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder="Filter..."
           >
           </gui-input>
-          <div class="absolute bottom-[6px] right-[5px] flex h-[30px] cursor-default items-center justify-center">
-            <gui-kbd classname="inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] border-muted bg-white px-1 text-xxs dark:bg-black">
+          <div class="absolute right-[5px] bottom-[6px] flex h-[30px] cursor-default items-center justify-center">
+            <gui-kbd classname="border-muted text-xxs inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] bg-white px-1 dark:bg-black">
               ctrl
             </gui-kbd>
-            <gui-kbd classname="inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] border-muted bg-white px-1 text-xxs dark:bg-black">
+            <gui-kbd classname="border-muted text-xxs inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] bg-white px-1 dark:bg-black">
               F
             </gui-kbd>
           </div>
@@ -174,55 +174,55 @@ exports[`filter-list renders with filters 1`] = `
 exports[`filter-list-empty-state renders when no matching filters are found 1`] = `
 
 <div
-  class="flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed border-muted py-12"
+  class="border-muted flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed py-12"
   style="opacity: 1; filter: blur(0px);"
 >
   <div class="mb-6 flex justify-center">
     <div class="relative">
       <div class="relative space-y-2">
-        <div class="h-12 w-64 rounded-lg border border-muted bg-muted/60 rotate-1 transform opacity-40">
+        <div class="border-muted bg-muted/60 h-12 w-64 rounded-lg border rotate-1 transform opacity-40">
           <div class="flex h-full items-center justify-between px-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+              <div class="border-muted-foreground/20 bg-muted-foreground/20 text-xxs text-muted-foreground/60 flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] px-2 font-mono tabular-nums">
                 ^21.0.0
               </div>
-              <div class="text-xs font-medium text-muted-foreground/60">
+              <div class="text-muted-foreground/60 text-xs font-medium">
                 tap
               </div>
             </div>
-            <div class="font-mono text-xxs tabular-nums text-muted-foreground/60">
+            <div class="text-xxs text-muted-foreground/60 font-mono tabular-nums">
               v21.1.0
             </div>
           </div>
         </div>
-        <div class="h-12 w-64 rounded-lg border border-muted bg-muted/60 -mt-10 -rotate-1 transform opacity-40">
+        <div class="border-muted bg-muted/60 h-12 w-64 rounded-lg border -mt-10 -rotate-1 transform opacity-40">
           <div class="flex h-full items-center justify-between px-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+              <div class="border-muted-foreground/20 bg-muted-foreground/20 text-xxs text-muted-foreground/60 flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] px-2 font-mono tabular-nums">
                 ^1.0.0
               </div>
-              <div class="text-xs font-medium text-muted-foreground/60">
+              <div class="text-muted-foreground/60 text-xs font-medium">
                 reproduce
               </div>
             </div>
-            <div class="font-mono text-xxs tabular-nums text-muted-foreground/60">
+            <div class="text-xxs text-muted-foreground/60 font-mono tabular-nums">
               v1.1.4
             </div>
           </div>
         </div>
       </div>
-      <div class="pointer-events-none absolute inset-0 rounded-lg bg-background/30">
+      <div class="bg-background/30 pointer-events-none absolute inset-0 rounded-lg">
       </div>
     </div>
   </div>
   <div class="flex flex-col items-center justify-center gap-1 text-center">
-    <h3 class="text-base font-medium tracking-tight text-foreground">
+    <h3 class="text-foreground text-base font-medium tracking-tight">
       No matching dependencies
     </h3>
-    <p class="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+    <p class="text-muted-foreground w-4/5 text-sm font-normal tracking-normal">
       There were no dependencies matching your current filters.
     </p>
-    <gui-button classname="mt-2 h-8 w-fit border-[1px] border-muted">
+    <gui-button classname="border-muted mt-2 h-8 w-fit border-[1px]">
       <gui-rotate-ccw>
       </gui-rotate-ccw>
       Clear Filters

@@ -2,9 +2,9 @@
 
 exports[`LinearMenu renders default 1`] = `
 
-<div class="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm dark:bg-neutral-950 md:flex">
+<div class="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm md:flex dark:bg-neutral-950">
   <gui-popover>
-    <gui-popover-trigger classname="duration-250 inline-flex cursor-default items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900">
+    <gui-popover-trigger classname="inline-flex cursor-default items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900">
       Item Group
       <gui-chevron-down size="12">
       </gui-chevron-down>
@@ -15,7 +15,7 @@ exports[`LinearMenu renders default 1`] = `
     >
       <a
         href="https://example.com/child1"
-        class="duration-250 inline-flex cursor-default items-center gap-x-3 text-nowrap rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
+        class="inline-flex cursor-default items-center gap-x-3 rounded-lg bg-transparent px-3 py-1.5 text-sm text-nowrap text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
       >
         gui-smile-icon
         <span>
@@ -24,7 +24,7 @@ exports[`LinearMenu renders default 1`] = `
       </a>
       <a
         href="https://example.com/child1"
-        class="duration-250 inline-flex cursor-default items-center gap-x-3 text-nowrap rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
+        class="inline-flex cursor-default items-center gap-x-3 rounded-lg bg-transparent px-3 py-1.5 text-sm text-nowrap text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
       >
         gui-smile-icon
         <span>
@@ -36,7 +36,7 @@ exports[`LinearMenu renders default 1`] = `
   <a
     target="_blank"
     href="https://example.com"
-    class="duration-250 inline-flex cursor-default items-center gap-x-3 text-nowrap rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
+    class="inline-flex cursor-default items-center gap-x-3 rounded-lg bg-transparent px-3 py-1.5 text-sm text-nowrap text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
   >
     gui-smile-icon
     <span>

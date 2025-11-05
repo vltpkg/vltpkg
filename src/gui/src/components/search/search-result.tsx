@@ -60,7 +60,7 @@ export const SearchResult = forwardRef<
       <div className="flex items-center gap-3">
         <div className="flex items-center justify-center">
           {pkgIcon ?
-            <div className="flex size-[64px] items-center justify-center rounded-lg border border-muted">
+            <div className="border-muted flex size-[64px] items-center justify-center rounded-lg border">
               <img
                 src={pkgIcon.src}
                 alt={pkgIcon.alt}
@@ -79,7 +79,7 @@ export const SearchResult = forwardRef<
             <h3 className="truncate text-lg font-semibold">
               {pkg.name}
             </h3>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               v{pkg.version}
             </span>
           </div>
@@ -92,13 +92,13 @@ export const SearchResult = forwardRef<
             tooltip={{ content: `npm:${pkg.name}@${pkg.version}` }}
           />
           <div className="flex items-center gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="text-muted-foreground text-xs font-medium">
               by {authorName}
             </p>
             {formattedDate && (
               <>
                 <span className="text-muted-foreground">•</span>
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-muted-foreground text-xs font-medium">
                   {formattedDate}
                 </p>
               </>
@@ -108,7 +108,7 @@ export const SearchResult = forwardRef<
       </div>
       {pkg.description && (
         <div className="flex flex-col">
-          <p className="line-clamp-2 text-sm text-muted-foreground">
+          <p className="text-muted-foreground line-clamp-2 text-sm">
             {pkg.description}
           </p>
         </div>
@@ -118,7 +118,7 @@ export const SearchResult = forwardRef<
           {pkg.keywords.slice(0, 5).map((keyword, idx) => (
             <span
               key={`${pkg.name}-keyword-${idx}`}
-              className="rounded-md border border-neutral-300 bg-neutral-200 px-2 py-0.5 text-xs text-muted-foreground transition-colors duration-100 group-hover/item:border-neutral-400 dark:border-muted dark:bg-neutral-800 group-hover/item:dark:border-neutral-600 group-hover/item:dark:bg-neutral-700">
+              className="text-muted-foreground dark:border-muted rounded-md border border-neutral-300 bg-neutral-200 px-2 py-0.5 text-xs transition-colors duration-100 group-hover/item:border-neutral-400 dark:bg-neutral-800 group-hover/item:dark:border-neutral-600 group-hover/item:dark:bg-neutral-700">
               {keyword}
             </span>
           ))}

@@ -38,7 +38,7 @@ export const SearchResults = () => {
   }
 
   return (
-    <section className="mt-16 p-4 md:mx-4 md:max-h-[calc(100svh-64px-84px)] md:min-h-[calc(100svh-64px-84px)] md:overflow-y-scroll md:rounded-2xl md:border md:border-muted md:bg-sidebar">
+    <section className="md:border-muted md:bg-sidebar mt-16 p-4 md:mx-4 md:max-h-[calc(100svh-64px-84px)] md:min-h-[calc(100svh-64px-84px)] md:overflow-y-scroll md:rounded-2xl md:border">
       <SearchResultsView />
     </section>
   )

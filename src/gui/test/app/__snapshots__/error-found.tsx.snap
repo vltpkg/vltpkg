@@ -6,7 +6,7 @@ exports[`error-found has a cause 1`] = `
   <section class="flex flex-col items-center justify-center rounded-lg bg-white dark:bg-black h-full">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
-        <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
+        <div class="bg-gradient-radial absolute inset-0 z-[2] from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
         </div>
         <div class="flex gap-8 opacity-20">
           <div class="relative flex flex-col gap-2">
@@ -410,7 +410,7 @@ exports[`error-found has a cause 1`] = `
           </gui-button>
         </div>
       </div>
-      <div class="absolute -bottom-6 -left-6 -right-6 z-[1] h-[150px] bg-gradient-radial from-white to-white/0 dark:from-black dark:to-black/0">
+      <div class="bg-gradient-radial absolute -right-6 -bottom-6 -left-6 z-[1] h-[150px] from-white to-white/0 dark:from-black dark:to-black/0">
       </div>
     </div>
   </section>
@@ -424,7 +424,7 @@ exports[`render default 1`] = `
   <section class="flex flex-col items-center justify-center rounded-lg bg-white dark:bg-black h-full">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
-        <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
+        <div class="bg-gradient-radial absolute inset-0 z-[2] from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
         </div>
         <div class="flex gap-8 opacity-20">
           <div class="relative flex flex-col gap-2">
@@ -828,7 +828,7 @@ exports[`render default 1`] = `
           </gui-button>
         </div>
       </div>
-      <div class="absolute -bottom-6 -left-6 -right-6 z-[1] h-[150px] bg-gradient-radial from-white to-white/0 dark:from-black dark:to-black/0">
+      <div class="bg-gradient-radial absolute -right-6 -bottom-6 -left-6 z-[1] h-[150px] from-white to-white/0 dark:from-black dark:to-black/0">
       </div>
     </div>
   </section>

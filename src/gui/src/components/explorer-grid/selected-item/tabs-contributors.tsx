@@ -41,7 +41,7 @@ const ContributorHelp = ({
   return (
     <TooltipProvider>
       <Tooltip delayDuration={150}>
-        <TooltipTrigger className="inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize text-muted-foreground">
+        <TooltipTrigger className="text-muted-foreground inline-flex w-fit cursor-default items-center gap-1 text-sm font-medium capitalize">
           {triggerContent}
           <span>
             <CircleHelp size={16} />
@@ -101,14 +101,14 @@ const Contributor = ({
     <div
       role="button"
       onClick={() => handleQueryContributor(email)}
-      className="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+      className="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800">
       <ContributorAvatar size={size} avatar={avatar} />
-      <div className="flex flex-col justify-center text-sm text-foreground">
+      <div className="text-foreground flex flex-col justify-center text-sm">
         <p className="font-medium text-neutral-900 dark:text-neutral-200">
           {name}
         </p>
         {email && (
-          <p className="text-xs text-muted-foreground">{email}</p>
+          <p className="text-muted-foreground text-xs">{email}</p>
         )}
       </div>
     </div>
@@ -137,8 +137,8 @@ export const ContributorList = () => {
             />
           ))}
           {contributors.length > 6 && (
-            <div className="flex size-6 items-center justify-center rounded-full bg-background p-0.5 outline outline-[1px] outline-neutral-200 dark:outline-neutral-700">
-              <span className="font-mono text-xxs font-medium tabular-nums text-muted-foreground">
+            <div className="bg-background flex size-6 items-center justify-center rounded-full p-0.5 outline outline-[1px] outline-neutral-200 dark:outline-neutral-700">
+              <span className="text-xxs text-muted-foreground font-mono font-medium tabular-nums">
                 {contributors.length > 99 ?
                   '99+'
                 : `+${contributors.length - 6}`}
@@ -147,7 +147,7 @@ export const ContributorList = () => {
           )}
         </div>
         <Button
-          className="duration-250 font-muted-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal text-foreground transition-colors hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
+          className="font-muted-foreground text-foreground hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal transition-colors duration-250 dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
           variant="default"
           onClick={handleToContributors}>
           See all contributors
@@ -182,7 +182,7 @@ export const ContributorTabContent = () => {
         <div className="flex items-center gap-3 px-6">
           <Button
             onClick={() => handleBackToOverview()}
-            className="inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] border-muted bg-transparent px-3 py-1 text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900">
+            className="border-muted text-foreground inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] bg-transparent px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900">
             <ArrowLeft />
             <span>Back</span>
           </Button>

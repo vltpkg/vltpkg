@@ -7,14 +7,14 @@ exports[`ItemHeader renders with a package score 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -30,7 +30,7 @@ exports[`ItemHeader renders with a package score 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -97,17 +97,17 @@ exports[`ItemHeader renders with a package score 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -122,8 +122,8 @@ exports[`ItemHeader renders with a package score 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               0
             </span>
             Downloads last week
@@ -143,14 +143,14 @@ exports[`ItemHeader renders with a version information 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -166,7 +166,7 @@ exports[`ItemHeader renders with a version information 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -207,17 +207,17 @@ exports[`ItemHeader renders with a version information 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -235,8 +235,8 @@ exports[`ItemHeader renders with a version information 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               123.5K
             </span>
             Downloads last week
@@ -256,14 +256,14 @@ exports[`ItemHeader renders with custom registry item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -279,7 +279,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -320,17 +320,17 @@ exports[`ItemHeader renders with custom registry item 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -345,8 +345,8 @@ exports[`ItemHeader renders with custom registry item 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               0
             </span>
             Downloads last week
@@ -366,14 +366,14 @@ exports[`ItemHeader renders with default git host item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -389,7 +389,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -429,17 +429,17 @@ exports[`ItemHeader renders with default git host item 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -454,8 +454,8 @@ exports[`ItemHeader renders with default git host item 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               0
             </span>
             Downloads last week
@@ -475,14 +475,14 @@ exports[`ItemHeader renders with default item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -498,7 +498,7 @@ exports[`ItemHeader renders with default item 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -539,17 +539,17 @@ exports[`ItemHeader renders with default item 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -564,8 +564,8 @@ exports[`ItemHeader renders with default item 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               0
             </span>
             Downloads last week
@@ -585,14 +585,14 @@ exports[`ItemHeader renders with insights 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -608,7 +608,7 @@ exports[`ItemHeader renders with insights 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -649,17 +649,17 @@ exports[`ItemHeader renders with insights 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -674,8 +674,8 @@ exports[`ItemHeader renders with insights 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               0
             </span>
             Downloads last week
@@ -695,14 +695,14 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
   style="opacity: 0;"
 >
   <div class="flex w-full flex-col">
-    <div class="flex h-10 w-full items-center border-b-[1px] border-muted pr-6 empty:hidden justify-end">
+    <div class="border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden justify-end">
     </div>
     <div class="flex flex-col gap-2 overflow-hidden px-6 py-4">
       <div class="flex justify-between gap-4 overflow-hidden">
         <div class="flex gap-4">
           <gui-avatar classname="aspect-square size-16">
             <gui-avatar-image
-              classname="aspect-square size-16 rounded-xl border-[1px] bg-secondary object-cover"
+              classname="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
               src="https://example.com/favicon.png"
               alt="Example Favicon"
             >
@@ -718,7 +718,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
                 <div class="flex items-center gap-2">
                   <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                     item
-                    <span class="ml-2 font-courier text-sm text-muted-foreground">
+                    <span class="font-courier text-muted-foreground ml-2 text-sm">
                       1.0.0
                     </span>
                   </h1>
@@ -759,17 +759,17 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
         <div class="flex items-center gap-2">
           <gui-avatar>
             <gui-avatar-image
-              classname="size-5 rounded-sm border-[1px] border-border"
+              classname="border-border size-5 rounded-sm border-[1px]"
               src="https://example.com/avatar.png"
               alt="John Doe"
             >
             </gui-avatar-image>
-            <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+            <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             </gui-avatar-fallback>
           </gui-avatar>
           <gui-tooltip-provider>
             <gui-tooltip>
-              <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              <gui-tooltip-trigger classname="text-baseline text-muted-foreground cursor-default text-xs font-medium">
                 Published by:
                 <span class="text-foreground">
                   John Doe
@@ -784,8 +784,8 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
           </gui-tooltip-provider>
         </div>
         <div class="flex items-center gap-2">
-          <p class="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-            <span class="mr-1 text-foreground">
+          <p class="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <span class="text-foreground mr-1">
               0
             </span>
             Downloads last week

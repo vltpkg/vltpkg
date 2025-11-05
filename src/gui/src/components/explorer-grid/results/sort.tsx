@@ -88,12 +88,12 @@ export const ResultsSort = () => {
               setSortBy('none' as ResultsSortBy)
             }}
             className={cn(
-              'inline-flex items-center gap-3 disabled:opacity-50 [&_svg]:text-muted-foreground',
+              '[&_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50',
               'rounded-xl border text-sm transition-colors duration-150',
               'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100',
               'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800',
               isActive &&
-                'border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700 [&>.option-icon]:text-foreground',
+                '[&>.option-icon]:text-foreground border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700',
             )}>
             <o.icon className="option-icon size-4" />
 

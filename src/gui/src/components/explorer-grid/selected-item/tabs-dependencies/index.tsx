@@ -70,7 +70,7 @@ export const DependenciesTabContent = () => {
           <DuplicatesTabButton />
           <FundingTabButton />
         </TabsList>
-        <div className="min-h-64 overflow-hidden rounded-b-xl bg-card">
+        <div className="bg-card min-h-64 overflow-hidden rounded-b-xl">
           <AnimatePresence initial={false} mode="wait">
             <Outlet key={activeSubTab} />
           </AnimatePresence>

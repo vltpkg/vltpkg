@@ -14,17 +14,17 @@ export const AsideOverviewEmptyState = () => {
           ease: 'easeInOut',
           duration: 0.25,
         }}
-        className="mt-4 flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed border-muted bg-card py-12 md:mt-0">
+        className="border-muted bg-card mt-4 flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed py-12 md:mt-0">
         <div className="mb-6 flex justify-center">
           <div className="relative">
             <div className="flex size-28 items-center justify-center rounded-full">
               <Package
-                className="size-10 text-muted-foreground"
+                className="text-muted-foreground size-10"
                 strokeWidth={1}
               />
 
-              <div className="absolute bottom-1 right-1 flex size-8 items-center justify-center rounded-full bg-black dark:bg-white">
-                <Search className="z-1 relative size-4 text-white dark:text-black" />
+              <div className="absolute right-1 bottom-1 flex size-8 items-center justify-center rounded-full bg-black dark:bg-white">
+                <Search className="relative z-1 size-4 text-white dark:text-black" />
               </div>
 
               <motion.div
@@ -60,10 +60,10 @@ export const AsideOverviewEmptyState = () => {
           </div>
         </div>
         <div className="flex flex-col items-center justify-center gap-1 text-center">
-          <h3 className="text-base font-medium tracking-tight text-foreground">
+          <h3 className="text-foreground text-base font-medium tracking-tight">
             No Overview Available
           </h3>
-          <p className="w-4/5 text-pretty text-sm font-normal tracking-normal text-muted-foreground">
+          <p className="text-muted-foreground w-4/5 text-sm font-normal tracking-normal text-pretty">
             This package does not have any additional metadata. Try
             adding some fields into{' '}
             <InlineCode>package.json</InlineCode>

@@ -28,7 +28,7 @@ export const Item = ({ item }: ItemProps) => {
   return (
     <SelectedItemProvider selectedItem={item}>
       <section className="relative">
-        <Card className="relative rounded-xl border-muted shadow-none">
+        <Card className="border-muted relative rounded-xl shadow-none">
           <ItemHeader />
           <SelectedItemTabs />
         </Card>
@@ -84,7 +84,7 @@ export const SelectedItemTabs = () => {
             </Fragment>
           }
         </TabsList>
-        <div className="min-h-64 overflow-hidden rounded-b-xl bg-card">
+        <div className="bg-card min-h-64 overflow-hidden rounded-b-xl">
           <AnimatePresence initial={false} mode="wait">
             <Outlet key={activeTab} />
           </AnimatePresence>

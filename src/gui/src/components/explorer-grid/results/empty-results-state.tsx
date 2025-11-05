@@ -39,13 +39,13 @@ const EmptyResultsState = () => {
 const MiniQuery = ({ className = '' }: { className?: string }) => {
   return (
     <div
-      className={`flex h-[70px] w-[300px] flex-col rounded-sm border-[1px] border-neutral-200 bg-card dark:border-neutral-800 ${className}`}>
+      className={`bg-card flex h-[70px] w-[300px] flex-col rounded-sm border-[1px] border-neutral-200 dark:border-neutral-800 ${className}`}>
       <div className="flex items-center justify-between border-b-[1px] border-neutral-200 p-2 dark:border-neutral-800">
-        <div className="h-[18px] w-[80px] rounded-sm border-[1px] border-neutral-300 bg-card dark:border-neutral-800" />
-        <div className="h-[16px] w-[60px] rounded-sm border-[1px] border-neutral-300 bg-card dark:border-neutral-800" />
+        <div className="bg-card h-[18px] w-[80px] rounded-sm border-[1px] border-neutral-300 dark:border-neutral-800" />
+        <div className="bg-card h-[16px] w-[60px] rounded-sm border-[1px] border-neutral-300 dark:border-neutral-800" />
       </div>
       <div className="flex h-full w-full items-center justify-between p-2">
-        <div className="h-[12px] w-[125px] rounded-sm border-[1px] border-neutral-300 bg-card dark:border-neutral-800" />
+        <div className="bg-card h-[12px] w-[125px] rounded-sm border-[1px] border-neutral-300 dark:border-neutral-800" />
         <div className="flex items-center gap-2">
           <div className="h-[12px] w-[30px] rounded-full border-[1px] border-sky-400 bg-sky-400/25 dark:border-sky-800 dark:bg-sky-800/25" />
           <div className="h-[12px] w-[38px] rounded-full border-[1px] border-red-400 bg-red-400/25 dark:border-red-800 dark:bg-red-800/25" />

@@ -10,7 +10,7 @@ exports[`link render default 1`] = `
     gui-link
   </span>
   <gui-arrow-up-right-icon
-    classname="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    classname="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
     size="14"
   >
   </gui-arrow-up-right-icon>
@@ -32,7 +32,7 @@ exports[`link renders with additional props 1`] = `
     gui-link
   </span>
   <gui-arrow-up-right-icon
-    classname="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    classname="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
     size="14"
   >
   </gui-arrow-up-right-icon>
@@ -55,7 +55,7 @@ exports[`link renders with complex children 1`] = `
     </strong>
   </span>
   <gui-arrow-up-right-icon
-    classname="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    classname="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
     size="14"
   >
   </gui-arrow-up-right-icon>
@@ -73,7 +73,7 @@ exports[`link renders with custom className 1`] = `
     gui-link
   </span>
   <gui-arrow-up-right-icon
-    classname="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    classname="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
     size="14"
   >
   </gui-arrow-up-right-icon>
@@ -92,7 +92,7 @@ exports[`link renders with href 1`] = `
     gui-link-acme
   </span>
   <gui-arrow-up-right-icon
-    classname="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    classname="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
     size="14"
   >
   </gui-arrow-up-right-icon>
@@ -110,7 +110,7 @@ exports[`link renders with ref 1`] = `
     gui-link
   </span>
   <gui-arrow-up-right-icon
-    classname="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    classname="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
     size="14"
   >
   </gui-arrow-up-right-icon>

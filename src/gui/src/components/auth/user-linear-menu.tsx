@@ -106,10 +106,10 @@ export const UserLinearMenu = () => {
                     <img
                       src={user.imageUrl}
                       alt={userInitials}
-                      className="size-10 rounded-xl border border-muted grayscale transition-colors duration-100 group-hover/login:grayscale-0"
+                      className="border-muted size-10 rounded-xl border grayscale transition-colors duration-100 group-hover/login:grayscale-0"
                     />
                   </div>
-                : <div className="flex aspect-square size-10 items-center justify-center rounded-xl border border-muted bg-white dark:bg-black">
+                : <div className="border-muted flex aspect-square size-10 items-center justify-center rounded-xl border bg-white dark:bg-black">
                     <span className="text-sm font-medium uppercase">
                       {userInitials}
                     </span>
@@ -126,19 +126,19 @@ export const UserLinearMenu = () => {
                   <img
                     src={user.imageUrl}
                     alt={userInitials}
-                    className="aspect-square size-8 rounded-lg border border-muted object-cover grayscale"
+                    className="border-muted aspect-square size-8 rounded-lg border object-cover grayscale"
                   />
-                : <div className="flex aspect-square size-8 items-center justify-center rounded-lg border border-muted bg-white dark:bg-black">
+                : <div className="border-muted flex aspect-square size-8 items-center justify-center rounded-lg border bg-white dark:bg-black">
                     <span className="text-base font-medium uppercase">
                       {userInitials}
                     </span>
                   </div>
                 }
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-foreground text-sm font-medium">
                     {user?.fullName || user?.username}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {user?.email}
                   </p>
                 </div>
@@ -178,7 +178,7 @@ const MenuGroup = ({ group, onAction }: MenuGroupProps) => {
   return (
     <DropdownMenuGroup>
       {group.label && (
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+        <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
           {group.label}
         </DropdownMenuLabel>
       )}
@@ -217,9 +217,9 @@ const MenuItem = ({ item, onAction }: MenuItemProps) => {
 
   return (
     <DropdownMenuItem
-      className="rounded-lg font-normal text-muted-foreground hover:text-foreground"
+      className="text-muted-foreground hover:text-foreground rounded-lg font-normal"
       onClick={handleClick}>
-      <span className="text-sm font-medium text-foreground">
+      <span className="text-foreground text-sm font-medium">
         {item.label}
       </span>
       {item.icon && (

@@ -21,7 +21,7 @@ exports[`ResultPageOptions renders default 1`] = `
     classname="rounded-xl shadow-none"
   >
     <gui-dropdown-menu-group>
-      <gui-dropdown-menu-label classname="text-sm text-muted-foreground">
+      <gui-dropdown-menu-label classname="text-muted-foreground text-sm">
         Results per page
       </gui-dropdown-menu-label>
       <gui-dropdown-menu-item classname="rounded-lg">

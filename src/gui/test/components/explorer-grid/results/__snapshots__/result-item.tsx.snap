@@ -6,20 +6,20 @@ exports[`ResultItem render missing version and labels 1`] = `
   <div class="group relative">
     <a
       href="#"
-      class="block border bg-card text-card-foreground duration-250 relative cursor-default rounded-xl shadow-none transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
           <button
             data-state="closed"
-            class="grow cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
+            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
           >
             item
           </button>
         </div>
         <div class="flex flex-row flex-wrap items-center gap-3">
         </div>
-        <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
+        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
         </div>
       </div>
     </a>
@@ -32,13 +32,13 @@ exports[`ResultItem render stacked many 1`] = `
 
 <div>
   <div class="group relative">
-    <div class="absolute left-2 top-2 h-full w-[97.5%] rounded-xl border bg-card transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
+    <div class="bg-card absolute top-2 left-2 h-full w-[97.5%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
-    <div class="absolute left-1 top-1 h-full w-[99%] rounded-xl border bg-card transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
+    <div class="bg-card absolute top-1 left-1 h-full w-[99%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <a
       href="#"
-      class="block border bg-card text-card-foreground duration-250 relative cursor-default rounded-xl shadow-none transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
@@ -52,14 +52,14 @@ exports[`ResultItem render stacked many 1`] = `
           </div>
           <button
             data-state="closed"
-            class="grow cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
+            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
           >
             many-edges-stacked
           </button>
         </div>
         <div class="flex flex-row flex-wrap items-center gap-3">
         </div>
-        <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
+        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
           <div>
             <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-fuchsia-100 dark:bg-fuchsia-950 border-[1px] border-fuchsia-500 dark:border-fuchsia-500">
               <span class="text-xs font-medium inline-flex items-center justify-center text-fuchsia-800 dark:text-fuchsia-400">
@@ -79,11 +79,11 @@ exports[`ResultItem render stacked two 1`] = `
 
 <div>
   <div class="group relative">
-    <div class="absolute left-1 top-1 h-full w-[99%] rounded-xl border bg-card transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
+    <div class="bg-card absolute top-1 left-1 h-full w-[99%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <a
       href="#"
-      class="block border bg-card text-card-foreground duration-250 relative cursor-default rounded-xl shadow-none transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
@@ -97,14 +97,14 @@ exports[`ResultItem render stacked two 1`] = `
           </div>
           <button
             data-state="closed"
-            class="grow cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
+            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
           >
             two-edges-stacked
           </button>
         </div>
         <div class="flex flex-row flex-wrap items-center gap-3">
         </div>
-        <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
+        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
           <div>
             <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-orange-200 dark:bg-orange-950 border-[1px] border-orange-500 dark:border-orange-500">
               <span class="text-xs font-medium inline-flex items-center justify-center text-orange-700 dark:text-orange-500">
@@ -126,7 +126,7 @@ exports[`ResultItem render with item 1`] = `
   <div class="group relative">
     <a
       href="#"
-      class="block border bg-card text-card-foreground duration-250 relative cursor-default rounded-xl shadow-none transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
@@ -140,14 +140,14 @@ exports[`ResultItem render with item 1`] = `
           </div>
           <button
             data-state="closed"
-            class="grow cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
+            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
           >
             item
           </button>
         </div>
         <div class="flex flex-row flex-wrap items-center gap-3">
         </div>
-        <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
+        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
           <div>
             <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
               <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
@@ -169,7 +169,7 @@ exports[`ResultItem render with type 1`] = `
   <div class="group relative">
     <a
       href="#"
-      class="block border bg-card text-card-foreground duration-250 relative cursor-default rounded-xl shadow-none transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
         <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
@@ -183,7 +183,7 @@ exports[`ResultItem render with type 1`] = `
           </div>
           <button
             data-state="closed"
-            class="grow cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
+            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
           >
             item
           </button>
@@ -202,7 +202,7 @@ exports[`ResultItem render with type 1`] = `
             </span>
           </div>
         </div>
-        <div class="absolute -bottom-3.5 right-2.5 flex gap-2">
+        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
           <div>
             <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
               <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">

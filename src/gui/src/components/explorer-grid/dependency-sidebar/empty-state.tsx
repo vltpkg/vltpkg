@@ -38,35 +38,35 @@ export const DependencyEmptyState = () => {
             ease: 'easeInOut',
             duration: 0.25,
           }}
-          className="flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed border-muted bg-card py-12">
+          className="border-muted bg-card flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed py-12">
           <div className="mb-6 flex justify-center">
             <div className="relative">
               <div className="relative space-y-2">
-                <div className="h-12 w-64 rotate-1 transform rounded-xl border-[1px] border-dashed border-muted-foreground/20 bg-muted/30" />
+                <div className="border-muted-foreground/20 bg-muted/30 h-12 w-64 rotate-1 transform rounded-xl border-[1px] border-dashed" />
 
-                <div className="-mt-10 h-12 w-64 -rotate-1 transform rounded-xl border-[1px] border-dashed border-muted-foreground/30 bg-muted/50" />
+                <div className="border-muted-foreground/30 bg-muted/50 -mt-10 h-12 w-64 -rotate-1 transform rounded-xl border-[1px] border-dashed" />
 
-                <div className="relative z-10 -mt-10 flex h-12 w-64 items-center justify-between rounded-xl border-[1px] border-dashed border-muted-foreground/40 bg-background px-4">
+                <div className="border-muted-foreground/40 bg-background relative z-10 -mt-10 flex h-12 w-64 items-center justify-between rounded-xl border-[1px] border-dashed px-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-6 w-12 rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
-                    <div className="h-4 w-24 rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
+                    <div className="border-muted-foreground/30 bg-muted/60 h-6 w-12 rounded-lg border-[1px] border-dashed" />
+                    <div className="border-muted-foreground/30 bg-muted/60 h-4 w-24 rounded-lg border-[1px] border-dashed" />
                   </div>
-                  <div className="h-4 w-12 rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/60" />
+                  <div className="border-muted-foreground/30 bg-muted/60 h-4 w-12 rounded-lg border-[1px] border-dashed" />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col items-center justify-center gap-1 text-center">
-            <h3 className="text-base font-medium tracking-tight text-foreground">
+            <h3 className="text-foreground text-base font-medium tracking-tight">
               No dependencies
             </h3>
             {importerId ?
-              <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+              <p className="text-muted-foreground w-4/5 text-sm font-normal tracking-normal">
                 Your project's dependencies will appear here, install
                 one to see it appear
               </p>
-            : <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+            : <p className="text-muted-foreground w-4/5 text-sm font-normal tracking-normal">
                 This package has no installed dependencies
               </p>
             }
@@ -77,7 +77,7 @@ export const DependencyEmptyState = () => {
                 <PopoverTrigger asChild>
                   <Button
                     onClick={toggleAddDepPopover}
-                    className="mt-2 h-8 w-fit rounded-xl border-[1px] border-muted">
+                    className="border-muted mt-2 h-8 w-fit rounded-xl border-[1px]">
                     Install a dependency
                     <motion.span
                       animate={{
@@ -90,7 +90,7 @@ export const DependencyEmptyState = () => {
                 <PopoverContent
                   align="center"
                   side="top"
-                  className="right-0 top-0 w-96 p-0">
+                  className="top-0 right-0 w-96 p-0">
                   <AddDependenciesPopover />
                 </PopoverContent>
               </Popover>

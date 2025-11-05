@@ -20,7 +20,7 @@ export const LinearMenu = () => {
 
   return (
     <Fragment>
-      <div className="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm dark:bg-neutral-950 md:flex">
+      <div className="hidden h-10 items-center gap-x-2 rounded-xl border-[1px] bg-white p-1 text-sm md:flex dark:bg-neutral-950">
         {menuData.map(item =>
           item.children ?
             <MenuGroup key={item.title} item={item} />
@@ -45,7 +45,7 @@ const MenuGroup = ({ item }: { item: MenuItem }) => {
 
   return (
     <Popover>
-      <PopoverTrigger className="duration-250 inline-flex cursor-default items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900">
+      <PopoverTrigger className="inline-flex cursor-default items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900">
         {title}
         <ChevronDown size={12} />
       </PopoverTrigger>
@@ -74,11 +74,11 @@ const MenuLink = ({
       target={target}
       href={path}
       className={cn(
-        'duration-250 inline-flex cursor-default items-center gap-x-3 text-nowrap rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900',
+        'inline-flex cursor-default items-center gap-x-3 rounded-lg bg-transparent px-3 py-1.5 text-sm text-nowrap text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900',
         className,
       )}>
       {Icon && (
-        <Icon className="rounded-sm border-[1px] border-border dark:border-neutral-800" />
+        <Icon className="border-border rounded-sm border-[1px] dark:border-neutral-800" />
       )}
       <span>{title}</span>
     </a>

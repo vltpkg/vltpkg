@@ -91,7 +91,7 @@ export const SettingsView = () => {
                     {root}
                     <Button
                       size="icon"
-                      className="mb-0.5 size-4 rounded-sm bg-neutral-100 text-muted-foreground hover:bg-neutral-200 hover:text-foreground dark:bg-neutral-800 dark:text-muted-foreground dark:hover:bg-neutral-700 dark:hover:text-foreground [&_svg]:size-3"
+                      className="text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground mb-0.5 size-4 rounded-sm bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&_svg]:size-3"
                       onClick={() =>
                         handleDashboardRootRemove(
                           root,

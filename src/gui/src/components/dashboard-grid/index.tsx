@@ -79,7 +79,7 @@ export const DashboardGrid = () => {
             exit={{ opacity: 0, y: 5 }}
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex w-full max-w-8xl flex-col py-4">
+            className="max-w-8xl flex w-full flex-col py-4">
             <DashboardTable
               data={dashboard.projects}
               setTable={value => {
@@ -104,7 +104,7 @@ export const DashboardGrid = () => {
             exit={{ opacity: 0, y: -5 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex w-full max-w-8xl flex-col">
+            className="max-w-8xl flex w-full flex-col">
             <p className="mb-4 text-sm font-semibold">Projects</p>
             <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredProjects.map((item, index) => (
@@ -133,7 +133,7 @@ const DashboardEmptyState = () => {
         </h2>
         {dashboardRoots && dashboardRoots.length > 0 && (
           <div className="flex flex-col items-center justify-center gap-2">
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-muted-foreground text-sm font-medium">
               We couldn't find any projects in the following
               configured dashboard roots:
             </p>

@@ -121,7 +121,7 @@ const Notification = ({
     <NavLink
       to={`/queries?query=${encodeURIComponent(query)}`}
       className={cn(
-        'h-6 cursor-pointer items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 px-2 py-1 text-xxs transition-colors dark:border-neutral-700 dark:bg-muted',
+        'text-xxs dark:bg-muted h-6 cursor-pointer items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 px-2 py-1 transition-colors dark:border-neutral-700',
         className,
       )}>
       Matches {numberOfQueries} Queries

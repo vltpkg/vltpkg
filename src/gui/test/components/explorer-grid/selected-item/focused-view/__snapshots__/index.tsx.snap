@@ -15,7 +15,7 @@ exports[`FocusedView renders default 1`] = `
       </gui-focused-button>
     </gui-item-header>
     <div class="mx-6 grid grid-cols-12">
-      <div class="col-span-full h-fit rounded-xl border-[1px] border-muted bg-white pt-2 dark:bg-neutral-900 lg:col-span-9">
+      <div class="border-muted col-span-full h-fit rounded-xl border-[1px] bg-white pt-2 lg:col-span-9 dark:bg-neutral-900">
         <gui-selected-item-tabs>
         </gui-selected-item-tabs>
       </div>

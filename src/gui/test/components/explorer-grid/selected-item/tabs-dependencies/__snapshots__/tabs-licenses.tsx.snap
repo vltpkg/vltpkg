@@ -53,15 +53,15 @@ exports[`LicensesTabContent renders with licenses 1`] = `
     <div class="px-6">
       <div
         role="button"
-        class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors hover:border-muted-foreground/30 hover:bg-secondary/60"
+        class="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors duration-250 hover:border-muted-foreground/30 hover:bg-secondary/60"
       >
-        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+        <p class="font-regular text-muted-foreground text-xs tracking-wide">
           Licenses warnings
         </p>
-        <p class="font-mono text-2xl font-medium tabular-nums text-foreground">
+        <p class="text-foreground font-mono text-2xl font-medium tabular-nums">
           27
         </p>
-        <div class="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
+        <div class="absolute -top-3 -right-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
           <gui-alert-triangle-icon classname="mb-0.5 size-4 text-yellow-500">
           </gui-alert-triangle-icon>
         </div>
@@ -136,7 +136,7 @@ exports[`LicensesTabContent renders with licenses 1`] = `
       >
       </gui-warning>
     </div>
-    <gui-table classname="border-t-[1px] border-muted">
+    <gui-table classname="border-muted border-t-[1px]">
       <gui-table-header>
         <gui-table-row>
           <gui-table-head

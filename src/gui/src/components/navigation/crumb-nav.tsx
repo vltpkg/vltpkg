@@ -54,7 +54,7 @@ const Crumb = ({ query, crumbIdx, crumbLength }: CrumbProps) => {
       className={cn(
         'px-1.5',
         crumbIdx !== crumbLength - 1 &&
-          'duration-250 opacity-75 transition-opacity hover:opacity-100',
+          'opacity-75 transition-opacity duration-250 hover:opacity-100',
       )}
       variant={segment.type}
       key={`crumb-${idx}`}>

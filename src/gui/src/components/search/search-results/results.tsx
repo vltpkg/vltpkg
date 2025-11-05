@@ -12,7 +12,7 @@ export const SearchResults = () => {
   useSyncSearchResultsURL()
   return (
     <section className="relative mx-auto grid h-full w-full grid-cols-12 gap-8 px-4 py-4">
-      <div className="col-span-full w-full py-4 md:sticky md:-top-4 md:z-[1001] md:col-start-3 md:bg-sidebar">
+      <div className="md:bg-sidebar col-span-full w-full py-4 md:sticky md:-top-4 md:z-[1001] md:col-start-3">
         <SearchResultsHeader />
       </div>
       <div className="col-span-full md:col-span-7 md:col-start-3">
@@ -32,7 +32,7 @@ const SearchResultsHeader = () => {
       <h3 className="inline-flex items-baseline gap-2 text-3xl tracking-tight">
         Search results for &ldquo;{query}&rdquo;
         {!isLoading && (
-          <span className="font-mono text-sm tabular-nums tracking-normal text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-sm tracking-normal tabular-nums">
             ({total.toLocaleString()})
           </span>
         )}
@@ -79,7 +79,7 @@ const SearchResultsState = ({
       {title && (
         <p
           className={cn(
-            'text-base text-muted-foreground',
+            'text-muted-foreground text-base',
             state === 'error' && 'text-red-500',
           )}>
           {title}

@@ -145,7 +145,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
       height={svgDimensions.height}
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
-        'pointer-events-none absolute left-0 top-0 transform-gpu stroke-2',
+        'pointer-events-none absolute top-0 left-0 transform-gpu stroke-2',
         className,
       )}
       viewBox={`0 0 ${svgDimensions.width} ${svgDimensions.height}`}>

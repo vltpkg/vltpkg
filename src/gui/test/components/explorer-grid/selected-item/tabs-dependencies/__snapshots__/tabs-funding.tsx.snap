@@ -53,11 +53,11 @@ exports[`FundingTabContent renders with an funding 1`] = `
 >
   <div class="flex flex-col gap-3 py-4">
     <div class="flex flex-col gap-3 px-6">
-      <div class="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors">
-        <p class="font-regular text-xs tracking-wide text-muted-foreground">
+      <div class="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors duration-250">
+        <p class="font-regular text-muted-foreground text-xs tracking-wide">
           Packages looking for funding
         </p>
-        <p class="inline-flex items-center gap-1 font-mono text-2xl font-medium tabular-nums text-foreground">
+        <p class="text-foreground inline-flex items-center gap-1 font-mono text-2xl font-medium tabular-nums">
           <span>
             <gui-heart-handshake-icon
               classname="text-pink-500"
@@ -69,15 +69,15 @@ exports[`FundingTabContent renders with an funding 1`] = `
         </p>
       </div>
       <div class="my-2 flex w-2/3 flex-col gap-1 text-pretty">
-        <p class="text-medium text-sm capitalize text-foreground">
+        <p class="text-medium text-foreground text-sm capitalize">
           support the tools you rely on
         </p>
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           Some of the packages you're using have funding options available. Supporting them helps ensure these projects remain maintained and sustainable for the community.
         </p>
       </div>
     </div>
-    <gui-table classname="cursor-default border-t-[1px] border-muted">
+    <gui-table classname="border-muted cursor-default border-t-[1px]">
       <gui-table-header>
         <gui-table-row>
           <gui-table-head

@@ -18,7 +18,7 @@ exports[`dependency-side-bar 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+    <span class="text-muted-foreground font-mono text-sm tabular-nums">
       /
     </span>
     <gui-number-flow
@@ -82,7 +82,7 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+    <span class="text-muted-foreground font-mono text-sm tabular-nums">
       /
     </span>
     <gui-number-flow
@@ -161,7 +161,7 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+    <span class="text-muted-foreground font-mono text-sm tabular-nums">
       /
     </span>
     <gui-number-flow
@@ -238,7 +238,7 @@ exports[`dependency-side-bar no items 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+    <span class="text-muted-foreground font-mono text-sm tabular-nums">
       /
     </span>
     <gui-number-flow

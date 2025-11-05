@@ -50,7 +50,7 @@ export const ResultPageOptions = ({
         className="rounded-xl shadow-none"
         onCloseAutoFocus={e => e.preventDefault()}>
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-sm text-muted-foreground">
+          <DropdownMenuLabel className="text-muted-foreground text-sm">
             Results per page
           </DropdownMenuLabel>
           {PAGE_SIZE_OPTIONS.map(size => (

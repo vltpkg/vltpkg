@@ -55,7 +55,7 @@ const Labels = () => {
 
   return (
     <section className="flex h-full w-full flex-col px-8">
-      <div className="flex w-full max-w-8xl flex-col">
+      <div className="max-w-8xl flex w-full flex-col">
         <LayoutGroup>
           <AnimatePresence mode="popLayout" initial={false}>
             {isCreating && (

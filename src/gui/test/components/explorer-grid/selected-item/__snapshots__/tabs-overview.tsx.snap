@@ -16,30 +16,30 @@ exports[`OverviewTabContent renders default 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
+  classname="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
     <div class="flex h-64 w-full items-center justify-center px-6 py-4">
       <div class="flex flex-col items-center justify-center gap-3 text-center">
-        <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+        <div class="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
           <gui-rectangle-horizontal-icon
-            classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)]"
             strokewidth="1.25"
           >
           </gui-rectangle-horizontal-icon>
           <gui-file-text-icon
-            classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+            classname="fill-secondary absolute z-[3] size-14 text-neutral-500"
             strokewidth="1"
           >
           </gui-file-text-icon>
           <gui-rectangle-horizontal-icon
-            classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)]"
             strokewidth="1.25"
           >
           </gui-rectangle-horizontal-icon>
         </div>
-        <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+        <p class="text-muted-foreground w-2/3 text-sm text-pretty">
           We couldn't find a description for this project.
         </p>
       </div>
@@ -55,30 +55,30 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
+  classname="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
     <div class="flex h-64 w-full items-center justify-center px-6 py-4">
       <div class="flex flex-col items-center justify-center gap-3 text-center">
-        <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+        <div class="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
           <gui-rectangle-horizontal-icon
-            classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)]"
             strokewidth="1.25"
           >
           </gui-rectangle-horizontal-icon>
           <gui-file-text-icon
-            classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+            classname="fill-secondary absolute z-[3] size-14 text-neutral-500"
             strokewidth="1"
           >
           </gui-file-text-icon>
           <gui-rectangle-horizontal-icon
-            classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)]"
             strokewidth="1.25"
           >
           </gui-rectangle-horizontal-icon>
         </div>
-        <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+        <p class="text-muted-foreground w-2/3 text-sm text-pretty">
           We couldn't find a description for this project.
         </p>
       </div>
@@ -94,12 +94,12 @@ exports[`OverviewTabContent renders with content 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
+  classname="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
     <div class="flex flex-col gap-2 px-6 py-4">
-      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+      <h4 class="text-muted-foreground text-sm font-medium capitalize">
         description
       </h4>
       <div class="prose-sm prose-neutral max-w-none text-sm">
@@ -113,7 +113,7 @@ This is a custom description
     <gui-contributor-list>
     </gui-contributor-list>
     <div class="mt-auto flex flex-col justify-end gap-2 px-6 py-4">
-      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+      <h4 class="text-muted-foreground text-sm font-medium capitalize">
         keywords
       </h4>
       <div class="flex flex-wrap gap-2">

@@ -78,7 +78,7 @@ export const DataTable = <TData, TValue>({
 
   return (
     <>
-      <div className="rounded-md border border-muted bg-card">
+      <div className="border-muted bg-card rounded-md border">
         <Table className="w-full">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -143,7 +143,7 @@ export const DataTable = <TData, TValue>({
                 />
               </TableCell>
               <TableCell className="flex items-center justify-end">
-                <p className="mr-3 text-nowrap text-xs font-medium text-muted-foreground">
+                <p className="text-muted-foreground mr-3 text-xs font-medium text-nowrap">
                   {table.getState().pagination.pageIndex + 1} of{' '}
                   {table.getPageCount()}
                 </p>

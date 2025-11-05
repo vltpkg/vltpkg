@@ -27,7 +27,7 @@ exports[`InsightTabContent renders an empty state 1`] = `
         >
         </gui-badge-info-icon>
       </div>
-      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+      <p class="text-muted-foreground w-2/3 text-sm text-pretty">
         This package has not been scanned for insights.
       </p>
     </div>
@@ -35,7 +35,7 @@ exports[`InsightTabContent renders an empty state 1`] = `
   <div class="w-full px-6 py-4">
     <gui-link
       to="/help/selectors"
-      classname="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted"
+      classname="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']"
     >
       See all Selectors &amp; Insights
     </gui-link>
@@ -51,9 +51,9 @@ exports[`InsightTabContent renders with insights 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="mt-2 flex flex-col px-6 py-4">
-    <div class="mb-4 grid cursor-default grid-cols-10 gap-2 border-b-[1px] border-muted px-2 pb-4">
+    <div class="border-muted mb-4 grid cursor-default grid-cols-10 gap-2 border-b-[1px] px-2 pb-4">
       <div class="col-span-3 flex w-full items-start">
-        <button class="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+        <button class="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
           <span>
             Insight
           </span>
@@ -62,7 +62,7 @@ exports[`InsightTabContent renders with insights 1`] = `
         </button>
       </div>
       <div class="col-span-2 flex w-full items-start">
-        <button class="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+        <button class="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
           <span>
             Category
           </span>
@@ -71,13 +71,13 @@ exports[`InsightTabContent renders with insights 1`] = `
         </button>
       </div>
       <div class="col-span-5 flex w-full items-start">
-        <p class="text-sm text-muted-foreground">
+        <p class="text-muted-foreground text-sm">
           Description
         </p>
       </div>
     </div>
-    <div class="flex flex-col divide-y-[1px] divide-muted">
-      <div class="duration-250 grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-colors hover:bg-muted">
+    <div class="divide-muted flex flex-col divide-y-[1px]">
+      <div class="hover:bg-muted grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-colors duration-250">
         <div class="col-span-3 flex w-full items-start">
           <gui-insight-badge
             color="medium"
@@ -92,7 +92,7 @@ exports[`InsightTabContent renders with insights 1`] = `
           </p>
         </div>
         <div class="col-span-5 flex">
-          <p class="text-pretty text-sm">
+          <p class="text-sm text-pretty">
             Packages that are missing an author field
           </p>
         </div>
@@ -102,7 +102,7 @@ exports[`InsightTabContent renders with insights 1`] = `
   <div class="w-full px-6 py-4">
     <gui-link
       to="/help/selectors"
-      classname="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted"
+      classname="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']"
     >
       See all Selectors &amp; Insights
     </gui-link>
@@ -117,7 +117,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
   value="insights"
   style="opacity: 0; filter: blur(2px);"
 >
-  <section class="mt-3 border-b-[1px] border-muted pb-6">
+  <section class="border-muted mt-3 border-b-[1px] pb-6">
     <div class="grid grid-cols-5 gap-2 px-6">
       <div class="flex flex-col items-center justify-center">
         <gui-chart-container
@@ -155,7 +155,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
             </gui-recharts-polar-radius-axis>
           </gui-recharts-radial-bar-chart>
         </gui-chart-container>
-        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
+        <p class="cursor-default text-sm font-medium whitespace-nowrap capitalize">
           quality
         </p>
       </div>
@@ -195,7 +195,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
             </gui-recharts-polar-radius-axis>
           </gui-recharts-radial-bar-chart>
         </gui-chart-container>
-        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
+        <p class="cursor-default text-sm font-medium whitespace-nowrap capitalize">
           supply chain
         </p>
       </div>
@@ -235,7 +235,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
             </gui-recharts-polar-radius-axis>
           </gui-recharts-radial-bar-chart>
         </gui-chart-container>
-        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
+        <p class="cursor-default text-sm font-medium whitespace-nowrap capitalize">
           maintenance
         </p>
       </div>
@@ -275,7 +275,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
             </gui-recharts-polar-radius-axis>
           </gui-recharts-radial-bar-chart>
         </gui-chart-container>
-        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
+        <p class="cursor-default text-sm font-medium whitespace-nowrap capitalize">
           vulnerability
         </p>
       </div>
@@ -315,13 +315,13 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
             </gui-recharts-polar-radius-axis>
           </gui-recharts-radial-bar-chart>
         </gui-chart-container>
-        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
+        <p class="cursor-default text-sm font-medium whitespace-nowrap capitalize">
           license
         </p>
       </div>
     </div>
     <div class="px-6 pt-6">
-      <p class="w-2/3 cursor-default text-sm text-muted-foreground">
+      <p class="text-muted-foreground w-2/3 cursor-default text-sm">
         Package Insight Scores are powered by
         <gui-link
           href="https://socket.dev/npm/package/item"
@@ -342,7 +342,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
         >
         </gui-badge-check-icon>
       </div>
-      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+      <p class="text-muted-foreground w-2/3 text-sm text-pretty">
         This package has no insights available.
       </p>
     </div>
@@ -350,7 +350,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
   <div class="w-full px-6 py-4">
     <gui-link
       to="/help/selectors"
-      classname="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm text-muted-foreground transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted"
+      classname="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']"
     >
       See all Selectors &amp; Insights
     </gui-link>

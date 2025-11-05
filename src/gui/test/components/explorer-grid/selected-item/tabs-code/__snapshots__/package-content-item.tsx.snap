@@ -11,7 +11,7 @@ exports[`PackageContentItem renders directory row 1`] = `
       <div class="col-span-6 flex items-center gap-2">
         <div class="flex size-4 items-center justify-center">
           <gui-folder-icon
-            classname="size-4 text-muted-foreground"
+            classname="text-muted-foreground size-4"
             strokewidth="1"
           >
           </gui-folder-icon>
@@ -21,12 +21,12 @@ exports[`PackageContentItem renders directory row 1`] = `
         </p>
       </div>
       <div class="col-span-3 flex justify-center">
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           directory
         </p>
       </div>
       <div class="col-span-3 flex justify-end text-right">
-        <p class="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+        <p class="text-muted-foreground font-mono text-sm font-medium tabular-nums">
           -
         </p>
       </div>
@@ -63,7 +63,7 @@ exports[`PackageContentItem renders file row with formatted size 1`] = `
       <div class="col-span-6 flex items-center gap-2">
         <div class="flex size-4 items-center justify-center">
           <gui-file-text-icon
-            classname="size-4 text-muted-foreground"
+            classname="text-muted-foreground size-4"
             strokewidth="1"
           >
           </gui-file-text-icon>
@@ -73,12 +73,12 @@ exports[`PackageContentItem renders file row with formatted size 1`] = `
         </p>
       </div>
       <div class="col-span-3 flex justify-center">
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           file
         </p>
       </div>
       <div class="col-span-3 flex justify-end text-right">
-        <p class="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+        <p class="text-muted-foreground font-mono text-sm font-medium tabular-nums">
           1 KB
         </p>
       </div>
@@ -118,11 +118,11 @@ exports[`PackageContentItem renders none row without icon and size 1`] = `
         </p>
       </div>
       <div class="col-span-3 flex justify-center">
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
         </p>
       </div>
       <div class="col-span-3 flex justify-end text-right">
-        <p class="font-mono text-sm font-medium tabular-nums text-muted-foreground">
+        <p class="text-muted-foreground font-mono text-sm font-medium tabular-nums">
         </p>
       </div>
     </div>

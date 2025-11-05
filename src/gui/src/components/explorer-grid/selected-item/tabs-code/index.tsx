@@ -140,8 +140,8 @@ export const CodeTabContent = () => {
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, filter: 'blur(2px)' }}>
             <div className="flex flex-col">
-              <div className="overflow-x-scroll border-b border-muted px-6 pb-4">
-                <h3 className="text-md inline-flex items-baseline gap-1 overflow-x-scroll whitespace-nowrap font-medium">
+              <div className="border-muted overflow-x-scroll border-b px-6 pb-4">
+                <h3 className="text-md inline-flex items-baseline gap-1 overflow-x-scroll font-medium whitespace-nowrap">
                   <span
                     onClick={() => {
                       if (nodeResolvedPath)
@@ -150,25 +150,25 @@ export const CodeTabContent = () => {
                     className="cursor-pointer hover:underline">
                     {selectedItemName}
                   </span>
-                  <span className="cursor-default text-muted-foreground">
+                  <span className="text-muted-foreground cursor-default">
                     /
                   </span>
                   {breadcrumbs.map((c, idx) => (
                     <Fragment key={c.path}>
                       <span
                         onClick={() => onCrumbNavigate(c.path)}
-                        className="cursor-pointer text-muted-foreground transition-colors duration-100 hover:text-foreground hover:underline">
+                        className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors duration-100 hover:underline">
                         {c.name}
                       </span>
                       {idx !== breadcrumbs.length && (
-                        <span className="cursor-default text-muted-foreground">
+                        <span className="text-muted-foreground cursor-default">
                           /
                         </span>
                       )}
                     </Fragment>
                   ))}
                   {selectedPackageContentItem && (
-                    <span className="cursor-default text-muted-foreground">
+                    <span className="text-muted-foreground cursor-default">
                       {selectedPackageContentItem.name}
                     </span>
                   )}
@@ -177,7 +177,7 @@ export const CodeTabContent = () => {
               {selectedPackageContentItem && (
                 <div
                   className={cn(
-                    'flex justify-between gap-2 border-b border-muted px-6 pb-2 pt-2',
+                    'border-muted flex justify-between gap-2 border-b px-6 pt-2 pb-2',
                     'bg-neutral-100',
                     'dark:bg-neutral-900',
                   )}>
@@ -205,7 +205,7 @@ export const CodeTabContent = () => {
                     <span>Back</span>
                   </Button>
                   <div className="flex items-center gap-4">
-                    <div className="flex h-8 items-center gap-2 px-4 font-mono text-xs font-medium tabular-nums text-muted-foreground [&_p]:cursor-default">
+                    <div className="text-muted-foreground flex h-8 items-center gap-2 px-4 font-mono text-xs font-medium tabular-nums [&_p]:cursor-default">
                       <p>{selectedPackageContentItem.mime}</p>
                       <p>{`.${selectedPackageContentItem.ext}`}</p>
                       <p>{selectedPackageContentItem.encoding}</p>
@@ -253,7 +253,7 @@ export const CodeTabContent = () => {
                     initial={{ opacity: 0, filter: 'blur(2px)' }}
                     animate={{ opacity: 1, filter: 'blur(0px)' }}
                     exit={{ opacity: 0, filter: 'blur(2px)' }}
-                    className="prose-sm prose-neutral w-full max-w-none px-6 py-4 prose-li:list-disc">
+                    className="prose-sm prose-neutral prose-li:list-disc w-full max-w-none px-6 py-4">
                     <Markdown>
                       {selectedPackageContentItem.content}
                     </Markdown>
@@ -267,9 +267,9 @@ export const CodeTabContent = () => {
                   animate={{ opacity: 1, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, filter: 'blur(2px)' }}
                   className="flex flex-col">
-                  <div className="px-6 pb-1 pt-4">
+                  <div className="px-6 pt-4 pb-1">
                     <div className="relative flex w-full items-center">
-                      <Search className="absolute ml-3 size-4 text-muted-foreground" />
+                      <Search className="text-muted-foreground absolute ml-3 size-4" />
                       <Input
                         placeholder="Filter..."
                         className="h-9 rounded-xl pl-9 text-sm"
@@ -278,7 +278,7 @@ export const CodeTabContent = () => {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-12 px-6 pb-2 pt-4">
+                  <div className="grid grid-cols-12 px-6 pt-4 pb-2">
                     <div className="col-span-6">
                       <SortingHeader
                         label="File"

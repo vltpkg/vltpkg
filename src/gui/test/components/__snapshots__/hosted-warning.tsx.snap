@@ -22,14 +22,14 @@ exports[`HostedWarning view 1`] = `
       aschild="true"
       size="sm"
       variant="outline"
-      classname="rounded-2xl border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-muted hover:dark:bg-neutral-900"
+      classname="dark:border-muted rounded-2xl border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 hover:dark:bg-neutral-900"
     >
       <gui-router-link
         to="https://docs.vlt.sh/cli"
         target="_blank"
       >
         Install the Client
-        <div class="flex size-5 items-center justify-center rounded-md border border-neutral-300 bg-white text-muted-foreground dark:border-muted dark:bg-black [&amp;_svg]:size-3">
+        <div class="text-muted-foreground dark:border-muted flex size-5 items-center justify-center rounded-md border border-neutral-300 bg-white dark:bg-black [&amp;_svg]:size-3">
           <gui-arrow-up-right-icon>
           </gui-arrow-up-right-icon>
         </div>
