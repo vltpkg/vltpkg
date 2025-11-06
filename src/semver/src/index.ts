@@ -10,7 +10,7 @@ export * from './version.ts'
 
 /** Return the parsed version string, or `undefined` if invalid */
 export const parse = (version: Version | string) => {
-  if (version instanceof Version) return version
+  if (!(typeof version === 'string')) return version
   try {
     return Version.parse(version)
   } catch {
