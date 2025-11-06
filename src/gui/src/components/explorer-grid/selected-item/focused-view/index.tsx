@@ -52,11 +52,12 @@ export const FocusedView = ({
           <FocusButton />
         </ItemHeader>
         <div className="mx-6 grid grid-cols-12">
-          <div className="col-span-full h-fit rounded-xl border-[1px] border-muted bg-white pt-2 dark:bg-neutral-900 lg:col-span-9">
+          <div className="border-muted col-span-full h-fit rounded-xl border-[1px] bg-white pt-2 lg:col-span-9 dark:bg-neutral-900">
             <SelectedItemTabs />
           </div>
 
           <FocusedAside
+            className="mt-4 md:mt-0"
             dependencies={dependencies}
             onDependencyClick={onDependencyClick}
             uninstalledDependencies={uninstalledDependencies}

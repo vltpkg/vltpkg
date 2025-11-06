@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import {
   getBooleanFlagsFromNum,
@@ -13,6 +14,7 @@ export const loadNodes = (
   nodes: LockfileData['nodes'],
   options: SpecOptions,
   actual?: GraphLike,
+  throwOnMissingManifest?: boolean,
 ) => {
   const entries = Object.entries(nodes) as [DepID, LockfileNode][]
   const nodeCount = entries.length
@@ -50,6 +52,13 @@ export const loadNodes = (
     // that may be missing from the lockfile
     const referenceNode = actual?.nodes.get(id)
     const mani = manifest ?? referenceNode?.manifest
+
+    // Throw if manifest is missing and the option is enabled
+    if (!mani && throwOnMissingManifest) {
+      throw error(
+        `Missing manifest for node ${id} and no reference node found.`,
+      )
+    }
 
     // Optimize registry version extraction with caching for large graphs
     let version: string | undefined

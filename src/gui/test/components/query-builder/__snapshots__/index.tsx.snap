@@ -6,7 +6,7 @@ exports[`QueryBuilder > opens UI when store flag is set 1`] = `
   <gui-tooltip-provider>
     <gui-tooltip>
       <gui-tooltip-trigger aschild="true">
-        <gui-button classname="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+        <gui-button classname="bg-input text-muted-foreground hover:text-accent-foreground flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm p-0 transition-colors duration-250 hover:bg-neutral-300 dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
           <gui-unfold-vertical>
           </gui-unfold-vertical>
         </gui-button>
@@ -28,7 +28,7 @@ exports[`QueryBuilder > renders nodes for a simple query 1`] = `
   <gui-tooltip-provider>
     <gui-tooltip>
       <gui-tooltip-trigger aschild="true">
-        <gui-button classname="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+        <gui-button classname="bg-input text-muted-foreground hover:text-accent-foreground flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm p-0 transition-colors duration-250 hover:bg-neutral-300 dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
           <gui-unfold-vertical>
           </gui-unfold-vertical>
         </gui-button>
@@ -50,7 +50,7 @@ exports[`QueryBuilder > renders toggle button (closed state) 1`] = `
   <gui-tooltip-provider>
     <gui-tooltip>
       <gui-tooltip-trigger aschild="true">
-        <gui-button classname="duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm bg-input p-0 text-muted-foreground transition-colors hover:bg-neutral-300 hover:text-accent-foreground dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
+        <gui-button classname="bg-input text-muted-foreground hover:text-accent-foreground flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm p-0 transition-colors duration-250 hover:bg-neutral-300 dark:hover:bg-neutral-700 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
           <gui-unfold-vertical>
           </gui-unfold-vertical>
         </gui-button>

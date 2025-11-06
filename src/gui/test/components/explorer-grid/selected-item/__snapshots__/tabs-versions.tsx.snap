@@ -25,15 +25,15 @@ exports[`VersionsTabContent filters newer versions 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
-    <div class="mb-3 border-b-[1px] border-muted pb-1">
+    <div class="border-muted mb-3 border-b-[1px] pb-1">
       <div class="flex cursor-default justify-between">
         <div class="flex flex-col gap-0.5">
           <gui-tooltip-provider>
-            <h3 class="inline-flex items-center gap-1 align-baseline text-base font-medium text-foreground">
+            <h3 class="text-foreground inline-flex items-center gap-1 align-baseline text-base font-medium">
               Package Downloads
               <gui-tooltip>
                 <gui-tooltip-trigger aschild="true">
-                  <span class="cursor-default text-muted-foreground">
+                  <span class="text-muted-foreground cursor-default">
                     <gui-circle-help-icon
                       strokewidth="2"
                       size="16"
@@ -49,11 +49,11 @@ exports[`VersionsTabContent filters newer versions 1`] = `
               </gui-tooltip>
             </h3>
           </gui-tooltip-provider>
-          <p class="font-mono text-xs text-muted-foreground">
+          <p class="text-muted-foreground font-mono text-xs">
             600
           </p>
         </div>
-        <p class="align-baseline text-sm text-muted-foreground">
+        <p class="text-muted-foreground align-baseline text-sm">
           2025-04-15 - 2025-04-15
         </p>
       </div>
@@ -89,7 +89,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
         <gui-search-icon
-          classname="absolute ml-3 text-muted-foreground"
+          classname="text-muted-foreground absolute ml-3"
           size="16"
         >
         </gui-search-icon>
@@ -133,7 +133,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
       <div class="mt-2 flex flex-col gap-2">
         <div class="hidden cursor-default grid-cols-12 gap-3 xl:grid">
           <div class="col-span-2 flex w-full items-center justify-start">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -148,7 +148,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </button>
           </div>
           <div class="col-span-2 ml-1 flex w-full items-center justify-end text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -157,7 +157,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </button>
           </div>
           <div class="col-span-3 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -166,7 +166,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </button>
           </div>
           <div class="col-span-2 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -175,7 +175,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </button>
           </div>
           <div class="col-span-3 flex w-full items-center justify-center text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -185,11 +185,11 @@ exports[`VersionsTabContent filters newer versions 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
-            classname="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+            classname="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
             data="[object Object],[object Object]"
           >
           </gui-virtuoso>
@@ -208,15 +208,15 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
-    <div class="mb-3 border-b-[1px] border-muted pb-1">
+    <div class="border-muted mb-3 border-b-[1px] pb-1">
       <div class="flex cursor-default justify-between">
         <div class="flex flex-col gap-0.5">
           <gui-tooltip-provider>
-            <h3 class="inline-flex items-center gap-1 align-baseline text-base font-medium text-foreground">
+            <h3 class="text-foreground inline-flex items-center gap-1 align-baseline text-base font-medium">
               Package Downloads
               <gui-tooltip>
                 <gui-tooltip-trigger aschild="true">
-                  <span class="cursor-default text-muted-foreground">
+                  <span class="text-muted-foreground cursor-default">
                     <gui-circle-help-icon
                       strokewidth="2"
                       size="16"
@@ -232,11 +232,11 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
               </gui-tooltip>
             </h3>
           </gui-tooltip-provider>
-          <p class="font-mono text-xs text-muted-foreground">
+          <p class="text-muted-foreground font-mono text-xs">
             600
           </p>
         </div>
-        <p class="align-baseline text-sm text-muted-foreground">
+        <p class="text-muted-foreground align-baseline text-sm">
           2025-04-15 - 2025-04-15
         </p>
       </div>
@@ -272,7 +272,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
         <gui-search-icon
-          classname="absolute ml-3 text-muted-foreground"
+          classname="text-muted-foreground absolute ml-3"
           size="16"
         >
         </gui-search-icon>
@@ -316,7 +316,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
       <div class="mt-2 flex flex-col gap-2">
         <div class="hidden cursor-default grid-cols-12 gap-3 xl:grid">
           <div class="col-span-2 flex w-full items-center justify-start">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -331,7 +331,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-2 ml-1 flex w-full items-center justify-end text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -340,7 +340,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-3 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -349,7 +349,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-2 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -358,7 +358,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-3 flex w-full items-center justify-center text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -368,11 +368,11 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
-            classname="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+            classname="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
             data="[object Object],[object Object]"
           >
           </gui-virtuoso>
@@ -394,7 +394,7 @@ exports[`VersionsTabContent filters versions 1`] = `
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
         <gui-search-icon
-          classname="absolute ml-3 text-muted-foreground"
+          classname="text-muted-foreground absolute ml-3"
           size="16"
         >
         </gui-search-icon>
@@ -438,7 +438,7 @@ exports[`VersionsTabContent filters versions 1`] = `
       <div class="mt-2 flex flex-col gap-2">
         <div class="hidden cursor-default grid-cols-12 gap-3 xl:grid">
           <div class="col-span-2 flex w-full items-center justify-start">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -453,7 +453,7 @@ exports[`VersionsTabContent filters versions 1`] = `
             </button>
           </div>
           <div class="col-span-2 ml-1 flex w-full items-center justify-end text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -462,7 +462,7 @@ exports[`VersionsTabContent filters versions 1`] = `
             </button>
           </div>
           <div class="col-span-3 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -471,7 +471,7 @@ exports[`VersionsTabContent filters versions 1`] = `
             </button>
           </div>
           <div class="col-span-2 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -480,7 +480,7 @@ exports[`VersionsTabContent filters versions 1`] = `
             </button>
           </div>
           <div class="col-span-3 flex w-full items-center justify-center text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -490,11 +490,11 @@ exports[`VersionsTabContent filters versions 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
-            classname="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+            classname="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
             data="[object Object],[object Object]"
           >
           </gui-virtuoso>
@@ -516,7 +516,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
         <gui-search-icon
-          classname="absolute ml-3 text-muted-foreground"
+          classname="text-muted-foreground absolute ml-3"
           size="16"
         >
         </gui-search-icon>
@@ -560,7 +560,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
       <div class="mt-2 flex flex-col gap-2">
         <div class="hidden cursor-default grid-cols-12 gap-3 xl:grid">
           <div class="col-span-2 flex w-full items-center justify-start">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -575,7 +575,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </button>
           </div>
           <div class="col-span-2 ml-1 flex w-full items-center justify-end text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -584,7 +584,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </button>
           </div>
           <div class="col-span-3 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -593,7 +593,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </button>
           </div>
           <div class="col-span-2 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -602,7 +602,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </button>
           </div>
           <div class="col-span-3 flex w-full items-center justify-center text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -612,11 +612,11 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
-            classname="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+            classname="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
             data="[object Object],[object Object]"
           >
           </gui-virtuoso>
@@ -636,7 +636,7 @@ exports[`VersionsTabContent renders an empty state 1`] = `
 >
   <div class="flex h-full min-h-64 w-full items-center justify-center overflow-hidden">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
-      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+      <div class="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
         <gui-history-icon
           classname="absolute z-[4] size-14 text-neutral-500"
           strokewidth="1.25"
@@ -644,7 +644,7 @@ exports[`VersionsTabContent renders an empty state 1`] = `
         </gui-history-icon>
       </div>
       <div class="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
-        <p class="w-full text-pretty text-sm text-muted-foreground">
+        <p class="text-muted-foreground w-full text-sm text-pretty">
           There is no versioning information about this package yet.
         </p>
       </div>
@@ -664,7 +664,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
         <gui-search-icon
-          classname="absolute ml-3 text-muted-foreground"
+          classname="text-muted-foreground absolute ml-3"
           size="16"
         >
         </gui-search-icon>
@@ -708,7 +708,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
       <div class="mt-2 flex flex-col gap-2">
         <div class="hidden cursor-default grid-cols-12 gap-3 xl:grid">
           <div class="col-span-2 flex w-full items-center justify-start">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -723,7 +723,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </button>
           </div>
           <div class="col-span-2 ml-1 flex w-full items-center justify-end text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -732,7 +732,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </button>
           </div>
           <div class="col-span-3 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -741,7 +741,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </button>
           </div>
           <div class="col-span-2 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -750,7 +750,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </button>
           </div>
           <div class="col-span-3 flex w-full items-center justify-center text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -760,11 +760,11 @@ exports[`VersionsTabContent renders with versions 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
-            classname="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+            classname="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
             data="[object Object],[object Object]"
           >
           </gui-virtuoso>
@@ -786,7 +786,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
     <div class="mb-3 flex items-center gap-2">
       <div class="relative flex w-full items-center justify-start">
         <gui-search-icon
-          classname="absolute ml-3 text-muted-foreground"
+          classname="text-muted-foreground absolute ml-3"
           size="16"
         >
         </gui-search-icon>
@@ -830,7 +830,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
       <div class="mt-2 flex flex-col gap-2">
         <div class="hidden cursor-default grid-cols-12 gap-3 xl:grid">
           <div class="col-span-2 flex w-full items-center justify-start">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -845,7 +845,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-2 ml-1 flex w-full items-center justify-end text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -854,7 +854,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-3 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -863,7 +863,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-2 w-full text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -872,7 +872,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </button>
           </div>
           <div class="col-span-3 flex w-full items-center justify-center text-center">
-            <button class="duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&amp;>svg]:size-4">
+            <button class="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&amp;>svg]:size-4">
               <gui-arrow-up-down-icon>
               </gui-arrow-up-down-icon>
               <span>
@@ -882,11 +882,11 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t from-card">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
-            classname="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+            classname="scrollbar-thumb-rounded-full scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500 flex flex-col"
             data="[object Object],[object Object]"
           >
           </gui-virtuoso>

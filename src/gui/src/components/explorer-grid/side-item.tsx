@@ -125,7 +125,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
                 {!isWorkspace && <SideItemSpec spec={item.spec} />}
                 <TooltipProvider>
                   <Tooltip delayDuration={150}>
-                    <TooltipTrigger className="w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                    <TooltipTrigger className="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                       {itemName}
                     </TooltipTrigger>
                     <TooltipPortal>
@@ -138,7 +138,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
                 {!item.id.startsWith('uninstalled-dep:') && (
                   <TooltipProvider>
                     <Tooltip delayDuration={150}>
-                      <TooltipTrigger className="w-full max-w-14 cursor-default overflow-hidden truncate text-right font-courier text-sm font-normal text-muted-foreground">
+                      <TooltipTrigger className="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
                         {`v${item.version}`}
                       </TooltipTrigger>
                       <TooltipPortal>
@@ -158,11 +158,11 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             </Card>
 
             {parent && (
-              <Card className="mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] bg-secondary/50 px-3 py-1.5 shadow-none dark:bg-neutral-950">
+              <Card className="bg-secondary/50 mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] px-3 py-1.5 shadow-none dark:bg-neutral-950">
                 <div className="flex w-full items-baseline justify-between gap-2">
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
-                      <TooltipTrigger className="grow cursor-default overflow-hidden truncate text-left text-xs font-medium">
+                      <TooltipTrigger className="grow cursor-default truncate overflow-hidden text-left text-xs font-medium">
                         {selectedItem?.name}
                       </TooltipTrigger>
                       <TooltipPortal>
@@ -175,7 +175,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
 
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
-                      <TooltipTrigger className="w-full max-w-24 cursor-default overflow-hidden truncate text-right font-courier text-xs text-muted-foreground">
+                      <TooltipTrigger className="font-courier text-muted-foreground w-full max-w-24 cursor-default truncate overflow-hidden text-right text-xs">
                         {selectedItem?.spec?.bareSpec}
                       </TooltipTrigger>
                       <TooltipPortal>
@@ -199,9 +199,9 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
           </ContextMenuContent>
           {item.stacked && (
             <>
-              <div className="duration-250 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50" />
+              <div className="bg-card group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250" />
               {item.size > 2 && (
-                <div className="duration-250 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] bg-card transition-colors group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30" />
+                <div className="bg-card group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] transition-colors duration-250" />
               )}
             </>
           )}

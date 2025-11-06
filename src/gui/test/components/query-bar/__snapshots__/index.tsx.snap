@@ -10,7 +10,7 @@ exports[`query-bar render default 1`] = `
     >
       <input
         type="text"
-        class="clear-none flex h-10 w-full border border-input px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-muted-foreground/5 dark:caret-white"
+        class="border-input ring-offset-background placeholder:text-muted-foreground clear-none flex h-10 w-full border px-3 py-2 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-muted-foreground/5 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:caret-white"
         role="search"
         autocorrect="off"
         autocomplete="off"
@@ -39,7 +39,7 @@ exports[`query-bar render with custom query 1`] = `
     >
       <input
         type="text"
-        class="clear-none flex h-10 w-full border border-input px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:bg-muted-foreground/5 dark:caret-white"
+        class="border-input ring-offset-background placeholder:text-muted-foreground clear-none flex h-10 w-full border px-3 py-2 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-muted-foreground/5 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:caret-white"
         role="search"
         autocorrect="off"
         autocomplete="off"

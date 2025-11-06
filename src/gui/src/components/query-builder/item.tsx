@@ -206,12 +206,12 @@ export const Item = ({
     <div
       className={cn(
         'inline-flex items-center',
-        'rounded-lg border-[1px] border-muted',
+        'border-muted rounded-lg border-[1px]',
         '[&:has(>.content:empty)_>.close-button]:border-l-[0px]',
       )}>
       <div
         className={cn(
-          'content inline-flex divide-x-[1px] divide-popover',
+          'content divide-popover inline-flex divide-x-[1px]',
         )}>
         {content}
       </div>
@@ -220,8 +220,8 @@ export const Item = ({
         onClick={onDelete}
         className={cn(
           'close-button',
-          'duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] border-muted bg-transparent p-0 text-muted-foreground transition-colors',
-          'hover:!bg-neutral-200 hover:text-foreground',
+          'border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250',
+          'hover:text-foreground hover:!bg-neutral-200',
           'dark:bg-transparent dark:hover:!bg-neutral-600',
         )}>
         <X />

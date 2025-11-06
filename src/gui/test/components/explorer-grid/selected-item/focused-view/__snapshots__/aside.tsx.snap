@@ -2,7 +2,7 @@
 
 exports[`FocusedAside renders default 1`] = `
 
-<div class="col-span-full lg:col-span-3 lg:pl-4 lg:pr-0">
+<div class="col-span-full lg:col-span-3 lg:pr-0 lg:pl-4">
   <div
     class="p-0"
     style="opacity: 0; filter: blur(2px); transform: translateY(2px);"
@@ -16,7 +16,7 @@ exports[`FocusedAside renders default 1`] = `
 
 exports[`FocusedAside renders with content 1`] = `
 
-<div class="col-span-full lg:col-span-3 lg:pl-4 lg:pr-0">
+<div class="col-span-full lg:col-span-3 lg:pr-0 lg:pl-4">
   <div
     class="p-0"
     style="opacity: 0; filter: blur(2px); transform: translateY(2px);"

@@ -143,18 +143,54 @@ t.test('loadHidden', async t => {
       },
     },
     nodes: {
-      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
-      [joinDepIDTuple(['file', 'linked'])]: [0, 'linked'],
+      [joinDepIDTuple(['file', '.'])]: [
+        0,
+        'my-project',
+        // integrity
+        null,
+        // resolved
+        null,
+        // location
+        null,
+        // manifest
+        {
+          name: 'my-project',
+          version: '1.0.0',
+          // placeholder: add additional fields as needed for test
+        },
+      ],
+      [joinDepIDTuple(['file', 'linked'])]: [
+        0,
+        'linked',
+        null,
+        null,
+        null,
+        {
+          name: 'linked',
+          version: '1.0.0',
+        },
+      ],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
         0,
         'foo',
         'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        null,
+        null,
+        {
+          name: 'foo',
+          version: '1.0.0',
+        },
       ],
       [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
         0,
         'bar',
         'sha512-6/deadbeef==',
         'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+        null,
+        {
+          name: 'bar',
+          version: '1.0.0',
+        },
       ],
       [joinDepIDTuple(['registry', '', 'baz@1.0.0'])]: [
         0,
@@ -162,6 +198,10 @@ t.test('loadHidden', async t => {
         null,
         null,
         './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
+        {
+          name: 'baz',
+          version: '1.0.0',
+        },
       ],
     } as Record<DepID, LockfileNode>,
     edges,

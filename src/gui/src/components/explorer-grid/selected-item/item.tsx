@@ -1,3 +1,4 @@
+import { Fragment, useRef, useCallback } from 'react'
 import { Outlet } from 'react-router'
 import { Card } from '@/components/ui/card.tsx'
 import { Tabs, TabsList } from '@/components/ui/tabs.tsx'
@@ -14,7 +15,7 @@ import { CodeTabButton } from '@/components/explorer-grid/selected-item/tabs-cod
 import { DependenciesTabsButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
 import { AnimatePresence } from 'framer-motion'
-import { useRef, useCallback } from 'react'
+import { isHostedEnvironment } from '@/lib/environment.ts'
 
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -27,7 +28,7 @@ export const Item = ({ item }: ItemProps) => {
   return (
     <SelectedItemProvider selectedItem={item}>
       <section className="relative">
-        <Card className="relative rounded-xl border-muted shadow-none">
+        <Card className="border-muted relative rounded-xl shadow-none">
           <ItemHeader />
           <SelectedItemTabs />
         </Card>
@@ -42,6 +43,7 @@ export const SelectedItemTabs = () => {
   )
   const { setActiveTab, tab: activeTab } = useTabNavigation()
   const currentTabRef = useRef<Tab>(activeTab)
+  const isHostedMode = isHostedEnvironment()
 
   if (currentTabRef.current !== activeTab) {
     currentTabRef.current = activeTab
@@ -67,14 +69,22 @@ export const SelectedItemTabs = () => {
         <TabsList
           variant="ghost"
           className="w-full gap-2 overflow-x-auto px-6">
-          <OverviewTabButton />
-          <TabsJsonButton />
-          <CodeTabButton />
-          <InsightTabButton />
-          <VersionsTabButton />
-          <DependenciesTabsButton />
+          {isHostedMode ?
+            <Fragment>
+              <OverviewTabButton />
+              <VersionsTabButton />
+            </Fragment>
+          : <Fragment>
+              <OverviewTabButton />
+              <TabsJsonButton />
+              <CodeTabButton />
+              <InsightTabButton />
+              <VersionsTabButton />
+              <DependenciesTabsButton />
+            </Fragment>
+          }
         </TabsList>
-        <div className="min-h-64 overflow-hidden rounded-b-xl bg-card">
+        <div className="bg-card min-h-64 overflow-hidden rounded-b-xl">
           <AnimatePresence initial={false} mode="wait">
             <Outlet key={activeTab} />
           </AnimatePresence>

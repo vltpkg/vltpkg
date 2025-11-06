@@ -50,77 +50,77 @@ exports[`DuplicatesTabContent renders with duplicated deps 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="px-6 pt-4">
-    <div class="relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3">
-      <p class="font-regular text-xs tracking-wide text-muted-foreground">
+    <div class="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3">
+      <p class="font-regular text-muted-foreground text-xs tracking-wide">
         Packages with multiple versions
       </p>
-      <p class="font-mono text-2xl font-medium tabular-nums text-foreground">
+      <p class="text-foreground font-mono text-2xl font-medium tabular-nums">
         2
-        <span class="ml-0.5 text-muted-foreground/80">
+        <span class="text-muted-foreground/80 ml-0.5">
           /
         </span>
       </p>
     </div>
     <div class="mt-4 grid grid-cols-3 gap-3 pb-4">
-      <div class="flex h-fit flex-col rounded-lg border-[1px] border-muted">
+      <div class="border-muted flex h-fit flex-col rounded-lg border-[1px]">
         <div
           role="button"
-          class="duration-250 flex h-fit cursor-default items-start gap-2 border-b-[1px] border-muted px-3 py-3 transition-colors hover:bg-secondary/60"
+          class="border-muted hover:bg-secondary/60 flex h-fit cursor-default items-start gap-2 border-b-[1px] px-3 py-3 transition-colors duration-250"
         >
           <gui-data-badge
             variant="count"
             content="2"
           >
           </gui-data-badge>
-          <p class="text-sm font-medium text-foreground">
+          <p class="text-foreground text-sm font-medium">
             next
           </p>
         </div>
         <ul class="flex flex-col">
           <li
             role="button"
-            class="duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums text-muted-foreground transition-colors last-of-type:rounded-b-md hover:bg-secondary/60 hover:text-foreground"
+            class="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md"
           >
             v12.0.0
           </li>
           <li
             role="button"
-            class="duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums text-muted-foreground transition-colors last-of-type:rounded-b-md hover:bg-secondary/60 hover:text-foreground"
+            class="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md"
           >
             v12.1.0
           </li>
         </ul>
       </div>
-      <div class="flex h-fit flex-col rounded-lg border-[1px] border-muted">
+      <div class="border-muted flex h-fit flex-col rounded-lg border-[1px]">
         <div
           role="button"
-          class="duration-250 flex h-fit cursor-default items-start gap-2 border-b-[1px] border-muted px-3 py-3 transition-colors hover:bg-secondary/60"
+          class="border-muted hover:bg-secondary/60 flex h-fit cursor-default items-start gap-2 border-b-[1px] px-3 py-3 transition-colors duration-250"
         >
           <gui-data-badge
             variant="count"
             content="3"
           >
           </gui-data-badge>
-          <p class="text-sm font-medium text-foreground">
+          <p class="text-foreground text-sm font-medium">
             react
           </p>
         </div>
         <ul class="flex flex-col">
           <li
             role="button"
-            class="duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums text-muted-foreground transition-colors last-of-type:rounded-b-md hover:bg-secondary/60 hover:text-foreground"
+            class="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md"
           >
             v17.0.2
           </li>
           <li
             role="button"
-            class="duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums text-muted-foreground transition-colors last-of-type:rounded-b-md hover:bg-secondary/60 hover:text-foreground"
+            class="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md"
           >
             v18.0.0
           </li>
           <li
             role="button"
-            class="duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums text-muted-foreground transition-colors last-of-type:rounded-b-md hover:bg-secondary/60 hover:text-foreground"
+            class="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md"
           >
             v18.1.0
           </li>

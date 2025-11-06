@@ -215,9 +215,9 @@ const SearchFilterList = () => {
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
-      : <div className="px-2 py-1.5 text-center text-sm text-muted-foreground">
+      : <div className="text-muted-foreground px-2 py-1.5 text-center text-sm">
           Press{' '}
-          <Kbd className="inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] border-muted bg-white px-1 text-xxs dark:bg-black">
+          <Kbd className="border-muted text-xxs inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] bg-white px-1 dark:bg-black">
             Enter <CornerDownRight size={13} />
           </Kbd>{' '}
           to search for <br />
@@ -261,14 +261,14 @@ const SearchInput = ({
         value={searchTerm}
         onChange={e => setSearchTerm(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="relative h-[30px] pl-[30px] pr-[70px] ring-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="relative h-[30px] pr-[70px] pl-[30px] ring-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
         placeholder="Filter..."
       />
-      <div className="absolute bottom-[6px] right-[5px] flex h-[30px] cursor-default items-center justify-center">
-        <Kbd className="inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] border-muted bg-white px-1 text-xxs dark:bg-black">
+      <div className="absolute right-[5px] bottom-[6px] flex h-[30px] cursor-default items-center justify-center">
+        <Kbd className="border-muted text-xxs inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] bg-white px-1 dark:bg-black">
           ctrl
         </Kbd>
-        <Kbd className="inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] border-muted bg-white px-1 text-xxs dark:bg-black">
+        <Kbd className="border-muted text-xxs inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] bg-white px-1 dark:bg-black">
           F
         </Kbd>
       </div>
@@ -422,19 +422,19 @@ const EmptyStateDependency = ({
   return (
     <div
       className={cn(
-        'h-12 w-64 rounded-lg border border-muted bg-muted/60',
+        'border-muted bg-muted/60 h-12 w-64 rounded-lg border',
         className,
       )}>
       <div className="flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+          <div className="border-muted-foreground/20 bg-muted-foreground/20 text-xxs text-muted-foreground/60 flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] px-2 font-mono tabular-nums">
             {spec}
           </div>
-          <div className="text-xs font-medium text-muted-foreground/60">
+          <div className="text-muted-foreground/60 text-xs font-medium">
             {name}
           </div>
         </div>
-        <div className="font-mono text-xxs tabular-nums text-muted-foreground/60">
+        <div className="text-xxs text-muted-foreground/60 font-mono tabular-nums">
           v{version}
         </div>
       </div>
@@ -488,7 +488,7 @@ export const FilterListEmptyState = () => {
             ease: 'easeInOut',
             duration: 0.25,
           }}
-          className="flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed border-muted py-12">
+          className="border-muted flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed py-12">
           <div className="mb-6 flex justify-center">
             <div className="relative">
               <div className="relative space-y-2">
@@ -506,21 +506,21 @@ export const FilterListEmptyState = () => {
                 ))}
               </div>
 
-              <div className="pointer-events-none absolute inset-0 rounded-lg bg-background/30" />
+              <div className="bg-background/30 pointer-events-none absolute inset-0 rounded-lg" />
             </div>
           </div>
 
           <div className="flex flex-col items-center justify-center gap-1 text-center">
-            <h3 className="text-base font-medium tracking-tight text-foreground">
+            <h3 className="text-foreground text-base font-medium tracking-tight">
               No matching dependencies
             </h3>
-            <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+            <p className="text-muted-foreground w-4/5 text-sm font-normal tracking-normal">
               There were no dependencies matching your current
               filters.
             </p>
             <Button
               onClick={handleClear}
-              className="mt-2 h-8 w-fit border-[1px] border-muted">
+              className="border-muted mt-2 h-8 w-fit border-[1px]">
               <RotateCcw />
               Clear Filters
             </Button>

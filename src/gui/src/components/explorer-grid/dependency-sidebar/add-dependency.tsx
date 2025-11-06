@@ -112,7 +112,7 @@ export const AddDependenciesPopover = () => {
             </CardTitle>
           </div>
         </CardHeader>
-        <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
+        <div className="border-muted-foreground/20 flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] p-6">
           <p className="text-sm">{error}</p>
         </div>
         <div className="flex w-full justify-end">
@@ -140,7 +140,7 @@ export const AddDependenciesPopover = () => {
         </div>
       </CardHeader>
       <form
-        className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6"
+        className="border-muted-foreground/20 flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] p-6"
         onSubmit={formSubmit}
         onKeyDown={keyDown}>
         <Label htmlFor="package-name" className="ml-1">
@@ -159,7 +159,7 @@ export const AddDependenciesPopover = () => {
           }}
           data-1p-ignore
         />
-        <Label htmlFor="package-version" className="ml-1 mt-2">
+        <Label htmlFor="package-version" className="mt-2 ml-1">
           Version | Spec
         </Label>
         <Input
@@ -174,7 +174,7 @@ export const AddDependenciesPopover = () => {
           }}
           data-1p-ignore
         />
-        <Label htmlFor="package-type" className="ml-1 mt-2">
+        <Label htmlFor="package-type" className="mt-2 ml-1">
           Type
         </Label>
         <Select
@@ -194,7 +194,7 @@ export const AddDependenciesPopover = () => {
         </Select>
         <div className="flex w-full justify-end">
           <Button
-            className="mr-2 mt-2"
+            className="mt-2 mr-2"
             role="cancel"
             variant="secondary"
             tabIndex={4}
@@ -228,7 +228,7 @@ export const AddDependenciesPopoverTrigger = () => {
             <TooltipTrigger asChild>
               <div
                 onClick={toggleAddDepPopover}
-                className="inline-flex size-6 cursor-default items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-white text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:bg-black [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
+                className="border-input ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex size-6 cursor-default items-center justify-center gap-2 rounded-md border bg-white text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-black [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
                 <motion.span
                   animate={{
                     rotate: dependencyPopoverOpen ? 45 : 0,
@@ -244,7 +244,7 @@ export const AddDependenciesPopoverTrigger = () => {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="right-0 top-0 w-96 p-0"
+          className="top-0 right-0 w-96 p-0"
           onCloseAutoFocus={e => e.preventDefault()}>
           <AddDependenciesPopover />
         </PopoverContent>

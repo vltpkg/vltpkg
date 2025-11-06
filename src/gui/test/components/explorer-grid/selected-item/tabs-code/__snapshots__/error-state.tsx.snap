@@ -4,7 +4,7 @@ exports[`ErrorState renders a single error 1`] = `
 
 <div class="flex min-h-64 w-full items-center justify-center px-6 py-4">
   <div class="flex flex-col items-center justify-center gap-3 text-center">
-    <h3 class="text-sm font-medium text-foreground">
+    <h3 class="text-foreground text-sm font-medium">
       An error occured.
     </h3>
     <div class="flex flex-col">
@@ -12,7 +12,7 @@ exports[`ErrorState renders a single error 1`] = `
         <h4 class="text-sm font-medium">
           Code explorer
         </h4>
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           Something went wrong
         </p>
       </div>
@@ -26,7 +26,7 @@ exports[`ErrorState renders multiple errors 1`] = `
 
 <div class="flex min-h-64 w-full items-center justify-center px-6 py-4">
   <div class="flex flex-col items-center justify-center gap-3 text-center">
-    <h3 class="text-sm font-medium text-foreground">
+    <h3 class="text-foreground text-sm font-medium">
       An errors occured.
     </h3>
     <div class="flex flex-col">
@@ -34,7 +34,7 @@ exports[`ErrorState renders multiple errors 1`] = `
         <h4 class="text-sm font-medium">
           Code explorer
         </h4>
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           Failed to load
         </p>
       </div>
@@ -42,7 +42,7 @@ exports[`ErrorState renders multiple errors 1`] = `
         <h4 class="text-sm font-medium">
           Hydrate code path
         </h4>
-        <p class="text-sm font-medium text-muted-foreground">
+        <p class="text-muted-foreground text-sm font-medium">
           Aborted
         </p>
       </div>

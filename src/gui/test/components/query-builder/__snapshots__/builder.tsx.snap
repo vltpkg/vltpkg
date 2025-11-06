@@ -10,7 +10,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
           <gui-button
             data-testid="query-builder-open"
             variant="default"
-            classname="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
+            classname="border-muted text-muted-foreground aspect-square size-6 rounded-md border-[1px] bg-transparent p-0 hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
           >
             <gui-plus-icon>
             </gui-plus-icon>
@@ -26,9 +26,9 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
   </gui-tooltip-provider>
   <gui-popover-content
     align="start"
-    classname="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none"
+    classname="group w-[400px] rounded-lg border-none bg-transparent p-0 shadow-none select-none"
   >
-    <div class="rounded-lg border border-muted bg-popover shadow-lg">
+    <div class="border-muted bg-popover rounded-lg border shadow-lg">
       <gui-command>
         <div class="relative">
           <gui-command-input
@@ -39,9 +39,9 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
           </gui-command-input>
           <div
             tabindex="-1"
-            class="absolute right-2 top-2"
+            class="absolute top-2 right-2"
           >
-            <gui-grip-vertical-icon classname="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground">
+            <gui-grip-vertical-icon classname="text-muted-foreground hover:text-foreground active:text-foreground relative size-4 opacity-0 transition-colors transition-opacity duration-250 group-hover:opacity-100 hover:cursor-grab active:cursor-grabbing">
             </gui-grip-vertical-icon>
           </div>
         </div>
@@ -100,7 +100,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   All configured projects
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -109,7 +109,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -158,7 +158,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Packages that are outdated
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -167,7 +167,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -204,7 +204,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Packages matching a semver value
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -213,7 +213,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -230,7 +230,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package type
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -239,7 +239,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -268,7 +268,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package publish date
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -277,7 +277,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -294,7 +294,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package insight score
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -303,7 +303,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -384,7 +384,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   License
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -393,7 +393,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -431,7 +431,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Has malware
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -440,7 +440,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -501,7 +501,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Typosquats
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -510,7 +510,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -639,7 +639,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Contributors
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -648,7 +648,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Contributors Properties
                     </h4>
                   </div>
@@ -674,7 +674,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Funding
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -683,7 +683,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Funding Properties
                     </h4>
                   </div>
@@ -703,7 +703,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Bug tracker
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -712,7 +712,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Bug tracker Properties
                     </h4>
                   </div>
@@ -732,7 +732,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Keywords
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -741,7 +741,7 @@ exports[`BuilderCombobox > opens popover on plus click 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Keywords Properties
                     </h4>
                   </div>
@@ -770,7 +770,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
           <gui-button
             data-testid="query-builder-open"
             variant="default"
-            classname="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
+            classname="border-muted text-muted-foreground aspect-square size-6 rounded-md border-[1px] bg-transparent p-0 hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
           >
             <gui-plus-icon>
             </gui-plus-icon>
@@ -786,9 +786,9 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
   </gui-tooltip-provider>
   <gui-popover-content
     align="start"
-    classname="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none"
+    classname="group w-[400px] rounded-lg border-none bg-transparent p-0 shadow-none select-none"
   >
-    <div class="rounded-lg border border-muted bg-popover shadow-lg">
+    <div class="border-muted bg-popover rounded-lg border shadow-lg">
       <gui-command>
         <div class="relative">
           <gui-command-input
@@ -799,9 +799,9 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
           </gui-command-input>
           <div
             tabindex="-1"
-            class="absolute right-2 top-2"
+            class="absolute top-2 right-2"
           >
-            <gui-grip-vertical-icon classname="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground">
+            <gui-grip-vertical-icon classname="text-muted-foreground hover:text-foreground active:text-foreground relative size-4 opacity-0 transition-colors transition-opacity duration-250 group-hover:opacity-100 hover:cursor-grab active:cursor-grabbing">
             </gui-grip-vertical-icon>
           </div>
         </div>
@@ -860,7 +860,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   All configured projects
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -869,7 +869,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -918,7 +918,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Packages that are outdated
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -927,7 +927,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -964,7 +964,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Packages matching a semver value
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -973,7 +973,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -990,7 +990,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package type
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -999,7 +999,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1028,7 +1028,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package publish date
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1037,7 +1037,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1054,7 +1054,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package insight score
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1063,7 +1063,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1144,7 +1144,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   License
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1153,7 +1153,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1191,7 +1191,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Has malware
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1200,7 +1200,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1261,7 +1261,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Typosquats
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1270,7 +1270,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1399,7 +1399,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Contributors
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1408,7 +1408,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Contributors Properties
                     </h4>
                   </div>
@@ -1434,7 +1434,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Funding
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1443,7 +1443,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Funding Properties
                     </h4>
                   </div>
@@ -1463,7 +1463,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Bug tracker
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1472,7 +1472,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Bug tracker Properties
                     </h4>
                   </div>
@@ -1492,7 +1492,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Keywords
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1501,7 +1501,7 @@ exports[`BuilderCombobox > renders default (closed) 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Keywords Properties
                     </h4>
                   </div>
@@ -1530,7 +1530,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
           <gui-button
             data-testid="query-builder-open"
             variant="default"
-            classname="aspect-square size-6 rounded-md border-[1px] border-muted bg-transparent p-0 text-muted-foreground hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
+            classname="border-muted text-muted-foreground aspect-square size-6 rounded-md border-[1px] bg-transparent p-0 hover:bg-neutral-200 dark:bg-neutral-800 hover:dark:bg-neutral-700"
           >
             <gui-plus-icon>
             </gui-plus-icon>
@@ -1546,9 +1546,9 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
   </gui-tooltip-provider>
   <gui-popover-content
     align="start"
-    classname="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none"
+    classname="group w-[400px] rounded-lg border-none bg-transparent p-0 shadow-none select-none"
   >
-    <div class="rounded-lg border border-muted bg-popover shadow-lg">
+    <div class="border-muted bg-popover rounded-lg border shadow-lg">
       <gui-command>
         <div class="relative">
           <gui-command-input
@@ -1559,9 +1559,9 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
           </gui-command-input>
           <div
             tabindex="-1"
-            class="absolute right-2 top-2"
+            class="absolute top-2 right-2"
           >
-            <gui-grip-vertical-icon classname="duration-250 relative size-4 text-muted-foreground opacity-0 transition-colors transition-opacity group-hover:opacity-100 hover:cursor-grab hover:text-foreground active:cursor-grabbing active:text-foreground">
+            <gui-grip-vertical-icon classname="text-muted-foreground hover:text-foreground active:text-foreground relative size-4 opacity-0 transition-colors transition-opacity duration-250 group-hover:opacity-100 hover:cursor-grab active:cursor-grabbing">
             </gui-grip-vertical-icon>
           </div>
         </div>
@@ -1620,7 +1620,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   All configured projects
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1629,7 +1629,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1678,7 +1678,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Packages that are outdated
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1687,7 +1687,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1724,7 +1724,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Packages matching a semver value
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1733,7 +1733,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1750,7 +1750,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package type
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1759,7 +1759,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1788,7 +1788,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package publish date
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1797,7 +1797,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1814,7 +1814,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Package insight score
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1823,7 +1823,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1904,7 +1904,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   License
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1913,7 +1913,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -1951,7 +1951,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Has malware
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -1960,7 +1960,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -2021,7 +2021,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Typosquats
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -2030,7 +2030,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Options
                     </h4>
                   </div>
@@ -2159,7 +2159,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Contributors
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -2168,7 +2168,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Contributors Properties
                     </h4>
                   </div>
@@ -2194,7 +2194,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Funding
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -2203,7 +2203,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Funding Properties
                     </h4>
                   </div>
@@ -2223,7 +2223,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Bug tracker
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -2232,7 +2232,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Bug tracker Properties
                     </h4>
                   </div>
@@ -2252,7 +2252,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
               <gui-dropdown-menu>
                 <gui-dropdown-menu-trigger classname="inline-flex w-full cursor-default items-center justify-between">
                   Keywords
-                  <gui-chevron-right-icon classname="h-4 w-4 text-muted-foreground">
+                  <gui-chevron-right-icon classname="text-muted-foreground h-4 w-4">
                   </gui-chevron-right-icon>
                 </gui-dropdown-menu-trigger>
                 <gui-dropdown-menu-content
@@ -2261,7 +2261,7 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
                   classname="w-[200px] rounded-lg p-1"
                 >
                   <div class="px-2 py-1.5">
-                    <h4 class="text-xs font-medium text-muted-foreground">
+                    <h4 class="text-muted-foreground text-xs font-medium">
                       Keywords Properties
                     </h4>
                   </div>
@@ -2274,8 +2274,8 @@ exports[`BuilderCombobox > shows hovered item description 1`] = `
           </gui-command-group>
         </gui-command-list>
       </gui-command>
-      <div class="border-t-[1px] border-muted px-3 py-2">
-        <p class="text-sm text-muted-foreground">
+      <div class="border-muted border-t-[1px] px-3 py-2">
+        <p class="text-muted-foreground text-sm">
           Matches prod dependencies to your current project.
         </p>
       </div>

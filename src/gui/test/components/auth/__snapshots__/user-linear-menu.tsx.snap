@@ -59,7 +59,7 @@ exports[`render when signed in 1`] = `
               classname="group/login size-10 items-center justify-center rounded-xl border-none bg-transparent p-0"
               variant="outline"
             >
-              <div class="flex aspect-square size-10 items-center justify-center rounded-xl border border-muted bg-white dark:bg-black">
+              <div class="border-muted flex aspect-square size-10 items-center justify-center rounded-xl border bg-white dark:bg-black">
                 <span class="text-sm font-medium uppercase">
                   JD
                 </span>
@@ -71,16 +71,16 @@ exports[`render when signed in 1`] = `
             classname="min-w-[200px] rounded-xl"
           >
             <div class="flex cursor-default items-center gap-3 px-2 py-2">
-              <div class="flex aspect-square size-8 items-center justify-center rounded-lg border border-muted bg-white dark:bg-black">
+              <div class="border-muted flex aspect-square size-8 items-center justify-center rounded-lg border bg-white dark:bg-black">
                 <span class="text-base font-medium uppercase">
                   JD
                 </span>
               </div>
               <div class="flex flex-col gap-0.5">
-                <p class="text-sm font-medium text-foreground">
+                <p class="text-foreground text-sm font-medium">
                   John Doe
                 </p>
-                <p class="text-xs text-muted-foreground">
+                <p class="text-muted-foreground text-xs">
                   john@example.com
                 </p>
               </div>
@@ -88,11 +88,11 @@ exports[`render when signed in 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+              <gui-dropdown-menu-label classname="text-muted-foreground text-xs font-normal">
                 My Account
               </gui-dropdown-menu-label>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Profile
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -100,8 +100,26 @@ exports[`render when signed in 1`] = `
                   </gui-user-icon>
                 </div>
               </gui-dropdown-menu-item>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
+                  Dashboard
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-layout-dashboard-icon classname="transition-colors duration-100">
+                  </gui-layout-dashboard-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
+                  Queries
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-query-icon classname="transition-colors duration-100">
+                  </gui-query-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Settings
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -113,11 +131,11 @@ exports[`render when signed in 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+              <gui-dropdown-menu-label classname="text-muted-foreground text-xs font-normal">
                 Resources
               </gui-dropdown-menu-label>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   GitHub
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -125,8 +143,8 @@ exports[`render when signed in 1`] = `
                   </gui-github-icon>
                 </div>
               </gui-dropdown-menu-item>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Support
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -138,8 +156,8 @@ exports[`render when signed in 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Logout
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -178,7 +196,7 @@ exports[`render when signed in with user image 1`] = `
                 <img
                   src="https://example.com/avatar.jpg"
                   alt="JS"
-                  class="size-10 rounded-xl border border-muted grayscale transition-colors duration-100 group-hover/login:grayscale-0"
+                  class="border-muted size-10 rounded-xl border grayscale transition-colors duration-100 group-hover/login:grayscale-0"
                 >
               </div>
             </gui-button>
@@ -191,13 +209,13 @@ exports[`render when signed in with user image 1`] = `
               <img
                 src="https://example.com/avatar.jpg"
                 alt="JS"
-                class="aspect-square size-8 rounded-lg border border-muted object-cover grayscale"
+                class="border-muted aspect-square size-8 rounded-lg border object-cover grayscale"
               >
               <div class="flex flex-col gap-0.5">
-                <p class="text-sm font-medium text-foreground">
+                <p class="text-foreground text-sm font-medium">
                   Jane Smith
                 </p>
-                <p class="text-xs text-muted-foreground">
+                <p class="text-muted-foreground text-xs">
                   jane@example.com
                 </p>
               </div>
@@ -205,11 +223,11 @@ exports[`render when signed in with user image 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+              <gui-dropdown-menu-label classname="text-muted-foreground text-xs font-normal">
                 My Account
               </gui-dropdown-menu-label>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Profile
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -217,8 +235,26 @@ exports[`render when signed in with user image 1`] = `
                   </gui-user-icon>
                 </div>
               </gui-dropdown-menu-item>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
+                  Dashboard
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-layout-dashboard-icon classname="transition-colors duration-100">
+                  </gui-layout-dashboard-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
+                  Queries
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-query-icon classname="transition-colors duration-100">
+                  </gui-query-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Settings
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -230,11 +266,11 @@ exports[`render when signed in with user image 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+              <gui-dropdown-menu-label classname="text-muted-foreground text-xs font-normal">
                 Resources
               </gui-dropdown-menu-label>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   GitHub
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -242,8 +278,8 @@ exports[`render when signed in with user image 1`] = `
                   </gui-github-icon>
                 </div>
               </gui-dropdown-menu-item>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Support
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -255,8 +291,8 @@ exports[`render when signed in with user image 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Logout
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -291,7 +327,7 @@ exports[`render when signed in with username only 1`] = `
               classname="group/login size-10 items-center justify-center rounded-xl border-none bg-transparent p-0"
               variant="outline"
             >
-              <div class="flex aspect-square size-10 items-center justify-center rounded-xl border border-muted bg-white dark:bg-black">
+              <div class="border-muted flex aspect-square size-10 items-center justify-center rounded-xl border bg-white dark:bg-black">
                 <span class="text-sm font-medium uppercase">
                   T
                 </span>
@@ -303,16 +339,16 @@ exports[`render when signed in with username only 1`] = `
             classname="min-w-[200px] rounded-xl"
           >
             <div class="flex cursor-default items-center gap-3 px-2 py-2">
-              <div class="flex aspect-square size-8 items-center justify-center rounded-lg border border-muted bg-white dark:bg-black">
+              <div class="border-muted flex aspect-square size-8 items-center justify-center rounded-lg border bg-white dark:bg-black">
                 <span class="text-base font-medium uppercase">
                   T
                 </span>
               </div>
               <div class="flex flex-col gap-0.5">
-                <p class="text-sm font-medium text-foreground">
+                <p class="text-foreground text-sm font-medium">
                   testuser
                 </p>
-                <p class="text-xs text-muted-foreground">
+                <p class="text-muted-foreground text-xs">
                   test@example.com
                 </p>
               </div>
@@ -320,11 +356,11 @@ exports[`render when signed in with username only 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+              <gui-dropdown-menu-label classname="text-muted-foreground text-xs font-normal">
                 My Account
               </gui-dropdown-menu-label>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Profile
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -332,8 +368,26 @@ exports[`render when signed in with username only 1`] = `
                   </gui-user-icon>
                 </div>
               </gui-dropdown-menu-item>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
+                  Dashboard
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-layout-dashboard-icon classname="transition-colors duration-100">
+                  </gui-layout-dashboard-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
+                  Queries
+                </span>
+                <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
+                  <gui-query-icon classname="transition-colors duration-100">
+                  </gui-query-icon>
+                </div>
+              </gui-dropdown-menu-item>
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Settings
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -345,11 +399,11 @@ exports[`render when signed in with username only 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-label classname="text-xs font-normal text-muted-foreground">
+              <gui-dropdown-menu-label classname="text-muted-foreground text-xs font-normal">
                 Resources
               </gui-dropdown-menu-label>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   GitHub
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -357,8 +411,8 @@ exports[`render when signed in with username only 1`] = `
                   </gui-github-icon>
                 </div>
               </gui-dropdown-menu-item>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Support
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">
@@ -370,8 +424,8 @@ exports[`render when signed in with username only 1`] = `
             <gui-dropdown-menu-separator>
             </gui-dropdown-menu-separator>
             <gui-dropdown-menu-group>
-              <gui-dropdown-menu-item classname="rounded-lg font-normal text-muted-foreground hover:text-foreground">
-                <span class="text-sm font-medium text-foreground">
+              <gui-dropdown-menu-item classname="text-muted-foreground hover:text-foreground rounded-lg font-normal">
+                <span class="text-foreground text-sm font-medium">
                   Logout
                 </span>
                 <div class="ml-auto flex size-5 items-center justify-center [&amp;_svg]:size-4">

@@ -4,14 +4,14 @@ exports[`setup-project 1`] = `
 
 <div class="relative flex h-full w-full items-center justify-center">
   <div class="flex h-full w-full max-w-7xl flex-col items-center justify-center gap-8 px-8">
-    <div class="absolute inset-0 w-full rounded-xl bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#fff_60%,transparent_100%)] dark:[mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]">
+    <div class="absolute inset-0 w-full rounded-xl bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#fff_60%,transparent_100%)] bg-[size:32px_32px] dark:[mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]">
     </div>
-    <div class="z-[4] flex w-full max-w-lg flex-col items-center justify-center gap-4 rounded-xl border-[1.6px] border-dashed border-muted bg-card px-4 py-6 text-center">
+    <div class="border-muted bg-card z-[4] flex w-full max-w-lg flex-col items-center justify-center gap-4 rounded-xl border-[1.6px] border-dashed px-4 py-6 text-center">
       <h3 class="text-xl font-medium">
         Initialize Project?
       </h3>
       <div>
-        <p class="text-pretty text-sm leading-7">
+        <p class="text-sm leading-7 text-pretty">
           Initializing this Project with the
           <strong>
             vlt

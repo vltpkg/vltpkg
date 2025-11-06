@@ -2,12 +2,12 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<div class="group flex flex-col rounded-xl border-[1px] bg-card transition-opacity hover:bg-card-accent border-muted">
+<div class="group bg-card hover:bg-card-accent flex flex-col rounded-xl border-[1px] transition-opacity border-muted">
   <div class="grid grid-cols-12 gap-4 px-3 py-2">
     <div class="col-span-2 flex grow items-center gap-3">
       <gui-checkbox
         checked="false"
-        classname="border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100"
+        classname="border-muted-foreground/25 group-hover:border-muted-foreground/50 opacity-0 group-hover:opacity-100"
       >
       </gui-checkbox>
       <p class="truncate text-sm font-medium">
@@ -36,13 +36,13 @@ exports[`labels view > labels render default 1`] = `
     <div class="col-span-2 flex items-center justify-end gap-4">
       <gui-button
         variant="outline"
-        classname="h-8 rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
+        classname="border-muted-foreground/25 h-8 rounded-lg border border-[1px] px-3 text-sm"
       >
         Edit
       </gui-button>
       <gui-button
         variant="outline"
-        classname="h-8 rounded-lg border border-[1px] border-muted-foreground/25 px-3 text-sm"
+        classname="border-muted-foreground/25 h-8 rounded-lg border border-[1px] px-3 text-sm"
         role="link"
       >
         <span>

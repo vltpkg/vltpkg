@@ -2,7 +2,7 @@
 
 exports[`AsideHeader renders with text 1`] = `
 
-<h4 class="text-sm font-medium capitalize text-muted-foreground">
+<h4 class="text-muted-foreground text-sm font-medium capitalize">
   Test Header
 </h4>
 
@@ -10,8 +10,8 @@ exports[`AsideHeader renders with text 1`] = `
 
 exports[`AsideItem renders with a copy to clipboard feature 1`] = `
 
-<div class="flex items-center text-nowrap text-sm text-foreground gap-2">
-  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+<div class="text-foreground flex items-center text-sm text-nowrap gap-2">
+  <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
   </span>
   <span class="text-sm">
     Copy this text
@@ -22,8 +22,8 @@ exports[`AsideItem renders with a copy to clipboard feature 1`] = `
 
 exports[`AsideItem renders with a count badge 1`] = `
 
-<div class="flex items-center text-nowrap text-sm text-foreground gap-2">
-  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+<div class="text-foreground flex items-center text-sm text-nowrap gap-2">
+  <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
   </span>
   <gui-data-badge
     variant="count"
@@ -41,9 +41,9 @@ exports[`AsideItem renders with a link 1`] = `
 
 <gui-link
   href="https://www.acme.com"
-  classname="flex items-center text-nowrap text-sm text-foreground"
+  classname="text-foreground flex items-center text-sm text-nowrap"
 >
-  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+  <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
     <gui-link-icon size="16">
     </gui-link-icon>
   </span>
@@ -56,8 +56,8 @@ exports[`AsideItem renders with a link 1`] = `
 
 exports[`AsideItem renders with an icon 1`] = `
 
-<div class="flex items-center text-nowrap text-sm text-foreground gap-2">
-  <span class="flex items-center justify-center empty:hidden [&amp;>svg]:text-muted-foreground">
+<div class="text-foreground flex items-center text-sm text-nowrap gap-2">
+  <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
     <gui-smile-icon size="16">
     </gui-smile-icon>
   </span>

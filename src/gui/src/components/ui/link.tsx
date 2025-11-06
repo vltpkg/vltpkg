@@ -19,7 +19,7 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
         )}>
         <span className="inline-flex gap-2">{children}</span>
         <ArrowUpRight
-          className="duration-250 transition-transform group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+          className="transition-transform duration-250 group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px]"
           size={14}
         />
       </a>

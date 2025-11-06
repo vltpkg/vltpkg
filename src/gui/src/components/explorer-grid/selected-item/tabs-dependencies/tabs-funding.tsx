@@ -165,11 +165,11 @@ export const FundingTabContent = () => {
       {depFunding && fundingCount > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div className="flex flex-col gap-3 px-6">
-            <div className="duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] border-muted bg-secondary/30 px-3 py-3 transition-colors">
-              <p className="font-regular text-xs tracking-wide text-muted-foreground">
+            <div className="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors duration-250">
+              <p className="font-regular text-muted-foreground text-xs tracking-wide">
                 Packages looking for funding
               </p>
-              <p className="inline-flex items-center gap-1 font-mono text-2xl font-medium tabular-nums text-foreground">
+              <p className="text-foreground inline-flex items-center gap-1 font-mono text-2xl font-medium tabular-nums">
                 <span>
                   <HeartHandshake
                     className="text-pink-500"
@@ -181,10 +181,10 @@ export const FundingTabContent = () => {
             </div>
 
             <div className="my-2 flex w-2/3 flex-col gap-1 text-pretty">
-              <p className="text-medium text-sm capitalize text-foreground">
+              <p className="text-medium text-foreground text-sm capitalize">
                 support the tools you rely on
               </p>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-medium">
                 Some of the packages you're using have funding options
                 available. Supporting them helps ensure these projects
                 remain maintained and sustainable for the community.
@@ -192,7 +192,7 @@ export const FundingTabContent = () => {
             </div>
           </div>
 
-          <Table className="cursor-default border-t-[1px] border-muted">
+          <Table className="border-muted cursor-default border-t-[1px]">
             <TableHeader>
               {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id}>
@@ -243,7 +243,7 @@ export const FundingTabContent = () => {
                 ))
               : <TableRow>
                   <TableCell>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       No warnings found
                     </p>
                   </TableCell>

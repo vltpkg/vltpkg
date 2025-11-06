@@ -23,12 +23,12 @@ exports[`queries-empty-state > labels render default 1`] = `
         style="opacity: 1;"
       >
       </div>
-      <div class="absolute z-[2] flex h-[50px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-card dark:from-card/0 dark:to-card/100">
+      <div class="to-card dark:from-card/0 dark:to-card/100 absolute z-[2] flex h-[50px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white">
         <div class="relative flex h-[48.25px] w-[398.25px] items-center overflow-hidden rounded-[6.25px] shadow-2xl">
-          <p class="absolute -ml-32 whitespace-nowrap bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-transparent dark:from-black dark:to-neutral-500">
+          <p class="absolute -ml-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text whitespace-nowrap text-transparent dark:from-black dark:to-neutral-500">
             [name="my-project"] &gt; :is(:project &gt; *[name="tap"])
           </p>
-          <div class="ml-auto mr-3 flex gap-2">
+          <div class="mr-3 ml-auto flex gap-2">
             <div class="flex h-[24px] w-[24px] items-center justify-center rounded-sm border-[1px] border-neutral-800 bg-neutral-700 dark:border-neutral-900 dark:bg-neutral-300">
               <gui-star-icon
                 id="icon"
@@ -53,7 +53,7 @@ exports[`queries-empty-state > labels render default 1`] = `
             </div>
           </div>
         </div>
-        <div class="absolute -right-10 top-10">
+        <div class="absolute top-10 -right-10">
           <div class="relative">
             <svg
               stroke="currentColor"

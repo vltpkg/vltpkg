@@ -21,9 +21,11 @@ export const getDefaultStartingRoute = async (options: {
   } = options
   if (startingRoute) return startingRoute
   const stat = await scurry.lstat(`${projectRoot}/package.json`)
-  return stat?.isFile() && !stat.isSymbolicLink() ?
+  const res =
+    stat?.isFile() && !stat.isSymbolicLink() ?
       `/explore/${LZString.compressToEncodedURIComponent(queryString)}/overview`
-    : '/'
+    : '/dashboard'
+  return res
 }
 
 const getAssetsDir = () => {

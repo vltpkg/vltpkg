@@ -34,13 +34,13 @@ export const DashboardItem = ({
   return (
     <div
       role="link"
-      className="group/card duration-250 group relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] bg-card transition-colors hover:border-muted hover:bg-card-accent"
+      className="group/card group bg-card hover:border-muted hover:bg-card-accent relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] transition-colors duration-250"
       onClick={onDashboardItemClick}>
       <div className="flex justify-end px-3 py-3">
         {item.mtime && (
           <TooltipProvider delayDuration={150}>
             <Tooltip>
-              <TooltipTrigger className="cursor-default text-xxs text-muted-foreground">
+              <TooltipTrigger className="text-xxs text-muted-foreground cursor-default">
                 {format(
                   new Date(item.mtime).toJSON(),
                   'LLLL do, yyyy',
@@ -65,10 +65,10 @@ export const DashboardItem = ({
         </CardTitle>
       </div>
 
-      <div className="duration-250 flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors group-hover/card:border-muted">
+      <div className="group-hover/card:border-muted flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors duration-250">
         <TooltipProvider delayDuration={150}>
           <Tooltip>
-            <TooltipTrigger className="grow cursor-default truncate text-left text-xs text-muted-foreground">
+            <TooltipTrigger className="text-muted-foreground grow cursor-default truncate text-left text-xs">
               {item.readablePath}
             </TooltipTrigger>
             <TooltipContent side="top" align="start">

@@ -226,8 +226,8 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
               filter: 'blur(2px)',
             }}
             transition={{ ease: 'easeInOut', duration: 0.25 }}
-            className="grid w-full max-w-8xl grid-cols-8 gap-4 px-8 py-4">
-            <div className="relative col-span-2">
+            className="max-w-8xl grid w-full grid-cols-8 gap-4 px-8 py-4">
+            <div className="relative col-span-full md:col-span-2">
               <OverviewSidebar
                 dependencies={dependencies}
                 parentItem={parentItem}
@@ -245,7 +245,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                 selectedItem={item}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-full md:col-span-4">
               <div className="flex items-center justify-between">
                 <GridHeader>Selected</GridHeader>
                 <FocusButton />
@@ -258,7 +258,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                 />
               </div>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-full md:col-span-2">
               {dependencies.length > 0 || item.to?.importer ?
                 <DependencySideBar
                   dependencies={dependencies}

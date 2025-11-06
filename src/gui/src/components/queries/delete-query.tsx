@@ -69,7 +69,7 @@ const DeleteQuery = ({
                 onMouseLeave={() => setIsTooltipOpen(false)}
                 disabled={selectedQueries.length <= 0}
                 className={cn(
-                  'rounded-sm border border-[1px] border-muted-foreground/25',
+                  'border-muted-foreground/25 rounded-sm border border-[1px]',
                   className,
                 )}
                 size="icon"

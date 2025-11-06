@@ -20,7 +20,7 @@ exports[`DependenciesTabContent renders an empty state 1`] = `
       <gui-funding-tab-button>
       </gui-funding-tab-button>
     </gui-tabs-list>
-    <div class="min-h-64 overflow-hidden rounded-b-xl bg-card">
+    <div class="bg-card min-h-64 overflow-hidden rounded-b-xl">
       <gui-router-outlet>
       </gui-router-outlet>
     </div>
@@ -49,7 +49,7 @@ exports[`DependenciesTabContent renders default 1`] = `
       <gui-funding-tab-button>
       </gui-funding-tab-button>
     </gui-tabs-list>
-    <div class="min-h-64 overflow-hidden rounded-b-xl bg-card">
+    <div class="bg-card min-h-64 overflow-hidden rounded-b-xl">
       <gui-router-outlet>
       </gui-router-outlet>
     </div>

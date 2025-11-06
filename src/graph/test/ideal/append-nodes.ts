@@ -1355,6 +1355,98 @@ t.test('early extraction during appendNodes', async t => {
     t.ok(extractedNodes.includes('foo'), 'foo should be extracted')
     t.ok(extractedNodes.includes('bar'), 'bar should be extracted')
   })
+
+  t.test('skip extraction for optional nodes', async t => {
+    const optionalManifest = {
+      name: 'optional',
+      version: '1.0.0',
+    }
+    const regularManifest = {
+      name: 'regular',
+      version: '1.0.0',
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+
+    const idealGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const actualGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const extractedNodes: string[] = []
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'optional') return optionalManifest
+        if (spec.name === 'regular') return regularManifest
+        return null
+      },
+      async extract(spec: Spec) {
+        extractedNodes.push(spec.name)
+        return { extracted: true }
+      },
+    } as unknown as PackageInfoClient
+
+    const optionalDep = asDependency({
+      spec: Spec.parse('optional', '^1.0.0'),
+      type: 'optional',
+    })
+    const regularDep = asDependency({
+      spec: Spec.parse('regular', '^1.0.0'),
+      type: 'prod',
+    })
+
+    const extractPromises: any[] = []
+    const seenExtracted = new Set<DepID>()
+
+    await appendNodes(
+      new Map([
+        ['optional', optionalDep],
+        ['regular', regularDep],
+      ]),
+      packageInfo,
+      idealGraph,
+      idealGraph.mainImporter,
+      [optionalDep, regularDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      undefined,
+      undefined,
+      extractPromises,
+      actualGraph,
+      seenExtracted,
+      new RollbackRemove(),
+    )
+
+    // Wait for any extractions
+    if (extractPromises.length > 0) {
+      await Promise.all(extractPromises)
+    }
+
+    t.equal(
+      extractedNodes.length,
+      1,
+      'only one node should be extracted',
+    )
+    t.ok(
+      extractedNodes.includes('regular'),
+      'regular dep should be extracted',
+    )
+    t.notOk(
+      extractedNodes.includes('optional'),
+      'optional dep should NOT be extracted',
+    )
+  })
 })
 
 t.test('skip peerOptional dependencies', async t => {
