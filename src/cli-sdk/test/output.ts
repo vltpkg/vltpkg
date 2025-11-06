@@ -87,7 +87,14 @@ t.test('outputCommand', async t => {
     async command() {
       return true
     },
-    usage: () => ({ usage: () => 'usage' }) as Jack,
+    usage: () => ({
+      usage: () => 'usage',
+      heading: () => ({
+        description: () => ({
+          usage: () => 'usage'
+        })
+      })
+    }) as unknown as Jack,
     views: {
       json: x => x,
       human: x => ({ ohthehumanity: x }),
