@@ -140,7 +140,7 @@ const fooFromAcmeReg = Spec.parse(
 ## Properties
 
 - type - the type of spec that this is. One of `'registry'`, `'git'`,
-  `'file'`, or `'remote'`.
+  `'file'`, `'remote'`, `catalog` or `workspace`.
 - spec - the full named specifier passed to the constructor
 - options - options passed to the constructor, plus defaults
 - name - the name portion, so `foo` in `foo@1.x`
