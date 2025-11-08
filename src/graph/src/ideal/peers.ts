@@ -138,7 +138,12 @@ export const addEntriesToPeerContext = (
 
     // we have a compatible entry that has a new target
     // so we need to update all dependents to point to the new target
-    if (target && entry.target && target.id !== entry.target.id) {
+    if (
+      target &&
+      entry.target &&
+      target.id !== entry.target.id &&
+      target.version !== entry.target.version
+    ) {
       for (const dependents of entry.contextDependents) {
         const edge = dependents.edgesOut.get(name)
         if (

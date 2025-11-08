@@ -324,11 +324,8 @@ const processPlacementTasks = async (
     // start peer deps placement process, populating the peer context with
     // dependency data; adding the parent node deps and this manifest's
     // peer deps references to the current peer context set
-    const {
-      peerData,
-      peerSetHash: peerSetString, // XXX: rename to whatever final name we use
-      queuedEntries,
-    } = startPeerPlacement(peerContext, manifest, fromNode, options)
+    const { peerData, peerSetHash, queuedEntries } =
+      startPeerPlacement(peerContext, manifest, fromNode, options)
 
     // places a new node in the graph representing a newly seen dependency
     const node = graph.placePackage(
@@ -337,7 +334,7 @@ const processPlacementTasks = async (
       spec,
       normalizeManifest(manifest),
       fileTypeInfo?.id,
-      peerSetString || queryModifier,
+      peerSetHash || queryModifier,
     )
 
     /* c8 ignore start - not possible, already ensured manifest */
@@ -348,11 +345,6 @@ const processPlacementTasks = async (
       })
     }
     /* c8 ignore stop */
-
-    // Store peer context set on node
-    if (peerSetString) {
-      node.peerRef = peerSetString
-    }
 
     // update the node modifier tracker
     if (activeModifier) {

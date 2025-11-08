@@ -224,7 +224,7 @@ export class Node implements NodeLike {
    * nodes that are affected by a peer context set modified resolution.
    * These are appended to the node {@link DepID} as the `extra` suffix.
    */
-  peerRef?: string
+  peerSetHash?: string
 
   /**
    * The file system location for this node.
