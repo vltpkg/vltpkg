@@ -329,7 +329,14 @@ export class Graph implements GraphLike {
     this.nodes.set(node.id, node)
     const nbn = this.nodesByName.get(node.name) ?? new Set()
     nbn.add(node)
-    this.nodesByName.set(node.name, nbn)
+
+    // ensure the nodes by name set is always sorted, this will help
+    // keeping a deterministic graph resolution when reusing nodes
+    const newByNameSet = new Set(
+      [...nbn].sort((a, b) => a.id.localeCompare(b.id)),
+    )
+    this.nodesByName.set(node.name, newByNameSet)
+
     if (manifest) {
       this.manifests.set(node.id, manifest)
     }
@@ -396,6 +403,7 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
+    // TODO: need to handle both extra and peerSetHash
     toNode.modifier = extra
 
     // add extra manifest info if available
