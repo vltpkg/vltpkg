@@ -1388,8 +1388,8 @@ export const longDependencyTypes = new Set<DependencyTypeLong>([
 export const shortDependencyTypes = new Set<DependencyTypeShort>([
   'prod',
   'dev',
-  'peer',
   'optional',
+  'peer',
   'peerOptional',
 ])
 

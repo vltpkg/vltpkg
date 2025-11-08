@@ -836,7 +836,13 @@ t.test(
     const graph = new Graph({
       projectRoot: t.testdirName,
       ...configData,
-      mainManifest: { name: 'test', version: '1.0.0' },
+      mainManifest: {
+        name: 'test',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+        },
+      },
     })
     const fooDep = asDependency({
       spec: Spec.parse('foo', '^1.0.0'),
@@ -858,16 +864,19 @@ t.test(
       updateActiveEntry: () => {},
       // This method will be called for the nested dependencies
       tryDependencies: (node: Node, deps: any[]) => {
-        tryDependenciesCalled.value = true
-        // Verify we're getting the expected parameters
-        t.equal(node.manifest?.name, 'foo', 'node should be foo')
-        t.ok(Array.isArray(deps), 'deps should be an array')
-        t.ok(deps.length > 0, 'deps should not be empty')
-        t.equal(
-          deps[0].spec.name,
-          'bar',
-          'first dependency should be bar',
-        )
+        // Only verify for 'foo' node, 'bar' has no dependencies
+        if (node.manifest?.name === 'foo') {
+          tryDependenciesCalled.value = true
+          // Verify we're getting the expected parameters
+          t.equal(node.manifest.name, 'foo', 'node should be foo')
+          t.ok(Array.isArray(deps), 'deps should be an array')
+          t.ok(deps.length > 0, 'deps should not be empty')
+          t.equal(
+            deps[0].spec.name,
+            'bar',
+            'first dependency should be bar',
+          )
+        }
         // we don't care about the returned value here
         return new Map()
       },

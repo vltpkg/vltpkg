@@ -5,14 +5,16 @@ import t from 'tap'
 import { Graph } from '../../src/graph.ts'
 import {
   addEntriesToPeerContext,
-  addSelfToPeerContext,
   endPeerPlacement,
   forkPeerContext,
   nextPeerContextIndex,
-  retrievePeerContextRef,
+  retrievePeerContextHash,
   startPeerPlacement,
 } from '../../src/ideal/peers.ts'
-import type { PeerContext } from '../../src/ideal/peers.ts'
+import type {
+  PeerContext,
+  PeerContextEntryInput,
+} from '../../src/ideal/peers.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -21,21 +23,21 @@ const configData = {
   },
 } satisfies SpecOptions
 
-t.test('retrievePeerContextRef', async t => {
+t.test('retrievePeerContextHash', async t => {
   t.test('returns undefined for undefined context', async t => {
     t.equal(
-      retrievePeerContextRef(undefined),
+      retrievePeerContextHash(undefined),
       undefined,
       'should return undefined',
     )
   })
 
-  t.test('returns peer context reference string', async t => {
+  t.test('returns peer context hash string', async t => {
     const peerContext: PeerContext = new Map()
     peerContext.index = 5
     t.equal(
-      retrievePeerContextRef(peerContext),
-      'peer:5',
+      retrievePeerContextHash(peerContext),
+      'peer:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
       'should return formatted reference',
     )
   })
@@ -43,7 +45,7 @@ t.test('retrievePeerContextRef', async t => {
   t.test('returns undefined if no index', async t => {
     const peerContext: PeerContext = new Map()
     t.equal(
-      retrievePeerContextRef(peerContext),
+      retrievePeerContextHash(peerContext),
       undefined,
       'should return undefined when index not set',
     )
@@ -336,44 +338,6 @@ t.test('addEntriesToPeerContext', async t => {
   })
 })
 
-t.test('addSelfToPeerContext', async t => {
-  t.test('adds node as target to peer context', async t => {
-    const peerContext: PeerContext = new Map()
-    const spec = Spec.parse('foo', '^1.0.0', configData)
-    const mainManifest = {
-      name: 'my-project',
-      version: '1.0.0',
-    }
-    const graph = new Graph({
-      projectRoot: t.testdirName,
-      ...configData,
-      mainManifest,
-    })
-
-    const node = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      {
-        name: 'foo',
-        version: '1.0.0',
-      },
-    )!
-
-    const needsFork = addSelfToPeerContext(
-      peerContext,
-      spec,
-      node,
-      'prod',
-    )
-
-    t.equal(needsFork, false, 'should not need fork')
-    const entry = peerContext.get('foo')
-    t.equal(entry?.target?.id, node.id, 'should set node as target')
-    t.equal(entry?.type, 'prod', 'should have correct type')
-  })
-})
-
 t.test('forkPeerContext', async t => {
   t.test('creates forked context with new entries', async t => {
     const originalContext: PeerContext = new Map()
@@ -497,14 +461,14 @@ t.test('startPeerPlacement', async t => {
 
     t.equal(result.peerData.length, 0, 'should have no peer data')
     t.equal(
-      result.peerSetRef,
+      result.peerSetHash,
       undefined,
       'should have no peer set ref',
     )
     t.equal(
-      result.needsToForkPeerContext,
-      false,
-      'should not need fork',
+      result.queuedEntries.length,
+      0,
+      'should have no queued entries',
     )
   })
 
@@ -547,7 +511,11 @@ t.test('startPeerPlacement', async t => {
     )
 
     t.equal(result.peerData.length, 1, 'should have peer data')
-    t.equal(result.peerSetRef, 'peer:1', 'should have peer set ref')
+    t.equal(
+      result.peerSetHash,
+      'peer:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      'should have peer set hash',
+    )
     t.ok(
       result.peerData[0]!.entries.length > 0,
       'should have entries',
@@ -601,8 +569,11 @@ t.test('endPeerPlacement', async t => {
     const nextPeerDeps = new Map([
       ['peer-pkg', { spec: peerSpec, type: 'peer' as const }],
     ])
+    const queuedEntries: PeerContextEntryInput[] = [
+      { spec: peerSpec, target: peerTarget, type: 'prod' },
+    ]
 
-    const resultContext = endPeerPlacement(
+    const end = endPeerPlacement(
       peerContext,
       [],
       nextDeps,
@@ -612,8 +583,9 @@ t.test('endPeerPlacement', async t => {
       graph.mainImporter,
       node,
       'prod',
-      false,
+      queuedEntries,
     )
+    const resultContext = end()
 
     t.equal(
       nextDeps.length,
@@ -657,8 +629,11 @@ t.test('endPeerPlacement', async t => {
     const nextPeerDeps = new Map([
       ['peer-pkg', { spec: peerSpec, type: 'peerOptional' as const }],
     ])
+    const queuedEntries: PeerContextEntryInput[] = [
+      { spec: nodeSpec, target: node, type: 'prod' },
+    ]
 
-    endPeerPlacement(
+    const end = endPeerPlacement(
       peerContext,
       [],
       nextDeps,
@@ -668,8 +643,9 @@ t.test('endPeerPlacement', async t => {
       graph.mainImporter,
       node,
       'prod',
-      false,
+      queuedEntries,
     )
+    end()
 
     t.equal(
       nextDeps.length,
@@ -713,8 +689,11 @@ t.test('endPeerPlacement', async t => {
     const nextPeerDeps = new Map([
       ['peer-pkg', { spec: peerSpec, type: 'peer' as const }],
     ])
+    const queuedEntries: PeerContextEntryInput[] = [
+      { spec: nodeSpec, target: node, type: 'prod' },
+    ]
 
-    endPeerPlacement(
+    const end = endPeerPlacement(
       peerContext,
       [],
       nextDeps,
@@ -724,8 +703,9 @@ t.test('endPeerPlacement', async t => {
       graph.mainImporter,
       node,
       'prod',
-      false,
+      queuedEntries,
     )
+    const _resultContext = end()
 
     t.equal(
       nextDeps.length,
@@ -764,7 +744,13 @@ t.test('endPeerPlacement', async t => {
     const nextDeps: any[] = []
     const nextPeerDeps = new Map()
 
-    const resultContext = endPeerPlacement(
+    // add a conflicting spec that will cause a fork
+    const conflictingSpec = Spec.parse('my-pkg', '^2.0.0', configData)
+    const queuedEntries: PeerContextEntryInput[] = [
+      { spec: conflictingSpec, target: node, type: 'prod' },
+    ]
+
+    const end = endPeerPlacement(
       peerContext,
       [],
       nextDeps,
@@ -774,8 +760,9 @@ t.test('endPeerPlacement', async t => {
       graph.mainImporter,
       node,
       'prod',
-      true, // needsToForkPeerContext
+      queuedEntries,
     )
+    const resultContext = end()
 
     t.notSame(
       resultContext.index,
