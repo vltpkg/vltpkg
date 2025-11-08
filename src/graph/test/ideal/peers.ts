@@ -15,6 +15,20 @@ import type {
   PeerContext,
   PeerContextEntryInput,
 } from '../../src/ideal/peers.ts'
+import type { PackageInfoClient } from '@vltpkg/package-info'
+import { PackageJson } from '@vltpkg/package-json'
+import { PathScurry } from 'path-scurry'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { build } from '../../src/ideal/build.ts'
+import { load as actualLoad } from '../../src/actual/load.ts'
+import { asDependency } from '../../src/dependencies.ts'
+import { mermaidOutput } from '../../src/visualization/mermaid-output.ts'
+import type {
+  Dependency,
+  AddImportersDependenciesMap,
+} from '../../src/dependencies.ts'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
+import type { Node } from '../../src/node.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -26,7 +40,9 @@ const configData = {
 t.test('retrievePeerContextHash', async t => {
   t.test('returns undefined for undefined context', async t => {
     t.equal(
-      retrievePeerContextHash(undefined),
+      retrievePeerContextHash(undefined, {
+        id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      } as unknown as Node),
       undefined,
       'should return undefined',
     )
@@ -36,8 +52,10 @@ t.test('retrievePeerContextHash', async t => {
     const peerContext: PeerContext = new Map()
     peerContext.index = 5
     t.equal(
-      retrievePeerContextHash(peerContext),
-      'peer:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      retrievePeerContextHash(peerContext, {
+        id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      } as unknown as Node),
+      'ṗ:15b4151810b76b23cc2a6910911011c49e18de96c162bf510a92b9a0a8d04b95',
       'should return formatted reference',
     )
   })
@@ -45,7 +63,9 @@ t.test('retrievePeerContextHash', async t => {
   t.test('returns undefined if no index', async t => {
     const peerContext: PeerContext = new Map()
     t.equal(
-      retrievePeerContextHash(peerContext),
+      retrievePeerContextHash(peerContext, {
+        id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      } as unknown as Node),
       undefined,
       'should return undefined when index not set',
     )
@@ -513,7 +533,7 @@ t.test('startPeerPlacement', async t => {
     t.equal(result.peerData.length, 1, 'should have peer data')
     t.equal(
       result.peerSetHash,
-      'peer:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      'ṗ:2e91a2df6ab60f21ad045748988dd5dc19e1e565d267a0d7c006928754484e94',
       'should have peer set hash',
     )
     t.ok(
@@ -787,4 +807,257 @@ t.test('nextPeerContextIndex', async t => {
     t.ok(idx3 > idx2, 'third index should be greater')
     t.equal(idx3 - idx2, 1, 'should increment by 1')
   })
+})
+
+// --- INTEGRATION TESTS
+// Mock package info that resolves real npm packages
+const createMockPackageInfo = (): PackageInfoClient => {
+  const mockManifests: Record<string, any> = {
+    'react@18.3.1': {
+      name: 'react',
+      version: '18.3.1',
+      dependencies: {
+        'loose-envify': '^1.1.0',
+      },
+    },
+    'react@19.2.0': {
+      name: 'react',
+      version: '19.2.0',
+    },
+    '@isaacs/peer-dep-cycle-a@1.0.0': {
+      name: '@isaacs/peer-dep-cycle-a',
+      version: '1.0.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-b': '^1.0.0',
+      },
+    },
+    '@isaacs/peer-dep-cycle-a@2.0.0': {
+      name: '@isaacs/peer-dep-cycle-a',
+      version: '2.0.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-b': '^2.0.0',
+      },
+    },
+    '@isaacs/peer-dep-cycle-b@1.0.0': {
+      name: '@isaacs/peer-dep-cycle-b',
+      version: '1.0.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-c': '^1.0.0',
+      },
+    },
+    '@isaacs/peer-dep-cycle-b@2.0.0': {
+      name: '@isaacs/peer-dep-cycle-b',
+      version: '2.0.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-c': '^2.0.0',
+      },
+    },
+    '@isaacs/peer-dep-cycle-c@1.0.0': {
+      name: '@isaacs/peer-dep-cycle-c',
+      version: '1.0.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-a': '^1.0.0',
+      },
+    },
+    '@isaacs/peer-dep-cycle-c@2.0.0': {
+      name: '@isaacs/peer-dep-cycle-c',
+      version: '2.0.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-a': '^2.0.0',
+      },
+    },
+    '@ruyadorno/package-with-flexible-peer-deps@1.1.0': {
+      name: '@ruyadorno/package-with-flexible-peer-deps',
+      version: '1.1.0',
+      peerDependencies: {
+        '@isaacs/peer-dep-cycle-a': '1 || 2',
+        react: '18 || 19',
+      },
+    },
+    '@ruyadorno/package-peer-parent-1@1.0.0': {
+      name: '@ruyadorno/package-peer-parent-1',
+      version: '1.0.0',
+      dependencies: {
+        '@isaacs/peer-dep-cycle-a': '^1.0.0',
+        '@ruyadorno/package-with-flexible-peer-deps': '^1.1.0',
+        react: '^18.0.0',
+      },
+    },
+    '@ruyadorno/package-peer-parent-2@1.0.0': {
+      name: '@ruyadorno/package-peer-parent-2',
+      version: '1.0.0',
+      dependencies: {
+        '@isaacs/peer-dep-cycle-a': '^2.0.0',
+        '@ruyadorno/package-with-flexible-peer-deps': '^1.1.0',
+        react: '^19.1.0',
+      },
+    },
+    'loose-envify@1.4.0': {
+      name: 'loose-envify',
+      version: '1.4.0',
+      dependencies: {
+        'js-tokens': '^3.0.0 || ^4.0.0',
+      },
+    },
+    'js-tokens@4.0.0': {
+      name: 'js-tokens',
+      version: '4.0.0',
+    },
+  }
+
+  return {
+    async manifest(spec: Spec) {
+      // Simple version resolver - match ranges to available versions
+      const bareSpec = spec.bareSpec
+
+      // Helper to find matching version in mockManifests
+      const findVersion = (
+        name: string,
+        range: string,
+      ): string | null => {
+        // For wildcards, pick the highest version
+        if (range === '*' || range === '' || range === 'latest') {
+          const defaults: Record<string, string> = {
+            react: '19.2.0',
+            '@isaacs/peer-dep-cycle-a': '2.0.0',
+            '@isaacs/peer-dep-cycle-b': '2.0.0',
+            '@isaacs/peer-dep-cycle-c': '2.0.0',
+            '@ruyadorno/package-with-flexible-peer-deps': '1.1.0',
+            '@ruyadorno/package-peer-parent-1': '1.0.0',
+            '@ruyadorno/package-peer-parent-2': '1.0.0',
+            'loose-envify': '1.4.0',
+            'js-tokens': '4.0.0',
+          }
+          return defaults[name] || null
+        }
+
+        // Handle OR ranges (e.g., "^3.0.0 || ^4.0.0" or "1 || 2" or "18 || 19")
+        if (range.includes('||')) {
+          const parts = range.split('||').map(r => r.trim())
+          // Try each part, prefer the highest available
+          for (const part of parts.reverse()) {
+            const version = findVersion(name, part)
+            if (version) return version
+          }
+          return null
+        }
+
+        // Strip range operators
+        const cleanRange = range.replace(/^[\^~]/, '').trim()
+
+        // For specific versions, match exact or compatible
+        const majorMatch = /^(\d+)/.exec(cleanRange)
+        if (majorMatch) {
+          const major = majorMatch[1]
+          // Try to find matching major version
+          const candidates = Object.keys(mockManifests)
+            .filter(k => k.startsWith(`${name}@${major}`))
+            .sort()
+            .reverse()
+          if (candidates.length > 0) {
+            const candidate = candidates[0]
+            if (candidate) {
+              const parts = candidate.split('@')
+              const version = parts[parts.length - 1]
+              return version ?? null
+            }
+          }
+        }
+
+        // Try exact match
+        if (mockManifests[`${name}@${cleanRange}`]) {
+          return cleanRange
+        }
+
+        return null
+      }
+
+      const version = findVersion(spec.name, bareSpec)
+      if (!version) return null
+
+      const key = `${spec.name}@${version}`
+      return mockManifests[key] || null
+    },
+    async extract() {},
+  } as unknown as PackageInfoClient
+}
+
+t.test('install packages with peer dependencies', async t => {
+  const mainManifest = {
+    name: 'test-peer-install',
+    version: '1.0.0',
+    dependencies: {
+      '@ruyadorno/package-peer-parent-1': '^1.0.0',
+      '@ruyadorno/package-peer-parent-2': '^1.0.0',
+    },
+  }
+  const dir = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+  })
+
+  const scurry = new PathScurry(dir)
+  const projectRoot = dir
+  const packageJson = new PackageJson()
+  const packageInfo = createMockPackageInfo()
+  const options = {
+    projectRoot,
+    scurry,
+    mainManifest,
+    loadManifests: true,
+    packageJson,
+  }
+
+  const actual = actualLoad({
+    projectRoot,
+    scurry,
+    mainManifest,
+    loadManifests: true,
+    packageJson,
+  })
+
+  const rootDepID = joinDepIDTuple(['file', '.'])
+  const addMap = new Map([
+    [
+      rootDepID,
+      new Map<string, Dependency>([
+        [
+          '@ruyadorno/package-peer-parent-1',
+          asDependency({
+            spec: Spec.parse(
+              '@ruyadorno/package-peer-parent-1',
+              '^1.0.0',
+            ),
+            type: 'prod',
+          }),
+        ],
+        [
+          '@ruyadorno/package-peer-parent-2',
+          asDependency({
+            spec: Spec.parse(
+              '@ruyadorno/package-peer-parent-2',
+              '^1.0.0',
+            ),
+            type: 'prod',
+          }),
+        ],
+      ]),
+    ],
+  ]) as AddImportersDependenciesMap
+
+  const graph = await build({
+    ...options,
+    actual,
+    packageInfo,
+    remover: new RollbackRemove(),
+    add: addMap,
+  })
+
+  t.matchSnapshot(
+    mermaidOutput({
+      edges: [...graph.edges],
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should build a peer dependency aware graph',
+  )
 })

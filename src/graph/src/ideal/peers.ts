@@ -41,10 +41,12 @@ export type PeerContext = Map<string, PeerContextEntry> & {
 }
 
 /**
- * Retrieve a unique and deterministic hash for a given peer context set.
+ * Retrieve a unique and deterministic hash for a given peer context set
+ * and a "from" node.
  */
 export const retrievePeerContextHash = (
   peerContext: PeerContext | undefined,
+  fromNode: Node,
 ): string | undefined => {
   // skips creating the initial peer context ref
   if (!peerContext?.index) return undefined
@@ -60,11 +62,12 @@ export const retrievePeerContextHash = (
         .sort((a, b) => a.localeCompare(b, 'en'))
         .join(','),
     )
+    .concat(fromNode.id)
     .join(',')
 
   const hash = createHash('sha256').update(ref).digest('hex')
 
-  return `peer:${hash}`
+  return `ṗ:${hash}`
 }
 
 /**
@@ -210,7 +213,7 @@ export const startPeerPlacement = (
   ) {
     // generates a peer context set hash for nodes that
     // have peer dependencies to be resolved
-    peerSetHash = retrievePeerContextHash(peerContext)
+    peerSetHash = retrievePeerContextHash(peerContext, fromNode)
 
     // get any potential sibling dependency from the
     // parent node that might have not been parsed yet

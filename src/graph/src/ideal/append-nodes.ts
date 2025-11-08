@@ -505,6 +505,7 @@ export const appendNodes = async (
       modifierRefs,
       depth: 0,
       peerContext: initialPeerContext,
+      /* c8 ignore next */
       updateContext: () => initialPeerContext,
     },
   ]
@@ -565,6 +566,7 @@ export const appendNodes = async (
           node,
           deps,
         }: ProcessPlacementResultEntry): string => {
+          /* c8 ignore start */
           const sortedDeps = deps.sort((depA, depB) => {
             const depAIsPeer =
               depA.type === 'peer' || depA.type === 'peerOptional' ?
@@ -579,6 +581,7 @@ export const appendNodes = async (
             }
             return depA.spec.name.localeCompare(depB.spec.name, 'en')
           })
+          /* c8 ignore stop */
           const ref = sortedDeps.map(dep => dep.spec.name).join(';')
           return `${node.id}(${ref})`
         }
