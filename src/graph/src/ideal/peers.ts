@@ -1,6 +1,7 @@
 // helpers for managing peer dependency resolution
 // during the ideal graph building process.
 
+import { createHash } from 'node:crypto'
 import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
 import { getDependencies } from '../dependencies.ts'
@@ -40,14 +41,30 @@ export type PeerContext = Map<string, PeerContextEntry> & {
 }
 
 /**
- * Retrieve a unique reference string for a given peer context set.
+ * Retrieve a unique and deterministic hash for a given peer context set.
  */
-export const retrievePeerContextRef = (
+export const retrievePeerContextHash = (
   peerContext: PeerContext | undefined,
 ): string | undefined => {
+  // skips creating the initial peer context ref
   if (!peerContext?.index) return undefined
 
-  return `peer:${peerContext.index}`
+  // retrieves a deterministic string based on all current
+  // peer deps available in this peer context set
+  const ref = [...peerContext.entries()]
+    .filter(([, entry]) => entry.type === 'peer')
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
+    .map(([, entry]) =>
+      [...entry.specs]
+        .map(String)
+        .sort((a, b) => a.localeCompare(b, 'en'))
+        .join(','),
+    )
+    .join(',')
+
+  const hash = createHash('sha256').update(ref).digest('hex')
+
+  return `peer:${hash}`
 }
 
 /**
@@ -61,7 +78,8 @@ export const addEntriesToPeerContext = (
   entries: PeerContextEntryInput[],
   dependent?: Node,
 ): boolean => {
-  // marks conflicts requiring fork
+  // marks conflicting versions for a given dependency
+  // which will require forking the current peer context set
   let needsFork = false
 
   for (const { spec, target, type } of entries) {
@@ -69,7 +87,7 @@ export const addEntriesToPeerContext = (
 
     let entry = peerContext.get(name)
 
-    // if there's no existing entry, create one
+    // if there's no existing entry, create one and that's it
     if (!entry) {
       entry = {
         specs: new Set(),
@@ -144,27 +162,6 @@ export const addEntriesToPeerContext = (
 }
 
 /**
- * Add the provided node to the peer context set if an entry
- * for its name is already available in the peer context.
- *
- * This ensures this node can be used to satisyfy peer dependencies
- * later on when using this peer context to resolve future nodes.
- */
-export const addSelfToPeerContext = (
-  peerContext: PeerContext,
-  spec: Spec,
-  node: Node,
-  type: DependencySaveType,
-): boolean =>
-  addEntriesToPeerContext(peerContext, [
-    {
-      spec,
-      target: node,
-      type,
-    },
-  ])
-
-/**
  * Create a forked copy of a given peer context set with specific
  * entries and dependents info added to it.
  */
@@ -201,50 +198,44 @@ export const startPeerPlacement = (
   fromNode: Node,
   options: SpecOptions,
 ) => {
-  const entries = []
+  // queue entries so that they can be added
+  // at the end of the placement process
+  const queuedEntries: PeerContextEntryInput[] = []
   const peerData = []
-  let peerSetRef: string | undefined
-  let needsToForkPeerContext = false
+  let peerSetHash: string | undefined
 
   if (
     manifest.peerDependencies &&
     Object.keys(manifest.peerDependencies).length > 0
   ) {
+    // generates a peer context set hash for nodes that
+    // have peer dependencies to be resolved
+    peerSetHash = retrievePeerContextHash(peerContext)
+
     // get any potential sibling dependency from the
     // parent node that might have not been parsed yet
     const siblingDeps = getDependencies(fromNode, {
       ...options,
       registry: fromNode.registry,
     })
-    entries.push(...siblingDeps.values())
+    queuedEntries.push(...siblingDeps.values())
 
     // collect the already parsed nodes and add those to the
     // list of entries to be added to the peer context set
     for (const edge of fromNode.edgesOut.values()) {
-      entries.push({
+      queuedEntries.push({
         spec: edge.spec,
         target: edge.to,
         type: edge.type,
       })
     }
-    peerData.push({ entries })
-
-    // add parent's dependencies to peer context but notice we don't
-    // add itself as a `dependent` of those entries since they're not
-    // actual peer dependencies themselves
-    needsToForkPeerContext =
-      addEntriesToPeerContext(
-        peerContext,
-        entries,
-      ) /* c8 ignore next */ || needsToForkPeerContext
-
-    peerSetRef = retrievePeerContextRef(peerContext)
+    peerData.push({ entries: queuedEntries })
   }
 
   return {
     peerData,
-    peerSetRef,
-    needsToForkPeerContext,
+    peerSetHash,
+    queuedEntries,
   }
 }
 
@@ -256,79 +247,88 @@ export const startPeerPlacement = (
  * Unresolved peer dependencies are added back to the `nextDeps` list
  * for regular processing.
  */
-export const endPeerPlacement = (
-  peerContext: PeerContext,
-  peerData: { entries: PeerContextEntryInput[]; dependent?: Node }[],
-  nextDeps: Dependency[],
-  nextPeerDeps: Map<string, Dependency>,
-  graph: Graph,
-  spec: Spec,
-  fromNode: Node,
-  node: Node,
-  type: DependencySaveType,
-  needsToForkPeerContext: boolean,
-): PeerContext => {
-  // add dependencies from the currently parsing manifest
-  // to the current set of peer context entries including itself
-  // in case of a newly seen dependency in this context
-  const nextEntries = [
-    ...nextDeps,
-    ...nextPeerDeps.values(),
-    /* ref itself */ {
-      spec,
-      target: node,
-      type,
-    },
-  ]
-  needsToForkPeerContext =
-    addEntriesToPeerContext(peerContext, nextEntries, node) ||
-    needsToForkPeerContext
-  peerData.push({ entries: nextEntries, dependent: node })
+export const endPeerPlacement =
+  (
+    peerContext: PeerContext,
+    peerData: {
+      entries: PeerContextEntryInput[]
+      dependent?: Node
+    }[],
+    nextDeps: Dependency[],
+    nextPeerDeps: Map<string, Dependency> & { id?: number },
+    graph: Graph,
+    spec: Spec,
+    fromNode: Node,
+    node: Node,
+    type: DependencySaveType,
+    queuedEntries: PeerContextEntryInput[],
+  ): (() => PeerContext) =>
+  () => {
+    // add dependencies from the currently parsing manifest
+    // to the current set of peer context entries including itself
+    // in case of a newly seen dependency in this context
+    const nextEntries = [
+      ...queuedEntries,
+      /* ref itself */ {
+        spec,
+        target: node,
+        type,
+      },
+      ...nextDeps,
+      ...nextPeerDeps.values(),
+    ]
+    const needsToForkPeerContext = addEntriesToPeerContext(
+      peerContext,
+      nextEntries,
+      node,
+    )
+    peerData.push({ entries: nextEntries, dependent: node })
 
-  // iterate on the set of peer dependencies of the current node
-  // and try to resolve them from the existing peer context set,
-  // when possible, add them as edges in the graph right away, if not,
-  // then we move them back to the `nextDeps` list for processing
-  // along with the rest of the regular dependencies
-  for (const nextDep of nextPeerDeps.values()) {
-    const { spec, type } = nextDep
-    if (type === 'peer' || type === 'peerOptional') {
-      // try to retrieve an entry for that peer dep from
-      // the current peer context set
-      const entry = peerContext.get(spec.final.name)
-      if (
-        entry?.target &&
-        satisfies(
-          entry.target.id,
-          spec,
-          fromNode.location,
-          fromNode.projectRoot,
-        )
-      ) {
-        // entry satisfied, create edge in the graph
-        graph.addEdge(type, spec, node, entry.target)
-        entry.specs.add(spec.final)
-      } else if (type === 'peerOptional') {
-        // skip unsatisfied peerOptional dependencies,
-        // just create a dangling edge
-        graph.addEdge(type, spec, node)
-      } else {
-        // could not satisfy from peer context, add to next deps
-        nextDeps.push(nextDep)
+    // iterate on the set of peer dependencies of the current node
+    // and try to resolve them from the existing peer context set,
+    // when possible, add them as edges in the graph right away, if not,
+    // then we move them back to the `nextDeps` list for processing
+    // along with the rest of the regular dependencies
+    for (const nextDep of nextPeerDeps.values()) {
+      const { spec, type } = nextDep
+      if (type === 'peer' || type === 'peerOptional') {
+        // try to retrieve an entry for that peer dep from
+        // the current peer context set
+        const entry = peerContext.get(spec.final.name)
+        if (
+          entry?.target &&
+          satisfies(
+            entry.target.id,
+            spec,
+            fromNode.location,
+            fromNode.projectRoot,
+          )
+        ) {
+          // entry satisfied, create edge in the graph
+          graph.addEdge(type, spec, node, entry.target)
+          entry.specs.add(spec.final)
+        } else if (type === 'peerOptional') {
+          // skip unsatisfied peerOptional dependencies,
+          // just create a dangling edge
+          graph.addEdge(type, spec, node)
+        } else {
+          // could not satisfy from peer context, add to next deps
+          nextDeps.push(nextDep)
+        }
       }
     }
+
+    // if any dependency could not be added to the current peer context
+    // and requested a fork of the current peer set, this is the time to do it
+    if (needsToForkPeerContext) {
+      peerContext = forkPeerContext(peerContext, peerData)
+    }
+    return peerContext
   }
 
-  // if any dependency could not be added to the current peer context
-  // and requested a fork of the current peer set, this is the time to do it
-  if (needsToForkPeerContext) {
-    peerContext = forkPeerContext(peerContext, peerData)
-  }
-
-  return peerContext
-}
-
-/** Global index to assign unique ids to peer context sets. */
+/**
+ * Global index to assign unique ids used to track peer context sets.
+ */
 let peerContextIndex = 0
 /**
  * Retrieve the next unique index for a peer context set.
