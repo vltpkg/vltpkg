@@ -1,4 +1,4 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
@@ -334,7 +334,7 @@ const processPlacementTasks = async (
       spec,
       normalizeManifest(manifest),
       fileTypeInfo?.id,
-      peerSetHash || queryModifier,
+      joinExtra({ peerSetHash, modifier: queryModifier }),
     )
 
     /* c8 ignore start - not possible, already ensured manifest */

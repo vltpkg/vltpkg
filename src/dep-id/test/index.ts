@@ -14,6 +14,8 @@ import {
   splitDepID,
   baseDepID,
   resetCaches,
+  joinExtra,
+  splitExtra,
 } from '../src/index.ts'
 import type { DepID } from '../src/index.ts'
 
@@ -403,6 +405,191 @@ t.test('resetCaches', t => {
     hydrated3,
     'hydrate should work after multiple resetCaches calls',
   )
+
+  t.end()
+})
+
+t.test('joinExtra', t => {
+  const peerSetHash =
+    'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067'
+  const modifier = '/* mini */:root > #eslint > #minimatch'
+
+  t.test('both modifier and peerSetHash', t => {
+    const result = joinExtra({ peerSetHash, modifier })
+    t.equal(
+      result,
+      `${modifier}${peerSetHash}`,
+      'should join without separator',
+    )
+    t.end()
+  })
+
+  t.test('only modifier', t => {
+    const result = joinExtra({ modifier })
+    t.equal(result, modifier, 'should return just modifier')
+    t.end()
+  })
+
+  t.test('only peerSetHash', t => {
+    const result = joinExtra({ peerSetHash })
+    t.equal(result, peerSetHash, 'should return just peerSetHash')
+    t.end()
+  })
+
+  t.test('neither modifier nor peerSetHash', t => {
+    const result = joinExtra({})
+    t.equal(result, undefined, 'should return undefined')
+    t.end()
+  })
+
+  t.test('empty strings', t => {
+    t.equal(
+      joinExtra({ peerSetHash: '', modifier: '' }),
+      undefined,
+      'both empty returns undefined',
+    )
+    t.equal(
+      joinExtra({ peerSetHash: '', modifier: 'mod' }),
+      'mod',
+      'empty peerSetHash returns modifier',
+    )
+    t.equal(
+      joinExtra({ peerSetHash: 'peer', modifier: '' }),
+      'peer',
+      'empty modifier returns peerSetHash',
+    )
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('splitExtra', t => {
+  const peerSetHash =
+    'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067'
+  const modifier = '#@types/react-dom > #@types/react'
+
+  t.test('only peerSetHash (starts with delimiter)', t => {
+    const result = splitExtra(peerSetHash)
+    t.strictSame(
+      result,
+      { peerSetHash },
+      'should return only peerSetHash',
+    )
+    t.end()
+  })
+
+  t.test('only modifier (no delimiter)', t => {
+    const result = splitExtra(modifier)
+    t.strictSame(result, { modifier }, 'should return only modifier')
+    t.end()
+  })
+
+  t.test('both modifier and peerSetHash', t => {
+    const combined = `${modifier}${peerSetHash}`
+    const result = splitExtra(combined)
+    t.strictSame(
+      result,
+      { modifier, peerSetHash },
+      'should split into both parts',
+    )
+    t.end()
+  })
+
+  t.test('empty string', t => {
+    const result = splitExtra('')
+    t.strictSame(result, {}, 'should return empty object')
+    t.end()
+  })
+
+  t.test('various peerSetHash formats', t => {
+    const hashes = [
+      'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
+      'ṗ:af175b2a75b7612b979fa268e54ab4e553f506c79c46ead5075b606ea61a5dbb',
+      'ṗ:3c1154d8e6f8e8dbac3311715107ec117ab29c2b9b74dc2cfe297fec9c44133a',
+    ]
+    for (const hash of hashes) {
+      t.strictSame(
+        splitExtra(hash),
+        { peerSetHash: hash },
+        `should handle ${hash}`,
+      )
+    }
+    t.end()
+  })
+
+  t.test('various modifier formats', t => {
+    const modifiers = [
+      '/* mini */:root > #eslint > #minimatch',
+      '#@types/react-dom > #@types/react',
+      '#underscore',
+    ]
+    for (const mod of modifiers) {
+      t.strictSame(
+        splitExtra(mod),
+        { modifier: mod },
+        `should handle ${mod}`,
+      )
+    }
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('joinExtra and splitExtra round-trip', t => {
+  const testCases = [
+    {
+      peerSetHash:
+        'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
+      modifier: '/* mini */:root > #eslint > #minimatch',
+    },
+    {
+      peerSetHash:
+        'ṗ:af175b2a75b7612b979fa268e54ab4e553f506c79c46ead5075b606ea61a5dbb',
+      modifier: '#@types/react-dom > #@types/react',
+    },
+    {
+      peerSetHash:
+        'ṗ:3c1154d8e6f8e8dbac3311715107ec117ab29c2b9b74dc2cfe297fec9c44133a',
+      modifier: '#underscore',
+    },
+    {
+      peerSetHash:
+        'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
+      modifier: undefined,
+    },
+    {
+      peerSetHash: undefined,
+      modifier: '#underscore',
+    },
+  ]
+
+  for (const { peerSetHash, modifier } of testCases) {
+    t.test(
+      `${modifier || 'no modifier'} + ${peerSetHash || 'no peerSetHash'}`,
+      t => {
+        const joined = joinExtra({ peerSetHash, modifier })
+        if (!joined) {
+          t.equal(peerSetHash, undefined)
+          t.equal(modifier, undefined)
+        } else {
+          const split = splitExtra(joined)
+          t.equal(
+            split.modifier,
+            modifier,
+            'modifier matches after round-trip',
+          )
+          t.equal(
+            split.peerSetHash,
+            peerSetHash,
+            'peerSetHash matches after round-trip',
+          )
+        }
+        t.end()
+      },
+    )
+  }
 
   t.end()
 })

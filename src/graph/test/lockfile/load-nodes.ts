@@ -174,7 +174,7 @@ t.test('load nodes with confused manifest', async t => {
 })
 
 t.test(
-  'load nodes with modifier from extra DepID parameter',
+  'load nodes with modifier and peerSetHash from extra DepID parameter',
   async t => {
     const graph = new Graph({
       mainManifest: {
@@ -186,7 +186,7 @@ t.test(
 
     // Create DepIDs with extra parameters for different dependency types
     const nodes = {
-      // Registry dependency with extra parameter (modifier)
+      // Registry dependency with modifier only
       [joinDepIDTuple([
         'registry',
         '',
@@ -203,12 +203,12 @@ t.test(
           version: '1.0.0',
         },
       ],
-      // Git dependency with extra parameter (modifier)
+      // Git dependency with peerSetHash only
       [joinDepIDTuple([
         'git',
         'https://github.com/user/repo.git',
         'main',
-        ':root > #git-pkg',
+        'ṗ:abc123',
       ])]: [
         0,
         'git-pkg',
@@ -220,20 +220,23 @@ t.test(
           version: '1.0.0',
         },
       ],
-      // File dependency with extra parameter (modifier)
-      [joinDepIDTuple(['file', './local-pkg', ':root > #file-pkg'])]:
-        [
-          0,
-          'file-pkg',
-          null,
-          null,
-          './packages/local-pkg',
-          {
-            name: 'file-pkg',
-            version: '1.0.0',
-          },
-        ],
-      // Registry dependency without extra parameter (no modifier)
+      // File dependency with both modifier and peerSetHash
+      [joinDepIDTuple([
+        'file',
+        './local-pkg',
+        ':root > #file-pkgṗ:def456',
+      ])]: [
+        0,
+        'file-pkg',
+        null,
+        null,
+        './packages/local-pkg',
+        {
+          name: 'file-pkg',
+          version: '1.0.0',
+        },
+      ],
+      // Registry dependency without extra parameter (no modifier or peerSetHash)
       [joinDepIDTuple(['registry', '', 'regular-pkg@1.0.0'])]: [
         0,
         'regular-pkg',
@@ -249,7 +252,7 @@ t.test(
 
     loadNodes(graph, nodes, {})
 
-    // Verify registry node with modifier
+    // Verify registry node with modifier only
     const modifiedPkgNode = graph.nodes.get(
       joinDepIDTuple([
         'registry',
@@ -267,35 +270,54 @@ t.test(
       ':root > #modified-pkg',
       'registry node should have correct modifier',
     )
+    t.equal(
+      modifiedPkgNode?.peerSetHash,
+      undefined,
+      'registry node should not have peerSetHash',
+    )
 
-    // Verify git node with modifier
+    // Verify git node with peerSetHash only
     const gitPkgNode = graph.nodes.get(
       joinDepIDTuple([
         'git',
         'https://github.com/user/repo.git',
         'main',
-        ':root > #git-pkg',
+        'ṗ:abc123',
       ]),
     )
-    t.ok(gitPkgNode, 'should load modified git package node')
+    t.ok(gitPkgNode, 'should load git package node with peerSetHash')
     t.equal(
       gitPkgNode?.modifier,
-      ':root > #git-pkg',
-      'git node should have correct modifier',
+      undefined,
+      'git node should not have modifier',
+    )
+    t.equal(
+      gitPkgNode?.peerSetHash,
+      'ṗ:abc123',
+      'git node should have correct peerSetHash',
     )
 
-    // Verify file node with modifier
+    // Verify file node with both modifier and peerSetHash
     const filePkgNode = graph.nodes.get(
-      joinDepIDTuple(['file', './local-pkg', ':root > #file-pkg']),
+      joinDepIDTuple([
+        'file',
+        './local-pkg',
+        ':root > #file-pkgṗ:def456',
+      ]),
     )
-    t.ok(filePkgNode, 'should load modified file package node')
+    t.ok(filePkgNode, 'should load file package node with both')
     t.equal(
       filePkgNode?.modifier,
       ':root > #file-pkg',
       'file node should have correct modifier',
     )
+    t.equal(
+      filePkgNode?.peerSetHash,
+      'ṗ:def456',
+      'file node should have correct peerSetHash',
+    )
 
-    // Verify regular node without modifier
+    // Verify regular node without modifier or peerSetHash
     const regularPkgNode = graph.nodes.get(
       joinDepIDTuple(['registry', '', 'regular-pkg@1.0.0']),
     )
@@ -305,15 +327,10 @@ t.test(
       undefined,
       'regular node should have no modifier',
     )
-
-    // Verify that all nodes with modifiers have them set correctly
-    const nodesWithModifiers = [...graph.nodes.values()].filter(
-      node => node.modifier !== undefined,
-    )
     t.equal(
-      nodesWithModifiers.length,
-      3,
-      'should have 4 nodes with modifiers',
+      regularPkgNode?.peerSetHash,
+      undefined,
+      'regular node should have no peerSetHash',
     )
 
     // Snapshot test to verify the complete structure
@@ -324,9 +341,10 @@ t.test(
           id: n.id,
           name: n.name,
           modifier: n.modifier,
+          peerSetHash: n.peerSetHash,
         }))
         .sort((a, b) => a.name.localeCompare(b.name)),
-      'should load nodes with correct modifiers from extra DepID parameters',
+      'should load nodes with correct modifiers and peerSetHash from extra DepID parameters',
     )
   },
 )

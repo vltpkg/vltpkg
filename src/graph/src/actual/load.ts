@@ -1,4 +1,10 @@
-import { asDepID, hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  asDepID,
+  hydrate,
+  joinDepIDTuple,
+  joinExtra,
+  splitExtra,
+} from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { graphStep } from '@vltpkg/output'
 import { isObject } from '@vltpkg/types'
@@ -308,7 +314,7 @@ const parseDir = (
             name,
           },
           depId,
-          queryModifier,
+          joinExtra({ modifier: queryModifier }),
         )
 
         // Update active entry after placing package
@@ -349,13 +355,14 @@ const parseDir = (
       spec = modifiedSpec
 
       const maybeId = getPathBasedId(spec, realpath)
+      const peerSetHash = maybeId && splitExtra(maybeId).peerSetHash
       node = graph.placePackage(
         fromNode,
         depType,
         spec,
         mani,
         maybeId,
-        queryModifier,
+        joinExtra({ modifier: queryModifier, peerSetHash }),
       )
 
       // Update active entry after placing package
@@ -415,7 +422,7 @@ const parseDir = (
         spec,
         undefined,
         undefined,
-        queryModifier,
+        joinExtra({ modifier: queryModifier }),
       )
     }
   }

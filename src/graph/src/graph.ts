@@ -1,4 +1,9 @@
-import { getId, joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  getId,
+  joinDepIDTuple,
+  joinExtra,
+  splitExtra,
+} from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -403,8 +408,12 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
-    // TODO: need to handle both extra and peerSetHash
-    toNode.modifier = extra
+    // split extra into modifier and peerSetHash
+    if (extra) {
+      const { modifier, peerSetHash } = splitExtra(extra)
+      toNode.modifier = modifier
+      toNode.peerSetHash = peerSetHash
+    }
 
     // add extra manifest info if available
     if (manifest) {
@@ -538,12 +547,15 @@ export class Graph implements GraphLike {
         this.resolutionsReverse.set(node, new Set())
       }
 
-      // Get the modifier if the node has one associated to it
-      const queryModifier = node.modifier || ''
+      // Get the extra combining modifier and peerSetHash if present
+      const extra = joinExtra({
+        modifier: node.modifier,
+        peerSetHash: node.peerSetHash,
+      })
       const resolutionKey = getResolutionCacheKey(
         edge.spec.final,
         edge.from.location,
-        queryModifier,
+        extra || '',
       )
 
       this.resolutions.set(resolutionKey, node)

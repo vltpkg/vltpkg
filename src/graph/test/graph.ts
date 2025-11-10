@@ -1490,6 +1490,66 @@ t.test('resetResolution method', async t => {
   })
 
   t.test(
+    'should handle nodes with both modifier and peerSetHash',
+    async t => {
+      // Create a node with both modifier and peerSetHash
+      const combinedNode = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('combined@^1.0.0'),
+        {
+          name: 'combined',
+          version: '1.0.0',
+        },
+        undefined,
+        ':root > #combinedṗ:hash123',
+      )
+
+      t.equal(
+        combinedNode?.modifier,
+        ':root > #combined',
+        'node has correct modifier',
+      )
+      t.equal(
+        combinedNode?.peerSetHash,
+        'ṗ:hash123',
+        'node has correct peerSetHash',
+      )
+
+      // Store references to verify after reset
+      const originalModifier = combinedNode?.modifier
+      const originalPeerSetHash = combinedNode?.peerSetHash
+
+      // Reset resolution
+      graph.resetResolution()
+
+      // Verify both values are preserved
+      t.equal(
+        combinedNode?.modifier,
+        originalModifier,
+        'node modifier preserved after reset',
+      )
+      t.equal(
+        combinedNode?.peerSetHash,
+        originalPeerSetHash,
+        'node peerSetHash preserved after reset',
+      )
+
+      // Verify cache works with combined extra
+      const foundCombined = graph.findResolution(
+        Spec.parse('combined@^1.0.0'),
+        graph.mainImporter,
+        ':root > #combinedṗ:hash123',
+      )
+      t.equal(
+        foundCombined,
+        combinedNode,
+        'findResolution works with combined extra after reset',
+      )
+    },
+  )
+
+  t.test(
     'should rebuild resolution cache with correct keys',
     async t => {
       // Create nodes with different types of specs
@@ -1902,6 +1962,108 @@ t.test('node platform data setting', async t => {
       )
     },
   )
+})
+
+t.test('splitExtra and joinExtra integration', async t => {
+  const mainManifest = {
+    name: 'root-project',
+    version: '1.0.0',
+    dependencies: {
+      a: '^1.0.0',
+      b: '^1.0.0',
+      c: '^1.0.0',
+      d: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  t.test('should split extra with only modifier', async t => {
+    const nodeA = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('a@^1.0.0'),
+      {
+        name: 'a',
+        version: '1.0.0',
+      },
+      undefined,
+      ':root > #a',
+    )
+
+    t.ok(nodeA, 'node a created')
+    t.equal(nodeA?.modifier, ':root > #a', 'modifier set correctly')
+    t.equal(nodeA?.peerSetHash, undefined, 'peerSetHash not set')
+  })
+
+  t.test('should split extra with only peerSetHash', async t => {
+    const nodeB = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('b@^1.0.0'),
+      {
+        name: 'b',
+        version: '1.0.0',
+      },
+      undefined,
+      'ṗ:abc123',
+    )
+
+    t.ok(nodeB, 'node b created')
+    t.equal(nodeB?.modifier, undefined, 'modifier not set')
+    t.equal(
+      nodeB?.peerSetHash,
+      'ṗ:abc123',
+      'peerSetHash set correctly',
+    )
+  })
+
+  t.test(
+    'should split extra with both modifier and peerSetHash',
+    async t => {
+      const nodeC = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('c@^1.0.0'),
+        {
+          name: 'c',
+          version: '1.0.0',
+        },
+        undefined,
+        ':root > #cṗ:xyz789',
+      )
+
+      t.ok(nodeC, 'node c created')
+      t.equal(nodeC?.modifier, ':root > #c', 'modifier set correctly')
+      t.equal(
+        nodeC?.peerSetHash,
+        'ṗ:xyz789',
+        'peerSetHash set correctly',
+      )
+    },
+  )
+
+  t.test('should handle empty extra', async t => {
+    const nodeD = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('d@^1.0.0'),
+      {
+        name: 'd',
+        version: '1.0.0',
+      },
+    )
+
+    t.ok(nodeD, 'node d created')
+    t.equal(nodeD?.modifier, undefined, 'modifier not set')
+    t.equal(nodeD?.peerSetHash, undefined, 'peerSetHash not set')
+  })
 })
 
 t.test('removeNode with keepEdges parameter', async t => {

@@ -342,27 +342,31 @@ Array [
 ]
 `
 
-exports[`test/lockfile/load-nodes.ts > TAP > load nodes with modifier from extra DepID parameter > should load nodes with correct modifiers from extra DepID parameters 1`] = `
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with modifier and peerSetHash from extra DepID parameter > should load nodes with correct modifiers and peerSetHash from extra DepID parameters 1`] = `
 Array [
   Object {
-    "id": "file·.§local-pkg·%3Aroot%20%3E%20%23file-pkg",
+    "id": "file·.§local-pkg·%3Aroot%20%3E%20%23file-pkg%E1%B9%97%3Adef456",
     "modifier": ":root > #file-pkg",
     "name": "file-pkg",
+    "peerSetHash": "ṗ:def456",
   },
   Object {
-    "id": "git·https%3A§§github.com§user§repo.git·main·%3Aroot%20%3E%20%23git-pkg",
-    "modifier": ":root > #git-pkg",
+    "id": "git·https%3A§§github.com§user§repo.git·main·%E1%B9%97%3Aabc123",
+    "modifier": undefined,
     "name": "git-pkg",
+    "peerSetHash": "ṗ:abc123",
   },
   Object {
     "id": "··modified-pkg@1.0.0·%3Aroot%20%3E%20%23modified-pkg",
     "modifier": ":root > #modified-pkg",
     "name": "modified-pkg",
+    "peerSetHash": undefined,
   },
   Object {
     "id": "··regular-pkg@1.0.0",
     "modifier": undefined,
     "name": "regular-pkg",
+    "peerSetHash": undefined,
   },
 ]
 `

@@ -1226,3 +1226,132 @@ t.test('load platform data for optional dependencies', async t => {
   )
   t.equal(baz?.optional, true, 'baz is optional')
 })
+
+t.test('load with peerSetHash in extra parameter', async t => {
+  const projectRoot = t.testdir()
+  const packageJson = new PackageJson()
+
+  const lockfileData: LockfileData = {
+    lockfileVersion: 0,
+    options: configData,
+    nodes: {
+      // Node with modifier only
+      [joinDepIDTuple([
+        'registry',
+        '',
+        'with-modifier@1.0.0',
+        ':root > #with-modifier',
+      ])]: [
+        0,
+        'with-modifier',
+        null,
+        null,
+        null,
+        { name: 'with-modifier', version: '1.0.0' },
+      ] as LockfileNode,
+      // Node with peerSetHash only
+      [joinDepIDTuple([
+        'registry',
+        '',
+        'with-peer@1.0.0',
+        'ṗ:hash123',
+      ])]: [
+        0,
+        'with-peer',
+        null,
+        null,
+        null,
+        { name: 'with-peer', version: '1.0.0' },
+      ] as LockfileNode,
+      // Node with both modifier and peerSetHash
+      [joinDepIDTuple([
+        'registry',
+        '',
+        'with-both@1.0.0',
+        ':root > #with-bothṗ:hash456',
+      ])]: [
+        0,
+        'with-both',
+        null,
+        null,
+        null,
+        { name: 'with-both', version: '1.0.0' },
+      ] as LockfileNode,
+      // Node with neither
+      [joinDepIDTuple(['registry', '', 'regular@1.0.0'])]: [
+        0,
+        'regular',
+        null,
+        null,
+        null,
+        { name: 'regular', version: '1.0.0' },
+      ] as LockfileNode,
+    },
+    edges: {
+      [`${joinDepIDTuple(['file', '.'])} with-modifier`]:
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-modifier@1.0.0', ':root > #with-modifier'])}` as LockfileEdgeValue,
+      [`${joinDepIDTuple(['file', '.'])} with-peer`]:
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'ṗ:hash123'])}` as LockfileEdgeValue,
+      [`${joinDepIDTuple(['file', '.'])} with-both`]:
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-both@1.0.0', ':root > #with-bothṗ:hash456'])}` as LockfileEdgeValue,
+      [`${joinDepIDTuple(['file', '.'])} regular`]:
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'regular@1.0.0'])}` as LockfileEdgeValue,
+    },
+  }
+
+  const graph = loadObject(
+    {
+      ...configData,
+      mainManifest,
+      projectRoot,
+      packageJson,
+    },
+    lockfileData,
+  )
+
+  // Verify modifier-only node
+  const withModifier = graph.nodes.get(
+    joinDepIDTuple([
+      'registry',
+      '',
+      'with-modifier@1.0.0',
+      ':root > #with-modifier',
+    ]),
+  )
+  t.ok(withModifier, 'with-modifier node exists')
+  t.equal(
+    withModifier?.modifier,
+    ':root > #with-modifier',
+    'has modifier',
+  )
+  t.notOk(withModifier?.peerSetHash, 'no peerSetHash')
+
+  // Verify peerSetHash-only node
+  const withPeer = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'ṗ:hash123']),
+  )
+  t.ok(withPeer, 'with-peer node exists')
+  t.notOk(withPeer?.modifier, 'no modifier')
+  t.equal(withPeer?.peerSetHash, 'ṗ:hash123', 'has peerSetHash')
+
+  // Verify node with both
+  const withBoth = graph.nodes.get(
+    joinDepIDTuple([
+      'registry',
+      '',
+      'with-both@1.0.0',
+      ':root > #with-bothṗ:hash456',
+    ]),
+  )
+  t.ok(withBoth, 'with-both node exists')
+  t.equal(withBoth?.modifier, ':root > #with-both', 'has modifier')
+  t.equal(withBoth?.peerSetHash, 'ṗ:hash456', 'has peerSetHash')
+
+  // Verify regular node
+  const regular = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'regular@1.0.0']),
+  )
+  t.ok(regular, 'regular node exists')
+  t.notOk(regular?.modifier, 'no modifier')
+  t.notOk(regular?.peerSetHash, 'no peerSetHash')
+})
