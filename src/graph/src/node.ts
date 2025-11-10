@@ -444,6 +444,9 @@ export class Node implements NodeLike {
       modifier: this.modifier,
       platform: this.platform,
       buildState: this.buildState,
+      ...(this.peerSetHash ?
+        { peerSetHash: this.peerSetHash }
+      : undefined),
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),

@@ -1465,6 +1465,7 @@ export type NodeLike = {
   dev: boolean
   optional: boolean
   modifier?: string | undefined
+  peerSetHash?: string | undefined
   registry?: string
   platform?: {
     engines?: Record<string, string>

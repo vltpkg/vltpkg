@@ -541,3 +541,25 @@ t.test('asNode', async t => {
     'should throw if object is not a node',
   )
 })
+
+t.test('node with peerSetHash', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const mani = {
+    name: 'test-peer',
+    version: '2.0.0',
+  }
+  const nodeWithPeer = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'test-peer@2.0.0', 'ṗ:abc123']),
+    mani,
+  )
+  nodeWithPeer.peerSetHash = 'ṗ:abc123'
+  t.matchSnapshot(
+    nodeWithPeer.toJSON(),
+    'should serialize node with peerSetHash',
+  )
+})

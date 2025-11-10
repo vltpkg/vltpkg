@@ -94,6 +94,30 @@ exports[`test/node.ts > TAP > Node > should stringify workspace node 1`] = `
 workspace:a
 `
 
+exports[`test/node.ts > TAP > node with peerSetHash > should serialize node with peerSetHash 1`] = `
+Object {
+  "buildState": "none",
+  "confused": false,
+  "dev": false,
+  "id": "··test-peer@2.0.0·%E1%B9%97%3Aabc123",
+  "importer": false,
+  "integrity": undefined,
+  "location": "./node_modules/.vlt/··test-peer@2.0.0·%E1%B9%97%3Aabc123/node_modules/test-peer",
+  "manifest": Object {
+    "name": "test-peer",
+    "version": "2.0.0",
+  },
+  "modifier": undefined,
+  "name": "test-peer",
+  "optional": false,
+  "peerSetHash": "ṗ:abc123",
+  "platform": undefined,
+  "projectRoot": "{ROOT}",
+  "resolved": undefined,
+  "version": "2.0.0",
+}
+`
+
 exports[`test/node.ts > TAP > rawManifest getter and setter > should serialize node to JSON 1`] = `
 Object {
   "buildState": "none",
