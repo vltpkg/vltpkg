@@ -112,11 +112,9 @@ t.test('addEntriesToPeerContext', async t => {
     addEntriesToPeerContext(peerContext, [{ spec, type: 'peer' }])
 
     // Then add with dependent
-    const needsFork = addEntriesToPeerContext(
-      peerContext,
-      [{ spec, type: 'peer' }],
-      node,
-    )
+    const needsFork = addEntriesToPeerContext(peerContext, [
+      { spec, type: 'peer', dependent: node },
+    ])
 
     t.equal(needsFork, false, 'should not need fork')
     const entry = peerContext.get('foo')
@@ -178,7 +176,7 @@ t.test('addEntriesToPeerContext', async t => {
       ...configData,
       mainManifest,
     })
-    const dependent = graph.placePackage(
+    graph.placePackage(
       graph.mainImporter,
       'prod',
       Spec.parse('bar', '^1.0.0', configData),
@@ -186,11 +184,9 @@ t.test('addEntriesToPeerContext', async t => {
     )!
 
     // Add first spec with dependent
-    addEntriesToPeerContext(
-      peerContext,
-      [{ spec: spec1, type: 'peer' }],
-      dependent,
-    )
+    addEntriesToPeerContext(peerContext, [
+      { spec: spec1, type: 'peer' },
+    ])
 
     // Add conflicting spec
     const needsFork = addEntriesToPeerContext(peerContext, [
@@ -235,11 +231,9 @@ t.test('addEntriesToPeerContext', async t => {
     graph.addEdge('peer', spec, dependent, target1)
 
     // Add first target
-    addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target1, type: 'peer' }],
-      dependent,
-    )
+    addEntriesToPeerContext(peerContext, [
+      { spec, target: target1, type: 'peer', dependent },
+    ])
 
     // Create new target
     const target2 = graph.placePackage(
@@ -282,7 +276,7 @@ t.test('addEntriesToPeerContext', async t => {
       })
 
       // Place a dependent node
-      const dependent = graph.placePackage(
+      graph.placePackage(
         graph.mainImporter,
         'prod',
         Spec.parse('bar', '^1.0.0', configData),
@@ -290,11 +284,9 @@ t.test('addEntriesToPeerContext', async t => {
       )!
 
       // Add entry with no target
-      let needsFork = addEntriesToPeerContext(
-        peerContext,
-        [{ spec, type: 'peer' }],
-        dependent,
-      )
+      let needsFork = addEntriesToPeerContext(peerContext, [
+        { spec, type: 'peer' },
+      ])
 
       t.equal(
         needsFork,
@@ -317,11 +309,9 @@ t.test('addEntriesToPeerContext', async t => {
         { name: 'foo', version: '1.0.0' },
       )!
 
-      needsFork = addEntriesToPeerContext(
-        peerContext,
-        [{ spec, type: 'peer', target }],
-        dependent,
-      )
+      needsFork = addEntriesToPeerContext(peerContext, [
+        { spec, type: 'peer', target },
+      ])
 
       t.equal(
         needsFork,
@@ -388,7 +378,7 @@ t.test('forkPeerContext', async t => {
     )!
 
     const forkedContext = forkPeerContext(originalContext, [
-      { entries: [{ spec: spec2, type: 'peer' }], dependent },
+      { spec: spec2, type: 'peer', dependent },
     ])
 
     t.not(
@@ -433,7 +423,7 @@ t.test('forkPeerContext', async t => {
 
       // No dependent this time
       const forkedContext = forkPeerContext(originalContext, [
-        { entries: [{ spec: spec2, type: 'peer' }] },
+        { spec: spec2, type: 'peer' },
       ])
 
       t.ok(
@@ -479,7 +469,6 @@ t.test('startPeerPlacement', async t => {
       configData,
     )
 
-    t.equal(result.peerData.length, 0, 'should have no peer data')
     t.equal(
       result.peerSetHash,
       undefined,
@@ -519,8 +508,8 @@ t.test('startPeerPlacement', async t => {
     graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('baz', '^1.0.0', configData),
-      { name: 'baz', version: '1.0.0' },
+      Spec.parse('baz', '^2.0.0', configData),
+      { name: 'baz', version: '2.0.0' },
     )!
 
     const result = startPeerPlacement(
@@ -530,16 +519,13 @@ t.test('startPeerPlacement', async t => {
       configData,
     )
 
-    t.equal(result.peerData.length, 1, 'should have peer data')
+    t.equal(result.queuedEntries.length, 1, 'should have peer data')
     t.equal(
       result.peerSetHash,
       'ṗ:2e91a2df6ab60f21ad045748988dd5dc19e1e565d267a0d7c006928754484e94',
       'should have peer set hash',
     )
-    t.ok(
-      result.peerData[0]!.entries.length > 0,
-      'should have entries',
-    )
+    t.ok(result.queuedEntries.length > 0, 'should have entries')
   })
 })
 
@@ -595,7 +581,6 @@ t.test('endPeerPlacement', async t => {
 
     const end = endPeerPlacement(
       peerContext,
-      [],
       nextDeps,
       nextPeerDeps,
       graph,
@@ -655,7 +640,6 @@ t.test('endPeerPlacement', async t => {
 
     const end = endPeerPlacement(
       peerContext,
-      [],
       nextDeps,
       nextPeerDeps,
       graph,
@@ -715,7 +699,6 @@ t.test('endPeerPlacement', async t => {
 
     const end = endPeerPlacement(
       peerContext,
-      [],
       nextDeps,
       nextPeerDeps,
       graph,
@@ -772,7 +755,6 @@ t.test('endPeerPlacement', async t => {
 
     const end = endPeerPlacement(
       peerContext,
-      [],
       nextDeps,
       nextPeerDeps,
       graph,
@@ -871,6 +853,7 @@ const createMockPackageInfo = (): PackageInfoClient => {
       version: '1.1.0',
       peerDependencies: {
         '@isaacs/peer-dep-cycle-a': '1 || 2',
+        '@isaacs/peer-dep-cycle-c': '1 || 2',
         react: '18 || 19',
       },
     },
