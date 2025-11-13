@@ -31,6 +31,8 @@ export type PeerContextEntry = {
 export type PeerContextEntryInput = {
   /** Node this peer context entry resolves to */
   target?: Node
+  /** Node that depends on this resolved peer context set entry */
+  dependent?: Node
 } & Dependency
 
 /**
@@ -79,18 +81,45 @@ export const retrievePeerContextHash = (
 export const addEntriesToPeerContext = (
   peerContext: PeerContext,
   entries: PeerContextEntryInput[],
-  dependent?: Node,
 ): boolean => {
   // marks conflicting versions for a given dependency
   // which will require forking the current peer context set
   let needsFork = false
 
-  for (const { spec, target, type } of entries) {
+  // first loop to check on compatibility of new entries
+  for (const { spec, target } of entries) {
     const name = target?.name ?? spec.final.name
 
-    let entry = peerContext.get(name)
+    const entry = peerContext.get(name)
+    if (!entry) continue
 
-    // if there's no existing entry, create one and that's it
+    // validate if the provided spec is compatible with existing specs
+    // if not then we need to fork the current peer context set
+    if (entry.specs.size > 0) {
+      for (const s of entry.specs) {
+        if (
+          // TODO: support specs other than semver ranges
+          !spec.range ||
+          !s.range ||
+          !intersects(spec.range, s.range)
+        ) {
+          needsFork = true
+          break
+        }
+      }
+    }
+
+    // if a fork is needed, bail out early
+    if (needsFork) {
+      return true
+    }
+  }
+
+  for (const { dependent, spec, target, type } of entries) {
+    const name = target?.name ?? spec.final.name
+
+    // if there's no existing entry, create one
+    let entry = peerContext.get(name)
     if (!entry) {
       entry = {
         specs: new Set(),
@@ -104,61 +133,50 @@ export const addEntriesToPeerContext = (
       continue
     }
 
-    // check if the new provided target satisfies existing specs
-    // if not then we may need to fork the current peer context set
-    if (target && entry.specs.size > 0) {
-      for (const s of entry.specs) {
-        if (spec.range && s.range && intersects(spec.range, s.range))
-          continue
-        if (!satisfies(target.id, s)) {
-          needsFork = true
-          break
-        }
-      }
-    }
-
-    // validate if the provided spec is compatible with existing specs
-    // if not then we need to fork the current peer context set
-    if (!needsFork && entry.specs.size > 0) {
+    // perform extra checks that confirms the new spec conflicts with
+    // existing specs in this entry, this handles the case of adding
+    // sibling deps that conflicts with one another
+    if (entry.specs.size > 0) {
       for (const s of entry.specs) {
         if (
           !spec.range ||
           !s.range ||
-          (entry.contextDependents.size > 0 &&
-            !intersects(spec.range, s.range))
+          !intersects(spec.range, s.range)
         ) {
           needsFork = true
           break
         }
       }
     }
+    if (needsFork) {
+      return true
+    }
 
-    // if a fork is needed, bail out early
-    if (needsFork) return true
-
-    // we have a compatible entry that has a new target
+    // we have a compatible entry that has a new, compatible target
     // so we need to update all dependents to point to the new target
     if (
       target &&
-      entry.target &&
-      target.id !== entry.target.id &&
-      target.version !== entry.target.version
+      [...entry.specs].every(s => satisfies(target.id, s))
     ) {
-      for (const dependents of entry.contextDependents) {
-        const edge = dependents.edgesOut.get(name)
-        if (
-          edge &&
-          (edge.type === 'peer' /* c8 ignore next */ ||
-            edge.type === 'peerOptional')
-        ) {
-          edge.to = target
+      if (
+        target.id !== entry.target?.id &&
+        target.version !== entry.target?.version
+      ) {
+        for (const dependents of entry.contextDependents) {
+          const edge = dependents.edgesOut.get(name)
+          if (edge?.to && edge.to !== target) {
+            edge.to.edgesIn.delete(edge)
+            edge.to = target
+            target.edgesIn.add(edge)
+          }
         }
-      }
-      entry.target = target
+        entry.target = target
 
-      // in case this entry was just missing a target, set it now
-    } else if (!entry.target && target) {
-      entry.target = target
+        // in case this entry was just missing a target, set it now
+      }
+
+      // otherwise sets the value in case it was nullish
+      entry.target ??= target
     }
 
     // update specs and dependents values
@@ -175,23 +193,21 @@ export const addEntriesToPeerContext = (
  */
 export const forkPeerContext = (
   peerContext: PeerContext,
-  data: { entries: PeerContextEntryInput[]; dependent?: Node }[],
+  entries: PeerContextEntryInput[],
 ): PeerContext => {
   peerContext = new Map(peerContext)
   peerContext.index = nextPeerContextIndex()
-  for (const { entries, dependent } of data) {
-    for (const entry of entries) {
-      const { spec, target, type } = entry
-      const name = target?.name ?? spec.final.name
-      const newEntry = {
-        specs: new Set([spec]),
-        target,
-        type,
-        contextDependents:
-          dependent ? new Set([dependent]) : new Set<Node>(),
-      }
-      peerContext.set(name, newEntry)
+  for (const entry of entries) {
+    const { dependent, spec, target, type } = entry
+    const name = target?.name ?? spec.final.name
+    const newEntry = {
+      specs: new Set([spec]),
+      target,
+      type,
+      contextDependents:
+        dependent ? new Set([dependent]) : new Set<Node>(),
     }
+    peerContext.set(name, newEntry)
   }
   return peerContext
 }
@@ -206,10 +222,10 @@ export const startPeerPlacement = (
   fromNode: Node,
   options: SpecOptions,
 ) => {
-  // queue entries so that they can be added
-  // at the end of the placement process
-  const queuedEntries: PeerContextEntryInput[] = []
-  const peerData = []
+  // queue entries so that they can be added at the end of the placement
+  // process, use a map to ensure deduplication between read json dep
+  // values and the resolved edges in the graph
+  const queueMap = new Map<string, PeerContextEntryInput>()
   let peerSetHash: string | undefined
 
   if (
@@ -226,24 +242,24 @@ export const startPeerPlacement = (
       ...options,
       registry: fromNode.registry,
     })
-    queuedEntries.push(...siblingDeps.values())
+    for (const [depName, dep] of siblingDeps) {
+      queueMap.set(depName, dep)
+    }
 
     // collect the already parsed nodes and add those to the
     // list of entries to be added to the peer context set
     for (const edge of fromNode.edgesOut.values()) {
-      queuedEntries.push({
+      queueMap.set(edge.name, {
         spec: edge.spec,
         target: edge.to,
         type: edge.type,
       })
     }
-    peerData.push({ entries: queuedEntries })
   }
 
   return {
-    peerData,
     peerSetHash,
-    queuedEntries,
+    queuedEntries: [...queueMap.values()],
   }
 }
 
@@ -258,10 +274,6 @@ export const startPeerPlacement = (
 export const endPeerPlacement =
   (
     peerContext: PeerContext,
-    peerData: {
-      entries: PeerContextEntryInput[]
-      dependent?: Node
-    }[],
     nextDeps: Dependency[],
     nextPeerDeps: Map<string, Dependency> & { id?: number },
     graph: Graph,
@@ -272,25 +284,47 @@ export const endPeerPlacement =
     queuedEntries: PeerContextEntryInput[],
   ): (() => PeerContext) =>
   () => {
-    // add dependencies from the currently parsing manifest
-    // to the current set of peer context entries including itself
-    // in case of a newly seen dependency in this context
-    const nextEntries = [
+    // add queued entries from this node parents along
+    // with a self-ref to the current peer context set
+    const prevEntries = [
       ...queuedEntries,
       /* ref itself */ {
         spec,
         target: node,
         type,
       },
-      ...nextDeps,
-      ...nextPeerDeps.values(),
     ]
-    const needsToForkPeerContext = addEntriesToPeerContext(
+    // keeps track of whether we need to fork the current peer context set
+    let needsToForkPeerContext = addEntriesToPeerContext(
       peerContext,
-      nextEntries,
-      node,
+      prevEntries,
     )
-    peerData.push({ entries: nextEntries, dependent: node })
+
+    // add this node's direct dependencies next
+    const nextEntries = [
+      ...nextDeps.map(dep => ({ ...dep, dependent: node })),
+      ...[...nextPeerDeps.values()].map(dep => ({
+        ...dep,
+        dependent: node,
+      })),
+    ]
+    // if there are entries to add, meaning the current node has deps then
+    // add them to the peer context set and keep track if a fork is needed
+    if (nextEntries.length > 0) {
+      needsToForkPeerContext ||= addEntriesToPeerContext(
+        peerContext,
+        nextEntries,
+      )
+      // peerData will keep a reference of entries added at each level
+      // in case we need to fork the peer context set in the next step
+      queuedEntries.push(...nextEntries)
+    }
+
+    // if any dependency could not be added to the current peer context
+    // and requested a fork of the current peer set, this is the time to do it
+    if (needsToForkPeerContext) {
+      peerContext = forkPeerContext(peerContext, queuedEntries)
+    }
 
     // iterate on the set of peer dependencies of the current node
     // and try to resolve them from the existing peer context set,
@@ -304,6 +338,7 @@ export const endPeerPlacement =
         // the current peer context set
         const entry = peerContext.get(spec.final.name)
         if (
+          !node.edgesOut.has(spec.final.name) &&
           entry?.target &&
           satisfies(
             entry.target.id,
@@ -324,12 +359,6 @@ export const endPeerPlacement =
           nextDeps.push(nextDep)
         }
       }
-    }
-
-    // if any dependency could not be added to the current peer context
-    // and requested a fork of the current peer set, this is the time to do it
-    if (needsToForkPeerContext) {
-      peerContext = forkPeerContext(peerContext, peerData)
     }
     return peerContext
   }

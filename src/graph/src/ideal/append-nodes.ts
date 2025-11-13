@@ -30,7 +30,6 @@ import {
 } from './peers.ts'
 import type { PeerContext } from './peers.ts'
 
-let countMaps = 0
 type FileTypeInfo = {
   id: DepID
   path: string
@@ -161,11 +160,12 @@ const fetchManifestsForDeps = async (
       }
     }
 
-    const existingNode = graph.findResolution(
-      spec,
-      fromNode,
-      queryModifier,
-    )
+    // skip reusing nodes for peer deps since their reusability
+    // is handled ahead-of-time during its parent's placement
+    const existingNode =
+      type !== 'peer' &&
+      type !== 'peerOptional' &&
+      graph.findResolution(spec, fromNode, queryModifier)
     if (existingNode) {
       graph.addEdge(type, spec, fromNode, existingNode)
       continue
@@ -324,8 +324,12 @@ const processPlacementTasks = async (
     // start peer deps placement process, populating the peer context with
     // dependency data; adding the parent node deps and this manifest's
     // peer deps references to the current peer context set
-    const { peerData, peerSetHash, queuedEntries } =
-      startPeerPlacement(peerContext, manifest, fromNode, options)
+    const { peerSetHash, queuedEntries } = startPeerPlacement(
+      peerContext,
+      manifest,
+      fromNode,
+      options,
+    )
 
     // places a new node in the graph representing a newly seen dependency
     const node = graph.placePackage(
@@ -401,9 +405,7 @@ const processPlacementTasks = async (
 
     // setup next level to process all child dependencies in the manifest
     const nextDeps: Dependency[] = []
-    const nextPeerDeps: Map<string, Dependency> & { id?: number } =
-      new Map()
-    nextPeerDeps.id = countMaps++
+    const nextPeerDeps = new Map<string, Dependency>()
 
     // traverse actual dependency declarations in the manifest
     // creating dependency entries for them
@@ -436,7 +438,6 @@ const processPlacementTasks = async (
     // to `nextDeps` so they get processed along regular dependencies
     const updateContext = endPeerPlacement(
       peerContext,
-      peerData,
       nextDeps,
       nextPeerDeps,
       graph,
