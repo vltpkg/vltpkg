@@ -1,0 +1,128 @@
+---
+title: Peer Dependencies Support
+sidebar:
+  label: Peer Dependencies
+  order: 7
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The vlt client handles peer dependencies by isolating their contexts,
+allowing multiple versions of the same package to coexist when
+necessary.
+
+---
+
+## Overview
+
+Peer dependencies declare that a package expects a, often times,
+unique version of another package to be present in the consuming
+application. When different parts of your dependency tree require
+incompatible peer versions, vlt automatically isolates these contexts.
+
+**Key behavior:** The vlt client will always try to use an unique
+version of a package for peer dependencies, when that is not possible
+it subdivides your dependency graph into groups of peer dependency
+contexts, allowing for duplicating packages in cases where it would be
+impossible to resolve to a single, unique version of a package.
+
+---
+
+## How It Works
+
+When vlt encounters packages with peer dependencies:
+
+1. **Analyzes the current peer context** to reuse a single version
+   that satisfy all occurrences of the peer dependency
+2. When needed, **Fork the current peer context** so that a peer
+   dependency can use a different version
+3. **Duplicates packages** that need different versions of its peer
+   dependencies
+4. **Stores duplicates** in separate locations within the
+   `node_modules/.vlt/` folder
+5. **Links appropriately** so each package resolves to its correct
+   peer version
+
+This happens automatically during `vlt install`.
+
+---
+
+## Example: Multiple React Versions
+
+Consider two packages (a and b) in your project that depend on
+different React major versions. In the image below you can see the
+difference in the resolved graph in case a common dependency (c) of
+both packages adds a peer dependency on `react@*`:
+
+![Diagram showing both graph resolutions for package c using peer deps or not](/images/peer-deps.png)
+
+In both scenarios:
+
+- Dependency `a` has a regular dependency on `react@18` and `c`
+- Dependency `b` has a regular dependency on `react@19` and `c`
+
+In this example, when `c` has no peer dependencies, both `a` and `b`
+will have edges pointing to the same resolved `c` node in the graph.
+
+In the scenario in which `c` has a peer dependency on `react@*`, the
+`c` node will be duplicated in order to accomodate reuse of its
+ancestor's React version dependency.
+
+---
+
+## Inspecting Peer Dependencies
+
+Use `vlt query` with the [Dependency Selector Syntax](/cli/selectors)
+to inspect peer dependencies in your project.
+
+### List All Peer Dependencies
+
+<Code code="$ vlt query :peer" title="Terminal" lang="bash" />
+
+Returns every package installed as a peer dependency.
+
+### List Optional Peer Dependencies
+
+<Code
+  code="$ vlt query ':peer:optional'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Shows peer dependencies marked as optional. These may or may not be
+installed depending on whether they're used elsewhere in your
+dependency tree.
+
+### Find Packages with Peer Dependencies
+
+<Code code='$ vlt query ":has(:peer)"' title="Terminal" lang="bash" />
+
+Returns packages that declare direct peer dependencies, helping
+identify which dependencies might get duplicated across different
+contexts.
+
+---
+
+## Important Considerations
+
+### Multiple Versions Are Normal
+
+Unlike some expectations, peer dependencies **do not guarantee a
+single version** in your final `node_modules` structure.
+
+vlt's default behavior is to subdivide peer dependency contexts. If
+different parts of your tree require incompatible peer versions,
+multiple versions will be installed.
+
+This is an intentional trade-off: each package gets exactly the peer
+version it expects, avoiding runtime errors from version mismatches at
+the expense of potentially having duplicate versions of that peer
+dependency.
+
+---
+
+## See Also
+
+- [Query Selectors](/cli/selectors)
+- [Graph Modifiers](/cli/graph-modifiers)
+- [Workspaces](/cli/workspaces)
