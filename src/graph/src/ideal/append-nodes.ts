@@ -1,4 +1,4 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
@@ -23,6 +23,12 @@ import type {
 import type { ExtractResult } from '../reify/extract-node.ts'
 import { extractNode } from '../reify/extract-node.ts'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
+import {
+  endPeerPlacement,
+  nextPeerContextIndex,
+  startPeerPlacement,
+} from './peers.ts'
+import type { PeerContext } from './peers.ts'
 
 type FileTypeInfo = {
   id: DepID
@@ -89,6 +95,7 @@ type ManifestFetchTask = {
   edgeOptional: boolean
   manifestPromise: Promise<Manifest | undefined>
   depth: number
+  peerContext: PeerContext
 }
 
 /**
@@ -100,6 +107,7 @@ type NodePlacementTask = {
   node?: Node
   childDeps?: Dependency[]
   childModifierRefs?: Map<string, ModifierActiveEntry>
+  childPeerContext?: PeerContext
 }
 
 /**
@@ -110,6 +118,8 @@ type AppendNodeEntry = {
   deps: Dependency[]
   modifierRefs?: Map<string, ModifierActiveEntry>
   depth: number
+  peerContext: PeerContext
+  updateContext: () => PeerContext
 }
 
 /**
@@ -121,6 +131,7 @@ const fetchManifestsForDeps = async (
   fromNode: Node,
   deps: Dependency[],
   scurry: PathScurry,
+  peerContext: PeerContext,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   depth = 0,
 ): Promise<NodePlacementTask[]> => {
@@ -149,20 +160,14 @@ const fetchManifestsForDeps = async (
       }
     }
 
-    const existingNode = graph.findResolution(
-      spec,
-      fromNode,
-      queryModifier,
-    )
+    // skip reusing nodes for peer deps since their reusability
+    // is handled ahead-of-time during its parent's placement
+    const existingNode =
+      type !== 'peer' &&
+      type !== 'peerOptional' &&
+      graph.findResolution(spec, fromNode, queryModifier)
     if (existingNode) {
-      // For peerOptional dependencies, create a dangling edge instead of linking to existing node
-      if (type === 'peerOptional') {
-        /* c8 ignore next 3 */
-        // This case happens when peerOptional dep already exists in graph
-        graph.addEdge(type, spec, fromNode)
-      } else {
-        graph.addEdge(type, spec, fromNode, existingNode)
-      }
+      graph.addEdge(type, spec, fromNode, existingNode)
       continue
     }
 
@@ -191,6 +196,7 @@ const fetchManifestsForDeps = async (
       edgeOptional,
       manifestPromise,
       depth,
+      peerContext,
     }
 
     fetchTasks.push(fetchTask)
@@ -207,11 +213,49 @@ const fetchManifestsForDeps = async (
     })
   }
 
+  // sort placement tasks: non-peer dependencies first, then peer dependencies
+  // so that peer dependencies can easily reuse already placed regular
+  // dependencies as part of peer context set resolution also makes sure to
+  // sort by the manifest name for deterministic order.
+  placementTasks.sort((a, b) => {
+    const aIsPeer =
+      (
+        a.manifest?.peerDependencies &&
+        Object.keys(a.manifest.peerDependencies).length > 0
+      ) ?
+        1
+      : 0
+    const bIsPeer =
+      (
+        b.manifest?.peerDependencies &&
+        Object.keys(b.manifest.peerDependencies).length > 0
+      ) ?
+        1
+      : 0
+
+    // regular dependencies first, peer dependencies last
+    if (aIsPeer !== bIsPeer) {
+      return aIsPeer - bIsPeer
+    }
+
+    // if both are in the same group,
+    // sort alphabetically by manifest name (fallback to spec.name)
+    const aName =
+      a.manifest?.name /* c8 ignore next */ || a.fetchTask.spec.name
+    const bName = b.manifest?.name || b.fetchTask.spec.name
+    return aName.localeCompare(bName, 'en')
+  })
+
   return placementTasks
 }
 
+type ProcessPlacementResultEntry = Omit<AppendNodeEntry, 'depth'>
+type ProcessPlacementResult = ProcessPlacementResultEntry[]
+
 /**
- * Process placement tasks and collect child dependencies
+ * Process placement tasks and collect child dependencies, this is the
+ * second step of the appendNodes operation after manifest fetching in
+ * which the final graph data structure is actually built.
  */
 const processPlacementTasks = async (
   add: Map<string, Dependency>,
@@ -225,20 +269,21 @@ const processPlacementTasks = async (
   actual?: Graph,
   seenExtracted?: Set<DepID>,
   remover?: RollbackRemove,
-): Promise<{
-  childDepsToProcess: Omit<AppendNodeEntry, 'depth'>[]
-}> => {
-  const childDepsToProcess: Omit<AppendNodeEntry, 'depth'>[] = []
+): Promise<ProcessPlacementResult> => {
+  const childDepsToProcess: ProcessPlacementResult = []
 
   for (const placementTask of placementTasks) {
     const { fetchTask, manifest } = placementTask
-    let { spec } = fetchTask
-    const type = fetchTask.type
-    const fromNode = fetchTask.fromNode
-    const fileTypeInfo = fetchTask.fileTypeInfo
-    const activeModifier = fetchTask.activeModifier
-    const queryModifier = fetchTask.queryModifier
-    const edgeOptional = fetchTask.edgeOptional
+    let {
+      activeModifier,
+      edgeOptional,
+      fileTypeInfo,
+      fromNode,
+      peerContext,
+      queryModifier,
+      spec,
+      type,
+    } = fetchTask
 
     // Handle nameless dependencies
     if (manifest?.name && spec.name === '(unknown)') {
@@ -276,12 +321,15 @@ const processPlacementTasks = async (
       }
     }
 
-    // Skip placing peerOptional dependencies, just create a dangling edge
-    if (type === 'peerOptional') {
-      /* c8 ignore next 3 */
-      graph.addEdge(type, spec, fromNode)
-      continue
-    }
+    // start peer deps placement process, populating the peer context with
+    // dependency data; adding the parent node deps and this manifest's
+    // peer deps references to the current peer context set
+    const { peerSetHash, queuedEntries } = startPeerPlacement(
+      peerContext,
+      manifest,
+      fromNode,
+      options,
+    )
 
     // places a new node in the graph representing a newly seen dependency
     const node = graph.placePackage(
@@ -290,7 +338,7 @@ const processPlacementTasks = async (
       spec,
       normalizeManifest(manifest),
       fileTypeInfo?.id,
-      queryModifier,
+      joinExtra({ peerSetHash, modifier: queryModifier }),
     )
 
     /* c8 ignore start - not possible, already ensured manifest */
@@ -355,37 +403,62 @@ const processPlacementTasks = async (
       : bundleDeps,
     )
 
-    // recursively process all child dependencies in the manifest
+    // setup next level to process all child dependencies in the manifest
     const nextDeps: Dependency[] = []
+    const nextPeerDeps = new Map<string, Dependency>()
 
+    // traverse actual dependency declarations in the manifest
+    // creating dependency entries for them
     for (const depTypeName of longDependencyTypes) {
       const depRecord: Record<string, string> | undefined =
         manifest[depTypeName]
 
       if (depRecord && shouldInstallDepType(node, depTypeName)) {
         for (const [name, bareSpec] of Object.entries(depRecord)) {
+          // might need to skip already placed peer deps here
           if (bundled.has(name)) continue
-          nextDeps.push({
+          const dep = {
             type: shorten(depTypeName, name, manifest),
             spec: Spec.parse(name, bareSpec, {
               ...options,
               registry: spec.registry,
             }),
-          })
+          }
+          if (depTypeName === 'peerDependencies') {
+            nextPeerDeps.set(name, dep)
+          } else {
+            nextDeps.push(dep)
+          }
         }
       }
     }
 
-    if (nextDeps.length > 0) {
-      childDepsToProcess.push({
-        node,
-        deps: nextDeps,
-        modifierRefs: modifiers?.tryDependencies(node, nextDeps),
-      })
-    }
+    // finish peer placement for this node, resolving satisfied peers
+    // to seen nodes from the peer context and adding unsatisfied peers
+    // to `nextDeps` so they get processed along regular dependencies
+    const updateContext = endPeerPlacement(
+      peerContext,
+      nextDeps,
+      nextPeerDeps,
+      graph,
+      spec,
+      fromNode,
+      node,
+      type,
+      queuedEntries,
+    )
+
+    // Build peer context for children from this node's resolved dependencies
+    childDepsToProcess.push({
+      node,
+      deps: nextDeps,
+      modifierRefs: modifiers?.tryDependencies(node, nextDeps),
+      peerContext,
+      updateContext,
+    })
   }
 
-  return { childDepsToProcess }
+  return childDepsToProcess
 }
 
 /**
@@ -416,8 +489,18 @@ export const appendNodes = async (
   seen.add(fromNode.id)
 
   // Use a queue for breadth-first processing
+  const initialPeerContext: PeerContext = new Map()
+  initialPeerContext.index = nextPeerContextIndex()
   let currentLevelDeps: AppendNodeEntry[] = [
-    { node: fromNode, deps, modifierRefs, depth: 0 },
+    {
+      node: fromNode,
+      deps,
+      modifierRefs,
+      depth: 0,
+      peerContext: initialPeerContext,
+      /* c8 ignore next */
+      updateContext: () => initialPeerContext,
+    },
   ]
 
   while (currentLevelDeps.length > 0) {
@@ -431,6 +514,7 @@ export const appendNodes = async (
           deps: nodeDeps,
           modifierRefs: nodeModifierRefs,
           depth,
+          peerContext,
         }: AppendNodeEntry) => {
           // Mark node as seen when we start processing its dependencies
           seen.add(node.id)
@@ -445,6 +529,7 @@ export const appendNodes = async (
               a.spec.name.localeCompare(b.spec.name, 'en'),
             ),
             scurry,
+            peerContext,
             nodeModifierRefs,
             depth,
           )
@@ -467,8 +552,49 @@ export const appendNodes = async (
       ),
     )
 
+    // sort level results for deterministic processing order
+    const sortedLevelResults = levelResults.sort(
+      (a: ProcessPlacementResult, b: ProcessPlacementResult) => {
+        const orderedEntry = ({
+          node,
+          deps,
+        }: ProcessPlacementResultEntry): string => {
+          /* c8 ignore start */
+          const sortedDeps = deps.sort((depA, depB) => {
+            const depAIsPeer =
+              depA.type === 'peer' || depA.type === 'peerOptional' ?
+                1
+              : 0
+            const depBIsPeer =
+              depB.type === 'peer' || depB.type === 'peerOptional' ?
+                1
+              : 0
+            if (depAIsPeer !== depBIsPeer) {
+              return depAIsPeer - depBIsPeer
+            }
+            return depA.spec.name.localeCompare(depB.spec.name, 'en')
+          })
+          /* c8 ignore stop */
+          const ref = sortedDeps.map(dep => dep.spec.name).join(';')
+          return `${node.id}(${ref})`
+        }
+        const aRef = a.map(orderedEntry).join(',')
+        const bRef = b.map(orderedEntry).join(',')
+        return aRef.localeCompare(bRef, 'en')
+      },
+    )
+
+    // Update peer contexts in a sorted manner after processing all nodes
+    // at a given level to ensure deterministic behavior when it comes to
+    // forking new peer contexts
+    for (const childDepsToProcess of sortedLevelResults) {
+      for (const childDep of childDepsToProcess) {
+        childDep.peerContext = childDep.updateContext()
+      }
+    }
+
     // Collect all child dependencies for the next level
-    for (const { childDepsToProcess } of levelResults) {
+    for (const childDepsToProcess of sortedLevelResults) {
       for (const childDep of childDepsToProcess) {
         if (!seen.has(childDep.node.id)) {
           /* c8 ignore next */

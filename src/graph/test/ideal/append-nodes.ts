@@ -836,7 +836,13 @@ t.test(
     const graph = new Graph({
       projectRoot: t.testdirName,
       ...configData,
-      mainManifest: { name: 'test', version: '1.0.0' },
+      mainManifest: {
+        name: 'test',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+        },
+      },
     })
     const fooDep = asDependency({
       spec: Spec.parse('foo', '^1.0.0'),
@@ -858,16 +864,19 @@ t.test(
       updateActiveEntry: () => {},
       // This method will be called for the nested dependencies
       tryDependencies: (node: Node, deps: any[]) => {
-        tryDependenciesCalled.value = true
-        // Verify we're getting the expected parameters
-        t.equal(node.manifest?.name, 'foo', 'node should be foo')
-        t.ok(Array.isArray(deps), 'deps should be an array')
-        t.ok(deps.length > 0, 'deps should not be empty')
-        t.equal(
-          deps[0].spec.name,
-          'bar',
-          'first dependency should be bar',
-        )
+        // Only verify for 'foo' node, 'bar' has no dependencies
+        if (node.manifest?.name === 'foo') {
+          tryDependenciesCalled.value = true
+          // Verify we're getting the expected parameters
+          t.equal(node.manifest.name, 'foo', 'node should be foo')
+          t.ok(Array.isArray(deps), 'deps should be an array')
+          t.ok(deps.length > 0, 'deps should not be empty')
+          t.equal(
+            deps[0].spec.name,
+            'bar',
+            'first dependency should be bar',
+          )
+        }
         // we don't care about the returned value here
         return new Map()
       },
@@ -1530,19 +1539,17 @@ t.test('skip peerOptional dependencies', async t => {
     })
 
     // Check that has-peer-optional was installed
-    const hasPeerOptional = graph.nodes.get(
-      '··has-peer-optional@1.0.0',
-    )
+    const [hasPeerOptional] = graph.nodesByName.get(
+      'has-peer-optional',
+    )!
     t.ok(hasPeerOptional, 'has-peer-optional should be installed')
 
     // Check that regular peer dependency was installed
-    const peerDep = graph.nodes.get('··peer-dep@1.0.0')
+    const peerDep = graph.nodesByName.get('peer-dep')!
     t.ok(peerDep, 'peer-dep should be installed')
 
     // Check that peerOptional dependency was NOT installed
-    const peerOptionalDep = graph.nodes.get(
-      '··peer-optional-dep@1.0.0',
-    )
+    const peerOptionalDep = graph.nodesByName.get('peer-optional-dep')
     t.notOk(
       peerOptionalDep,
       'peer-optional-dep should NOT be installed',
@@ -1576,7 +1583,7 @@ t.test('skip peerOptional dependencies', async t => {
   })
 
   t.test(
-    'skip linking to existing node for peerOptional dependencies',
+    'link to existing node for peerOptional dependencies',
     async t => {
       const projectRoot = t.testdir({
         'package.json': JSON.stringify({
@@ -1601,18 +1608,18 @@ t.test('skip peerOptional dependencies', async t => {
       })
 
       // Check that peer-optional-dep was installed as a regular dependency
-      const peerOptionalDep = graph.nodes.get(
-        '··peer-optional-dep@1.0.0',
-      )
+      const [peerOptionalDep] = graph.nodesByName.get(
+        'peer-optional-dep',
+      )!
       t.ok(
         peerOptionalDep,
         'peer-optional-dep should be installed as regular dep',
       )
 
       // Check that has-peer-optional was installed
-      const hasPeerOptional = graph.nodes.get(
-        '··has-peer-optional@1.0.0',
-      )
+      const [hasPeerOptional] = graph.nodesByName.get(
+        'has-peer-optional',
+      )!
       t.ok(hasPeerOptional, 'has-peer-optional should be installed')
 
       // Check that has-peer-optional has a dangling edge to peer-optional-dep
@@ -1629,13 +1636,19 @@ t.test('skip peerOptional dependencies', async t => {
         'peerOptional',
         'edge type should be peerOptional',
       )
-      t.notOk(
+      t.ok(
         peerOptionalEdge?.to,
-        'peerOptional edge should not have a "to" node even when node exists',
+        'peerOptional edge should have a "to" node when node exists',
+      )
+      t.ok(
+        peerOptionalEdge?.to?.name,
+        'peerOptional edge should point to peer-optional-dep node',
       )
     },
   )
 
+  // TODO: this scenario should be handled better in the future by reusing
+  // the existing node instead of creating a dangling edge
   t.test(
     'skip peerOptional dependencies even when they already exist in graph',
     async t => {
@@ -1660,11 +1673,11 @@ t.test('skip peerOptional dependencies', async t => {
       })
 
       // Check that shared-dep was installed as a regular dependency of lib-a
-      const sharedDep = graph.nodes.get('··shared-dep@1.0.0')
+      const [sharedDep] = graph.nodesByName.get('shared-dep')!
       t.ok(sharedDep, 'shared-dep should be installed (from lib-a)')
 
       // Check that lib-b has a dangling edge to shared-dep for its peerOptional dependency
-      const libB = graph.nodes.get('··lib-b@1.0.0')
+      const [libB] = graph.nodesByName.get('lib-b')!
       const peerOptionalEdge = libB?.edgesOut.get('shared-dep')
       t.ok(
         peerOptionalEdge,
@@ -1681,7 +1694,9 @@ t.test('skip peerOptional dependencies', async t => {
       )
 
       // Check that lib-a has a proper edge to shared-dep
-      const libA = graph.nodes.get('··lib-a@1.0.0')
+      const libA = graph.nodes.get(
+        joinDepIDTuple(['registry', '', 'lib-a@1.0.0']),
+      )
       const regularEdge = libA?.edgesOut.get('shared-dep')
       t.ok(regularEdge, 'edge for shared-dep from lib-a should exist')
       t.equal(regularEdge?.type, 'prod', 'edge type should be prod')
