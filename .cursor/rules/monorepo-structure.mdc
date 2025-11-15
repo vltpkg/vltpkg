@@ -53,6 +53,7 @@ actions:
         - 📋 **See `@graph/modifiers.mdc`** for understanding Graph modifiers
         - 📋 **See `@graph/lockfiles.mdc`** for working with lockfiles
         - 📋 **See `@graph/reify.mdc`** for understanding how to save packages to node_modules folders
+        - 📋 **See `@graph/peers.mdc`** for understanding peer dependency context isolation and resolution
       - `src/types` (`@vltpkg/types`) - Common TypeScript types
       - `src/dep-id` (`@vltpkg/dep-id`) - Unique Graph node identifiers
       - `src/spec` (`@vltpkg/spec`) - Package specifier parsing
