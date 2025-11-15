@@ -17,7 +17,7 @@ export const removeNode = (state: ParserState, node: NodeLike) => {
  */
 export const removeEdge = (state: ParserState, edge: EdgeLike) => {
   state.partial.edges.delete(edge)
-  if (edge.to) {
+  if (edge.to && edge.to.edgesIn.size === 1) {
     state.partial.nodes.delete(edge.to)
   }
 }
@@ -37,10 +37,13 @@ export const removeDanglingEdges = (state: ParserState) => {
  * Removes any nodes that have no incoming edges from the results.
  */
 export const removeUnlinkedNodes = (state: ParserState) => {
-  for (const node of state.partial.nodes) {
-    if (node.edgesIn.size === 0) {
-      state.partial.nodes.delete(node)
+  nodeLoop: for (const node of state.partial.nodes) {
+    for (const edge of state.partial.edges) {
+      if (edge.to === node) {
+        continue nodeLoop
+      }
     }
+    state.partial.nodes.delete(node)
   }
 }
 
