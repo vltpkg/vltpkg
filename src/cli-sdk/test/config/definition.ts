@@ -164,3 +164,10 @@ t.test('silent view option is valid', async t => {
   const { values } = definition.parse(['--view', 'silent'])
   t.equal(values.view, 'silent')
 })
+
+t.test('getSortedCliOptionsWithDescriptions', async t => {
+  const { getSortedCliOptionsWithDescriptions } = await t.mockImport<
+    typeof import('../../src/config/definition.ts')
+  >('../../src/config/definition.ts')
+  t.matchSnapshot(getSortedCliOptionsWithDescriptions(), 'sorted cli definitions with description')
+})
