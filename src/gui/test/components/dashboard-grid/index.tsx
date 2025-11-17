@@ -2,6 +2,7 @@ import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
+import { useDashboardStore } from '@/state/dashboard.ts'
 import { DashboardGrid } from '@/components/dashboard-grid/index.tsx'
 
 import type { DashboardTools } from '@/state/types.ts'
@@ -89,10 +90,7 @@ vi.mock(
 vi.mock('lucide-react', () => ({
   Plus: 'gui-plus-icon',
   Settings2: 'gui-settings-icon',
-}))
-
-vi.mock('@/components/dashboard-grid/dashboard-item.tsx', () => ({
-  DashboardItem: 'gui-dashboard-item',
+  FolderSearch: 'gui-folder-search-icon',
 }))
 
 vi.mock('@/components/ui/loading-spinner.tsx', () => ({
@@ -103,13 +101,38 @@ vi.mock('@/components/ui/inline-code.tsx', () => ({
   InlineCode: 'gui-inline-code',
 }))
 
+vi.mock('@/components/ui/empty-state.tsx', () => ({
+  Empty: 'gui-empty-state',
+  EmptyContent: 'gui-empty-state-content',
+  EmptyDescription: 'gui-empty-state-description',
+  EmptyHeader: 'gui-empty-state-header',
+  EmptyMedia: 'gui-empty-state-media',
+  EmptyTitle: 'gui-empty-state-title',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
 })
 
 afterEach(() => {
-  const CleanUp = () => (useStore(state => state.reset)(), '')
+  const CleanUp = () => {
+    useStore(state => state.reset)()
+    // Reset dashboard store to initial state
+    useDashboardStore.setState({
+      currentView: 'grid',
+      searchValue: '',
+      table: undefined,
+      tableFilterValue: '',
+      filteredProjects: [],
+      columnVisibility: {
+        type: false,
+        private: false,
+        version: false,
+      },
+    })
+    return ''
+  }
   render(<CleanUp />)
   cleanup()
   vi.clearAllMocks()
@@ -123,31 +146,36 @@ test('dashboard-grid render default', async () => {
 test('dashboard-grid with results', async () => {
   const Container = () => {
     const updateDashboard = useStore(state => state.updateDashboard)
+    const setFilteredProjects = useDashboardStore(
+      state => state.setFilteredProjects,
+    )
+    const projects = [
+      {
+        name: 'project-foo',
+        readablePath: '~/project-foo',
+        path: '/home/user/project-foo',
+        manifest: { name: 'project-foo', version: '1.0.0' },
+        tools: ['node', 'vlt'] as DashboardTools[],
+        mtime: 1730498483044,
+      },
+      {
+        name: 'project-bar',
+        readablePath: '~/project-foo',
+        path: '/home/user/project-bar',
+        manifest: { name: 'project-bar', version: '1.0.0' },
+        tools: ['pnpm'] as DashboardTools[],
+        mtime: 1730498491029,
+      },
+    ]
     updateDashboard({
       cwd: '/path/to/cwd',
       defaultAuthor: 'John Doe',
       dashboardProjectLocations: [
         { path: '/home/user', readablePath: '~' },
       ],
-      projects: [
-        {
-          name: 'project-foo',
-          readablePath: '~/project-foo',
-          path: '/home/user/project-foo',
-          manifest: { name: 'project-foo', version: '1.0.0' },
-          tools: ['node', 'vlt'],
-          mtime: 1730498483044,
-        },
-        {
-          name: 'project-bar',
-          readablePath: '~/project-foo',
-          path: '/home/user/project-bar',
-          manifest: { name: 'project-bar', version: '1.0.0' },
-          tools: ['pnpm'],
-          mtime: 1730498491029,
-        },
-      ],
+      projects,
     })
+    setFilteredProjects(projects)
     return <DashboardGrid />
   }
   render(<Container />)

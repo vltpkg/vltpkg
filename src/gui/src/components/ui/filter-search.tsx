@@ -12,6 +12,8 @@ interface FilterSearchProps<T> {
   setFilteredItems: (i: T[]) => void
   placeholder: string
   className?: string
+  value?: string
+  onValueChange?: (value: string) => void
 }
 
 const FilterSearch = <T,>({
@@ -19,12 +21,27 @@ const FilterSearch = <T,>({
   setFilteredItems,
   placeholder,
   className,
+  value: controlledValue,
+  onValueChange: controlledSetValue,
 }: FilterSearchProps<T>) => {
-  const [filterText, setFilterText] = useState<string>('')
+  const [internalFilterText, setInternalFilterText] =
+    useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
   const isInitialMount = useRef(true)
   const lastFilteredItemsRef = useRef<T[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Determine if component is controlled
+  const isControlled = controlledValue !== undefined
+  const filterText =
+    isControlled ? controlledValue : internalFilterText
+  const setFilterText = (value: string) => {
+    if (isControlled) {
+      controlledSetValue?.(value)
+    } else {
+      setInternalFilterText(value)
+    }
+  }
 
   /**
    * Update URL params based on `filterText` after initial load.
@@ -80,8 +97,14 @@ const FilterSearch = <T,>({
 
   /**
    * Sync URL params with filtered items on initial load.
+   * Only run if component is uncontrolled.
    */
   useEffect(() => {
+    if (isControlled) {
+      isInitialMount.current = false
+      return
+    }
+
     const params = new URLSearchParams(searchParams)
     const itemKeys = items ? Object.keys(items[0] ?? {}) : []
 
@@ -98,7 +121,8 @@ const FilterSearch = <T,>({
     }
 
     isInitialMount.current = false
-  }, [items, searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, searchParams, isControlled])
 
   /**
    * Filter items based on `filterText` or URL params.

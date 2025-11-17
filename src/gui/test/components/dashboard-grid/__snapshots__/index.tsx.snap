@@ -3,55 +3,59 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex h-full w-full flex-col items-center justify-center">
-    <div class="flex flex-col items-center justify-center gap-2 text-center">
-      <h2 class="text-2xl font-medium tracking-tight">
+  <gui-empty-state>
+    <gui-empty-state-header>
+      <gui-empty-state-media variant="icon">
+        <gui-folder-search-icon>
+        </gui-folder-search-icon>
+      </gui-empty-state-media>
+      <gui-empty-state-title>
         No projects found
-      </h2>
-      <div class="flex flex-col items-center justify-center gap-2">
-        <p class="text-muted-foreground text-sm font-medium">
-          We couldn't find any projects in the following configured dashboard roots:
-        </p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <gui-inline-code classname="mx-0">
-            /user/project-foo
-          </gui-inline-code>
-          <gui-inline-code classname="mx-0">
-            /user/project-bar
-          </gui-inline-code>
+      </gui-empty-state-title>
+      <gui-empty-state-description>
+        <div class="flex flex-col items-center justify-center">
+          <p class="text-muted-foreground text-sm font-medium">
+            We couldn't find any projects in the following configured dashboard roots:
+          </p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <gui-inline-code classname="mx-0">
+              /user/project-foo
+            </gui-inline-code>
+            <gui-inline-code classname="mx-0">
+              /user/project-bar
+            </gui-inline-code>
+          </div>
         </div>
-        <div class="mt-4 flex gap-2">
-          <gui-button
-            aschild="true"
-            variant="secondary"
-            size="sm"
-            classname="rounded-xl"
-          >
-            <gui-nav-link to="/settings">
-              <gui-settings-icon size="24">
-              </gui-settings-icon>
-              <span>
-                Settings
-              </span>
-            </gui-nav-link>
-          </gui-button>
-          <gui-button
-            aschild="true"
-            size="sm"
-            classname="rounded-xl"
-          >
-            <gui-nav-link to="/create-new-project">
-              <gui-plus-icon size="24">
-              </gui-plus-icon>
-              <span>
-                Create New Project
-              </span>
-            </gui-nav-link>
-          </gui-button>
-        </div>
+      </gui-empty-state-description>
+    </gui-empty-state-header>
+    <gui-empty-state-content>
+      <div class="flex gap-2">
+        <gui-button size="sm">
+          <gui-plus-icon>
+          </gui-plus-icon>
+          <span>
+            Create New Project
+          </span>
+        </gui-button>
+        <gui-button
+          size="sm"
+          variant="outline"
+        >
+          <gui-settings-icon>
+          </gui-settings-icon>
+          <span>
+            Change Directory
+          </span>
+        </gui-button>
+        <gui-button
+          size="sm"
+          variant="outline"
+        >
+          Clear Filters
+        </gui-button>
       </div>
-    </div>
-  </div>
+    </gui-empty-state-content>
+  </gui-empty-state>
 </div>
 
 `;
@@ -59,13 +63,53 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid when dashboard present with empty roots 1`] = `
 
 <div>
-  <div class="flex h-full w-full flex-col items-center justify-center">
-    <div class="flex flex-col items-center justify-center gap-2 text-center">
-      <h2 class="text-2xl font-medium tracking-tight">
+  <gui-empty-state>
+    <gui-empty-state-header>
+      <gui-empty-state-media variant="icon">
+        <gui-folder-search-icon>
+        </gui-folder-search-icon>
+      </gui-empty-state-media>
+      <gui-empty-state-title>
         No projects found
-      </h2>
-    </div>
-  </div>
+      </gui-empty-state-title>
+      <gui-empty-state-description>
+        <div class="flex flex-col items-center justify-center">
+          <p class="text-muted-foreground text-sm font-medium">
+            We couldn't find any projects in the following configured dashboard roots:
+          </p>
+          <div class="mt-2 flex flex-wrap gap-2">
+          </div>
+        </div>
+      </gui-empty-state-description>
+    </gui-empty-state-header>
+    <gui-empty-state-content>
+      <div class="flex gap-2">
+        <gui-button size="sm">
+          <gui-plus-icon>
+          </gui-plus-icon>
+          <span>
+            Create New Project
+          </span>
+        </gui-button>
+        <gui-button
+          size="sm"
+          variant="outline"
+        >
+          <gui-settings-icon>
+          </gui-settings-icon>
+          <span>
+            Change Directory
+          </span>
+        </gui-button>
+        <gui-button
+          size="sm"
+          variant="outline"
+        >
+          Clear Filters
+        </gui-button>
+      </div>
+    </gui-empty-state-content>
+  </gui-empty-state>
 </div>
 
 `;
@@ -73,13 +117,53 @@ exports[`dashboard-grid when dashboard present with empty roots 1`] = `
 exports[`dashboard-grid when loading and no dashboard 1`] = `
 
 <div>
-  <div class="flex h-full w-full flex-col items-center justify-center">
-    <div class="flex flex-col items-center justify-center gap-2 text-center">
-      <h2 class="text-2xl font-medium tracking-tight">
+  <gui-empty-state>
+    <gui-empty-state-header>
+      <gui-empty-state-media variant="icon">
+        <gui-folder-search-icon>
+        </gui-folder-search-icon>
+      </gui-empty-state-media>
+      <gui-empty-state-title>
         No projects found
-      </h2>
-    </div>
-  </div>
+      </gui-empty-state-title>
+      <gui-empty-state-description>
+        <div class="flex flex-col items-center justify-center">
+          <p class="text-muted-foreground text-sm font-medium">
+            We couldn't find any projects in the following configured dashboard roots:
+          </p>
+          <div class="mt-2 flex flex-wrap gap-2">
+          </div>
+        </div>
+      </gui-empty-state-description>
+    </gui-empty-state-header>
+    <gui-empty-state-content>
+      <div class="flex gap-2">
+        <gui-button size="sm">
+          <gui-plus-icon>
+          </gui-plus-icon>
+          <span>
+            Create New Project
+          </span>
+        </gui-button>
+        <gui-button
+          size="sm"
+          variant="outline"
+        >
+          <gui-settings-icon>
+          </gui-settings-icon>
+          <span>
+            Change Directory
+          </span>
+        </gui-button>
+        <gui-button
+          size="sm"
+          variant="outline"
+        >
+          Clear Filters
+        </gui-button>
+      </div>
+    </gui-empty-state-content>
+  </gui-empty-state>
 </div>
 
 `;
@@ -87,15 +171,74 @@ exports[`dashboard-grid when loading and no dashboard 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex h-full flex-col px-8 py-4">
+  <div class="flex h-full flex-col p-6">
     <div
-      class="max-w-8xl flex w-full flex-col"
+      class="flex w-full flex-col pb-6"
       style="opacity: 1; transform: none;"
     >
-      <p class="mb-4 text-sm font-semibold">
-        Projects
-      </p>
-      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <article
+          role="link"
+          class="dark:bg-background dark:hover:bg-foreground/3 bg-foreground/2 hover:bg-foreground/6 group/dashboard-item flex h-fit cursor-pointer flex-col rounded-lg border p-0.5 transition-colors duration-100"
+        >
+          <div class="bg-background dark:bg-foreground/3 flex rounded-[calc(0.5rem-(0.125rem/2))] border">
+            <div class="flex flex-col p-3">
+              <time
+                class="text-xxs text-muted-foreground/60 cursor-default font-mono"
+                data-state="closed"
+              >
+                November 1st, 2024
+              </time>
+              <h3 class="text-md mt-1 leading-tight font-medium tracking-tight">
+                project-foo
+              </h3>
+            </div>
+          </div>
+          <div class="flex gap-2 pt-0.5 pr-0 pb-0 pl-2">
+            <button
+              data-state="closed"
+              class="text-foreground/50 grow cursor-default truncate text-left text-xs"
+            >
+              ~/project-foo
+            </button>
+            <div class="dark:bg-foreground/3 bg-background flex gap-1 rounded-[calc(0.5rem-(0.125rem/2))] border p-1 [&amp;_svg]:flex [&amp;_svg]:size-3.5 [&amp;_svg]:items-center [&amp;_svg]:justify-center">
+              <gui-package-manager-vlt-icon>
+              </gui-package-manager-vlt-icon>
+              <gui-runtime-node-icon>
+              </gui-runtime-node-icon>
+            </div>
+          </div>
+        </article>
+        <article
+          role="link"
+          class="dark:bg-background dark:hover:bg-foreground/3 bg-foreground/2 hover:bg-foreground/6 group/dashboard-item flex h-fit cursor-pointer flex-col rounded-lg border p-0.5 transition-colors duration-100"
+        >
+          <div class="bg-background dark:bg-foreground/3 flex rounded-[calc(0.5rem-(0.125rem/2))] border">
+            <div class="flex flex-col p-3">
+              <time
+                class="text-xxs text-muted-foreground/60 cursor-default font-mono"
+                data-state="closed"
+              >
+                November 1st, 2024
+              </time>
+              <h3 class="text-md mt-1 leading-tight font-medium tracking-tight">
+                project-bar
+              </h3>
+            </div>
+          </div>
+          <div class="flex gap-2 pt-0.5 pr-0 pb-0 pl-2">
+            <button
+              data-state="closed"
+              class="text-foreground/50 grow cursor-default truncate text-left text-xs"
+            >
+              ~/project-foo
+            </button>
+            <div class="dark:bg-foreground/3 bg-background flex gap-1 rounded-[calc(0.5rem-(0.125rem/2))] border p-1 [&amp;_svg]:flex [&amp;_svg]:size-3.5 [&amp;_svg]:items-center [&amp;_svg]:justify-center">
+              <gui-package-manager-pnpm-icon>
+              </gui-package-manager-pnpm-icon>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </div>

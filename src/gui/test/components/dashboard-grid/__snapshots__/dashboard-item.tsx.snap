@@ -2,36 +2,38 @@
 
 exports[`dashboard-item renders correctly 1`] = `
 
-<div
+<article
   role="link"
-  class="group/card group bg-card hover:border-muted hover:bg-card-accent relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] transition-colors duration-250"
+  class="dark:bg-background dark:hover:bg-foreground/3 bg-foreground/2 hover:bg-foreground/6 group/dashboard-item flex h-fit cursor-pointer flex-col rounded-lg border p-0.5 transition-colors duration-100"
 >
-  <div class="flex justify-end px-3 py-3">
+  <div class="bg-background dark:bg-foreground/3 flex rounded-[calc(0.5rem-(0.125rem/2))] border">
+    <div class="flex flex-col p-3">
+      <gui-tooltip-provider delayduration="150">
+        <gui-tooltip>
+          <gui-tooltip-trigger aschild="true">
+            <time class="text-xxs text-muted-foreground/60 cursor-default font-mono">
+              November 1st, 2024
+            </time>
+          </gui-tooltip-trigger>
+          <gui-tooltip-content
+            side="top"
+            align="start"
+          >
+            <time>
+              November 1st, 2024
+            </time>
+          </gui-tooltip-content>
+        </gui-tooltip>
+      </gui-tooltip-provider>
+      <h3 class="text-md mt-1 leading-tight font-medium tracking-tight">
+        project-foo
+      </h3>
+    </div>
+  </div>
+  <div class="flex gap-2 pt-0.5 pr-0 pb-0 pl-2">
     <gui-tooltip-provider delayduration="150">
       <gui-tooltip>
-        <gui-tooltip-trigger classname="text-xxs text-muted-foreground cursor-default">
-          November 1st, 2024
-        </gui-tooltip-trigger>
-        <gui-tooltip-content
-          side="top"
-          align="start"
-        >
-          <p class>
-            November 1st, 2024
-          </p>
-        </gui-tooltip-content>
-      </gui-tooltip>
-    </gui-tooltip-provider>
-  </div>
-  <div class="flex min-h-14 items-center px-3">
-    <gui-card-title classname="text-md font-medium">
-      project-foo
-    </gui-card-title>
-  </div>
-  <div class="group-hover/card:border-muted flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors duration-250">
-    <gui-tooltip-provider delayduration="150">
-      <gui-tooltip>
-        <gui-tooltip-trigger classname="text-muted-foreground grow cursor-default truncate text-left text-xs">
+        <gui-tooltip-trigger classname="text-foreground/50 grow cursor-default truncate text-left text-xs">
           ~/project-foo
         </gui-tooltip-trigger>
         <gui-tooltip-content
@@ -42,13 +44,13 @@ exports[`dashboard-item renders correctly 1`] = `
         </gui-tooltip-content>
       </gui-tooltip>
     </gui-tooltip-provider>
-    <div class="flex gap-1">
-      <gui-package-manager-vlt-icon classname="text-muted-foreground fill-muted-foreground transition-colors duration-250 size-6">
+    <div class="dark:bg-foreground/3 bg-background flex gap-1 rounded-[calc(0.5rem-(0.125rem/2))] border p-1 [&amp;_svg]:flex [&amp;_svg]:size-3.5 [&amp;_svg]:items-center [&amp;_svg]:justify-center">
+      <gui-package-manager-vlt-icon>
       </gui-package-manager-vlt-icon>
-      <gui-runtime-node-icon classname="text-muted-foreground fill-muted-foreground transition-colors duration-250 size-6">
+      <gui-runtime-node-icon>
       </gui-runtime-node-icon>
     </div>
   </div>
-</div>
+</article>
 
 `;
