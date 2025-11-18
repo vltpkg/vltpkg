@@ -135,6 +135,8 @@ const main = async () => {
     'FSL-1.1-MIT',
     '(WTFPL OR MIT)',
     '(MIT OR CC0-1.0)',
+    '(BSD-3-Clause OR GPL-2.0)',
+    'Unlicense',
   ])
   const checkLicenses = check(
     'license',
