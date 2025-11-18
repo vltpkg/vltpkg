@@ -351,12 +351,19 @@ const fixCliVariants = async (ws: Workspace) => {
   )
 }
 
+const fixEngines = async (ws: Workspace) => {
+  ws.pj.engines ??= {}
+  ws.pj.engines.node = NODE_ENGINES
+  if (ws.pj.name === '@vltpkg/vsr-nitro') {
+    ws.pj.engines.node = '>=22.12.0'
+  }
+}
+
 const fixPackage = async (
   ws: Workspace,
   config: PnpmWorkspaceConfig,
 ) => {
   ws.pj.engines ??= {}
-  ws.pj.engines.node = NODE_ENGINES
   if (ws.isRoot) {
     ws.pj.engines.pnpm = PNPM_VERSION.split('.')[0] ?? ''
     ws.pj.packageManager = `pnpm@${PNPM_VERSION}`
@@ -372,6 +379,7 @@ const fixPackage = async (
   ws.pj.author =
     'vlt technology inc. <support@vlt.sh> (http://vlt.sh)'
 
+  await fixEngines(ws)
   await fixCatalogs(ws, config)
   await fixScripts(ws)
   await fixTools(ws)
