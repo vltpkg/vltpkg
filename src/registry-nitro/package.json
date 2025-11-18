@@ -1,5 +1,6 @@
 {
   "name": "@vltpkg/vsr-nitro",
+  "version": "1.0.0-rc.3",
   "private": true,
   "repository": {
     "type": "git",
@@ -38,7 +39,7 @@
   },
   "license": "FSL-1.1-MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "build": "nitro build",

@@ -2,43 +2,58 @@
 
 import { spawn } from 'node:child_process'
 import { relative } from 'node:path'
-import assert from 'node:assert'
 import { subset } from 'semver'
 import { ROOT, readPkgJson } from './utils.ts'
 import type { PackageJson } from './utils.ts'
 
-interface PnpmListItem {
-  path: string
-  name?: string
-  from?: string
-  dependencies?: Record<string, PnpmListItem>
-}
-
-interface PnpmList {
-  name: string
-  version: string
+type PnpmListItem = {
   path: string
   dependencies?: Record<string, PnpmListItem>
 }
 
-interface Dependency {
+type Dependency = {
   path: string
   pkg: PackageJson
-  ancestors: string[][]
+}
+
+type DependencyWithRoot = Dependency & {
+  root: PackageJson
 }
 
 const walk = (
   dep: PnpmListItem,
-  ancestors: string[] = [],
-): { path: string; ancestors: string[] }[] => [
-  { path: dep.path, ancestors },
+  root: PnpmListItem,
+): { path: string; root: PnpmListItem }[] => [
+  { path: dep.path, root },
   ...Object.values(dep.dependencies ?? {}).flatMap(d =>
-    walk(d, [...ancestors, dep.from ?? dep.name ?? '']),
+    walk(d, root),
   ),
 ]
 
-const getAllProdDeps = async () => {
-  const pnpmList = await new Promise<PnpmList[]>((res, rej) => {
+const PKG_CACHE = new Map<string, PackageJson>()
+const getPkg = (path: string): PackageJson => {
+  const cached = PKG_CACHE.get(path)
+  if (cached) return cached
+  const pkg = readPkgJson(path)
+  PKG_CACHE.set(path, pkg)
+  return pkg
+}
+
+const uniqBy = <T>(arr: T[], key: (t: T) => string): T[] => {
+  const seen = new Set<string>()
+  return arr.filter(t => {
+    const k = key(t)
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+}
+
+const getAllProdDeps: () => Promise<{
+  deps: Dependency[]
+  depsWithRoot: DependencyWithRoot[]
+}> = async () => {
+  const workspaces = await new Promise<PnpmListItem[]>((res, rej) => {
     const proc = spawn(
       'pnpm',
       [
@@ -61,35 +76,36 @@ const getAllProdDeps = async () => {
       (data: Buffer) => (output += data.toString()),
     )
     proc
-      .on('close', () => res(JSON.parse(output) as PnpmList[]))
+      .on('close', () => res(JSON.parse(output) as PnpmListItem[]))
       .on('error', rej)
   })
-  return Array.from(
-    pnpmList
-      .flatMap(workspace => walk(workspace))
-      .reduce((acc, d) => {
-        const c = acc.get(d.path)
-        acc.set(d.path, {
-          ...c,
-          path: d.path,
-          pkg: readPkgJson(d.path),
-          ancestors: [
-            ...new Set([...(c?.ancestors ?? []), d.ancestors]),
-          ],
-        })
-        return acc
-      }, new Map<string, Dependency>())
-      .values(),
+
+  const allPackages = workspaces.flatMap(workspace =>
+    walk(workspace, workspace),
   )
+
+  return {
+    deps: uniqBy(allPackages, d => d.path).map(d => ({
+      path: d.path,
+      pkg: getPkg(d.path),
+    })),
+    depsWithRoot: uniqBy(allPackages, d =>
+      [d.path, d.root.path].join(';'),
+    ).map(d => ({
+      path: d.path,
+      pkg: getPkg(d.path),
+      root: getPkg(d.root.path),
+    })),
+  }
 }
 
-const check = (
+const check = <T extends Dependency | DependencyWithRoot>(
   key: string,
-  packages: Dependency[],
-  value: (d: Dependency) => string | undefined,
-  ok: (v: string | undefined, pkg: PackageJson) => boolean,
+  packages: T[],
+  value: (d: T) => string | undefined,
+  ok: (v: string | undefined, pkg: T) => boolean,
 ) => {
-  const problems = packages.filter(d => !ok(value(d), d.pkg))
+  const problems = packages.filter(d => !ok(value(d), d))
   if (problems.length) {
     const indent = (n = 0) => `\n${' '.repeat(n)}`
     return (
@@ -99,8 +115,7 @@ const check = (
           d =>
             `${indent(2)}${d.pkg.name}@${d.pkg.version}` +
             `${indent(4)}${key}: ${value(d)}` +
-            `${indent(4)}path: ${relative(ROOT, d.path)}` +
-            `${indent(4)}from: ${d.ancestors.map(f => f.join(' > ')).join(indent(4 + 'from: '.length))}`,
+            `${indent(4)}path: ${relative(ROOT, d.path)}`,
         )
         .join(indent())
     )
@@ -109,15 +124,17 @@ const check = (
 }
 
 const main = async () => {
-  const deps = await getAllProdDeps()
-  const allowedEngines = readPkgJson(ROOT).engines?.node
-  assert(allowedEngines, 'No engines defined in package.json')
+  const { deps, depsWithRoot } = await getAllProdDeps()
 
   const checkEngines = check(
     'engines',
-    deps,
+    depsWithRoot,
     d => d.pkg.engines?.node,
-    v => v === undefined || subset(allowedEngines, v),
+    (v, pkg) => {
+      if (v === undefined) return true
+      if (!pkg.root.engines?.node) return false
+      return subset(pkg.root.engines.node, v)
+    },
   )
   const allowedLicenes = new Set([
     'MIT',
