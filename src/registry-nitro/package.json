@@ -1,0 +1,65 @@
+{
+  "name": "@vltpkg/vsr-nitro",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/registry-nitro"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "dependencies": {
+    "@clerk/backend": "^2.17.2",
+    "@libsql/client": "^0.15.14",
+    "@libsql/linux-x64-gnu": "^0.5.22",
+    "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^2.0.0",
+    "db0": "^0.3.2",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.5",
+    "h3": "2.0.0-beta.4",
+    "libsql": "^0.5.20",
+    "nitro": "npm:nitro-nightly@3.0.0-20250911-162707-b6dbc0f9",
+    "ssri": "catalog:",
+    "unstorage": "^1.17.1",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250829.0",
+    "@eslint/js": "catalog:",
+    "@neon-rs/load": "^0.0.4",
+    "@types/node": "catalog:",
+    "drizzle-kit": "^0.31.4",
+    "eslint": "catalog:",
+    "if-env": "^1.0.4",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "wrangler": "^4.33.1"
+  },
+  "license": "FSL-1.1-MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "nitro build",
+    "postbuild": "node dev/find-libsql.mjs",
+    "build:cf": "VSR_CLOUDFLARE=1 nitro build",
+    "cache:drop": "rm -rf .data",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio --port 4985",
+    "deploy:cf": "wrangler deploy",
+    "dev": "nitro dev",
+    "dev:cf": "wrangler dev",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepare": "if-env OS=Windows_NT || nitro prepare",
+    "preprepare": "node dev/pre-prepare.mjs",
+    "serve": "node .output/server/index.mjs",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "prettier": "../../.prettierrc.js",
+  "type": "module"
+}

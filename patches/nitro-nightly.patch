@@ -1,0 +1,65 @@
+diff --git a/dist/runtime/internal/cache.mjs b/dist/runtime/internal/cache.mjs
+index 7b3265de048214b2aa34252716438d1320eed08c..e873d71b7e0290ddcca58c99a4160c343bd21c22 100644
+--- a/dist/runtime/internal/cache.mjs
++++ b/dist/runtime/internal/cache.mjs
+@@ -26,7 +26,7 @@ export function defineCachedFunction(fn, opts = {}) {
+   const validate = opts.validate || ((entry) => entry.value !== void 0);
+   async function get(key, resolver, shouldInvalidateCache, event) {
+     const cacheKey = [opts.base, group, name, key + ".json"].filter(Boolean).join(":").replace(/:\/$/, ":index");
+-    let entry = await useStorage().getItem(cacheKey).catch((error) => {
++    let entry = await useStorage().getItem(cacheKey, { event }).catch((error) => {
+       console.error(`[cache] Cache read error.`, error);
+       useNitroApp().captureError(error, { event, tags: ["cache"] });
+     }) || {};
+@@ -69,12 +69,28 @@ export function defineCachedFunction(fn, opts = {}) {
+           if (opts.maxAge && !opts.swr) {
+             setOpts = { ttl: opts.maxAge };
+           }
+-          const promise = useStorage().setItem(cacheKey, entry, setOpts).catch((error) => {
++          let cacheEntry = entry;
++          let setItem = useStorage().setItem;
++          if (opts.streaming && entry.value?.body instanceof ReadableStream) {
++            const [streamForCache, streamForResponse] = entry.value.body.tee();
++            cacheEntry = {
++              ...entry,
++              value: {
++                ...entry.value,
++                body: streamForCache
++              }
++            };
++            entry.value.body = streamForResponse;
++            setItem = useStorage().setItemRaw;
++          }
++          const promise = setItem(cacheKey, cacheEntry, { event, ...setOpts }).catch((error) => {
+             console.error(`[cache] Cache write error.`, error);
+             useNitroApp().captureError(error, { event, tags: ["cache"] });
+           });
+           if (typeof event?.req?.waitUntil === "function") {
+             event.req.waitUntil(promise);
++          } else if (typeof event?.context?.waitUntil === "function") {
++            event.context.waitUntil(promise);
+           }
+         }
+       }
+@@ -84,6 +100,8 @@ export function defineCachedFunction(fn, opts = {}) {
+       await _resolvePromise;
+     } else if (expired && event && event.req.waitUntil) {
+       event.req.waitUntil(_resolvePromise);
++    } else if (expired && event && event.context.waitUntil) {
++      event.context.waitUntil(_resolvePromise);
+     }
+     if (opts.swr && validate(entry) !== false) {
+       _resolvePromise.catch((error) => {
+@@ -179,8 +197,10 @@ export function defineCachedEventHandler(handler, opts = defaultCacheOptions())
+       }
+       const rawValue = await handler(event);
+       const res = await toResponse(rawValue, event);
+-      const body = await res.text();
+-      if (!res.headers.has("etag")) {
++      const body = opts.streaming 
++        ? res.body
++        : await res.text();
++      if (!res.headers.has("etag") && !(body instanceof ReadableStream)) {
+         res.headers.set("etag", `W/"${hash(body)}"`);
+       }
+       if (!res.headers.has("last-modified")) {
