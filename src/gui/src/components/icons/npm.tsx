@@ -4,9 +4,18 @@ export const Npm = createLucideIcon('Npm', [
   [
     'path',
     {
-      d: 'M2 2V22H22V2H2ZM18.6469 18.6484H15.2938V8.70469H11.9406V18.6484H5.35156V5.35312H18.6469V18.6484Z',
+      d: 'M2 22V2H22V22H2Z',
       key: '1',
-      fill: 'currentColor',
+      fill: '#C12127',
+      strokeWidth: '0',
+    },
+  ],
+  [
+    'path',
+    {
+      d: 'M5.75 5.75H18.25V18.25H15.75V8.25H12V18.25H5.75V5.75Z',
+      key: '2',
+      fill: '#fafafa',
       strokeWidth: '0',
     },
   ],

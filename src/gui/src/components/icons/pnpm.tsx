@@ -4,73 +4,19 @@ export const Pnpm = createLucideIcon('Pnpm', [
   [
     'path',
     {
-      d: 'M22 8.24922H15.7507V2H22V8.24922Z',
+      d: 'M2 2V8.24937H8.24937V2H2ZM8.87437 2V8.24937H15.1244V2H8.87437ZM15.7506 2V8.24937H22V2H15.7506ZM15.7506 8.87437V15.1237H22V8.87437H15.7506Z',
+      key: '0',
+      strokeWidth: '0',
+      fill: '#F8AB00',
+    },
+  ],
+  [
+    'path',
+    {
+      d: 'M8.87437 8.87439V15.1238H15.1244V8.87439H8.87437ZM2 15.7488V21.9988H8.24937V15.7488H2ZM8.87437 15.7488V21.9988H15.1244V15.7488H8.87437ZM15.7506 15.7488V21.9988H22V15.7488H15.7506Z',
       key: '1',
-      fill: 'currentColor',
       strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M15.1242 8.24922H8.875V2H15.1242V8.24922Z',
-      key: '2',
-      fill: 'currentColor',
-      strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M8.25 8.24898H2V1.99976H8.25V8.24898Z',
-      key: '3',
-      fill: 'currentColor',
-      strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M22 15.1243H15.7507V8.87427H22V15.1243Z',
-      key: '4',
-      fill: 'currentColor',
-      strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M15.1242 15.1243H8.875V8.87427H15.1242V15.1243Z',
-      key: '5',
-      fill: 'currentColor',
-      strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M15.1242 21.9985H8.875V15.7493H15.1242V21.9985Z',
-      key: '6',
-      fill: 'currentColor',
-      strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M22 21.9985H15.7507V15.7493H22V21.9985Z',
-      key: '7',
-      fill: 'currentColor',
-      strokeWidth: '0',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M8.25 21.9985H2V15.7493H8.25V21.9985Z',
-      key: '8',
-      fill: 'currentColor',
-      strokeWidth: '0',
+      fill: '#4C4C4C',
     },
   ],
 ])
