@@ -323,6 +323,13 @@ export default [
       ...unsafeRules('off'),
       'no-console': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      'import/no-unresolved': [
+        'error',
+        {
+          // I don't know why this doesn't work
+          ignore: ['nitro'],
+        },
+      ],
     },
   },
   {

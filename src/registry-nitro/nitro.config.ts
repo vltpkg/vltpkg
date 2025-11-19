@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { defineNitroConfig } from 'nitro/config'
-import { resolve } from 'node:path'
+// import { resolve } from 'node:path'
 
 const Envs = {
   cloudflare: 'cloudflare',
@@ -26,15 +26,15 @@ const buildEnv =
 //   : process.env.VSR_TURSO ? DatabaseEnvs.turso
 //   : DatabaseEnvs.sqlite
 
-const getDriver = (
-  type: 'packages' | 'tarballs',
-  env: (typeof Envs)[keyof typeof Envs],
-) => {
-  return resolve(
-    import.meta.dirname,
-    `./src/drivers/${type}-${env}.ts`,
-  )
-}
+// const getDriver = (
+//   type: 'packages' | 'tarballs',
+//   env: (typeof Envs)[keyof typeof Envs],
+// ) => {
+//   return resolve(
+//     import.meta.dirname,
+//     `./src/drivers/${type}-${env}.ts`,
+//   )
+// }
 
 export default defineNitroConfig({
   preset:
@@ -42,9 +42,14 @@ export default defineNitroConfig({
     : buildEnv === Envs.vercel ? 'vercel'
     : 'node-server',
   compatibilityDate: '2025-09-22',
-  srcDir: 'server',
+  serverDir: './src',
   minify: false,
   imports: false,
+  runtimeConfig: {
+    db: 'neon' as 'neon' | 'sqlite',
+    NEON_DATABASE_URL: process.env.NEON_DATABASE_URL,
+    SQLITE_DATABASE_FILE_NAME: process.env.SQLITE_DATABASE_FILE_NAME,
+  },
   cloudflare: {
     deployConfig: true,
     nodeCompat: true,
@@ -72,31 +77,31 @@ export default defineNitroConfig({
       ],
     },
   },
-  experimental: {
-    database: true,
-  },
-  database: {
-    default: {
-      connector: 'sqlite',
-      options: {
-        url: 'file:.data/db.sqlite',
-      },
-    },
-  },
-  storage: {
-    packages: {
-      driver: getDriver('packages', buildEnv),
-    },
-    tarballs: {
-      driver: getDriver('tarballs', buildEnv),
-    },
-  },
-  devStorage: {
-    packages: {
-      driver: getDriver('packages', 'node'),
-    },
-    tarballs: {
-      driver: getDriver('tarballs', 'node'),
-    },
-  },
+  // experimental: {
+  //   database: true,
+  // },
+  // database: {
+  //   default: {
+  //     connector: 'sqlite',
+  //     options: {
+  //       url: 'file:.data/db.sqlite',
+  //     },
+  //   },
+  // },
+  // storage: {
+  //   packages: {
+  //     driver: getDriver('packages', buildEnv),
+  //   },
+  //   tarballs: {
+  //     driver: getDriver('tarballs', buildEnv),
+  //   },
+  // },
+  // devStorage: {
+  //   packages: {
+  //     driver: getDriver('packages', 'node'),
+  //   },
+  //   tarballs: {
+  //     driver: getDriver('tarballs', 'node'),
+  //   },
+  // },
 })

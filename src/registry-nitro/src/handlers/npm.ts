@@ -1,16 +1,8 @@
-import { cachedEventHandler } from 'nitro/runtime'
-import {
-  getRouterParam,
-  proxyRequest,
-  eventHandler,
-  getQuery,
-} from 'h3'
-import type { HTTPEvent, H3Event, EventHandler } from 'h3'
+import { defineCachedHandler } from 'nitro/cache'
+import { getRouterParam, proxyRequest, getQuery } from 'nitro/h3'
+import type { HTTPEvent, H3Event, EventHandler } from 'nitro/h3'
 import assert from 'node:assert'
 import type { CachedEventHandlerOptions } from 'nitro/types'
-
-const CACHE_MANIFESTS = process.env.VSR_NO_CACHE_MANIFESTS !== '1'
-const CACHE_TARBALLS = process.env.VSR_NO_CACHE_TARBALLS !== '1'
 
 const assertParam = (event: HTTPEvent, name: string) => {
   const param = getRouterParam(event, name)
@@ -72,13 +64,10 @@ const packageOrVersionHandler: EventHandler = async event => {
   )
 }
 
-export const getPackageOrVersionHandler =
-  CACHE_MANIFESTS ?
-    cachedEventHandler(
-      packageOrVersionHandler,
-      packageOrVersionOptions,
-    )
-  : eventHandler(packageOrVersionHandler)
+export const getPackageOrVersionHandler = defineCachedHandler(
+  packageOrVersionHandler,
+  packageOrVersionOptions,
+)
 
 const tarballOptions: CachedEventHandlerOptions = {
   base: 'tarballs',
@@ -104,10 +93,10 @@ const tarballHandler: EventHandler = async event => {
   )
 }
 
-export const getTarballHandler =
-  CACHE_TARBALLS ?
-    cachedEventHandler(tarballHandler, tarballOptions)
-  : eventHandler(tarballHandler)
+export const getTarballHandler = defineCachedHandler(
+  tarballHandler,
+  tarballOptions,
+)
 
 export const putPackageHandler: EventHandler = async event => {
   const param1 = assertParam(event, 'param1')

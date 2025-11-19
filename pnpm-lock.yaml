@@ -96,9 +96,6 @@ overrides:
   '@types/react-dom': ^18.3.7
 
 patchedDependencies:
-  nitro-nightly:
-    hash: 4ae2e7c1ea514d2381abdd2c3c3939a88c233b1b8c415d4eaea03541b193e604
-    path: patches/nitro-nightly.patch
   tshy:
     hash: bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e
     path: patches/tshy.patch
@@ -1865,48 +1862,21 @@ importers:
 
   src/registry-nitro:
     dependencies:
-      '@clerk/backend':
-        specifier: ^2.17.2
-        version: 2.23.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@libsql/client':
-        specifier: ^0.15.14
+        specifier: ^0.15.15
         version: 0.15.15
-      '@libsql/linux-x64-gnu':
-        specifier: ^0.5.22
-        version: 0.5.22
       '@neondatabase/serverless':
         specifier: ^1.0.2
         version: 1.0.2
-      '@vercel/blob':
-        specifier: ^2.0.0
-        version: 2.0.0
-      db0:
-        specifier: ^0.3.2
-        version: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
       drizzle-orm:
-        specifier: ^0.44.5
-        version: 0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)
-      h3:
-        specifier: 2.0.0-beta.4
-        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.9.6))
-      libsql:
-        specifier: ^0.5.20
-        version: 0.5.22
+        specifier: ^0.44.7
+        version: 0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)
       nitro:
-        specifier: npm:nitro-nightly@3.0.1-alpha.1
-        version: nitro-nightly@3.0.1-alpha.1(patch_hash=4ae2e7c1ea514d2381abdd2c3c3939a88c233b1b8c415d4eaea03541b193e604)(@libsql/client@0.15.15)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.8.2)(rollup@4.53.2)
-      ssri:
-        specifier: 'catalog:'
-        version: 12.0.0
-      unstorage:
-        specifier: ^1.17.1
-        version: 1.17.1(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)
-      zod:
-        specifier: ^4.1.8
-        version: 4.1.12
+        specifier: 3.0.1-alpha.1
+        version: 3.0.1-alpha.1(@libsql/client@0.15.15)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.8.2)(rollup@4.53.2)
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20250829.0
@@ -1914,9 +1884,6 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.34.0
-      '@neon-rs/load':
-        specifier: ^0.0.4
-        version: 0.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 22.18.0
@@ -2692,22 +2659,22 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.6.2)(typescript@5.7.3)
       '@astrojs/mdx':
         specifier: ^4.3.4
-        version: 4.3.7(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
+        version: 4.3.7(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
       '@astrojs/react':
         specifier: ^4.3.0
         version: 4.4.0(@types/node@22.18.0)(@types/react-dom@18.3.7(@types/react@18.3.26))(@types/react@18.3.26)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(terser@5.43.1)(tsx@4.20.5)(yaml@2.8.1)
       '@astrojs/starlight':
         specifier: ^0.30.6
-        version: 0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
+        version: 0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
       '@astrojs/starlight-tailwind':
         specifier: ^3.0.1
-        version: 3.0.1(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)))(@astrojs/tailwind@5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18))(tailwindcss@3.4.18)
+        version: 3.0.1(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)))(@astrojs/tailwind@5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18))(tailwindcss@3.4.18)
       '@astrojs/tailwind':
         specifier: ^5.1.5
-        version: 5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18)
+        version: 5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18)
       '@astrojs/vercel':
         specifier: ^8.2.6
-        version: 8.2.9(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(encoding@0.1.13)(react@18.3.1)(rollup@4.53.2)(vue-router@4.5.1(vue@3.5.20(typescript@5.7.3)))(vue@3.5.20(typescript@5.7.3))
+        version: 8.2.9(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(encoding@0.1.13)(react@18.3.1)(rollup@4.53.2)(vue-router@4.5.1(vue@3.5.20(typescript@5.7.3)))(vue@3.5.20(typescript@5.7.3))
       '@radix-ui/react-dropdown-menu':
         specifier: ^2.1.16
         version: 2.1.16(@types/react-dom@18.3.7(@types/react@18.3.26))(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2728,7 +2695,7 @@ importers:
         version: 0.2.44(typescript@5.7.3)
       astro:
         specifier: ^5.13.3
-        version: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
+        version: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2752,7 +2719,7 @@ importers:
         version: 0.34.4
       starlight-links-validator:
         specifier: ^0.14.3
-        version: 0.14.3(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)))
+        version: 0.14.3(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)))
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.0
@@ -3045,26 +3012,6 @@ packages:
   '@capsizecss/unpack@3.0.0':
     resolution: {integrity: sha512-+ntATQe1AlL7nTOYjwjj6w3299CgRot48wL761TUGYpYgAou3AaONZazp0PKZyCyWhudWsjhq1nvRHOvbMzhTA==}
     engines: {node: '>=18'}
-
-  '@clerk/backend@2.23.0':
-    resolution: {integrity: sha512-2wqdnYMtBdmqTOSyl8aEVaUezcDlizOY4hnXIRQ1A6ss1QjYiZJofjhpFJgC9SxNA29Nb9szkOsXQ7eI+gLY9g==}
-    engines: {node: '>=18.17.0'}
-
-  '@clerk/shared@3.35.0':
-    resolution: {integrity: sha512-UjENPnS7HLejzjMbUI9mDYJONsJR3Q3EChlamlNZfZQzMbvEE8ybETLPXxnm/JA6e1binyUJsYnaghlb+aZ6aw==}
-    engines: {node: '>=18.17.0'}
-    peerDependencies:
-      react: ^18.0.0 || ^19.0.0 || ^19.0.0-0
-      react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      react-dom:
-        optional: true
-
-  '@clerk/types@4.101.0':
-    resolution: {integrity: sha512-Y9fRBgNoztH42a0sVIcNGdMX7KZl7i/+07fi35lw2K2Tqpc3cFUlZ5J4KAEAT8EN3/E6iPgsxHOyvCrTmQ2V+A==}
-    engines: {node: '>=18.17.0'}
 
   '@cloudflare/kv-asset-handler@0.4.0':
     resolution: {integrity: sha512-+tv3z+SPp+gqTIcImN9o0hqE9xyfQjI1XD9pL6NuKjua9B1y7mNYv0S9cP+QEbA4ppVgGZEmKOvHX5G5Ei1CVA==}
@@ -5976,9 +5923,6 @@ packages:
   '@speed-highlight/core@1.2.7':
     resolution: {integrity: sha512-0dxmVj4gxg3Jg879kvFS/msl4s9F3T9UXC1InxgOf7t5NvcPD97u/WTA5vL/IxWHMn7qSxBozqrnnE2wvl1m8g==}
 
-  '@stablelib/base64@1.0.1':
-    resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
-
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
 
@@ -7497,9 +7441,6 @@ packages:
   cookie-es@1.2.2:
     resolution: {integrity: sha512-+W7VmiVINB+ywl1HGXJXmrqkOhpKrIiVZV6tQuV54ZyQC7MMuBt81Vc336GMLoHBq5hV/F9eXgt5Mnx0Rha5Fg==}
 
-  cookie-es@2.0.0:
-    resolution: {integrity: sha512-RAj4E421UYRgqokKUmotqAwuplYw15qtdXfY+hGzgCJ/MBjCVZcSoHK/kH9kocfjRjcDME7IiDWR/1WX1TM2Pg==}
-
   cookie@1.0.2:
     resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
     engines: {node: '>=18'}
@@ -7825,6 +7766,98 @@ packages:
 
   drizzle-orm@0.44.6:
     resolution: {integrity: sha512-uy6uarrrEOc9K1u5/uhBFJbdF5VJ5xQ/Yzbecw3eAYOunv5FDeYkR2m8iitocdHBOHbvorviKOW5GVw0U1j4LQ==}
+    peerDependencies:
+      '@aws-sdk/client-rds-data': '>=3'
+      '@cloudflare/workers-types': '>=4'
+      '@electric-sql/pglite': '>=0.2.0'
+      '@libsql/client': '>=0.10.0'
+      '@libsql/client-wasm': '>=0.10.0'
+      '@neondatabase/serverless': '>=0.10.0'
+      '@op-engineering/op-sqlite': '>=2'
+      '@opentelemetry/api': ^1.4.1
+      '@planetscale/database': '>=1.13'
+      '@prisma/client': '*'
+      '@tidbcloud/serverless': '*'
+      '@types/better-sqlite3': '*'
+      '@types/pg': '*'
+      '@types/sql.js': '*'
+      '@upstash/redis': '>=1.34.7'
+      '@vercel/postgres': '>=0.8.0'
+      '@xata.io/client': '*'
+      better-sqlite3: '>=7'
+      bun-types: '*'
+      expo-sqlite: '>=14.0.0'
+      gel: '>=2'
+      knex: '*'
+      kysely: '*'
+      mysql2: '>=2'
+      pg: '>=8'
+      postgres: '>=3'
+      prisma: '*'
+      sql.js: '>=1'
+      sqlite3: '>=5'
+    peerDependenciesMeta:
+      '@aws-sdk/client-rds-data':
+        optional: true
+      '@cloudflare/workers-types':
+        optional: true
+      '@electric-sql/pglite':
+        optional: true
+      '@libsql/client':
+        optional: true
+      '@libsql/client-wasm':
+        optional: true
+      '@neondatabase/serverless':
+        optional: true
+      '@op-engineering/op-sqlite':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+      '@planetscale/database':
+        optional: true
+      '@prisma/client':
+        optional: true
+      '@tidbcloud/serverless':
+        optional: true
+      '@types/better-sqlite3':
+        optional: true
+      '@types/pg':
+        optional: true
+      '@types/sql.js':
+        optional: true
+      '@upstash/redis':
+        optional: true
+      '@vercel/postgres':
+        optional: true
+      '@xata.io/client':
+        optional: true
+      better-sqlite3:
+        optional: true
+      bun-types:
+        optional: true
+      expo-sqlite:
+        optional: true
+      gel:
+        optional: true
+      knex:
+        optional: true
+      kysely:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      postgres:
+        optional: true
+      prisma:
+        optional: true
+      sql.js:
+        optional: true
+      sqlite3:
+        optional: true
+
+  drizzle-orm@0.44.7:
+    resolution: {integrity: sha512-quIpnYznjU9lHshEOAYLoZ9s3jweleHlZIAWR/jX9gAWNg/JhQ1wj0KGRf7/Zm+obRrYd9GjPVJg790QY9N5AQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -8262,9 +8295,6 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
-  fast-sha256@1.3.0:
-    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
-
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
@@ -8300,9 +8330,6 @@ packages:
   fetch-blob@3.2.0:
     resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
     engines: {node: ^12.20 || >= 14.13}
-
-  fetchdts@0.1.7:
-    resolution: {integrity: sha512-YoZjBdafyLIop9lSxXVI33oLD5kN31q4Td+CasofLLYeLXRFeOsuOw0Uo+XNRi9PZlbfdlN2GmRtm4tCEQ9/KA==}
 
   figures@6.1.0:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
@@ -8542,15 +8569,6 @@ packages:
 
   h3@1.15.4:
     resolution: {integrity: sha512-z5cFQWDffyOe4vQ9xIqNfCZdV4p//vy6fBnr8Q1AWnVZ0teurKMG66rLj++TKwKPUP3u7iMUvrvKaEUiQw2QWQ==}
-
-  h3@2.0.0-beta.4:
-    resolution: {integrity: sha512-/JdwHUGuHjbBXAVxQN7T7QeI9cVlhsqMKVNFHebZVs9RoEYH85Ogh9O1DEy/1ZiJkmMwa1gNg6bBcGhc1Itjdg==}
-    engines: {node: '>=20.11.1'}
-    peerDependencies:
-      crossws: ^0.4.1
-    peerDependenciesMeta:
-      crossws:
-        optional: true
 
   h3@2.0.1-rc.5:
     resolution: {integrity: sha512-qkohAzCab0nLzXNm78tBjZDvtKMTmtygS8BJLT3VPczAQofdqlFXDPkXdLMJN4r05+xqneG8snZJ0HgkERCZTg==}
@@ -9122,10 +9140,6 @@ packages:
 
   js-base64@3.7.8:
     resolution: {integrity: sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==}
-
-  js-cookie@3.0.5:
-    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
-    engines: {node: '>=14'}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -9892,8 +9906,8 @@ packages:
   nf3@0.1.12:
     resolution: {integrity: sha512-qbMXT7RTGh74MYWPeqTIED8nDW70NXOULVHpdWcdZ7IVHVnAsMV9fNugSNnvooipDc1FMOzpis7T9nXJEbJhvQ==}
 
-  nitro-nightly@3.0.1-alpha.1:
-    resolution: {integrity: sha512-AvqVVCX11J8O5w91zHc79NhjviEO/JzaFtYcPm+taxC9Px/IP/Lvrb0u4XeTSSyN8/GYDMIN7fmyFZ9Ok0qrRQ==}
+  nitro@3.0.1-alpha.1:
+    resolution: {integrity: sha512-U4AxIsXxdkxzkFrK0XAw0e5Qbojk8jQ50MjjRBtBakC4HurTtQoiZvF+lSe382jhuQZCfAyywGWOFa9QzXLFaw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -11229,11 +11243,6 @@ packages:
   split@0.3.3:
     resolution: {integrity: sha512-wD2AeVmxXRBoX44wAycgjVpMhvbwdI2aZjCkvfNcH1YqHQvJVa1duWc73OyVGJUc05fhFaTZeQ/PYsrmyH0JVA==}
 
-  srvx@0.8.16:
-    resolution: {integrity: sha512-hmcGW4CgroeSmzgF1Ihwgl+Ths0JqAJ7HwjP2X7e3JzY7u4IydLMcdnlqGQiQGUswz+PO9oh/KtCpOISIvs9QQ==}
-    engines: {node: '>=20.16.0'}
-    hasBin: true
-
   srvx@0.9.6:
     resolution: {integrity: sha512-5L4rT6qQqqb+xcoDoklUgCNdmzqJ6vbcDRwPVGRXewF55IJH0pqh0lQlrJ266ZWTKJ4mfeioqHQJeAYesS+RrQ==}
     engines: {node: '>=20.16.0'}
@@ -11259,9 +11268,6 @@ packages:
 
   standard-as-callback@2.1.0:
     resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==}
-
-  standardwebhooks@1.0.0:
-    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
 
   starlight-links-validator@0.14.3:
     resolution: {integrity: sha512-2CvQs0ZdIVExrEQ1bn0r2aFx4n+VSOb6vDWK+gTNb5N1c+nXJ7VjUbEsQhj+9Lb7XgY6Nxqz9JXUM9364hJ3ZA==}
@@ -11401,11 +11407,6 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
-
-  swr@2.3.4:
-    resolution: {integrity: sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==}
-    peerDependencies:
-      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
@@ -12790,12 +12791,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@4.3.7(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))':
+  '@astrojs/mdx@4.3.7(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))':
     dependencies:
       '@astrojs/markdown-remark': 6.3.8
       '@mdx-js/mdx': 3.1.1
       acorn: 8.15.0
-      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
+      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
       es-module-lexer: 1.7.0
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.5
@@ -12842,22 +12843,22 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.25.76
 
-  ? '@astrojs/starlight-tailwind@3.0.1(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)))(@astrojs/tailwind@5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18))(tailwindcss@3.4.18)'
+  ? '@astrojs/starlight-tailwind@3.0.1(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)))(@astrojs/tailwind@5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18))(tailwindcss@3.4.18)'
   : dependencies:
-      '@astrojs/starlight': 0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
-      '@astrojs/tailwind': 5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18)
+      '@astrojs/starlight': 0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
+      '@astrojs/tailwind': 5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18)
       tailwindcss: 3.4.18
 
-  '@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))':
+  '@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))':
     dependencies:
-      '@astrojs/mdx': 4.3.7(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
+      '@astrojs/mdx': 4.3.7(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
       '@astrojs/sitemap': 3.2.1
       '@pagefind/default-ui': 1.1.1
       '@types/hast': 3.0.4
       '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
-      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
-      astro-expressive-code: 0.38.3(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
+      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
+      astro-expressive-code: 0.38.3(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
       bcp-47: 2.1.0
       hast-util-from-html: 2.0.3
       hast-util-select: 6.0.3
@@ -12878,9 +12879,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/tailwind@5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18)':
+  '@astrojs/tailwind@5.1.5(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(tailwindcss@3.4.18)':
     dependencies:
-      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
+      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
       autoprefixer: 10.4.21(postcss@8.5.3)
       postcss: 8.5.3
       postcss-load-config: 4.0.2(postcss@8.5.3)
@@ -12900,14 +12901,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@8.2.9(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(encoding@0.1.13)(react@18.3.1)(rollup@4.53.2)(vue-router@4.5.1(vue@3.5.20(typescript@5.7.3)))(vue@3.5.20(typescript@5.7.3))':
+  '@astrojs/vercel@8.2.9(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))(encoding@0.1.13)(react@18.3.1)(rollup@4.53.2)(vue-router@4.5.1(vue@3.5.20(typescript@5.7.3)))(vue@3.5.20(typescript@5.7.3))':
     dependencies:
       '@astrojs/internal-helpers': 0.7.4
       '@vercel/analytics': 1.5.0(react@18.3.1)(vue-router@4.5.1(vue@3.5.20(typescript@5.7.3)))(vue@3.5.20(typescript@5.7.3))
       '@vercel/functions': 2.2.13
       '@vercel/nft': 0.30.2(encoding@0.1.13)(rollup@4.53.2)
       '@vercel/routing-utils': 5.1.1
-      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
+      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
       esbuild: 0.25.10
       tinyglobby: 0.2.15
     transitivePeerDependencies:
@@ -13059,36 +13060,6 @@ snapshots:
   '@capsizecss/unpack@3.0.0':
     dependencies:
       fontkit: 2.0.4
-
-  '@clerk/backend@2.23.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@clerk/shared': 3.35.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@clerk/types': 4.101.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      cookie: 1.0.2
-      standardwebhooks: 1.0.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - react
-      - react-dom
-
-  '@clerk/shared@3.35.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      csstype: 3.1.3
-      dequal: 2.0.3
-      glob-to-regexp: 0.4.1
-      js-cookie: 3.0.5
-      std-env: 3.9.0
-      swr: 2.3.4(react@19.2.0)
-    optionalDependencies:
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@clerk/types@4.101.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@clerk/shared': 3.35.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-    transitivePeerDependencies:
-      - react
-      - react-dom
 
   '@cloudflare/kv-asset-handler@0.4.0':
     dependencies:
@@ -13724,7 +13695,8 @@ snapshots:
     dependencies:
       '@expressive-code/core': 0.38.3
 
-  '@fastify/busboy@2.1.1': {}
+  '@fastify/busboy@2.1.1':
+    optional: true
 
   '@floating-ui/core@1.7.3':
     dependencies:
@@ -14226,7 +14198,8 @@ snapshots:
   '@libsql/linux-arm64-musl@0.5.22':
     optional: true
 
-  '@libsql/linux-x64-gnu@0.5.22': {}
+  '@libsql/linux-x64-gnu@0.5.22':
+    optional: true
 
   '@libsql/linux-x64-musl@0.5.22':
     optional: true
@@ -16002,8 +15975,6 @@ snapshots:
 
   '@speed-highlight/core@1.2.7': {}
 
-  '@stablelib/base64@1.0.1': {}
-
   '@swc/helpers@0.5.17':
     dependencies:
       tslib: 2.8.1
@@ -17198,6 +17169,7 @@ snapshots:
       is-node-process: 1.2.0
       throttleit: 2.1.0
       undici: 5.29.0
+    optional: true
 
   '@vercel/functions@2.2.13':
     dependencies:
@@ -17707,12 +17679,12 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-expressive-code@0.38.3(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)):
+  astro-expressive-code@0.38.3(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)):
     dependencies:
-      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
+      astro: 5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1)
       rehype-expressive-code: 0.38.3
 
-  astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1):
+  astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1):
     dependencies:
       '@astrojs/compiler': 2.12.2
       '@astrojs/internal-helpers': 0.7.4
@@ -17766,7 +17738,7 @@ snapshots:
       ultrahtml: 1.6.0
       unifont: 0.6.0
       unist-util-visit: 5.0.0
-      unstorage: 1.17.1(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)
+      unstorage: 1.17.1(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)
       vfile: 6.0.3
       vite: 6.3.6(@types/node@22.18.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.43.1)(tsx@4.20.5)(yaml@2.8.1)
       vitefu: 1.1.1(vite@6.3.6(@types/node@22.18.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.43.1)(tsx@4.20.5)(yaml@2.8.1))
@@ -17820,6 +17792,7 @@ snapshots:
   async-retry@1.3.3:
     dependencies:
       retry: 0.13.1
+    optional: true
 
   async-sema@3.1.1: {}
 
@@ -18217,8 +18190,6 @@ snapshots:
 
   cookie-es@1.2.2: {}
 
-  cookie-es@2.0.0: {}
-
   cookie@1.0.2: {}
 
   core-js@2.6.12: {}
@@ -18326,11 +18297,11 @@ snapshots:
 
   date-fns@4.1.0: {}
 
-  db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)):
+  db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)):
     optionalDependencies:
       '@libsql/client': 0.15.15
       better-sqlite3: 12.2.0
-      drizzle-orm: 0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)
+      drizzle-orm: 0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)
 
   debug@3.2.7:
     dependencies:
@@ -18485,6 +18456,16 @@ snapshots:
       - supports-color
 
   drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1):
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20251011.0
+      '@libsql/client': 0.15.15
+      '@neondatabase/serverless': 1.0.2
+      '@opentelemetry/api': 1.9.0
+      '@types/pg': 8.15.6
+      better-sqlite3: 12.2.0
+      gel: 2.1.1
+
+  drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20251011.0
       '@libsql/client': 0.15.15
@@ -19094,8 +19075,6 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fast-sha256@1.3.0: {}
-
   fast-uri@3.1.0: {}
 
   fastq@1.17.1:
@@ -19126,8 +19105,6 @@ snapshots:
     dependencies:
       node-domexception: 1.0.0
       web-streams-polyfill: 3.3.3
-
-  fetchdts@0.1.7: {}
 
   figures@6.1.0:
     dependencies:
@@ -19384,15 +19361,6 @@ snapshots:
       radix3: 1.1.2
       ufo: 1.6.1
       uncrypto: 0.1.3
-
-  h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.9.6)):
-    dependencies:
-      cookie-es: 2.0.0
-      fetchdts: 0.1.7
-      rou3: 0.7.10
-      srvx: 0.8.16
-    optionalDependencies:
-      crossws: 0.4.1(srvx@0.9.6)
 
   h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.6)):
     dependencies:
@@ -19947,7 +19915,8 @@ snapshots:
       call-bound: 1.0.4
       has-tostringtag: 1.0.2
 
-  is-buffer@2.0.5: {}
+  is-buffer@2.0.5:
+    optional: true
 
   is-bun-module@2.0.0:
     dependencies:
@@ -20123,8 +20092,6 @@ snapshots:
   jiti@2.6.1: {}
 
   js-base64@3.7.8: {}
-
-  js-cookie@3.0.5: {}
 
   js-tokens@4.0.0: {}
 
@@ -21311,11 +21278,11 @@ snapshots:
 
   nf3@0.1.12: {}
 
-  nitro-nightly@3.0.1-alpha.1(patch_hash=4ae2e7c1ea514d2381abdd2c3c3939a88c233b1b8c415d4eaea03541b193e604)(@libsql/client@0.15.15)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.8.2)(rollup@4.53.2):
+  nitro@3.0.1-alpha.1(@libsql/client@0.15.15)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(better-sqlite3@12.2.0)(chokidar@4.0.3)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))(ioredis@5.8.2)(rollup@4.53.2):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.1(srvx@0.9.6)
-      db0: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
+      db0: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
       h3: 2.0.1-rc.5(crossws@0.4.1(srvx@0.9.6))
       jiti: 2.6.1
       nf3: 0.1.12
@@ -21326,7 +21293,7 @@ snapshots:
       srvx: 0.9.6
       undici: 7.16.0
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.4(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(chokidar@4.0.3)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(ofetch@2.0.0-alpha.3)
+      unstorage: 2.0.0-alpha.4(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(chokidar@4.0.3)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(ofetch@2.0.0-alpha.3)
     optionalDependencies:
       rollup: 4.53.2
     transitivePeerDependencies:
@@ -23094,8 +23061,6 @@ snapshots:
     dependencies:
       through: 2.3.8
 
-  srvx@0.8.16: {}
-
   srvx@0.9.6: {}
 
   ssri@10.0.6:
@@ -23117,14 +23082,9 @@ snapshots:
   standard-as-callback@2.1.0:
     optional: true
 
-  standardwebhooks@1.0.0:
+  starlight-links-validator@0.14.3(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))):
     dependencies:
-      '@stablelib/base64': 1.0.1
-      fast-sha256: 1.3.0
-
-  starlight-links-validator@0.14.3(@astrojs/starlight@0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))):
-    dependencies:
-      '@astrojs/starlight': 0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
+      '@astrojs/starlight': 0.30.6(astro@5.14.4(@types/node@22.18.0)(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.2)(terser@5.43.1)(tsx@4.20.5)(typescript@5.7.3)(yaml@2.8.1))
       '@types/picomatch': 3.0.1
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.3
@@ -23286,12 +23246,6 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
-
-  swr@2.3.4(react@19.2.0):
-    dependencies:
-      dequal: 2.0.3
-      react: 19.2.0
-      use-sync-external-store: 1.5.0(react@19.2.0)
 
   symbol-tree@3.2.4: {}
 
@@ -23563,7 +23517,8 @@ snapshots:
     dependencies:
       any-promise: 1.3.0
 
-  throttleit@2.1.0: {}
+  throttleit@2.1.0:
+    optional: true
 
   through@2.3.8: {}
 
@@ -23842,6 +23797,7 @@ snapshots:
   undici@5.29.0:
     dependencies:
       '@fastify/busboy': 2.1.1
+    optional: true
 
   undici@7.14.0: {}
 
@@ -23983,7 +23939,7 @@ snapshots:
       '@unrs/resolver-binding-win32-ia32-msvc': 1.7.9
       '@unrs/resolver-binding-win32-x64-msvc': 1.7.9
 
-  unstorage@1.17.1(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2):
+  unstorage@1.17.1(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -23996,15 +23952,15 @@ snapshots:
     optionalDependencies:
       '@vercel/blob': 2.0.0
       '@vercel/functions': 2.2.13
-      db0: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
+      db0: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
       ioredis: 5.8.2
 
-  unstorage@2.0.0-alpha.4(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(chokidar@4.0.3)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.4(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(chokidar@4.0.3)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
       '@vercel/blob': 2.0.0
       '@vercel/functions': 2.2.13
       chokidar: 4.0.3
-      db0: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
+      db0: 0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1))
       ioredis: 5.8.2
       ofetch: 2.0.0-alpha.3
 
@@ -24038,10 +23994,6 @@ snapshots:
   use-sync-external-store@1.5.0(react@18.3.1):
     dependencies:
       react: 18.3.1
-
-  use-sync-external-store@1.5.0(react@19.2.0):
-    dependencies:
-      react: 19.2.0
 
   util-deprecate@1.0.2: {}
 

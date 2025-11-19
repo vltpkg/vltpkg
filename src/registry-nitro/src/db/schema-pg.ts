@@ -49,18 +49,3 @@ export type Package = typeof packages.$inferSelect
 export type Version = typeof versions.$inferSelect
 export type Token = typeof tokens.$inferSelect
 export type LoginSession = typeof loginSessions.$inferSelect
-
-// // Default admin token
-// export const defaultAdminToken = {
-//   token: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-//   uuid: 'admin',
-//   scope: JSON.stringify([
-//     {
-//       values: ['*'],
-//       types: {
-//         pkg: { read: true, write: true },
-//         user: { read: true, write: true },
-//       },
-//     },
-//   ]),
-// } as const
