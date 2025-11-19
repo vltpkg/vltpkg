@@ -23,11 +23,7 @@ import type {
 import type { ExtractResult } from '../reify/extract-node.ts'
 import { extractNode } from '../reify/extract-node.ts'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import {
-  endPeerPlacement,
-  nextPeerContextIndex,
-  startPeerPlacement,
-} from './peers.ts'
+import { checkEntriesToPeerContext, endPeerPlacement, startPeerPlacement, forkPeerContext } from './peers.ts'
 import type { PeerContext } from './peers.ts'
 
 type FileTypeInfo = {
@@ -119,7 +115,14 @@ type AppendNodeEntry = {
   modifierRefs?: Map<string, ModifierActiveEntry>
   depth: number
   peerContext: PeerContext
-  updateContext: () => PeerContext
+  updateContext: {
+    putEntries: () => {
+      dependent: Node
+      spec: Spec
+      type: DependencySaveType
+    }[] | undefined
+    resolvePeerDeps: () => void
+  }
 }
 
 /**
@@ -448,7 +451,6 @@ const processPlacementTasks = async (
       queuedEntries,
     )
 
-    // Build peer context for children from this node's resolved dependencies
     childDepsToProcess.push({
       node,
       deps: nextDeps,
@@ -477,6 +479,8 @@ export const appendNodes = async (
   scurry: PathScurry,
   options: SpecOptions,
   seen: Set<DepID>,
+  initialPeerContext: PeerContext,
+  nextPeerContextIndex: () => number,
   modifiers?: GraphModifier,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   extractPromises?: Promise<ExtractResult>[],
@@ -489,8 +493,6 @@ export const appendNodes = async (
   seen.add(fromNode.id)
 
   // Use a queue for breadth-first processing
-  const initialPeerContext: PeerContext = new Map()
-  initialPeerContext.index = nextPeerContextIndex()
   let currentLevelDeps: AppendNodeEntry[] = [
     {
       node: fromNode,
@@ -499,7 +501,10 @@ export const appendNodes = async (
       depth: 0,
       peerContext: initialPeerContext,
       /* c8 ignore next */
-      updateContext: () => initialPeerContext,
+      updateContext: {
+        putEntries: () => undefined,
+        resolvePeerDeps: () => {},
+      },
     },
   ]
 
@@ -513,8 +518,8 @@ export const appendNodes = async (
           node,
           deps: nodeDeps,
           modifierRefs: nodeModifierRefs,
-          depth,
           peerContext,
+          depth,
         }: AppendNodeEntry) => {
           // Mark node as seen when we start processing its dependencies
           seen.add(node.id)
@@ -588,8 +593,33 @@ export const appendNodes = async (
     // at a given level to ensure deterministic behavior when it comes to
     // forking new peer contexts
     for (const childDepsToProcess of sortedLevelResults) {
+      const needsForking = new Map<ProcessPlacementResultEntry, {
+        dependent: Node
+        spec: Spec
+        type: DependencySaveType
+      }[]>()
+      // first iterate on all child deps, adding entries to the current
+      // context and collect the information on which ones need forking
       for (const childDep of childDepsToProcess) {
-        childDep.peerContext = childDep.updateContext()
+        const needsFork = childDep.updateContext.putEntries()
+        if (needsFork) {
+          needsForking.set(childDep, needsFork)
+        }
+      }
+      // then iterate again, forking contexts as needed but also try to
+      // reuse the context of the previous sibling if possible
+      let prevContext
+      for (const [childDep, nextEntries] of needsForking.entries()) {
+        if (prevContext && !checkEntriesToPeerContext(prevContext, nextEntries)) {
+          continue
+        }
+        childDep.peerContext = forkPeerContext(childDep.peerContext, nextEntries, nextPeerContextIndex)
+        prevContext = childDep.peerContext
+      }
+      // try to resolve peer dependencies now that
+      // the context is fully set up
+      for (const childDep of childDepsToProcess) {
+        childDep.updateContext.resolvePeerDeps()
       }
     }
 
