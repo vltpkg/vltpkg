@@ -183,8 +183,18 @@ export const ExplorerGrid = () => {
 
   const items = getItemsData(edges, nodes, query)
 
-  if (items.length === 1 && items[0])
+  // Show loading while query is executing (edges/nodes are cleared during query)
+  if (
+    items.length === 0 &&
+    edges.length === 0 &&
+    nodes.length === 0
+  ) {
+    return null
+  }
+
+  if (items.length === 1 && items[0]) {
     return <SelectedItem item={items[0]} />
+  }
 
   return <Results allItems={items} />
 }
