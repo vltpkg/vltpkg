@@ -6,6 +6,7 @@ exports[`DashboardHeader renders correctly 1`] = `
   <gui-filter-search
     placeholder="Filter Projects"
     items
+    value
     classname="w-full"
   >
   </gui-filter-search>
@@ -24,7 +25,7 @@ exports[`DashboardHeader renders correctly 1`] = `
   </div>
   <gui-button
     aschild="true"
-    classname="ml-auto rounded-xl"
+    classname="ml-auto"
   >
     <gui-nav-link to="/create-new-project">
       <gui-plus-icon size="24">

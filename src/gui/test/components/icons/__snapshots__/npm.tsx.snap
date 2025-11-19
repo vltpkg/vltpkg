@@ -17,8 +17,14 @@ exports[`npm icon render custom class 1`] = `
     aria-hidden="true"
   >
     <path
-      d="M2 2V22H22V2H2ZM18.6469 18.6484H15.2938V8.70469H11.9406V18.6484H5.35156V5.35312H18.6469V18.6484Z"
-      fill="currentColor"
+      d="M2 22V2H22V22H2Z"
+      fill="#C12127"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M5.75 5.75H18.25V18.25H15.75V8.25H12V18.25H5.75V5.75Z"
+      fill="#fafafa"
       stroke-width="0"
     >
     </path>
@@ -44,8 +50,14 @@ exports[`npm icon render default 1`] = `
     aria-hidden="true"
   >
     <path
-      d="M2 2V22H22V2H2ZM18.6469 18.6484H15.2938V8.70469H11.9406V18.6484H5.35156V5.35312H18.6469V18.6484Z"
-      fill="currentColor"
+      d="M2 22V2H22V22H2Z"
+      fill="#C12127"
+      stroke-width="0"
+    >
+    </path>
+    <path
+      d="M5.75 5.75H18.25V18.25H15.75V8.25H12V18.25H5.75V5.75Z"
+      fill="#fafafa"
       stroke-width="0"
     >
     </path>

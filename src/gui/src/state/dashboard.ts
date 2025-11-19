@@ -8,6 +8,7 @@ export type DashboardState = {
   tableFilterValue: string
   filteredProjects: DashboardDataProject[]
   columnVisibility: VisibilityState
+  searchValue: string
 }
 
 export type DashboardAction = {
@@ -24,10 +25,12 @@ export type DashboardAction = {
   setColumnVisibility: (
     columnVisibility: DashboardState['columnVisibility'],
   ) => void
+  setSearchValue: (value: DashboardState['searchValue']) => void
 }
 
 const initialState: DashboardState = {
   currentView: 'grid',
+  searchValue: '',
   table: undefined,
   tableFilterValue: '',
   filteredProjects: [],
@@ -55,6 +58,8 @@ export const useDashboardStore = create<
     setColumnVisibility: (
       columnVisibility: DashboardState['columnVisibility'],
     ) => set(() => ({ columnVisibility })),
+    setSearchValue: (searchValue: DashboardState['searchValue']) =>
+      set(() => ({ searchValue })),
   }
   return store
 })

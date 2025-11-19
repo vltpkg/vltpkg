@@ -1,4 +1,3 @@
-import { CardTitle } from '@/components/ui/card.tsx'
 import {
   Tooltip,
   TooltipContent,
@@ -16,9 +15,6 @@ export interface DashboardItemOptions {
   onItemClick: (selectedProject: DashboardDataProject) => void
 }
 
-const iconClassnames =
-  'text-muted-foreground fill-muted-foreground transition-colors duration-250 size-6'
-
 export const DashboardItem = ({
   item,
   onItemClick,
@@ -32,43 +28,43 @@ export const DashboardItem = ({
   }
 
   return (
-    <div
+    <article
       role="link"
-      className="group/card group bg-card hover:border-muted hover:bg-card-accent relative w-full cursor-default grid-rows-3 gap-3 rounded-lg border-[1px] transition-colors duration-250"
+      className="dark:bg-background dark:hover:bg-foreground/3 bg-foreground/2 hover:bg-foreground/6 group/dashboard-item flex h-fit cursor-pointer flex-col rounded-lg border p-0.5 transition-colors duration-100"
       onClick={onDashboardItemClick}>
-      <div className="flex justify-end px-3 py-3">
-        {item.mtime && (
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger className="text-xxs text-muted-foreground cursor-default">
-                {format(
-                  new Date(item.mtime).toJSON(),
-                  'LLLL do, yyyy',
-                )}
-              </TooltipTrigger>
-              <TooltipContent side="top" align="start">
-                <p className="">
-                  {format(
-                    new Date(item.mtime).toJSON(),
-                    'LLLL do, yyyy - HH:mm:ss',
-                  )}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
+      <div className="bg-background dark:bg-foreground/3 flex rounded-[calc(0.5rem-(0.125rem/2))] border">
+        <div className="flex flex-col p-3">
+          {item.mtime && (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <time className="text-xxs text-muted-foreground/60 cursor-default font-mono">
+                    {format(
+                      new Date(item.mtime).toJSON(),
+                      'LLLL do, yyyy',
+                    )}
+                  </time>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">
+                  <time>
+                    {format(
+                      new Date(item.mtime).toJSON(),
+                      'LLLL do, yyyy - HH:mm:ss',
+                    )}
+                  </time>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <h3 className="text-md mt-1 leading-tight font-medium tracking-tight">
+            {item.name}
+          </h3>
+        </div>
       </div>
-
-      <div className="flex min-h-14 items-center px-3">
-        <CardTitle className="text-md font-medium">
-          {item.name}
-        </CardTitle>
-      </div>
-
-      <div className="group-hover/card:border-muted flex w-full gap-2 border-t-[1px] px-3 py-1.5 transition-colors duration-250">
+      <div className="flex gap-2 pt-0.5 pr-0 pb-0 pl-2">
         <TooltipProvider delayDuration={150}>
           <Tooltip>
-            <TooltipTrigger className="text-muted-foreground grow cursor-default truncate text-left text-xs">
+            <TooltipTrigger className="text-foreground/50 grow cursor-default truncate text-left text-xs">
               {item.readablePath}
             </TooltipTrigger>
             <TooltipContent side="top" align="start">
@@ -77,13 +73,11 @@ export const DashboardItem = ({
           </Tooltip>
         </TooltipProvider>
 
-        <div className="flex gap-1">
-          {PackageManager && (
-            <PackageManager className={iconClassnames} />
-          )}
-          {RunTime && <RunTime className={iconClassnames} />}
+        <div className="dark:bg-foreground/3 bg-background flex gap-1 rounded-[calc(0.5rem-(0.125rem/2))] border p-1 [&_svg]:flex [&_svg]:size-3.5 [&_svg]:items-center [&_svg]:justify-center">
+          {PackageManager && <PackageManager />}
+          {RunTime && <RunTime />}
         </div>
       </div>
-    </div>
+    </article>
   )
 }

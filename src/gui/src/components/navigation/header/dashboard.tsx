@@ -35,6 +35,10 @@ export const DashboardHeader = () => {
   const setColumnVisibility = useDashboardStore(
     state => state.setColumnVisibility,
   )
+  const searchValue = useDashboardStore(state => state.searchValue)
+  const setSearchValue = useDashboardStore(
+    state => state.setSearchValue,
+  )
 
   return (
     <div className="flex w-full items-center gap-5">
@@ -47,6 +51,8 @@ export const DashboardHeader = () => {
       : <FilterSearch
           placeholder="Filter Projects"
           items={dashboard?.projects ?? []}
+          value={searchValue}
+          onValueChange={setSearchValue}
           setFilteredItems={setFilteredProjects}
           className="w-full"
         />
@@ -92,7 +98,7 @@ export const DashboardHeader = () => {
           />
         </motion.div>
       }
-      <Button asChild className="ml-auto rounded-xl">
+      <Button asChild className="ml-auto">
         <NavLink to="/create-new-project">
           <Plus size={24} />
           <span className="hidden md:flex">Create New Project</span>
