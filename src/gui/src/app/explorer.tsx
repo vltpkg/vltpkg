@@ -9,6 +9,7 @@ import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
 import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import { createHostContextsMap } from '@/lib/query-host-contexts.ts'
 import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
 
 import type { MotionProps } from 'framer-motion'
 import type { TransferData, Action, State } from '@/state/types.ts'
@@ -205,6 +206,7 @@ const ExplorerContent = () => {
     state => state.isExternalPackage,
   )
   const ac = useRef<AbortController>(new AbortController())
+  const { resolvedTheme } = useTheme()
 
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
@@ -248,10 +250,12 @@ const ExplorerContent = () => {
     <AnimatePresence mode="popLayout">
       {!graph || graphStamp !== stamp ?
         <motion.div
-          className="fixed inset-0 z-[100] flex h-full w-full justify-center backdrop-blur-2xl"
+          className="absolute inset-0 z-[100] flex h-full w-full justify-center"
           {...explorerMotion}>
-          <div className="relative flex h-svh w-svw items-center justify-center">
-            <JellyTriangleSpinner />
+          <div className="relative flex h-full w-full items-center justify-center">
+            <JellyTriangleSpinner
+              color={resolvedTheme === 'dark' ? '#fafafa' : '#000000'}
+            />
           </div>
         </motion.div>
       : <MotionExplorerGrid
