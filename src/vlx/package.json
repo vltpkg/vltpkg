@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/vlx",
   "description": "vlt exec management",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
