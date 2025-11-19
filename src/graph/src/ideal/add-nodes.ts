@@ -10,6 +10,7 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
 } from './types.ts'
+import type { PeerContext } from './peers.ts'
 import type { GraphModifier } from '../modifiers.ts'
 import type { ExtractResult } from '../reify/extract-node.ts'
 import type { Graph } from '../graph.ts'
@@ -79,6 +80,10 @@ export const addNodes = async ({
       if (node) graph.removeNode(node)
     }
 
+    // starts the top-level peer context set for this install
+    const initialPeerContext: PeerContext = new Map()
+    initialPeerContext.index = nextPeerContextIndex()
+
     // Add new nodes for packages defined in the dependencies list fetching
     // metadata from the registry manifests and updating the graph
     await appendNodes(
@@ -90,6 +95,8 @@ export const addNodes = async ({
       scurry,
       specOptions,
       seen,
+      initialPeerContext,
+      nextPeerContextIndex,
       modifiers,
       modifiers?.tryDependencies(importer, deps),
       extractPromises,
@@ -104,3 +111,12 @@ export const addNodes = async ({
     await Promise.all(extractPromises)
   }
 }
+
+/**
+ * Global index to assign unique ids used to track peer context sets.
+ */
+let peerContextIndex = 0
+/**
+ * Retrieve the next unique index for a peer context set.
+ */
+export const nextPeerContextIndex = () => peerContextIndex++

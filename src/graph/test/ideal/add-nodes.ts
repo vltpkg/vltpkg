@@ -11,7 +11,10 @@ import type {
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import type { GraphModifier } from '../../src/modifiers.ts'
-import { addNodes } from '../../src/ideal/add-nodes.ts'
+import {
+  addNodes,
+  nextPeerContextIndex,
+} from '../../src/ideal/add-nodes.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 
@@ -354,3 +357,15 @@ t.test(
     t.equal(extractionOrder.length, 3, 'all extractions were started')
   },
 )
+
+t.test('nextPeerContextIndex', async t => {
+  t.test('returns incrementing indices', async t => {
+    const idx1 = nextPeerContextIndex()
+    const idx2 = nextPeerContextIndex()
+    const idx3 = nextPeerContextIndex()
+
+    t.ok(idx2 > idx1, 'second index should be greater')
+    t.ok(idx3 > idx2, 'third index should be greater')
+    t.equal(idx3 - idx2, 1, 'should increment by 1')
+  })
+})
