@@ -26,7 +26,7 @@ interface ItemProps {
 
 export const Item = ({ item }: ItemProps) => {
   return (
-    <SelectedItemProvider selectedItem={item}>
+    <SelectedItemProvider key={item.id} selectedItem={item}>
       <section className="relative">
         <Card className="border-muted relative rounded-xl shadow-none">
           <ItemHeader />
