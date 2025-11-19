@@ -27,7 +27,7 @@ export const removeEdge = (state: ParserState, edge: EdgeLike) => {
  */
 export const removeDanglingEdges = (state: ParserState) => {
   for (const edge of state.partial.edges) {
-    if (!edge.to) {
+    if (!edge.to || !state.partial.nodes.has(edge.to)) {
       state.partial.edges.delete(edge)
     }
   }

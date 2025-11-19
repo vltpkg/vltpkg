@@ -242,34 +242,6 @@ my-project
 exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`] = `
 [
   {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0",
-        "dependencies": {
-          "@foo/bazz": "^1.0.0",
-          "bar": "^1.0.0",
-          "missing": "^1.0.0"
-        }
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "buildState": "none",
-      "insights": {
-        "scanned": false
-      }
-    },
-    "overridden": false
-  },
-  {
     "name": "@foo/bazz",
     "fromID": "file·.",
     "spec": "@foo/bazz@^1.0.0",
@@ -329,34 +301,6 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
 
 exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`] = `
 [
-  {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0",
-        "dependencies": {
-          "@foo/bazz": "^1.0.0",
-          "bar": "^1.0.0",
-          "missing": "^1.0.0"
-        }
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "buildState": "none",
-      "insights": {
-        "scanned": false
-      }
-    },
-    "overridden": false
-  },
   {
     "name": "@foo/bazz",
     "fromID": "file·.",
@@ -504,29 +448,6 @@ my-project
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in json format 1`] = `
 [
-  {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "buildState": "none",
-      "insights": {
-        "scanned": false
-      }
-    },
-    "overridden": false
-  },
   {
     "name": "b",
     "fromID": "file·.",
