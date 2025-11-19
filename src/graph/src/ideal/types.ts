@@ -1,11 +1,16 @@
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
+import type { Spec } from '@vltpkg/spec'
+import type { DependencySaveType } from '@vltpkg/types'
 import type {
   AddImportersDependenciesMap,
   Dependency,
   RemoveImportersDependenciesMap,
 } from '../dependencies.ts'
+import type { ModifierActiveEntry } from '../modifiers.ts'
 import type { Graph } from '../graph.ts'
+import type { Node } from '../node.ts'
+import type { PeerContext } from './peers.ts'
 
 export type BuildIdealAddOptions = {
   /**
@@ -41,3 +46,37 @@ export type BuildIdealPackageInfoOptions = {
    */
   packageInfo: PackageInfoClient
 }
+
+/**
+ * Represents an ongoing append operation for a node and its dependencies.
+ */
+export type AppendNodeEntry = {
+  node: Node
+  deps: Dependency[]
+  modifierRefs?: Map<string, ModifierActiveEntry>
+  depth: number
+  peerContext: PeerContext
+  updateContext: {
+    putEntries: () =>
+      | {
+          dependent: Node
+          spec: Spec
+          type: DependencySaveType
+        }[]
+      | undefined
+    resolvePeerDeps: () => void
+  }
+}
+
+/**
+ * The result of processing a given placed node in the graph.
+ */
+export type ProcessPlacementResultEntry = Omit<
+  AppendNodeEntry,
+  'depth'
+>
+
+/**
+ * The result of processing placement for nodes to be added to the graph.
+ */
+export type ProcessPlacementResult = ProcessPlacementResultEntry[]
