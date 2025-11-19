@@ -34,13 +34,18 @@ export type JSONOutputItem = {
 
 export type JSONOutputGraph = {
   edges: EdgeLike[]
+  nodes: NodeLike[]
   importers: Set<NodeLike>
 }
 
 /**
  * Returns a JSON string representation of the graph.
  */
-export function jsonOutput({ edges, importers }: JSONOutputGraph) {
+export function jsonOutput({
+  edges,
+  nodes,
+  importers,
+}: JSONOutputGraph) {
   const res: JSONOutputItem[] = []
   const seenIds = new Set<DepID>()
 
@@ -73,7 +78,7 @@ export function jsonOutput({ edges, importers }: JSONOutputGraph) {
     return a.name.localeCompare(b.name)
   })
   for (const node of orderedImporters) {
-    if (seenIds.has(node.id)) continue
+    if (!nodes.includes(node) || seenIds.has(node.id)) continue
     res.unshift({
       /* c8 ignore next - name can't be missing but ts won't know */
       name: node.name || node.id,
