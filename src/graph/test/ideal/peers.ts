@@ -7,6 +7,7 @@ import {
   addEntriesToPeerContext,
   endPeerPlacement,
   forkPeerContext,
+  postPlacementPeerCheck,
   retrievePeerContextHash,
   startPeerPlacement,
 } from '../../src/ideal/peers.ts'
@@ -28,7 +29,6 @@ import type {
   AddImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import type { Node } from '../../src/node.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -40,9 +40,7 @@ const configData = {
 t.test('retrievePeerContextHash', async t => {
   t.test('returns undefined for undefined context', async t => {
     t.equal(
-      retrievePeerContextHash(undefined, {
-        id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
-      } as unknown as Node),
+      retrievePeerContextHash(undefined),
       undefined,
       'should return undefined',
     )
@@ -52,9 +50,7 @@ t.test('retrievePeerContextHash', async t => {
     const peerContext: PeerContext = new Map()
     peerContext.index = 5
     t.equal(
-      retrievePeerContextHash(peerContext, {
-        id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
-      } as unknown as Node),
+      retrievePeerContextHash(peerContext),
       'ṗ:5',
       'should return formatted reference',
     )
@@ -63,23 +59,81 @@ t.test('retrievePeerContextHash', async t => {
   t.test('returns undefined if no index', async t => {
     const peerContext: PeerContext = new Map()
     t.equal(
-      retrievePeerContextHash(peerContext, {
-        id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
-      } as unknown as Node),
+      retrievePeerContextHash(peerContext),
       undefined,
       'should return undefined when index not set',
     )
   })
 })
 
+t.test('incompatibleSpecs', async t => {
+  t.test(
+    'returns false for non-registry specs with same bareSpec',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec1 = Spec.parse(
+        '@user/repo',
+        'github:user/repo#v1.0.0',
+        configData,
+      )
+      const spec2 = Spec.parse(
+        '@user/repo',
+        'github:user/repo#v1.0.1',
+        configData,
+      )
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Add first git spec
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec: spec1, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      // Add second git spec with same base but different ref
+      // This should trigger the bareSpec comparison branch
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec: spec2, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      t.equal(
+        needsFork,
+        true,
+        'should need fork when git specs have different refs',
+      )
+    },
+  )
+})
+
 t.test('addEntriesToPeerContext', async t => {
   t.test('adds new entry to empty context', async t => {
     const peerContext: PeerContext = new Map()
     const spec = Spec.parse('foo', '^1.0.0', configData)
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
 
-    const needsFork = addEntriesToPeerContext(peerContext, [
-      { spec, type: 'peer' },
-    ])
+    const needsFork = addEntriesToPeerContext(
+      peerContext,
+      [{ spec, type: 'peer' }],
+      graph.mainImporter,
+    )
 
     t.equal(needsFork, false, 'should not need fork')
     t.equal(peerContext.size, 1, 'should have one entry')
@@ -109,12 +163,18 @@ t.test('addEntriesToPeerContext', async t => {
     )!
 
     // First add without dependent
-    addEntriesToPeerContext(peerContext, [{ spec, type: 'peer' }])
+    addEntriesToPeerContext(
+      peerContext,
+      [{ spec, type: 'peer' }],
+      graph.mainImporter,
+    )
 
     // Then add with dependent
-    const needsFork = addEntriesToPeerContext(peerContext, [
-      { spec, type: 'peer', dependent: node },
-    ])
+    const needsFork = addEntriesToPeerContext(
+      peerContext,
+      [{ spec, type: 'peer', dependent: node }],
+      graph.mainImporter,
+    )
 
     t.equal(needsFork, false, 'should not need fork')
     const entry = peerContext.get('foo')
@@ -143,9 +203,11 @@ t.test('addEntriesToPeerContext', async t => {
       })
 
       // Add first spec
-      addEntriesToPeerContext(peerContext, [
-        { spec: spec1, type: 'peer' },
-      ])
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec: spec1, type: 'peer' }],
+        graph.mainImporter,
+      )
 
       // Add target with conflicting version
       const target = graph.placePackage(
@@ -155,9 +217,11 @@ t.test('addEntriesToPeerContext', async t => {
         { name: 'foo', version: '2.0.0' },
       )!
 
-      const needsFork = addEntriesToPeerContext(peerContext, [
-        { spec: spec2, target, type: 'peer' },
-      ])
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec: spec2, target, type: 'peer' }],
+        graph.mainImporter,
+      )
 
       t.equal(needsFork, true, 'should need fork due to conflict')
     },
@@ -184,14 +248,18 @@ t.test('addEntriesToPeerContext', async t => {
     )!
 
     // Add first spec with dependent
-    addEntriesToPeerContext(peerContext, [
-      { spec: spec1, type: 'peer' },
-    ])
+    addEntriesToPeerContext(
+      peerContext,
+      [{ spec: spec1, type: 'peer' }],
+      graph.mainImporter,
+    )
 
     // Add conflicting spec
-    const needsFork = addEntriesToPeerContext(peerContext, [
-      { spec: spec2, type: 'peer' },
-    ])
+    const needsFork = addEntriesToPeerContext(
+      peerContext,
+      [{ spec: spec2, type: 'peer' }],
+      graph.mainImporter,
+    )
 
     t.equal(
       needsFork,
@@ -231,9 +299,11 @@ t.test('addEntriesToPeerContext', async t => {
     graph.addEdge('peer', spec, dependent, target1)
 
     // Add first target
-    addEntriesToPeerContext(peerContext, [
-      { spec, target: target1, type: 'peer', dependent },
-    ])
+    addEntriesToPeerContext(
+      peerContext,
+      [{ spec, target: target1, type: 'peer', dependent }],
+      dependent,
+    )
 
     // Create new target
     const target2 = graph.placePackage(
@@ -244,9 +314,11 @@ t.test('addEntriesToPeerContext', async t => {
     )!
 
     // Add new target - should update edges
-    const needsFork = addEntriesToPeerContext(peerContext, [
-      { spec, target: target2, type: 'peer' },
-    ])
+    const needsFork = addEntriesToPeerContext(
+      peerContext,
+      [{ spec, target: target2, type: 'peer' }],
+      dependent,
+    )
 
     t.equal(needsFork, false, 'should not need fork')
     const entry = peerContext.get('foo')
@@ -276,7 +348,7 @@ t.test('addEntriesToPeerContext', async t => {
       })
 
       // Place a dependent node
-      graph.placePackage(
+      const bar = graph.placePackage(
         graph.mainImporter,
         'prod',
         Spec.parse('bar', '^1.0.0', configData),
@@ -284,9 +356,11 @@ t.test('addEntriesToPeerContext', async t => {
       )!
 
       // Add entry with no target
-      let needsFork = addEntriesToPeerContext(peerContext, [
-        { spec, type: 'peer' },
-      ])
+      let needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, type: 'peer' }],
+        bar,
+      )
 
       t.equal(
         needsFork,
@@ -309,9 +383,11 @@ t.test('addEntriesToPeerContext', async t => {
         { name: 'foo', version: '1.0.0' },
       )!
 
-      needsFork = addEntriesToPeerContext(peerContext, [
-        { spec, type: 'peer', target },
-      ])
+      needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, type: 'peer', target }],
+        bar,
+      )
 
       t.equal(
         needsFork,
@@ -338,10 +414,21 @@ t.test('addEntriesToPeerContext', async t => {
       'github:user/repo',
       configData,
     )
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
 
-    const needsFork = addEntriesToPeerContext(peerContext, [
-      { spec, type: 'peer' },
-    ])
+    const needsFork = addEntriesToPeerContext(
+      peerContext,
+      [{ spec, type: 'peer' }],
+      graph.mainImporter,
+    )
 
     t.equal(needsFork, false, 'should not need fork')
     t.ok(peerContext.size > 0, 'should add entry for git spec')
@@ -356,11 +443,6 @@ t.test('forkPeerContext', async t => {
     const spec1 = Spec.parse('foo', '^1.0.0', configData)
     const spec2 = Spec.parse('bar', '^2.0.0', configData)
 
-    // Add entry to original
-    addEntriesToPeerContext(originalContext, [
-      { spec: spec1, type: 'peer' },
-    ])
-
     const mainManifest = {
       name: 'my-project',
       version: '1.0.0',
@@ -370,6 +452,14 @@ t.test('forkPeerContext', async t => {
       ...configData,
       mainManifest,
     })
+
+    // Add entry to original
+    addEntriesToPeerContext(
+      originalContext,
+      [{ spec: spec1, type: 'peer' }],
+      graph.mainImporter,
+    )
+
     const dependent = graph.placePackage(
       graph.mainImporter,
       'prod',
@@ -418,10 +508,22 @@ t.test('forkPeerContext', async t => {
       const spec1 = Spec.parse('foo', '^1.0.0', configData)
       const spec2 = Spec.parse('bar', '^2.0.0', configData)
 
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
       // Add entry to original
-      addEntriesToPeerContext(originalContext, [
-        { spec: spec1, type: 'peer' },
-      ])
+      addEntriesToPeerContext(
+        originalContext,
+        [{ spec: spec1, type: 'peer' }],
+        graph.mainImporter,
+      )
 
       // No dependent this time
       const forkedContext = forkPeerContext(
@@ -524,11 +626,7 @@ t.test('startPeerPlacement', async t => {
     )
 
     t.equal(result.queuedEntries.length, 1, 'should have peer data')
-    t.equal(
-      result.peerSetHash,
-      'ṗ:1',
-      'should have peer set hash',
-    )
+    t.equal(result.peerSetHash, 'ṗ:1', 'should have peer set hash')
     t.ok(result.queuedEntries.length > 0, 'should have entries')
   })
 })
@@ -559,9 +657,11 @@ t.test('endPeerPlacement', async t => {
       { name: 'peer-pkg', version: '1.0.0' },
     )!
 
-    addEntriesToPeerContext(peerContext, [
-      { spec: peerSpec, target: peerTarget, type: 'prod' },
-    ])
+    addEntriesToPeerContext(
+      peerContext,
+      [{ spec: peerSpec, target: peerTarget, type: 'prod' }],
+      graph.mainImporter,
+    )
 
     // Create node that has peer dependency
     const node = graph.placePackage(
@@ -735,6 +835,282 @@ t.test('nextPeerContextIndex', async t => {
     t.ok(idx3 > idx2, 'third index should be greater')
     t.equal(idx3 - idx2, 1, 'should increment by 1')
   })
+})
+
+t.test('postPlacementPeerCheck', async t => {
+  t.test(
+    'reuses forked peer context between compatible siblings',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create three sibling nodes that will be processed together
+      const node1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('pkg-a', '^1.0.0', configData),
+        { name: 'pkg-a', version: '1.0.0' },
+      )!
+
+      const node2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('pkg-b', '^1.0.0', configData),
+        { name: 'pkg-b', version: '1.0.0' },
+      )!
+
+      const node3 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('pkg-c', '^1.0.0', configData),
+        { name: 'pkg-c', version: '1.0.0' },
+      )!
+
+      // All three packages have the same peer dependency
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+
+      // Create initial peer contexts with an incompatible peer already in them
+      // This will force forking
+      const incompatibleSpec = Spec.parse(
+        'react',
+        '^17.0.0',
+        configData,
+      )
+
+      const peerContext1: PeerContext = new Map()
+      addEntriesToPeerContext(
+        peerContext1,
+        [{ spec: incompatibleSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      const peerContext2: PeerContext = new Map()
+      addEntriesToPeerContext(
+        peerContext2,
+        [{ spec: incompatibleSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      const peerContext3: PeerContext = new Map()
+      addEntriesToPeerContext(
+        peerContext3,
+        [{ spec: incompatibleSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      // Track how many times resolvePeerDeps is called
+      let resolveCallCount = 0
+
+      // Build the sorted level results with sibling entries that need forking
+      // but have compatible peer requirements (same peerSpec)
+      const entry1 = {
+        node: node1,
+        deps: [],
+        peerContext: peerContext1,
+        updateContext: {
+          putEntries: () => [
+            {
+              dependent: node1,
+              spec: peerSpec,
+              type: 'peer' as const,
+            },
+          ],
+          resolvePeerDeps: () => {
+            resolveCallCount++
+          },
+        },
+      }
+      const entry2 = {
+        node: node2,
+        deps: [],
+        peerContext: peerContext2,
+        updateContext: {
+          putEntries: () => [
+            {
+              dependent: node2,
+              spec: peerSpec, // Same peer spec = compatible
+              type: 'peer' as const,
+            },
+          ],
+          resolvePeerDeps: () => {
+            resolveCallCount++
+          },
+        },
+      }
+      const entry3 = {
+        node: node3,
+        deps: [],
+        peerContext: peerContext3,
+        updateContext: {
+          putEntries: () => [
+            {
+              dependent: node3,
+              spec: peerSpec, // Same peer spec = compatible
+              type: 'peer' as const,
+            },
+          ],
+          resolvePeerDeps: () => {
+            resolveCallCount++
+          },
+        },
+      }
+
+      const sortedLevelResults = [[entry1, entry2, entry3]]
+
+      // Call postPlacementPeerCheck
+      postPlacementPeerCheck(sortedLevelResults, nextPeerContextIndex)
+
+      // Verify that:
+      // 1. First entry gets a new forked context
+      t.ok(
+        entry1.peerContext.index !== undefined,
+        'first node should have forked peer context',
+      )
+
+      // 2. Second and third entries reuse the first one's forked context
+      t.equal(
+        entry2.peerContext,
+        entry1.peerContext,
+        'second node should reuse first node peer context',
+      )
+      t.equal(
+        entry3.peerContext,
+        entry1.peerContext,
+        'third node should reuse first node peer context',
+      )
+
+      // 3. All three share the same context index
+      t.equal(
+        entry1.peerContext.index,
+        entry2.peerContext.index,
+        'all nodes share same context index',
+      )
+      t.equal(
+        entry1.peerContext.index,
+        entry3.peerContext.index,
+        'all nodes share same context index',
+      )
+
+      // 4. The shared context has the react peer entry
+      t.equal(
+        entry1.peerContext.size,
+        1,
+        'context should have react entry',
+      )
+      const reactEntry = entry1.peerContext.get('react')
+      t.ok(reactEntry, 'should have react peer entry')
+      t.ok(
+        reactEntry && reactEntry.specs.size > 0,
+        'react entry should have specs',
+      )
+
+      // 5. resolvePeerDeps was called for all three nodes
+      t.equal(
+        resolveCallCount,
+        3,
+        'resolvePeerDeps should be called for all nodes',
+      )
+    },
+  )
+
+  t.test(
+    'forks separate contexts when siblings are incompatible',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two sibling nodes
+      const node1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('pkg-a', '^1.0.0', configData),
+        { name: 'pkg-a', version: '1.0.0' },
+      )!
+
+      const node2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('pkg-b', '^1.0.0', configData),
+        { name: 'pkg-b', version: '1.0.0' },
+      )!
+
+      // These have DIFFERENT peer dependencies (incompatible)
+      const peerSpec1 = Spec.parse('react', '^18.0.0', configData)
+      const peerSpec2 = Spec.parse('react', '^19.0.0', configData)
+
+      const peerContext1: PeerContext = new Map()
+      const peerContext2: PeerContext = new Map()
+
+      const entry1 = {
+        node: node1,
+        deps: [],
+        peerContext: peerContext1,
+        updateContext: {
+          putEntries: () => [
+            {
+              dependent: node1,
+              spec: peerSpec1,
+              type: 'peer' as const,
+            },
+          ],
+          resolvePeerDeps: () => {},
+        },
+      }
+      const entry2 = {
+        node: node2,
+        deps: [],
+        peerContext: peerContext2,
+        updateContext: {
+          putEntries: () => [
+            {
+              dependent: node2,
+              spec: peerSpec2, // Different spec = incompatible
+              type: 'peer' as const,
+            },
+          ],
+          resolvePeerDeps: () => {},
+        },
+      }
+
+      const sortedLevelResults = [[entry1, entry2]]
+
+      postPlacementPeerCheck(sortedLevelResults, nextPeerContextIndex)
+
+      // Both nodes should have forked contexts, but they should be different
+      t.ok(
+        entry1.peerContext.index !== undefined,
+        'first node should have forked context',
+      )
+      t.ok(
+        entry2.peerContext.index !== undefined,
+        'second node should have forked context',
+      )
+      t.not(
+        entry1.peerContext,
+        entry2.peerContext,
+        'contexts should be different for incompatible siblings',
+      )
+      t.not(
+        entry1.peerContext.index,
+        entry2.peerContext.index,
+        'context indices should be different',
+      )
+    },
+  )
 })
 
 t.test('integration tests', async t => {

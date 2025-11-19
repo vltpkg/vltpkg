@@ -23,8 +23,17 @@ import type {
 import type { ExtractResult } from '../reify/extract-node.ts'
 import { extractNode } from '../reify/extract-node.ts'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { checkEntriesToPeerContext, endPeerPlacement, startPeerPlacement, forkPeerContext } from './peers.ts'
+import {
+  endPeerPlacement,
+  postPlacementPeerCheck,
+  startPeerPlacement,
+} from './peers.ts'
 import type { PeerContext } from './peers.ts'
+import type {
+  AppendNodeEntry,
+  ProcessPlacementResult,
+  ProcessPlacementResultEntry,
+} from './types.ts'
 
 type FileTypeInfo = {
   id: DepID
@@ -104,25 +113,6 @@ type NodePlacementTask = {
   childDeps?: Dependency[]
   childModifierRefs?: Map<string, ModifierActiveEntry>
   childPeerContext?: PeerContext
-}
-
-/**
- * Represents an ongoing append operation for a node and its dependencies.
- */
-type AppendNodeEntry = {
-  node: Node
-  deps: Dependency[]
-  modifierRefs?: Map<string, ModifierActiveEntry>
-  depth: number
-  peerContext: PeerContext
-  updateContext: {
-    putEntries: () => {
-      dependent: Node
-      spec: Spec
-      type: DependencySaveType
-    }[] | undefined
-    resolvePeerDeps: () => void
-  }
 }
 
 /**
@@ -251,9 +241,6 @@ const fetchManifestsForDeps = async (
 
   return placementTasks
 }
-
-type ProcessPlacementResultEntry = Omit<AppendNodeEntry, 'depth'>
-type ProcessPlacementResult = ProcessPlacementResultEntry[]
 
 /**
  * Process placement tasks and collect child dependencies, this is the
@@ -500,11 +487,12 @@ export const appendNodes = async (
       modifierRefs,
       depth: 0,
       peerContext: initialPeerContext,
-      /* c8 ignore next */
+      /* c8 ignore start */
       updateContext: {
         putEntries: () => undefined,
         resolvePeerDeps: () => {},
       },
+      /* c8 ignore stop */
     },
   ]
 
@@ -589,39 +577,11 @@ export const appendNodes = async (
       },
     )
 
-    // Update peer contexts in a sorted manner after processing all nodes
-    // at a given level to ensure deterministic behavior when it comes to
-    // forking new peer contexts
-    for (const childDepsToProcess of sortedLevelResults) {
-      const needsForking = new Map<ProcessPlacementResultEntry, {
-        dependent: Node
-        spec: Spec
-        type: DependencySaveType
-      }[]>()
-      // first iterate on all child deps, adding entries to the current
-      // context and collect the information on which ones need forking
-      for (const childDep of childDepsToProcess) {
-        const needsFork = childDep.updateContext.putEntries()
-        if (needsFork) {
-          needsForking.set(childDep, needsFork)
-        }
-      }
-      // then iterate again, forking contexts as needed but also try to
-      // reuse the context of the previous sibling if possible
-      let prevContext
-      for (const [childDep, nextEntries] of needsForking.entries()) {
-        if (prevContext && !checkEntriesToPeerContext(prevContext, nextEntries)) {
-          continue
-        }
-        childDep.peerContext = forkPeerContext(childDep.peerContext, nextEntries, nextPeerContextIndex)
-        prevContext = childDep.peerContext
-      }
-      // try to resolve peer dependencies now that
-      // the context is fully set up
-      for (const childDep of childDepsToProcess) {
-        childDep.updateContext.resolvePeerDeps()
-      }
-    }
+    // Traverse the queued up children dependencies, adding and tracking
+    // dependencies on the peer context set, forking the context as needed
+    // and resolving any peer dependency that is able to be resolved using
+    // the current peer context set
+    postPlacementPeerCheck(sortedLevelResults, nextPeerContextIndex)
 
     // Collect all child dependencies for the next level
     for (const childDepsToProcess of sortedLevelResults) {
