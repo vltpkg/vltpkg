@@ -127,9 +127,9 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
         )}
         {...rest}>
         {startContent && (
-          <div className="absolute z-[4] pr-8">{startContent}</div>
+          <div className="absolute z-[51] pr-8">{startContent}</div>
         )}
-        <div id={QUERY_BAR_ID} className="relative z-[3] w-full">
+        <div id={QUERY_BAR_ID} className="relative z-[51] w-full">
           <Input
             onFocus={onFocus}
             onBlur={onBlur}
@@ -161,7 +161,7 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
           />
         </div>
         {endContent && (
-          <div className="absolute right-0 z-[3]">{endContent}</div>
+          <div className="absolute right-0 z-[51]">{endContent}</div>
         )}
       </div>
     )

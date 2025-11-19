@@ -173,7 +173,7 @@ const QueryBuilderUi = () => {
   return createPortal(
     <section
       className={cn(
-        'border-muted bg-popover absolute inset-x-0 top-10 z-[10000] flex w-full rounded-b-xl border border-t-0 shadow-lg',
+        'border-muted bg-popover absolute inset-x-0 top-10 z-50 flex w-full rounded-b-xl border border-t-0 shadow-lg',
         queryInputFocused &&
           'after:border-ring after:absolute after:-inset-[5px] after:rounded-[14px] after:rounded-t-none after:border-x-[2px] after:border-b-[2px] after:content-[""]',
       )}>
@@ -202,7 +202,7 @@ const QueryBuilderUi = () => {
         <div
           id="query-builder-focus-guard"
           onClick={handleFocusGuardClick}
-          className="fixed inset-0 z-[10000] bg-transparent"
+          className="fixed inset-0 z-50 bg-transparent"
         />,
         document.body,
       )}
