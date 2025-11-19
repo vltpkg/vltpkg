@@ -1,12 +1,16 @@
+import { motion, AnimatePresence } from 'framer-motion'
 import { transfer } from '@vltpkg/graph/browser'
 import { useNavigate, useParams, useLocation } from 'react-router'
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import { SetupProject } from '@/components/explorer-grid/setup-project.tsx'
 import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import { createHostContextsMap } from '@/lib/query-host-contexts.ts'
+import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
+
+import type { MotionProps } from 'framer-motion'
 import type { TransferData, Action, State } from '@/state/types.ts'
 
 export type ExplorerOptions = {
@@ -55,6 +59,20 @@ const startGraphData = async ({
   updateQ(q)
 }
 
+// 'supercharge' the `explorer-grid` component
+// so that can get access to some fancy animations
+const ExplorerGridWrapper = forwardRef<HTMLDivElement>((_, ref) => {
+  return (
+    <div ref={ref}>
+      <ExplorerGrid />
+    </div>
+  )
+})
+
+ExplorerGridWrapper.displayName = 'ExplorerGridWrapper'
+
+const MotionExplorerGrid = motion.create(ExplorerGridWrapper)
+
 export const Explorer = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -72,6 +90,9 @@ export const Explorer = () => {
   const updateQ = useGraphStore(state => state.updateQ)
   const updateSpecOptions = useGraphStore(
     state => state.updateSpecOptions,
+  )
+  const updateGraphStamp = useGraphStore(
+    state => state.updateGraphStamp,
   )
   const stamp = useGraphStore(state => state.stamp)
   const updateIsExternalPackage = useGraphStore(
@@ -130,11 +151,16 @@ export const Explorer = () => {
       updateQ,
       updateSpecOptions,
       stamp,
-    }).catch((err: unknown) => {
-      console.error(err)
-      void navigate('/error')
-      updateErrorCause('Failed to initialize explorer.')
     })
+      .then(() => {
+        // Mark that graph data has been loaded for this stamp
+        updateGraphStamp(stamp)
+      })
+      .catch((err: unknown) => {
+        console.error(err)
+        void navigate('/error')
+        updateErrorCause('Failed to initialize explorer.')
+      })
   }, [
     isNpmRoute,
     stamp,
@@ -143,11 +169,27 @@ export const Explorer = () => {
     updateProjectInfo,
     updateQ,
     updateSpecOptions,
+    updateGraphStamp,
     navigate,
     updateErrorCause,
   ])
 
   return <ExplorerContent />
+}
+
+const explorerMotion: MotionProps = {
+  initial: {
+    opacity: 0,
+    filter: 'blur(4px)',
+  },
+  animate: {
+    opacity: 1,
+    filter: 'blur(0px)',
+  },
+  exit: {
+    opacity: 0,
+    filter: 'blur(4px)',
+  },
 }
 
 const ExplorerContent = () => {
@@ -157,6 +199,8 @@ const ExplorerContent = () => {
   const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
+  const stamp = useGraphStore(state => state.stamp)
+  const graphStamp = useGraphStore(state => state.graphStamp)
   const isExternalPackage = useGraphStore(
     state => state.isExternalPackage,
   )
@@ -168,6 +212,10 @@ const ExplorerContent = () => {
   useEffect(() => {
     async function updateQueryData() {
       if (!q) return
+
+      // Clear edges/nodes immediately when query changes to prevent stale data
+      updateEdges([])
+      updateNodes([])
 
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
@@ -191,15 +239,28 @@ const ExplorerContent = () => {
     return <ExplorerGrid />
   }
 
-  // avoids flash of content
-  if (!graph) {
-    return undefined
-  }
-
   // intentional check for `false` in order to avoid flashing content
   if (projectInfo.vltInstalled === false) {
     return <SetupProject />
   }
 
-  return <ExplorerGrid />
+  return (
+    <AnimatePresence mode="popLayout">
+      {!graph || graphStamp !== stamp ?
+        <motion.div
+          className="fixed inset-0 z-[100] flex h-full w-full justify-center backdrop-blur-2xl"
+          {...explorerMotion}>
+          <div className="relative flex h-svh w-svw items-center justify-center">
+            <JellyTriangleSpinner />
+          </div>
+        </motion.div>
+      : <MotionExplorerGrid
+          {...explorerMotion}
+          transition={{
+            delay: 0.25, // to ensure it has enough time
+          }}
+        />
+      }
+    </AnimatePresence>
+  )
 }
