@@ -640,9 +640,6 @@ export const SelectedItemProvider = ({
       // For packages from the graph, use the hydrated dep ID
       if (!item.to?.name) return
 
-      console.log('item.to.id', item.to.id)
-      console.log('item.to.name', item.to.name)
-      console.log('specOptions', specOptions)
       const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
       const manifest = item.to.manifest ?? {}
       const abortController = new AbortController()

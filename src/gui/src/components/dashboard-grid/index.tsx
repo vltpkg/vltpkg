@@ -1,16 +1,15 @@
-import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useGraphStore } from '@/state/index.ts'
+import { useGraphStore, DEFAULT_QUERY } from '@/state/index.ts'
 import { requestRouteTransition } from '@/lib/request-route-transition.ts'
 import { useDashboardStore } from '@/state/dashboard.ts'
 import { useDashboardRootCheck } from '@/components/hooks/use-dashboard-root-check.tsx'
 import { Plus, Settings2 } from 'lucide-react'
 import { DashboardItem } from '@/components/dashboard-grid/dashboard-item.tsx'
-import { LoadingSpinner } from '@/components/ui/loading-spinner.tsx'
 import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.tsx'
 import { InlineCode } from '@/components/ui/inline-code.tsx'
 import { Button } from '@/components/ui/button.tsx'
+import { encodeCompressedQuery } from '@/lib/compress-query.ts'
 
 import type { DashboardDataProject } from '@/state/types.ts'
 
@@ -39,11 +38,7 @@ export const DashboardGrid = () => {
     state => state.setColumnVisibility,
   )
 
-  const [inProgress, setInProgress] = useState<boolean>(false)
   const onItemClick = (selectedProject: DashboardDataProject) => {
-    if (inProgress) return
-    setInProgress(true)
-
     void requestRouteTransition<{ path: string }>({
       navigate,
       updateErrorCause,
@@ -53,17 +48,9 @@ export const DashboardGrid = () => {
         path: selectedProject.path,
       },
       url: '/select-project',
-      destinationRoute: '/explore',
+      destinationRoute: `/explore/${encodeCompressedQuery(DEFAULT_QUERY)}/overview`,
       errorMessage: 'Failed to select project.',
     }).catch((err: unknown) => console.error(err))
-  }
-
-  if (inProgress) {
-    return (
-      <div className="flex h-96 w-full items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    )
   }
 
   if (!dashboard?.projects || dashboard.projects.length === 0) {

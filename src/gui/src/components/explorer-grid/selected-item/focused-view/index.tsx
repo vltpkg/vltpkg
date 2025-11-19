@@ -25,6 +25,7 @@ export const FocusedView = ({
 }: FocusedViewProps) => {
   return (
     <SelectedItemProvider
+      key={item.id}
       selectedItem={item}
       asideOveriewVisible={false}>
       <motion.section
