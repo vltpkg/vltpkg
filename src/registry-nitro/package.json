@@ -19,7 +19,7 @@
     "drizzle-orm": "^0.44.5",
     "h3": "2.0.0-beta.4",
     "libsql": "^0.5.20",
-    "nitro": "npm:nitro-nightly@3.0.0-20250911-162707-b6dbc0f9",
+    "nitro": "npm:nitro-nightly@3.0.1-alpha.1",
     "ssri": "catalog:",
     "unstorage": "^1.17.1",
     "zod": "^4.1.8"
