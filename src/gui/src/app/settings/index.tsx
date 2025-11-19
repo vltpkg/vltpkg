@@ -38,8 +38,8 @@ const handleDashboardRootRemove = async (
 export const SettingsView = () => {
   const { theme, setTheme } = useTheme()
   const updateStamp = useGraphStore(state => state.updateStamp)
-  const { dashboardRoots } = useDashboardRootCheck()
-  const [_, setForceRerender] = useState<number>(0)
+  const [forceRerender, setForceRerender] = useState<number>(0)
+  const { dashboardRoots } = useDashboardRootCheck(forceRerender)
   const { toast } = useToast()
 
   const rerender = () => setForceRerender(v => v + 1)

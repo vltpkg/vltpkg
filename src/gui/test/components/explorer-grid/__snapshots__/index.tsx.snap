@@ -3,10 +3,6 @@
 exports[`ExplorerGrid render default 1`] = `
 
 <div>
-  <div class="px-8 py-4">
-    <gui-empty-results-state>
-    </gui-empty-results-state>
-  </div>
 </div>
 
 `;
@@ -16,6 +12,17 @@ exports[`ExplorerGrid renders workspace with edges in 1`] = `
 <div>
   <gui-selected-item item="[object Object]">
   </gui-selected-item>
+</div>
+
+`;
+
+exports[`ExplorerGrid with empty results state 1`] = `
+
+<div>
+  <div class="px-8 py-4">
+    <gui-empty-results-state>
+    </gui-empty-results-state>
+  </div>
 </div>
 
 `;

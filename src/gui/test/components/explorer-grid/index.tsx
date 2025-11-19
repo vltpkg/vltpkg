@@ -353,3 +353,46 @@ test('ExplorerGrid renders workspace with edges in', async () => {
   render(<Container />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
+
+test('ExplorerGrid with empty results state', async () => {
+  const mockState = {
+    page: 1,
+    totalPages: 0,
+    pageSize: 25,
+    pageItems: [],
+    allItems: [],
+    sortBy: 'alphabetical',
+    sortDir: 'asc',
+    setPage: vi.fn(),
+    setSortBy: vi.fn(),
+    setPageSize: vi.fn(),
+    setSortDir: vi.fn(),
+  } satisfies ResultsStore
+
+  vi.mocked(useResultsStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const Container = () => {
+    const updateEdges = useStore(state => state.updateEdges)
+    const updateNodes = useStore(state => state.updateNodes)
+    const updateQuery = useStore(state => state.updateQuery)
+    // Set empty edges but with a non-importer node
+    // This simulates a query that returned no matching results
+    updateEdges([])
+    updateNodes([
+      {
+        id: joinDepIDTuple(['registry', '', 'pkg@1.0.0']),
+        name: 'pkg',
+        version: '1.0.0',
+        importer: false,
+        insights: {},
+        toJSON() {},
+      } as QueryResponseNode,
+    ])
+    updateQuery('#nonexistent')
+    return <ExplorerGrid />
+  }
+  render(<Container />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})

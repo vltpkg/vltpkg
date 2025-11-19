@@ -46,7 +46,6 @@ export const requestRouteTransition = async <T>({
   }
 
   if (projectSelected) {
-    window.scrollTo(0, 0)
     updateQuery(DEFAULT_QUERY)
     navigate(destinationRoute)
     updateStamp()

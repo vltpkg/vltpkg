@@ -24,6 +24,7 @@ export type Action = {
   updateProjectInfo: (projectInfo: State['projectInfo']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
   updateStamp: () => void
+  updateGraphStamp: (graphStamp: State['graphStamp']) => void
   updateTheme: (theme: State['theme']) => void
   updateQueryBuilderDisplay: (
     queryBuilderDisplay: State['queryBuilderDisplay'],
@@ -155,6 +156,11 @@ export type State = {
    * A random string to control when graph data should be reloaded.
    */
   stamp: string
+  /**
+   * The stamp value when the current graph data was loaded.
+   * Used to prevent rendering with stale edges/nodes.
+   */
+  graphStamp: string
   /**
    * Store the current theme value.
    */

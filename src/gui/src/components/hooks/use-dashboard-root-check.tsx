@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useGraphStore } from '@/state/index.ts'
 import { getFromConfig } from '@/lib/vlt-config.ts'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 
-export const useDashboardRootCheck = (): {
+export const useDashboardRootCheck = (
+  rerender?: any, // eslint-disable @typescript-eslint/no-explicit-any
+): {
   hasDashboard: boolean
   isLoading: boolean
   dashboardRoots: string[] | null
@@ -56,7 +57,7 @@ export const useDashboardRootCheck = (): {
   useEffect(() => {
     void fetchDashboardRoot()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [useGraphStore.getState().stamp])
+  }, [rerender])
 
   return { hasDashboard, isLoading, dashboardRoots }
 }
