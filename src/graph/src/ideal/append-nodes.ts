@@ -32,7 +32,6 @@ import type { PeerContext } from './peers.ts'
 import type {
   AppendNodeEntry,
   ProcessPlacementResult,
-  ProcessPlacementResultEntry,
 } from './types.ts'
 
 type FileTypeInfo = {
@@ -347,6 +346,8 @@ const processPlacementTasks = async (
 
     // Extract the node if it doesn't exist in the actual graph and we have the necessary parameters
     if (
+      type !== 'peer' &&
+      type !== 'peerOptional' &&
       remover &&
       extractPromises &&
       actual &&
@@ -545,46 +546,14 @@ export const appendNodes = async (
       ),
     )
 
-    // sort level results for deterministic processing order
-    const sortedLevelResults = levelResults.sort(
-      (a: ProcessPlacementResult, b: ProcessPlacementResult) => {
-        const orderedEntry = ({
-          node,
-          deps,
-        }: ProcessPlacementResultEntry): string => {
-          /* c8 ignore start */
-          const sortedDeps = deps.sort((depA, depB) => {
-            const depAIsPeer =
-              depA.type === 'peer' || depA.type === 'peerOptional' ?
-                1
-              : 0
-            const depBIsPeer =
-              depB.type === 'peer' || depB.type === 'peerOptional' ?
-                1
-              : 0
-            if (depAIsPeer !== depBIsPeer) {
-              return depAIsPeer - depBIsPeer
-            }
-            return depA.spec.name.localeCompare(depB.spec.name, 'en')
-          })
-          /* c8 ignore stop */
-          const ref = sortedDeps.map(dep => dep.spec.name).join(';')
-          return `${node.id}(${ref})`
-        }
-        const aRef = a.map(orderedEntry).join(',')
-        const bRef = b.map(orderedEntry).join(',')
-        return aRef.localeCompare(bRef, 'en')
-      },
-    )
-
     // Traverse the queued up children dependencies, adding and tracking
     // dependencies on the peer context set, forking the context as needed
     // and resolving any peer dependency that is able to be resolved using
     // the current peer context set
-    postPlacementPeerCheck(sortedLevelResults, nextPeerContextIndex)
+    postPlacementPeerCheck(levelResults, nextPeerContextIndex)
 
     // Collect all child dependencies for the next level
-    for (const childDepsToProcess of sortedLevelResults) {
+    for (const childDepsToProcess of levelResults) {
       for (const childDep of childDepsToProcess) {
         if (!seen.has(childDep.node.id)) {
           /* c8 ignore next */
