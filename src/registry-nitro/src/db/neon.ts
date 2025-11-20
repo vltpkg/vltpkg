@@ -1,6 +1,13 @@
+import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
-import * as schema from './schema-pg.ts'
 
-const db = drizzle(process.env.NEON_DATABASE_URL!, { schema })
+let singleton: ReturnType<typeof drizzle> | null = null
 
-export const getDb = () => db
+export default (url: string) => {
+  if (singleton) {
+    return singleton
+  }
+  const client = neon(url)
+  singleton = drizzle({ client })
+  return singleton
+}

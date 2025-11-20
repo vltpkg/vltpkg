@@ -45,6 +45,7 @@ export default defineNitroConfig({
   serverDir: './src',
   minify: false,
   imports: false,
+  // builder: 'rolldown',
   runtimeConfig: {
     db: 'neon' as 'neon' | 'sqlite',
     NEON_DATABASE_URL: process.env.NEON_DATABASE_URL,
@@ -77,31 +78,4 @@ export default defineNitroConfig({
       ],
     },
   },
-  // experimental: {
-  //   database: true,
-  // },
-  // database: {
-  //   default: {
-  //     connector: 'sqlite',
-  //     options: {
-  //       url: 'file:.data/db.sqlite',
-  //     },
-  //   },
-  // },
-  // storage: {
-  //   packages: {
-  //     driver: getDriver('packages', buildEnv),
-  //   },
-  //   tarballs: {
-  //     driver: getDriver('tarballs', buildEnv),
-  //   },
-  // },
-  // devStorage: {
-  //   packages: {
-  //     driver: getDriver('packages', 'node'),
-  //   },
-  //   tarballs: {
-  //     driver: getDriver('tarballs', 'node'),
-  //   },
-  // },
 })
