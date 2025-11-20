@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { defineNitroConfig } from 'nitro/config'
-// import { resolve } from 'node:path'
+import { resolve } from 'node:path'
 
 const Envs = {
   cloudflare: 'cloudflare',
@@ -35,6 +35,8 @@ const buildEnv =
 //     `./src/drivers/${type}-${env}.ts`,
 //   )
 // }
+
+const storage = 'fs' as 'fs' | 'r2' | 's3'
 
 export default defineNitroConfig({
   preset:
@@ -77,5 +79,22 @@ export default defineNitroConfig({
         },
       ],
     },
+  },
+  storage: {
+    tarballs:
+      storage === 'fs' ?
+        {
+          driver: 'fs-lite',
+          base: resolve(import.meta.dirname, '.data/tarballs'),
+        }
+      : storage === 'r2' ?
+        {
+          driver: 'cloudflare-r2',
+          bucket: 'vsr-production-tarballs',
+        }
+      : {
+          driver: 's3',
+          bucket: 'vsr-production-tarballs',
+        },
   },
 })

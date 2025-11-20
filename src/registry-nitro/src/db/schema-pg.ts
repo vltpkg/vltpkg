@@ -13,25 +13,31 @@ export const packages = pgTable('packages', {
   updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 })
 
-export const versions = pgTable('versions', {
-  spec: text('spec').primaryKey().notNull(),
-  manifest: text('manifest').$type<string>().notNull(),
-  headers: json('headers').$type<Record<string, string>>().notNull(),
-  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
-})
-
-export const tarballs = pgTable(
-  'tarballs',
+export const versions = pgTable(
+  'versions',
   {
     name: text('name').notNull(),
-    version: text('version'),
-    filename: text('filename').notNull(),
+    version: text('version').notNull(),
+    manifest: text('manifest').$type<string>().notNull(),
     headers: json('headers')
       .$type<Record<string, string>>()
       .notNull(),
     updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
   },
-  table => [primaryKey({ columns: [table.name, table.filename] })],
+  table => [primaryKey({ columns: [table.name, table.version] })],
+)
+
+export const tarballs = pgTable(
+  'tarballs',
+  {
+    name: text('name').notNull(),
+    version: text('version').notNull(),
+    headers: json('headers')
+      .$type<Record<string, string>>()
+      .notNull(),
+    updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+  },
+  table => [primaryKey({ columns: [table.name, table.version] })],
 )
 
 export const tokens = pgTable('tokens', {

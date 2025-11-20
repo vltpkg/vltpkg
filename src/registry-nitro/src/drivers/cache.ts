@@ -124,7 +124,7 @@ export async function setCachedVersion(
 
 export async function getCachedTarball(
   name: string,
-  filename: string,
+  version: string,
   db: any,
   schema: any,
 ) {
@@ -134,14 +134,14 @@ export async function getCachedTarball(
     .where(
       and(
         eq(schema.tarballs.name, name),
-        eq(schema.tarballs.filename, filename),
+        eq(schema.tarballs.version, version),
       ),
     )
     .limit(1)
 
   if (!row) return null
 
-  const key = `tarballs:${filename}`
+  const key = `tarballs:${name}:${version}`
   const hasItem = await useStorage().hasItem(key)
   if (!hasItem) return null
 
@@ -159,13 +159,14 @@ export async function getCachedTarball(
 
 export async function setCachedTarball(
   name: string,
-  filename: string,
+  version: string,
   data: any,
   headers: Record<string, string>,
   db: any,
   schema: any,
 ) {
-  const key = `tarballs:${filename}`
+  const key = `tarballs:${name}:${version}`
+
   // useStorage().setItemRaw supports ReadableStream
   await useStorage().setItemRaw(key, data)
 
@@ -173,12 +174,12 @@ export async function setCachedTarball(
     .insert(schema.tarballs)
     .values({
       name,
-      filename,
+      version,
       headers,
       updatedAt: Date.now(),
     })
     .onConflictDoUpdate({
-      target: [schema.tarballs.name, schema.tarballs.filename],
+      target: [schema.tarballs.name, schema.tarballs.version],
       set: { headers, updatedAt: Date.now() },
     })
 }
@@ -202,10 +203,6 @@ export async function fetchAndCache<T>(
   ) => Promise<void>,
   ttl: number,
 ) {
-  if (!event.waitUntil) {
-    throw new Error('event.waitUntil is required for caching')
-  }
-
   const cached = await cacheGetter()
 
   if (cached) {
@@ -236,8 +233,11 @@ export async function fetchAndCache<T>(
   // Miss
   const { data, headers } = await fetcher()
 
+  console.log('data', data)
+
   // For streaming responses (tarballs), we need to TEE the stream
   if (data instanceof ReadableStream) {
+    console.log('here')
     const [streamForResponse, streamForCache] = data.tee()
 
     event.waitUntil(

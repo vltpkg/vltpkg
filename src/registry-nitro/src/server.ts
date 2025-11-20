@@ -170,6 +170,7 @@ npm.get('/@:scope/:name/:version', versionHandler)
 const tarballHandler = defineEventHandler(async event => {
   const { name, scope, tarball } = event.context.params ?? {}
   const pkgName = scope ? `@${scope}/${name}` : name!
+  const version = tarball!.replace(name! + '-', '')
   const db = event.context.db
   const schema = getDbSchema()
 
@@ -179,9 +180,9 @@ const tarballHandler = defineEventHandler(async event => {
   const result = await fetchAndCache(
     event,
     () => fetchUpstreamTarball(upstreamPath),
-    () => getCachedTarball(pkgName, tarball!, db, schema),
+    () => getCachedTarball(pkgName, version, db, schema),
     (data, headers) =>
-      setCachedTarball(pkgName, tarball!, data, headers, db, schema),
+      setCachedTarball(pkgName, version, data, headers, db, schema),
     TTL.TARBALL,
   )
 
