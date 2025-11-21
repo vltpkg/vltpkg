@@ -136,10 +136,7 @@ t.test('Edge', async t => {
       child,
     )
     const edgeStr = edge.toString()
-    t.equal(
-      edgeStr,
-      `Edge from: ${root.id} --|prod|--> foo`,
-    )
+    t.equal(edgeStr, `Edge from: ${root.id} --|prod|--> foo`)
 
     const danglingEdge = new Edge(
       'prod',

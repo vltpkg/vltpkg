@@ -10,46 +10,12 @@ import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
 import type {
+  PeerContext,
+  PeerContextEntry,
+  PeerContextEntryInput,
   ProcessPlacementResult,
   ProcessPlacementResultEntry,
 } from './types.ts'
-
-/**
- * Entry in a peer context representing a resolved peer dependency.
- */
-export type PeerContextEntry = {
-  /**
-   * True if this entry is currently being resolved and track by this
-   * peer context set, false in case this entry was inherit from a previous
-   * peer context set and should not be considered for resolution.
-   */
-  active: boolean
-  /** List of full Spec objects that are part of this peer context entry */
-  specs: Set<Spec>
-  /** The target Node that satisfies all specs for this peer context entry */
-  target: Node | undefined
-  /** The type of dependency this entry represents */
-  type: DependencySaveType
-  /** Context dependent nodes that had dependencies resolved to this entry */
-  contextDependents: Set<Node>
-}
-
-/**
- * Input for adding an entry to peer contexts.
- */
-export type PeerContextEntryInput = {
-  /** Node that depends on this resolved peer context set entry */
-  dependent?: Node
-  /** Node this peer context entry resolves to */
-  target?: Node
-} & Dependency
-
-/**
- * Represents resolved peer dependencies in a given append-nodes context.
- */
-export type PeerContext = Map<string, PeerContextEntry> & {
-  index?: number
-}
 
 /**
  * Retrieve a unique hash value for a given peer context set.
@@ -206,13 +172,15 @@ export const addEntriesToPeerContext = (
  * Create and returns a forked copy of a given peer context set.
  */
 export const forkPeerContext = (
+  graph: Graph,
   peerContext: PeerContext,
   entries: PeerContextEntryInput[],
-  nextPeerContextIndex: () => number,
 ): PeerContext => {
   // create a new peer context set
   const nextPeerContext: PeerContext = new Map()
-  nextPeerContext.index = nextPeerContextIndex()
+  nextPeerContext.index = graph.nextPeerContextIndex()
+  // register it in the graph
+  graph.peerContexts[nextPeerContext.index] = nextPeerContext
 
   // copy existing entries marking them as inactive, it's also important
   // to note that specs and contextDependents are new objects so that changes
@@ -402,8 +370,8 @@ export const endPeerPlacement = (
  * nodes already present in the graph if possible.
  */
 export const postPlacementPeerCheck = (
+  graph: Graph,
   sortedLevelResults: ProcessPlacementResult[],
-  nextPeerContextIndex: () => number,
 ) => {
   // Update peer contexts in a sorted manner after processing all nodes
   // at a given level to ensure deterministic behavior when it comes to
@@ -443,9 +411,9 @@ export const postPlacementPeerCheck = (
         continue
       }
       childDep.peerContext = forkPeerContext(
+        graph,
         childDep.peerContext,
         nextEntries,
-        nextPeerContextIndex,
       )
       prevContext = childDep.peerContext
     }

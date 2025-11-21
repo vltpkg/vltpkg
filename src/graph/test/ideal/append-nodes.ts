@@ -12,8 +12,6 @@ import { asDependency } from '../../src/dependencies.ts'
 import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { appendNodes } from '../../src/ideal/append-nodes.ts'
-import { nextPeerContextIndex } from '../../src/ideal/add-nodes.ts'
-import type { PeerContext } from '../../src/ideal/peers.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { Node } from '../../src/node.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
@@ -136,8 +134,6 @@ t.test('append a new node to a graph from a registry', async t => {
     'has no direct dependency yet',
   )
   const scurry = new PathScurry(t.testdirName)
-  const initialPeerContext: PeerContext = new Map()
-  initialPeerContext.index = nextPeerContextIndex()
   await appendNodes(
     add,
     packageInfo,
@@ -147,10 +143,6 @@ t.test('append a new node to a graph from a registry', async t => {
     scurry,
     configData,
     new Set<DepID>(),
-    initialPeerContext,
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
@@ -178,8 +170,6 @@ t.test('append a new node to a graph from a registry', async t => {
   )
   t.equal(bazNodeSet?.size, 1)
 
-  const barPeerContext: PeerContext = new Map()
-  barPeerContext.index = nextPeerContextIndex()
   await appendNodes(
     add,
     packageInfo,
@@ -189,10 +179,6 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    barPeerContext,
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -200,8 +186,6 @@ t.test('append a new node to a graph from a registry', async t => {
     'should add a direct dependency on latest bar',
   )
 
-  const borkedPeerContext: PeerContext = new Map()
-  borkedPeerContext.index = nextPeerContextIndex()
   await t.rejects(
     appendNodes(
       add,
@@ -212,15 +196,11 @@ t.test('append a new node to a graph from a registry', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      borkedPeerContext,
-      nextPeerContextIndex,
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
   )
 
-  const gitPeerContext: PeerContext = new Map()
-  gitPeerContext.index = nextPeerContextIndex()
   await appendNodes(
     add,
     packageInfo,
@@ -230,10 +210,6 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    gitPeerContext,
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
   t.matchSnapshot(
     [...add].map(([name, dep]) => [
@@ -309,14 +285,6 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    (() => {
-      const pc: PeerContext = new Map()
-      pc.index = nextPeerContextIndex()
-      return pc
-    })(),
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
 
   await appendNodes(
@@ -328,18 +296,8 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    (() => {
-      const pc: PeerContext = new Map()
-      pc.index = nextPeerContextIndex()
-      return pc
-    })(),
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
 
-  const missingPeerContext: PeerContext = new Map()
-  missingPeerContext.index = nextPeerContextIndex()
   await t.rejects(
     appendNodes(
       add,
@@ -350,8 +308,6 @@ t.test('append different type of dependencies', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      missingPeerContext,
-      nextPeerContextIndex,
     ),
     /failed to resolve dependency/,
     'should throw if failes to create a node for a given manifest',
@@ -438,14 +394,6 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    (() => {
-      const pc: PeerContext = new Map()
-      pc.index = nextPeerContextIndex()
-      return pc
-    })(),
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
   await appendNodes(
     add,
@@ -456,14 +404,6 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    (() => {
-      const pc: PeerContext = new Map()
-      pc.index = nextPeerContextIndex()
-      return pc
-    })(),
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -581,14 +521,6 @@ t.test('resolve against the correct registries', async t => {
       registries,
     },
     new Set<DepID>(),
-    (() => {
-      const pc: PeerContext = new Map()
-      pc.index = nextPeerContextIndex()
-      return pc
-    })(),
-    nextPeerContextIndex,
-    undefined,
-    undefined,
   )
   t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
@@ -616,8 +548,6 @@ t.test('appendNodes with query modifier', async t => {
   })
 
   // Call appendNodes with minimal arguments
-  const minimalPeerContext: PeerContext = new Map()
-  minimalPeerContext.index = nextPeerContextIndex()
   await appendNodes(
     new Map(),
     packageInfo,
@@ -627,8 +557,6 @@ t.test('appendNodes with query modifier', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    minimalPeerContext,
-    nextPeerContextIndex,
   )
 
   // Verify the appendNodes function ran without errors
@@ -696,8 +624,6 @@ t.test(
     )
 
     // Call appendNodes with the modifier
-    const modifierPeerContext: PeerContext = new Map()
-    modifierPeerContext.index = nextPeerContextIndex()
     await appendNodes(
       new Map([['foo', fooDep]]),
       packageInfo,
@@ -707,8 +633,6 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      modifierPeerContext,
-      nextPeerContextIndex,
       modifiers,
       completeModifierRefs,
     )
@@ -783,8 +707,6 @@ t.test('spec edge removal', async t => {
   )
 
   // Call appendNodes with the modifier
-  const removePeerContext: PeerContext = new Map()
-  removePeerContext.index = nextPeerContextIndex()
   await appendNodes(
     new Map([['foo', fooDep]]),
     packageInfo,
@@ -794,8 +716,6 @@ t.test('spec edge removal', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    removePeerContext,
-    nextPeerContextIndex,
     modifiers,
     completeModifierRefs,
   )
@@ -836,8 +756,6 @@ t.test(
 
     try {
       // This should throw an error
-      const placePeerContext: PeerContext = new Map()
-      placePeerContext.index = nextPeerContextIndex()
       await t.rejects(
         appendNodes(
           new Map([['foo', fooDep]]),
@@ -848,8 +766,6 @@ t.test(
           new PathScurry(t.testdirName),
           configData,
           new Set<DepID>(),
-          placePeerContext,
-          nextPeerContextIndex,
         ),
         /failed to place package/,
         'should throw when graph.placePackage returns null',
@@ -929,8 +845,6 @@ t.test(
     }
 
     // call appendNodes with the mock modifier
-    const mockPeerContext: PeerContext = new Map()
-    mockPeerContext.index = nextPeerContextIndex()
     await appendNodes(
       new Map([['foo', fooDep]]),
       packageInfo,
@@ -940,8 +854,6 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      mockPeerContext,
-      nextPeerContextIndex,
       mockModifier as any,
     )
 
@@ -1045,8 +957,6 @@ t.test(
         }),
       ]
       const add = new Map(deps.map(d => [d.spec.name, d]))
-      const buildPeerContext: PeerContext = new Map()
-      buildPeerContext.index = nextPeerContextIndex()
       await appendNodes(
         add,
         makePackageInfo(delays),
@@ -1056,8 +966,6 @@ t.test(
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
-        buildPeerContext,
-        nextPeerContextIndex,
       )
       return graph
     }
@@ -1122,8 +1030,6 @@ t.test('early extraction during appendNodes', async t => {
       const extractPromises: any[] = []
       const seenExtracted = new Set<DepID>()
 
-      const extractPeerContext: PeerContext = new Map()
-      extractPeerContext.index = nextPeerContextIndex()
       await appendNodes(
         new Map([['foo', fooDep]]),
         packageInfo,
@@ -1133,8 +1039,6 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
-        extractPeerContext,
-        nextPeerContextIndex,
         undefined,
         undefined,
         extractPromises,
@@ -1196,8 +1100,6 @@ t.test('early extraction during appendNodes', async t => {
       })
 
       // First, add the node to actual graph
-      const actualPeerContext: PeerContext = new Map()
-      actualPeerContext.index = nextPeerContextIndex()
       await appendNodes(
         new Map([['foo', fooDep]]),
         packageInfo,
@@ -1207,8 +1109,6 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
-        actualPeerContext,
-        nextPeerContextIndex,
       )
 
       // Reset extraction tracking
@@ -1218,8 +1118,6 @@ t.test('early extraction during appendNodes', async t => {
       const seenExtracted = new Set<DepID>()
 
       // Now add to ideal graph with actual graph provided
-      const skipExtractPeerContext: PeerContext = new Map()
-      skipExtractPeerContext.index = nextPeerContextIndex()
       await appendNodes(
         new Map([['foo', fooDep]]),
         packageInfo,
@@ -1229,8 +1127,6 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
-        skipExtractPeerContext,
-        nextPeerContextIndex,
         undefined,
         undefined,
         extractPromises,
@@ -1313,8 +1209,6 @@ t.test('early extraction during appendNodes', async t => {
       const extractPromises: any[] = []
       const seenExtracted = new Set<DepID>()
 
-      const noduplPeerContext: PeerContext = new Map()
-      noduplPeerContext.index = nextPeerContextIndex()
       await appendNodes(
         new Map([['foo', fooDep]]),
         packageInfo,
@@ -1324,8 +1218,6 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
-        noduplPeerContext,
-        nextPeerContextIndex,
         undefined,
         undefined,
         extractPromises,
@@ -1401,8 +1293,6 @@ t.test('early extraction during appendNodes', async t => {
     const extractPromises: any[] = []
     const seenExtracted = new Set<DepID>()
 
-    const storeExtractPeerContext: PeerContext = new Map()
-    storeExtractPeerContext.index = nextPeerContextIndex()
     await appendNodes(
       new Map([
         ['foo', fooDep],
@@ -1415,8 +1305,6 @@ t.test('early extraction during appendNodes', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      storeExtractPeerContext,
-      nextPeerContextIndex,
       undefined,
       undefined,
       extractPromises,
@@ -1490,8 +1378,6 @@ t.test('early extraction during appendNodes', async t => {
     const extractPromises: any[] = []
     const seenExtracted = new Set<DepID>()
 
-    const optionalExtractPeerContext: PeerContext = new Map()
-    optionalExtractPeerContext.index = nextPeerContextIndex()
     await appendNodes(
       new Map([
         ['optional', optionalDep],
@@ -1504,8 +1390,6 @@ t.test('early extraction during appendNodes', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      optionalExtractPeerContext,
-      nextPeerContextIndex,
       undefined,
       undefined,
       extractPromises,

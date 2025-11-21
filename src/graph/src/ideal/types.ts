@@ -10,7 +10,6 @@ import type {
 import type { ModifierActiveEntry } from '../modifiers.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
-import type { PeerContext } from './peers.ts'
 
 export type BuildIdealAddOptions = {
   /**
@@ -80,3 +79,40 @@ export type ProcessPlacementResultEntry = Omit<
  * The result of processing placement for nodes to be added to the graph.
  */
 export type ProcessPlacementResult = ProcessPlacementResultEntry[]
+
+/**
+ * Entry in a peer context representing a resolved peer dependency.
+ */
+export type PeerContextEntry = {
+  /**
+   * True if this entry is currently being resolved and track by this
+   * peer context set, false in case this entry was inherit from a previous
+   * peer context set and should not be considered for resolution.
+   */
+  active: boolean
+  /** List of full Spec objects that are part of this peer context entry */
+  specs: Set<Spec>
+  /** The target Node that satisfies all specs for this peer context entry */
+  target: Node | undefined
+  /** The type of dependency this entry represents */
+  type: DependencySaveType
+  /** Context dependent nodes that had dependencies resolved to this entry */
+  contextDependents: Set<Node>
+}
+
+/**
+ * Input for adding an entry to peer contexts.
+ */
+export type PeerContextEntryInput = {
+  /** Node that depends on this resolved peer context set entry */
+  dependent?: Node
+  /** Node this peer context entry resolves to */
+  target?: Node
+} & Dependency
+
+/**
+ * Represents resolved peer dependencies in a given append-nodes context.
+ */
+export type PeerContext = Map<string, PeerContextEntry> & {
+  index?: number
+}

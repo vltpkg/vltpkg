@@ -9,8 +9,8 @@ import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
+  PeerContext,
 } from './types.ts'
-import type { PeerContext } from './peers.ts'
 import type { GraphModifier } from '../modifiers.ts'
 import type { ExtractResult } from '../reify/extract-node.ts'
 import type { Graph } from '../graph.ts'
@@ -95,8 +95,6 @@ export const addNodes = async ({
       scurry,
       specOptions,
       seen,
-      initialPeerContext,
-      nextPeerContextIndex,
       modifiers,
       modifiers?.tryDependencies(importer, deps),
       extractPromises,

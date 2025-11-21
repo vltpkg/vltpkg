@@ -23,6 +23,7 @@ import { Edge } from './edge.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
+import type { PeerContext } from './ideal/types.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -145,6 +146,16 @@ export class Graph implements GraphLike {
    */
   projectRoot: string
 
+  /**
+   * The peer context sets used to resolve peer dependencies within this graph.
+   */
+  peerContexts: PeerContext[]
+
+  /**
+   * Tracks the current peer context index.
+   */
+  currentPeerContextIndex = 0
+
   constructor(options: GraphOptions) {
     const { mainManifest, monorepo } = options
     this.#options = options
@@ -199,6 +210,18 @@ export class Graph implements GraphLike {
         this.mainImporter.workspaces.set(wsNode.name, edge)
       }
     }
+
+    // initializes the peer context set collection
+    const initialPeerContext: PeerContext = new Map()
+    initialPeerContext.index = this.currentPeerContextIndex
+    this.peerContexts = [initialPeerContext]
+  }
+
+  /**
+   * Get the next peer context index.
+   */
+  nextPeerContextIndex() {
+    return ++this.currentPeerContextIndex
   }
 
   /**

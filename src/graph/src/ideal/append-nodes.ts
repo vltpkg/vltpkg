@@ -28,8 +28,8 @@ import {
   postPlacementPeerCheck,
   startPeerPlacement,
 } from './peers.ts'
-import type { PeerContext } from './peers.ts'
 import type {
+  PeerContext,
   AppendNodeEntry,
   ProcessPlacementResult,
 } from './types.ts'
@@ -467,8 +467,6 @@ export const appendNodes = async (
   scurry: PathScurry,
   options: SpecOptions,
   seen: Set<DepID>,
-  initialPeerContext: PeerContext,
-  nextPeerContextIndex: () => number,
   modifiers?: GraphModifier,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   extractPromises?: Promise<ExtractResult>[],
@@ -479,6 +477,14 @@ export const appendNodes = async (
   /* c8 ignore next */
   if (seen.has(fromNode.id)) return
   seen.add(fromNode.id)
+
+  // Get the initial peer context from the graph
+  const [initialPeerContext] = graph.peerContexts
+  /* c8 ignore start - impossible */
+  if (!initialPeerContext) {
+    throw error('no initial peer context found in graph')
+  }
+  /* c8 ignore stop */
 
   // Use a queue for breadth-first processing
   let currentLevelDeps: AppendNodeEntry[] = [
@@ -550,7 +556,7 @@ export const appendNodes = async (
     // dependencies on the peer context set, forking the context as needed
     // and resolving any peer dependency that is able to be resolved using
     // the current peer context set
-    postPlacementPeerCheck(levelResults, nextPeerContextIndex)
+    postPlacementPeerCheck(graph, levelResults)
 
     // Collect all child dependencies for the next level
     for (const childDepsToProcess of levelResults) {

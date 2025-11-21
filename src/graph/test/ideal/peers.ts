@@ -15,7 +15,7 @@ import { nextPeerContextIndex } from '../../src/ideal/add-nodes.ts'
 import type {
   PeerContext,
   PeerContextEntryInput,
-} from '../../src/ideal/peers.ts'
+} from '../../src/ideal/types.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
@@ -437,9 +437,6 @@ t.test('addEntriesToPeerContext', async t => {
 
 t.test('forkPeerContext', async t => {
   t.test('creates forked context with new entries', async t => {
-    const originalContext: PeerContext = new Map()
-    originalContext.index = 1
-
     const spec1 = Spec.parse('foo', '^1.0.0', configData)
     const spec2 = Spec.parse('bar', '^2.0.0', configData)
 
@@ -452,6 +449,7 @@ t.test('forkPeerContext', async t => {
       ...configData,
       mainManifest,
     })
+    const originalContext = graph.peerContexts[0]!
 
     // Add entry to original
     addEntriesToPeerContext(
@@ -467,11 +465,9 @@ t.test('forkPeerContext', async t => {
       { name: 'bar', version: '2.0.0' },
     )!
 
-    const forkedContext = forkPeerContext(
-      originalContext,
-      [{ spec: spec2, type: 'peer', dependent }],
-      nextPeerContextIndex,
-    )
+    const forkedContext = forkPeerContext(graph, originalContext, [
+      { spec: spec2, type: 'peer', dependent },
+    ])
 
     t.not(
       forkedContext.index,
@@ -526,11 +522,9 @@ t.test('forkPeerContext', async t => {
       )
 
       // No dependent this time
-      const forkedContext = forkPeerContext(
-        originalContext,
-        [{ spec: spec2, type: 'peer' }],
-        nextPeerContextIndex,
-      )
+      const forkedContext = forkPeerContext(graph, originalContext, [
+        { spec: spec2, type: 'peer' },
+      ])
 
       t.ok(
         forkedContext.index !== undefined &&
@@ -965,7 +959,7 @@ t.test('postPlacementPeerCheck', async t => {
       const sortedLevelResults = [[entry1, entry2, entry3]]
 
       // Call postPlacementPeerCheck
-      postPlacementPeerCheck(sortedLevelResults, nextPeerContextIndex)
+      postPlacementPeerCheck(graph, sortedLevelResults)
 
       // Verify that:
       // 1. First entry gets a new forked context
@@ -1088,7 +1082,7 @@ t.test('postPlacementPeerCheck', async t => {
 
       const sortedLevelResults = [[entry1, entry2]]
 
-      postPlacementPeerCheck(sortedLevelResults, nextPeerContextIndex)
+      postPlacementPeerCheck(graph, sortedLevelResults)
 
       // Both nodes should have forked contexts, but they should be different
       t.ok(

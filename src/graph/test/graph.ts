@@ -2066,6 +2066,57 @@ t.test('splitExtra and joinExtra integration', async t => {
   })
 })
 
+t.test('nextPeerContextIndex', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  // Initial index should be 0
+  t.equal(
+    graph.currentPeerContextIndex,
+    0,
+    'initial peer context index is 0',
+  )
+
+  // Call nextPeerContextIndex and verify it increments and returns
+  const firstNext = graph.nextPeerContextIndex()
+  t.equal(firstNext, 1, 'first call returns 1')
+  t.equal(
+    graph.currentPeerContextIndex,
+    1,
+    'currentPeerContextIndex updated to 1',
+  )
+
+  // Call again to verify it continues incrementing
+  const secondNext = graph.nextPeerContextIndex()
+  t.equal(secondNext, 2, 'second call returns 2')
+  t.equal(
+    graph.currentPeerContextIndex,
+    2,
+    'currentPeerContextIndex updated to 2',
+  )
+
+  // Verify multiple sequential calls
+  graph.nextPeerContextIndex()
+  graph.nextPeerContextIndex()
+  const fifthNext = graph.nextPeerContextIndex()
+  t.equal(fifthNext, 5, 'fifth call returns 5')
+  t.equal(
+    graph.currentPeerContextIndex,
+    5,
+    'currentPeerContextIndex updated to 5',
+  )
+})
+
 t.test('removeNode with keepEdges parameter', async t => {
   const mainManifest = {
     name: 'my-project',
