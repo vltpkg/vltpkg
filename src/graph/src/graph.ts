@@ -1,4 +1,9 @@
-import { getId, joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  getId,
+  joinDepIDTuple,
+  joinExtra,
+  splitExtra,
+} from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -39,7 +44,7 @@ const getMap = <T extends Map<any, any>>(m?: T) =>
 const getResolutionCacheKey = (
   spec: Spec,
   location: string,
-  queryModifier: string,
+  extra: string,
 ): string => {
   const f = spec.final
   // if it's a file: dep, then the fromNode location matters
@@ -53,7 +58,7 @@ const getResolutionCacheKey = (
     : f.gitRemote ?
       `${cacheKeySeparator}git` + `${cacheKeySeparator}${f.gitRemote}`
     : `${cacheKeySeparator}${f.type}`
-  const modifierSuffix = `${cacheKeySeparator}${queryModifier}`
+  const modifierSuffix = `${cacheKeySeparator}${extra}`
   return fromPrefix + String(f) + typePrecisionKey + modifierSuffix
 }
 
@@ -283,13 +288,9 @@ export class Graph implements GraphLike {
   /**
    * Find an existing node to satisfy a dependency
    */
-  findResolution(spec: Spec, fromNode: Node, queryModifier = '') {
+  findResolution(spec: Spec, fromNode: Node, extra = '') {
     const f = spec.final
-    const sf = getResolutionCacheKey(
-      f,
-      fromNode.location,
-      queryModifier,
-    )
+    const sf = getResolutionCacheKey(f, fromNode.location, extra)
     const cached = this.resolutions.get(sf)
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
@@ -333,7 +334,14 @@ export class Graph implements GraphLike {
     this.nodes.set(node.id, node)
     const nbn = this.nodesByName.get(node.name) ?? new Set()
     nbn.add(node)
-    this.nodesByName.set(node.name, nbn)
+
+    // ensure the nodes by name set is always sorted, this will help
+    // keeping a deterministic graph resolution when reusing nodes
+    const newByNameSet = new Set(
+      [...nbn].sort((a, b) => a.id.localeCompare(b.id)),
+    )
+    this.nodesByName.set(node.name, newByNameSet)
+
     if (manifest) {
       this.manifests.set(node.id, manifest)
     }
@@ -400,7 +408,12 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
-    toNode.modifier = extra
+    // split extra into modifier and peerSetHash
+    if (extra) {
+      const { modifier, peerSetHash } = splitExtra(extra)
+      toNode.modifier = modifier
+      toNode.peerSetHash = peerSetHash
+    }
 
     // add extra manifest info if available
     if (manifest) {
@@ -484,12 +497,12 @@ export class Graph implements GraphLike {
   /**
    * Removes the resolved node of a given edge.
    */
-  removeEdgeResolution(edge: Edge, queryModifier = '') {
+  removeEdgeResolution(edge: Edge, extra = '') {
     const node = edge.to
     const resolutionKey = getResolutionCacheKey(
       edge.spec,
       edge.from.location,
-      queryModifier,
+      extra,
     )
     if (node) {
       edge.to = undefined
@@ -534,12 +547,15 @@ export class Graph implements GraphLike {
         this.resolutionsReverse.set(node, new Set())
       }
 
-      // Get the modifier if the node has one associated to it
-      const queryModifier = node.modifier || ''
+      // Get the extra combining modifier and peerSetHash if present
+      const extra = joinExtra({
+        modifier: node.modifier,
+        peerSetHash: node.peerSetHash,
+      })
       const resolutionKey = getResolutionCacheKey(
         edge.spec.final,
         edge.from.location,
-        queryModifier,
+        extra || '',
       )
 
       this.resolutions.set(resolutionKey, node)
