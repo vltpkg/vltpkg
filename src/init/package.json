@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/init",
   "description": "vlt project intialization logic",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
