@@ -102,4 +102,9 @@ export class Edge implements EdgeLike {
       spec: String(this.spec),
     }
   }
+
+  toString() {
+    const to = `${this.name}${this.to ? '' : ' (missing)'}`
+    return `Edge from: ${this.from.id} --|${this.type}|--> ${to}`
+  }
 }

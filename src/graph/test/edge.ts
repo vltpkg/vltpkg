@@ -127,4 +127,31 @@ t.test('Edge', async t => {
 
     t.end()
   })
+
+  t.test('toString', t => {
+    const edge = new Edge(
+      'prod',
+      Spec.parse('foo@^1.0.0'),
+      root,
+      child,
+    )
+    const edgeStr = edge.toString()
+    t.equal(
+      edgeStr,
+      `Edge from: ${root.id} --|prod|--> foo`,
+    )
+
+    const danglingEdge = new Edge(
+      'prod',
+      Spec.parse('bar', 'latest'),
+      child,
+    )
+    const danglingStr = danglingEdge.toString()
+    t.equal(
+      danglingStr,
+      `Edge from: ${child.id} --|prod|--> bar (missing)`,
+    )
+
+    t.end()
+  })
 })
