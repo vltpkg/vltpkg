@@ -57,8 +57,8 @@ const fetchUpstreamJSON = async (path: string) => {
     })
   }
   const headers = filterHeaders(res.headers)
-  const data = await res.json()
-  return { data, headers }
+  // Use res.body for streaming JSON response
+  return { data: res.body, headers }
 }
 
 const fetchUpstreamTarball = async (path: string) => {

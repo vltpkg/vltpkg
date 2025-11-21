@@ -11,6 +11,7 @@
   "dependencies": {
     "@libsql/client": "^0.15.15",
     "@neondatabase/serverless": "^1.0.2",
+    "aws4fetch": "^1.0.20",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "nitro": "3.0.1-alpha.1",
@@ -38,6 +39,7 @@
     "postbuild": "node dev/find-libsql.mjs",
     "build:cf": "VSR_CLOUDFLARE=1 nitro build",
     "cache:drop": "rm -rf .data",
+    "db:reset": "./dev/reset-db.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio --port 4985",
     "deploy:cf": "wrangler deploy",
@@ -50,6 +52,7 @@
     "prepare": "if-env OS=Windows_NT || nitro prepare",
     "preprepare": "node dev/pre-prepare.mjs",
     "serve": "node .output/server/index.mjs",
+    "serve:https": "NITRO_SSL_CERT=$(cat ./dev/localhost.pem) NITRO_SSL_KEY=$(cat ./dev/localhost-key.pem) node .output/server/index.mjs",
     "posttest": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },

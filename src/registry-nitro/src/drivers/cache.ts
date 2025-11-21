@@ -1,6 +1,8 @@
 import { useStorage } from 'nitro/storage'
 import { eq, and } from 'drizzle-orm'
 import type { H3Event } from 'nitro/h3'
+import { text, arrayBuffer } from 'stream/consumers'
+import { useRuntimeConfig } from 'nitro/runtime-config'
 
 export const TTL = {
   PACKUMENT: 60 * 5, // 5 minutes
@@ -32,6 +34,12 @@ function parseHeaders(headers: any): Record<string, string> {
   return typeof headers === 'string' ? JSON.parse(headers) : headers
 }
 
+// Helper to buffer a stream into JSON
+async function bufferStreamToJson(stream: unknown) {
+  const txt = await text(stream as any)
+  return JSON.parse(txt)
+}
+
 export async function getCachedPackument(
   name: string,
   db: any,
@@ -59,7 +67,17 @@ export async function setCachedPackument(
   db: any,
   schema: any,
 ) {
-  const packument = JSON.stringify(data)
+  let packument: string
+
+  if (
+    data instanceof ReadableStream ||
+    (data && typeof data.pipe === 'function')
+  ) {
+    const json = await bufferStreamToJson(data)
+    packument = JSON.stringify(json)
+  } else {
+    packument = JSON.stringify(data)
+  }
 
   await db
     .insert(schema.packages)
@@ -106,7 +124,17 @@ export async function setCachedVersion(
   schema: any,
 ) {
   const spec = `${name}@${version}`
-  const manifest = JSON.stringify(data)
+  let manifest: string
+
+  if (
+    data instanceof ReadableStream ||
+    (data && typeof data.pipe === 'function')
+  ) {
+    const json = await bufferStreamToJson(data)
+    manifest = JSON.stringify(json)
+  } else {
+    manifest = JSON.stringify(data)
+  }
 
   await db
     .insert(schema.versions)
@@ -145,9 +173,6 @@ export async function getCachedTarball(
   const hasItem = await useStorage().hasItem(key)
   if (!hasItem) return null
 
-  // Streaming support: getStream if available, else getItemRaw
-  // Nitro's storage layer doesn't strictly guarantee a stream from getItemRaw unless the driver supports it
-  // but for file/R2/etc it should work.
   const body = await useStorage().getItemRaw(key)
 
   return {
@@ -165,10 +190,13 @@ export async function setCachedTarball(
   db: any,
   schema: any,
 ) {
+  const config = useRuntimeConfig()
   const key = `tarballs:${name}:${version}`
 
-  // useStorage().setItemRaw supports ReadableStream
-  await useStorage().setItemRaw(key, data)
+  // Buffer to avoid Transfer-Encoding: chunked which S3 rejects
+  const body: ReadableStream | ArrayBuffer =
+    config.tarballStorage === 's3' ? await arrayBuffer(data) : data
+  await useStorage().setItemRaw(key, body)
 
   await db
     .insert(schema.tarballs)
@@ -211,18 +239,8 @@ export async function fetchAndCache<T>(
       // SWR
       event.waitUntil(
         fetcher()
-          .then(
-            async ({ data: freshData, headers: freshHeaders }) => {
-              // If streaming, we might need to tee it again?
-              // Usually SWR fetcher for tarball would need to read the stream to buffer to verify integrity
-              // OR just overwrite.
-              // But for tarballs we generally don't expire them (TTL 1 year).
-              // So SWR is mostly for metadata (JSON).
-              // If it is a stream, we must handle it carefully.
-              await cacheSetter(freshData, freshHeaders)
-            },
-          )
-          .catch(err =>
+          .then(({ data, headers }) => cacheSetter(data, headers))
+          .catch((err: unknown) =>
             console.error('Background fetch failed', err),
           ),
       )
@@ -233,28 +251,18 @@ export async function fetchAndCache<T>(
   // Miss
   const { data, headers } = await fetcher()
 
-  console.log('data', data)
-
-  // For streaming responses (tarballs), we need to TEE the stream
+  // Check for ReadableStream to tee
   if (data instanceof ReadableStream) {
-    console.log('here')
     const [streamForResponse, streamForCache] = data.tee()
 
     event.waitUntil(
-      cacheSetter(streamForCache as any, headers).catch(err =>
-        console.error('Cache set failed', err),
+      cacheSetter(streamForCache as any, headers).catch(
+        (err: unknown) => console.error('Cache set failed', err),
       ),
     )
 
     return { data: streamForResponse as any, headers }
   }
 
-  // For JSON/Buffer
-  event.waitUntil(
-    cacheSetter(data, headers).catch(err =>
-      console.error('Cache set failed', err),
-    ),
-  )
-
-  return { data, headers }
+  throw new Error('Unsupported data type')
 }

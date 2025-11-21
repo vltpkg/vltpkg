@@ -2,54 +2,28 @@ import 'dotenv/config'
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
 
-const Envs = {
-  cloudflare: 'cloudflare',
-  vercel: 'vercel',
-  node: 'node',
-}
+const buildPreset = (process.env.VSR_BUILD_PRESET ??
+  'node-server') as 'node-server' | 'cloudflare-module' | 'vercel'
 
-// const DatabaseEnvs = {
-//   neon: 'neon',
-//   turso: 'turso',
-//   sqlite: 'sqlite',
-//   d1: 'd1',
-// }
+const tarballStorage = (process.env.VSR_TARBALL_STORAGE ?? 'fs') as
+  | 'fs'
+  | 'r2'
+  | 's3'
 
-const buildEnv =
-  process.env.VSR_CLOUDFLARE ? Envs.cloudflare
-  : process.env.VSR_VERCEL ? Envs.vercel
-  : Envs.node
-
-// const databaseEnv =
-//   buildEnv === Envs.cloudflare ? DatabaseEnvs.d1
-//   : process.env.VSR_NEON ? DatabaseEnvs.neon
-//   : process.env.VSR_TURSO ? DatabaseEnvs.turso
-//   : DatabaseEnvs.sqlite
-
-// const getDriver = (
-//   type: 'packages' | 'tarballs',
-//   env: (typeof Envs)[keyof typeof Envs],
-// ) => {
-//   return resolve(
-//     import.meta.dirname,
-//     `./src/drivers/${type}-${env}.ts`,
-//   )
-// }
-
-const storage = 'fs' as 'fs' | 'r2' | 's3'
+const database = (process.env.VSR_DATABASE ?? 'sqlite') as
+  | 'neon'
+  | 'sqlite'
 
 export default defineNitroConfig({
-  preset:
-    buildEnv === Envs.cloudflare ? 'cloudflare-module'
-    : buildEnv === Envs.vercel ? 'vercel'
-    : 'node-server',
+  preset: buildPreset,
   compatibilityDate: '2025-09-22',
   serverDir: './src',
   minify: false,
   imports: false,
-  // builder: 'rolldown',
   runtimeConfig: {
-    db: 'neon' as 'neon' | 'sqlite',
+    db: database,
+    tarballStorage,
+    buildPreset,
     NEON_DATABASE_URL: process.env.NEON_DATABASE_URL,
     SQLITE_DATABASE_FILE_NAME: process.env.SQLITE_DATABASE_FILE_NAME,
   },
@@ -82,19 +56,23 @@ export default defineNitroConfig({
   },
   storage: {
     tarballs:
-      storage === 'fs' ?
-        {
-          driver: 'fs-lite',
-          base: resolve(import.meta.dirname, '.data/tarballs'),
-        }
-      : storage === 'r2' ?
+      tarballStorage === 'r2' ?
         {
           driver: 'cloudflare-r2',
           bucket: 'vsr-production-tarballs',
         }
-      : {
+      : tarballStorage === 's3' ?
+        {
           driver: 's3',
-          bucket: 'vsr-production-tarballs',
+          bucket: 'vsr-prod-1',
+          endpoint: 'https://s3.us-east-1.amazonaws.com/',
+          region: 'us-east-1',
+          accessKeyId: process.env.S3_ACCESS_KEY_ID,
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        }
+      : {
+          driver: 'fs-lite',
+          base: resolve(import.meta.dirname, '.data/tarballs'),
         },
   },
 })
