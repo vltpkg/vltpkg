@@ -127,9 +127,9 @@ export async function setCachedPackument(
     await ctx.$client.transaction(tx => {
       const queries: NeonQueryPromise<false, false>[] = [
         tx`
-          INSERT INTO packages (name, packument, headers, updated_at)
-          VALUES (${name}, ${row.packument}, ${JSON.stringify(headers)}, ${row.updatedAt})
-          ON CONFLICT (name) DO UPDATE SET
+          INSERT INTO packages (name, packument, headers, updated_at, origin)
+          VALUES (${name}, ${row.packument}, ${JSON.stringify(headers)}, ${row.updatedAt}, ${origin})
+          ON CONFLICT (name, origin) DO UPDATE SET
           packument = EXCLUDED.packument,
           headers = EXCLUDED.headers,
           updated_at = EXCLUDED.updated_at
@@ -141,7 +141,7 @@ export async function setCachedPackument(
 
       for (const [version, manifest] of Object.entries(versions)) {
         values.push(
-          `($${params.length + 1}, $${params.length + 2}, $${params.length + 3}, $${params.length + 4}, $${params.length + 5})`,
+          `($${params.length + 1}, $${params.length + 2}, $${params.length + 3}, $${params.length + 4}, $${params.length + 5}, $${params.length + 6})`,
         )
         params.push(
           name,
@@ -149,13 +149,14 @@ export async function setCachedPackument(
           JSON.stringify(manifest),
           JSON.stringify(headers),
           row.updatedAt,
+          origin,
         )
       }
 
       const versionQuery = `
-        INSERT INTO versions (name, version, manifest, headers, updated_at)
+        INSERT INTO versions (name, version, manifest, headers, updated_at, origin)
         VALUES ${values.join(', ')}
-        ON CONFLICT (name, version) DO UPDATE SET
+        ON CONFLICT (name, version, origin) DO UPDATE SET
         manifest = EXCLUDED.manifest,
         headers = EXCLUDED.headers,
         updated_at = EXCLUDED.updated_at
