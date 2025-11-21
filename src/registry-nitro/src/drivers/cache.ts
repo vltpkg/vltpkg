@@ -3,12 +3,9 @@ import { eq, and } from 'drizzle-orm'
 import type { H3Event } from 'nitro/h3'
 import { text, arrayBuffer } from 'stream/consumers'
 import { useRuntimeConfig } from 'nitro/runtime-config'
-
-export const TTL = {
-  PACKUMENT: 60 * 5, // 5 minutes
-  VERSION: 60 * 60 * 24, // 24 hours
-  TARBALL: 60 * 60 * 24 * 365, // 1 year
-}
+import type * as DBTypes from '../db/index.ts'
+import assert from 'node:assert'
+import type { NeonQueryPromise } from '@neondatabase/serverless'
 
 const ALLOWED_HEADERS = [
   'content-type',
@@ -26,200 +23,338 @@ export const filterHeaders = (headers: Headers) => {
   return out
 }
 
-export const isStale = (updatedAt: number, ttl: number) => {
-  return Date.now() - updatedAt > ttl * 1000
-}
-
-function parseHeaders(headers: any): Record<string, string> {
-  return typeof headers === 'string' ? JSON.parse(headers) : headers
-}
-
-// Helper to buffer a stream into JSON
-async function bufferStreamToJson(stream: unknown) {
-  const txt = await text(stream as any)
-  return JSON.parse(txt)
+function parseHeaders(headers: unknown): Record<string, string> {
+  if (typeof headers === 'string') {
+    return JSON.parse(headers) as Record<string, string>
+  }
+  return headers as Record<string, string>
 }
 
 export async function getCachedPackument(
   name: string,
-  db: any,
-  schema: any,
+  ctx: DBTypes.Context,
 ) {
-  const [row] = await db
-    .select()
-    .from(schema.packages)
-    .where(eq(schema.packages.name, name))
-    .limit(1)
+  let row: DBTypes.Package | undefined = undefined
+  let versions: DBTypes.Version[] = []
 
-  if (!row) return null
+  if (ctx.dialect === 'sqlite') {
+    row = await ctx.db.query.packages.findFirst({
+      where: eq(ctx.schema.packages.name, name),
+    })
+    versions = await ctx.db.query.versions.findMany({
+      where: eq(ctx.schema.versions.name, name),
+    })
+  } else {
+    row = await ctx.db.query.packages.findFirst({
+      where: eq(ctx.schema.packages.name, name),
+    })
+    versions = await ctx.db.query.versions.findMany({
+      where: eq(ctx.schema.versions.name, name),
+    })
+  }
+
+  if (!row) {
+    return null
+  }
+
+  const data = JSON.parse(row.packument)
+  data.versions = Object.fromEntries(
+    versions.map(v => [v.version, JSON.parse(v.manifest)]),
+  )
 
   return {
-    data: JSON.parse(row.packument),
+    data,
     headers: parseHeaders(row.headers),
-    updatedAt: Number(row.updatedAt),
+    updatedAt: row.updatedAt,
   }
 }
 
 export async function setCachedPackument(
   name: string,
-  data: any,
+  data: ReadableStream | string,
   headers: Record<string, string>,
-  db: any,
-  schema: any,
+  ctx: DBTypes.Context,
+  { origin }: { origin: string },
 ) {
-  let packument: string
+  let packument: any
 
-  if (
-    data instanceof ReadableStream ||
-    (data && typeof data.pipe === 'function')
-  ) {
-    const json = await bufferStreamToJson(data)
-    packument = JSON.stringify(json)
+  if (data instanceof ReadableStream) {
+    packument = JSON.parse(await text(data))
   } else {
-    packument = JSON.stringify(data)
+    packument = JSON.parse(data)
   }
 
-  await db
-    .insert(schema.packages)
-    .values({
-      name,
-      packument,
-      headers,
-      updatedAt: Date.now(),
+  const { versions } = packument
+  packument.versions = {}
+
+  const row = {
+    packument: JSON.stringify(packument),
+    headers,
+    updatedAt: Date.now(),
+    origin,
+  }
+
+  if (ctx.dialect === 'sqlite') {
+    await ctx.db.transaction(async tx => {
+      await tx
+        .insert(ctx.schema.packages)
+        .values({ name, ...row })
+        .onConflictDoUpdate({
+          target: ctx.schema.packages.name,
+          set: row,
+        })
+
+      for (const [version, manifest] of Object.entries(versions)) {
+        const versionRow = {
+          manifest: JSON.stringify(manifest),
+          headers,
+          updatedAt: row.updatedAt,
+          origin,
+        }
+        await tx
+          .insert(ctx.schema.versions)
+          .values({ name, version, ...versionRow })
+          .onConflictDoUpdate({
+            target: [
+              ctx.schema.versions.name,
+              ctx.schema.versions.version,
+            ],
+            set: versionRow,
+          })
+      }
     })
-    .onConflictDoUpdate({
-      target: schema.packages.name,
-      set: { packument, headers, updatedAt: Date.now() },
+  } else {
+    await ctx.$client.transaction(tx => {
+      const queries: NeonQueryPromise<false, false>[] = [
+        tx`
+          INSERT INTO packages (name, packument, headers, updated_at)
+          VALUES (${name}, ${row.packument}, ${JSON.stringify(headers)}, ${row.updatedAt})
+          ON CONFLICT (name) DO UPDATE SET
+          packument = EXCLUDED.packument,
+          headers = EXCLUDED.headers,
+          updated_at = EXCLUDED.updated_at
+        `,
+      ]
+
+      const values: string[] = []
+      const params: unknown[] = []
+
+      for (const [version, manifest] of Object.entries(versions)) {
+        values.push(
+          `($${params.length + 1}, $${params.length + 2}, $${params.length + 3}, $${params.length + 4}, $${params.length + 5})`,
+        )
+        params.push(
+          name,
+          version,
+          JSON.stringify(manifest),
+          JSON.stringify(headers),
+          row.updatedAt,
+        )
+      }
+
+      const versionQuery = `
+        INSERT INTO versions (name, version, manifest, headers, updated_at)
+        VALUES ${values.join(', ')}
+        ON CONFLICT (name, version) DO UPDATE SET
+        manifest = EXCLUDED.manifest,
+        headers = EXCLUDED.headers,
+        updated_at = EXCLUDED.updated_at
+      `
+      queries.push(tx.query(versionQuery, params))
+
+      return queries
     })
+  }
 }
 
 export async function getCachedVersion(
   name: string,
   version: string,
-  db: any,
-  schema: any,
+  ctx: DBTypes.Context,
+  { origin }: { origin: string },
 ) {
-  const spec = `${name}@${version}`
-  const [row] = await db
-    .select()
-    .from(schema.versions)
-    .where(eq(schema.versions.spec, spec))
-    .limit(1)
+  let row: DBTypes.Version | undefined = undefined
+
+  if (ctx.dialect === 'sqlite') {
+    row = await ctx.db.query.versions.findFirst({
+      where: and(
+        eq(ctx.schema.versions.name, name),
+        eq(ctx.schema.versions.version, version),
+        eq(ctx.schema.versions.origin, origin),
+      ),
+    })
+  } else {
+    row = await ctx.db.query.versions.findFirst({
+      where: and(
+        eq(ctx.schema.versions.name, name),
+        eq(ctx.schema.versions.version, version),
+        eq(ctx.schema.versions.origin, origin),
+      ),
+    })
+  }
 
   if (!row) return null
 
   return {
     data: JSON.parse(row.manifest),
     headers: parseHeaders(row.headers),
-    updatedAt: Number(row.updatedAt),
+    updatedAt: row.updatedAt,
   }
 }
 
 export async function setCachedVersion(
   name: string,
   version: string,
-  data: any,
+  data: unknown,
   headers: Record<string, string>,
-  db: any,
-  schema: any,
+  ctx: DBTypes.Context,
+  { origin }: { origin: string },
 ) {
-  const spec = `${name}@${version}`
   let manifest: string
 
-  if (
-    data instanceof ReadableStream ||
-    (data && typeof data.pipe === 'function')
-  ) {
-    const json = await bufferStreamToJson(data)
-    manifest = JSON.stringify(json)
+  if (data instanceof ReadableStream) {
+    manifest = await text(data)
   } else {
     manifest = JSON.stringify(data)
   }
 
-  await db
-    .insert(schema.versions)
-    .values({
-      spec,
-      manifest,
-      headers,
-      updatedAt: Date.now(),
-    })
-    .onConflictDoUpdate({
-      target: schema.versions.spec,
-      set: { manifest, headers, updatedAt: Date.now() },
-    })
+  const set = {
+    manifest,
+    headers,
+    updatedAt: Date.now(),
+    origin,
+  }
+
+  if (ctx.dialect === 'sqlite') {
+    await ctx.db
+      .insert(ctx.schema.versions)
+      .values({ name, version, ...set })
+      .onConflictDoUpdate({
+        target: [
+          ctx.schema.versions.name,
+          ctx.schema.versions.version,
+        ],
+        set,
+      })
+  } else {
+    await ctx.db
+      .insert(ctx.schema.versions)
+      .values({ name, version, ...set })
+      .onConflictDoUpdate({
+        target: [
+          ctx.schema.versions.name,
+          ctx.schema.versions.version,
+        ],
+        set,
+      })
+  }
 }
 
 export async function getCachedTarball(
   name: string,
   version: string,
-  db: any,
-  schema: any,
+  ctx: DBTypes.Context,
+  { origin }: { origin: string },
 ) {
-  const [row] = await db
-    .select()
-    .from(schema.tarballs)
-    .where(
-      and(
-        eq(schema.tarballs.name, name),
-        eq(schema.tarballs.version, version),
+  let row: DBTypes.Tarball | undefined = undefined
+
+  if (ctx.dialect === 'sqlite') {
+    row = await ctx.db.query.tarballs.findFirst({
+      where: and(
+        eq(ctx.schema.tarballs.name, name),
+        eq(ctx.schema.tarballs.version, version),
+        eq(ctx.schema.tarballs.origin, origin),
       ),
-    )
-    .limit(1)
+    })
+  } else {
+    row = await ctx.db.query.tarballs.findFirst({
+      where: and(
+        eq(ctx.schema.tarballs.name, name),
+        eq(ctx.schema.tarballs.version, version),
+        eq(ctx.schema.tarballs.origin, origin),
+      ),
+    })
+  }
 
-  if (!row) return null
+  if (!row) {
+    return null
+  }
 
-  const key = `tarballs:${name}:${version}`
+  const key = [`tarballs`, origin, name, version]
+    .filter(Boolean)
+    .join('/')
+
   const hasItem = await useStorage().hasItem(key)
-  if (!hasItem) return null
+  if (!hasItem) {
+    return null
+  }
 
   const body = await useStorage().getItemRaw(key)
 
   return {
     data: body,
     headers: parseHeaders(row.headers),
-    updatedAt: Number(row.updatedAt),
+    updatedAt: row.updatedAt,
   }
 }
 
 export async function setCachedTarball(
   name: string,
   version: string,
-  data: any,
+  data: ReadableStream,
   headers: Record<string, string>,
-  db: any,
-  schema: any,
+  ctx: DBTypes.Context,
+  { origin }: { origin: string },
 ) {
   const config = useRuntimeConfig()
-  const key = `tarballs:${name}:${version}`
+  const key = [`tarballs`, origin, name, version]
+    .filter(Boolean)
+    .join('/')
 
   // Buffer to avoid Transfer-Encoding: chunked which S3 rejects
   const body: ReadableStream | ArrayBuffer =
     config.tarballStorage === 's3' ? await arrayBuffer(data) : data
   await useStorage().setItemRaw(key, body)
 
-  await db
-    .insert(schema.tarballs)
-    .values({
-      name,
-      version,
-      headers,
-      updatedAt: Date.now(),
-    })
-    .onConflictDoUpdate({
-      target: [schema.tarballs.name, schema.tarballs.version],
-      set: { headers, updatedAt: Date.now() },
-    })
-}
+  const set = {
+    headers,
+    updatedAt: Date.now(),
+    origin,
+  }
 
-type FetchResult<T> = {
-  data: T
-  headers: Record<string, string>
+  if (ctx.dialect === 'sqlite') {
+    await ctx.db
+      .insert(ctx.schema.tarballs)
+      .values({ name, version, ...set })
+      .onConflictDoUpdate({
+        target: [
+          ctx.schema.tarballs.name,
+          ctx.schema.tarballs.version,
+          ctx.schema.tarballs.origin,
+        ],
+        set,
+      })
+  } else {
+    await ctx.db
+      .insert(ctx.schema.tarballs)
+      .values({ name, version, ...set })
+      .onConflictDoUpdate({
+        target: [
+          ctx.schema.tarballs.name,
+          ctx.schema.tarballs.version,
+          ctx.schema.tarballs.origin,
+        ],
+        set,
+      })
+  }
 }
 
 export async function fetchAndCache<T>(
   event: H3Event,
-  fetcher: () => Promise<FetchResult<T>>,
+  fetcher: () => Promise<{
+    data: T
+    headers: Record<string, string>
+  }>,
   cacheGetter: () => Promise<{
     data: T
     headers: Record<string, string>
@@ -235,8 +370,7 @@ export async function fetchAndCache<T>(
 
   if (cached) {
     const { data, headers, updatedAt } = cached
-    if (isStale(updatedAt, ttl)) {
-      // SWR
+    if (Date.now() - updatedAt > ttl * 1000) {
       event.waitUntil(
         fetcher()
           .then(({ data, headers }) => cacheSetter(data, headers))
@@ -248,21 +382,20 @@ export async function fetchAndCache<T>(
     return { data, headers }
   }
 
-  // Miss
   const { data, headers } = await fetcher()
 
-  // Check for ReadableStream to tee
-  if (data instanceof ReadableStream) {
-    const [streamForResponse, streamForCache] = data.tee()
+  assert(
+    data instanceof ReadableStream,
+    'data must be a ReadableStream',
+  )
 
-    event.waitUntil(
-      cacheSetter(streamForCache as any, headers).catch(
-        (err: unknown) => console.error('Cache set failed', err),
-      ),
-    )
+  const [streamForResponse, streamForCache] = data.tee()
 
-    return { data: streamForResponse as any, headers }
-  }
+  event.waitUntil(
+    cacheSetter(streamForCache as T, headers).catch((err: unknown) =>
+      console.error('Cache set failed', err),
+    ),
+  )
 
-  throw new Error('Unsupported data type')
+  return { data: streamForResponse, headers }
 }

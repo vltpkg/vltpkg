@@ -1,13 +1,26 @@
 import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
+import type { NeonHttpDatabase } from 'drizzle-orm/neon-http'
+import type { NeonQueryFunction } from '@neondatabase/serverless'
+import * as schema from './schema-pg.ts'
 
-let singleton: ReturnType<typeof drizzle> | null = null
+export type Database = NeonHttpDatabase<typeof schema>
 
-export default (url: string) => {
-  if (singleton) {
-    return singleton
+export type Context = {
+  dialect: 'pg'
+  db: Database
+  schema: typeof schema
+  $client: NeonQueryFunction<false, false>
+}
+
+let ctx: Context | null = null
+
+export default (url: string): Context => {
+  if (ctx) {
+    return ctx
   }
-  const client = neon(url)
-  singleton = drizzle({ client })
-  return singleton
+  const neonClient = neon(url)
+  const client = drizzle(neonClient, { schema })
+  ctx = { dialect: 'pg', db: client, schema, $client: neonClient }
+  return ctx
 }

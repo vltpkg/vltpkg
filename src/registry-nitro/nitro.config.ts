@@ -55,7 +55,7 @@ export default defineNitroConfig({
     },
   },
   storage: {
-    tarballs:
+    default:
       tarballStorage === 'r2' ?
         {
           driver: 'cloudflare-r2',
@@ -72,7 +72,7 @@ export default defineNitroConfig({
         }
       : {
           driver: 'fs-lite',
-          base: resolve(import.meta.dirname, '.data/tarballs'),
+          base: resolve(import.meta.dirname, '.data'),
         },
   },
 })

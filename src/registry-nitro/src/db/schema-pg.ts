@@ -6,12 +6,19 @@ import {
   primaryKey,
 } from 'drizzle-orm/pg-core'
 
-export const packages = pgTable('packages', {
-  name: text('name').primaryKey().notNull(),
-  packument: text('packument').$type<string>().notNull(),
-  headers: json('headers').$type<Record<string, string>>().notNull(),
-  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
-})
+export const packages = pgTable(
+  'packages',
+  {
+    name: text('name').notNull(),
+    packument: text('packument').$type<string>().notNull(),
+    headers: json('headers')
+      .$type<Record<string, string>>()
+      .notNull(),
+    updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+    origin: text('origin').notNull(),
+  },
+  table => [primaryKey({ columns: [table.name, table.origin] })],
+)
 
 export const versions = pgTable(
   'versions',
@@ -23,8 +30,13 @@ export const versions = pgTable(
       .$type<Record<string, string>>()
       .notNull(),
     updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+    origin: text('origin').notNull(),
   },
-  table => [primaryKey({ columns: [table.name, table.version] })],
+  table => [
+    primaryKey({
+      columns: [table.name, table.version, table.origin],
+    }),
+  ],
 )
 
 export const tarballs = pgTable(
@@ -36,29 +48,15 @@ export const tarballs = pgTable(
       .$type<Record<string, string>>()
       .notNull(),
     updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+    origin: text('origin').notNull(),
   },
-  table => [primaryKey({ columns: [table.name, table.version] })],
+  table => [
+    primaryKey({
+      columns: [table.name, table.version, table.origin],
+    }),
+  ],
 )
-
-export const tokens = pgTable('tokens', {
-  token: text('token').primaryKey(),
-  uuid: text('uuid').notNull(),
-  scope: text('scope').$type<string>(),
-  created: bigint('created', { mode: 'number' }).notNull(),
-  expires: bigint('expires', { mode: 'number' }),
-})
-
-export const loginSessions = pgTable('login_sessions', {
-  sessionId: text('session_id').primaryKey(),
-  token: text('token'),
-  clerkUserId: text('clerk_user_id'),
-  doneUrl: text('done_url'),
-  created: bigint('created', { mode: 'number' }).notNull(),
-  expires: bigint('expires', { mode: 'number' }).notNull(),
-})
 
 export type Package = typeof packages.$inferSelect
 export type Version = typeof versions.$inferSelect
 export type Tarball = typeof tarballs.$inferSelect
-export type Token = typeof tokens.$inferSelect
-export type LoginSession = typeof loginSessions.$inferSelect
