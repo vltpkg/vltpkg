@@ -1,6 +1,5 @@
 dangerouslyAllowAllBuilds: true
 patchedDependencies:
-  nitro-nightly: patches/nitro-nightly.patch
   tshy: patches/tshy.patch
 overrides:
   '@types/react': ^18.3.24

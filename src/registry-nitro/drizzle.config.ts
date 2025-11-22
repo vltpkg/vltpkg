@@ -1,34 +1,40 @@
+import 'dotenv/config'
 import { defineConfig } from 'drizzle-kit'
-import { mkdirSync } from 'node:fs'
-import { resolve } from 'node:path'
+import type { Config } from 'drizzle-kit'
+import assert from 'node:assert'
 
-mkdirSync(resolve(process.cwd(), '.data'), {
-  recursive: true,
-})
+const getAndAssert = (name: string) => {
+  const value = process.env[name]
+  assert(value, `Environment variable ${name} is required`)
+  return value
+}
+
+const { VSR_DATABASE } = process.env
+
+const config =
+  VSR_DATABASE === 'neon' ?
+    ({
+      dialect: 'postgresql',
+      schema: './src/db/schema-pg.ts',
+      dbCredentials: {
+        url: getAndAssert('NEON_DATABASE_URL'),
+      },
+    } satisfies Config)
+  : VSR_DATABASE === 'sqlite' ?
+    ({
+      dialect: 'sqlite',
+      schema: './src/db/schema-sqlite.ts',
+      dbCredentials: {
+        url: getAndAssert('SQLITE_DATABASE_FILE'),
+      },
+    } satisfies Config)
+  : null
+
+if (!config) {
+  throw new Error('No database URL provided')
+}
 
 export default defineConfig({
-  schema: './src/db/schema.ts',
   out: './drizzle',
-  ...(process.env.DATABASE_URL ?
-    process.env.TURSO_AUTH_TOKEN ?
-      {
-        dialect: 'turso',
-        dbCredentials: {
-          url: process.env.DATABASE_URL,
-          authToken: process.env.TURSO_AUTH_TOKEN,
-        },
-      }
-    : {
-        dialect: 'postgresql',
-        schema: './src/db/schema-postgres.ts',
-        dbCredentials: {
-          url: process.env.DATABASE_URL,
-        },
-      }
-  : {
-      dialect: 'sqlite',
-      dbCredentials: {
-        url: 'file:.data/db.sqlite',
-      },
-    }),
+  ...config,
 })
