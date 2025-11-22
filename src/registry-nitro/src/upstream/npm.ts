@@ -1,4 +1,6 @@
 import { defineEventHandler, HTTPError } from 'nitro/h3'
+import { useRuntimeConfig } from 'nitro/runtime-config'
+import { ms } from 'ms'
 import type { Context as DbContext } from '../db/index.ts'
 import {
   fetchAndCache,
@@ -11,11 +13,12 @@ import {
   setCachedVersion,
 } from '../drivers/cache.ts'
 
-// TODO: make this live in runtime config
+const { VSR_PACKUMENT_TTL, VSR_MANIFEST_TTL, VSR_TARBALL_TTL } =
+  useRuntimeConfig()
 const TTL = {
-  PACKUMENT: 60 * 30,
-  VERSION: 60 * 60 * 24,
-  TARBALL: 60 * 60 * 24 * 365,
+  PACKUMENT: ms(VSR_PACKUMENT_TTL ?? '5m'),
+  MANIFEST: ms(VSR_MANIFEST_TTL ?? '24h'),
+  TARBALL: ms(VSR_TARBALL_TTL ?? '1yr'),
 }
 
 const fetchUpstream = async (path: string) => {
@@ -63,7 +66,7 @@ export const versionHandler = defineEventHandler(async event => {
       setCachedVersion(pkgName, version!, data, headers, db, {
         origin: 'npm',
       }),
-    TTL.VERSION,
+    TTL.MANIFEST,
   )
 
   for (const [k, v] of Object.entries(result.headers)) {

@@ -140,17 +140,18 @@ export async function setCachedPackument(
       const params: unknown[] = []
 
       for (const [version, manifest] of Object.entries(versions)) {
-        values.push(
-          `($${params.length + 1}, $${params.length + 2}, $${params.length + 3}, $${params.length + 4}, $${params.length + 5}, $${params.length + 6})`,
-        )
-        params.push(
+        const next = [
           name,
           version,
           JSON.stringify(manifest),
           JSON.stringify(headers),
           row.updatedAt,
           origin,
+        ]
+        values.push(
+          `(${next.map((_, i) => `$${params.length + i + 1}`).join(', ')})`,
         )
+        params.push(...next)
       }
 
       const versionQuery = `
@@ -370,7 +371,7 @@ export async function fetchAndCache<T>(
 
   if (cached) {
     const { data, headers, updatedAt } = cached
-    if (Date.now() - updatedAt > ttl * 1000) {
+    if (Date.now() - updatedAt > ttl) {
       event.waitUntil(
         fetcher()
           .then(({ data, headers }) => cacheSetter(data, headers))

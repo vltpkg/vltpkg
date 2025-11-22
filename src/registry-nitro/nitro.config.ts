@@ -2,17 +2,30 @@ import 'dotenv/config'
 import { defineNitroConfig } from 'nitro/config'
 import { resolve } from 'node:path'
 
-const buildPreset = (process.env.VSR_BUILD_PRESET ??
-  'node-server') as 'node-server' | 'cloudflare-module' | 'vercel'
+const {
+  VSR_BUILD_PRESET,
+  VSR_TARBALL_STORAGE,
+  VSR_DATABASE,
+  VSR_NEON_DATABASE_URL,
+  VSR_SQLITE_DATABASE_FILE_NAME,
+  VSR_S3_BUCKET,
+  VSR_S3_ENDPOINT,
+  VSR_S3_REGION,
+  VSR_S3_ACCESS_KEY_ID,
+  VSR_S3_SECRET_ACCESS_KEY,
+} = process.env
 
-const tarballStorage = (process.env.VSR_TARBALL_STORAGE ?? 'fs') as
+const buildPreset = (VSR_BUILD_PRESET ?? 'node-server') as
+  | 'node-server'
+  | 'cloudflare-module'
+  | 'vercel'
+
+const tarballStorage = (VSR_TARBALL_STORAGE ?? 'fs') as
   | 'fs'
   | 'r2'
   | 's3'
 
-const database = (process.env.VSR_DATABASE ?? 'sqlite') as
-  | 'neon'
-  | 'sqlite'
+const database = (VSR_DATABASE ?? 'sqlite') as 'neon' | 'sqlite'
 
 export default defineNitroConfig({
   preset: buildPreset,
@@ -24,8 +37,8 @@ export default defineNitroConfig({
     db: database,
     tarballStorage,
     buildPreset,
-    NEON_DATABASE_URL: process.env.NEON_DATABASE_URL,
-    SQLITE_DATABASE_FILE_NAME: process.env.SQLITE_DATABASE_FILE_NAME,
+    NEON_DATABASE_URL: VSR_NEON_DATABASE_URL,
+    SQLITE_DATABASE_FILE_NAME: VSR_SQLITE_DATABASE_FILE_NAME,
   },
   cloudflare: {
     deployConfig: true,
@@ -64,11 +77,11 @@ export default defineNitroConfig({
       : tarballStorage === 's3' ?
         {
           driver: 's3',
-          bucket: 'vsr-prod-1',
-          endpoint: 'https://s3.us-east-1.amazonaws.com/',
-          region: 'us-east-1',
-          accessKeyId: process.env.S3_ACCESS_KEY_ID,
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+          bucket: VSR_S3_BUCKET,
+          endpoint: VSR_S3_ENDPOINT,
+          region: VSR_S3_REGION,
+          accessKeyId: VSR_S3_ACCESS_KEY_ID,
+          secretAccessKey: VSR_S3_SECRET_ACCESS_KEY,
         }
       : {
           driver: 'fs-lite',
