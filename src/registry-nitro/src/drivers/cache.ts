@@ -37,6 +37,8 @@ export async function getCachedPackument(
   let row: DBTypes.Package | undefined = undefined
   let versions: DBTypes.Version[] = []
 
+  const timeKey = `[get_packument] ${name}`
+  console.time(timeKey)
   if (ctx.dialect === 'sqlite') {
     row = await ctx.db.query.packages.findFirst({
       where: eq(ctx.schema.packages.name, name),
@@ -52,6 +54,7 @@ export async function getCachedPackument(
       where: eq(ctx.schema.versions.name, name),
     })
   }
+  console.timeEnd(timeKey)
 
   if (!row) {
     return null
@@ -94,6 +97,8 @@ export async function setCachedPackument(
     origin,
   }
 
+  const timeKey = `[set_packument] ${name}`
+  console.time(timeKey)
   if (ctx.dialect === 'sqlite') {
     await ctx.db.transaction(async tx => {
       await tx
@@ -167,6 +172,7 @@ export async function setCachedPackument(
       return queries
     })
   }
+  console.timeEnd(timeKey)
 }
 
 export async function getCachedVersion(
@@ -177,6 +183,8 @@ export async function getCachedVersion(
 ) {
   let row: DBTypes.Version | undefined = undefined
 
+  const timeKey = `[get_version] ${name} ${version}`
+  console.time(timeKey)
   if (ctx.dialect === 'sqlite') {
     row = await ctx.db.query.versions.findFirst({
       where: and(
@@ -194,6 +202,7 @@ export async function getCachedVersion(
       ),
     })
   }
+  console.timeEnd(timeKey)
 
   if (!row) return null
 
@@ -227,6 +236,8 @@ export async function setCachedVersion(
     origin,
   }
 
+  const timeKey = `[set_version] ${name}@${version}`
+  console.time(timeKey)
   if (ctx.dialect === 'sqlite') {
     await ctx.db
       .insert(ctx.schema.versions)
@@ -250,6 +261,7 @@ export async function setCachedVersion(
         set,
       })
   }
+  console.timeEnd(timeKey)
 }
 
 export async function getCachedTarball(
@@ -260,6 +272,7 @@ export async function getCachedTarball(
 ) {
   let row: DBTypes.Tarball | undefined = undefined
 
+  const timeKey = `[get_tarball_db] ${name}@${version}`
   if (ctx.dialect === 'sqlite') {
     row = await ctx.db.query.tarballs.findFirst({
       where: and(
@@ -277,6 +290,7 @@ export async function getCachedTarball(
       ),
     })
   }
+  console.timeEnd(timeKey)
 
   if (!row) {
     return null
@@ -291,7 +305,11 @@ export async function getCachedTarball(
     return null
   }
 
+  const timeKey1 = `[get_tarball_storage] ${name}@${version}`
+  console.time(timeKey1)
   const body = await useStorage('tarballs').getItemRaw(key)
+  console.timeEnd(timeKey1)
+
   return {
     data: body,
     headers: parseHeaders(row.headers),
@@ -312,10 +330,13 @@ export async function setCachedTarball(
     .filter(Boolean)
     .join('/')
 
-  // Buffer to avoid Transfer-Encoding: chunked which S3 rejects
+  const timeKey = `[set_tarball] ${name}@${version}`
+  console.time(timeKey)
   const body: ReadableStream | ArrayBuffer =
+    // Buffer to avoid Transfer-Encoding: chunked which S3 rejects
     config.storage === 's3' ? await arrayBuffer(data) : data
   await useStorage('tarballs').setItemRaw(key, body)
+  console.timeEnd(timeKey)
 
   const set = {
     headers,
@@ -323,6 +344,7 @@ export async function setCachedTarball(
     origin,
   }
 
+  const timeKey2 = `[set_tarball_db] ${name}@${version}`
   if (ctx.dialect === 'sqlite') {
     await ctx.db
       .insert(ctx.schema.tarballs)
@@ -348,6 +370,7 @@ export async function setCachedTarball(
         set,
       })
   }
+  console.timeEnd(timeKey2)
 }
 
 export async function fetchAndCache<T>(
@@ -367,9 +390,16 @@ export async function fetchAndCache<T>(
   ) => Promise<void>,
   ttl: number,
 ) {
+  const params = Object.entries(event.context.params ?? {})
+    .map(([k, v]) => `${k}:${v}`)
+    .join(', ')
+
+  const timeKey = `[cache_read] ${params}`
   const cached = await cacheGetter()
+  console.timeEnd(timeKey)
 
   if (cached) {
+    console.log('[cache_hit]', params)
     const { data, headers, updatedAt } = cached
     if (Date.now() - updatedAt > ttl) {
       event.waitUntil(
@@ -383,7 +413,11 @@ export async function fetchAndCache<T>(
     return { data, headers }
   }
 
+  console.log('[cache_miss]', params)
+
+  const timeKey2 = `[cache_fetch] ${params}`
   const { data, headers } = await fetcher()
+  console.timeEnd(timeKey2)
 
   assert(
     data instanceof ReadableStream,

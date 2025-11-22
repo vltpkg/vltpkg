@@ -10,6 +10,8 @@ export default definePlugin(() => {
   const storage = useStorage()
   const config = useRuntimeConfig()
 
+  console.log('[storage]', config.storage)
+
   if (config.storage === 'fs') {
     return storage.mount(
       'tarballs',
