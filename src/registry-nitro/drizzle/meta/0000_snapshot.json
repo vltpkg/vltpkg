@@ -124,10 +124,7 @@
       "compositePrimaryKeys": {
         "tarballs_name_version_pk": {
           "name": "tarballs_name_version_pk",
-          "columns": [
-            "name",
-            "version"
-          ]
+          "columns": ["name", "version"]
         }
       },
       "uniqueConstraints": {},
@@ -218,10 +215,7 @@
       "compositePrimaryKeys": {
         "versions_name_version_pk": {
           "name": "versions_name_version_pk",
-          "columns": [
-            "name",
-            "version"
-          ]
+          "columns": ["name", "version"]
         }
       },
       "uniqueConstraints": {},
