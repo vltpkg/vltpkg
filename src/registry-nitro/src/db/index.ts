@@ -22,10 +22,10 @@ export const getDb = () => {
   const config = useRuntimeConfig()
 
   if (config.database === 'neon') {
-    return createNeon(config.NEON_DATABASE_URL)
+    return createNeon(process.env.NEON_DATABASE_URL!)
   }
   if (config.database === 'sqlite') {
-    return createLibsql(config.SQLITE_DATABASE_FILE_NAME)
+    return createLibsql(process.env.SQLITE_DATABASE_FILE_NAME!)
   }
 
   throw new Error(`Invalid database type: ${config.db}`)

@@ -44,10 +44,7 @@
       "compositePrimaryKeys": {
         "packages_name_origin_pk": {
           "name": "packages_name_origin_pk",
-          "columns": [
-            "name",
-            "origin"
-          ]
+          "columns": ["name", "origin"]
         }
       },
       "uniqueConstraints": {},
@@ -95,11 +92,7 @@
       "compositePrimaryKeys": {
         "tarballs_name_version_origin_pk": {
           "name": "tarballs_name_version_origin_pk",
-          "columns": [
-            "name",
-            "version",
-            "origin"
-          ]
+          "columns": ["name", "version", "origin"]
         }
       },
       "uniqueConstraints": {},
@@ -153,11 +146,7 @@
       "compositePrimaryKeys": {
         "versions_name_version_origin_pk": {
           "name": "versions_name_version_origin_pk",
-          "columns": [
-            "name",
-            "version",
-            "origin"
-          ]
+          "columns": ["name", "version", "origin"]
         }
       },
       "uniqueConstraints": {},
