@@ -16,7 +16,8 @@
     "drizzle-orm": "^0.44.7",
     "ms": "4.0.0-nightly.202508271359",
     "nitro": "3.0.1-alpha.1",
-    "rolldown": "1.0.0-beta.51"
+    "rolldown": "1.0.0-beta.51",
+    "unstorage": "2.0.0-alpha.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250829.0",

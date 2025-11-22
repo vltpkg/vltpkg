@@ -1,41 +1,52 @@
 # @vltpkg/vsr-nitro
 
-## Configuration
+## Build Configuration
 
-Configuration is currently controlled by setting environment
-variables.
+Building different configurations is controlled by setting env vars
+and running `pnpm build`.
 
-To run it locall you can create a `.env` file in the root and run
-`pnpm dev`.
+The build env vars are:
 
-For deployment, you should set these environment variables in your
-deployment platform.
+- `VSR_PLATFORM=node|vercel|cloudflare` (default is `node`)
+- `VSR_DATABASE=sqlite|neon` (default is `sqlite`)
+- `VSR_STORAGE=fs|s3|r2` (default is `fs`)
 
-### Database
+So to build for Vercel with Neon and S3, you would run:
+
+```
+VSR_PLATFORM=vercel VSR_DATABASE=neon VSR_STORAGE=s3 pnpm build
+```
+
+This will output the built artifacts to a local directory that can
+then be deployed the platform. So to deploy to Vercel you would run:
+
+```
+vercel --prebuilt --prod
+```
+
+### Runtime Configuration
+
+Other configuration is read from `process.env` at runtime. This is to
+avoid secrets being written into the built artifacts and to allow
+changing certain config without rebuilding.
 
 #### Neon
 
-- `VSR_DATABASE=neon`
-- `VSR_NEON_DATABASE_URL=postgresql://...`
+- `NEON_DATABASE_URL=postgresql://...`
 
-### Storage
+#### Sqlite
+
+- `SQLITE_DATABASE_FILE_NAME=file:...`
 
 #### S3
 
-- `VSR_STORAGE=s3`
-- `VSR_S3_BUCKER=<BUCKET_NAME>`
-- `VSR_S3_ENDPOINT=https://...`
-- `VSR_S3_REGION=<S3_REGION>`
-- `VSR_S3_ACCESS_KEY_ID=`
-- `VSR_S3_SECRET_ACCESS_KEY=`
-
-### TTLs (optional)
-
-- `VSR_PACKUMENT_TTL=5m`
-- `VSR_MANIFEST_TTL=24h`
-- `VSR_TARBALL_TTL=1yr`
+- `S3_BUCKER=<BUCKET_NAME>`
+- `S3_ENDPOINT=https://...`
+- `S3_REGION=<S3_REGION>`
+- `S3_ACCESS_KEY_ID=`
+- `S3_SECRET_ACCESS_KEY=`
 
 ## Database Schema Changes
 
-Run `pnpm db:push` with the same environment variables for your
-database set in a local `.env` file.
+Run `VSR_DATABASE=sqlite|neon pnpm db:push` while also having set the
+runtime configuration environment variables for that database.

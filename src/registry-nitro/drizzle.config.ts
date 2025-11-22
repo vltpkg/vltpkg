@@ -17,7 +17,7 @@ const config =
       dialect: 'postgresql',
       schema: './src/db/schema-pg.ts',
       dbCredentials: {
-        url: getAndAssert('VSR_NEON_DATABASE_URL'),
+        url: getAndAssert('NEON_DATABASE_URL'),
       },
     } satisfies Config)
   : VSR_DATABASE === 'sqlite' ?
@@ -25,7 +25,7 @@ const config =
       dialect: 'sqlite',
       schema: './src/db/schema-sqlite.ts',
       dbCredentials: {
-        url: getAndAssert('VSR_SQLITE_DATABASE_FILE_NAME'),
+        url: getAndAssert('SQLITE_DATABASE_FILE_NAME'),
       },
     } satisfies Config)
   : null

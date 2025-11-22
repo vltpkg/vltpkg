@@ -327,7 +327,7 @@ export default [
         'error',
         {
           // I don't know why this doesn't work
-          ignore: ['nitro'],
+          ignore: ['nitro', 'unstorage'],
         },
       ],
     },

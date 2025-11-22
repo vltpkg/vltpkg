@@ -1,44 +1,34 @@
 import 'dotenv/config'
 import { defineNitroConfig } from 'nitro/config'
-import { resolve } from 'node:path'
 
 const {
-  VSR_BUILD_PRESET,
-  VSR_TARBALL_STORAGE,
-  VSR_DATABASE,
-  VSR_NEON_DATABASE_URL,
-  VSR_SQLITE_DATABASE_FILE_NAME,
-  VSR_S3_BUCKET,
-  VSR_S3_ENDPOINT,
-  VSR_S3_REGION,
-  VSR_S3_ACCESS_KEY_ID,
-  VSR_S3_SECRET_ACCESS_KEY,
+  VSR_PLATFORM = 'node',
+  VSR_STORAGE = 'fs',
+  VSR_DATABASE = 'sqlite',
+  VSR_PACKUMENT_TTL = '5m',
+  VSR_MANIFEST_TTL = '24h',
+  VSR_TARBALL_TTL = '1yr',
 } = process.env
 
-const buildPreset = (VSR_BUILD_PRESET ?? 'node-server') as
-  | 'node-server'
-  | 'cloudflare-module'
-  | 'vercel'
+const platform = VSR_PLATFORM as 'node' | 'cloudflare' | 'vercel'
 
-const tarballStorage = (VSR_TARBALL_STORAGE ?? 'fs') as
-  | 'fs'
-  | 'r2'
-  | 's3'
+const storage = VSR_STORAGE as 'fs' | 'r2' | 's3'
 
-const database = (VSR_DATABASE ?? 'sqlite') as 'neon' | 'sqlite'
+const database = VSR_DATABASE as 'neon' | 'sqlite'
 
 export default defineNitroConfig({
-  preset: buildPreset,
+  preset: platform === 'cloudflare' ? 'cloudflare-module' : platform,
   compatibilityDate: '2025-09-22',
   serverDir: './src',
   minify: false,
   imports: false,
   runtimeConfig: {
-    db: database,
-    tarballStorage,
-    buildPreset,
-    NEON_DATABASE_URL: VSR_NEON_DATABASE_URL,
-    SQLITE_DATABASE_FILE_NAME: VSR_SQLITE_DATABASE_FILE_NAME,
+    database,
+    storage,
+    platform,
+    packumentTtl: VSR_PACKUMENT_TTL,
+    manifestTtl: VSR_MANIFEST_TTL,
+    tarballTtl: VSR_TARBALL_TTL,
   },
   cloudflare: {
     deployConfig: true,
@@ -66,26 +56,5 @@ export default defineNitroConfig({
         },
       ],
     },
-  },
-  storage: {
-    tarballs:
-      tarballStorage === 'r2' ?
-        {
-          driver: 'cloudflare-r2',
-          bucket: 'vsr-production-tarballs',
-        }
-      : tarballStorage === 's3' ?
-        {
-          driver: 's3',
-          bucket: VSR_S3_BUCKET,
-          endpoint: VSR_S3_ENDPOINT,
-          region: VSR_S3_REGION,
-          accessKeyId: VSR_S3_ACCESS_KEY_ID,
-          secretAccessKey: VSR_S3_SECRET_ACCESS_KEY,
-        }
-      : {
-          driver: 'fs-lite',
-          base: resolve(import.meta.dirname, '.data'),
-        },
   },
 })

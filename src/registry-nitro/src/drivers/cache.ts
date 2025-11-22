@@ -314,7 +314,7 @@ export async function setCachedTarball(
 
   // Buffer to avoid Transfer-Encoding: chunked which S3 rejects
   const body: ReadableStream | ArrayBuffer =
-    config.tarballStorage === 's3' ? await arrayBuffer(data) : data
+    config.storage === 's3' ? await arrayBuffer(data) : data
   await useStorage('tarballs').setItemRaw(key, body)
 
   const set = {

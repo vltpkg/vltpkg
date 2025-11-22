@@ -1886,6 +1886,9 @@ importers:
       rolldown:
         specifier: 1.0.0-beta.51
         version: 1.0.0-beta.51
+      unstorage:
+        specifier: 2.0.0-alpha.4
+        version: 2.0.0-alpha.4(@vercel/blob@2.0.0)(@vercel/functions@2.2.13)(aws4fetch@1.0.20)(chokidar@4.0.3)(db0@0.3.4(@libsql/client@0.15.15)(better-sqlite3@12.2.0)(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20251011.0)(@libsql/client@0.15.15)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(better-sqlite3@12.2.0)(gel@2.1.1)))(ioredis@5.8.2)(ofetch@2.0.0-alpha.3)
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20250829.0

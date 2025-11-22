@@ -21,10 +21,10 @@ export const libsql = createLibsql
 export const getDb = () => {
   const config = useRuntimeConfig()
 
-  if (config.db === 'neon') {
+  if (config.database === 'neon') {
     return createNeon(config.NEON_DATABASE_URL)
   }
-  if (config.db === 'sqlite') {
+  if (config.database === 'sqlite') {
     return createLibsql(config.SQLITE_DATABASE_FILE_NAME)
   }
 

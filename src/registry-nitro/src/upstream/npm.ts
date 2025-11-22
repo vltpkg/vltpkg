@@ -13,12 +13,11 @@ import {
   setCachedVersion,
 } from '../drivers/cache.ts'
 
-const { VSR_PACKUMENT_TTL, VSR_MANIFEST_TTL, VSR_TARBALL_TTL } =
-  useRuntimeConfig()
+const { packumentTtl, manifestTtl, tarballTtl } = useRuntimeConfig()
 const TTL = {
-  PACKUMENT: ms(VSR_PACKUMENT_TTL ?? '5m'),
-  MANIFEST: ms(VSR_MANIFEST_TTL ?? '24h'),
-  TARBALL: ms(VSR_TARBALL_TTL ?? '1yr'),
+  PACKUMENT: ms(packumentTtl),
+  MANIFEST: ms(manifestTtl),
+  TARBALL: ms(tarballTtl),
 }
 
 const fetchUpstream = async (path: string) => {
