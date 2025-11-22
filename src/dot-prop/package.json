@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/dot-prop",
   "description": "Get and manipulate an object using strings",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
