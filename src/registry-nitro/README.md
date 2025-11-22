@@ -30,6 +30,9 @@ Other configuration is read from `process.env` at runtime. This is to
 avoid secrets being written into the built artifacts and to allow
 changing certain config without rebuilding.
 
+If you are running locally with `pnpm dev` you can set these values in
+a `.env` file in the root of the workspace.
+
 #### Neon
 
 - `NEON_DATABASE_URL=postgresql://...`
