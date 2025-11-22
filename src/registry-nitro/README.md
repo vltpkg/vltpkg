@@ -1,6 +1,6 @@
 # @vltpkg/vsr-nitro
 
-## Setup
+## Configuration
 
 Configuration is currently controlled by setting environment
 variables.
@@ -11,12 +11,16 @@ To run it locall you can create a `.env` file in the root and run
 For deployment, you should set these environment variables in your
 deployment platform.
 
-### Neon
+### Database
+
+#### Neon
 
 - `VSR_DATABASE=neon`
-- `NEON_DATABASE_URL=postgresql://...`
+- `VSR_NEON_DATABASE_URL=postgresql://...`
 
-### S3
+### Storage
+
+#### S3
 
 - `VSR_STORAGE=s3`
 - `VSR_S3_BUCKER=<BUCKET_NAME>`
@@ -30,3 +34,8 @@ deployment platform.
 - `VSR_PACKUMENT_TTL=5m`
 - `VSR_MANIFEST_TTL=24h`
 - `VSR_TARBALL_TTL=1yr`
+
+## Database Schema Changes
+
+Run `pnpm db:push` with the same environment variables for your
+database set in a local `.env` file.
