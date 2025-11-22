@@ -403,11 +403,17 @@ export async function fetchAndCache<T>(
     const { data, headers, updatedAt } = cached
     if (Date.now() - updatedAt > ttl) {
       event.waitUntil(
-        fetcher()
-          .then(({ data, headers }) => cacheSetter(data, headers))
-          .catch((err: unknown) =>
-            console.error('Background fetch failed', err),
-          ),
+        (async () => {
+          const timeKey2 = `[cache_fetch_swr] ${params}`
+          console.time(timeKey2)
+          try {
+            const { data, headers } = await fetcher()
+            await cacheSetter(data, headers)
+          } catch (err: unknown) {
+            console.error('[cache_fetch_swr] failed', err)
+          }
+          console.timeEnd(timeKey2)
+        })(),
       )
     }
     return { data, headers }
@@ -427,9 +433,16 @@ export async function fetchAndCache<T>(
   const [streamForResponse, streamForCache] = data.tee()
 
   event.waitUntil(
-    cacheSetter(streamForCache as T, headers).catch((err: unknown) =>
-      console.error('Cache set failed', err),
-    ),
+    (async () => {
+      const timeKey2 = `[cache_set] ${params}`
+      console.time(timeKey2)
+      try {
+        await cacheSetter(streamForCache as T, headers)
+      } catch (err: unknown) {
+        console.error('[cache_set] failed', err)
+      }
+      console.timeEnd(timeKey2)
+    })(),
   )
 
   return { data: streamForResponse, headers }
