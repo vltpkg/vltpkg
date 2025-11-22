@@ -281,17 +281,16 @@ export async function getCachedTarball(
     return null
   }
 
-  const key = [`tarballs`, origin, name, version]
+  const key = ['tarballs', origin, name, version]
     .filter(Boolean)
     .join('/')
 
-  const hasItem = await useStorage().hasItem(key)
+  const hasItem = await useStorage('tarballs').hasItem(key)
   if (!hasItem) {
     return null
   }
 
-  const body = await useStorage().getItemRaw(key)
-
+  const body = await useStorage('tarballs').getItemRaw(key)
   return {
     data: body,
     headers: parseHeaders(row.headers),
@@ -308,14 +307,14 @@ export async function setCachedTarball(
   { origin }: { origin: string },
 ) {
   const config = useRuntimeConfig()
-  const key = [`tarballs`, origin, name, version]
+  const key = ['tarballs', origin, name, version]
     .filter(Boolean)
     .join('/')
 
   // Buffer to avoid Transfer-Encoding: chunked which S3 rejects
   const body: ReadableStream | ArrayBuffer =
     config.tarballStorage === 's3' ? await arrayBuffer(data) : data
-  await useStorage().setItemRaw(key, body)
+  await useStorage('tarballs').setItemRaw(key, body)
 
   const set = {
     headers,

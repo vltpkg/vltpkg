@@ -55,7 +55,7 @@ export default defineNitroConfig({
     },
   },
   storage: {
-    default:
+    tarballs:
       tarballStorage === 'r2' ?
         {
           driver: 'cloudflare-r2',
