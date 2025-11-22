@@ -403,9 +403,10 @@ export async function fetchAndCache(
   console.timeEnd(timeKey)
 
   if (cached) {
-    console.log('[cache_hit]', params)
     const { data, headers, updatedAt } = cached
-    if (Date.now() - updatedAt > ttl) {
+    const stale = Date.now() - updatedAt > ttl
+    console.log('[cache_hit]', params, `stale=${stale}`)
+    if (stale) {
       event.waitUntil(
         (async () => {
           const timeKey2 = `[cache_fetch_swr] ${params}`
