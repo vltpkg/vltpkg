@@ -39,7 +39,7 @@ a `.env` file in the root of the workspace.
 
 #### Sqlite
 
-- `SQLITE_DATABASE_FILE_NAME=file:...`
+- `SQLITE_DATABASE_FILE=file:...`
 
 #### S3
 

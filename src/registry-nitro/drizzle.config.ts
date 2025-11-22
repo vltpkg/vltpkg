@@ -25,7 +25,7 @@ const config =
       dialect: 'sqlite',
       schema: './src/db/schema-sqlite.ts',
       dbCredentials: {
-        url: getAndAssert('SQLITE_DATABASE_FILE_NAME'),
+        url: getAndAssert('SQLITE_DATABASE_FILE'),
       },
     } satisfies Config)
   : null
