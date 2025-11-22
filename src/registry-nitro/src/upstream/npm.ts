@@ -22,7 +22,7 @@ const TTL = {
 
 const fetchUpstream = async (path: string) => {
   const res = await fetch(`https://registry.npmjs.org${path}`)
-  if (!res.ok) {
+  if (!res.ok || !res.body) {
     throw new HTTPError(res.statusText, { status: res.status })
   }
   const headers = filterHeaders(res.headers)

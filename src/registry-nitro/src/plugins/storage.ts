@@ -5,6 +5,7 @@ import fsLite from 'unstorage/drivers/fs-lite'
 import { resolve } from 'node:path'
 import r2 from 'unstorage/drivers/cloudflare-r2-binding'
 import { definePlugin } from 'nitro'
+import type { Driver } from 'unstorage'
 
 export default definePlugin(() => {
   const storage = useStorage()
@@ -12,36 +13,29 @@ export default definePlugin(() => {
 
   console.log('[storage]', config.storage)
 
+  let driver: Driver | null = null
+
   if (config.storage === 'fs') {
-    return storage.mount(
-      'tarballs',
-      fsLite({
-        base: resolve(process.cwd(), '.data'),
-      }),
-    )
+    driver = fsLite({
+      base: resolve(process.cwd(), '.data'),
+    })
+  } else if (config.storage === 's3') {
+    driver = s3({
+      bucket: process.env.S3_BUCKET,
+      endpoint: process.env.S3_ENDPOINT,
+      region: process.env.S3_REGION,
+      accessKeyId: process.env.S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    })
+  } else if (config.storage === 'r2') {
+    driver = r2({
+      bucket: config.R2_BUCKET,
+    })
   }
 
-  if (config.storage === 's3') {
-    return storage.mount(
-      'tarballs',
-      s3({
-        bucket: process.env.S3_BUCKET,
-        endpoint: process.env.S3_ENDPOINT,
-        region: process.env.S3_REGION,
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-      }),
-    )
+  if (!driver) {
+    throw new Error(`Invalid storage type: ${config.storage}`)
   }
 
-  if (config.storage === 'r2') {
-    return storage.mount(
-      'tarballs',
-      r2({
-        bucket: config.R2_BUCKET,
-      }),
-    )
-  }
-
-  throw new Error(`Invalid storage type: ${config.storage}`)
+  storage.mount('tarballs', driver)
 })

@@ -79,7 +79,7 @@ export async function setCachedPackument(
   ctx: DBTypes.Context,
   { origin }: { origin: string },
 ) {
-  let packument: any
+  let packument: Record<string, unknown>
 
   if (data instanceof ReadableStream) {
     packument = JSON.parse(await text(data))
@@ -87,7 +87,9 @@ export async function setCachedPackument(
     packument = JSON.parse(data)
   }
 
-  const { versions } = packument
+  const { versions } = packument as {
+    versions: Record<string, unknown>
+  }
   packument.versions = {}
 
   const row = {
@@ -216,7 +218,7 @@ export async function getCachedVersion(
 export async function setCachedVersion(
   name: string,
   version: string,
-  data: unknown,
+  data: ReadableStream | Record<string, unknown>,
   headers: Record<string, string>,
   ctx: DBTypes.Context,
   { origin }: { origin: string },
@@ -273,6 +275,7 @@ export async function getCachedTarball(
   let row: DBTypes.Tarball | undefined = undefined
 
   const timeKey = `[get_tarball_db] ${name}@${version}`
+  console.time(timeKey)
   if (ctx.dialect === 'sqlite') {
     row = await ctx.db.query.tarballs.findFirst({
       where: and(
@@ -373,28 +376,29 @@ export async function setCachedTarball(
   console.timeEnd(timeKey2)
 }
 
-export async function fetchAndCache<T>(
+export async function fetchAndCache(
   event: H3Event,
   fetcher: () => Promise<{
-    data: T
+    data: ReadableStream
     headers: Record<string, string>
   }>,
   cacheGetter: () => Promise<{
-    data: T
+    data: Record<string, unknown>
     headers: Record<string, string>
     updatedAt: number
   } | null>,
   cacheSetter: (
-    data: T,
+    data: ReadableStream,
     headers: Record<string, string>,
   ) => Promise<void>,
   ttl: number,
 ) {
   const params = Object.entries(event.context.params ?? {})
     .map(([k, v]) => `${k}:${v}`)
-    .join(', ')
+    .join('|')
 
   const timeKey = `[cache_read] ${params}`
+  console.time(timeKey)
   const cached = await cacheGetter()
   console.timeEnd(timeKey)
 
@@ -437,7 +441,7 @@ export async function fetchAndCache<T>(
       const timeKey2 = `[cache_set] ${params}`
       console.time(timeKey2)
       try {
-        await cacheSetter(streamForCache as T, headers)
+        await cacheSetter(streamForCache, headers)
       } catch (err: unknown) {
         console.error('[cache_set] failed', err)
       }
