@@ -12,9 +12,9 @@ import type {
 import { Graph } from '../../src/graph.ts'
 import type { GraphModifier } from '../../src/modifiers.ts'
 import {
-  addNodes,
+  refreshIdealGraph,
   nextPeerContextIndex,
-} from '../../src/ideal/add-nodes.ts'
+} from '../../src/ideal/refresh-ideal-graph.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 
@@ -31,7 +31,7 @@ const configData = {
   },
 } satisfies SpecOptions
 
-t.test('addNodes', async t => {
+t.test('refreshIdealGraph', async t => {
   const fooManifest = {
     name: 'foo',
     version: '1.0.0',
@@ -77,7 +77,7 @@ t.test('addNodes', async t => {
 
   t.matchSnapshot(objectLikeOutput(graph), 'initial graph')
 
-  await addNodes({
+  await refreshIdealGraph({
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry('foo')],
     ]) as AddImportersDependenciesMap,
@@ -88,7 +88,7 @@ t.test('addNodes', async t => {
   })
   t.matchSnapshot(objectLikeOutput(graph), 'graph with an added foo')
 
-  await addNodes({
+  await refreshIdealGraph({
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry('foo')],
     ]) as AddImportersDependenciesMap,
@@ -103,7 +103,7 @@ t.test('addNodes', async t => {
   )
 
   await t.rejects(
-    addNodes({
+    refreshIdealGraph({
       add: new Map([
         [joinDepIDTuple(['file', 'unknown']), addEntry('foo')],
       ]) as AddImportersDependenciesMap,
@@ -128,7 +128,7 @@ t.test('addNodes', async t => {
   )
 
   // now it should install the package bar to the main importer
-  await addNodes({
+  await refreshIdealGraph({
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry('bar', 'dev')],
     ]) as AddImportersDependenciesMap,
@@ -159,7 +159,7 @@ t.test('addNodes', async t => {
       },
     } as unknown as GraphModifier
 
-    await addNodes({
+    await refreshIdealGraph({
       add: new Map([
         [joinDepIDTuple(['file', '.']), addEntry('foo')],
       ]) as AddImportersDependenciesMap,
@@ -179,7 +179,7 @@ t.test('addNodes', async t => {
   })
 })
 
-t.test('addNodes waits for extraction promises', async t => {
+t.test('refreshIdealGraph waits for extraction promises', async t => {
   const fooManifest = {
     name: 'foo',
     version: '1.0.0',
@@ -229,8 +229,8 @@ t.test('addNodes waits for extraction promises', async t => {
     }),
   )
 
-  // Call addNodes with actual graph to trigger early extraction
-  await addNodes({
+  // Call refreshIdealGraph with actual graph to trigger early extraction
+  await refreshIdealGraph({
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry],
     ]) as AddImportersDependenciesMap,
@@ -245,12 +245,12 @@ t.test('addNodes waits for extraction promises', async t => {
   t.ok(extractionStarted.value, 'extraction was started')
   t.ok(
     extractionCompleted.value,
-    'extraction was completed before addNodes returned',
+    'extraction was completed before refreshIdealGraph returned',
   )
 })
 
 t.test(
-  'addNodes handles multiple extraction promises concurrently',
+  'refreshIdealGraph handles multiple extraction promises concurrently',
   async t => {
     const fooManifest = {
       name: 'foo',
@@ -332,7 +332,7 @@ t.test(
       }),
     )
 
-    await addNodes({
+    await refreshIdealGraph({
       add: new Map([
         [joinDepIDTuple(['file', '.']), addEntry],
       ]) as AddImportersDependenciesMap,

@@ -1,16 +1,11 @@
 import { getImporterSpecs } from './get-importer-specs.ts'
-import { addNodes } from './add-nodes.ts'
-import { removeNodes } from './remove-nodes.ts'
-import { asDependency } from '../dependencies.ts'
-import type { AddNodesOptions } from './add-nodes.ts'
-import type { AddImportersDependenciesMap } from '../dependencies.ts'
+import { refreshIdealGraph } from './refresh-ideal-graph.ts'
+import { resolveSaveType } from '../resolve-save-type.ts'
+import type { RefreshIdealGraphOptions } from './refresh-ideal-graph.ts'
 import type { Graph } from '../graph.ts'
-import type { RemoveNodesOptions } from './remove-nodes.ts'
 
-export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
-  RemoveNodesOptions & {
-    projectRoot: string
-  }
+export type BuildIdealFromStartingGraphOptions =
+  RefreshIdealGraphOptions
 
 /**
  * Builds an ideal {@link Graph} representing the dependencies that
@@ -39,6 +34,9 @@ export const buildIdealFromStartingGraph = async (
   // merge values found on importer specs with
   // user-provided values from `options.add`
   for (const [importerId, deps] of importerSpecs.add) {
+    const importer = options.graph.nodes.get(importerId)
+    if (!importer) continue
+
     if (!options.add.has(importerId)) {
       options.add.set(importerId, deps)
       continue
@@ -51,60 +49,22 @@ export const buildIdealFromStartingGraph = async (
       if (!options.add.get(importerId)?.has(depName)) {
         options.add.get(importerId)?.set(depName, dep)
       }
-    }
-  }
 
-  if (options.add.modifiedDependencies) {
-    // removes all edges to start from a clean state
-    // the performance impact from is attenuated by the fact that
-    // nodes resolutions are already cached in-memory
-    // Create a deep copy of options.add
-    const mergedAdd: AddImportersDependenciesMap =
-      new Map() as AddImportersDependenciesMap
-    for (const [importerId, deps] of options.add) {
-      mergedAdd.set(importerId, new Map(deps))
-    }
-    mergedAdd.modifiedDependencies = true
-    for (const importer of options.graph.importers) {
-      const importerId = importer.id
-      for (const [depName, edge] of importer.edgesOut) {
-        let mergedDeps = mergedAdd.get(importerId)
-        if (!mergedDeps) {
-          mergedDeps = new Map()
-          mergedAdd.set(importerId, mergedDeps)
-        }
-        // If the dep isn't already set by options/add/user input, add it from the graph
-        if (!mergedDeps.has(depName)) {
-          // The edge has .spec but we usually just use it as the value
-          mergedDeps.set(
-            depName,
-            asDependency({ type: edge.type, spec: edge.spec }),
-          )
-        }
+      // update the save type for deps when using an implicit type
+      for (const [depName, depSpec] of deps) {
+        depSpec.type = resolveSaveType(
+          importer,
+          depName,
+          depSpec.type,
+        )
       }
     }
-
-    options.graph.resetEdges()
-
-    // add nodes, fetching remote manifests for each dependency to be added
-    await addNodes({
-      ...options,
-      add: mergedAdd,
-    })
-
-    // move things into their default locations, if possible
-    for (const node of options.graph.nodes.values()) {
-      node.setDefaultLocation()
-    }
   }
 
-  // TODO: needs to handle modifiedDependencies flag and potentially
-  // a way to clear up top level deps so that we recalculate the
-  // ideal graph
-  // removes any dependencies that are listed in the `remove` option
-  if (options.remove.modifiedDependencies) {
-    removeNodes({ ...options, remove: importerSpecs.remove })
-  }
+  // refreshs the current graph adding the nodes marked for addition
+  // and removing the ones marked for removal, while also recalculating
+  // peer dependencies and default locations
+  await refreshIdealGraph(options)
 
   options.graph.gc()
 

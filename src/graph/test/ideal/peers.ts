@@ -11,7 +11,7 @@ import {
   retrievePeerContextHash,
   startPeerPlacement,
 } from '../../src/ideal/peers.ts'
-import { nextPeerContextIndex } from '../../src/ideal/add-nodes.ts'
+import { nextPeerContextIndex } from '../../src/ideal/refresh-ideal-graph.ts'
 import type {
   PeerContext,
   PeerContextEntryInput,

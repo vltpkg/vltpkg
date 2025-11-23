@@ -33,6 +33,7 @@ import type {
   AppendNodeEntry,
   ProcessPlacementResult,
 } from './types.ts'
+import { getOrderedDependencies } from './get-ordered-dependencies.ts'
 
 type FileTypeInfo = {
   id: DepID
@@ -260,10 +261,10 @@ const fetchManifestsForDeps = async (
  * which the final graph data structure is actually built.
  */
 const processPlacementTasks = async (
-  add: Map<string, Dependency>,
   graph: Graph,
   options: SpecOptions,
   placementTasks: NodePlacementTask[],
+  add?: Map<string, Dependency>,
   modifiers?: GraphModifier,
   scurry?: PathScurry,
   packageInfo?: PackageInfoClient,
@@ -289,8 +290,8 @@ const processPlacementTasks = async (
 
     // Handle nameless dependencies
     if (manifest?.name && spec.name === '(unknown)') {
-      const s = add.get(String(spec))
-      if (s) {
+      const s = add?.get(String(spec))
+      if (add && s) {
         // removes the previous, placeholder entry key
         add.delete(String(spec))
         // replaces spec with a version with the correct name
@@ -374,7 +375,9 @@ const processPlacementTasks = async (
       scurry &&
       packageInfo &&
       node.inVltStore() &&
-      !node.isOptional()
+      !node.isOptional() &&
+      !fileTypeInfo?.isDirectory &&
+      !node.importer
     ) {
       /* c8 ignore start */
       if (seenExtracted?.has(node.id)) {
@@ -480,7 +483,7 @@ const processPlacementTasks = async (
 
     childDepsToProcess.push({
       node,
-      deps: nextDeps,
+      deps: getOrderedDependencies(nextDeps),
       modifierRefs: modifiers?.tryDependencies(node, nextDeps),
       peerContext,
       updateContext,
@@ -498,7 +501,6 @@ const processPlacementTasks = async (
  * and builds the graph.
  */
 export const appendNodes = async (
-  add: Map<string, Dependency>,
   packageInfo: PackageInfoClient,
   graph: Graph,
   fromNode: Node,
@@ -506,6 +508,7 @@ export const appendNodes = async (
   scurry: PathScurry,
   options: SpecOptions,
   seen: Set<DepID>,
+  add?: Map<string, Dependency>,
   modifiers?: GraphModifier,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   extractPromises?: Promise<ExtractResult>[],
@@ -571,15 +574,14 @@ export const appendNodes = async (
             peerContext,
             nodeModifierRefs,
             depth,
-            options,
           )
 
           // Process the placement tasks and get child dependencies
           return await processPlacementTasks(
-            add,
             graph,
             options,
             placementTasks,
+            add,
             modifiers,
             scurry,
             packageInfo,
