@@ -1,8 +1,10 @@
-import type { Graph } from '../graph.ts'
 import { getImporterSpecs } from './get-importer-specs.ts'
 import { addNodes } from './add-nodes.ts'
-import type { AddNodesOptions } from './add-nodes.ts'
 import { removeNodes } from './remove-nodes.ts'
+import { asDependency } from '../dependencies.ts'
+import type { AddNodesOptions } from './add-nodes.ts'
+import type { AddImportersDependenciesMap } from '../dependencies.ts'
+import type { Graph } from '../graph.ts'
 import type { RemoveNodesOptions } from './remove-nodes.ts'
 
 export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
@@ -52,12 +54,43 @@ export const buildIdealFromStartingGraph = async (
     }
   }
 
-  // hydrate the resolution cache
   if (options.add.modifiedDependencies) {
-    options.graph.resetResolution()
+    // removes all edges to start from a clean state
+    // the performance impact from is attenuated by the fact that
+    // nodes resolutions are already cached in-memory
+    // Create a deep copy of options.add
+    const mergedAdd: AddImportersDependenciesMap =
+      new Map() as AddImportersDependenciesMap
+    for (const [importerId, deps] of options.add) {
+      mergedAdd.set(importerId, new Map(deps))
+    }
+    mergedAdd.modifiedDependencies = true
+    for (const importer of options.graph.importers) {
+      const importerId = importer.id
+      for (const [depName, edge] of importer.edgesOut) {
+        let mergedDeps = mergedAdd.get(importerId)
+        if (!mergedDeps) {
+          mergedDeps = new Map()
+          mergedAdd.set(importerId, mergedDeps)
+        }
+        // If the dep isn't already set by options/add/user input, add it from the graph
+        if (!mergedDeps.has(depName)) {
+          // The edge has .spec but we usually just use it as the value
+          mergedDeps.set(
+            depName,
+            asDependency({ type: edge.type, spec: edge.spec }),
+          )
+        }
+      }
+    }
+
+    options.graph.resetEdges()
 
     // add nodes, fetching remote manifests for each dependency to be added
-    await addNodes(options)
+    await addNodes({
+      ...options,
+      add: mergedAdd,
+    })
 
     // move things into their default locations, if possible
     for (const node of options.graph.nodes.values()) {
@@ -65,8 +98,13 @@ export const buildIdealFromStartingGraph = async (
     }
   }
 
+  // TODO: needs to handle modifiedDependencies flag and potentially
+  // a way to clear up top level deps so that we recalculate the
+  // ideal graph
   // removes any dependencies that are listed in the `remove` option
-  removeNodes({ ...options, remove: importerSpecs.remove })
+  if (options.remove.modifiedDependencies) {
+    removeNodes({ ...options, remove: importerSpecs.remove })
+  }
 
   options.graph.gc()
 

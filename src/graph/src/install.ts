@@ -82,7 +82,6 @@ export const install = async (
     const lockfileGraph = loadVirtual({
       ...options,
       mainManifest,
-      skipLoadingNodesOnModifiersChange: false,
     })
 
     const emptyAdd = Object.assign(

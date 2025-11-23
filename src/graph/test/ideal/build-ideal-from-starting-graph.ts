@@ -138,23 +138,38 @@ t.test('build from a virtual graph', async t => {
       },
     },
     nodes: {
-      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
-      [joinDepIDTuple(['file', 'linked'])]: [0, 'linked'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
         0,
         'foo',
         'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        null,
+        null,
+        {
+          name: 'foo',
+          version: '1.0.0',
+        },
       ],
       [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
         0,
         'bar',
         'sha512-6/deadbeef==',
         'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+        null,
+        {
+          name: 'bar',
+          version: '1.0.0',
+        },
       ],
       [joinDepIDTuple(['registry', '', 'baz@1.0.0'])]: [
         0,
         'baz',
         null,
+        null,
+        null,
+        {
+          name: 'baz',
+          version: '1.0.0',
+        },
       ],
       [joinDepIDTuple(['registry', '', 'pnpmdep@1.0.0'])]: [
         0,
@@ -162,6 +177,10 @@ t.test('build from a virtual graph', async t => {
         null,
         null,
         './node_modules/.pnpm/pnpmdep@1.0.0/node_modules/pnpmdep',
+        {
+          name: 'pnpmdep',
+          version: '1.0.0',
+        },
       ],
     } as Record<DepID, LockfileNode>,
     edges: {
@@ -179,6 +198,7 @@ t.test('build from a virtual graph', async t => {
     } as LockfileEdges,
   }
   const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
     'vlt-lock.json': JSON.stringify(lockfileData),
     linked: {
       'package.json': JSON.stringify({

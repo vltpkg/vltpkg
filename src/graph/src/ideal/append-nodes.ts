@@ -129,6 +129,7 @@ const fetchManifestsForDeps = async (
 ): Promise<NodePlacementTask[]> => {
   // Create fetch tasks for all dependencies at this level
   const fetchTasks: ManifestFetchTask[] = []
+  const placementTasks: NodePlacementTask[] = []
 
   for (const { spec: originalSpec, type } of deps) {
     let spec = originalSpec
@@ -154,11 +155,21 @@ const fetchManifestsForDeps = async (
 
     // skip reusing nodes for peer deps since their reusability
     // is handled ahead-of-time during its parent's placement
-    const existingNode =
-      type !== 'peer' &&
-      type !== 'peerOptional' &&
-      graph.findResolution(spec, fromNode, queryModifier)
-    if (existingNode) {
+    const existingNode = graph.findResolution(
+      spec,
+      fromNode,
+      queryModifier,
+    )
+
+    if (
+      (type !== 'peer' &&
+        type !== 'peerOptional' &&
+        existingNode &&
+        !existingNode.detached) ||
+      // importers are handled at the ./add-nodes.ts top-level
+      // so we should just skip whenever we find one
+      existingNode?.importer
+    ) {
       graph.addEdge(type, spec, fromNode, existingNode)
       continue
     }
@@ -167,16 +178,19 @@ const fetchManifestsForDeps = async (
       type === 'optional' || type === 'peerOptional'
 
     // Start manifest fetch immediately for parallel processing
-    const manifestPromise = packageInfo
-      .manifest(spec, { from: scurry.resolve(fromNode.location) })
-      .then(manifest => manifest as Manifest | undefined)
-      .catch((er: unknown) => {
-        // optional deps ignored if inaccessible
-        if (edgeOptional || fromNode.optional) {
-          return undefined
-        }
-        throw er
-      })
+    const manifestPromise =
+      existingNode?.detached ?
+        Promise.resolve(existingNode.manifest as Manifest | undefined)
+      : packageInfo
+          .manifest(spec, { from: scurry.resolve(fromNode.location) })
+          .then(manifest => manifest as Manifest | undefined)
+          .catch((er: unknown) => {
+            // optional deps ignored if inaccessible
+            if (edgeOptional || fromNode.optional) {
+              return undefined
+            }
+            throw er
+          })
 
     const fetchTask: ManifestFetchTask = {
       spec,
@@ -194,8 +208,7 @@ const fetchManifestsForDeps = async (
     fetchTasks.push(fetchTask)
   }
 
-  // Create placement tasks
-  const placementTasks: NodePlacementTask[] = []
+  // Create placement tasks from fetch tasks
   for (const fetchTask of fetchTasks) {
     const manifest = await fetchTask.manifestPromise
 
@@ -310,34 +323,41 @@ const processPlacementTasks = async (
       }
     }
 
+    // Check if node was already attached by attachNodeToGraph
+    let node = placementTask.node
+
     // start peer deps placement process, populating the peer context with
     // dependency data; adding the parent node deps and this manifest's
     // peer deps references to the current peer context set
-    const { peerSetHash, queuedEntries } = startPeerPlacement(
+    const peerPlacement = startPeerPlacement(
       peerContext,
       manifest,
       fromNode,
       options,
     )
+    const peerSetHash = peerPlacement.peerSetHash
+    const queuedEntries = peerPlacement.queuedEntries
 
-    // places a new node in the graph representing a newly seen dependency
-    const node = graph.placePackage(
-      fromNode,
-      type,
-      spec,
-      normalizeManifest(manifest),
-      fileTypeInfo?.id,
-      joinExtra({ peerSetHash, modifier: queryModifier }),
-    )
-
-    /* c8 ignore start - not possible, already ensured manifest */
     if (!node) {
-      throw error('failed to place package', {
-        from: fromNode.location,
+      // places a new node in the graph representing a newly seen dependency
+      node = graph.placePackage(
+        fromNode,
+        type,
         spec,
-      })
+        normalizeManifest(manifest),
+        fileTypeInfo?.id,
+        joinExtra({ peerSetHash, modifier: queryModifier }),
+      )
+
+      /* c8 ignore start - not possible, already ensured manifest */
+      if (!node) {
+        throw error('failed to place package', {
+          from: fromNode.location,
+          spec,
+        })
+      }
+      /* c8 ignore stop */
     }
-    /* c8 ignore stop */
 
     // update the node modifier tracker
     if (activeModifier) {
@@ -383,42 +403,61 @@ const processPlacementTasks = async (
     node.setResolved()
 
     // Collect child dependencies for processing in the next level
-    const bundleDeps = manifest.bundleDependencies
-    const bundled = new Set<string>(
-      (
-        node.id.startsWith('git') ||
-        node.importer ||
-        !isStringArray(bundleDeps)
-      ) ?
-        []
-      : bundleDeps,
-    )
-
-    // setup next level to process all child dependencies in the manifest
-    const nextDeps: Dependency[] = []
+    // Use pre-computed childDeps if available (from attachNodeToGraph)
+    let nextDeps: Dependency[]
     const nextPeerDeps = new Map<string, Dependency>()
 
-    // traverse actual dependency declarations in the manifest
-    // creating dependency entries for them
-    for (const depTypeName of longDependencyTypes) {
-      const depRecord: Record<string, string> | undefined =
-        manifest[depTypeName]
+    if (placementTask.childDeps) {
+      // Use pre-computed deps from attachNodeToGraph
+      nextDeps = placementTask.childDeps
+      // Still need to separate peer deps
+      for (const dep of nextDeps) {
+        if (dep.type === 'peer' || dep.type === 'peerOptional') {
+          nextPeerDeps.set(dep.spec.name, dep)
+        }
+      }
+      // Filter out peer deps from nextDeps
+      nextDeps = nextDeps.filter(
+        dep => dep.type !== 'peer' && dep.type !== 'peerOptional',
+      )
+    } else {
+      // Compute deps normally
+      const bundleDeps = manifest.bundleDependencies
+      const bundled = new Set<string>(
+        (
+          node.id.startsWith('git') ||
+          node.importer ||
+          !isStringArray(bundleDeps)
+        ) ?
+          []
+        : bundleDeps,
+      )
 
-      if (depRecord && shouldInstallDepType(node, depTypeName)) {
-        for (const [name, bareSpec] of Object.entries(depRecord)) {
-          // might need to skip already placed peer deps here
-          if (bundled.has(name)) continue
-          const dep = {
-            type: shorten(depTypeName, name, manifest),
-            spec: Spec.parse(name, bareSpec, {
-              ...options,
-              registry: spec.registry,
-            }),
-          }
-          if (depTypeName === 'peerDependencies') {
-            nextPeerDeps.set(name, dep)
-          } else {
-            nextDeps.push(dep)
+      // setup next level to process all child dependencies in the manifest
+      nextDeps = []
+
+      // traverse actual dependency declarations in the manifest
+      // creating dependency entries for them
+      for (const depTypeName of longDependencyTypes) {
+        const depRecord: Record<string, string> | undefined =
+          manifest[depTypeName]
+
+        if (depRecord && shouldInstallDepType(node, depTypeName)) {
+          for (const [name, bareSpec] of Object.entries(depRecord)) {
+            // might need to skip already placed peer deps here
+            if (bundled.has(name)) continue
+            const dep = {
+              type: shorten(depTypeName, name, manifest),
+              spec: Spec.parse(name, bareSpec, {
+                ...options,
+                registry: spec.registry,
+              }),
+            }
+            if (depTypeName === 'peerDependencies') {
+              nextPeerDeps.set(name, dep)
+            } else {
+              nextDeps.push(dep)
+            }
           }
         }
       }
@@ -532,6 +571,7 @@ export const appendNodes = async (
             peerContext,
             nodeModifierRefs,
             depth,
+            options,
           )
 
           // Process the placement tasks and get child dependencies

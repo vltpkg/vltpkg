@@ -27,7 +27,8 @@ Node [@vltpkg/graph.Node] {
   bins: undefined,
   built: false,
   buildState: 'none',
-  peerSetHash: undefined
+  peerSetHash: undefined,
+  detached: false
 }
 `
 

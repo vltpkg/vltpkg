@@ -1,9 +1,4 @@
-import {
-  getId,
-  joinDepIDTuple,
-  joinExtra,
-  splitExtra,
-} from '@vltpkg/dep-id'
+import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -421,6 +416,7 @@ export class Graph implements GraphLike {
       this.addEdge(depType, spec, fromNode, toFoundNode)
       // the current only stays dev/optional if this dep lets it remain so
       // if it's not already, we don't make it dev or optional.
+      toFoundNode.detached = false
       toFoundNode.dev &&= flags.dev
       toFoundNode.optional &&= flags.optional
       return toFoundNode
@@ -540,49 +536,18 @@ export class Graph implements GraphLike {
   }
 
   /**
-   * Reset resolution cache data.
+   * Remove all edges from the graph while preserving nodes and resolution caches.
+   * This allows the graph to be reconstructed efficiently using the existing nodes.
    */
-  resetResolution() {
-    // Clear all cache structures
-    this.resolutions.clear()
-    this.resolutionsReverse.clear()
-    this.nodesByName.clear()
+  resetEdges() {
+    // Clear the global edges set
+    this.edges.clear()
 
-    // Rebuild nodesByName from all nodes
+    // Clear all node edge relationships
     for (const node of this.nodes.values()) {
-      const nbn = this.nodesByName.get(node.name) ?? new Set()
-      nbn.add(node)
-      this.nodesByName.set(node.name, nbn)
-    }
-
-    // Rebuild resolution caches from all edges that have resolved targets
-    const seenNodes = new Set<Node>()
-    for (const edge of this.edges) {
-      const { to: node } = edge
-      if (!node) continue // Skip unresolved edges
-
-      // Only process each node once to avoid duplicate cache entries
-      if (seenNodes.has(node)) continue
-      seenNodes.add(node)
-
-      // Initialize resolutionsReverse entry for this node if it doesn't exist
-      if (!this.resolutionsReverse.has(node)) {
-        this.resolutionsReverse.set(node, new Set())
-      }
-
-      // Get the extra combining modifier and peerSetHash if present
-      const extra = joinExtra({
-        modifier: node.modifier,
-        peerSetHash: node.peerSetHash,
-      })
-      const resolutionKey = getResolutionCacheKey(
-        edge.spec.final,
-        edge.from.location,
-        extra || '',
-      )
-
-      this.resolutions.set(resolutionKey, node)
-      this.resolutionsReverse.get(node)?.add(resolutionKey)
+      node.detached = true
+      node.edgesOut.clear()
+      node.edgesIn.clear()
     }
   }
 
