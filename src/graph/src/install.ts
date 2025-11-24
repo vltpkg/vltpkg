@@ -20,7 +20,8 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
-import { Graph, lockfile } from './index.ts'
+import { lockfile } from './index.ts'
+import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 
 export type InstallOptions = LoadOptions & {

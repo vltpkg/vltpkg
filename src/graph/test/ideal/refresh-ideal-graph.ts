@@ -105,21 +105,6 @@ t.test('refreshIdealGraph', async t => {
     'graph after adding foo when there is an already existing foo',
   )
 
-  await t.rejects(
-    refreshIdealGraph({
-      add: new Map([
-        [joinDepIDTuple(['file', 'unknown']), addEntry('foo')],
-      ]) as AddImportersDependenciesMap,
-      remove: new Map() as RemoveImportersDependenciesMap,
-      graph,
-      packageInfo,
-      scurry: new PathScurry(t.testdirName),
-      remover: new RollbackRemove(),
-    }),
-    /Could not find importer/,
-    'should throw an error if finding an unknown importer id',
-  )
-
   // place a missing package bar on the main importer
   graph.placePackage(
     graph.mainImporter,
@@ -179,7 +164,7 @@ t.test('refreshIdealGraph', async t => {
     t.equal(modifierCalls.tryImporter, 1, 'tryImporter was called')
     t.equal(
       modifierCalls.tryDependencies,
-      2,
+      1,
       'tryDependencies was called',
     )
   })

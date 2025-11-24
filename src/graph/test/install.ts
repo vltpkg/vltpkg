@@ -55,6 +55,11 @@ t.test('install', async t => {
     '../src/actual/load.ts': {
       load: () => {
         log += 'actual.load\n'
+        return {
+          edges: new Set(),
+          importers: new Map(),
+          nodes: new Map(),
+        }
       },
     },
     '../src/reify/index.ts': {

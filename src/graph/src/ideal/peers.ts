@@ -4,6 +4,7 @@
 import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
 import { getDependencies } from '../dependencies.ts'
+import { getOrderedDependencies } from './get-ordered-dependencies.ts'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { Dependency } from '../dependencies.ts'
@@ -421,6 +422,7 @@ export const postPlacementPeerCheck = (
     // the context is fully set up
     for (const childDep of childDepsToProcess) {
       childDep.updateContext.resolvePeerDeps()
+      childDep.deps = getOrderedDependencies(childDep.deps)
     }
   }
 }

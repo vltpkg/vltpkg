@@ -522,7 +522,9 @@ export const load = (options: LoadOptions): Graph => {
     modifiers?.rollbackActiveEntries()
 
     // caches the load result to the hidden lockfile when enabled
-    if (scurry.cwd.resolve('node_modules').lstatSync()?.isDirectory()) {
+    if (
+      scurry.cwd.resolve('node_modules').lstatSync()?.isDirectory()
+    ) {
       saveHidden({
         ...options,
         graph,

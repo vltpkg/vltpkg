@@ -33,7 +33,6 @@ import type {
   AppendNodeEntry,
   ProcessPlacementResult,
 } from './types.ts'
-import { getOrderedDependencies } from './get-ordered-dependencies.ts'
 
 type FileTypeInfo = {
   id: DepID
@@ -154,6 +153,8 @@ const fetchManifestsForDeps = async (
       }
     }
 
+    const peer = type === 'peer' || type === 'peerOptional'
+
     // skip reusing nodes for peer deps since their reusability
     // is handled ahead-of-time during its parent's placement
     const existingNode = graph.findResolution(
@@ -161,12 +162,16 @@ const fetchManifestsForDeps = async (
       fromNode,
       queryModifier,
     )
+    const validExistingNode =
+      existingNode &&
+      !existingNode.detached &&
+      // Regular deps can always reuse
+      (!peer ||
+        // Peer deps can reuse if peerSetHash matches
+        (existingNode.peerSetHash === fromNode.peerSetHash && peer))
 
     if (
-      (type !== 'peer' &&
-        type !== 'peerOptional' &&
-        existingNode &&
-        !existingNode.detached) ||
+      validExistingNode ||
       // importers are handled at the ./add-nodes.ts top-level
       // so we should just skip whenever we find one
       existingNode?.importer
@@ -175,13 +180,19 @@ const fetchManifestsForDeps = async (
       continue
     }
 
+    // is the current edge pointint go an optional dependency?
     const edgeOptional =
       type === 'optional' || type === 'peerOptional'
 
     // Start manifest fetch immediately for parallel processing
     const manifestPromise =
+      // the "detached" node state means that it has already been load as
+      // part of a graph (either lockfile or actual) and it has valid manifest
+      // data so we shortcut the package info manifest fetch here
       existingNode?.detached ?
         Promise.resolve(existingNode.manifest as Manifest | undefined)
+        // this is the entry point to fetch calls to retrieve manifests
+        // from the build ideal graph point of view
       : packageInfo
           .manifest(spec, { from: scurry.resolve(fromNode.location) })
           .then(manifest => manifest as Manifest | undefined)
@@ -483,7 +494,7 @@ const processPlacementTasks = async (
 
     childDepsToProcess.push({
       node,
-      deps: getOrderedDependencies(nextDeps),
+      deps: nextDeps,
       modifierRefs: modifiers?.tryDependencies(node, nextDeps),
       peerContext,
       updateContext,

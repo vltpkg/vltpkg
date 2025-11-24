@@ -548,8 +548,7 @@ export class Graph implements GraphLike {
       // marking nodes as detached needs to be restricted to only those
       // that had a manifest, otherwise we'd be skipping fetching manifest
       // for nodes we don't have a manifest during the ideal build phase
-      if (node.manifest) 
-        node.detached = true
+      if (node.manifest) node.detached = true
 
       // detaches all edges from this node
       node.edgesOut.clear()
