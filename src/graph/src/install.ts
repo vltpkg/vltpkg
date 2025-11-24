@@ -12,6 +12,7 @@ import { getDependencies } from './dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   Dependency,
+  RemoveImportersDependenciesMap,
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { DepID } from '@vltpkg/dep-id'
@@ -19,7 +20,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
-import { lockfile } from './index.ts'
+import { Graph, lockfile } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 
 export type InstallOptions = LoadOptions & {
@@ -32,6 +33,10 @@ export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
+  // initialize remove map, it may be filled up
+  // from reading importers package.json files
+  const remove = new Map() as RemoveImportersDependenciesMap
+
   // Validate incompatible options
   if (options.lockfileOnly && options.cleanInstall) {
     throw error(
@@ -66,6 +71,7 @@ export const install = async (
   }
 
   if (options.frozenLockfile) {
+    // validates no add/remove operations are requested
     if (add?.modifiedDependencies) {
       const dependencies: string[] = []
       for (const [, deps] of add) {
@@ -75,6 +81,18 @@ export const install = async (
       }
       throw error(
         'Cannot add dependencies when using --frozen-lockfile',
+        { found: dependencies.join(', ') },
+      )
+    }
+    if (remove.modifiedDependencies) {
+      const dependencies: string[] = []
+      for (const [, deps] of remove) {
+        for (const name of deps) {
+          dependencies.push(name)
+        }
+      }
+      throw error(
+        'Cannot remove dependencies when using --frozen-lockfile',
         { found: dependencies.join(', ') },
       )
     }
@@ -179,12 +197,18 @@ export const install = async (
   try {
     const modifiers = GraphModifier.maybeLoad(options)
 
-    const act = actualLoad({
+    let act: Graph | undefined = actualLoad({
       ...options,
       mainManifest,
       loadManifests: true,
       modifiers: undefined, // modifiers should not be used here
     })
+    // if the actual graph has no dependencies, it's simpler to ignore it
+    // this allows us to check for its availability later on for properly
+    // handling situations like resetting edges for refreshing the ideal graph
+    if (act.importers.size === act.nodes.size) {
+      act = undefined
+    }
     const graph = await idealBuild({
       ...options,
       actual: act,
@@ -192,6 +216,7 @@ export const install = async (
       mainManifest,
       loadManifests: true,
       modifiers,
+      remove,
       remover,
     })
 
@@ -201,11 +226,12 @@ export const install = async (
       lockfile.save({ graph, modifiers })
       const saveImportersPackageJson =
         /* c8 ignore next */
-        add?.modifiedDependencies ?
+        add?.modifiedDependencies || remove.modifiedDependencies ?
           updatePackageJson({
             ...options,
             add,
             graph,
+            remove,
           })
         : undefined
       saveImportersPackageJson?.()
@@ -219,6 +245,7 @@ export const install = async (
       graph,
       loadManifests: true,
       modifiers,
+      remove,
       remover,
     })
 

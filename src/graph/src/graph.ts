@@ -545,7 +545,13 @@ export class Graph implements GraphLike {
 
     // Clear all node edge relationships
     for (const node of this.nodes.values()) {
-      node.detached = true
+      // marking nodes as detached needs to be restricted to only those
+      // that had a manifest, otherwise we'd be skipping fetching manifest
+      // for nodes we don't have a manifest during the ideal build phase
+      if (node.manifest) 
+        node.detached = true
+
+      // detaches all edges from this node
       node.edgesOut.clear()
       node.edgesIn.clear()
     }

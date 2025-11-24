@@ -230,6 +230,7 @@ export class Node implements NodeLike {
    * True if this node is detached from the graph.
    * This is used to indicate that the node is not part of the graph
    * although the node is still available as part of the resolution process.
+   * Allows for skipping fetching manifests for detached nodes.
    */
   detached = false
 

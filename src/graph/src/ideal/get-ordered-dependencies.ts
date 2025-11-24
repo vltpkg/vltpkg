@@ -30,7 +30,7 @@ export const getNodeOrderedDependencies = (
   // finally iterate through the list of dependencies to be removed
   const removedDeps = options?.remove.get(fromNode.id)
   if (removedDeps) {
-    for (const name of removedDeps.keys()) {
+    for (const name of removedDeps) {
       deps.delete(name)
     }
   }

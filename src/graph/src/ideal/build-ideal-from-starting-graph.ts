@@ -35,6 +35,7 @@ export const buildIdealFromStartingGraph = async (
   // user-provided values from `options.add`
   for (const [importerId, deps] of importerSpecs.add) {
     const importer = options.graph.nodes.get(importerId)
+    /* c8 ignore next - impossible */
     if (!importer) continue
 
     if (!options.add.has(importerId)) {
@@ -58,6 +59,21 @@ export const buildIdealFromStartingGraph = async (
           depSpec.type,
         )
       }
+    }
+  }
+
+  // merge values found on importer specs with
+  // user-provided values from `options.remove`
+  for (const [importerId, deps] of importerSpecs.remove) {
+    if (!options.remove.has(importerId)) {
+      options.remove.set(importerId, deps)
+      continue
+    }
+
+    // merge any deps found when reading the importers manifest
+    // with the ones provided by the user in the `remove` options
+    for (const depName of deps) {
+      options.remove.get(importerId)?.add(depName)
     }
   }
 

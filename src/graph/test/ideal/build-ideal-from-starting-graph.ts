@@ -158,6 +158,9 @@ t.test('build from a virtual graph', async t => {
         {
           name: 'bar',
           version: '1.0.0',
+          dependencies: {
+            baz: '^1.0.0',
+          },
         },
       ],
       [joinDepIDTuple(['registry', '', 'baz@1.0.0'])]: [
@@ -186,6 +189,9 @@ t.test('build from a virtual graph', async t => {
     edges: {
       [edgeKey(['file', '.'], 'linked')]:
         'prod file:./linked ' + joinDepIDTuple(['file', 'linked']),
+      [edgeKey(['file', '.'], 'bar')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'bar@1.0.0']),
       [edgeKey(['file', '.'], 'foo')]:
         'prod ^1.0.0 ' +
         joinDepIDTuple(['registry', '', 'foo@1.0.0']),
@@ -216,9 +222,10 @@ t.test('build from a virtual graph', async t => {
     mainManifest,
   })
 
+  // add a new root --> baz dep
+  // removes the root --> bar dep
   const graph = await buildIdealFromStartingGraph({
     ...configData,
-    projectRoot,
     packageInfo,
     scurry: new PathScurry(projectRoot),
     graph: virtual,
@@ -285,7 +292,6 @@ t.test('add from manifest file only', async t => {
 
   const graph = await buildIdealFromStartingGraph({
     ...configData,
-    projectRoot,
     packageInfo,
     scurry: new PathScurry(projectRoot),
     graph: virtual,
@@ -307,23 +313,39 @@ t.test('remove from manifest file only', async t => {
       },
     },
     nodes: {
-      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
         0,
         'foo',
         'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        null,
+        null,
+        {
+          name: 'foo',
+          version: '1.0.0',
+        },
       ],
       [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
         0,
         'bar',
         'sha512-6/deadbeef==',
         'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+        null,
+        {
+          name: 'bar',
+          version: '1.0.0',
+          dependencies: {
+            baz: '^1.0.0',
+          },
+        },
       ],
     } as Record<DepID, LockfileNode>,
     edges: {
       [edgeKey(['file', '.'], 'foo')]:
         'prod ^1.0.0 ' +
         joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      [edgeKey(['file', '.'], 'bar')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'bar@1.0.0']),
       [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
         'prod ^1.0.0 ' +
         joinDepIDTuple(['registry', '', 'baz@1.0.0']),
@@ -332,7 +354,10 @@ t.test('remove from manifest file only', async t => {
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
-    dependencies: {},
+    dependencies: {
+      foo: '^1.0.0',
+      // "bar" was manually removed from the importer manifest file!
+    },
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
@@ -355,7 +380,6 @@ t.test('remove from manifest file only', async t => {
 
   const graph = await buildIdealFromStartingGraph({
     ...configData,
-    projectRoot,
     packageInfo,
     scurry: new PathScurry(projectRoot),
     graph: virtual,
@@ -597,16 +621,15 @@ t.test('build from an actual graph', async t => {
   unload('project')
 
   const actual = loadActual({
+    projectRoot,
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     monorepo: Monorepo.maybeLoad(projectRoot),
-    projectRoot,
     loadManifests: true,
     ...configData,
   })
 
   const graph = await buildIdealFromStartingGraph({
-    projectRoot,
     ...configData,
     packageInfo,
     graph: actual,
@@ -676,10 +699,10 @@ t.test('optional subdeps binary distribution strategy', async t => {
   unload('project')
 
   const actual = loadActual({
+    projectRoot,
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     monorepo: Monorepo.maybeLoad(projectRoot),
-    projectRoot,
     loadManifests: true,
     ...configData,
   })
@@ -692,7 +715,6 @@ t.test('optional subdeps binary distribution strategy', async t => {
 
   const graph = await buildIdealFromStartingGraph({
     ...configData,
-    projectRoot,
     packageInfo,
     scurry: new PathScurry(projectRoot),
     actual,

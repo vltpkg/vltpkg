@@ -29,12 +29,6 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(bar@^1.0.0) -prod-> to: Node {
-        id: '··bar@1.0.0',
-        location: './node_modules/.vlt/··bar@1.0.0/node_modules/bar',
-        resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz',
-        integrity: 'sha512-6/deadbeef=='
-      },
       Edge spec(baz@^1.0.0) -prod-> to: Node {
         id: '··baz@1.0.0',
         location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
@@ -186,5 +180,19 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > optional subdeps 
 `
 
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > remove from manifest file only > must match snapshot 1`] = `
-[ Node { id: 'file·.', location: '.', importer: true } ]
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(foo@^1.0.0) -prod-> to: Node {
+        id: '··foo@1.0.0',
+        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+      }
+    ]
+  }
+]
 `

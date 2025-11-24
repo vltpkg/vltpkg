@@ -8,6 +8,7 @@ import t from 'tap'
 import type {
   AddImportersDependenciesMap,
   Dependency,
+  RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import type { GraphModifier } from '../../src/modifiers.ts'
@@ -81,6 +82,7 @@ t.test('refreshIdealGraph', async t => {
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry('foo')],
     ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
     graph,
     packageInfo,
     scurry: new PathScurry(t.testdirName),
@@ -92,6 +94,7 @@ t.test('refreshIdealGraph', async t => {
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry('foo')],
     ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
     graph,
     scurry: new PathScurry(t.testdirName),
     packageInfo,
@@ -107,6 +110,7 @@ t.test('refreshIdealGraph', async t => {
       add: new Map([
         [joinDepIDTuple(['file', 'unknown']), addEntry('foo')],
       ]) as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
       graph,
       packageInfo,
       scurry: new PathScurry(t.testdirName),
@@ -132,6 +136,7 @@ t.test('refreshIdealGraph', async t => {
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry('bar', 'dev')],
     ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
     scurry: new PathScurry(t.testdirName),
     graph,
     packageInfo,
@@ -163,6 +168,7 @@ t.test('refreshIdealGraph', async t => {
       add: new Map([
         [joinDepIDTuple(['file', '.']), addEntry('foo')],
       ]) as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
       graph,
       packageInfo,
       scurry: new PathScurry(t.testdirName),
@@ -234,6 +240,7 @@ t.test('refreshIdealGraph waits for extraction promises', async t => {
     add: new Map([
       [joinDepIDTuple(['file', '.']), addEntry],
     ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
     graph: idealGraph,
     packageInfo,
     scurry: new PathScurry(t.testdirName),
@@ -336,6 +343,7 @@ t.test(
       add: new Map([
         [joinDepIDTuple(['file', '.']), addEntry],
       ]) as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
       graph: idealGraph,
       packageInfo,
       scurry: new PathScurry(t.testdirName),

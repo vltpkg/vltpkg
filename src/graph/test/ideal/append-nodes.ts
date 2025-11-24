@@ -135,7 +135,6 @@ t.test('append a new node to a graph from a registry', async t => {
   )
   const scurry = new PathScurry(t.testdirName)
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -143,6 +142,7 @@ t.test('append a new node to a graph from a registry', async t => {
     scurry,
     configData,
     new Set<DepID>(),
+    add,
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
@@ -171,7 +171,6 @@ t.test('append a new node to a graph from a registry', async t => {
   t.equal(bazNodeSet?.size, 1)
 
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -179,6 +178,7 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    add,
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -188,7 +188,6 @@ t.test('append a new node to a graph from a registry', async t => {
 
   await t.rejects(
     appendNodes(
-      add,
       packageInfo,
       graph,
       graph.mainImporter,
@@ -196,13 +195,13 @@ t.test('append a new node to a graph from a registry', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      add,
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
   )
 
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -210,6 +209,7 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    add,
   )
   t.matchSnapshot(
     [...add].map(([name, dep]) => [
@@ -277,7 +277,6 @@ t.test('append different type of dependencies', async t => {
     ['missing', depMissing],
   ])
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -285,10 +284,10 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    add,
   )
 
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -296,11 +295,11 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    add,
   )
 
   await t.rejects(
     appendNodes(
-      add,
       packageInfo,
       graph,
       graph.mainImporter,
@@ -308,6 +307,7 @@ t.test('append different type of dependencies', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      add,
     ),
     /failed to resolve dependency/,
     'should throw if failes to create a node for a given manifest',
@@ -386,7 +386,6 @@ t.test('append file type of nodes', async t => {
     },
   } as PackageInfoClient
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -394,9 +393,9 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    add,
   )
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -404,6 +403,7 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    add,
   )
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -511,7 +511,6 @@ t.test('resolve against the correct registries', async t => {
   ]
   const add = new Map(deps.map(dep => [dep.spec.name, dep]))
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -521,6 +520,7 @@ t.test('resolve against the correct registries', async t => {
       registries,
     },
     new Set<DepID>(),
+    add,
   )
   t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
@@ -549,7 +549,6 @@ t.test('appendNodes with query modifier', async t => {
 
   // Call appendNodes with minimal arguments
   await appendNodes(
-    new Map(),
     packageInfo,
     graph,
     graph.mainImporter,
@@ -557,6 +556,7 @@ t.test('appendNodes with query modifier', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    new Map(),
   )
 
   // Verify the appendNodes function ran without errors
@@ -625,7 +625,6 @@ t.test(
 
     // Call appendNodes with the modifier
     await appendNodes(
-      new Map([['foo', fooDep]]),
       packageInfo,
       graph,
       graph.mainImporter,
@@ -633,6 +632,7 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([['foo', fooDep]]),
       modifiers,
       completeModifierRefs,
     )
@@ -708,7 +708,6 @@ t.test('spec edge removal', async t => {
 
   // Call appendNodes with the modifier
   await appendNodes(
-    new Map([['foo', fooDep]]),
     packageInfo,
     graph,
     graph.mainImporter,
@@ -716,6 +715,7 @@ t.test('spec edge removal', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    new Map([['foo', fooDep]]),
     modifiers,
     completeModifierRefs,
   )
@@ -758,7 +758,6 @@ t.test(
       // This should throw an error
       await t.rejects(
         appendNodes(
-          new Map([['foo', fooDep]]),
           packageInfo,
           graph,
           graph.mainImporter,
@@ -766,6 +765,7 @@ t.test(
           new PathScurry(t.testdirName),
           configData,
           new Set<DepID>(),
+          new Map([['foo', fooDep]]),
         ),
         /failed to place package/,
         'should throw when graph.placePackage returns null',
@@ -846,7 +846,6 @@ t.test(
 
     // call appendNodes with the mock modifier
     await appendNodes(
-      new Map([['foo', fooDep]]),
       packageInfo,
       graph,
       graph.mainImporter,
@@ -854,6 +853,7 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([['foo', fooDep]]),
       mockModifier as any,
     )
 
@@ -958,7 +958,6 @@ t.test(
       ]
       const add = new Map(deps.map(d => [d.spec.name, d]))
       await appendNodes(
-        add,
         makePackageInfo(delays),
         graph,
         graph.mainImporter,
@@ -966,6 +965,7 @@ t.test(
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        add,
       )
       return graph
     }
@@ -1031,7 +1031,6 @@ t.test('early extraction during appendNodes', async t => {
       const seenExtracted = new Set<DepID>()
 
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         idealGraph,
         idealGraph.mainImporter,
@@ -1039,6 +1038,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
         undefined,
         undefined,
         extractPromises,
@@ -1101,7 +1101,6 @@ t.test('early extraction during appendNodes', async t => {
 
       // First, add the node to actual graph
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         actualGraph,
         actualGraph.mainImporter,
@@ -1109,6 +1108,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
       )
 
       // Reset extraction tracking
@@ -1119,7 +1119,6 @@ t.test('early extraction during appendNodes', async t => {
 
       // Now add to ideal graph with actual graph provided
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         idealGraph,
         idealGraph.mainImporter,
@@ -1127,6 +1126,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
         undefined,
         undefined,
         extractPromises,
@@ -1210,7 +1210,6 @@ t.test('early extraction during appendNodes', async t => {
       const seenExtracted = new Set<DepID>()
 
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         idealGraph,
         idealGraph.mainImporter,
@@ -1218,6 +1217,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
         undefined,
         undefined,
         extractPromises,
@@ -1294,10 +1294,6 @@ t.test('early extraction during appendNodes', async t => {
     const seenExtracted = new Set<DepID>()
 
     await appendNodes(
-      new Map([
-        ['foo', fooDep],
-        ['bar', barDep],
-      ]),
       packageInfo,
       idealGraph,
       idealGraph.mainImporter,
@@ -1305,6 +1301,10 @@ t.test('early extraction during appendNodes', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([
+        ['foo', fooDep],
+        ['bar', barDep],
+      ]),
       undefined,
       undefined,
       extractPromises,
@@ -1379,10 +1379,6 @@ t.test('early extraction during appendNodes', async t => {
     const seenExtracted = new Set<DepID>()
 
     await appendNodes(
-      new Map([
-        ['optional', optionalDep],
-        ['regular', regularDep],
-      ]),
       packageInfo,
       idealGraph,
       idealGraph.mainImporter,
@@ -1390,6 +1386,10 @@ t.test('early extraction during appendNodes', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([
+        ['optional', optionalDep],
+        ['regular', regularDep],
+      ]),
       undefined,
       undefined,
       extractPromises,

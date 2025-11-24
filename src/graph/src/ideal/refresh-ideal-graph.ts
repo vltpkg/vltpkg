@@ -106,7 +106,9 @@ export const refreshIdealGraph = async ({
   }
 
   // removes all edges to start recalculating the graph
-  graph.resetEdges()
+  if (add.modifiedDependencies || remove.modifiedDependencies) {
+    graph.resetEdges()
+  }
 
   // iterates on the list of dependencies per importer updating
   // the graph using metadata fetch from the registry manifest files
