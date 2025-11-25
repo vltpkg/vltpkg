@@ -1,0 +1,1 @@
+CREATE INDEX "versions_name_origin_idx" ON "versions" USING btree ("name","origin");
