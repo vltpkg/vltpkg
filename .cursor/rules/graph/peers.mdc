@@ -5,7 +5,7 @@ alwaysApply: false
 ---
 # Peer Dependencies in Graph
 
-Comprehensive guide to peer dependency handling in `@vltpkg/graph`, covering context isolation, package duplication, and the `peerSetRef` mechanism.
+Comprehensive guide to peer dependency handling in `@vltpkg/graph`, covering context isolation, package duplication, and the `peerSetHash` mechanism.
 
 <rule>
 name: graph_peers
@@ -19,15 +19,15 @@ filters:
   # DepID utilities for extra parameter handling
   - type: path
     pattern: "^src/dep-id/src/(browser|index)\\.ts$"
-  # Graph core that handles peerSetRef
+  # Graph core that handles peerSetHash
   - type: path
     pattern: "^src/graph/src/graph\\.ts$"
-  # Node class with peerSetRef property
+  # Node class with peerSetHash property
   - type: path
     pattern: "^src/graph/src/node\\.ts$"
   # Mentions of peer dependencies in content
   - type: content
-    pattern: "peerSetRef|peerDependencies|splitExtra|joinExtra|peer context"
+    pattern: "peerSetHash|peerDependencies|splitExtra|joinExtra|peer context"
 
 actions:
   - type: guide
@@ -40,7 +40,7 @@ actions:
       - **Attempts reuse first**: vlt tries to resolve to a single unique version that satisfies all peer contexts
       - **Forks contexts when needed**: when a single version cannot satisfy all requirements, vlt subdivides the dependency graph into peer context groups
       - **Duplicates packages**: packages requiring different peer versions are duplicated in the vlt store
-      - **Tracks contexts**: uses `peerSetRef` internally to identify and duplicate nodes affected by peer context modifications
+      - **Tracks contexts**: uses `peerSetHash` internally to identify and duplicate nodes affected by peer context modifications
 
   - type: architecture_guide
     message: |
@@ -51,12 +51,12 @@ actions:
       2. **Attempt reuse**: Try to use a single version across all occurrences of the peer dependency
       3. **Fork when necessary**: Create new peer contexts when version conflicts arise
       4. **Duplicate nodes**: Clone package nodes that need different peer versions
-      5. **Track with peerSetRef**: Append unique identifiers to DepIDs to distinguish peer contexts
+      5. **Track with peerSetHash**: Append unique identifiers to DepIDs to distinguish peer contexts
 
       Implementation details:
-      - Peer contexts are deterministically identified using `peerSetRef` strings (format: `ṗ:N` where N is a numeric identifier)
-      - The `peerSetRef` is appended to the node's DepID as part of the `extra` parameter
-      - Multiple versions of the same package can exist in the graph, differentiated by their `peerSetRef`
+      - Peer contexts are deterministically identified using `peerSetHash` strings (format: `ṗ:N` where N is a numeric identifier)
+      - The `peerSetHash` is appended to the node's DepID as part of the `extra` parameter
+      - Multiple versions of the same package can exist in the graph, differentiated by their `peerSetHash`
 
   - type: architecture_guide
     message: |
@@ -64,33 +64,33 @@ actions:
 
       The `extra` parameter in DepIDs now serves dual purposes:
       1. **Modifier**: Query-based graph modifications (e.g., `:root > #package`)
-      2. **peerSetRef**: Peer context identifier (e.g., `ṗ:1`, `ṗ:2`)
+      2. **peerSetHash**: Peer context identifier (e.g., `ṗ:1`, `ṗ:2`)
 
       ### Utilities
 
-      **`joinExtra({ modifier?, peerSetRef? })`**
-      - Combines modifier and peerSetRef into a single string
+      **`joinExtra({ modifier?, peerSetHash? })`**
+      - Combines modifier and peerSetHash into a single string
       - Returns `undefined` if both are empty
-      - Concatenates without separator when both present: `${modifier}${peerSetRef}`
+      - Concatenates without separator when both present: `${modifier}${peerSetHash}`
       - Examples:
         - `joinExtra({ modifier: ':root > #pkg' })` → `':root > #pkg'`
-        - `joinExtra({ peerSetRef: 'ṗ:1' })` → `'ṗ:1'`
-        - `joinExtra({ modifier: ':root > #pkg', peerSetRef: 'ṗ:1' })` → `':root > #pkgṗ:1'`
+        - `joinExtra({ peerSetHash: 'ṗ:1' })` → `'ṗ:1'`
+        - `joinExtra({ modifier: ':root > #pkg', peerSetHash: 'ṗ:1' })` → `':root > #pkgṗ:1'`
 
       **`splitExtra(extra: string)`**
       - Parses an extra string into its components
-      - Detects peerSetRef by looking for `ṗ:` delimiter
-      - Returns `{ modifier?, peerSetRef? }`
+      - Detects peerSetHash by looking for `ṗ:` delimiter
+      - Returns `{ modifier?, peerSetHash? }`
       - Examples:
-        - `splitExtra('ṗ:1')` → `{ peerSetRef: 'ṗ:1' }`
+        - `splitExtra('ṗ:1')` → `{ peerSetHash: 'ṗ:1' }`
         - `splitExtra(':root > #pkg')` → `{ modifier: ':root > #pkg' }`
-        - `splitExtra(':root > #pkgṗ:2')` → `{ modifier: ':root > #pkg', peerSetRef: 'ṗ:2' }`
+        - `splitExtra(':root > #pkgṗ:2')` → `{ modifier: ':root > #pkg', peerSetHash: 'ṗ:2' }`
 
   - type: architecture_guide
     message: |
-      ## Node peerSetRef Property (`src/graph/src/node.ts`)
+      ## Node peerSetHash Property (`src/graph/src/node.ts`)
 
-      Nodes now have an optional `peerSetRef?: string` property:
+      Nodes now have an optional `peerSetHash?: string` property:
       - Set during ideal graph construction when peer context forking occurs
       - Included in node serialization (lockfile, JSON output)
       - Preserved during graph operations (reset, gc, etc.)
@@ -106,13 +106,13 @@ actions:
       ## Graph Integration (`src/graph/src/graph.ts`)
 
       ### Resolution Cache
-      - Cache keys now include the full `extra` string (both modifier and peerSetRef)
+      - Cache keys now include the full `extra` string (both modifier and peerSetHash)
       - `getResolutionCacheKey(spec, location, extra)` incorporates both components
       - Ensures nodes with different peer contexts don't incorrectly share resolution cache entries
 
       ### Node Placement
-      - `placePackage()` accepts `extra` parameter containing combined modifier + peerSetRef
-      - Automatically splits `extra` and assigns to `node.modifier` and `node.peerSetRef`
+      - `placePackage()` accepts `extra` parameter containing combined modifier + peerSetHash
+      - Automatically splits `extra` and assigns to `node.modifier` and `node.peerSetHash`
       - `findResolution()` accepts `extra` for cache key construction
 
       ### nodesByName Ordering
@@ -139,18 +139,18 @@ actions:
 
       Peer context information is preserved in lockfiles:
 
-      **Nodes**: DepID includes peerSetRef in the extra parameter
+      **Nodes**: DepID includes peerSetHash in the extra parameter
       ```
       "··package@1.0.0·ṗ:1": [...]
       "··package@1.0.0·ṗ:2": [...]
       ```
 
-      **Edges**: References include the full DepID with peerSetRef
+      **Edges**: References include the full DepID with peerSetHash
       ```
       "file·. package": "prod ^1.0.0 ··package@1.0.0·ṗ:1"
       ```
 
-      **Loading**: `loadNodes()` in `src/graph/src/lockfile/load-nodes.ts` uses `splitExtra()` to parse both modifier and peerSetRef from the DepID
+      **Loading**: `loadNodes()` in `src/graph/src/lockfile/load-nodes.ts` uses `splitExtra()` to parse both modifier and peerSetHash from the DepID
 
   - type: development_workflow
     message: |
@@ -168,8 +168,8 @@ actions:
       Testing patterns:
       - Build ideal graphs with packages declaring peer dependencies
       - Verify correct number of duplicate nodes created
-      - Check that peerSetRef values are assigned and unique
-      - Validate lockfile serialization includes peerSetRef
+      - Check that peerSetHash values are assigned and unique
+      - Validate lockfile serialization includes peerSetHash
       - Confirm query selectors return expected peer dependency sets
       - Test mermaid diagram generation showing peer context isolation
 
@@ -178,33 +178,33 @@ actions:
       ## Practical Tips
 
       When working with peer dependencies:
-      - **Always use joinExtra()**: When constructing extra parameters, use `joinExtra({ modifier, peerSetRef })` rather than string concatenation
+      - **Always use joinExtra()**: When constructing extra parameters, use `joinExtra({ modifier, peerSetHash })` rather than string concatenation
       - **Always use splitExtra()**: When parsing extra parameters, use `splitExtra(extra)` to correctly handle both components
-      - **Preserve peerSetRef**: When copying or transforming nodes, ensure peerSetRef is maintained
+      - **Preserve peerSetHash**: When copying or transforming nodes, ensure peerSetHash is maintained
       - **Cache key awareness**: Resolution cache keys must include the full extra string to avoid incorrect cache hits
       - **Test with real packages**: Use actual npm packages with peer dependencies (like React ecosystem) for integration tests
-      - **Check lockfile round-trips**: Verify that peerSetRef survives serialization and deserialization
+      - **Check lockfile round-trips**: Verify that peerSetHash survives serialization and deserialization
 
 examples:
   - input: |
-      // Correctly combining modifier and peerSetRef
+      // Correctly combining modifier and peerSetHash
       const extra = joinExtra({ 
         modifier: ':root > #react-dom', 
-        peerSetRef: 'ṗ:1' 
+        peerSetHash: 'ṗ:1' 
       })
       const node = graph.placePackage(from, 'prod', spec, manifest, id, extra)
     output: "Node placed with both modifier and peer context tracking"
 
   - input: |
       // Parsing extra from DepID during lockfile load
-      const { modifier, peerSetRef } = splitExtra(extra)
+      const { modifier, peerSetHash } = splitExtra(extra)
       if (modifier) node.modifier = modifier
-      if (peerSetRef) node.peerSetRef = peerSetRef
+      if (peerSetHash) node.peerSetHash = peerSetHash
     output: "Extra parameter correctly split into components"
 
   - input: |
       // Finding resolution with peer context
-      const extra = joinExtra({ peerSetRef: 'ṗ:2' })
+      const extra = joinExtra({ peerSetHash: 'ṗ:2' })
       const resolved = graph.findResolution(spec, fromNode, extra)
     output: "Resolution respects peer context isolation"
 
