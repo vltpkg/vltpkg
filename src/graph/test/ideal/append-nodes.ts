@@ -1669,4 +1669,90 @@ t.test('skip peerOptional dependencies', async t => {
       )
     },
   )
+
+  t.test('reuse manifest from detached node', async t => {
+    const fooManifest = {
+      name: 'foo',
+      version: '1.0.0',
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Track if packageInfo.manifest was called
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        manifestCalled = true
+        if (spec.name === 'foo') return fooManifest
+        return null
+      },
+    } as PackageInfoClient
+
+    // First, add a node to the graph that we'll mark as detached
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+
+    // Add the node normally first, would likely be already present in
+    // a loaded lockfile or actual graph instead but this simulates it ok
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    // Get the node and mark it as detached
+    const [fooNode] = graph.nodesByName.get('foo')!
+    if (!fooNode) {
+      throw new Error('foo node not found')
+    }
+    t.ok(fooNode, 'foo node should exist')
+    fooNode.detached = true
+
+    // Remove the edge from mainImporter to foo so we can re-add it
+    const fooEdge = graph.mainImporter.edgesOut.get('foo')
+    if (fooEdge) {
+      graph.mainImporter.edgesOut.delete('foo')
+      fooNode.edgesIn.delete(fooEdge)
+    }
+
+    // Reset the flag
+    manifestCalled = false
+
+    // Now try to append the same dependency again
+    // It should reuse the manifest from the detached node
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.notOk(
+      manifestCalled,
+      'packageInfo.manifest should not be called for detached node',
+    )
+    t.ok(
+      graph.mainImporter.edgesOut.get('foo'),
+      'edge should be re-added',
+    )
+  })
 })

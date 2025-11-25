@@ -34,10 +34,6 @@ export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
 ) => {
-  // initialize remove map, it may be filled up
-  // from reading importers package.json files
-  const remove = new Map() as RemoveImportersDependenciesMap
-
   // Validate incompatible options
   if (options.lockfileOnly && options.cleanInstall) {
     throw error(
@@ -82,18 +78,6 @@ export const install = async (
       }
       throw error(
         'Cannot add dependencies when using --frozen-lockfile',
-        { found: dependencies.join(', ') },
-      )
-    }
-    if (remove.modifiedDependencies) {
-      const dependencies: string[] = []
-      for (const [, deps] of remove) {
-        for (const name of deps) {
-          dependencies.push(name)
-        }
-      }
-      throw error(
-        'Cannot remove dependencies when using --frozen-lockfile',
         { found: dependencies.join(', ') },
       )
     }
@@ -152,8 +136,10 @@ export const install = async (
           const node = lockfileGraph.nodes.get(importerId)
           const location = node?.location || importerId
           const depNames = Array.from(deps.keys())
+          const depLabelAdd =
+            deps.size === 1 ? 'dependency' : 'dependencies'
           details.push(
-            `  ${location}: ${deps.size} dependencies to add (${depNames.join(', ')})`,
+            `  ${location}: ${deps.size} ${depLabelAdd} to add (${depNames.join(', ')})`,
           )
         }
       }
@@ -163,8 +149,12 @@ export const install = async (
           const node = lockfileGraph.nodes.get(importerId)
           const location = node?.location || importerId
           const depNames = Array.from(deps)
+          const depLabelRemove =
+            deps.size === 1 ?
+              'dependency'
+            : /* c8 ignore next */ 'dependencies'
           details.push(
-            `  ${location}: ${deps.size} dependencies to remove (${depNames.join(', ')})`,
+            `  ${location}: ${deps.size} ${depLabelRemove} to remove (${depNames.join(', ')})`,
           )
         }
       }
@@ -196,6 +186,7 @@ export const install = async (
   }
 
   try {
+    const remove = new Map() as RemoveImportersDependenciesMap
     const modifiers = GraphModifier.maybeLoad(options)
 
     let act: Graph | undefined = actualLoad({

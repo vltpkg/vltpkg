@@ -119,6 +119,7 @@ export const refreshIdealGraph = async ({
     const addedDeps = add.get(importer.id)
 
     const deps = depsPerImporter.get(importer)
+    /* c8 ignore next */
     if (!deps) continue
 
     // gets a ref to the list of modifier functions for this set of deps

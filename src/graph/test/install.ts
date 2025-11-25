@@ -1088,7 +1088,10 @@ t.test(
     const addMap = new Map()
     addMap.set(
       'missing-node-id',
-      new Map([['new-dep', { spec: {}, type: 'prod' }]]),
+      new Map([
+        ['new-dep', { spec: {}, type: 'prod' }],
+        ['new-dep-2', { spec: {}, type: 'prod' }],
+      ]),
     )
     const removeMap = new Map()
     removeMap.set('another-missing-id', new Set(['old-dep']))
@@ -1131,12 +1134,12 @@ t.test(
     } catch (err: any) {
       t.match(
         err.message,
-        /missing-node-id: 1 dependencies to add/,
-        'should use importerId for add',
+        /missing-node-id: 2 dependencies to add/,
+        'should use importerId for add (new-dep, new-dep-2)',
       )
       t.match(
         err.message,
-        /another-missing-id: 1 dependencies to remove/,
+        /another-missing-id: 1 dependency to remove/,
         'should use importerId for remove',
       )
     }
@@ -1469,6 +1472,86 @@ t.test(
     t.ok(
       updatePackageJsonOptions?.add,
       'should pass add map to updatePackageJson',
+    )
+    t.ok(result.graph, 'should return graph')
+    t.equal(result.diff, undefined, 'should return undefined diff')
+  },
+)
+
+t.test(
+  'install with lockfileOnly and removing packages (updatePackageJson)',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      lockfileOnly: true,
+    } as unknown as InstallOptions
+
+    let reifyCalled = false
+    let lockfileSaveCalled = false
+    let updatePackageJsonCalled = false
+    let updatePackageJsonOptions: any = null
+
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/ideal/build.ts': {
+        build: async ({ remove }: any) => {
+          // Simulate idealBuild populating the remove map
+          remove.set('file·.', new Set(['old-dep']))
+          Object.assign(remove, { modifiedDependencies: true })
+          return {
+            nodes: new Map(),
+            importers: [],
+            projectRoot: dir,
+          }
+        },
+      },
+      '../src/reify/index.ts': {
+        reify: async () => {
+          reifyCalled = true
+          return { hasChanges: () => false }
+        },
+      },
+      '../src/index.ts': {
+        lockfile: {
+          save: () => {
+            lockfileSaveCalled = true
+          },
+        },
+      },
+      '../src/reify/update-importers-package-json.ts': {
+        updatePackageJson: (opts: any) => {
+          updatePackageJsonCalled = true
+          updatePackageJsonOptions = opts
+          return () => {}
+        },
+      },
+    })
+
+    const result = await install(
+      options,
+      new Map() as AddImportersDependenciesMap,
+    )
+
+    t.notOk(reifyCalled, 'should NOT call reify with lockfileOnly')
+    t.ok(lockfileSaveCalled, 'should call lockfile.save')
+    t.ok(
+      updatePackageJsonCalled,
+      'should call updatePackageJson when removing packages',
+    )
+    t.ok(
+      updatePackageJsonOptions?.remove,
+      'should pass remove map to updatePackageJson',
     )
     t.ok(result.graph, 'should return graph')
     t.equal(result.diff, undefined, 'should return undefined diff')

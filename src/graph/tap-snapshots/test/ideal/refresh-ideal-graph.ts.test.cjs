@@ -106,3 +106,55 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > initial graph 1`] = `
 [ Node { id: 'file·.', location: '.', importer: true } ]
 `
+
+exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with workspaces > graph with workspace changes 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(baz@^1.0.0) -prod-> to: Node {
+        id: '··baz@1.0.0',
+        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
+      }
+    ]
+  },
+  Node {
+    id: 'workspace·packages§workspace-c',
+    location: './packages/workspace-c',
+    importer: true,
+    edgesOut: [
+      Edge spec(lorem@^1.0.0) -peer-> to: Node {
+        id: '··lorem@1.0.0',
+        location: './node_modules/.vlt/··lorem@1.0.0/node_modules/lorem',
+        resolved: 'https://registry.npmjs.org/lorem/-/lorem-1.0.0.tgz'
+      }
+    ]
+  },
+  Node {
+    id: 'workspace·packages§workspace-b',
+    location: './packages/workspace-b',
+    importer: true
+  },
+  Node {
+    id: 'workspace·packages§workspace-a',
+    location: './packages/workspace-a',
+    importer: true,
+    edgesOut: [
+      Edge spec(foo@^1.0.0) -prod-> to: Node {
+        id: '··foo@1.0.0',
+        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
+      },
+      Edge spec(qux@^1.0.0) -dev-> to: Node {
+        id: '··qux@1.0.0',
+        location: './node_modules/.vlt/··qux@1.0.0/node_modules/qux',
+        dev: true,
+        resolved: 'https://registry.npmjs.org/qux/-/qux-1.0.0.tgz'
+      }
+    ]
+  }
+]
+`

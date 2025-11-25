@@ -162,13 +162,16 @@ const fetchManifestsForDeps = async (
       fromNode,
       queryModifier,
     )
+    // defines what nodes are eligible to be reused
     const validExistingNode =
       existingNode &&
       !existingNode.detached &&
       // Regular deps can always reuse
+      /* c8 ignore start */
       (!peer ||
-        // Peer deps can reuse if peerSetHash matches
-        (existingNode.peerSetHash === fromNode.peerSetHash && peer))
+        // otherwise reusing peer deps only in case of a peerSetHash matche
+        existingNode.peerSetHash === fromNode.peerSetHash)
+    /* c8 ignore stop */
 
     if (
       validExistingNode ||
@@ -335,9 +338,6 @@ const processPlacementTasks = async (
       }
     }
 
-    // Check if node was already attached by attachNodeToGraph
-    let node = placementTask.node
-
     // start peer deps placement process, populating the peer context with
     // dependency data; adding the parent node deps and this manifest's
     // peer deps references to the current peer context set
@@ -350,34 +350,31 @@ const processPlacementTasks = async (
     const peerSetHash = peerPlacement.peerSetHash
     const queuedEntries = peerPlacement.queuedEntries
 
-    if (!node) {
-      // places a new node in the graph representing a newly seen dependency
-      node = graph.placePackage(
-        fromNode,
-        type,
-        spec,
-        normalizeManifest(manifest),
-        fileTypeInfo?.id,
-        joinExtra({ peerSetHash, modifier: queryModifier }),
-      )
+    // places a new node in the graph representing a newly seen dependency
+    const node = graph.placePackage(
+      fromNode,
+      type,
+      spec,
+      normalizeManifest(manifest),
+      fileTypeInfo?.id,
+      joinExtra({ peerSetHash, modifier: queryModifier }),
+    )
 
-      /* c8 ignore start - not possible, already ensured manifest */
-      if (!node) {
-        throw error('failed to place package', {
-          from: fromNode.location,
-          spec,
-        })
-      }
-      /* c8 ignore stop */
+    /* c8 ignore start - not possible, already ensured manifest */
+    if (!node) {
+      throw error('failed to place package', {
+        from: fromNode.location,
+        spec,
+      })
     }
+    /* c8 ignore stop */
 
     // update the node modifier tracker
     if (activeModifier) {
       modifiers?.updateActiveEntry(node, activeModifier)
     }
 
-    // Extract the node if it doesn't exist in the actual graph and we have the necessary parameters
-    if (
+    const eligibleForExtraction =
       type !== 'peer' &&
       type !== 'peerOptional' &&
       remover &&
@@ -387,9 +384,12 @@ const processPlacementTasks = async (
       packageInfo &&
       node.inVltStore() &&
       !node.isOptional() &&
-      !fileTypeInfo?.isDirectory &&
+      // this fixes an issue with installing `file:pathname` specs
+      /* c8 ignore next */ !fileTypeInfo?.isDirectory &&
       !node.importer
-    ) {
+
+    // extract the node if it meets the criteria for early extraction
+    if (eligibleForExtraction) {
       /* c8 ignore start */
       if (seenExtracted?.has(node.id)) {
         continue
@@ -398,7 +398,7 @@ const processPlacementTasks = async (
       seenExtracted?.add(node.id)
       const actualNode = actual.nodes.get(node.id)
       if (!actualNode?.equals(node)) {
-        // Extract the node without awaiting - push the promise to the array
+        // extract the node without awaiting - push the promise to the array
         const extractPromise = extractNode(
           node,
           scurry,
@@ -416,62 +416,45 @@ const processPlacementTasks = async (
     }
     node.setResolved()
 
-    // Collect child dependencies for processing in the next level
-    // Use pre-computed childDeps if available (from attachNodeToGraph)
-    let nextDeps: Dependency[]
+    // collect child dependencies for processing in the next level
     const nextPeerDeps = new Map<string, Dependency>()
 
-    if (placementTask.childDeps) {
-      // Use pre-computed deps from attachNodeToGraph
-      nextDeps = placementTask.childDeps
-      // Still need to separate peer deps
-      for (const dep of nextDeps) {
-        if (dep.type === 'peer' || dep.type === 'peerOptional') {
-          nextPeerDeps.set(dep.spec.name, dep)
-        }
-      }
-      // Filter out peer deps from nextDeps
-      nextDeps = nextDeps.filter(
-        dep => dep.type !== 'peer' && dep.type !== 'peerOptional',
-      )
-    } else {
-      // Compute deps normally
-      const bundleDeps = manifest.bundleDependencies
-      const bundled = new Set<string>(
-        (
-          node.id.startsWith('git') ||
-          node.importer ||
-          !isStringArray(bundleDeps)
-        ) ?
-          []
-        : bundleDeps,
-      )
+    // compute deps normally
+    const bundleDeps = manifest.bundleDependencies
+    const bundled = new Set<string>(
+      (
+        node.id.startsWith('git') ||
+        node.importer ||
+        !isStringArray(bundleDeps)
+      ) ?
+        []
+      : bundleDeps,
+    )
 
-      // setup next level to process all child dependencies in the manifest
-      nextDeps = []
+    // setup next level to process all child dependencies in the manifest
+    const nextDeps: Dependency[] = []
 
-      // traverse actual dependency declarations in the manifest
-      // creating dependency entries for them
-      for (const depTypeName of longDependencyTypes) {
-        const depRecord: Record<string, string> | undefined =
-          manifest[depTypeName]
+    // traverse actual dependency declarations in the manifest
+    // creating dependency entries for them
+    for (const depTypeName of longDependencyTypes) {
+      const depRecord: Record<string, string> | undefined =
+        manifest[depTypeName]
 
-        if (depRecord && shouldInstallDepType(node, depTypeName)) {
-          for (const [name, bareSpec] of Object.entries(depRecord)) {
-            // might need to skip already placed peer deps here
-            if (bundled.has(name)) continue
-            const dep = {
-              type: shorten(depTypeName, name, manifest),
-              spec: Spec.parse(name, bareSpec, {
-                ...options,
-                registry: spec.registry,
-              }),
-            }
-            if (depTypeName === 'peerDependencies') {
-              nextPeerDeps.set(name, dep)
-            } else {
-              nextDeps.push(dep)
-            }
+      if (depRecord && shouldInstallDepType(node, depTypeName)) {
+        for (const [name, bareSpec] of Object.entries(depRecord)) {
+          // might need to skip already placed peer deps here
+          if (bundled.has(name)) continue
+          const dep = {
+            type: shorten(depTypeName, name, manifest),
+            spec: Spec.parse(name, bareSpec, {
+              ...options,
+              registry: spec.registry,
+            }),
+          }
+          if (depTypeName === 'peerDependencies') {
+            nextPeerDeps.set(name, dep)
+          } else {
+            nextDeps.push(dep)
           }
         }
       }

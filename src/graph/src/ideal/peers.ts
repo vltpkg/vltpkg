@@ -7,6 +7,7 @@ import { getDependencies } from '../dependencies.ts'
 import { getOrderedDependencies } from './get-ordered-dependencies.ts'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type { DependencySaveType, Manifest } from '@vltpkg/types'
+import type { Monorepo } from '@vltpkg/workspaces'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
@@ -98,6 +99,7 @@ export const addEntriesToPeerContext = (
   peerContext: PeerContext,
   entries: PeerContextEntryInput[],
   fromNode: Node,
+  monorepo?: Monorepo,
 ): boolean => {
   // pre check to see if any of the new entries to be added to the
   // provided peer context set conflicts with existing ones
@@ -137,6 +139,7 @@ export const addEntriesToPeerContext = (
           s,
           fromNode.location,
           fromNode.projectRoot,
+          monorepo,
         ),
       )
     ) {
@@ -298,7 +301,12 @@ export const endPeerPlacement = (
         type,
       },
     ]
-    addEntriesToPeerContext(peerContext, prevEntries, fromNode)
+    addEntriesToPeerContext(
+      peerContext,
+      prevEntries,
+      fromNode,
+      graph.monorepo,
+    )
 
     // add this node's direct dependencies next
     const nextEntries = [
@@ -313,6 +321,7 @@ export const endPeerPlacement = (
         peerContext,
         nextEntries,
         node,
+        graph.monorepo,
       )
     }
 
@@ -345,6 +354,7 @@ export const endPeerPlacement = (
             spec,
             fromNode.location,
             fromNode.projectRoot,
+            graph.monorepo,
           )
         ) {
           // entry satisfied, create edge in the graph
@@ -407,6 +417,7 @@ export const postPlacementPeerCheck = (
           prevContext,
           nextEntries,
           childDep.node,
+          graph.monorepo,
         )
         childDep.peerContext = prevContext
         continue
