@@ -185,13 +185,13 @@ const ItemBreadcrumbs = () => {
       className="relative flex w-full items-center overflow-hidden overflow-x-scroll">
       <div
         className={cn(
-          'pointer-events-none absolute top-0 right-0 bottom-0 z-[100] h-full w-6 rounded-r-xl bg-gradient-to-l',
+          'pointer-events-none absolute bottom-0 right-0 top-0 z-[100] h-full w-6 rounded-r-xl bg-gradient-to-l',
           focused ? 'from-background' : 'from-card',
         )}
       />
       <div
         className={cn(
-          'pointer-events-none absolute top-0 bottom-0 left-0 z-[100] h-full w-6 rounded-l-xl bg-gradient-to-r',
+          'pointer-events-none absolute bottom-0 left-0 top-0 z-[100] h-full w-6 rounded-l-xl bg-gradient-to-r',
           focused ? 'from-background' : 'from-card',
         )}
       />

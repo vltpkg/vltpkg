@@ -1,7 +1,6 @@
 // TODO: it might be faster to not have Version objects in the
 // comparator tuples, and instead just keep the parsed number arrays?
 import { syntaxError } from '@vltpkg/error-cause'
-import { fastSplit } from '@vltpkg/fast-split'
 import { Version } from './version.ts'
 
 /** all comparators are expressed in terms of these operators */
@@ -162,7 +161,10 @@ export class Comparator {
     comp = comp.trim()
     this.raw = comp
     let hyphen = false as boolean
-    const rawComps = fastSplit(comp, ' ', -1, (part, parts, i) => {
+    const rawComps = comp.split(' ')
+    for (let i = 0; i < rawComps.length; i++) {
+      const part = rawComps[i]
+      if (!part) continue
       if (part === '-') {
         if (hyphen) {
           throw invalidComp(
@@ -170,17 +172,17 @@ export class Comparator {
             'multiple hyphen ranges not allowed',
           )
         }
-        if (parts.length !== 1 || i === -1) {
+        if (i !== 1) {
           throw invalidComp(
             comp,
             'hyphen must be between two versions',
           )
         }
         hyphen = true
-      } else if (hyphen && parts.length !== 2) {
+      } else if (hyphen && rawComps.length !== 3) {
         throw invalidComp(comp, 'hyphen range must be alone')
       }
-    })
+    }
 
     // remove excess spaces, `> 1   2` => `>1 2`
     const comps: string[] = []
@@ -452,7 +454,17 @@ export class Comparator {
   // return the fields for creating a Version object.
   // only call once operator is stripped off
   #parseX(raw: string): ParsedXRange {
-    let [M, m, p] = fastSplit(raw, '.', 3)
+    // Split with limit 3, but we need to include the rest in the last part
+    // (like fastSplit did with limit 3)
+    const allParts = raw.split('.')
+    const parts = [
+      allParts[0],
+      allParts[1],
+      allParts.slice(2).join('.'),
+    ]
+    let M = parts[0]
+    const m = parts[1]
+    const p = parts[2]
     let prune = 0
     while (M && preJunk.has(M.charAt(prune))) prune++
     if (M !== undefined && prune !== 0) M = M.substring(prune)

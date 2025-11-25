@@ -143,7 +143,7 @@ export const DataTable = <TData, TValue>({
                 />
               </TableCell>
               <TableCell className="flex items-center justify-end">
-                <p className="text-muted-foreground mr-3 text-xs font-medium text-nowrap">
+                <p className="text-muted-foreground mr-3 text-nowrap text-xs font-medium">
                   {table.getState().pagination.pageIndex + 1} of{' '}
                   {table.getPageCount()}
                 </p>

@@ -90,7 +90,7 @@ export const DependencyEmptyState = () => {
                 <PopoverContent
                   align="center"
                   side="top"
-                  className="top-0 right-0 w-96 p-0">
+                  className="right-0 top-0 w-96 p-0">
                   <AddDependenciesPopover />
                 </PopoverContent>
               </Popover>

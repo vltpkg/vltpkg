@@ -161,7 +161,7 @@ export const SavedQueryItem = ({
   return (
     <div
       className={cn(
-        'group bg-card hover:bg-card-accent flex flex-col rounded-xl border border-[1px] transition-colors transition-opacity',
+        'bg-card hover:bg-card-accent group flex flex-col rounded-xl border border-[1px] transition-colors transition-opacity',
         isExpanded ? 'border-muted-foreground' : 'border-muted',
       )}>
       <div className="grid grid-cols-12 gap-4 px-3 py-2">

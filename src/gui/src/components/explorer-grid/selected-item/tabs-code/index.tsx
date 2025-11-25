@@ -141,7 +141,7 @@ export const CodeTabContent = () => {
             exit={{ opacity: 0, filter: 'blur(2px)' }}>
             <div className="flex flex-col">
               <div className="border-muted overflow-x-scroll border-b px-6 pb-4">
-                <h3 className="text-md inline-flex items-baseline gap-1 overflow-x-scroll font-medium whitespace-nowrap">
+                <h3 className="text-md inline-flex items-baseline gap-1 overflow-x-scroll whitespace-nowrap font-medium">
                   <span
                     onClick={() => {
                       if (nodeResolvedPath)
@@ -177,7 +177,7 @@ export const CodeTabContent = () => {
               {selectedPackageContentItem && (
                 <div
                   className={cn(
-                    'border-muted flex justify-between gap-2 border-b px-6 pt-2 pb-2',
+                    'border-muted flex justify-between gap-2 border-b px-6 pb-2 pt-2',
                     'bg-neutral-100',
                     'dark:bg-neutral-900',
                   )}>
@@ -267,7 +267,7 @@ export const CodeTabContent = () => {
                   animate={{ opacity: 1, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, filter: 'blur(2px)' }}
                   className="flex flex-col">
-                  <div className="px-6 pt-4 pb-1">
+                  <div className="px-6 pb-1 pt-4">
                     <div className="relative flex w-full items-center">
                       <Search className="text-muted-foreground absolute ml-3 size-4" />
                       <Input
@@ -278,7 +278,7 @@ export const CodeTabContent = () => {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-12 px-6 pt-4 pb-2">
+                  <div className="grid grid-cols-12 px-6 pb-2 pt-4">
                     <div className="col-span-6">
                       <SortingHeader
                         label="File"

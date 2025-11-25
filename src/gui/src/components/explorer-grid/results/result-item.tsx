@@ -63,15 +63,15 @@ export const ResultItem = ({ item }: GridItemOptions) => {
       {item.stacked && (
         <>
           {item.size > 2 && (
-            <div className="bg-card absolute top-2 left-2 h-full w-[97.5%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600" />
+            <div className="bg-card absolute left-2 top-2 h-full w-[97.5%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600" />
           )}
-          <div className="bg-card absolute top-1 left-1 h-full w-[99%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600" />
+          <div className="bg-card absolute left-1 top-1 h-full w-[99%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600" />
         </>
       )}
 
       <Card
         renderAsLink
-        className="relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+        className="duration-250 relative cursor-default rounded-xl shadow-none transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
         onClick={updateResultItem({ item, query, updateQuery })}>
         <CardHeader className="relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
           <div className="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
@@ -88,7 +88,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
             )}
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger className="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <TooltipTrigger className="grow cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
                   {item.title}
                 </TooltipTrigger>
                 <TooltipContent>{item.title}</TooltipContent>
@@ -135,7 +135,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
             />
           </div>
 
-          <div className="absolute right-2.5 -bottom-3.5 flex gap-2">
+          <div className="absolute -bottom-3.5 right-2.5 flex gap-2">
             {item.labels?.map(i => (
               <div key={i}>
                 <RelationBadge relation={i}>{i}</RelationBadge>
@@ -144,7 +144,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
           </div>
 
           <PackageOverallScore
-            className="absolute top-2 right-2 flex md:hidden"
+            className="absolute right-2 top-2 flex md:hidden"
             insights={insights}
           />
         </CardHeader>

@@ -261,10 +261,10 @@ const SearchInput = ({
         value={searchTerm}
         onChange={e => setSearchTerm(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="relative h-[30px] pr-[70px] pl-[30px] ring-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="relative h-[30px] pl-[30px] pr-[70px] ring-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
         placeholder="Filter..."
       />
-      <div className="absolute right-[5px] bottom-[6px] flex h-[30px] cursor-default items-center justify-center">
+      <div className="absolute bottom-[6px] right-[5px] flex h-[30px] cursor-default items-center justify-center">
         <Kbd className="border-muted text-xxs inline-flex h-[20px] w-fit items-center justify-center gap-1 border-[1px] bg-white px-1 dark:bg-black">
           ctrl
         </Kbd>

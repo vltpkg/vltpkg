@@ -92,7 +92,7 @@ export const CreateNewProjectContent = ({
   return (
     <div className="bg-card z-[3] flex w-full rounded-md border-[1px] border-dashed">
       <form
-        className="relative w-1/2 space-y-6 border-r-[1px] border-dashed border-solid"
+        className="relative w-1/2 space-y-6 border-r-[1px] border-solid border-dashed"
         onSubmit={formSubmit}>
         <div className="mb-12 flex flex-col gap-2 px-8 pt-8">
           <h5 className="text-xl font-medium">Project details</h5>
@@ -180,7 +180,7 @@ export const CreateNewProjectContent = ({
         <System className="h-full w-full">
           <Grid rows={7} columns={7} ref={containerRef}>
             <Cell column={2} row={2} ref={nextRef}>
-              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed">
                 <div className="flex items-center justify-center shadow-inner">
                   <Next className="text-muted-foreground/80 size-12" />
                 </div>
@@ -188,7 +188,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={6} row={2} ref={nuxtRef}>
-              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed">
                 <div className="flex items-center justify-center shadow-inner">
                   <Nuxt className="text-muted-foreground/80 size-12" />
                 </div>
@@ -196,7 +196,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={2} row={6} ref={vercelRef}>
-              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed">
                 <div className="flex items-center justify-center shadow-inner">
                   <Vercel className="text-muted-foreground/80 size-12" />
                 </div>
@@ -204,7 +204,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={6} row={6} ref={nodeRef}>
-              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed">
+              <div className="/80 border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed">
                 <div className="flex h-full w-full items-center justify-center shadow-inner">
                   <Node className="fill-muted-foreground/80 size-12" />
                 </div>
@@ -212,7 +212,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={4} row={4} ref={vltRef}>
-              <div className="border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-r-[1px] border-b-[1px] border-dashed p-2 shadow-inner">
+              <div className="border-muted bg-card relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed p-2 shadow-inner">
                 <div className="flex items-center justify-center">
                   <svg
                     width="24"

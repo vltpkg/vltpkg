@@ -56,12 +56,12 @@ export const DashboardItem = ({
               </Tooltip>
             </TooltipProvider>
           )}
-          <h3 className="text-md mt-1 leading-tight font-medium tracking-tight">
+          <h3 className="text-md mt-1 font-medium leading-tight tracking-tight">
             {item.name}
           </h3>
         </div>
       </div>
-      <div className="flex gap-2 pt-0.5 pr-0 pb-0 pl-2">
+      <div className="flex gap-2 pb-0 pl-2 pr-0 pt-0.5">
         <TooltipProvider delayDuration={150}>
           <Tooltip>
             <TooltipTrigger className="text-foreground/50 grow cursor-default truncate text-left text-xs">

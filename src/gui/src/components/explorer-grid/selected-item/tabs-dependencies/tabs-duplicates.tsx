@@ -73,7 +73,7 @@ export const DuplicatesTabContent = () => {
                   <div
                     role="button"
                     onClick={() => queryDuplicatedDeps(name)}
-                    className="border-muted hover:bg-secondary/60 flex h-fit cursor-default items-start gap-2 border-b-[1px] px-3 py-3 transition-colors duration-250">
+                    className="border-muted hover:bg-secondary/60 duration-250 flex h-fit cursor-default items-start gap-2 border-b-[1px] px-3 py-3 transition-colors">
                     <DataBadge
                       variant="count"
                       content={String(info.count)}
@@ -90,7 +90,7 @@ export const DuplicatesTabContent = () => {
                           queryDuplicatedDeps(name, version)
                         }
                         key={`${version}-${idx}`}
-                        className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors duration-250 last-of-type:rounded-b-md">
+                        className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground duration-250 cursor-default px-3 py-2 font-mono text-sm font-medium tabular-nums transition-colors last-of-type:rounded-b-md">
                         v{version}
                       </li>
                     ))}

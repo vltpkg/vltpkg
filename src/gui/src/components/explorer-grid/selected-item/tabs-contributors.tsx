@@ -101,7 +101,7 @@ const Contributor = ({
     <div
       role="button"
       onClick={() => handleQueryContributor(email)}
-      className="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+      className="duration-250 flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
       <ContributorAvatar size={size} avatar={avatar} />
       <div className="text-foreground flex flex-col justify-center text-sm">
         <p className="font-medium text-neutral-900 dark:text-neutral-200">
@@ -147,7 +147,7 @@ export const ContributorList = () => {
           )}
         </div>
         <Button
-          className="font-muted-foreground text-foreground hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal transition-colors duration-250 dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
+          className="font-muted-foreground text-foreground hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground duration-250 h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal transition-colors dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
           variant="default"
           onClick={handleToContributors}>
           See all contributors

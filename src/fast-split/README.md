@@ -5,6 +5,8 @@
 This is a very fast alternative to `String.split()`, which can be used
 to quickly parse a small-to-medium sized string by a given delimiter.
 
+> **Note:** This package is no longer used internally by vltpkg (as of Node.js 22, native `String.split()` is faster), but it remains available as a standalone package for projects that may benefit from its specific optimizations.
+
 **[It's fast](#how-fast-is-it)** · **[Usage](#usage)**
 
 ## How Fast Is It!?

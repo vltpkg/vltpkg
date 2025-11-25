@@ -277,7 +277,7 @@ const FileExplorerViewChanger = () => {
           {view === 'grid' ?
             <LayoutGrid />
           : <List />}
-          <ChevronRight className="chevron transition-transform duration-250" />
+          <ChevronRight className="chevron duration-250 transition-transform" />
         </FileExplorerButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent onCloseAutoFocus={e => e.preventDefault()}>
@@ -637,7 +637,7 @@ const FileExplorerGridItem = ({
   return (
     <div
       className={cn(
-        'group col-span-3 flex cursor-default flex-col items-center justify-center gap-1 rounded-lg p-2 duration-250 select-none',
+        'duration-250 group col-span-3 flex cursor-default select-none flex-col items-center justify-center gap-1 rounded-lg p-2',
         isSelected ?
           'bg-neutral-200 dark:bg-neutral-900'
         : 'bg-transparent',
@@ -645,7 +645,7 @@ const FileExplorerGridItem = ({
       )}
       onClick={onClick}
       onDoubleClick={onDoubleClick}>
-      <div className="flex items-center justify-center rounded-lg p-1 transition-colors duration-250 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-900 [&>svg]:size-20">
+      <div className="duration-250 flex items-center justify-center rounded-lg p-1 transition-colors group-hover:bg-neutral-200 dark:group-hover:bg-neutral-900 [&>svg]:size-20">
         <Icon
           className={cn(
             '',
@@ -659,7 +659,7 @@ const FileExplorerGridItem = ({
       <div className="flex items-center justify-center">
         <p
           className={cn(
-            'text-center text-sm font-normal text-wrap break-all',
+            'text-wrap break-all text-center text-sm font-normal',
             isSelected ?
               'rounded bg-blue-300 px-1 text-white dark:bg-blue-500'
             : 'text-foreground',
@@ -759,7 +759,7 @@ const FileExplorerSearch = () => {
             onChange={e => setSearchValue(e.target.value)}
             placeholder="Search"
             className={cn(
-              'h-8 w-48 rounded-lg border-transparent bg-transparent pr-2 pl-8 text-sm dark:border-transparent dark:bg-transparent',
+              'h-8 w-48 rounded-lg border-transparent bg-transparent pl-8 pr-2 text-sm dark:border-transparent dark:bg-transparent',
               '!ring-offset-0 focus-visible:!ring-0',
             )}
           />

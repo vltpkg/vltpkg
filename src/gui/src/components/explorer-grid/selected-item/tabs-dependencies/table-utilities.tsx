@@ -18,7 +18,7 @@ export const SortingHeader = <T,>({
   return (
     <button
       className={cn(
-        'hover:text-foreground inline-flex items-center gap-1.5 px-3 py-0 transition-colors duration-250 [&>svg]:size-4',
+        'hover:text-foreground duration-250 inline-flex items-center gap-1.5 px-3 py-0 transition-colors [&>svg]:size-4',
         className,
       )}
       onClick={() =>

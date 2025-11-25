@@ -16,7 +16,7 @@ export const FocusButton = ({ className }: FocusButtonProps) => {
     <Button
       onClick={toggleFocus}
       className={cn(
-        'border-muted text-muted-foreground hover:border-muted-foreground/30 relative inline-flex h-7 w-24 items-center gap-1.5 border-[1px] bg-white px-3 py-1.5 text-sm transition-colors duration-250 hover:bg-white/80 dark:bg-neutral-900 dark:hover:bg-neutral-900/80',
+        'border-muted text-muted-foreground hover:border-muted-foreground/30 duration-250 relative inline-flex h-7 w-24 items-center gap-1.5 border-[1px] bg-white px-3 py-1.5 text-sm transition-colors hover:bg-white/80 dark:bg-neutral-900 dark:hover:bg-neutral-900/80',
         className,
       )}
       variant="default">

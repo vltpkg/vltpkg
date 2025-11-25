@@ -165,7 +165,7 @@ export const FundingTabContent = () => {
       {depFunding && fundingCount > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div className="flex flex-col gap-3 px-6">
-            <div className="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors duration-250">
+            <div className="border-muted bg-secondary/30 duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors">
               <p className="font-regular text-muted-foreground text-xs tracking-wide">
                 Packages looking for funding
               </p>

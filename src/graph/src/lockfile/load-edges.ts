@@ -1,6 +1,5 @@
 import { asDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
-import { fastSplit } from '@vltpkg/fast-split'
 import { Spec } from '@vltpkg/spec/browser'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import { longDependencyTypes } from '@vltpkg/types'
@@ -67,8 +66,8 @@ export const loadEdges = (
     useOptimizations ? new Map<string, NodeLike>() : undefined
 
   for (const [key, value] of entries) {
-    const [fromId, specName] = fastSplit(key, ' ', 2)
-    const [depType, valRest] = fastSplit(value, ' ', 2)
+    const [fromId, specName] = key.split(' ', 2)
+    const [depType, valRest] = value.split(' ', 2)
     const vrSplit = valRest?.lastIndexOf(' ') ?? -1
 
     // not a valid edge record

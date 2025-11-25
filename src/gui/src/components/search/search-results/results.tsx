@@ -32,7 +32,7 @@ const SearchResultsHeader = () => {
       <h3 className="inline-flex items-baseline gap-2 text-3xl tracking-tight">
         Search results for &ldquo;{query}&rdquo;
         {!isLoading && (
-          <span className="text-muted-foreground font-mono text-sm tracking-normal tabular-nums">
+          <span className="text-muted-foreground font-mono text-sm tabular-nums tracking-normal">
             ({total.toLocaleString()})
           </span>
         )}

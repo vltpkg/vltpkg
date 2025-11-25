@@ -111,10 +111,10 @@ export const SuggestedQueries = ({
                   <div
                     role="button"
                     onClick={() => runQuery(query.query)}
-                    className="group border-muted bg-background hover:border-muted-foreground/50 mt-1 flex cursor-default items-center gap-2 rounded-lg border-[1px] px-2 py-1.5 transition-colors duration-250">
+                    className="border-muted bg-background hover:border-muted-foreground/50 duration-250 group mt-1 flex cursor-default items-center gap-2 rounded-lg border-[1px] px-2 py-1.5 transition-colors">
                     <Search
                       size={16}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors duration-250"
+                      className="text-muted-foreground group-hover:text-foreground duration-250 transition-colors"
                     />
                     <div className="flex">
                       {tokens.map((segment, idx) => (
@@ -125,7 +125,7 @@ export const SuggestedQueries = ({
                     </div>
                     <CornerDownRight
                       size={16}
-                      className="text-muted-foreground/40 group-hover:text-foreground ml-auto transition-colors duration-250"
+                      className="text-muted-foreground/40 group-hover:text-foreground duration-250 ml-auto transition-colors"
                     />
                   </div>
                 </div>

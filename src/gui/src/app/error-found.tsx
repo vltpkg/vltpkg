@@ -65,7 +65,7 @@ export const ErrorFound = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-radial absolute -right-6 -bottom-6 -left-6 z-[1] h-[150px] from-white to-white/0 dark:from-black dark:to-black/0" />
+        <div className="bg-gradient-radial absolute -bottom-6 -left-6 -right-6 z-[1] h-[150px] from-white to-white/0 dark:from-black dark:to-black/0" />
       </div>
     </section>
   )
