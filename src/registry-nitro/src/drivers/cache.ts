@@ -33,27 +33,48 @@ function parseHeaders(headers: unknown): Record<string, string> {
 export async function getCachedPackument(
   name: string,
   ctx: DBTypes.Context,
+  { origin }: { origin: string },
 ) {
+  const timeKey = `[get_packument] ${name}`
+  console.time(timeKey)
+
+  const packageWhere = and(
+    eq(ctx.schema.packages.name, name),
+    eq(ctx.schema.packages.origin, origin),
+  )
+
+  const versionWhere = and(
+    eq(ctx.schema.versions.name, name),
+    eq(ctx.schema.versions.origin, origin),
+  )
+
   let row: DBTypes.Package | undefined = undefined
   let versions: DBTypes.Version[] = []
 
-  const timeKey = `[get_packument] ${name}`
-  console.time(timeKey)
   if (ctx.dialect === 'sqlite') {
-    row = await ctx.db.query.packages.findFirst({
-      where: eq(ctx.schema.packages.name, name),
+    const packageRow = await ctx.db.query.packages.findFirst({
+      where: packageWhere,
+      with: {
+        versions: {
+          where: versionWhere,
+        },
+      },
     })
-    versions = await ctx.db.query.versions.findMany({
-      where: eq(ctx.schema.versions.name, name),
-    })
+    row = packageRow
+    versions = packageRow?.versions ?? []
   } else {
-    row = await ctx.db.query.packages.findFirst({
-      where: eq(ctx.schema.packages.name, name),
+    const packageRow = await ctx.db.query.packages.findFirst({
+      where: packageWhere,
+      with: {
+        versions: {
+          where: versionWhere,
+        },
+      },
     })
-    versions = await ctx.db.query.versions.findMany({
-      where: eq(ctx.schema.versions.name, name),
-    })
+    row = packageRow
+    versions = packageRow?.versions ?? []
   }
+
   console.timeEnd(timeKey)
 
   if (!row) {
@@ -62,7 +83,10 @@ export async function getCachedPackument(
 
   const data = JSON.parse(row.packument)
   data.versions = Object.fromEntries(
-    versions.map(v => [v.version, JSON.parse(v.manifest)]),
+    versions.map((v: DBTypes.Version) => [
+      v.version,
+      JSON.parse(v.manifest),
+    ]),
   )
 
   return {

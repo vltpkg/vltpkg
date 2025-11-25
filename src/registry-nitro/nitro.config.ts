@@ -5,7 +5,7 @@ const {
   VSR_PLATFORM = 'node',
   VSR_STORAGE = 'fs',
   VSR_DATABASE = 'sqlite',
-  VSR_PACKUMENT_TTL = '5m',
+  VSR_PACKUMENT_TTL = '1hr',
   VSR_MANIFEST_TTL = '24h',
   VSR_TARBALL_TTL = '1yr',
 } = process.env

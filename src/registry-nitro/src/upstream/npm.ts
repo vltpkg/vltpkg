@@ -37,7 +37,7 @@ export const packumentHandler = defineEventHandler(async event => {
   const result = await fetchAndCache(
     event,
     () => fetchUpstream(`/${pkgName}`),
-    () => getCachedPackument(pkgName, db),
+    () => getCachedPackument(pkgName, db, { origin: 'npm' }),
     (data, headers) =>
       setCachedPackument(pkgName, data, headers, db, {
         origin: 'npm',
