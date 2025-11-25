@@ -186,7 +186,9 @@ export const install = async (
   }
 
   try {
-    const remove = new Map() as RemoveImportersDependenciesMap
+    const remove = Object.assign(new Map<DepID, Set<string>>(), {
+      modifiedDependencies: false,
+    }) as RemoveImportersDependenciesMap
     const modifiers = GraphModifier.maybeLoad(options)
 
     let act: Graph | undefined = actualLoad({

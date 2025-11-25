@@ -3,6 +3,7 @@ import {
   hydrate,
   joinDepIDTuple,
   joinExtra,
+  splitDepID,
   splitExtra,
 } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
@@ -355,7 +356,22 @@ const parseDir = (
       spec = modifiedSpec
 
       const maybeId = getPathBasedId(spec, realpath)
-      const peerSetHash = maybeId && splitExtra(maybeId).peerSetHash
+      let peerSetHash: string | undefined
+      if (maybeId) {
+        // parses extra info from depID to retrieve peerSetHash
+        try {
+          const tuple = splitDepID(maybeId)
+          const type = tuple[0]
+          const extra =
+            type === 'registry' || type === 'git' ?
+              tuple[3]
+            : tuple[2]
+
+          peerSetHash =
+            extra ? splitExtra(extra).peerSetHash : undefined
+          /* c8 ignore next - impossible: getPathBasedId asserts valid dep id */
+        } catch {}
+      }
       node = graph.placePackage(
         fromNode,
         depType,

@@ -1204,6 +1204,209 @@ t.test('hidden lockfile', async t => {
   )
 })
 
+t.test('various DepID types with peerSetHash', async t => {
+  const peerSetHash = 'ṗ:1'
+  const modifier = ':root > #a'
+
+  // Build extra metadata combining modifier and peerSetHash
+  const { joinExtra } = await import('@vltpkg/dep-id')
+  const registryExtra = joinExtra({ modifier, peerSetHash })
+  const peerSetOnly = joinExtra({ peerSetHash })
+
+  // Create DepIDs with various types
+  const registryDepID = joinDepIDTuple([
+    'registry',
+    '',
+    'a@1.0.0',
+    registryExtra,
+  ])
+  const gitDepID = joinDepIDTuple([
+    'git',
+    'github:user/repo',
+    'main',
+    peerSetOnly,
+  ])
+  const remoteDepID = joinDepIDTuple([
+    'remote',
+    'https://example.com/pkg.tgz',
+    peerSetOnly,
+  ])
+
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'depid-types-test',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+        b: 'github:user/repo',
+        c: 'https://example.com/pkg.tgz',
+        d: 'file:packages/d',
+        e: 'workspace:*',
+      },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: {
+        [modifier]: '^1.0.0',
+      },
+    }),
+    packages: {
+      d: {
+        'package.json': JSON.stringify({
+          name: 'd',
+          version: '1.0.0',
+        }),
+      },
+      e: {
+        'package.json': JSON.stringify({
+          name: 'e',
+          version: '1.0.0',
+        }),
+      },
+    },
+    node_modules: {
+      '.vlt': {
+        [registryDepID]: {
+          node_modules: {
+            a: {
+              'package.json': JSON.stringify({
+                name: 'a',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+        [gitDepID]: {
+          node_modules: {
+            b: {
+              'package.json': JSON.stringify({
+                name: 'b',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+        [remoteDepID]: {
+          node_modules: {
+            c: {
+              'package.json': JSON.stringify({
+                name: 'c',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+      a: t.fixture('symlink', `.vlt/${registryDepID}/node_modules/a`),
+      b: t.fixture('symlink', `.vlt/${gitDepID}/node_modules/b`),
+      c: t.fixture('symlink', `.vlt/${remoteDepID}/node_modules/c`),
+      d: t.fixture('symlink', '../packages/d'),
+      e: t.fixture('symlink', '../packages/e'),
+    },
+  })
+
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = load({
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    projectRoot,
+    loadManifests: true,
+    ...configData,
+  })
+
+  // Verify all node types were loaded
+  const nodeA = graph.nodes.get(registryDepID)
+  const nodeB = graph.nodes.get(gitDepID)
+  const nodeC = graph.nodes.get(remoteDepID)
+  const nodeD = graph.nodes.get(
+    joinDepIDTuple(['file', 'packages/d']),
+  )
+  const nodeE = graph.nodes.get(
+    joinDepIDTuple(['workspace', 'packages/e']),
+  )
+
+  t.ok(nodeA, 'registry node with peerSetHash + modifier loaded')
+  t.equal(nodeA?.name, 'a', 'registry node has correct name')
+  t.equal(
+    nodeA?.peerSetHash,
+    peerSetHash,
+    'registry node has peerSetHash',
+  )
+
+  t.ok(nodeB, 'git node with peerSetHash loaded')
+  t.equal(nodeB?.name, 'b', 'git node has correct name')
+  t.equal(nodeB?.peerSetHash, peerSetHash, 'git node has peerSetHash')
+
+  t.ok(nodeC, 'remote node with peerSetHash loaded')
+  t.equal(nodeC?.name, 'c', 'remote node has correct name')
+  t.equal(
+    nodeC?.peerSetHash,
+    peerSetHash,
+    'remote node has peerSetHash',
+  )
+
+  t.ok(nodeD, 'file node loaded')
+  t.equal(nodeD?.name, 'd', 'file node has correct name')
+
+  t.ok(nodeE, 'workspace node loaded')
+  t.equal(nodeE?.name, 'e', 'workspace node has correct name')
+
+  t.matchSnapshot(
+    objectLikeOutput(graph),
+    'should load graph with various DepID types and peerSetHash',
+  )
+})
+
+t.test('invalid DepID handling', async t => {
+  // Create a malformed DepID that will fail parsing
+  const invalidDepID = '····id··with··too··many··separators'
+
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'invalid-depid-test',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+      },
+    }),
+    'vlt.json': '{}',
+    node_modules: {
+      '.vlt': {
+        [invalidDepID]: {
+          node_modules: {
+            a: {
+              'package.json': JSON.stringify({
+                name: 'a',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+      a: t.fixture('symlink', `.vlt/${invalidDepID}/node_modules/a`),
+    },
+  })
+
+  t.chdir(projectRoot)
+  unload('project')
+
+  t.throws(
+    () =>
+      load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      }),
+    /Expected dep id/,
+    'should throw when encountering invalid DepID',
+  )
+})
+
 t.test('asStoreConfigObject', async t => {
   t.strictSame(
     asStoreConfigObject({ modifiers: { '#a': '1' } }),

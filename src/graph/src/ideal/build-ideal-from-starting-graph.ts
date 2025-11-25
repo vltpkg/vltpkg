@@ -52,13 +52,7 @@ export const buildIdealFromStartingGraph = async (
       }
 
       // update the save type for deps when using an implicit type
-      for (const [depName, depSpec] of deps) {
-        depSpec.type = resolveSaveType(
-          importer,
-          depName,
-          depSpec.type,
-        )
-      }
+      dep.type = resolveSaveType(importer, depName, dep.type)
     }
   }
 

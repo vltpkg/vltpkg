@@ -261,3 +261,29 @@ exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an a
   }
 ]
 `
+
+exports[`test/actual/load.ts > TAP > various DepID types with peerSetHash > should load graph with various DepID types and peerSetHash 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(e@workspace:*) -prod-> to: Node { id: 'workspace·packages§e', location: './packages/e' },
+      Edge spec(d@file:./packages/d) -prod-> to: Node { id: 'file·packages§d', location: './packages/d' },
+      Edge spec(c@https://example.com/pkg.tgz) -prod-> to: Node {
+        id: 'remote·https%3A§§example.com§pkg.tgz·%E1%B9%97%3A1',
+        location: './node_modules/.vlt/remote·https%3A§§example.com§pkg.tgz·%E1%B9%97%3A1/node_modules/c'
+      },
+      Edge spec(b@github:user/repo) -prod-> to: Node {
+        id: 'git·github%3Auser§repo·main·%E1%B9%97%3A1',
+        location: './node_modules/.vlt/git·github%3Auser§repo·main·%E1%B9%97%3A1/node_modules/b'
+      },
+      Edge spec(a@^1.0.0) -prod-> to: Node {
+        id: '··a@1.0.0·%3Aroot%20%3E%20%23a%E1%B9%97%3A1',
+        location: './node_modules/.vlt/··a@1.0.0·%3Aroot%20%3E%20%23a%E1%B9%97%3A1/node_modules/a'
+      }
+    ]
+  }
+]
+`
