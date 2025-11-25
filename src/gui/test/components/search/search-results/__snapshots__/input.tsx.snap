@@ -1,0 +1,89 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders search input 1`] = `
+
+<div class="relative flex items-center">
+  <gui-input
+    placeholder="Search"
+    classname="h-10 rounded-2xl"
+  >
+  </gui-input>
+  <gui-button
+    size="icon"
+    variant="secondary"
+    classname="text-muted-foreground absolute right-1 ml-auto size-8 rounded-xl p-0 [&amp;_svg]:size-5"
+  >
+    <gui-search-icon>
+    </gui-search-icon>
+  </gui-button>
+</div>
+
+`;
+
+exports[`renders search input with custom placeholder 1`] = `
+
+<div class="relative flex items-center">
+  <gui-input
+    placeholder="Search packages..."
+    classname="h-10 rounded-2xl"
+  >
+  </gui-input>
+  <gui-button
+    size="icon"
+    variant="secondary"
+    classname="text-muted-foreground absolute right-1 ml-auto size-8 rounded-xl p-0 [&amp;_svg]:size-5"
+  >
+    <gui-search-icon>
+    </gui-search-icon>
+  </gui-button>
+</div>
+
+`;
+
+exports[`renders search input with loading state 1`] = `
+
+<div class="relative flex items-center">
+  <gui-input
+    placeholder="Search"
+    classname="h-10 rounded-2xl"
+  >
+  </gui-input>
+  <div
+    class="absolute right-11 flex items-center justify-center"
+    style="opacity: 1; transform: none;"
+  >
+    <gui-loader-icon classname="text-muted-foreground size-4 animate-spin">
+    </gui-loader-icon>
+  </div>
+  <gui-button
+    size="icon"
+    variant="secondary"
+    classname="text-muted-foreground absolute right-1 ml-auto size-8 rounded-xl p-0 [&amp;_svg]:size-5"
+  >
+    <gui-search-icon>
+    </gui-search-icon>
+  </gui-button>
+</div>
+
+`;
+
+exports[`renders search input with value 1`] = `
+
+<div class="relative flex items-center">
+  <gui-input
+    placeholder="Search"
+    value="react"
+    classname="h-10 rounded-2xl"
+  >
+  </gui-input>
+  <gui-button
+    size="icon"
+    variant="secondary"
+    classname="text-muted-foreground absolute right-1 ml-auto size-8 rounded-xl p-0 [&amp;_svg]:size-5"
+  >
+    <gui-search-icon>
+    </gui-search-icon>
+  </gui-button>
+</div>
+
+`;

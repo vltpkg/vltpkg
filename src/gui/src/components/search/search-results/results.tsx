@@ -1,130 +1,412 @@
-import { SearchResult } from '@/components/search/search-result.tsx'
+import { forwardRef, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  Search as SearchIcon,
+  CircleAlert,
+  PackageSearch,
+  Loader2,
+  Command,
+} from 'lucide-react'
+import { SearchResult } from '@/components/search/search-results/search-result.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+} from '@/components/ui/input-group.tsx'
+import { Kbd } from '@/components/ui/kbd.tsx'
 import { SearchResultsSort } from '@/components/search/search-results/sort.tsx'
+import { SearchResultsPaginationNavigation } from './page-navigation.tsx'
+import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
+import {
+  Empty,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyHeader,
+  EmptyDescription,
+} from '@/components/ui/empty-state.tsx'
 import { useSearchResultsStore } from '@/state/search-results.ts'
 import { useSyncSearchResultsURL } from '@/components/search/search-results/use-sync-url.tsx'
+import { useDebounce } from '@/components/hooks/use-debounce.tsx'
+import { useKeyDown } from '@/components/hooks/use-keydown.tsx'
 import { cn } from '@/lib/utils.ts'
-import { CircleAlert, Loader2, PackageSearch } from 'lucide-react'
+import { FAVORITE_PACKAGES } from '@/lib/constants/favorite-packages.ts'
 
-import type { LucideIcon } from 'lucide-react'
+import type { ComponentProps } from 'react'
+import type { MotionProps } from 'framer-motion'
+
+const Decorator = ({ className }: { className?: string }) => {
+  return (
+    <div aria-hidden="true" className={cn('p-[0.5px]', className)}>
+      <div className="bg-background h-full rounded" />
+    </div>
+  )
+}
+
+const titleMotion: MotionProps = {
+  initial: {
+    opacity: 0,
+    filter: 'blur(2px)',
+  },
+  animate: {
+    opacity: 1,
+    filter: 'blur(0px)',
+  },
+  exit: {
+    opacity: 0,
+    filter: 'blur(2px)',
+  },
+}
 
 export const SearchResults = () => {
+  const query = useSearchResultsStore(state => state.query)
+  const isLoading = useSearchResultsStore(state => state.isLoading)
+  const searchTerm = useSearchResultsStore(state => state.searchTerm)
+  const setSearchTerm = useSearchResultsStore(
+    state => state.setSearchTerm,
+  )
+  const executeSearch = useSearchResultsStore(
+    state => state.executeSearch,
+  )
+  const resultsOnPage = useSearchResultsStore(state => state.results)
+  const totalResults = useSearchResultsStore(state => state.total)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const results = useSearchResultsStore(state => state.results)
+
+  useKeyDown(['meta+k', 'ctrl+k'], () => inputRef.current?.focus())
+  useKeyDown(['escape'], () => inputRef.current?.blur())
+
   // Sync URL params with zustand store
   useSyncSearchResultsURL()
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
+  const handleLucky = () => {
+    const idx = Math.floor(Math.random() * FAVORITE_PACKAGES.length)
+    const randomPackage = FAVORITE_PACKAGES[idx]
+    setSearchTerm(randomPackage ?? 'vlt')
+  }
+
+  useEffect(() => {
+    executeSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm])
+
+  // On initial load, when there is no searchTerm, focus the input asap
+  // so the user can start searching right away
+  useEffect(() => {
+    if (!searchTerm || searchTerm.trim() === '') {
+      inputRef.current?.focus()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <section className="relative mx-auto grid h-full w-full grid-cols-12 gap-8 px-4 py-4">
-      <div className="md:bg-sidebar col-span-full w-full py-4 md:sticky md:-top-4 md:z-[1001] md:col-start-3">
-        <SearchResultsHeader />
-      </div>
-      <div className="col-span-full md:col-span-7 md:col-start-3">
-        <SearchResultsList />
+    <section className="bg-background">
+      <div className="bg-foreground/6 relative">
+        {/* results count */}
+        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+          <Decorator className="max-lg:hidden" />
+          <div className="flex w-full p-[0.5px]">
+            <div className="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+              <div className="h-[36.5px]">
+                <AnimatePresence mode="popLayout">
+                  {query && results.length !== 0 ?
+                    <motion.h3
+                      key={`has-results-${query}`}
+                      className="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+                      {...titleMotion}>
+                      Showing{' '}
+                      <span className="font-mono text-2xl tabular-nums">
+                        {resultsOnPage.length.toLocaleString()}
+                      </span>{' '}
+                      of{' '}
+                      <span className="font-mono text-2xl tabular-nums">
+                        {totalResults.toLocaleString()}
+                      </span>{' '}
+                      results for
+                      <span className="fancy-quote mr-0.5 ml-2 font-medium">
+                        &ldquo;
+                      </span>
+                      {query}
+                      <span className="fancy-quote ml-0.5 font-medium">
+                        &rdquo;
+                      </span>
+                    </motion.h3>
+                  : <motion.h3
+                      key="has-no-results"
+                      className="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+                      {...titleMotion}>
+                      Start typing to search
+                    </motion.h3>
+                  }
+                </AnimatePresence>
+              </div>
+              <InputGroup className="mt-3">
+                <InputGroupAddon>
+                  {isLoading ?
+                    <Loader2 className="animate-spin" />
+                  : <SearchIcon />}
+                </InputGroupAddon>
+                <InputGroupInput
+                  ref={inputRef}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  value={searchTerm}
+                  placeholder="Search packages"
+                  className=""
+                />
+                <InputGroupAddon align="inline-end" className="gap-1">
+                  <Kbd>
+                    <Command />
+                  </Kbd>
+                  <Kbd>K</Kbd>
+                </InputGroupAddon>
+              </InputGroup>
+            </div>
+          </div>
+          <Decorator className="max-lg:hidden" />
+        </div>
+
+        {/* sorting filters */}
+        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+          <Decorator className="max-lg:hidden" />
+          <SearchResultsSort className="w-full p-[0.5px]" />
+          <Decorator className="max-lg:hidden" />
+        </div>
+
+        {/* list view */}
+        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+          <Decorator className="max-lg:hidden" />
+          <AnimatePresence mode="popLayout" initial={false}>
+            {query && (results.length > 0 || isLoading) ?
+              <MotionSearchResultsList
+                key="results-list"
+                {...searchResultsSectionMotion}
+                className="rounded p-[0.5px]"
+              />
+            : <MotionSearchResultsSection
+                key="results-list-empty-state"
+                {...searchResultsSectionMotion}>
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <PackageSearch />
+                    </EmptyMedia>
+                    <EmptyTitle>
+                      Your results will appear here
+                    </EmptyTitle>
+                    <EmptyDescription>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={handleLucky}>
+                        I'm feeling lucky
+                      </Button>
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              </MotionSearchResultsSection>
+            }
+          </AnimatePresence>
+          <Decorator className="max-lg:hidden" />
+        </div>
+
+        {/* pagination */}
+        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+          <Decorator className="max-lg:hidden" />
+          <SearchResultsPaginationNavigation className="w-full p-[0.5px]" />
+          <Decorator className="max-lg:hidden" />
+        </div>
       </div>
     </section>
   )
 }
 
-const SearchResultsHeader = () => {
-  const total = useSearchResultsStore(state => state.total)
-  const query = useSearchResultsStore(state => state.query)
-  const isLoading = useSearchResultsStore(state => state.isLoading)
-
-  return (
-    <div className="flex flex-col gap-3">
-      <h3 className="inline-flex items-baseline gap-2 text-3xl tracking-tight">
-        Search results for &ldquo;{query}&rdquo;
-        {!isLoading && (
-          <span className="text-muted-foreground font-mono text-sm tracking-normal tabular-nums">
-            ({total.toLocaleString()})
-          </span>
-        )}
-      </h3>
-      <div className="flex items-center gap-2">
-        <SearchResultsSort />
-      </div>
-    </div>
-  )
+const searchResultsSectionMotion: MotionProps = {
+  initial: {
+    opacity: 0,
+    filter: 'blur(4px)',
+  },
+  animate: {
+    opacity: 1,
+    filter: 'blur(0px)',
+  },
+  exit: {
+    opacity: 0,
+    filter: 'blur(4px)',
+  },
+  transition: {
+    duration: 0.3,
+    ease: [0.22, 1, 0.36, 1],
+  },
 }
 
-const SearchResultsState = ({
-  title,
-  state = 'default',
-  className,
-  icon: Icon,
-}: {
-  title?: string
-  state?: 'default' | 'error' | 'loading'
-  className?: string
-  icon: LucideIcon
-}) => {
-  return (
-    <div
-      className={cn(
-        'flex grow flex-col items-center justify-center gap-3 px-8 py-12',
-        className,
-      )}>
-      <div className="relative flex size-24 items-center justify-center [&_svg]:size-8">
-        <Icon
-          className={cn(
-            'z-[2] text-neutral-500',
-            state === 'error' && 'text-red-500',
-            state === 'loading' && 'animate-spin',
-          )}
-        />
-        <div
-          className={cn(
-            'absolute size-24 rounded-full bg-neutral-100 dark:bg-neutral-900',
-            state === 'error' && 'bg-red-500/50',
-          )}
-        />
-      </div>
-      {title && (
-        <p
-          className={cn(
-            'text-muted-foreground text-base',
-            state === 'error' && 'text-red-500',
-          )}>
-          {title}
-        </p>
-      )}
-    </div>
-  )
+const searchResultsContainerVariants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      duration: 0.2,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.2,
+    },
+  },
 }
 
-const SearchResultsList = ({ className }: { className?: string }) => {
+const searchResultItemVariants = {
+  hidden: {
+    opacity: 0,
+    filter: 'blur(4px)',
+  },
+  visible: {
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.4,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
+  },
+}
+
+type SearchResultsListProps = ComponentProps<'div'>
+
+const SearchResultsList = forwardRef<
+  HTMLDivElement,
+  SearchResultsListProps
+>(({ className, ...props }, ref) => {
   const results = useSearchResultsStore(state => state.results)
   const isLoading = useSearchResultsStore(state => state.isLoading)
   const error = useSearchResultsStore(state => state.error)
+  const query = useSearchResultsStore(state => state.query)
+  const page = useSearchResultsStore(state => state.page)
+  const sortDir = useSearchResultsStore(state => state.sortDir)
+  const sortBy = useSearchResultsStore(state => state.sortBy)
+  const [showLoading, setShowLoading] = useState(false)
 
-  if (isLoading) {
-    return <SearchResultsState icon={Loader2} state="loading" />
-  }
+  // Only show loading spinner after 2 seconds
+  useEffect(() => {
+    if (!isLoading) {
+      setShowLoading(false)
+      return
+    }
 
-  if (error) {
-    return (
-      <SearchResultsState
-        title={error}
-        state="error"
-        icon={CircleAlert}
-      />
-    )
-  }
+    const timer = setTimeout(() => {
+      setShowLoading(true)
+    }, 2000)
 
-  if (results.length === 0) {
-    return (
-      <SearchResultsState
-        title="No results found"
-        icon={PackageSearch}
-      />
-    )
-  }
+    return () => clearTimeout(timer)
+  }, [isLoading])
+
+  // Don't show old results if we're loading
+  const shouldShowResults = !isLoading && results.length > 0
+  const shouldShowNoResults =
+    !isLoading && results.length === 0 && query
 
   return (
-    <div className={cn('flex flex-col gap-5', className)}>
-      {results.map((result, idx) => (
-        <SearchResult
-          key={`${result.package.name}-${idx}`}
-          item={result}
-        />
-      ))}
+    <div className="min-w-0" ref={ref} {...props}>
+      <AnimatePresence mode="wait">
+        {isLoading && showLoading ?
+          <MotionSearchResultsSection
+            key="loading"
+            {...searchResultsSectionMotion}>
+            <JellyTriangleSpinner />
+          </MotionSearchResultsSection>
+        : error ?
+          <MotionSearchResultsSection
+            key="error"
+            {...searchResultsSectionMotion}>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <CircleAlert className="text-red-500" />
+                </EmptyMedia>
+                <EmptyTitle>An error occurred</EmptyTitle>
+                <EmptyDescription>{error}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </MotionSearchResultsSection>
+        : shouldShowNoResults ?
+          <MotionSearchResultsSection
+            key="no-results"
+            {...searchResultsSectionMotion}>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <PackageSearch />
+                </EmptyMedia>
+                <EmptyTitle>No results found</EmptyTitle>
+                <EmptyDescription>
+                  We couldn't find any results for{' '}
+                  <strong>{query}</strong>
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </MotionSearchResultsSection>
+        : shouldShowResults ?
+          <motion.div
+            key={`results-${query}-${page}-${sortDir}-${sortBy}`}
+            className={cn(
+              'flex w-full flex-col gap-[1px]',
+              className,
+            )}
+            variants={searchResultsContainerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit">
+            {results.map((result, idx) => {
+              const uniqueKey = `result-${result.package.name || 'unknown'}-${result.package.version || 'unknown'}-${idx}`
+              return (
+                <motion.div
+                  key={uniqueKey}
+                  variants={searchResultItemVariants}
+                  className="bg-background rounded">
+                  <SearchResult item={result} />
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        : <MotionSearchResultsSection
+            empty
+            key="no-results-results-loading"
+          />
+        }
+      </AnimatePresence>
     </div>
   )
-}
+})
+SearchResultsList.displayName = 'SearchResultsList'
+
+const MotionSearchResultsList = motion.create(SearchResultsList)
+
+const SearchResultsSection = forwardRef<
+  HTMLDivElement,
+  ComponentProps<'div'> & {
+    empty?: boolean
+  }
+>(({ className, empty, children, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]',
+        className,
+      )}
+      {...props}>
+      {!empty && (
+        <div className="bg-background flex h-full w-full items-center justify-center rounded">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+})
+SearchResultsSection.displayName = 'SearchResultsSection'
+
+const MotionSearchResultsSection = motion.create(SearchResultsSection)

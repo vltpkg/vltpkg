@@ -3,13 +3,13 @@
 exports[`renders Layout for the "/" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
-    <gui-header classname="fixed top-0 bg-transparent">
-    </gui-header>
+  <div class="flex flex-col antialiased">
+    <gui-marketing-header>
+    </gui-marketing-header>
     <gui-search>
     </gui-search>
-    <gui-minimal-footer>
-    </gui-minimal-footer>
+    <gui-marketing-footer>
+    </gui-marketing-footer>
     <gui-toaster>
     </gui-toaster>
   </div>
@@ -20,7 +20,7 @@ exports[`renders Layout for the "/" view 1`] = `
 exports[`renders Layout for the "/create-new-project" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -41,7 +41,7 @@ exports[`renders Layout for the "/create-new-project" view 1`] = `
 exports[`renders Layout for the "/error" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -62,7 +62,7 @@ exports[`renders Layout for the "/error" view 1`] = `
 exports[`renders Layout for the "/explore" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -83,7 +83,7 @@ exports[`renders Layout for the "/explore" view 1`] = `
 exports[`renders Layout for the "/help/selectors" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -104,7 +104,7 @@ exports[`renders Layout for the "/help/selectors" view 1`] = `
 exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -125,7 +125,7 @@ exports[`renders Layout for the "/labels" view 1`] = `
 exports[`renders Layout for the "/queries" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -146,7 +146,7 @@ exports[`renders Layout for the "/queries" view 1`] = `
 exports[`renders Layout for the "/settings/general" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -167,7 +167,7 @@ exports[`renders Layout for the "/settings/general" view 1`] = `
 exports[`renders SignIn for the "/auth/sign-in" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -188,7 +188,7 @@ exports[`renders SignIn for the "/auth/sign-in" view 1`] = `
 exports[`renders SignUp for the "/auth/sign-up" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col">
+  <div class="flex flex-col antialiased">
     <gui-header>
     </gui-header>
     <gui-sidebar-provider defaultopen="true">
@@ -201,6 +201,23 @@ exports[`renders SignUp for the "/auth/sign-up" view 1`] = `
       <gui-toaster>
       </gui-toaster>
     </gui-sidebar-provider>
+  </div>
+</gui-layout>
+
+`;
+
+exports[`renders search for the "/search" view 1`] = `
+
+<gui-layout>
+  <div class="flex flex-col antialiased">
+    <gui-marketing-header>
+    </gui-marketing-header>
+    <gui-search-results>
+    </gui-search-results>
+    <gui-marketing-footer>
+    </gui-marketing-footer>
+    <gui-toaster>
+    </gui-toaster>
   </div>
 </gui-layout>
 

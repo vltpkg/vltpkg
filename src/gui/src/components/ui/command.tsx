@@ -1,33 +1,77 @@
 import * as React from 'react'
-import type { DialogProps } from '@radix-ui/react-dialog'
 import { Command as CommandPrimitive } from 'cmdk'
-import { Search } from 'lucide-react'
-
+import { SearchIcon } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog.tsx'
 import { cn } from '@/lib/utils.ts'
-import { Dialog, DialogContent } from '@/components/ui/dialog.tsx'
 
-const Command = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive>
->(
-  ({ className, ...props }, ref): React.JSX.Element => (
+import type { LucideIcon } from 'lucide-react'
+
+function Command({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive>) {
+  return (
     <CommandPrimitive
-      ref={ref}
+      data-slot="command"
       className={cn(
         'bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md',
         className,
       )}
       {...props}
     />
-  ),
-)
-Command.displayName = CommandPrimitive.displayName
+  )
+}
 
-const CommandDialog = ({ children, ...props }: DialogProps) => {
+function CommandDialog({
+  title = 'Command Palette',
+  description = 'Search for a command to run...',
+  children,
+  className,
+  classNames,
+  showCloseButton = true,
+  isLoading = false,
+  commandProps,
+  ...props
+}: React.ComponentProps<typeof Dialog> & {
+  title?: string
+  description?: string
+  className?: string
+  classNames?: {
+    dialog?: string
+    command?: string
+  }
+  showCloseButton?: boolean
+  isLoading?: boolean
+  commandProps?: Partial<
+    React.ComponentProps<typeof CommandPrimitive>
+  >
+}) {
+  const { dialog: dialogCn, command } = classNames ?? {}
+
   return (
     <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0 shadow-lg">
-        <Command className="[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+      <DialogHeader className="sr-only">
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
+      <DialogContent
+        className={cn('overflow-hidden p-0', dialogCn, className)}
+        showCloseButton={showCloseButton}>
+        <Command
+          loop
+          data-loading={isLoading}
+          className={cn(
+            '[&_[cmdk-group-heading]]:text-muted-foreground **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5',
+            '[&_[data-slot=loading-icon]]:text-muted-foreground [&_[data-slot=loading-icon]]:opacity-0 [&_[data-slot=loading-icon]]:transition-opacity [&_[data-slot=loading-icon]]:duration-100 data-[loading=true]:[&_[data-slot=loading-icon]]:animate-spin data-[loading=true]:[&_[data-slot=loading-icon]]:opacity-100',
+            command,
+          )}
+          {...commandProps}>
           {children}
         </Command>
       </DialogContent>
@@ -35,126 +79,122 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
   )
 }
 
-const CommandInput = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Input>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & {
-    wrapperClassName?: string
-  }
->(
-  (
-    { className, wrapperClassName, ...props },
-    ref,
-  ): React.JSX.Element => (
+function CommandInput({
+  className,
+  loadingIcon: LoadingIcon,
+  wrapperClassName,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  loadingIcon?: LucideIcon
+  wrapperClassName?: string
+}) {
+  return (
     <div
+      data-slot="command-input-wrapper"
       className={cn(
-        'flex items-center border-b px-3',
+        'flex h-9 items-center gap-2 border-b px-3',
         wrapperClassName,
-      )}
-      cmdk-input-wrapper="">
-      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+      )}>
+      <SearchIcon className="size-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
-        ref={ref}
+        data-slot="command-input"
         className={cn(
-          'placeholder:text-muted-foreground flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50',
+          'placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
           className,
         )}
         {...props}
       />
+      {LoadingIcon && <LoadingIcon data-slot="loading-icon" />}
     </div>
-  ),
-)
+  )
+}
 
-CommandInput.displayName = CommandPrimitive.Input.displayName
+type CommandListProps = React.ComponentProps<
+  typeof CommandPrimitive.List
+>
 
 const CommandList = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
->(
-  ({ className, ...props }, ref): React.JSX.Element => (
+  HTMLDivElement,
+  CommandListProps
+>(({ className, ...props }, ref) => {
+  return (
     <CommandPrimitive.List
+      data-slot="command-list"
       ref={ref}
       className={cn(
-        'max-h-[300px] overflow-x-hidden overflow-y-auto',
+        'max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto',
         className,
       )}
       {...props}
     />
-  ),
-)
+  )
+})
+CommandList.displayName = 'CommandList'
 
-CommandList.displayName = CommandPrimitive.List.displayName
-
-const CommandEmpty = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Empty>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
->(
-  (props, ref): React.JSX.Element => (
+function CommandEmpty({
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Empty>) {
+  return (
     <CommandPrimitive.Empty
-      ref={ref}
+      data-slot="command-empty"
       className="py-6 text-center text-sm"
       {...props}
     />
-  ),
-)
+  )
+}
 
-CommandEmpty.displayName = CommandPrimitive.Empty.displayName
-
-const CommandGroup = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Group>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
->(
-  ({ className, ...props }, ref): React.JSX.Element => (
+function CommandGroup({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Group>) {
+  return (
     <CommandPrimitive.Group
-      ref={ref}
+      data-slot="command-group"
       className={cn(
         'text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium',
         className,
       )}
       {...props}
     />
-  ),
-)
+  )
+}
 
-CommandGroup.displayName = CommandPrimitive.Group.displayName
-
-const CommandSeparator = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
->(
-  ({ className, ...props }, ref): React.JSX.Element => (
+function CommandSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Separator>) {
+  return (
     <CommandPrimitive.Separator
-      ref={ref}
+      data-slot="command-separator"
       className={cn('bg-border -mx-1 h-px', className)}
       {...props}
     />
-  ),
-)
-CommandSeparator.displayName = CommandPrimitive.Separator.displayName
+  )
+}
 
-const CommandItem = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(
-  ({ className, ...props }, ref): React.JSX.Element => (
+function CommandItem({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Item>) {
+  return (
     <CommandPrimitive.Item
-      ref={ref}
+      data-slot="command-item"
       className={cn(
-        "data-[selected='true']:bg-accent data-[selected=true]:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+        "data-[selected=true]:bg-foreground/6 data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
     />
-  ),
-)
+  )
+}
 
-CommandItem.displayName = CommandPrimitive.Item.displayName
-
-const CommandShortcut = ({
+function CommandShortcut({
   className,
   ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
+}: React.ComponentProps<'span'>) {
   return (
     <span
+      data-slot="command-shortcut"
       className={cn(
         'text-muted-foreground ml-auto text-xs tracking-widest',
         className,
@@ -163,7 +203,6 @@ const CommandShortcut = ({
     />
   )
 }
-CommandShortcut.displayName = 'CommandShortcut'
 
 export {
   Command,

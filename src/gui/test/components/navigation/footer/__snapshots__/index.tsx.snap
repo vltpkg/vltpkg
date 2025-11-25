@@ -1,0 +1,146 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders footer 1`] = `
+
+<footer
+  class="relative h-[300px] w-full border-t"
+  style="clip-path: polygon(0% 0, 100% 0%, 100% 100%, 0 100%);"
+>
+  <div class="fixed bottom-0 h-[300px] w-full max-w-svw">
+    <div class="sticky top-[calc(100vh-300px)] h-full overflow-y-auto">
+      <div class="relative flex size-full max-w-svw flex-col justify-between gap-5 px-4">
+        <div
+          aria-hidden="true"
+          class="absolute inset-0 isolate z-0 opacity-50 contain-strict max-md:hidden dark:opacity-100"
+        >
+          <div class="bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,--theme(--color-foreground/.06)_0,hsla(0,0%,55%,.02)_50%,--theme(--color-foreground/.01)_80%)] absolute top-0 left-0 h-320 w-140 -translate-y-87.5 -rotate-45 rounded-full">
+          </div>
+          <div class="bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)] absolute top-0 left-0 h-320 w-60 [translate:5%_-50%] -rotate-45 rounded-full">
+          </div>
+          <div class="bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)] absolute top-0 left-0 h-320 w-60 -translate-y-87.5 -rotate-45 rounded-full">
+          </div>
+        </div>
+        <div class="flex flex-col gap-8 pt-12 md:flex-row">
+          <gui-motion-div
+            initial="[object Object]"
+            transition="[object Object]"
+            viewport="[object Object]"
+            whileinview="[object Object]"
+            classname="w-full max-w-sm min-w-2xs space-y-4"
+          >
+            <gui-link
+              to="/"
+              classname="focus-visible:ring-ring flex items-center justify-start gap-3 rounded-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label="vlt home"
+            >
+              <gui-vlt-icon>
+              </gui-vlt-icon>
+            </gui-link>
+          </gui-motion-div>
+          <gui-motion-div
+            initial="[object Object]"
+            transition="[object Object]"
+            viewport="[object Object]"
+            whileinview="[object Object]"
+            classname="w-full"
+          >
+            <nav
+              class="mb-10 md:mb-0"
+              aria-label="Products navigation"
+            >
+              <h3 class="text-foreground text-sm font-medium">
+                Products
+              </h3>
+              <ul class="text-muted-foreground mt-4 space-y-2 text-sm md:text-xs lg:text-sm">
+                <li class="text-sm font-medium">
+                  <a
+                    class="hover:text-foreground focus-visible:ring-ring inline-flex items-center rounded-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    href="https://www.vlt.sh/products/client"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <gui-scramble-hover
+                      text="Client"
+                      scramblespeed="50"
+                      maxiterations="8"
+                      useoriginalcharsonly="true"
+                      classname="cursor-pointer"
+                    >
+                    </gui-scramble-hover>
+                    <gui-external-link-icon
+                      classname="ms-1 size-3 opacity-50"
+                      aria-hidden="true"
+                    >
+                    </gui-external-link-icon>
+                    <span class="sr-only">
+                      (opens in new window)
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </gui-motion-div>
+          <gui-motion-div
+            initial="[object Object]"
+            transition="[object Object]"
+            viewport="[object Object]"
+            whileinview="[object Object]"
+            classname="w-full"
+          >
+            <nav
+              class="mb-10 md:mb-0"
+              aria-label="Resources navigation"
+            >
+              <h3 class="text-foreground text-sm font-medium">
+                Resources
+              </h3>
+              <ul class="text-muted-foreground mt-4 space-y-2 text-sm md:text-xs lg:text-sm">
+                <li class="text-sm font-medium">
+                  <a
+                    class="hover:text-foreground focus-visible:ring-ring inline-flex items-center rounded-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    href="https://docs.vlt.sh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <gui-scramble-hover
+                      text="Documentation"
+                      scramblespeed="50"
+                      maxiterations="8"
+                      useoriginalcharsonly="true"
+                      classname="cursor-pointer"
+                    >
+                    </gui-scramble-hover>
+                    <gui-external-link-icon
+                      classname="ms-1 size-3 opacity-50"
+                      aria-hidden="true"
+                    >
+                    </gui-external-link-icon>
+                    <span class="sr-only">
+                      (opens in new window)
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </gui-motion-div>
+        </div>
+        <div
+          class="text-muted-foreground z-[10] flex flex-col items-center justify-between gap-2 border-t py-4 text-sm md:flex-row"
+          role="contentinfo"
+        >
+          <p>
+            <small>
+              © 2025 vlt technology inc, All rights reserved.
+            </small>
+          </p>
+          <div class="flex items-center gap-4">
+            <gui-theme-switcher>
+            </gui-theme-switcher>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+`;

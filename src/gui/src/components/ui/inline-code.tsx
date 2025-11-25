@@ -4,7 +4,14 @@ import { forwardRef } from 'react'
 
 import type { VariantProps } from 'class-variance-authority'
 
-type Color = 'pink' | 'blue' | 'green' | 'yellow' | 'red' | 'purple'
+type Color =
+  | 'pink'
+  | 'blue'
+  | 'green'
+  | 'yellow'
+  | 'red'
+  | 'purple'
+  | 'amber'
 
 interface InlineCodeProps
   extends React.ComponentProps<'span'>,
@@ -22,6 +29,7 @@ const variants = cva(
         blue: 'text-blue-500',
         green: 'text-green-500',
         yellow: 'text-yellow-500',
+        amber: 'text-amber-500',
         red: 'text-red-500',
         purple: 'text-purple-500',
       },
