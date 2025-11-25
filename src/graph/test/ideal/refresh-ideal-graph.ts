@@ -1,5 +1,5 @@
-import {  joinDepIDTuple } from '@vltpkg/dep-id'
-import type {DepID} from '@vltpkg/dep-id';
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { SpecOptions } from '@vltpkg/spec'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
