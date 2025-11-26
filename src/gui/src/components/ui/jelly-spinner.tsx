@@ -2,14 +2,12 @@ import type React from 'react'
 
 interface JellyTriangleSpinnerProps {
   size?: number
-  color?: string
   speed?: number
   className?: string
 }
 
 export const JellyTriangleSpinner = ({
   size = 30,
-  color = '#000000',
   speed = 1.75,
   className = '',
 }: JellyTriangleSpinnerProps) => {
@@ -22,7 +20,7 @@ export const JellyTriangleSpinner = ({
         style={
           {
             '--uib-size': `${size}px`,
-            '--uib-color': color,
+            '--uib-color': 'var(--color-primary)',
             '--uib-speed': `${speed}s`,
             height: `${size}px`,
             width: `${size}px`,

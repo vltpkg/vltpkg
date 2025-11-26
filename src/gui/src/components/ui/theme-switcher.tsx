@@ -1,4 +1,3 @@
-import { forwardRef } from 'react'
 import { useTheme } from '@/components/ui/theme-provider.tsx'
 import {
   DropdownMenu,
@@ -7,12 +6,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import { LaptopMinimal, Moon, Sun } from 'lucide-react'
+import { LaptopMinimal, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils.ts'
 
-import type { Theme } from '@/components/ui/theme-provider.tsx'
 import type { LucideIcon } from 'lucide-react'
-import type { ComponentProps } from 'react'
+
+type Theme = 'system' | 'dark' | 'light'
 
 interface ThemeOption {
   theme: Theme
@@ -51,10 +50,7 @@ const renderIcon = (theme: Theme): LucideIcon => {
   }
 }
 
-export const ThemeSwitcher = forwardRef<
-  HTMLButtonElement,
-  ComponentProps<typeof Button>
->(({ className, ...rest }, ref) => {
+export const ThemeSwitcher = () => {
   const { theme, setTheme } = useTheme()
 
   const updateTheme = (theme: Theme) => {
@@ -67,22 +63,19 @@ export const ThemeSwitcher = forwardRef<
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          ref={ref}
           size="sm"
           variant="ghost"
           className={cn(
-            'group/trigger text-muted-foreground hover:text-foreground h-8 w-[100px] rounded-xl',
+            'group/trigger text-muted-foreground hover:text-foreground w-[100px]',
             'data-[state=open]:text-foreground',
             'dark:data-[state=open]:border-neutral-800 dark:data-[state=open]:bg-neutral-900',
             'data-[state=open]:border-neutral-200 data-[state=open]:bg-neutral-100',
-            className,
-          )}
-          {...rest}>
+          )}>
           <Icon
             className={cn(
               'fill-neutral-500 stroke-neutral-500 transition-colors duration-100',
-              'group-hover/trigger:fill-foreground group-hover/trigger:stroke-foreground',
-              'group-data-[state=open]/trigger:fill-foreground group-data-[state=open]/trigger:stroke-foreground',
+              'group-hover/trigger:stroke-foreground group-hover/trigger:fill-foreground',
+              'group-data-[state=open]/trigger:stroke-foreground group-data-[state=open]/trigger:fill-foreground',
             )}
           />
           <p className="capitalize">{theme}</p>
@@ -91,13 +84,12 @@ export const ThemeSwitcher = forwardRef<
       <DropdownMenuContent
         side="top"
         align="end"
-        onCloseAutoFocus={e => e.preventDefault()}
-        className="rounded-2xl">
+        onCloseAutoFocus={e => e.preventDefault()}>
         {themeOptions.map((o, idx) => (
           <DropdownMenuItem
             key={`${o.theme}-${idx}`}
             onClick={() => updateTheme(o.theme)}
-            className="group/option text-muted-foreground hover:text-foreground h-8 rounded-xl">
+            className="text-muted-foreground group/option hover:text-foreground h-8">
             <o.icon
               className={cn(
                 'fill-neutral-500 stroke-neutral-500 transition-colors duration-100',
@@ -110,6 +102,4 @@ export const ThemeSwitcher = forwardRef<
       </DropdownMenuContent>
     </DropdownMenu>
   )
-})
-
-ThemeSwitcher.displayName = 'ThemeSwitcher'
+}

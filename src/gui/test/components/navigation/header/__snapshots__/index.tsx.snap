@@ -4,8 +4,10 @@ exports[`renders Header for route / 1`] = `
 
 <div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
   <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-vlt-icon>
-    </gui-vlt-icon>
+    <gui-router-nav-link to="/">
+      <gui-vlt-icon>
+      </gui-vlt-icon>
+    </gui-router-nav-link>
   </div>
   <div class="flex w-full">
   </div>
@@ -19,8 +21,10 @@ exports[`renders Header for route /explore 1`] = `
 
 <div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
   <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-vlt-icon>
-    </gui-vlt-icon>
+    <gui-router-nav-link to="/">
+      <gui-vlt-icon>
+      </gui-vlt-icon>
+    </gui-router-nav-link>
   </div>
   <div class="flex w-full">
     <gui-explorer-header>
@@ -36,8 +40,10 @@ exports[`renders Header for route /help 1`] = `
 
 <div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
   <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-vlt-icon>
-    </gui-vlt-icon>
+    <gui-router-nav-link to="/">
+      <gui-vlt-icon>
+      </gui-vlt-icon>
+    </gui-router-nav-link>
   </div>
   <div class="flex w-full">
     <gui-breadcrumb-header>
@@ -53,8 +59,10 @@ exports[`renders Header for route /labels 1`] = `
 
 <div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
   <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-vlt-icon>
-    </gui-vlt-icon>
+    <gui-router-nav-link to="/">
+      <gui-vlt-icon>
+      </gui-vlt-icon>
+    </gui-router-nav-link>
   </div>
   <div class="flex w-full">
     <gui-labels-header>
@@ -70,8 +78,10 @@ exports[`renders Header for route /queries 1`] = `
 
 <div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
   <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-vlt-icon>
-    </gui-vlt-icon>
+    <gui-router-nav-link to="/">
+      <gui-vlt-icon>
+      </gui-vlt-icon>
+    </gui-router-nav-link>
   </div>
   <div class="flex w-full">
     <gui-queries-header>
@@ -87,8 +97,10 @@ exports[`renders Header for route /settings 1`] = `
 
 <div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
   <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-vlt-icon>
-    </gui-vlt-icon>
+    <gui-router-nav-link to="/">
+      <gui-vlt-icon>
+      </gui-vlt-icon>
+    </gui-router-nav-link>
   </div>
   <div class="flex w-full">
     <gui-breadcrumb-header>

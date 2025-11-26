@@ -22,7 +22,6 @@ export const useBlogPosts = (count: number) => {
       const res = await fetch(`https://blog.vlt.sh/feed.xml`).then(
         r => r.text(),
       )
-      console.log(res)
       const posts = [...parseXML(res).querySelectorAll('item')]
         .map(item => {
           try {

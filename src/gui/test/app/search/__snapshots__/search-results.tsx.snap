@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SearchResults > renders SearchResultsView when query parameter is present 1`] = `
+
+<section>
+  <gui-search-results>
+  </gui-search-results>
+</section>
+
+`;
+
+exports[`SearchResults > renders empty state when no query parameter is present 1`] = `
+
+<section>
+  <gui-search-results>
+  </gui-search-results>
+</section>
+
+`;

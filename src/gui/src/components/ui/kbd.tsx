@@ -10,7 +10,7 @@ export const Kbd = ({ children, className }: KbdProps) => {
   return (
     <kbd
       className={cn(
-        'text-muted-foreground dark:bg-muted flex size-6 items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 font-mono text-xs dark:border-neutral-700',
+        'text-muted-foreground dark:bg-muted flex size-6 items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 font-mono text-xs dark:border-neutral-700 [&>svg]:size-3',
         className,
       )}>
       {children}

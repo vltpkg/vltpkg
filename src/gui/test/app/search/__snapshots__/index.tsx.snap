@@ -1,0 +1,919 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`search renders default components 1`] = `
+
+<section class="bg-background">
+  <div class="bg-foreground/6 relative">
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full justify-center overflow-hidden">
+        <div class="**:data-grid-content:bg-background grid w-full *:p-[0.5px] **:data-grid-content:h-full **:data-grid-content:rounded">
+          <div
+            aria-hidden="true"
+            class="col-span-full grid grid-cols-12 gap-px max-lg:hidden"
+          >
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-12 gap-px">
+            <div
+              aria-hidden="true"
+              class="grid auto-rows-fr grid-rows-6 gap-px max-lg:hidden"
+            >
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+            </div>
+            <div class="bg-background relative col-span-full rounded p-6 lg:col-span-10 lg:p-0">
+              <div class="bg-background absolute inset-0 max-lg:hidden">
+                <div class="**:data-grid-content:bg-background from-foreground/0 to-foreground/6 relative grid w-full grid-cols-10 bg-radial opacity-50 *:p-[0.5px] **:data-grid-content:h-full **:data-grid-content:rounded">
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                  <div class="aspect-square">
+                    <div data-grid-content="true">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex h-full w-full flex-col items-center justify-center gap-10 px-0 text-center xl:px-8">
+                <div class="z-[2] flex w-full flex-col items-center justify-center gap-6">
+                  <h1 class="mt-4 bg-gradient-to-tr from-neutral-600 to-neutral-900 bg-clip-text py-1 text-6xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
+                    Discover packages
+                    <span class="max-xl:hidden">
+                      for your
+                    </span>
+                    <br>
+                    <gui-flip-words
+                      classname="max-xl:hidden"
+                      words="next project,next website,next dev tool,next app,next release,next workflow,next blog,next build,next idea,next integration,next deployment,next creation,next release"
+                    >
+                    </gui-flip-words>
+                  </h1>
+                  <gui-search-palette classname="w-2/3 xl:w-[400px]">
+                  </gui-search-palette>
+                  <div class="flex flex-wrap gap-2">
+                    <gui-router-nav-link to="https://docs.vlt.sh/cli">
+                      <gui-button
+                        size="sm"
+                        variant="outline"
+                      >
+                        <vlt-client-icon>
+                        </vlt-client-icon>
+                        <span>
+                          Install the client
+                        </span>
+                      </gui-button>
+                    </gui-router-nav-link>
+                    <gui-router-nav-link to="https://www.vlt.sh/serverless-registry">
+                      <gui-button
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <vlt-vsr-icon>
+                        </vlt-vsr-icon>
+                        <span>
+                          Managed hosting
+                        </span>
+                      </gui-button>
+                    </gui-router-nav-link>
+                    <gui-router-nav-link to="https://docs.vlt.sh/">
+                      <gui-button
+                        size="sm"
+                        variant="ghost"
+                      >
+                        Documentation
+                      </gui-button>
+                    </gui-router-nav-link>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              aria-hidden="true"
+              class="grid auto-rows-fr grid-rows-6 gap-px max-lg:hidden"
+            >
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+              <div class="aspect-square">
+                <div data-grid-content="true">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            aria-hidden="true"
+            class="col-span-full grid grid-cols-12 gap-px max-lg:hidden"
+          >
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+            <div class="aspect-square">
+              <div data-grid-content="true">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-foreground/3 w-full rounded">
+          <div class="grid-cols-4 lg:grid">
+            <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
+              <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
+                <div class="order-2 flex grow flex-col gap-2 xl:order-1">
+                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                    Install
+                  </h3>
+                  <p class="text-muted-foreground text-sm font-medium">
+                    Install the vlt client.
+                  </p>
+                  <gui-router-nav-link
+                    to="https://docs.vlt.sh/cli"
+                    classname="w-fit"
+                  >
+                    <gui-flip-button
+                      size="sm"
+                      icon="VltClient"
+                      label="Install the client"
+                      classname="mt-2 w-fit"
+                    >
+                    </gui-flip-button>
+                  </gui-router-nav-link>
+                </div>
+                <div class="mask relative order-1 grow mask-b-from-0% mask-b-to-100% max-xl:h-[100px] xl:order-2 xl:flex-none xl:mask-b-to-90%">
+                  <gui-install-illustration>
+                  </gui-install-illustration>
+                </div>
+              </div>
+            </div>
+            <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
+              <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
+                <div class="order-2 flex grow flex-col gap-2 xl:order-1">
+                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                    Serve
+                  </h3>
+                  <p class="text-muted-foreground text-sm font-medium">
+                    Spin up your workspace instantly.
+                  </p>
+                  <gui-router-nav-link
+                    to="https://docs.vlt.sh/registry"
+                    classname="w-fit"
+                  >
+                    <gui-flip-button
+                      size="sm"
+                      icon="Vsr"
+                      label="Learn more"
+                      classname="mt-2 w-fit"
+                    >
+                    </gui-flip-button>
+                  </gui-router-nav-link>
+                </div>
+                <div class="mask relative order-1 grow mask-b-from-0% mask-b-to-100% max-xl:h-[100px] xl:order-2 xl:flex-none xl:mask-b-to-90%">
+                  <gui-serve-illustration>
+                  </gui-serve-illustration>
+                </div>
+              </div>
+            </div>
+            <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
+              <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
+                <div class="order-2 flex grow flex-col gap-2 xl:order-1">
+                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                    Configure
+                  </h3>
+                  <p class="text-muted-foreground text-sm font-medium">
+                    Configure your dashboard.
+                  </p>
+                  <gui-router-nav-link
+                    to="https://docs.vlt.sh/registry/configuring"
+                    classname="w-fit"
+                  >
+                    <gui-flip-button
+                      size="sm"
+                      icon="Newspaper"
+                      label="Documentation"
+                      classname="mt-2 w-fit"
+                    >
+                    </gui-flip-button>
+                  </gui-router-nav-link>
+                </div>
+                <div class="mask relative order-1 grow mask-b-from-0% mask-b-to-100% max-xl:h-[100px] xl:order-2 xl:flex-none xl:mask-b-to-90%">
+                  <gui-configure-illustration>
+                  </gui-configure-illustration>
+                </div>
+              </div>
+            </div>
+            <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
+              <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
+                <div class="order-2 flex grow flex-col gap-2 xl:order-1">
+                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                    Discover
+                  </h3>
+                  <p class="text-muted-foreground text-sm font-medium">
+                    Explore your projects.
+                  </p>
+                  <gui-router-nav-link
+                    to="/dashboard"
+                    classname="w-fit"
+                  >
+                    <gui-flip-button
+                      size="sm"
+                      icon="LayoutDashboard"
+                      label="Dashboard"
+                      classname="mt-2 w-fit"
+                    >
+                    </gui-flip-button>
+                  </gui-router-nav-link>
+                </div>
+                <div class="mask relative order-1 grow mask-b-from-0% mask-b-to-100% max-xl:h-[100px] xl:order-2 xl:flex-none xl:mask-b-to-90%">
+                  <gui-discover-illustration>
+                  </gui-discover-illustration>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background w-full rounded">
+          <div class="pattern-hatch h-8 w-full opacity-100 dark:opacity-20">
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background relative flex w-full overflow-hidden rounded">
+          <div
+            aria-hidden="true"
+            class="from-background/20 to-background pointer-events-none absolute inset-0 z-[2] bg-radial"
+          >
+          </div>
+          <gui-flickering-grid
+            classname="pointer-events-none absolute inset-0 z-[1] h-full w-full mask-radial-to-90% mask-radial-at-center"
+            squaresize="4"
+            gridgap="6"
+            color="#6B7280"
+            maxopacity="0.5"
+            flickerchance="0.1"
+            height="1920"
+            width="1080"
+          >
+          </gui-flickering-grid>
+          <div class="z-[3] flex w-full flex-col justify-between px-6 pt-12 pb-6 md:flex-row md:pt-24">
+            <div class="flex max-w-full flex-col md:max-w-sm">
+              <h2
+                id="blog-heading"
+                class="tracking-loose mt-4 bg-gradient-to-tr from-neutral-600 to-neutral-900 bg-clip-text text-3xl font-medium text-balance text-transparent dark:from-neutral-400 dark:to-neutral-100"
+              >
+                Latest news
+              </h2>
+              <p class="text-muted-foreground mt-2 text-xs font-medium">
+                Our mission has always been to improve the developer experience, and we're thrilled to be working together on it again
+              </p>
+            </div>
+            <div class="mt-4 self-start md:mt-0 md:self-end">
+              <gui-router-nav-link to="/blog">
+                <gui-flip-button
+                  icon="Newspaper"
+                  label="See more"
+                >
+                </gui-flip-button>
+              </gui-router-nav-link>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="bg-foreground/3 relative overflow-hidden rounded">
+        <div class="grid-cols-12 lg:grid">
+          <gui-router-link
+            to="https://blog.vlt.sh//post1"
+            classname="col-span-4 flex p-[0.5px]"
+          >
+            <article class="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">
+              <div class="relative">
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                >
+                </div>
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                >
+                </div>
+                <img
+                  src="/post-1/banner.png"
+                  alt="post-1 banner"
+                  class="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                >
+                <div
+                  aria-hidden="true"
+                  class="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                >
+                </div>
+              </div>
+              <div class="mt-3 flex grow flex-col gap-[0.5px]">
+                <time class="text-muted-foreground font-mono text-[0.7rem] font-medium uppercase tabular-nums">
+                  November 24th, 2025
+                </time>
+                <p class="text-foreground text-md mt-1 leading-tight font-semibold tracking-tight text-balance">
+                  post 1
+                </p>
+                <p class="text-muted-foreground mt-2 text-xs font-medium">
+                  post 1 mock summary
+                </p>
+              </div>
+              <div class="mt-4 flex justify-end">
+                <span class="text-muted-foreground inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors group-hover/article:[&amp;>svg]:translate-x-1 [&amp;>svg]:ml-auto [&amp;>svg]:size-4 [&amp;>svg]:transition-transform">
+                  <span>
+                    Read
+                  </span>
+                  <gui-chevron-right-icon>
+                  </gui-chevron-right-icon>
+                </span>
+              </div>
+            </article>
+          </gui-router-link>
+          <gui-router-link
+            to="https://blog.vlt.sh//post2"
+            classname="col-span-4 flex p-[0.5px]"
+          >
+            <article class="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">
+              <div class="relative">
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                >
+                </div>
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                >
+                </div>
+                <img
+                  src="/post-2/banner.png"
+                  alt="post-2 banner"
+                  class="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                >
+                <div
+                  aria-hidden="true"
+                  class="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                >
+                </div>
+              </div>
+              <div class="mt-3 flex grow flex-col gap-[0.5px]">
+                <time class="text-muted-foreground font-mono text-[0.7rem] font-medium uppercase tabular-nums">
+                  November 24th, 2025
+                </time>
+                <p class="text-foreground text-md mt-1 leading-tight font-semibold tracking-tight text-balance">
+                  post 2
+                </p>
+                <p class="text-muted-foreground mt-2 text-xs font-medium">
+                  post 2 mock summary
+                </p>
+              </div>
+              <div class="mt-4 flex justify-end">
+                <span class="text-muted-foreground inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors group-hover/article:[&amp;>svg]:translate-x-1 [&amp;>svg]:ml-auto [&amp;>svg]:size-4 [&amp;>svg]:transition-transform">
+                  <span>
+                    Read
+                  </span>
+                  <gui-chevron-right-icon>
+                  </gui-chevron-right-icon>
+                </span>
+              </div>
+            </article>
+          </gui-router-link>
+          <gui-router-link
+            to="https://blog.vlt.sh//post3"
+            classname="col-span-4 flex p-[0.5px]"
+          >
+            <article class="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">
+              <div class="relative">
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                >
+                </div>
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                >
+                </div>
+                <img
+                  src="/post-3/banner.png"
+                  alt="post-3 banner"
+                  class="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                >
+                <div
+                  aria-hidden="true"
+                  class="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                >
+                </div>
+              </div>
+              <div class="mt-3 flex grow flex-col gap-[0.5px]">
+                <time class="text-muted-foreground font-mono text-[0.7rem] font-medium uppercase tabular-nums">
+                  November 24th, 2025
+                </time>
+                <p class="text-foreground text-md mt-1 leading-tight font-semibold tracking-tight text-balance">
+                  post 3
+                </p>
+                <p class="text-muted-foreground mt-2 text-xs font-medium">
+                  post 3 mock summary
+                </p>
+              </div>
+              <div class="mt-4 flex justify-end">
+                <span class="text-muted-foreground inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors group-hover/article:[&amp;>svg]:translate-x-1 [&amp;>svg]:ml-auto [&amp;>svg]:size-4 [&amp;>svg]:transition-transform">
+                  <span>
+                    Read
+                  </span>
+                  <gui-chevron-right-icon>
+                  </gui-chevron-right-icon>
+                </span>
+              </div>
+            </article>
+          </gui-router-link>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background w-full rounded">
+          <div class="pattern-hatch h-8 w-full opacity-100 dark:opacity-20">
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="relative flex w-full overflow-hidden p-[0.5px]">
+        <div class="bg-background w-full rounded px-6 py-5">
+          <gui-cta-waitlist-grid>
+          </gui-cta-waitlist-grid>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+`;

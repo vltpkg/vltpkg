@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, NavLink } from 'react-router'
 import { Vlt } from '@/components/icons/index.ts'
 import { ExplorerHeader } from '@/components/navigation/header/explorer.tsx'
 import { DashboardHeader } from '@/components/navigation/header/dashboard.tsx'
@@ -50,7 +50,9 @@ const Header = ({ className }: HeaderProps) => {
         className,
       )}>
       <div className="flex aspect-square size-8 items-center justify-center">
-        <Vlt />
+        <NavLink to="/">
+          <Vlt />
+        </NavLink>
       </div>
       <div className="flex w-full">{headerContent}</div>
       <LinearMenu />

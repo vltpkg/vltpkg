@@ -68,10 +68,10 @@ export const ExplorerHeader = () => {
             <Kbd className="text-sm">k</Kbd>
             <div
               className={cn(
-                'border-input dark:from-muted/5 dark:to-muted/5 absolute inset-0 -top-2 -right-3 -bottom-2 z-[-2] rounded-tr-xl rounded-br-xl border-y border-r bg-gradient-to-r from-white/20 to-white backdrop-blur-sm',
+                'border-input absolute inset-0 -top-1.5 -right-3 -bottom-1.5 z-[-2] rounded-tr-xl rounded-br-xl border-y border-r',
                 queryBuilderOpen &&
                   queryBuilderDisplay &&
-                  'rounded-br-none',
+                  'rounded-br-none border-t-[0] border-r-[0] border-b-[0]',
               )}
             />
           </div>

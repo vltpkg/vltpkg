@@ -173,9 +173,9 @@ const QueryBuilderUi = () => {
   return createPortal(
     <section
       className={cn(
-        'border-muted bg-popover absolute inset-x-0 top-10 z-50 flex w-full rounded-b-xl border border-t-0 shadow-lg',
+        'border-muted bg-popover absolute inset-x-0 top-[34px] z-50 flex w-full rounded-b-xl border border-t-0 shadow-lg',
         queryInputFocused &&
-          'after:border-ring after:absolute after:-inset-[5px] after:rounded-[14px] after:rounded-t-none after:border-x-[2px] after:border-b-[2px] after:content-[""]',
+          'after:border-ring after:absolute after:-inset-[5px] after:rounded-[16px] after:rounded-t-none after:border-x-[2px] after:border-b-[2px] after:content-[""]',
       )}>
       <div className="relative flex w-full gap-2 px-3 py-3">
         <BuilderCombobox setNodes={setNodes} nodes={nodes} />

@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button.tsx'
 import {
   ChevronUp,
   ChevronDown,
@@ -17,105 +16,149 @@ import type {
 } from '@/state/search-results.ts'
 
 import type { LucideIcon } from 'lucide-react'
+import type { ComponentProps } from 'react'
 
 interface SortOption {
   label: string
-  key: SearchResultsSortBy
+  value: SearchResultsSortBy
   icon: LucideIcon
 }
 
 const sortOptions: SortOption[] = [
   {
     label: 'Relevance',
-    key: 'relevance' as const,
+    value: 'relevance' as const,
     icon: Sparkles,
   },
   {
     label: 'Popularity',
-    key: 'popularity' as const,
+    value: 'popularity' as const,
     icon: TrendingUp,
   },
   {
     label: 'Quality',
-    key: 'quality' as const,
+    value: 'quality' as const,
     icon: Shield,
   },
   {
     label: 'Maintenance',
-    key: 'maintenance' as const,
+    value: 'maintenance' as const,
     icon: Wrench,
   },
   {
-    label: 'Published Date',
-    key: 'date' as const,
+    label: 'Published',
+    value: 'date' as const,
     icon: Calendar,
   },
 ]
 
-export const SearchResultsSort = () => {
+export const SearchResultsSort = ({
+  className,
+  ...props
+}: ComponentProps<typeof SortMenu>) => {
   const sortBy = useSearchResultsStore(state => state.sortBy)
   const sortDir = useSearchResultsStore(state => state.sortDir)
-  const setSortBy = useSearchResultsStore(state => state.setSortBy)
+  const setSort = useSearchResultsStore(state => state.setSort)
   const setSortDir = useSearchResultsStore(state => state.setSortDir)
+  const isLoading = useSearchResultsStore(state => state.isLoading)
+  const results = useSearchResultsStore(state => state.results)
 
-  // Default direction for each sort type
-  const defaultDirFor = (): SearchResultsSortDir => {
-    return 'desc'
+  const noResults = results.length === 0
+
+  const handleSetSort = (key: SearchResultsSortBy) => {
+    if (isLoading) return
+
+    if (sortBy !== key) {
+      // Use atomic setSort to avoid double sorting
+      setSort(key, 'asc')
+    } else {
+      setSortDir(sortDir === 'desc' ? 'asc' : 'desc')
+    }
   }
 
   return (
-    <div className="flex flex-wrap gap-2 overflow-x-auto">
-      {sortOptions.map((o, idx) => {
-        const isActive = sortBy === o.key
-        const defaultDir = defaultDirFor()
-        return (
-          <Button
-            key={`${o.label}-${idx}`}
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (!isActive) {
-                // First click: activate with default direction
-                setSortBy(o.key)
-                return
-              }
-              // If active and at default direction -> switch to opposite
-              const isDefault = sortDir === defaultDir
-              if (isDefault) {
-                setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
-                return
-              }
-              // If active and not default -> turn off (return to relevance)
-              setSortBy('relevance')
-            }}
-            className={cn(
-              '[&_svg]:text-muted-foreground inline-flex items-center gap-3 disabled:opacity-50',
-              'rounded-xl border text-sm transition-colors duration-150',
-              'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-100',
-              'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800',
-              isActive &&
-                '[&>.option-icon]:text-foreground border-neutral-300 bg-neutral-200 hover:border-neutral-400 hover:bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700',
-            )}>
-            <o.icon className="option-icon size-4" />
+    <SortMenu className={className} {...props}>
+      <SortMenuContent className="grid-cols-5 gap-[1px] rounded lg:grid">
+        {sortOptions.map((option, idx) => (
+          <SortMenuItem
+            key={`${option.label}-${idx}`}
+            {...option}
+            sortDir={sortDir}
+            isActive={sortBy === option.value}
+            onClick={() => handleSetSort(option.value)}
+            disabled={noResults}>
+            {option.label}
+          </SortMenuItem>
+        ))}
+      </SortMenuContent>
+    </SortMenu>
+  )
+}
 
-            <span>{o.label}</span>
-            <div
-              className={cn(
-                'flex flex-col items-center justify-center [&_svg]:size-2.5',
-                isActive &&
-                  sortDir === 'asc' &&
-                  '[&>.ascending]:text-foreground',
-                isActive &&
-                  sortDir === 'desc' &&
-                  '[&>.descending]:text-foreground',
-                !isActive && '[&_svg]:opacity-40',
-              )}>
-              <ChevronUp className="ascending" />
-              <ChevronDown className="descending" />
-            </div>
-          </Button>
-        )
-      })}
-    </div>
+const SortMenu = ({ className, ...props }: ComponentProps<'nav'>) => {
+  return <nav className={cn('', className)} {...props} />
+}
+
+const SortMenuContent = ({
+  className,
+  ...props
+}: ComponentProps<'ul'>) => {
+  return <ul className={cn('', className)} {...props} />
+}
+
+type SortMenuItemProps = ComponentProps<'li'> &
+  Omit<SortOption, 'label'> & {
+    isActive: boolean
+    sortDir: SearchResultsSortDir
+    disabled?: boolean
+  }
+
+const SortMenuItem = ({
+  className,
+  children,
+  icon: Icon,
+  isActive,
+  sortDir,
+  disabled = false,
+  ...props
+}: SortMenuItemProps) => {
+  return (
+    <li
+      data-active={isActive}
+      data-sort-direction={
+        isActive ?
+          sortDir === 'asc' ?
+            'asc'
+          : 'desc'
+        : undefined
+      }
+      data-slot="sort-menu-item"
+      className={cn(
+        'group flex h-full w-full items-center justify-center rounded',
+        'bg-background',
+        className,
+      )}
+      {...props}>
+      <button
+        data-slot="sort-menu-button"
+        className={cn(
+          'hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full cursor-pointer items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3',
+          'group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10',
+          disabled && 'cursor-not-allowed opacity-50',
+        )}>
+        <Icon data-slot="icon" className="size-4" />
+        <span className="ml-2">{children}</span>
+        <div
+          className={cn(
+            'ml-auto inline-flex flex-col items-center justify-center',
+            '[&_svg]:size-3 [&_svg]:transition-colors [&_svg]:duration-100',
+            'group-data-[sort-direction=asc]:[&_>[data-slot=sort-menu-desc]]:text-muted-foreground group-data-[sort-direction=asc]:[&_>[data-slot=sort-menu-asc]]:text-foreground',
+            'group-data-[sort-direction=desc]:[&_>[data-slot=sort-menu-asc]]:text-muted-foreground group-data-[sort-direction=desc]:[&_>[data-slot=sort-menu-desc]]:text-foreground',
+          )}>
+          <ChevronUp data-slot="sort-menu-asc" />
+          <ChevronDown data-slot="sort-menu-desc" />
+        </div>
+      </button>
+    </li>
   )
 }

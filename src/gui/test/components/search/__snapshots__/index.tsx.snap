@@ -1,0 +1,296 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`search palette renders a loading state 1`] = `
+
+<button class="hover:bg-foreground/3 inline-flex h-9 w-[300px] cursor-pointer items-center rounded-full border pr-3 pl-0.5 text-sm font-medium transition-colors duration-100">
+  <span class="flex size-8 items-center justify-center [&amp;_svg]:size-4">
+    <gui-search-icon>
+    </gui-search-icon>
+  </span>
+  <span>
+    Search
+  </span>
+  <div class="ml-auto inline-flex gap-1">
+    <gui-kbd>
+      <gui-command-icon>
+      </gui-command-icon>
+    </gui-kbd>
+    <gui-kbd>
+      k
+    </gui-kbd>
+  </div>
+</button>
+<gui-command-dialog
+  open="false"
+  showclosebutton="false"
+  isloading="true"
+  data-empty="false"
+  classname="dark:bg-popover rounded-2xl border-1 border-neutral-100/60 bg-neutral-100 p-0.5 ring-2 ring-white dark:border-neutral-800/60 dark:ring-neutral-950 [&amp;_[data-slot=command]]:rounded-[calc(1rem-2px)]"
+  classnames="[object Object]"
+  commandprops="[object Object]"
+>
+  <div>
+    <gui-command-input
+      value="loading"
+      placeholder="Search for packages"
+      loadingicon="gui-loader-icon"
+    >
+    </gui-command-input>
+  </div>
+  <div
+    class="flex h-[304px] items-center justify-center"
+    style="opacity: 1; filter: blur(0px);"
+  >
+    <gui-empty>
+      <gui-empty-header>
+        <gui-empty-media variant="icon">
+          <gui-package-search-icon classname="text-muted-foreground">
+          </gui-package-search-icon>
+        </gui-empty-media>
+        <gui-empty-title classname="text-muted-foreground text-sm">
+          Start typing to search
+        </gui-empty-title>
+        <gui-empty-description>
+        </gui-empty-description>
+      </gui-empty-header>
+    </gui-empty>
+  </div>
+</gui-command-dialog>
+
+`;
+
+exports[`search palette renders default 1`] = `
+
+<button class="hover:bg-foreground/3 inline-flex h-9 w-[300px] cursor-pointer items-center rounded-full border pr-3 pl-0.5 text-sm font-medium transition-colors duration-100">
+  <span class="flex size-8 items-center justify-center [&amp;_svg]:size-4">
+    <gui-search-icon>
+    </gui-search-icon>
+  </span>
+  <span>
+    Search
+  </span>
+  <div class="ml-auto inline-flex gap-1">
+    <gui-kbd>
+      <gui-command-icon>
+      </gui-command-icon>
+    </gui-kbd>
+    <gui-kbd>
+      k
+    </gui-kbd>
+  </div>
+</button>
+<gui-command-dialog
+  open="false"
+  showclosebutton="false"
+  isloading="false"
+  data-empty="false"
+  classname="dark:bg-popover rounded-2xl border-1 border-neutral-100/60 bg-neutral-100 p-0.5 ring-2 ring-white dark:border-neutral-800/60 dark:ring-neutral-950 [&amp;_[data-slot=command]]:rounded-[calc(1rem-2px)]"
+  classnames="[object Object]"
+  commandprops="[object Object]"
+>
+  <div>
+    <gui-command-input
+      value
+      placeholder="Search for packages"
+      loadingicon="gui-loader-icon"
+    >
+    </gui-command-input>
+  </div>
+  <div
+    class="flex h-[304px] items-center justify-center"
+    style="opacity: 1; filter: blur(0px);"
+  >
+    <gui-empty>
+      <gui-empty-header>
+        <gui-empty-media variant="icon">
+          <gui-package-search-icon classname="text-muted-foreground">
+          </gui-package-search-icon>
+        </gui-empty-media>
+        <gui-empty-title classname="text-muted-foreground text-sm">
+          Start typing to search
+        </gui-empty-title>
+        <gui-empty-description>
+        </gui-empty-description>
+      </gui-empty-header>
+    </gui-empty>
+  </div>
+</gui-command-dialog>
+
+`;
+
+exports[`search palette renders with empty state 1`] = `
+
+<button class="hover:bg-foreground/3 inline-flex h-9 w-[300px] cursor-pointer items-center rounded-full border pr-3 pl-0.5 text-sm font-medium transition-colors duration-100">
+  <span class="flex size-8 items-center justify-center [&amp;_svg]:size-4">
+    <gui-search-icon>
+    </gui-search-icon>
+  </span>
+  <span>
+    Search
+  </span>
+  <div class="ml-auto inline-flex gap-1">
+    <gui-kbd>
+      <gui-command-icon>
+      </gui-command-icon>
+    </gui-kbd>
+    <gui-kbd>
+      k
+    </gui-kbd>
+  </div>
+</button>
+<gui-command-dialog
+  open="false"
+  showclosebutton="false"
+  isloading="false"
+  data-empty="false"
+  classname="dark:bg-popover rounded-2xl border-1 border-neutral-100/60 bg-neutral-100 p-0.5 ring-2 ring-white dark:border-neutral-800/60 dark:ring-neutral-950 [&amp;_[data-slot=command]]:rounded-[calc(1rem-2px)]"
+  classnames="[object Object]"
+  commandprops="[object Object]"
+>
+  <div>
+    <gui-command-input
+      value="nonexistentpackage"
+      placeholder="Search for packages"
+      loadingicon="gui-loader-icon"
+    >
+    </gui-command-input>
+  </div>
+  <div
+    class="flex h-[304px] items-center justify-center"
+    style="opacity: 1; filter: blur(0px);"
+  >
+    <gui-empty>
+      <gui-empty-header>
+        <gui-empty-media variant="icon">
+          <gui-package-search-icon classname="text-muted-foreground">
+          </gui-package-search-icon>
+        </gui-empty-media>
+        <gui-empty-title classname="text-muted-foreground text-sm">
+          Start typing to search
+        </gui-empty-title>
+        <gui-empty-description>
+        </gui-empty-description>
+      </gui-empty-header>
+    </gui-empty>
+  </div>
+</gui-command-dialog>
+
+`;
+
+exports[`search palette renders with results 1`] = `
+
+<button class="hover:bg-foreground/3 inline-flex h-9 w-[300px] cursor-pointer items-center rounded-full border pr-3 pl-0.5 text-sm font-medium transition-colors duration-100">
+  <span class="flex size-8 items-center justify-center [&amp;_svg]:size-4">
+    <gui-search-icon>
+    </gui-search-icon>
+  </span>
+  <span>
+    Search
+  </span>
+  <div class="ml-auto inline-flex gap-1">
+    <gui-kbd>
+      <gui-command-icon>
+      </gui-command-icon>
+    </gui-kbd>
+    <gui-kbd>
+      k
+    </gui-kbd>
+  </div>
+</button>
+<gui-command-dialog
+  open="false"
+  showclosebutton="false"
+  isloading="false"
+  data-empty="true"
+  classname="dark:bg-popover rounded-2xl border-1 border-neutral-100/60 bg-neutral-100 p-0.5 ring-2 ring-white dark:border-neutral-800/60 dark:ring-neutral-950 [&amp;_[data-slot=command]]:rounded-[calc(1rem-2px)]"
+  classnames="[object Object]"
+  commandprops="[object Object]"
+>
+  <div>
+    <gui-command-input
+      value="react"
+      placeholder="Search for packages"
+      loadingicon="gui-loader-icon"
+    >
+    </gui-command-input>
+  </div>
+  <gui-command-list
+    classname="mb-1 h-[300px]"
+    style="opacity: 1; filter: blur(0px);"
+  >
+    <gui-command-item
+      value="__no_selection__"
+      classname="pointer-events-none absolute h-0 w-0 overflow-hidden p-0 opacity-0"
+      aria-hidden="true"
+    >
+    </gui-command-item>
+    <gui-command-group>
+      <gui-command-item
+        aria-label="Package link"
+        value="react"
+        classname="flex w-[488px] max-w-[488px] flex-col items-start rounded-[calc(1rem-0.25rem)] !py-1"
+      >
+        <div class="flex w-full items-start gap-2">
+          <div class="flex aspect-square size-9 items-center justify-center rounded-lg border bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              re
+            </span>
+          </div>
+          <div class="flex w-full min-w-0 flex-col">
+            <div class="flex min-w-0 items-baseline gap-1.5">
+              <p
+                aria-label="Package name"
+                class="text-md min-w-0 flex-1 truncate font-medium tracking-tight"
+              >
+                react
+              </p>
+              <span
+                class="text-muted-foreground shrink-0 font-mono text-xs whitespace-nowrap tabular-nums"
+                aria-label="Package version"
+              >
+                v18.0.0
+              </span>
+            </div>
+            <p class="text-muted-foreground truncate text-sm font-medium">
+              React library
+            </p>
+          </div>
+        </div>
+      </gui-command-item>
+      <gui-command-item
+        aria-label="Package link"
+        value="react-dom"
+        classname="flex w-[488px] max-w-[488px] flex-col items-start rounded-[calc(1rem-0.25rem)] !py-1"
+      >
+        <div class="flex w-full items-start gap-2">
+          <div class="flex aspect-square size-9 items-center justify-center rounded-lg border bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              re
+            </span>
+          </div>
+          <div class="flex w-full min-w-0 flex-col">
+            <div class="flex min-w-0 items-baseline gap-1.5">
+              <p
+                aria-label="Package name"
+                class="text-md min-w-0 flex-1 truncate font-medium tracking-tight"
+              >
+                react-dom
+              </p>
+              <span
+                class="text-muted-foreground shrink-0 font-mono text-xs whitespace-nowrap tabular-nums"
+                aria-label="Package version"
+              >
+                v18.0.0
+              </span>
+            </div>
+            <p class="text-muted-foreground truncate text-sm font-medium">
+              React DOM
+            </p>
+          </div>
+        </div>
+      </gui-command-item>
+    </gui-command-group>
+  </gui-command-list>
+</gui-command-dialog>
+
+`;

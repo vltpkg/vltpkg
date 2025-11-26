@@ -1,14 +1,33 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renders Layout with an outlet 1`] = `
+exports[`renders default components 1`] = `
 
-<div class="flex flex-col">
-  <gui-nav-header classname="fixed top-0 bg-transparent">
+<div class="flex flex-col antialiased">
+  <gui-nav-header>
   </gui-nav-header>
+  <gui-sidebar-provider defaultopen="true">
+    <gui-app-sidebar>
+    </gui-app-sidebar>
+    <gui-sidebar-inset>
+      <gui-router-outlet>
+      </gui-router-outlet>
+    </gui-sidebar-inset>
+    <gui-toaster>
+    </gui-toaster>
+  </gui-sidebar-provider>
+</div>
+
+`;
+
+exports[`renders the marketing components on '/' route 1`] = `
+
+<div class="flex flex-col antialiased">
+  <gui-marketing-header>
+  </gui-marketing-header>
   <gui-router-outlet>
   </gui-router-outlet>
-  <gui-minimal-footer>
-  </gui-minimal-footer>
+  <gui-marketing-footer>
+  </gui-marketing-footer>
   <gui-toaster>
   </gui-toaster>
 </div>

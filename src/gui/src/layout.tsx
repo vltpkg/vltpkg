@@ -10,10 +10,11 @@ import {
 } from '@/components/ui/sidebar.tsx'
 import { Toaster } from '@/components/ui/toaster.tsx'
 import { Header } from '@/components/navigation/header/index.tsx'
+import { Header as MarketingHeader } from '@/components/navigation/marketing-menu/index.tsx'
 import { usePreflight } from '@/components/hooks/use-preflight.tsx'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 import { HostedWarning } from '@/components/hosted-warning.tsx'
-import { MinimalFooter } from '@/components/navigation/footer/minimal.tsx'
+import { Footer } from '@/components/navigation/footer/index.tsx'
 
 const Layout = () => {
   const isHostedMode = isHostedEnvironment()
@@ -38,17 +39,17 @@ const Layout = () => {
 
   if (pathname === '/' || pathname.includes('/search')) {
     return (
-      <div className="flex flex-col">
-        <Header className="fixed top-0 bg-transparent" />
+      <div className="flex flex-col antialiased">
+        <MarketingHeader />
         <Outlet />
-        <MinimalFooter />
+        <Footer />
         <Toaster />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col antialiased">
       <Header />
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />

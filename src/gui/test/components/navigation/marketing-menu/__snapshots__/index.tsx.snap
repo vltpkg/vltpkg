@@ -1,0 +1,80 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders header 1`] = `
+
+<header class="sticky top-0 z-50 w-full max-w-full border-b border-transparent will-change-auto lg:mx-auto lg:max-w-5xl lg:rounded-2xl lg:border lg:transition-all lg:ease-out xl:max-w-[66.7%]">
+  <nav
+    class="flex h-14 w-full items-center justify-between px-4 will-change-auto lg:h-12 lg:transition-all lg:ease-out"
+    aria-label="Main navigation"
+  >
+    <gui-logo>
+    </gui-logo>
+    <div class="hidden items-center gap-2 lg:flex">
+      <gui-navigation-menu>
+        <gui-navigation-menu-list>
+          <gui-navigation-menu-item>
+            <gui-navigation-menu-trigger classname="bg-transparent">
+              Products
+            </gui-navigation-menu-trigger>
+            <gui-menu-group-content group="[object Object]">
+            </gui-menu-group-content>
+          </gui-navigation-menu-item>
+          <gui-navigation-menu-link
+            aschild="true"
+            classname="rounded-md px-4"
+          >
+            <a
+              class="hover:bg-accent rounded-md p-2 font-medium"
+              href="https://docs.vlt.sh/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Docs
+              <span class="sr-only">
+                (opens in new window)
+              </span>
+            </a>
+          </gui-navigation-menu-link>
+          <gui-navigation-menu-indicator>
+          </gui-navigation-menu-indicator>
+        </gui-navigation-menu-list>
+        <gui-navigation-menu-viewport classname="bg-popover/80 backdrop-blur-lg">
+        </gui-navigation-menu-viewport>
+      </gui-navigation-menu>
+      <gui-button
+        variant="outline"
+        aschild="true"
+      >
+        <gui-nav-link
+          to="https://docs.vlt.sh/registry/getting-started"
+          rel="noopener noreferrer"
+        >
+          Get Started
+        </gui-nav-link>
+      </gui-button>
+      <gui-button
+        variant="default"
+        aschild="true"
+      >
+        <gui-nav-link
+          to="/dashboard"
+          rel="noopener noreferrer"
+        >
+          Dashboard
+        </gui-nav-link>
+      </gui-button>
+    </div>
+    <gui-button
+      classname="lg:hidden"
+      size="sm"
+      variant="outline"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Open menu"
+    >
+      Menu
+    </gui-button>
+  </nav>
+</header>
+
+`;
