@@ -41,10 +41,6 @@ export type LoadOptions = SpecOptions & {
    */
   scurry?: PathScurry
   /**
-   * Load only importers into the graph if the modifiers have changed.
-   */
-  skipLoadingNodesOnModifiersChange?: boolean
-  /**
    * Whether to throw an error if a manifest is missing when loading nodes.
    */
   throwOnMissingManifest?: boolean
@@ -80,12 +76,7 @@ export const loadObject = (
   lockfileData: Omit<LockfileData, 'options' | 'lockfileVersion'> &
     Partial<Pick<LockfileData, 'options' | 'lockfileVersion'>>,
 ) => {
-  const {
-    mainManifest,
-    modifiers,
-    scurry,
-    skipLoadingNodesOnModifiersChange,
-  } = options
+  const { mainManifest, scurry } = options
   const packageJson = options.packageJson ?? new PackageJson()
   const monorepo =
     options.monorepo ??
@@ -93,7 +84,6 @@ export const loadObject = (
   const {
     catalog = {},
     catalogs = {},
-    modifiers: modifiersLockfileConfig,
     'scope-registries': scopeRegistries,
     registry,
     registries,
@@ -130,44 +120,14 @@ export const loadObject = (
     mainManifest,
     monorepo,
   })
-
-  // When using the skipLoadingNodesOnModifiersChange option, we should skip loading
-  // dependencies in case the modifiers have changed since we'll need to
-  // recalculate the graph - useful for refreshing an ideal graph when
-  // modifiers are swapped.
-
-  // Optimize modifier comparison - avoid JSON.stringify for simple cases
-  let modifiersChanged = false
-  if (skipLoadingNodesOnModifiersChange) {
-    const lockfileConfig = modifiersLockfileConfig ?? {}
-    const optionsConfig = modifiers?.config ?? {}
-
-    // Quick check for obvious differences
-    const lockfileKeys = Object.keys(lockfileConfig)
-    const optionsKeys = Object.keys(optionsConfig)
-
-    if (lockfileKeys.length !== optionsKeys.length) {
-      modifiersChanged = true
-    } else {
-      // Only use JSON.stringify if we need deep comparison
-      const lockfileModifiers = JSON.stringify(lockfileConfig)
-      const optionsModifiers = JSON.stringify(optionsConfig)
-      modifiersChanged = lockfileModifiers !== optionsModifiers
-    }
-  }
-  const shouldLoadDependencies = !(
-    skipLoadingNodesOnModifiersChange && modifiersChanged
+  loadNodes(
+    graph,
+    lockfileData.nodes,
+    mergedOptions,
+    options.actual,
+    options.throwOnMissingManifest,
   )
-  if (shouldLoadDependencies) {
-    loadNodes(
-      graph,
-      lockfileData.nodes,
-      mergedOptions,
-      options.actual,
-      options.throwOnMissingManifest,
-    )
-    loadEdges(graph, lockfileData.edges, mergedOptions)
-  }
+  loadEdges(graph, lockfileData.edges, mergedOptions)
 
   // hydrate missing node-level registry data
   for (const node of graph.nodes.values()) {

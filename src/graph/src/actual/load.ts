@@ -1,4 +1,11 @@
-import { asDepID, hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  asDepID,
+  hydrate,
+  joinDepIDTuple,
+  joinExtra,
+  splitDepID,
+  splitExtra,
+} from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { graphStep } from '@vltpkg/output'
 import { isObject } from '@vltpkg/types'
@@ -308,7 +315,7 @@ const parseDir = (
             name,
           },
           depId,
-          queryModifier,
+          joinExtra({ modifier: queryModifier }),
         )
 
         // Update active entry after placing package
@@ -349,13 +356,29 @@ const parseDir = (
       spec = modifiedSpec
 
       const maybeId = getPathBasedId(spec, realpath)
+      let peerSetHash: string | undefined
+      if (maybeId) {
+        // parses extra info from depID to retrieve peerSetHash
+        try {
+          const tuple = splitDepID(maybeId)
+          const type = tuple[0]
+          const extra =
+            type === 'registry' || type === 'git' ?
+              tuple[3]
+            : tuple[2]
+
+          peerSetHash =
+            extra ? splitExtra(extra).peerSetHash : undefined
+          /* c8 ignore next - impossible: getPathBasedId asserts valid dep id */
+        } catch {}
+      }
       node = graph.placePackage(
         fromNode,
         depType,
         spec,
         mani,
         maybeId,
-        queryModifier,
+        joinExtra({ modifier: queryModifier, peerSetHash }),
       )
 
       // Update active entry after placing package
@@ -415,7 +438,7 @@ const parseDir = (
         spec,
         undefined,
         undefined,
-        queryModifier,
+        joinExtra({ modifier: queryModifier }),
       )
     }
   }
@@ -515,10 +538,14 @@ export const load = (options: LoadOptions): Graph => {
     modifiers?.rollbackActiveEntries()
 
     // caches the load result to the hidden lockfile when enabled
-    saveHidden({
-      ...options,
-      graph,
-    })
+    if (
+      scurry.cwd.resolve('node_modules').lstatSync()?.isDirectory()
+    ) {
+      saveHidden({
+        ...options,
+        graph,
+      })
+    }
   }
 
   done()

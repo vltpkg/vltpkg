@@ -1,14 +1,11 @@
-import type { Graph } from '../graph.ts'
 import { getImporterSpecs } from './get-importer-specs.ts'
-import { addNodes } from './add-nodes.ts'
-import type { AddNodesOptions } from './add-nodes.ts'
-import { removeNodes } from './remove-nodes.ts'
-import type { RemoveNodesOptions } from './remove-nodes.ts'
+import { refreshIdealGraph } from './refresh-ideal-graph.ts'
+import { resolveSaveType } from '../resolve-save-type.ts'
+import type { RefreshIdealGraphOptions } from './refresh-ideal-graph.ts'
+import type { Graph } from '../graph.ts'
 
-export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
-  RemoveNodesOptions & {
-    projectRoot: string
-  }
+export type BuildIdealFromStartingGraphOptions =
+  RefreshIdealGraphOptions
 
 /**
  * Builds an ideal {@link Graph} representing the dependencies that
@@ -37,6 +34,10 @@ export const buildIdealFromStartingGraph = async (
   // merge values found on importer specs with
   // user-provided values from `options.add`
   for (const [importerId, deps] of importerSpecs.add) {
+    const importer = options.graph.nodes.get(importerId)
+    /* c8 ignore next - impossible */
+    if (!importer) continue
+
     if (!options.add.has(importerId)) {
       options.add.set(importerId, deps)
       continue
@@ -49,24 +50,31 @@ export const buildIdealFromStartingGraph = async (
       if (!options.add.get(importerId)?.has(depName)) {
         options.add.get(importerId)?.set(depName, dep)
       }
+
+      // update the save type for deps when using an implicit type
+      dep.type = resolveSaveType(importer, depName, dep.type)
     }
   }
 
-  // hydrate the resolution cache
-  if (options.add.modifiedDependencies) {
-    options.graph.resetResolution()
+  // merge values found on importer specs with
+  // user-provided values from `options.remove`
+  for (const [importerId, deps] of importerSpecs.remove) {
+    if (!options.remove.has(importerId)) {
+      options.remove.set(importerId, deps)
+      continue
+    }
 
-    // add nodes, fetching remote manifests for each dependency to be added
-    await addNodes(options)
-
-    // move things into their default locations, if possible
-    for (const node of options.graph.nodes.values()) {
-      node.setDefaultLocation()
+    // merge any deps found when reading the importers manifest
+    // with the ones provided by the user in the `remove` options
+    for (const depName of deps) {
+      options.remove.get(importerId)?.add(depName)
     }
   }
 
-  // removes any dependencies that are listed in the `remove` option
-  removeNodes({ ...options, remove: importerSpecs.remove })
+  // refreshs the current graph adding the nodes marked for addition
+  // and removing the ones marked for removal, while also recalculating
+  // peer dependencies and default locations
+  await refreshIdealGraph(options)
 
   options.graph.gc()
 

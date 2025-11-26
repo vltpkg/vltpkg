@@ -220,6 +220,21 @@ export class Node implements NodeLike {
   buildState: 'none' | 'needed' | 'built' | 'failed' = 'none'
 
   /**
+   * Deterministic unique string used to identify (and ultimately duplicate)
+   * nodes that are affected by a peer context set modified resolution.
+   * These are appended to the node {@link DepID} as the `extra` suffix.
+   */
+  peerSetHash?: string
+
+  /**
+   * True if this node is detached from the graph.
+   * This is used to indicate that the node is not part of the graph
+   * although the node is still available as part of the resolution process.
+   * Allows for skipping fetching manifests for detached nodes.
+   */
+  detached = false
+
+  /**
    * The file system location for this node.
    */
   get location(): string {
@@ -437,6 +452,9 @@ export class Node implements NodeLike {
       modifier: this.modifier,
       platform: this.platform,
       buildState: this.buildState,
+      ...(this.peerSetHash ?
+        { peerSetHash: this.peerSetHash }
+      : undefined),
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),

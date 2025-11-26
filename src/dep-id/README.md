@@ -24,7 +24,7 @@ import { manifest } from '@vltpkg/package-info'
   // default registry
   const spec = Spec.parse('x@latest')
   const mani = await manifest(spec)
-  const id = getId(spec, mani) // registry;;x@1.2.3
+  const id = getId(spec, mani) // registry··x@1.2.3
 }
 
 {
@@ -33,18 +33,18 @@ import { manifest } from '@vltpkg/package-info'
     registries: { vlt: 'http://vlt.sh' },
   })
   const mani = await manifest(spec)
-  const id = getId(spec, mani) // registry;vlt;y@latest
+  const id = getId(spec, mani) // registry·vlt·y@latest
 }
 
 {
   // git, hosted
   const spec = Spec.parse('x@github:a/b#branch')
   const mani = await manifest(spec)
-  const id = getId(spec, mani) // git;github:a/b;branch
+  const id = getId(spec, mani) // git·github:a/b·branch
 }
 
 // Hydrate by providing a name, and options for the spec creation
-const spec = hydrate('git;github:a/b;branch', 'x') // x@github:a/b#branch
+const spec = hydrate('git·github:a/b·branch', 'x') // x@github:a/b#branch
 ```
 
 ### Note

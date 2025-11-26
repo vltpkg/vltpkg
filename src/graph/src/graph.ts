@@ -1,4 +1,4 @@
-import { getId, joinDepIDTuple } from '@vltpkg/dep-id'
+import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -18,6 +18,7 @@ import { Edge } from './edge.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
+import type { PeerContext } from './ideal/types.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -39,7 +40,7 @@ const getMap = <T extends Map<any, any>>(m?: T) =>
 const getResolutionCacheKey = (
   spec: Spec,
   location: string,
-  queryModifier: string,
+  extra: string,
 ): string => {
   const f = spec.final
   // if it's a file: dep, then the fromNode location matters
@@ -53,7 +54,7 @@ const getResolutionCacheKey = (
     : f.gitRemote ?
       `${cacheKeySeparator}git` + `${cacheKeySeparator}${f.gitRemote}`
     : `${cacheKeySeparator}${f.type}`
-  const modifierSuffix = `${cacheKeySeparator}${queryModifier}`
+  const modifierSuffix = `${cacheKeySeparator}${extra}`
   return fromPrefix + String(f) + typePrecisionKey + modifierSuffix
 }
 
@@ -140,6 +141,16 @@ export class Graph implements GraphLike {
    */
   projectRoot: string
 
+  /**
+   * The peer context sets used to resolve peer dependencies within this graph.
+   */
+  peerContexts: PeerContext[]
+
+  /**
+   * Tracks the current peer context index.
+   */
+  currentPeerContextIndex = 0
+
   constructor(options: GraphOptions) {
     const { mainManifest, monorepo } = options
     this.#options = options
@@ -194,6 +205,18 @@ export class Graph implements GraphLike {
         this.mainImporter.workspaces.set(wsNode.name, edge)
       }
     }
+
+    // initializes the peer context set collection
+    const initialPeerContext: PeerContext = new Map()
+    initialPeerContext.index = this.currentPeerContextIndex
+    this.peerContexts = [initialPeerContext]
+  }
+
+  /**
+   * Get the next peer context index.
+   */
+  nextPeerContextIndex() {
+    return ++this.currentPeerContextIndex
   }
 
   /**
@@ -283,13 +306,9 @@ export class Graph implements GraphLike {
   /**
    * Find an existing node to satisfy a dependency
    */
-  findResolution(spec: Spec, fromNode: Node, queryModifier = '') {
+  findResolution(spec: Spec, fromNode: Node, extra = '') {
     const f = spec.final
-    const sf = getResolutionCacheKey(
-      f,
-      fromNode.location,
-      queryModifier,
-    )
+    const sf = getResolutionCacheKey(f, fromNode.location, extra)
     const cached = this.resolutions.get(sf)
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
@@ -333,7 +352,14 @@ export class Graph implements GraphLike {
     this.nodes.set(node.id, node)
     const nbn = this.nodesByName.get(node.name) ?? new Set()
     nbn.add(node)
-    this.nodesByName.set(node.name, nbn)
+
+    // ensure the nodes by name set is always sorted, this will help
+    // keeping a deterministic graph resolution when reusing nodes
+    const newByNameSet = new Set(
+      [...nbn].sort((a, b) => a.id.localeCompare(b.id)),
+    )
+    this.nodesByName.set(node.name, newByNameSet)
+
     if (manifest) {
       this.manifests.set(node.id, manifest)
     }
@@ -390,6 +416,7 @@ export class Graph implements GraphLike {
       this.addEdge(depType, spec, fromNode, toFoundNode)
       // the current only stays dev/optional if this dep lets it remain so
       // if it's not already, we don't make it dev or optional.
+      toFoundNode.detached = false
       toFoundNode.dev &&= flags.dev
       toFoundNode.optional &&= flags.optional
       return toFoundNode
@@ -400,7 +427,12 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
-    toNode.modifier = extra
+    // split extra into modifier and peerSetHash
+    if (extra) {
+      const { modifier, peerSetHash } = splitExtra(extra)
+      toNode.modifier = modifier
+      toNode.peerSetHash = peerSetHash
+    }
 
     // add extra manifest info if available
     if (manifest) {
@@ -484,12 +516,12 @@ export class Graph implements GraphLike {
   /**
    * Removes the resolved node of a given edge.
    */
-  removeEdgeResolution(edge: Edge, queryModifier = '') {
+  removeEdgeResolution(edge: Edge, extra = '') {
     const node = edge.to
     const resolutionKey = getResolutionCacheKey(
       edge.spec,
       edge.from.location,
-      queryModifier,
+      extra,
     )
     if (node) {
       edge.to = undefined
@@ -504,46 +536,23 @@ export class Graph implements GraphLike {
   }
 
   /**
-   * Reset resolution cache data.
+   * Remove all edges from the graph while preserving nodes and resolution caches.
+   * This allows the graph to be reconstructed efficiently using the existing nodes.
    */
-  resetResolution() {
-    // Clear all cache structures
-    this.resolutions.clear()
-    this.resolutionsReverse.clear()
-    this.nodesByName.clear()
+  resetEdges() {
+    // Clear the global edges set
+    this.edges.clear()
 
-    // Rebuild nodesByName from all nodes
+    // Clear all node edge relationships
     for (const node of this.nodes.values()) {
-      const nbn = this.nodesByName.get(node.name) ?? new Set()
-      nbn.add(node)
-      this.nodesByName.set(node.name, nbn)
-    }
+      // marking nodes as detached needs to be restricted to only those
+      // that had a manifest, otherwise we'd be skipping fetching manifest
+      // for nodes we don't have a manifest during the ideal build phase
+      if (node.manifest) node.detached = true
 
-    // Rebuild resolution caches from all edges that have resolved targets
-    const seenNodes = new Set<Node>()
-    for (const edge of this.edges) {
-      const { to: node } = edge
-      if (!node) continue // Skip unresolved edges
-
-      // Only process each node once to avoid duplicate cache entries
-      if (seenNodes.has(node)) continue
-      seenNodes.add(node)
-
-      // Initialize resolutionsReverse entry for this node if it doesn't exist
-      if (!this.resolutionsReverse.has(node)) {
-        this.resolutionsReverse.set(node, new Set())
-      }
-
-      // Get the modifier if the node has one associated to it
-      const queryModifier = node.modifier || ''
-      const resolutionKey = getResolutionCacheKey(
-        edge.spec.final,
-        edge.from.location,
-        queryModifier,
-      )
-
-      this.resolutions.set(resolutionKey, node)
-      this.resolutionsReverse.get(node)?.add(resolutionKey)
+      // detaches all edges from this node
+      node.edgesOut.clear()
+      node.edgesIn.clear()
     }
   }
 

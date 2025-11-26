@@ -1388,8 +1388,8 @@ export const longDependencyTypes = new Set<DependencyTypeLong>([
 export const shortDependencyTypes = new Set<DependencyTypeShort>([
   'prod',
   'dev',
-  'peer',
   'optional',
+  'peer',
   'peerOptional',
 ])
 
@@ -1465,6 +1465,7 @@ export type NodeLike = {
   dev: boolean
   optional: boolean
   modifier?: string | undefined
+  peerSetHash?: string | undefined
   registry?: string
   platform?: {
     engines?: Record<string, string>

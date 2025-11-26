@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { splitDepID } from '@vltpkg/dep-id/browser'
+import { splitDepID, splitExtra } from '@vltpkg/dep-id/browser'
 import {
   getBooleanFlagsFromNum,
   getBuildStateFromNum,
@@ -98,7 +98,13 @@ export const loadNodes = (
         )
 
     if (extra) {
-      node.modifier = extra
+      const { modifier, peerSetHash } = splitExtra(extra)
+      if (modifier) {
+        node.modifier = modifier
+      }
+      if (peerSetHash) {
+        node.peerSetHash = peerSetHash
+      }
     }
 
     const { dev, optional } = getBooleanFlagsFromNum(flags)
