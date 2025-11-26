@@ -355,12 +355,14 @@ export class Spec implements SpecLike<Spec> {
       this.catalog = this.bareSpec.substring('catalog:'.length)
       const catalog =
         this.catalog ?
-          this.options.catalogs[this.catalog]
+          this.options.catalogs?.[this.catalog]
         : this.options.catalog
       if (!catalog) {
         throw this.#error('Named catalog not found', {
           name: this.catalog,
-          validOptions: Object.keys(this.options.catalogs),
+          validOptions:
+            this.options.catalogs &&
+            Object.keys(this.options.catalogs),
         })
       }
       const sub = catalog[this.name]

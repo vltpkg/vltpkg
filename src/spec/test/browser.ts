@@ -827,6 +827,23 @@ t.test('catalogs', async t => {
       spec: 'b@catalog:',
     },
   })
+  t.throws(
+    () =>
+      Spec.parse('b', 'catalog:', {
+        catalog: undefined,
+        catalogs: undefined,
+      }),
+    {
+      message: 'Named catalog not found',
+      cause: {
+        spec: 'b@catalog:',
+        name: '',
+        validOptions: undefined,
+      },
+      name: 'Error',
+    },
+    'should throw proper catalog missing when no catalogs provided',
+  )
   t.throws(() => Spec.parse('b@catalog:z', opts), {
     message: 'Named catalog not found',
     cause: {
