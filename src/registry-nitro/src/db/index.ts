@@ -21,8 +21,6 @@ export const libsql = createLibsql
 export const getDb = () => {
   const config = useRuntimeConfig()
 
-  console.log('[database]', config.database)
-
   if (config.database === 'neon') {
     return createNeon(process.env.NEON_DATABASE_URL!)
   }
