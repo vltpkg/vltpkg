@@ -23,8 +23,8 @@ export const AsideOverviewEmptyState = () => {
                 strokeWidth={1}
               />
 
-              <div className="absolute right-1 bottom-1 flex size-8 items-center justify-center rounded-full bg-black dark:bg-white">
-                <Search className="relative z-1 size-4 text-white dark:text-black" />
+              <div className="absolute bottom-1 right-1 flex size-8 items-center justify-center rounded-full bg-black dark:bg-white">
+                <Search className="z-1 relative size-4 text-white dark:text-black" />
               </div>
 
               <motion.div
@@ -63,7 +63,7 @@ export const AsideOverviewEmptyState = () => {
           <h3 className="text-foreground text-base font-medium tracking-tight">
             No Overview Available
           </h3>
-          <p className="text-muted-foreground w-4/5 text-sm font-normal tracking-normal text-pretty">
+          <p className="text-muted-foreground w-4/5 text-pretty text-sm font-normal tracking-normal">
             This package does not have any additional metadata. Try
             adding some fields into{' '}
             <InlineCode>package.json</InlineCode>

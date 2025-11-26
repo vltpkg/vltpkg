@@ -57,7 +57,7 @@ export const FocusedAside = ({
   return (
     <div
       className={cn(
-        'col-span-full lg:col-span-3 lg:pr-0 lg:pl-4',
+        'col-span-full lg:col-span-3 lg:pl-4 lg:pr-0',
         className,
       )}>
       <AnimatePresence>

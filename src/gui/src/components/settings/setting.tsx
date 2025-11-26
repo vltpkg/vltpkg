@@ -222,7 +222,7 @@ const DropdownField = ({
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'group border-border inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 truncate overflow-hidden rounded-lg border-[1px] px-2 py-1 text-sm transition-colors duration-250 hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&_svg]:size-4',
+            'border-border duration-250 group inline-flex h-10 w-full min-w-36 cursor-default items-center gap-2 overflow-hidden truncate rounded-lg border-[1px] px-2 py-1 text-sm transition-colors hover:border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:border-neutral-800 dark:hover:bg-neutral-900 [&_svg]:size-4',
             className,
           )}>
           {defaultValue?.icon && (
@@ -277,7 +277,7 @@ const ToggleField = ({
     <div
       onClick={() => toggleSetting(!active)}
       className={cn(
-        'grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors duration-250',
+        'duration-250 grid h-6 w-10 cursor-pointer justify-items-stretch rounded-full border-[1px] px-1 transition-colors',
         active ?
           'border-green-500/50 bg-green-500 dark:border-green-600/50 dark:bg-green-900'
         : 'border-muted-foreground/25 bg-secondary',

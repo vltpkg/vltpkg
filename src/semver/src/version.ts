@@ -1,5 +1,4 @@
 import { syntaxError, typeError } from '@vltpkg/error-cause'
-import { fastSplit } from '@vltpkg/fast-split'
 import type { Range } from './range.ts'
 
 const maybeNumber = (s: string): number | string => {
@@ -157,7 +156,7 @@ export class Version {
 
     // has prerelease and/or build
     if (prerelease) {
-      this.prerelease = fastSplit(prerelease, '.', -1, c => {
+      this.prerelease = prerelease.split('.').map(c => {
         if (!c) {
           throw invalidVersion(
             version,
@@ -168,13 +167,14 @@ export class Version {
       })
     }
     if (build) {
-      this.build = fastSplit(build, '.', -1, c => {
+      this.build = build.split('.').map(c => {
         if (!c) {
           throw invalidVersion(
             version,
             'invalid build metadata, empty identifiers not allowed',
           )
         }
+        return c
       })
     }
   }

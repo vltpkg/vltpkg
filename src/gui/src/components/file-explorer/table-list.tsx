@@ -72,7 +72,7 @@ export const ViewOptions = () => {
           variant="default"
           className="hover:border-muted hover:text-foreground h-8 w-fit min-w-fit border-transparent text-neutral-500 hover:bg-transparent [&>.chevron]:data-[state=open]:rotate-90">
           <ViewOptionsIcon className="text-muted-foreground size-4" />
-          <ChevronRight className="chevron transition-transform duration-250" />
+          <ChevronRight className="chevron duration-250 transition-transform" />
         </FileExplorerButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent onCloseAutoFocus={e => e.preventDefault()}>

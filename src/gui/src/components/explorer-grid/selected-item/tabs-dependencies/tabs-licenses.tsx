@@ -253,7 +253,7 @@ export const LicensesTabContent = () => {
               role={licenseWarningCount > 0 ? 'button' : undefined}
               onClick={() => queryAllLicenseWarnings()}
               className={cn(
-                'border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors duration-250',
+                'border-muted bg-secondary/30 duration-250 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3 transition-colors',
                 licenseWarningCount > 0 &&
                   'hover:border-muted-foreground/30 hover:bg-secondary/60',
               )}>
@@ -269,7 +269,7 @@ export const LicensesTabContent = () => {
               </p>
               {licenseWarningCount > 0 && (
                 <>
-                  <div className="absolute -top-3 -right-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
+                  <div className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full border-[1px] border-yellow-500/50 bg-yellow-300/30 backdrop-blur-sm dark:bg-yellow-900/30">
                     <AlertTriangle className="mb-0.5 size-4 text-yellow-500" />
                   </div>
                   <p className="text-xs font-medium text-yellow-500">

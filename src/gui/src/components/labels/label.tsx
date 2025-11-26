@@ -90,7 +90,7 @@ export const Label = ({
   return (
     <div
       className={cn(
-        'group bg-card hover:bg-card-accent rounded-xl border border-[1px] transition-colors transition-opacity',
+        'bg-card hover:bg-card-accent group rounded-xl border border-[1px] transition-colors transition-opacity',
         isExpanded ? 'border-muted-foreground' : 'border-muted',
       )}>
       <div className="flex grid grid-cols-8 items-center px-3 py-2">

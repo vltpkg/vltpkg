@@ -1,4 +1,3 @@
-import { fastSplit } from '@vltpkg/fast-split'
 import { Comparator } from './comparator.ts'
 import type { Version } from './version.ts'
 import { asError } from '@vltpkg/types'
@@ -54,17 +53,17 @@ export class Range {
     let isFirst = true
     this.isSingle = false
     const comparatorErrors: Error[] = []
-    fastSplit(range, '||', -1, part => {
-      if (this.isAny) return
+    for (const part of range.split('||')) {
+      if (this.isAny) continue
       const cmp = this.#maybeComparator(part, this.includePrerelease)
       if (cmp instanceof Error) {
         comparatorErrors.push(cmp)
-        return
+        continue
       }
       if (cmp.isAny) {
         this.set = [cmp]
         this.isAny = true
-        return
+        continue
       }
       this.set.push(cmp)
       if (!isFirst) this.isSingle = false
@@ -77,7 +76,7 @@ export class Range {
         this.isSingle = true
       }
       isFirst = false
-    })
+    }
     if (!this.set.length && comparatorErrors.length) {
       if (comparatorErrors.length === 1 && comparatorErrors[0]) {
         throw comparatorErrors[0]

@@ -167,7 +167,7 @@ const AsideItem = ({
         }
       : {})}
       className={cn(
-        'text-foreground flex items-center text-sm text-nowrap',
+        'text-foreground flex items-center text-nowrap text-sm',
         !isLink && 'gap-2',
         className,
       )}>

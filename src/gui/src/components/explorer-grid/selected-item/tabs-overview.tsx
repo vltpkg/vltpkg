@@ -33,7 +33,7 @@ export const OverviewTabContent = () => {
     <MotionTabsContent
       {...tabMotion}
       value="overview"
-      className="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&>aside]:border-b-[1px] xl:[&>aside]:border-b-[0px]">
+      className="divide-x-none divide-muted group flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&>aside]:border-b-[1px] xl:[&>aside]:border-b-[0px]">
       <div className="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&:has(aside)]:col-span-8">
         {manifest?.description ?
           <div className="flex flex-col gap-2 px-6 py-4">
@@ -90,7 +90,7 @@ const EmptyState = () => {
             strokeWidth={1.25}
           />
         </div>
-        <p className="text-muted-foreground w-2/3 text-sm text-pretty">
+        <p className="text-muted-foreground w-2/3 text-pretty text-sm">
           We couldn't find a description for this project.
         </p>
       </div>

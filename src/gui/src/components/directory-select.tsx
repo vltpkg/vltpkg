@@ -99,7 +99,7 @@ export const DirectorySelect = ({
       <PopoverTrigger asChild>
         <Button
           className={cn(
-            'group border-muted text-muted-foreground hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10 flex h-10 w-full items-center justify-between rounded-lg border-[1px] bg-white shadow-none',
+            'border-muted text-muted-foreground hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10 group flex h-10 w-full items-center justify-between rounded-lg border-[1px] bg-white shadow-none',
             className,
           )}>
           {displayPath}

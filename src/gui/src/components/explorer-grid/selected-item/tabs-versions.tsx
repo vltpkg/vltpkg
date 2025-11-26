@@ -98,7 +98,7 @@ const VersionHeaderButton = ({
 }) => {
   return (
     <button
-      className="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex cursor-default items-center justify-center gap-2 rounded-sm px-2 py-1 text-sm text-nowrap transition-colors duration-250 [&>svg]:size-4"
+      className="text-muted-foreground hover:bg-secondary hover:text-foreground duration-250 inline-flex cursor-default items-center justify-center gap-2 text-nowrap rounded-sm px-2 py-1 text-sm transition-colors [&>svg]:size-4"
       onClick={onClick}>
       {children}
     </button>
@@ -419,7 +419,7 @@ const EmptyState = ({ message }: { message: string }) => (
         />
       </div>
       <div className="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
-        <p className="text-muted-foreground w-full text-sm text-pretty">
+        <p className="text-muted-foreground w-full text-pretty text-sm">
           {message}
         </p>
       </div>
@@ -748,7 +748,7 @@ export const VersionsTabContent = () => {
                           style={{
                             originY: '0px',
                           }}
-                          className="border-muted-foreground/20 text-foreground dark:bg-muted-foreground/5 relative inline-flex h-fit cursor-default items-center overflow-hidden rounded-full border-[1px] bg-white py-1 text-xs font-medium whitespace-nowrap"
+                          className="border-muted-foreground/20 text-foreground dark:bg-muted-foreground/5 relative inline-flex h-fit cursor-default items-center overflow-hidden whitespace-nowrap rounded-full border-[1px] bg-white py-1 text-xs font-medium"
                           key={`filter-${filter.id}-${idx}`}>
                           <span className="px-3">{filter.label}</span>
                         </motion.div>

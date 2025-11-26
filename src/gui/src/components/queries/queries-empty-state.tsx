@@ -159,8 +159,8 @@ const QueriesEmptyState = ({ dashboard }: QueriesEmptyStateProps) => {
 
               <div className="to-card dark:from-card/0 dark:to-card/100 absolute z-[2] flex h-[50px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white">
                 <div className="relative flex h-[48.25px] w-[398.25px] items-center overflow-hidden rounded-[6.25px] shadow-2xl">
-                  <p className="absolute -ml-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text whitespace-nowrap text-transparent dark:from-black dark:to-neutral-500">{`[name="my-project"] > :is(:project > *[name="tap"])`}</p>
-                  <div className="mr-3 ml-auto flex gap-2">
+                  <p className="absolute -ml-32 whitespace-nowrap bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-transparent dark:from-black dark:to-neutral-500">{`[name="my-project"] > :is(:project > *[name="tap"])`}</p>
+                  <div className="ml-auto mr-3 flex gap-2">
                     <div
                       ref={starScope}
                       className="flex h-[24px] w-[24px] items-center justify-center rounded-sm border-[1px] border-neutral-800 bg-neutral-700 dark:border-neutral-900 dark:bg-neutral-300">
@@ -187,7 +187,7 @@ const QueriesEmptyState = ({ dashboard }: QueriesEmptyStateProps) => {
                 </div>
                 <div
                   ref={cursorScope}
-                  className="absolute top-10 -right-10">
+                  className="absolute -right-10 top-10">
                   <div className="relative">
                     <svg
                       stroke="currentColor"

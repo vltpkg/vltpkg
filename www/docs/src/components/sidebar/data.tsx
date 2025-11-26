@@ -75,7 +75,6 @@ export const iconMap: Partial<Record<string, IconName>> = {
   'dss-breadcrumb': 'Compass',
   'dss-parser': 'Code',
   'error-cause': 'AlertCircle',
-  'fast-split': 'FastSplit',
   git: 'GitBranch',
   'git-scp-url': 'Link',
   graph: 'Network',

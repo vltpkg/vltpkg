@@ -64,7 +64,7 @@ const QueryBuilderButton = ({ onClick }: { onClick: () => void }) => {
           <TooltipTrigger asChild>
             <Button
               onClick={onClick}
-              className="bg-input text-muted-foreground hover:text-accent-foreground flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm p-0 transition-colors duration-250 hover:bg-neutral-300 dark:hover:bg-neutral-700 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
+              className="bg-input text-muted-foreground hover:text-accent-foreground duration-250 flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm p-0 transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
               <UnfoldVertical />
             </Button>
           </TooltipTrigger>

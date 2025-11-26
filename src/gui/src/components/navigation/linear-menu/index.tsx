@@ -45,7 +45,7 @@ const MenuGroup = ({ item }: { item: MenuItem }) => {
 
   return (
     <Popover>
-      <PopoverTrigger className="inline-flex cursor-default items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900">
+      <PopoverTrigger className="duration-250 inline-flex cursor-default items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900">
         {title}
         <ChevronDown size={12} />
       </PopoverTrigger>
@@ -74,7 +74,7 @@ const MenuLink = ({
       target={target}
       href={path}
       className={cn(
-        'inline-flex cursor-default items-center gap-x-3 rounded-lg bg-transparent px-3 py-1.5 text-sm text-nowrap text-neutral-800 transition-colors duration-250 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900',
+        'duration-250 inline-flex cursor-default items-center gap-x-3 text-nowrap rounded-lg bg-transparent px-3 py-1.5 text-sm text-neutral-800 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900',
         className,
       )}>
       {Icon && (

@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@ export const EmptyState = () => {
             strokeWidth={1}
           />
         </div>
-        <p className="text-muted-foreground w-2/3 text-sm text-pretty">
+        <p className="text-muted-foreground w-2/3 text-pretty text-sm">
           The code for this project could not be loaded.
         </p>
       </div>

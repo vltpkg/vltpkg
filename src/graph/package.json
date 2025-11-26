@@ -25,7 +25,6 @@
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/dss-breadcrumb": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",
     "@vltpkg/package-info": "workspace:*",

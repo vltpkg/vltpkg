@@ -69,7 +69,7 @@ export function ColorPicker({
           placeholder="#00FF5F"
         />
         <div
-          className="absolute top-0 right-2 bottom-0 my-auto flex h-5 w-5 items-center justify-center rounded-sm"
+          className="absolute bottom-0 right-2 top-0 my-auto flex h-5 w-5 items-center justify-center rounded-sm"
           style={{
             backgroundColor:
               isValidHex(inputColor) ? inputColor : currentColor,
@@ -91,7 +91,7 @@ export function ColorPicker({
           <button
             key={color}
             onClick={() => handleDefaultColorClick(color)}
-            className="border-muted-foreground/25 aspect-square w-full cursor-default rounded-sm border border-[1px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-muted-foreground/25 aspect-square w-full cursor-default rounded-sm border border-[1px] focus:outline-none focus:ring-2 focus:ring-blue-500"
             style={{ backgroundColor: color }}
             aria-label={`Select color ${color}`}
           />

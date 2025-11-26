@@ -220,7 +220,7 @@ export const Item = ({
         onClick={onDelete}
         className={cn(
           'close-button',
-          'border-muted text-muted-foreground m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors duration-250',
+          'border-muted text-muted-foreground duration-250 m-0 aspect-square size-6 rounded-l-none border-l-[1px] bg-transparent p-0 transition-colors',
           'hover:text-foreground hover:!bg-neutral-200',
           'dark:bg-transparent dark:hover:!bg-neutral-600',
         )}>

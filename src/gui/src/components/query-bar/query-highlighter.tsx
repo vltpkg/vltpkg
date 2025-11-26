@@ -59,7 +59,7 @@ export const QueryHighlighter = forwardRef<
     <div
       ref={ref}
       className={cn(
-        'scrollbar-hidden pointer-events-none absolute inset-0 top-[0.01rem] left-[2.556rem] flex items-center overflow-x-auto pr-32',
+        'scrollbar-hidden pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center overflow-x-auto pr-32',
         className,
       )}>
       <div className="flex whitespace-nowrap">

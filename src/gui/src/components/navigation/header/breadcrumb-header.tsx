@@ -27,7 +27,7 @@ export const BreadcrumbHeader = () => {
           <button
             onClick={() => navigateCrumbs(idx)}
             className={cn(
-              'text-muted-foreground hover:text-foreground cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize transition-colors duration-250 hover:bg-neutral-200 dark:hover:bg-neutral-800',
+              'text-muted-foreground hover:text-foreground duration-250 cursor-default rounded-sm bg-transparent px-2 py-1 text-sm font-medium capitalize transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-800',
               idx === paths.length - 1 && 'text-foreground',
             )}>
             {crumb}

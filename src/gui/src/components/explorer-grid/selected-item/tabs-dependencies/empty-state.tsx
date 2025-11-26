@@ -16,7 +16,7 @@ export const EmptyState = ({
             strokeWidth={1.25}
           />
         </div>
-        <p className="text-muted-foreground w-2/3 text-sm text-pretty">
+        <p className="text-muted-foreground w-2/3 text-pretty text-sm">
           {message}
         </p>
       </div>

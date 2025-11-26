@@ -66,8 +66,8 @@ export const BlogPost = forwardRef<HTMLAnchorElement, BlogPostProps>(
           <div
             className={cn(
               isFeatured ?
-                'mt-4 mb-3 flex flex-col gap-2'
-              : 'mt-3 mb-1',
+                'mb-3 mt-4 flex flex-col gap-2'
+              : 'mb-1 mt-3',
             )}>
             <p className={cn('text-md', isFeatured && 'text-2xl')}>
               {title}

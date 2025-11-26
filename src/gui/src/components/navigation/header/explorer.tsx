@@ -68,7 +68,7 @@ export const ExplorerHeader = () => {
             <Kbd className="text-sm">k</Kbd>
             <div
               className={cn(
-                'border-input dark:from-muted/5 dark:to-muted/5 absolute inset-0 -top-2 -right-3 -bottom-2 z-[-2] rounded-tr-xl rounded-br-xl border-y border-r bg-gradient-to-r from-white/20 to-white backdrop-blur-sm',
+                'border-input dark:from-muted/5 dark:to-muted/5 absolute inset-0 -bottom-2 -right-3 -top-2 z-[-2] rounded-br-xl rounded-tr-xl border-y border-r bg-gradient-to-r from-white/20 to-white backdrop-blur-sm',
                 queryBuilderOpen &&
                   queryBuilderDisplay &&
                   'rounded-br-none',

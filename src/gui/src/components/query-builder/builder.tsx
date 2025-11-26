@@ -267,7 +267,7 @@ const ArgumentDialog = memo(
                     <DropdownMenuTrigger asChild>
                       <Button
                         id="operator"
-                        className="border-muted text-foreground h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:duration-250 [&>svg]:data-[state=open]:rotate-90">
+                        className="border-muted text-foreground [&>svg]:duration-250 h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
                         <span>
                           {operator ?
                             operator.label
@@ -306,7 +306,7 @@ const ArgumentDialog = memo(
                     <DropdownMenuTrigger asChild>
                       <Button
                         id="argument"
-                        className="border-muted text-foreground h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:duration-250 [&>svg]:data-[state=open]:rotate-90">
+                        className="border-muted text-foreground [&>svg]:duration-250 h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
                         <span>
                           {selectedValue ?? 'Select a value'}
                         </span>
@@ -352,7 +352,7 @@ const ArgumentDialog = memo(
                     <DropdownMenuTrigger asChild>
                       <Button
                         id="flag"
-                        className="border-muted text-foreground h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:duration-250 [&>svg]:data-[state=open]:rotate-90">
+                        className="border-muted text-foreground [&>svg]:duration-250 h-8 w-fit border-[1px] bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 [&>svg]:transition-transform [&>svg]:data-[state=open]:rotate-90">
                         <span>
                           {flag ? flag.label : 'Select a flag'}
                         </span>
@@ -727,7 +727,7 @@ export const BuilderCombobox = memo(
             }
           }}
           align="start"
-          className="group w-[400px] rounded-lg border-none bg-transparent p-0 shadow-none select-none">
+          className="group w-[400px] select-none rounded-lg border-none bg-transparent p-0 shadow-none">
           <motion.div
             drag
             dragConstraints={constraints}
@@ -750,8 +750,8 @@ export const BuilderCombobox = memo(
                     e.stopPropagation()
                     controls.start(e)
                   }}
-                  className="absolute top-2 right-2">
-                  <GripVertical className="text-muted-foreground hover:text-foreground active:text-foreground relative size-4 opacity-0 transition-colors transition-opacity duration-250 group-hover:opacity-100 hover:cursor-grab active:cursor-grabbing" />
+                  className="absolute right-2 top-2">
+                  <GripVertical className="text-muted-foreground hover:text-foreground active:text-foreground duration-250 relative size-4 opacity-0 transition-colors transition-opacity hover:cursor-grab active:cursor-grabbing group-hover:opacity-100" />
                 </div>
               </div>
               <CommandList>
