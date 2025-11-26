@@ -142,6 +142,7 @@ metadata:
     - graph_lockfiles
     - graph_load_actual
     - graph_modifiers
+    - graph_peers
     - graph_reify
     - monorepo-structure
 </rule>

@@ -323,5 +323,6 @@ metadata:
     - graph_data_structure
     - graph_ideal
     - graph_modifiers
+    - graph_peers
     - monorepo_structure
 </rule>

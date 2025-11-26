@@ -5,6 +5,7 @@ import type { Manifest } from '@vltpkg/types'
 
 export const delimiter: Delimiter = '·'
 export type Delimiter = '·'
+const EXTRA_PEER_SET_DELIMITER = 'ṗ:'
 
 /**
  * Dependency IDs are a URI-encoded set of strings, separated
@@ -424,6 +425,49 @@ export const getId = (
   mani: Pick<Manifest, 'name' | 'version'>,
   extra?: string,
 ): DepID => joinDepIDTuple(getTuple(spec, mani, extra))
+
+/**
+ * Join a modifier and a peer set hash into a single "extra" string.
+ */
+export function joinExtra({
+  modifier,
+  peerSetHash,
+}: {
+  modifier?: string
+  peerSetHash?: string
+}): string | undefined {
+  if (!modifier && !peerSetHash) return
+  if (modifier && peerSetHash) return `${modifier}${peerSetHash}`
+  if (modifier) return modifier
+  return peerSetHash
+}
+
+/**
+ * Split an "extra" string into a modifier and a peerSetHash.
+ */
+export function splitExtra(extra: string): {
+  modifier?: string
+  peerSetHash?: string
+} {
+  if (!extra) return {}
+
+  // only peerSetHash is present, return it
+  if (extra.startsWith(EXTRA_PEER_SET_DELIMITER)) {
+    return { peerSetHash: extra }
+  }
+
+  // only modifier is present, return its value
+  const idx = extra.indexOf(EXTRA_PEER_SET_DELIMITER)
+  if (idx === -1) {
+    return { modifier: extra }
+  }
+
+  // Both modifier and peerSetHash are present
+  return {
+    modifier: extra.slice(0, idx),
+    peerSetHash: extra.slice(idx),
+  }
+}
 
 /**
  * Reset internal caches. This should be used when options change since

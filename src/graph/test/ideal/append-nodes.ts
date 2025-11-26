@@ -135,7 +135,6 @@ t.test('append a new node to a graph from a registry', async t => {
   )
   const scurry = new PathScurry(t.testdirName)
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -143,10 +142,7 @@ t.test('append a new node to a graph from a registry', async t => {
     scurry,
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
@@ -175,7 +171,6 @@ t.test('append a new node to a graph from a registry', async t => {
   t.equal(bazNodeSet?.size, 1)
 
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -183,10 +178,7 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -196,7 +188,6 @@ t.test('append a new node to a graph from a registry', async t => {
 
   await t.rejects(
     appendNodes(
-      add,
       packageInfo,
       graph,
       graph.mainImporter,
@@ -204,13 +195,13 @@ t.test('append a new node to a graph from a registry', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      add,
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
   )
 
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -218,10 +209,7 @@ t.test('append a new node to a graph from a registry', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
   t.matchSnapshot(
     [...add].map(([name, dep]) => [
@@ -289,7 +277,6 @@ t.test('append different type of dependencies', async t => {
     ['missing', depMissing],
   ])
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -297,14 +284,10 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
 
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -312,15 +295,11 @@ t.test('append different type of dependencies', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
 
   await t.rejects(
     appendNodes(
-      add,
       packageInfo,
       graph,
       graph.mainImporter,
@@ -328,6 +307,7 @@ t.test('append different type of dependencies', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      add,
     ),
     /failed to resolve dependency/,
     'should throw if failes to create a node for a given manifest',
@@ -406,7 +386,6 @@ t.test('append file type of nodes', async t => {
     },
   } as PackageInfoClient
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -414,13 +393,9 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -428,10 +403,7 @@ t.test('append file type of nodes', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -539,7 +511,6 @@ t.test('resolve against the correct registries', async t => {
   ]
   const add = new Map(deps.map(dep => [dep.spec.name, dep]))
   await appendNodes(
-    add,
     packageInfo,
     graph,
     graph.mainImporter,
@@ -549,10 +520,7 @@ t.test('resolve against the correct registries', async t => {
       registries,
     },
     new Set<DepID>(),
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    add,
   )
   t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
 })
@@ -581,7 +549,6 @@ t.test('appendNodes with query modifier', async t => {
 
   // Call appendNodes with minimal arguments
   await appendNodes(
-    new Map(),
     packageInfo,
     graph,
     graph.mainImporter,
@@ -589,8 +556,7 @@ t.test('appendNodes with query modifier', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
-    undefined,
-    undefined,
+    new Map(),
   )
 
   // Verify the appendNodes function ran without errors
@@ -659,7 +625,6 @@ t.test(
 
     // Call appendNodes with the modifier
     await appendNodes(
-      new Map([['foo', fooDep]]),
       packageInfo,
       graph,
       graph.mainImporter,
@@ -667,10 +632,9 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([['foo', fooDep]]),
       modifiers,
       completeModifierRefs,
-      undefined,
-      undefined,
     )
 
     // Verify bar was added from the edge modifier
@@ -744,7 +708,6 @@ t.test('spec edge removal', async t => {
 
   // Call appendNodes with the modifier
   await appendNodes(
-    new Map([['foo', fooDep]]),
     packageInfo,
     graph,
     graph.mainImporter,
@@ -752,10 +715,9 @@ t.test('spec edge removal', async t => {
     new PathScurry(t.testdirName),
     configData,
     new Set<DepID>(),
+    new Map([['foo', fooDep]]),
     modifiers,
     completeModifierRefs,
-    undefined,
-    undefined,
   )
 
   const fooNode = graph.nodesByName.get('foo')
@@ -796,7 +758,6 @@ t.test(
       // This should throw an error
       await t.rejects(
         appendNodes(
-          new Map([['foo', fooDep]]),
           packageInfo,
           graph,
           graph.mainImporter,
@@ -804,6 +765,7 @@ t.test(
           new PathScurry(t.testdirName),
           configData,
           new Set<DepID>(),
+          new Map([['foo', fooDep]]),
         ),
         /failed to place package/,
         'should throw when graph.placePackage returns null',
@@ -836,7 +798,13 @@ t.test(
     const graph = new Graph({
       projectRoot: t.testdirName,
       ...configData,
-      mainManifest: { name: 'test', version: '1.0.0' },
+      mainManifest: {
+        name: 'test',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+        },
+      },
     })
     const fooDep = asDependency({
       spec: Spec.parse('foo', '^1.0.0'),
@@ -858,16 +826,19 @@ t.test(
       updateActiveEntry: () => {},
       // This method will be called for the nested dependencies
       tryDependencies: (node: Node, deps: any[]) => {
-        tryDependenciesCalled.value = true
-        // Verify we're getting the expected parameters
-        t.equal(node.manifest?.name, 'foo', 'node should be foo')
-        t.ok(Array.isArray(deps), 'deps should be an array')
-        t.ok(deps.length > 0, 'deps should not be empty')
-        t.equal(
-          deps[0].spec.name,
-          'bar',
-          'first dependency should be bar',
-        )
+        // Only verify for 'foo' node, 'bar' has no dependencies
+        if (node.manifest?.name === 'foo') {
+          tryDependenciesCalled.value = true
+          // Verify we're getting the expected parameters
+          t.equal(node.manifest.name, 'foo', 'node should be foo')
+          t.ok(Array.isArray(deps), 'deps should be an array')
+          t.ok(deps.length > 0, 'deps should not be empty')
+          t.equal(
+            deps[0].spec.name,
+            'bar',
+            'first dependency should be bar',
+          )
+        }
         // we don't care about the returned value here
         return new Map()
       },
@@ -875,7 +846,6 @@ t.test(
 
     // call appendNodes with the mock modifier
     await appendNodes(
-      new Map([['foo', fooDep]]),
       packageInfo,
       graph,
       graph.mainImporter,
@@ -883,8 +853,8 @@ t.test(
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([['foo', fooDep]]),
       mockModifier as any,
-      undefined,
     )
 
     // Verify tryDependencies was called
@@ -988,7 +958,6 @@ t.test(
       ]
       const add = new Map(deps.map(d => [d.spec.name, d]))
       await appendNodes(
-        add,
         makePackageInfo(delays),
         graph,
         graph.mainImporter,
@@ -996,6 +965,7 @@ t.test(
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        add,
       )
       return graph
     }
@@ -1061,7 +1031,6 @@ t.test('early extraction during appendNodes', async t => {
       const seenExtracted = new Set<DepID>()
 
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         idealGraph,
         idealGraph.mainImporter,
@@ -1069,6 +1038,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
         undefined,
         undefined,
         extractPromises,
@@ -1131,7 +1101,6 @@ t.test('early extraction during appendNodes', async t => {
 
       // First, add the node to actual graph
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         actualGraph,
         actualGraph.mainImporter,
@@ -1139,6 +1108,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
       )
 
       // Reset extraction tracking
@@ -1149,7 +1119,6 @@ t.test('early extraction during appendNodes', async t => {
 
       // Now add to ideal graph with actual graph provided
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         idealGraph,
         idealGraph.mainImporter,
@@ -1157,6 +1126,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
         undefined,
         undefined,
         extractPromises,
@@ -1240,7 +1210,6 @@ t.test('early extraction during appendNodes', async t => {
       const seenExtracted = new Set<DepID>()
 
       await appendNodes(
-        new Map([['foo', fooDep]]),
         packageInfo,
         idealGraph,
         idealGraph.mainImporter,
@@ -1248,6 +1217,7 @@ t.test('early extraction during appendNodes', async t => {
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
+        new Map([['foo', fooDep]]),
         undefined,
         undefined,
         extractPromises,
@@ -1324,10 +1294,6 @@ t.test('early extraction during appendNodes', async t => {
     const seenExtracted = new Set<DepID>()
 
     await appendNodes(
-      new Map([
-        ['foo', fooDep],
-        ['bar', barDep],
-      ]),
       packageInfo,
       idealGraph,
       idealGraph.mainImporter,
@@ -1335,6 +1301,10 @@ t.test('early extraction during appendNodes', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([
+        ['foo', fooDep],
+        ['bar', barDep],
+      ]),
       undefined,
       undefined,
       extractPromises,
@@ -1409,10 +1379,6 @@ t.test('early extraction during appendNodes', async t => {
     const seenExtracted = new Set<DepID>()
 
     await appendNodes(
-      new Map([
-        ['optional', optionalDep],
-        ['regular', regularDep],
-      ]),
       packageInfo,
       idealGraph,
       idealGraph.mainImporter,
@@ -1420,6 +1386,10 @@ t.test('early extraction during appendNodes', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
+      new Map([
+        ['optional', optionalDep],
+        ['regular', regularDep],
+      ]),
       undefined,
       undefined,
       extractPromises,
@@ -1530,19 +1500,17 @@ t.test('skip peerOptional dependencies', async t => {
     })
 
     // Check that has-peer-optional was installed
-    const hasPeerOptional = graph.nodes.get(
-      '··has-peer-optional@1.0.0',
-    )
+    const [hasPeerOptional] = graph.nodesByName.get(
+      'has-peer-optional',
+    )!
     t.ok(hasPeerOptional, 'has-peer-optional should be installed')
 
     // Check that regular peer dependency was installed
-    const peerDep = graph.nodes.get('··peer-dep@1.0.0')
+    const peerDep = graph.nodesByName.get('peer-dep')!
     t.ok(peerDep, 'peer-dep should be installed')
 
     // Check that peerOptional dependency was NOT installed
-    const peerOptionalDep = graph.nodes.get(
-      '··peer-optional-dep@1.0.0',
-    )
+    const peerOptionalDep = graph.nodesByName.get('peer-optional-dep')
     t.notOk(
       peerOptionalDep,
       'peer-optional-dep should NOT be installed',
@@ -1576,7 +1544,7 @@ t.test('skip peerOptional dependencies', async t => {
   })
 
   t.test(
-    'skip linking to existing node for peerOptional dependencies',
+    'link to existing node for peerOptional dependencies',
     async t => {
       const projectRoot = t.testdir({
         'package.json': JSON.stringify({
@@ -1601,18 +1569,18 @@ t.test('skip peerOptional dependencies', async t => {
       })
 
       // Check that peer-optional-dep was installed as a regular dependency
-      const peerOptionalDep = graph.nodes.get(
-        '··peer-optional-dep@1.0.0',
-      )
+      const [peerOptionalDep] = graph.nodesByName.get(
+        'peer-optional-dep',
+      )!
       t.ok(
         peerOptionalDep,
         'peer-optional-dep should be installed as regular dep',
       )
 
       // Check that has-peer-optional was installed
-      const hasPeerOptional = graph.nodes.get(
-        '··has-peer-optional@1.0.0',
-      )
+      const [hasPeerOptional] = graph.nodesByName.get(
+        'has-peer-optional',
+      )!
       t.ok(hasPeerOptional, 'has-peer-optional should be installed')
 
       // Check that has-peer-optional has a dangling edge to peer-optional-dep
@@ -1629,13 +1597,19 @@ t.test('skip peerOptional dependencies', async t => {
         'peerOptional',
         'edge type should be peerOptional',
       )
-      t.notOk(
+      t.ok(
         peerOptionalEdge?.to,
-        'peerOptional edge should not have a "to" node even when node exists',
+        'peerOptional edge should have a "to" node when node exists',
+      )
+      t.ok(
+        peerOptionalEdge?.to?.name,
+        'peerOptional edge should point to peer-optional-dep node',
       )
     },
   )
 
+  // TODO: this scenario should be handled better in the future by reusing
+  // the existing node instead of creating a dangling edge
   t.test(
     'skip peerOptional dependencies even when they already exist in graph',
     async t => {
@@ -1660,11 +1634,11 @@ t.test('skip peerOptional dependencies', async t => {
       })
 
       // Check that shared-dep was installed as a regular dependency of lib-a
-      const sharedDep = graph.nodes.get('··shared-dep@1.0.0')
+      const [sharedDep] = graph.nodesByName.get('shared-dep')!
       t.ok(sharedDep, 'shared-dep should be installed (from lib-a)')
 
       // Check that lib-b has a dangling edge to shared-dep for its peerOptional dependency
-      const libB = graph.nodes.get('··lib-b@1.0.0')
+      const [libB] = graph.nodesByName.get('lib-b')!
       const peerOptionalEdge = libB?.edgesOut.get('shared-dep')
       t.ok(
         peerOptionalEdge,
@@ -1681,7 +1655,9 @@ t.test('skip peerOptional dependencies', async t => {
       )
 
       // Check that lib-a has a proper edge to shared-dep
-      const libA = graph.nodes.get('··lib-a@1.0.0')
+      const libA = graph.nodes.get(
+        joinDepIDTuple(['registry', '', 'lib-a@1.0.0']),
+      )
       const regularEdge = libA?.edgesOut.get('shared-dep')
       t.ok(regularEdge, 'edge for shared-dep from lib-a should exist')
       t.equal(regularEdge?.type, 'prod', 'edge type should be prod')
@@ -1693,4 +1669,90 @@ t.test('skip peerOptional dependencies', async t => {
       )
     },
   )
+
+  t.test('reuse manifest from detached node', async t => {
+    const fooManifest = {
+      name: 'foo',
+      version: '1.0.0',
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Track if packageInfo.manifest was called
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        manifestCalled = true
+        if (spec.name === 'foo') return fooManifest
+        return null
+      },
+    } as PackageInfoClient
+
+    // First, add a node to the graph that we'll mark as detached
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+
+    // Add the node normally first, would likely be already present in
+    // a loaded lockfile or actual graph instead but this simulates it ok
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    // Get the node and mark it as detached
+    const [fooNode] = graph.nodesByName.get('foo')!
+    if (!fooNode) {
+      throw new Error('foo node not found')
+    }
+    t.ok(fooNode, 'foo node should exist')
+    fooNode.detached = true
+
+    // Remove the edge from mainImporter to foo so we can re-add it
+    const fooEdge = graph.mainImporter.edgesOut.get('foo')
+    if (fooEdge) {
+      graph.mainImporter.edgesOut.delete('foo')
+      fooNode.edgesIn.delete(fooEdge)
+    }
+
+    // Reset the flag
+    manifestCalled = false
+
+    // Now try to append the same dependency again
+    // It should reuse the manifest from the detached node
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.notOk(
+      manifestCalled,
+      'packageInfo.manifest should not be called for detached node',
+    )
+    t.ok(
+      graph.mainImporter.edgesOut.get('foo'),
+      'edge should be re-added',
+    )
+  })
 })

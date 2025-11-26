@@ -12,11 +12,9 @@ exports[`test/ideal/build.ts > TAP > build from actual files > should build an i
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(foo@^1.0.0) -prod-> to: Node {
+      Edge spec(foo@1.0.0) -prod-> to: Node {
         id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
-        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
-        integrity: 'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ=='
+        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo'
       }
     ]
   }

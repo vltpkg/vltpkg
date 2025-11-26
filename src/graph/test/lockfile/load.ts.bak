@@ -19,6 +19,7 @@ import type {
   LockfileEdgeValue,
 } from '../../src/lockfile/types.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -533,6 +534,446 @@ t.test('missing options object', async t => {
   t.matchSnapshot(
     JSON.stringify(loadObject(loadOptions, lockfileData), null, 2),
     'should be able to parse lockfile without options object',
+  )
+})
+
+t.test('load with optimization path for large graphs', async t => {
+  const fooDepID = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const barDepID = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+
+  // Helper to create basic lockfile data with a dependency
+  const createLockfileData = (
+    depName: string,
+    depID: DepID,
+    modifiersConfig?: Record<string, string>,
+  ): LockfileData => ({
+    lockfileVersion: 0,
+    options: {
+      modifiers: modifiersConfig,
+    },
+    nodes: {
+      [joinDepIDTuple(['file', '.'])]: [0, 'test-project'],
+      [depID]: [0, depName],
+    } as Record<DepID, LockfileNode>,
+    edges: {
+      [edgeKey(['file', '.'], depName)]: `prod ^1.0.0 ${depID}`,
+    } as LockfileEdges,
+  })
+
+  await t.test(
+    'modifiers changed - should skip loading dependencies when enabled',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #foo': '^2.0.0' },
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('foo', fooDepID, {
+            ':root > #foo': '^1.0.0',
+          }),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('foo', fooDepID, {
+          ':root > #foo': '^1.0.0',
+        }),
+      )
+
+      t.notOk(
+        graph.nodes.get(fooDepID),
+        'dependency should not be loaded when modifiers changed and skipLoadingNodesOnModifiersChange is true',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain only the root node',
+      )
+    },
+  )
+
+  await t.test(
+    'modifiers unchanged - should load dependencies when enabled',
+    async t => {
+      const modifiersConfig = { ':root > #bar': '^1.0.0' }
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: modifiersConfig,
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('bar', barDepID, modifiersConfig),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('bar', barDepID, modifiersConfig),
+      )
+
+      t.ok(
+        graph.nodes.get(barDepID),
+        'dependency should be loaded when modifiers are unchanged',
+      )
+      t.equal(
+        graph.nodes.size,
+        2,
+        'graph should contain root and dependency nodes',
+      )
+    },
+  )
+
+  await t.test(
+    'skipLoadingNodesOnModifiersChange disabled - should always load',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #foo': '^2.0.0' },
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('foo', fooDepID, {
+            ':root > #foo': '^1.0.0',
+          }),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: false,
+        },
+        createLockfileData('foo', fooDepID, {
+          ':root > #foo': '^1.0.0',
+        }),
+      )
+
+      t.ok(
+        graph.nodes.get(fooDepID),
+        'dependency should be loaded even when modifiers changed and skipLoadingNodesOnModifiersChange is false',
+      )
+      t.equal(
+        graph.nodes.size,
+        2,
+        'graph should contain root and dependency nodes',
+      )
+    },
+  )
+
+  await t.test(
+    'missing vlt.json but existing lockfile modifiers - should skip loading',
+    async t => {
+      const projectRoot = t.testdir({
+        // No vlt.json file
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('foo', fooDepID, {
+            ':root > #foo': '^1.0.0',
+          }),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      // modifiers will be undefined since no vlt.json exists
+      const modifiers = GraphModifier.maybeLoad(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('foo', fooDepID, {
+          ':root > #foo': '^1.0.0',
+        }),
+      )
+
+      t.notOk(
+        graph.nodes.get(fooDepID),
+        'dependency should not be loaded when vlt.json is missing but lockfile has modifiers',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain only the root node',
+      )
+    },
+  )
+
+  await t.test(
+    'missing lockfile modifiers but existing vlt.json modifiers - should skip loading',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #bar': '^1.0.0' },
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('bar', barDepID, undefined), // No modifiers in lockfile
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('bar', barDepID, undefined),
+      )
+
+      t.notOk(
+        graph.nodes.get(barDepID),
+        'dependency should not be loaded when lockfile modifiers are missing but vlt.json has modifiers',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain only the root node',
+      )
+    },
+  )
+
+  await t.test(
+    'both vlt.json and lockfile missing modifiers - should load',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt.json': '{}', // No modifiers - this creates an empty modifiers object
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('foo', fooDepID, undefined), // No modifiers - this is undefined
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData) // This loads empty modifiers from vlt.json
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('foo', fooDepID, undefined),
+      )
+
+      t.ok(
+        graph.nodes.get(fooDepID),
+        'dependency should be loaded when both files have no modifiers (they match as empty objects)',
+      )
+      t.equal(
+        graph.nodes.size,
+        2,
+        'graph should contain root and dependency nodes',
+      )
+    },
+  )
+
+  await t.test(
+    'complex modifiers matching - should load dependencies',
+    async t => {
+      const complexModifiers = {
+        ':root > #foo': '^1.0.0',
+        ':root > #bar > #baz': '^2.0.0',
+        '#qux': 'latest',
+      }
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: complexModifiers,
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('foo', fooDepID, complexModifiers),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('foo', fooDepID, complexModifiers),
+      )
+
+      t.ok(
+        graph.nodes.get(fooDepID),
+        'dependency should be loaded when complex modifiers match',
+      )
+      t.equal(
+        graph.nodes.size,
+        2,
+        'graph should contain root and dependency nodes',
+      )
+    },
+  )
+
+  await t.test(
+    'complex modifiers not matching - should skip loading',
+    async t => {
+      const vltModifiers = {
+        ':root > #foo': '^1.0.0',
+        ':root > #bar > #baz': '^2.0.0',
+        '#qux': 'latest',
+      }
+      const lockfileModifiers = {
+        ':root > #foo': '^1.0.0',
+        ':root > #bar > #baz': '^3.0.0', // Different version
+        '#qux': 'latest',
+      }
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: vltModifiers,
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData('bar', barDepID, lockfileModifiers),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          projectRoot,
+          mainManifest,
+          modifiers,
+          skipLoadingNodesOnModifiersChange: true,
+        },
+        createLockfileData('bar', barDepID, lockfileModifiers),
+      )
+
+      t.notOk(
+        graph.nodes.get(barDepID),
+        'dependency should not be loaded when complex modifiers do not match',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain only the root node',
+      )
+    },
+  )
+
+  await t.test(
+    'using load() function with skipLoadingNodesOnModifiersChange',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #test': '^2.0.0' },
+        }),
+        'vlt-lock.json': JSON.stringify(
+          createLockfileData(
+            'test',
+            joinDepIDTuple(['registry', '', 'test@1.0.0']),
+            {
+              ':root > #test': '^1.0.0',
+            },
+          ),
+        ),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = load({
+        ...configData,
+        projectRoot,
+        mainManifest,
+        modifiers,
+        skipLoadingNodesOnModifiersChange: true,
+      })
+
+      t.notOk(
+        graph.nodes.get(
+          joinDepIDTuple(['registry', '', 'test@1.0.0']),
+        ),
+        'dependency should not be loaded when using load() function with changed modifiers',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain only the root node',
+      )
+    },
+  )
+
+  await t.test(
+    'using loadHidden() function with skipLoadingNodesOnModifiersChange',
+    async t => {
+      const testDepID = joinDepIDTuple([
+        'registry',
+        '',
+        'hidden-test@1.0.0',
+      ])
+      const projectRoot = t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #hidden-test': '^2.0.0' },
+        }),
+        node_modules: {
+          '.vlt-lock.json': JSON.stringify(
+            createLockfileData('hidden-test', testDepID, {
+              ':root > #hidden-test': '^1.0.0',
+            }),
+          ),
+        },
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const modifiers = new GraphModifier(configData)
+      const graph = loadHidden({
+        ...configData,
+        projectRoot,
+        mainManifest,
+        modifiers,
+        skipLoadingNodesOnModifiersChange: true,
+      })
+
+      t.notOk(
+        graph.nodes.get(testDepID),
+        'dependency should not be loaded when using loadHidden() function with changed modifiers',
+      )
+      t.equal(
+        graph.nodes.size,
+        1,
+        'graph should contain only the root node',
+      )
+    },
   )
 })
 

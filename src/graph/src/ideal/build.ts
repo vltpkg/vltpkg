@@ -67,14 +67,12 @@ export const build = async (
       ...options,
       mainManifest,
       monorepo,
-      skipLoadingNodesOnModifiersChange: true,
     })
   } catch {
     graph = loadActual({
       ...options,
       mainManifest,
       monorepo,
-      skipLoadingNodesOnModifiersChange: true,
     })
   }
 
