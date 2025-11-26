@@ -83,7 +83,10 @@ const nodeRef = (
   labeledNodes: Set<DepID>,
   depIdMapping: Map<DepID, string>,
 ): string => {
-  const shortId = depIdMapping.get(node.id) ?? ''
+  const shortId =
+    depIdMapping.get(
+      node.id,
+    ) /* c8 ignore next - should not be possible */ ?? ''
   if (labeledNodes.has(node.id)) {
     return shortId
   }
