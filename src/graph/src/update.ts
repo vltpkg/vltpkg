@@ -70,13 +70,15 @@ export const update = async (options: UpdateOptions) => {
   } catch (err) {
     await remover.rollback().catch(() => {})
     // Remove hidden lockfile on failure
-    const hiddenLockfile = resolve(
-      options.projectRoot,
-      'node_modules/.vlt-lock.json',
-    )
-    if (existsSync(hiddenLockfile)) {
-      rmSync(hiddenLockfile, { force: true })
-    }
+    try {
+      const hiddenLockfile = resolve(
+        options.projectRoot,
+        'node_modules/.vlt-lock.json',
+      )
+      if (existsSync(hiddenLockfile)) {
+        rmSync(hiddenLockfile, { force: true })
+      }
+    } catch {}
     throw err
   }
   /* c8 ignore stop */
