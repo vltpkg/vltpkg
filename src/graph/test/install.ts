@@ -9,13 +9,11 @@ import type {
   AddImportersDependenciesMap,
   Dependency,
 } from '../src/dependencies.ts'
-import type { BuildIdealAddOptions } from '../src/ideal/types.ts'
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
 import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
-import { install } from '../src/install.ts'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -37,7 +35,7 @@ t.test('install', async t => {
   }
 
   const packageInfo = {
-    async manifest(spec: Spec, options?: any) {
+    async manifest(spec: Spec, _options?: any) {
       switch (spec.name) {
         case 'abbrev':
           return abbrevManifest
@@ -74,9 +72,15 @@ t.test('install', async t => {
 
   const { install } = await import('../src/install.ts')
 
-  const result = await install(options, new Map() as AddImportersDependenciesMap)
+  const result = await install(
+    options,
+    new Map() as AddImportersDependenciesMap,
+  )
 
-  t.matchSnapshot(objectLikeOutput(result.graph), 'should return a graph')
+  t.matchSnapshot(
+    objectLikeOutput(result.graph),
+    'should return a graph',
+  )
 
   // adding a new dependency
   const result2 = await install(
@@ -97,7 +101,10 @@ t.test('install', async t => {
     ]) as AddImportersDependenciesMap,
   )
 
-  t.matchSnapshot(objectLikeOutput(result2.graph), 'should call build adding new dependency')
+  t.matchSnapshot(
+    objectLikeOutput(result2.graph),
+    'should call build adding new dependency',
+  )
 })
 
 t.test('install with no package.json file in cwd', async t => {
