@@ -15,6 +15,13 @@
       "when": 1764101021234,
       "tag": "0001_damp_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764108634548,
+      "tag": "0002_smart_silver_samurai",
+      "breakpoints": true
     }
   ]
 }

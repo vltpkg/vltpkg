@@ -43,6 +43,11 @@ export const packumentHandler = defineEventHandler(async event => {
         origin: 'npm',
       }),
     TTL.PACKUMENT,
+    {
+      packageName: pkgName,
+      origin: 'npm',
+      resourceType: 'packument',
+    },
   )
 
   for (const [k, v] of Object.entries(result.headers)) {
@@ -66,6 +71,12 @@ export const versionHandler = defineEventHandler(async event => {
         origin: 'npm',
       }),
     TTL.MANIFEST,
+    {
+      packageName: pkgName,
+      version: version!,
+      origin: 'npm',
+      resourceType: 'version',
+    },
   )
 
   for (const [k, v] of Object.entries(result.headers)) {
@@ -90,6 +101,12 @@ export const tarballHandler = defineEventHandler(async event => {
         origin: 'npm',
       }),
     TTL.TARBALL,
+    {
+      packageName: pkgName,
+      version,
+      origin: 'npm',
+      resourceType: 'tarball',
+    },
   )
 
   for (const [k, v] of Object.entries(result.headers)) {

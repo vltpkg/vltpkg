@@ -1,6 +1,6 @@
 {
-  "id": "d16f5ec0-9a00-4138-a8a0-3d56ce75a7b3",
-  "prevId": "32083d8a-5d82-4818-a36b-e5cbba05c0b6",
+  "id": "8f61b48c-2175-408d-abb0-ce1972fe6557",
+  "prevId": "d16f5ec0-9a00-4138-a8a0-3d56ce75a7b3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -164,7 +164,17 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "versions_name_origin_packages_name_origin_fk": {
+          "name": "versions_name_origin_packages_name_origin_fk",
+          "tableFrom": "versions",
+          "tableTo": "packages",
+          "columnsFrom": ["name", "origin"],
+          "columnsTo": ["name", "origin"],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {
         "versions_name_version_origin_pk": {
           "name": "versions_name_version_origin_pk",

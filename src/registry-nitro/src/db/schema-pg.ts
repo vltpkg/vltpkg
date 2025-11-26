@@ -5,6 +5,7 @@ import {
   json,
   primaryKey,
   index,
+  foreignKey,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
@@ -39,6 +40,12 @@ export const versions = pgTable(
       columns: [table.name, table.version, table.origin],
     }),
     index('versions_name_origin_idx').on(table.name, table.origin),
+    foreignKey({
+      columns: [table.name, table.origin],
+      foreignColumns: [packages.name, packages.origin],
+    })
+      .onDelete('cascade')
+      .onUpdate('cascade'),
   ],
 )
 
