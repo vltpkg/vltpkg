@@ -24,24 +24,8 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/explorer-grid/header.tsx', () => ({
-  GridHeader: 'gui-grid-header',
-}))
-
 vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
   SideItem: 'gui-side-item',
-}))
-
-vi.mock(
-  '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx',
-  () => ({
-    AddDependenciesPopoverTrigger:
-      'gui-add-dependencies-popover-trigger',
-  }),
-)
-
-vi.mock('@/components/number-flow.tsx', () => ({
-  NumberFlow: 'gui-number-flow',
 }))
 
 vi.mock(
@@ -117,13 +101,7 @@ test('dependency-side-bar', async () => {
   )
 
   const Container = () => {
-    return (
-      <DependencySideBar
-        dependencies={dependencies}
-        uninstalledDependencies={[]}
-        onDependencyClick={() => () => {}}
-      />
-    )
+    return <DependencySideBar />
   }
 
   const { container } = render(<Container />)
@@ -158,13 +136,7 @@ test('dependency-side-bar no items', async () => {
   )
 
   const Container = () => {
-    return (
-      <DependencySideBar
-        dependencies={[]}
-        uninstalledDependencies={[]}
-        onDependencyClick={() => () => {}}
-      />
-    )
+    return <DependencySideBar />
   }
 
   const { container } = render(<Container />)
@@ -205,13 +177,7 @@ test('dependency-side-bar has uninstalled deps only', async () => {
   )
 
   const Container = () => {
-    return (
-      <DependencySideBar
-        dependencies={[]}
-        uninstalledDependencies={dependencies}
-        onDependencyClick={() => () => {}}
-      />
-    )
+    return <DependencySideBar />
   }
 
   const { container } = render(<Container />)
@@ -257,13 +223,7 @@ test('dependency-side-bar has both installed and uninstalled deps', async () => 
   )
 
   const Container = () => {
-    return (
-      <DependencySideBar
-        dependencies={dependencies}
-        uninstalledDependencies={uninstalledDependencies}
-        onDependencyClick={() => () => {}}
-      />
-    )
+    return <DependencySideBar />
   }
 
   const { container } = render(<Container />)

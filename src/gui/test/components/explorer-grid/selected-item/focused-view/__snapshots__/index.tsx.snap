@@ -6,27 +6,114 @@ exports[`FocusedView renders default 1`] = `
   selecteditem="[object Object]"
   asideoveriewvisible="false"
 >
-  <section
-    class="relative pb-4"
-    style="opacity: 0; filter: blur(2px);"
+  <gui-dependency-sidebar-provider
+    dependencies
+    uninstalleddependencies
   >
-    <gui-item-header classnames="[object Object]">
-      <gui-focused-button>
-      </gui-focused-button>
-    </gui-item-header>
-    <div class="mx-6 grid grid-cols-12">
-      <div class="border-muted col-span-full h-fit rounded-xl border-[1px] bg-white pt-2 lg:col-span-9 dark:bg-neutral-900">
-        <gui-selected-item-tabs>
-        </gui-selected-item-tabs>
+    <div class="bg-background relative">
+      <div class="bg-foreground/6">
+        <div class="grid-cols-[4fr_1fr] lg:grid">
+          <div class="flex w-full flex-col gap-[1px] p-[0.5px] pl-[0px] pt-[0px]">
+            <div class="bg-background w-full rounded px-6 py-4">
+              <gui-package-image-spec>
+              </gui-package-image-spec>
+            </div>
+            <div class="bg-background w-full rounded px-6 py-2 empty:hidden">
+              <gui-publisher classname="flex-col items-start lg:flex-row">
+              </gui-publisher>
+            </div>
+          </div>
+          <gui-decorator classname="max-lg:hidden">
+          </gui-decorator>
+        </div>
+        <div class="bg-background pattern-hatch h-9 w-full rounded lg:hidden">
+        </div>
+        <div class="grid-cols-[4fr_1fr] lg:grid">
+          <div class="flex w-full p-[0.5px] pl-[0px]">
+            <div class="bg-background w-full rounded">
+              <gui-navigation>
+                <gui-navigation-list>
+                  <gui-navigation-list-item>
+                    <gui-navigation-button
+                      navigationlayer="primary"
+                      tab="overview"
+                    >
+                      Overview
+                    </gui-navigation-button>
+                  </gui-navigation-list-item>
+                  <gui-navigation-list-item>
+                    <gui-navigation-button
+                      navigationlayer="primary"
+                      tab="json"
+                    >
+                      JSON
+                    </gui-navigation-button>
+                  </gui-navigation-list-item>
+                  <gui-navigation-list-item>
+                    <gui-navigation-button
+                      navigationlayer="primary"
+                      tab="code"
+                    >
+                      Code
+                    </gui-navigation-button>
+                  </gui-navigation-list-item>
+                  <gui-navigation-list-item>
+                    <gui-navigation-button
+                      navigationlayer="primary"
+                      tab="insights"
+                    >
+                      Insights
+                    </gui-navigation-button>
+                  </gui-navigation-list-item>
+                  <gui-navigation-list-item>
+                    <gui-navigation-button
+                      navigationlayer="primary"
+                      tab="versions"
+                    >
+                      Versions
+                    </gui-navigation-button>
+                  </gui-navigation-list-item>
+                  <gui-navigation-list-item>
+                    <gui-navigation-button
+                      navigationlayer="primary"
+                      tab="dependencies"
+                    >
+                      Dependencies
+                    </gui-navigation-button>
+                  </gui-navigation-list-item>
+                </gui-navigation-list>
+              </gui-navigation>
+            </div>
+          </div>
+          <div class="flex w-full p-[0.5px] max-lg:hidden">
+            <div class="bg-background flex w-full items-center justify-between rounded px-6">
+              <h3 class="text-muted-foreground text-sm font-medium">
+                Summary
+              </h3>
+            </div>
+          </div>
+        </div>
+        <div class="h-full min-w-0 grid-cols-[4fr_1fr] lg:grid lg:min-h-[calc(100svh-64px-96.5px-45px-1px)]">
+          <div class="flex w-full min-w-0 p-[0.5px] pl-[0px]">
+            <div class="bg-background w-full min-w-0 rounded">
+              <gui-router-outlet>
+              </gui-router-outlet>
+            </div>
+          </div>
+          <div class="bg-background pattern-hatch h-9 w-full rounded lg:hidden">
+          </div>
+          <div class="flex w-full min-w-0 rounded p-[0.5px]">
+            <div class="flex h-full w-full min-w-0 flex-col gap-[1px] rounded **:data-[slot=aside-section]:last-of-type:h-full [&amp;>aside]:h-full **:data-[slot=aside-section]:last-of-type:[&amp;>div]:h-full">
+              <gui-install-helper>
+              </gui-install-helper>
+              <gui-aside-overview-empty-state>
+              </gui-aside-overview-empty-state>
+            </div>
+          </div>
+        </div>
       </div>
-      <gui-focused-aside
-        classname="mt-4 md:mt-0"
-        dependencies
-        uninstalleddependencies
-      >
-      </gui-focused-aside>
     </div>
-  </section>
+  </gui-dependency-sidebar-provider>
 </gui-selected-item-provider>
 
 `;

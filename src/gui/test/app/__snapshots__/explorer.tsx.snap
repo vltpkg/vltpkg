@@ -3,8 +3,11 @@
 exports[`explorer has project root info 1`] = `
 
 <div>
-  <div>
-    <gui-explorer-grid>
+  <div
+    class="h-full"
+    style="opacity: 0; filter: blur(4px);"
+  >
+    <gui-explorer-grid isloading="true">
     </gui-explorer-grid>
   </div>
 </div>
@@ -23,8 +26,11 @@ exports[`explorer not vlt installed 1`] = `
 exports[`render default 1`] = `
 
 <div>
-  <div>
-    <gui-explorer-grid>
+  <div
+    class="h-full"
+    style="opacity: 0; filter: blur(4px);"
+  >
+    <gui-explorer-grid isloading="true">
     </gui-explorer-grid>
   </div>
 </div>
@@ -34,8 +40,11 @@ exports[`render default 1`] = `
 exports[`render no results if search throws 1`] = `
 
 <div>
-  <div>
-    <gui-explorer-grid>
+  <div
+    class="h-full"
+    style="opacity: 0; filter: blur(4px);"
+  >
+    <gui-explorer-grid isloading="true">
     </gui-explorer-grid>
   </div>
 </div>

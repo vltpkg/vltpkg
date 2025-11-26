@@ -17,8 +17,8 @@ import type {
 import type { RawNode } from '@/state/types.ts'
 import type { GridItemData } from '@/components/explorer-grid/types'
 
-vi.mock('lucide-react', () => ({
-  Package: 'gui-package-icon',
+vi.mock('@/components/explorer-grid/results/index.tsx', () => ({
+  Results: 'gui-results',
 }))
 
 vi.mock('@/components/explorer-grid/results/result-item.tsx', () => ({
@@ -109,6 +109,7 @@ test('ExplorerGrid render default', async () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
@@ -162,6 +163,7 @@ test('ExplorerGrid with results', async () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
@@ -239,6 +241,7 @@ test('ExplorerGrid with stack', async () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
@@ -367,6 +370,7 @@ test('ExplorerGrid with empty results state', async () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>

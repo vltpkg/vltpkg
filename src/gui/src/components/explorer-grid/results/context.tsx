@@ -5,11 +5,9 @@ import {
   useSearchParams,
   useLocation,
 } from 'react-router'
-import { PAGE_SIZE_OPTIONS } from '@/components/explorer-grid/results/page-options.tsx'
 
 import type { PropsWithChildren } from 'react'
 import type { StoreApi } from 'zustand'
-import type { PageSizeOption } from '@/components/explorer-grid/results/page-options.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.tsx'
 
 export type ResultsSortBy =
@@ -19,9 +17,61 @@ export type ResultsSortBy =
   | 'dependencyType'
   | 'dependents'
   | 'moduleType'
-  | 'overallScore'
 
 export type ResultsSortDir = 'asc' | 'desc'
+
+/**
+ * Client-side sorting function for explorer grid results
+ * Matches the pattern used in search-results.ts
+ */
+const sortResults = (
+  results: GridItemData[],
+  sortBy: ResultsSortBy,
+  sortDir: ResultsSortDir,
+): GridItemData[] => {
+  if (sortBy === 'none') {
+    return results
+  }
+
+  const compareString = (x?: string, y?: string) =>
+    (x ?? '').localeCompare(y ?? '', undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    })
+  const compareNumber = (
+    x?: number | null,
+    y?: number | null,
+    desc = false,
+  ) => {
+    const nx = x ?? -Infinity
+    const ny = y ?? -Infinity
+    return desc ? ny - nx : nx - ny
+  }
+
+  const sorted = [...results].sort((a, b) => {
+    const dirMultiplier = sortDir === 'asc' ? 1 : -1
+    switch (sortBy) {
+      case 'alphabetical':
+        return dirMultiplier * compareString(a.name, b.name)
+      case 'version': {
+        const va = a.version
+        const vb = b.version
+        return dirMultiplier * compareString(va, vb)
+      }
+      case 'dependencyType':
+        return dirMultiplier * compareString(a.type, b.type)
+      case 'dependents':
+        return compareNumber(a.size, b.size, sortDir === 'desc')
+      case 'moduleType': {
+        const ma = a.to?.manifest?.type ?? ''
+        const mb = b.to?.manifest?.type ?? ''
+        return dirMultiplier * compareString(ma, mb)
+      }
+    }
+  })
+
+  return sorted
+}
 
 type ResultsStoreState = {
   /**
@@ -35,7 +85,7 @@ type ResultsStoreState = {
   /**
    * The count of items on each page
    */
-  pageSize: PageSizeOption
+  pageSize: number
   /**
    * The items to display on the current page
    */
@@ -71,6 +121,10 @@ type ResultsStoreAction = {
    * Sets the sort direction for the results list
    */
   setSortDir: (sortDir: ResultsSortDir) => void
+  /**
+   * Sets both sort key and direction atomically
+   */
+  setSort: (sortBy: ResultsSortBy, sortDir: ResultsSortDir) => void
 }
 
 export type ResultsStore = ResultsStoreState & ResultsStoreAction
@@ -97,13 +151,10 @@ export const ResultsProvider = ({
   }, [searchParams])
 
   const resultsStore = useRef(
-    createStore<ResultsStore>((_, get) => ({
+    createStore<ResultsStore>((set, get) => ({
       page: Number(searchParams.get('page') ?? '1'),
       totalPages: 1,
-      pageSize: Number(
-        searchParams.get('pageSize') ??
-          PAGE_SIZE_OPTIONS[0].toString(),
-      ) as PageSizeOption,
+      pageSize: 25,
       pageItems: [],
       allItems,
       sortBy: (() => {
@@ -116,7 +167,6 @@ export const ResultsProvider = ({
           'dependencyType',
           'dependents',
           'moduleType',
-          'overallScore',
         ]
         return valid.includes(raw) ? raw : 'none'
       })(),
@@ -131,14 +181,11 @@ export const ResultsProvider = ({
           'dependencyType',
           'dependents',
           'moduleType',
-          'overallScore',
         ]
         const sortBy =
           validSorts.includes(sortByParam) ? sortByParam : 'none'
         const defaultDirFor = (key: ResultsSortBy): ResultsSortDir =>
-          key === 'dependents' || key === 'overallScore' ?
-            'desc'
-          : 'asc'
+          key === 'dependents' ? 'desc' : 'asc'
         return dirParam === 'asc' || dirParam === 'desc' ?
             dirParam
           : defaultDirFor(sortBy)
@@ -174,15 +221,33 @@ export const ResultsProvider = ({
         }
         // when changing sort key, reset direction to sensible default for that key
         const defaultDirFor = (key: ResultsSortBy): ResultsSortDir =>
-          key === 'dependents' || key === 'overallScore' ?
-            'desc'
-          : 'asc'
+          key === 'dependents' ? 'desc' : 'asc'
+        const newSortDir =
+          sortBy === 'none' ? 'asc' : defaultDirFor(sortBy)
         if (sortBy === 'none') {
           next.delete('dir')
         } else {
-          next.set('dir', defaultDirFor(sortBy))
+          next.set('dir', newSortDir)
         }
         setSearchParams(next, { replace: true })
+
+        // Immediately re-sort existing results (optimization: don't wait for URL sync)
+        const { allItems, pageSize, page } = get()
+        if (allItems.length > 0) {
+          const sortedAll = sortResults(allItems, sortBy, newSortDir)
+          const start = (page - 1) * pageSize
+          const pageItems = sortedAll.slice(start, start + pageSize)
+          const totalPages = Math.max(
+            1,
+            Math.ceil(sortedAll.length / pageSize),
+          )
+          set({
+            sortBy,
+            sortDir: newSortDir,
+            pageItems,
+            totalPages,
+          })
+        }
       },
       setSortDir: (sortDir: ResultsSortDir) => {
         const next = new URLSearchParams(
@@ -190,6 +255,51 @@ export const ResultsProvider = ({
         )
         next.set('dir', sortDir)
         setSearchParams(next, { replace: true })
+
+        // Immediately re-sort existing results (optimization: don't wait for URL sync)
+        const { allItems, sortBy, pageSize, page } = get()
+        if (allItems.length > 0) {
+          const sortedAll = sortResults(allItems, sortBy, sortDir)
+          const start = (page - 1) * pageSize
+          const pageItems = sortedAll.slice(start, start + pageSize)
+          set({
+            sortDir,
+            pageItems,
+          })
+        }
+      },
+      setSort: (sortBy: ResultsSortBy, sortDir: ResultsSortDir) => {
+        const next = new URLSearchParams(
+          latestSearchParamsRef.current,
+        )
+        if (sortBy === 'none') {
+          next.delete('sort')
+          next.delete('dir')
+        } else {
+          next.set('sort', sortBy)
+          next.set('dir', sortDir)
+        }
+        // reset page to 1 when sorting changes
+        next.set('page', '1')
+        setSearchParams(next, { replace: true })
+
+        // Immediately re-sort existing results (optimization: don't wait for URL sync)
+        const { allItems, pageSize } = get()
+        if (allItems.length > 0) {
+          const sortedAll = sortResults(allItems, sortBy, sortDir)
+          const pageItems = sortedAll.slice(0, pageSize)
+          const totalPages = Math.max(
+            1,
+            Math.ceil(sortedAll.length / pageSize),
+          )
+          set({
+            sortBy,
+            sortDir,
+            page: 1,
+            pageItems,
+            totalPages,
+          })
+        }
       },
     })),
   ).current
@@ -214,7 +324,7 @@ export const ResultsProvider = ({
       if (!searchParams.get('page')) {
         const next = new URLSearchParams(searchParams)
         next.set('page', '1')
-        next.set('pageSize', PAGE_SIZE_OPTIONS[0].toString())
+        next.set('pageSize', '25')
         setSearchParams(next, { replace: true })
       }
     }
@@ -222,18 +332,11 @@ export const ResultsProvider = ({
 
   // keep store in sync with URL and data; clamp and validate values
   useEffect(() => {
-    const defaultPageSize = PAGE_SIZE_OPTIONS[0]
+    const defaultPageSize = 25
     const rawPageSize = Number(
       searchParams.get('pageSize') ?? String(defaultPageSize),
     )
-    const validPageSize =
-      (
-        (PAGE_SIZE_OPTIONS as unknown as number[]).includes(
-          rawPageSize,
-        )
-      ) ?
-        rawPageSize
-      : defaultPageSize
+    const validPageSize = 25
 
     const totalPages = Math.max(
       1,
@@ -252,77 +355,37 @@ export const ResultsProvider = ({
       'dependencyType',
       'dependents',
       'moduleType',
-      'overallScore',
     ]
     const sortBy = validSorts.includes(rawSort) ? rawSort : 'none'
 
     const rawDir = searchParams.get('dir') ?? ''
     const defaultDirFor = (key: ResultsSortBy): ResultsSortDir =>
-      key === 'dependents' || key === 'overallScore' ? 'desc' : 'asc'
+      key === 'dependents' ? 'desc' : 'asc'
     const sortDir: ResultsSortDir =
       sortBy === 'none' ? 'asc'
       : rawDir === 'asc' || rawDir === 'desc' ? rawDir
       : defaultDirFor(sortBy)
 
-    const compareString = (x?: string, y?: string) =>
-      (x ?? '').localeCompare(y ?? '', undefined, {
-        numeric: true,
-        sensitivity: 'base',
-      })
-    const compareNumber = (
-      x?: number | null,
-      y?: number | null,
-      desc = false,
-    ) => {
-      const nx = x ?? -Infinity
-      const ny = y ?? -Infinity
-      return desc ? ny - nx : nx - ny
-    }
+    // Sort the entire array first, then paginate (matches search-results.ts pattern)
+    const sortedAll = sortResults(allItems, sortBy, sortDir)
 
-    // page-local sorting: slice first, then sort the current page only
+    // Paginate the sorted results
     const start = (clampedPage - 1) * validPageSize
-    const pageSlice = allItems.slice(start, start + validPageSize)
-    const sortedAll =
-      sortBy === 'none' ? pageSlice : (
-        [...pageSlice].sort((a, b) => {
-          const dirMultiplier = sortDir === 'asc' ? 1 : -1
-          switch (sortBy) {
-            case 'alphabetical':
-              return dirMultiplier * compareString(a.name, b.name)
-            case 'version': {
-              const va = a.version
-              const vb = b.version
-              return dirMultiplier * compareString(va, vb)
-            }
-            case 'dependencyType':
-              return dirMultiplier * compareString(a.type, b.type)
-            case 'dependents':
-              return compareNumber(a.size, b.size, sortDir === 'desc')
-            case 'moduleType': {
-              const ma = a.to?.manifest?.type ?? ''
-              const mb = b.to?.manifest?.type ?? ''
-              return dirMultiplier * compareString(ma, mb)
-            }
-            case 'overallScore': {
-              const scoreA = a.to?.insights.score
-              const scoreB = b.to?.insights.score
-              const sa = scoreA ? scoreA.overall : null
-              const sb = scoreB ? scoreB.overall : null
-              return compareNumber(sa, sb, sortDir === 'desc')
-            }
-          }
-        })
-      )
-
-    const pageItems = sortedAll
+    const pageItems = sortedAll.slice(start, start + validPageSize)
 
     // reflect clamped/validated values in URL if needed
-    if (
-      rawPage !== clampedPage ||
-      rawPageSize !== validPageSize ||
-      rawSort !== sortBy ||
-      rawDir !== sortDir
-    ) {
+    // When sortBy is 'none', don't compare sortDir since we're going to delete it anyway
+    const needsSync =
+      sortBy === 'none' ?
+        rawPage !== clampedPage ||
+        rawPageSize !== validPageSize ||
+        rawSort !== sortBy
+      : rawPage !== clampedPage ||
+        rawPageSize !== validPageSize ||
+        rawSort !== sortBy ||
+        rawDir !== sortDir
+
+    if (needsSync) {
       const next = new URLSearchParams(searchParams)
       next.set('page', String(clampedPage))
       next.set('pageSize', String(validPageSize))
@@ -338,7 +401,7 @@ export const ResultsProvider = ({
 
     resultsStore.setState({
       page: clampedPage,
-      pageSize: validPageSize as PageSizeOption,
+      pageSize: validPageSize,
       totalPages,
       pageItems,
       allItems,

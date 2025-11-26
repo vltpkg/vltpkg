@@ -1,23 +1,23 @@
 import { Fragment, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import {
   ArrowLeft,
   DecimalsArrowRight,
+  FileCode2,
+  FileWarning,
   Files,
   FileSliders,
   Search,
 } from 'lucide-react'
 import {
-  MotionTabsContent,
-  tabMotion,
+  contentMotion,
+  MotionContent,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
 import { CodeBlock } from '@/components/ui/code-block.tsx'
 import { Markdown } from '@/components/markdown-components.tsx'
-import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-code/empty-state.tsx'
-import { ErrorState } from '@/components/explorer-grid/selected-item/tabs-code/error-state.tsx'
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 import { PackageContentItem } from '@/components/explorer-grid/selected-item/tabs-code/package-content-item.tsx'
 import { ViewSwitcher } from '@/components/explorer-grid/selected-item/tabs-code/view-switcher.tsx'
 import { LoadingState } from '@/components/explorer-grid/selected-item/tabs-code/loading-state.tsx'
@@ -32,14 +32,6 @@ import { cn } from '@/lib/utils.ts'
 
 import type { View } from '@/components/explorer-grid/selected-item/tabs-code/types.ts'
 import type { FsItem } from '@/lib/fetch-fs.ts'
-
-export const CodeTabButton = () => {
-  return (
-    <TabsTrigger variant="ghost" value="code" className="w-fit px-2">
-      Code
-    </TabsTrigger>
-  )
-}
 
 export const CodeTabContent = () => {
   const selectedItem = useSelectedItemStore(
@@ -120,7 +112,9 @@ export const CodeTabContent = () => {
   const sortedContents = applySort(visibleContents)
 
   return (
-    <MotionTabsContent {...tabMotion} value="code" className="py-4">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       <AnimatePresence initial={false} mode="popLayout">
         {loading ?
           <motion.div
@@ -132,15 +126,38 @@ export const CodeTabContent = () => {
           </motion.div>
         : !packageContents || packageContents.length === 0 ?
           !errors || errors.length === 0 ?
-            <EmptyState />
-          : <ErrorState errors={errors} />
+            <SelectedItemEmptyState
+              icon={FileCode2}
+              title="Code exploration not available"
+              description="The code for this project could not be loaded"
+            />
+          : <SelectedItemEmptyState
+              icon={FileWarning}
+              title="An error occured"
+              description="One or more errors have occured:"
+              content={
+                <div className="flex flex-col gap-1">
+                  {errors.map((error, idx) => (
+                    <p
+                      className="text-muted-foreground inline-flex items-baseline gap-1 text-sm font-medium"
+                      key={`error-${idx}`}>
+                      <span className="text-foreground">
+                        {error.cause}:
+                      </span>
+                      <span>{error.origin}</span>
+                    </p>
+                  ))}
+                </div>
+              }
+            />
+
         : <motion.div
             key="main"
             initial={{ opacity: 0, filter: 'blur(2px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, filter: 'blur(2px)' }}>
             <div className="flex flex-col">
-              <div className="border-muted overflow-x-scroll border-b px-6 pb-4">
+              <div className="border-muted overflow-x-scroll border-b px-6 py-4">
                 <h3 className="text-md inline-flex items-baseline gap-1 overflow-x-scroll font-medium whitespace-nowrap">
                   <span
                     onClick={() => {
@@ -344,6 +361,6 @@ export const CodeTabContent = () => {
           </motion.div>
         }
       </AnimatePresence>
-    </MotionTabsContent>
+    </MotionContent>
   )
 }

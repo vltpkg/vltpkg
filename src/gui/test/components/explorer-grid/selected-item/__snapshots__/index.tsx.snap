@@ -2,37 +2,100 @@
 
 exports[`SelectedItem renders default 1`] = `
 
-<section>
-  <div
-    class="max-w-8xl grid w-full grid-cols-8 gap-4 px-8 py-4"
-    style="opacity: 1; filter: blur(0px);"
-  >
-    <div class="relative col-span-full md:col-span-2">
-      <gui-overview-sidebar
-        dependencies
-        workspaces
-        dependents
-        selecteditem="[object Object]"
+<div
+  class="bg-background relative h-full"
+  style="opacity: 1; filter: blur(0px);"
+>
+  <div class="bg-foreground/6 h-full">
+    <div
+      class="h-full grid-cols-[var(--side)_var(--main)] lg:grid"
+      style="--side: 1fr; --main: 3fr;"
+    >
+      <div class="flex h-full w-full p-[0.5px] pt-[0px] pl-[0px]">
+        <div class="bg-background flex h-full w-full flex-col rounded">
+          <gui-overview-sidebar
+            dependencies
+            workspaces
+            dependents
+            selecteditem="[object Object]"
+          >
+          </gui-overview-sidebar>
+        </div>
+      </div>
+      <div
+        class="h-full grid-cols-[var(--main)_var(--side)] grid-rows-[auto_1fr] lg:grid"
+        style="--side: 1fr; --main: 2fr;"
       >
-      </gui-overview-sidebar>
-    </div>
-    <div class="col-span-full md:col-span-4">
-      <div class="flex items-center justify-between">
-        <gui-grid-header>
-          Selected
-        </gui-grid-header>
-        <gui-focused-button>
-        </gui-focused-button>
+        <div class="flex w-full shrink-0 p-[0.5px] pt-[0px]">
+          <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+            <h3 class="text-sm font-medium">
+              Selected
+            </h3>
+          </div>
+        </div>
+        <div class="flex w-full shrink-0 p-[0.5px] pt-[0px]">
+          <div class="bg-background flex h-12 w-full items-center justify-between rounded px-6 py-3">
+            <h3 class="text-sm font-medium">
+              <span class="mr-2">
+                Direct Dependencies
+              </span>
+              <div
+                class="inline-flex"
+                data-id="number-flow-wrapper"
+              >
+                <p
+                  data-id="number-flow-p"
+                  class="overflow-hidden"
+                >
+                  <span
+                    data-key="number-flow-span-0-0"
+                    class="inline-block text-sm tabular-nums font-mono text-muted-foreground"
+                    style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+                  >
+                    0
+                  </span>
+                </p>
+              </div>
+              <span class="text-muted-foreground font-mono text-sm tabular-nums">
+                /
+              </span>
+              <div
+                class="inline-flex"
+                data-id="number-flow-wrapper"
+              >
+                <p
+                  data-id="number-flow-p"
+                  class="overflow-hidden"
+                >
+                  <span
+                    data-key="number-flow-span-0-0"
+                    class="inline-block text-sm tabular-nums font-mono text-muted-foreground"
+                    style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+                  >
+                    0
+                  </span>
+                </p>
+              </div>
+            </h3>
+          </div>
+        </div>
+        <div class="flex min-h-0 w-full min-w-0 p-[0.5px]">
+          <div class="bg-background flex w-full rounded">
+            <gui-selected-item
+              item="[object Object]"
+              classname="w-full"
+            >
+            </gui-selected-item>
+          </div>
+        </div>
+        <div class="flex min-h-0 w-full p-[0.5px]">
+          <div class="bg-background flex w-full min-w-0 flex-col rounded">
+          </div>
+        </div>
       </div>
-      <div class="flex flex-col gap-6">
-        <gui-selected-item item="[object Object]">
-        </gui-selected-item>
-      </div>
-    </div>
-    <div class="col-span-full md:col-span-2">
     </div>
   </div>
-</section>
+</div>
 
 `;
 

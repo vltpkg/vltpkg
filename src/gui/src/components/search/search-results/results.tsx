@@ -1,20 +1,8 @@
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  Search as SearchIcon,
-  CircleAlert,
-  PackageSearch,
-  Loader2,
-  Command,
-} from 'lucide-react'
+import { CircleAlert, PackageSearch } from 'lucide-react'
 import { SearchResult } from '@/components/search/search-results/search-result.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import {
-  InputGroup,
-  InputGroupInput,
-  InputGroupAddon,
-} from '@/components/ui/input-group.tsx'
-import { Kbd } from '@/components/ui/kbd.tsx'
 import { SearchResultsSort } from '@/components/search/search-results/sort.tsx'
 import { SearchResultsPaginationNavigation } from './page-navigation.tsx'
 import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
@@ -28,7 +16,6 @@ import {
 import { useSearchResultsStore } from '@/state/search-results.ts'
 import { useSyncSearchResultsURL } from '@/components/search/search-results/use-sync-url.tsx'
 import { useDebounce } from '@/components/hooks/use-debounce.tsx'
-import { useKeyDown } from '@/components/hooks/use-keydown.tsx'
 import { cn } from '@/lib/utils.ts'
 import { FAVORITE_PACKAGES } from '@/lib/constants/favorite-packages.ts'
 
@@ -70,11 +57,9 @@ export const SearchResults = () => {
   )
   const resultsOnPage = useSearchResultsStore(state => state.results)
   const totalResults = useSearchResultsStore(state => state.total)
+  const reset = useSearchResultsStore(state => state.reset)
   const inputRef = useRef<HTMLInputElement>(null)
   const results = useSearchResultsStore(state => state.results)
-
-  useKeyDown(['meta+k', 'ctrl+k'], () => inputRef.current?.focus())
-  useKeyDown(['escape'], () => inputRef.current?.blur())
 
   // Sync URL params with zustand store
   useSyncSearchResultsURL()
@@ -101,6 +86,15 @@ export const SearchResults = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Reset store when navigating away from search page
+  useEffect(() => {
+    return () => {
+      // Reset store when component unmounts (navigating away from search page)
+      // If user navigates back with URL params, useSyncSearchResultsURL will restore state
+      reset()
+    }
+  }, [reset])
+
   return (
     <section className="bg-background">
       <div className="bg-foreground/6 relative">
@@ -109,7 +103,7 @@ export const SearchResults = () => {
           <Decorator className="max-lg:hidden" />
           <div className="flex w-full p-[0.5px]">
             <div className="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-              <div className="h-[36.5px]">
+              <div className="h-[75px] lg:h-[36.5px]">
                 <AnimatePresence mode="popLayout">
                   {query && results.length !== 0 ?
                     <motion.h3
@@ -142,26 +136,6 @@ export const SearchResults = () => {
                   }
                 </AnimatePresence>
               </div>
-              <InputGroup className="mt-3">
-                <InputGroupAddon>
-                  {isLoading ?
-                    <Loader2 className="animate-spin" />
-                  : <SearchIcon />}
-                </InputGroupAddon>
-                <InputGroupInput
-                  ref={inputRef}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  value={searchTerm}
-                  placeholder="Search packages"
-                  className=""
-                />
-                <InputGroupAddon align="inline-end" className="gap-1">
-                  <Kbd>
-                    <Command />
-                  </Kbd>
-                  <Kbd>K</Kbd>
-                </InputGroupAddon>
-              </InputGroup>
             </div>
           </div>
           <Decorator className="max-lg:hidden" />
@@ -173,6 +147,8 @@ export const SearchResults = () => {
           <SearchResultsSort className="w-full p-[0.5px]" />
           <Decorator className="max-lg:hidden" />
         </div>
+
+        <div className="pattern-hatch bg-background h-9 rounded lg:hidden" />
 
         {/* list view */}
         <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
@@ -187,7 +163,7 @@ export const SearchResults = () => {
             : <MotionSearchResultsSection
                 key="results-list-empty-state"
                 {...searchResultsSectionMotion}>
-                <Empty>
+                <Empty className="h-full w-full grow">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
                       <PackageSearch />
@@ -322,7 +298,7 @@ const SearchResultsList = forwardRef<
           <MotionSearchResultsSection
             key="error"
             {...searchResultsSectionMotion}>
-            <Empty>
+            <Empty className="h-full w-full">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <CircleAlert className="text-red-500" />
@@ -336,7 +312,7 @@ const SearchResultsList = forwardRef<
           <MotionSearchResultsSection
             key="no-results"
             {...searchResultsSectionMotion}>
-            <Empty>
+            <Empty className="h-full w-full">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <PackageSearch />
@@ -353,7 +329,7 @@ const SearchResultsList = forwardRef<
           <motion.div
             key={`results-${query}-${page}-${sortDir}-${sortBy}`}
             className={cn(
-              'flex w-full flex-col gap-[1px]',
+              'flex min-h-[calc(100svh-56px-148px-245px-36px-49px)] w-full flex-col gap-[1px] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]',
               className,
             )}
             variants={searchResultsContainerVariants}
@@ -395,12 +371,13 @@ const SearchResultsSection = forwardRef<
     <div
       ref={ref}
       className={cn(
-        'flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]',
+        'flex h-full w-full flex-col p-[0.5px]',
+        'min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]',
         className,
       )}
       {...props}>
       {!empty && (
-        <div className="bg-background flex h-full w-full items-center justify-center rounded">
+        <div className="bg-background flex h-full w-full flex-1 flex-col rounded">
           {children}
         </div>
       )}

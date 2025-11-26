@@ -27,6 +27,8 @@ export const QueryMatches = () => {
     [savedQueries, activeQuery],
   )
 
+  if (matchedQueries.length === 0) return null
+
   return (
     <>
       <LabelTags className="mr-1" queries={matchedQueries} />

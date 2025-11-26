@@ -10,13 +10,6 @@ vi.mock('react-router', () => ({
   useLocation: vi.fn().mockReturnValue({
     pathname: '/',
   } as Location),
-  NavLink: 'gui-router-nav-link',
-}))
-
-vi.mock('@/components/icons/index.ts', () => ({
-  Vlt: 'gui-vlt-icon',
-  VltClient: 'gui-vlt-client-icon',
-  Vsr: 'gui-vsr-icon',
 }))
 
 vi.mock('@/components/navigation/header/explorer.tsx', () => ({
@@ -31,12 +24,20 @@ vi.mock('@/components/navigation/header/queries.tsx', () => ({
   QueriesHeader: 'gui-queries-header',
 }))
 
+vi.mock('@/components/navigation/header/search.tsx', () => ({
+  SearchHeader: 'gui-search-header',
+}))
+
 vi.mock('@/components/navigation/header/labels.tsx', () => ({
   LabelsHeader: 'gui-labels-header',
 }))
 
-vi.mock('@/components/navigation/linear-menu/index.tsx', () => ({
-  LinearMenu: 'gui-linear-menu',
+vi.mock('@/components/navigation/header/mobile.tsx', () => ({
+  MobileMenu: 'gui-mobile-menu',
+}))
+
+vi.mock('@/components/auth/index.tsx', () => ({
+  UserMenu: 'gui-user-menu',
 }))
 
 vi.mock(

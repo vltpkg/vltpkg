@@ -2,7 +2,7 @@
 
 exports[`suggested-queries renders default 1`] = `
 
-<div class="border-muted dark:bg-muted-foreground/5 my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed bg-white p-3">
+<div class="border-muted dark:bg-muted-foreground/5 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed bg-white p-3">
   <div class="flex w-full items-center justify-between">
     <p class="text-sm font-medium tracking-tight">
       Suggested Queries

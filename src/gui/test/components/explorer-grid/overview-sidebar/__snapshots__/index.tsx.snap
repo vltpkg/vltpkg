@@ -2,100 +2,147 @@
 
 exports[`OverviewSidebar contains SuggestedQueries when dependencies are present 1`] = `
 
-<gui-suggested-queries classname="mt-[3rem]">
-</gui-suggested-queries>
+<div class="px-4 py-3">
+  <gui-suggested-queries>
+  </gui-suggested-queries>
+</div>
 
 `;
 
 exports[`OverviewSidebar renders with a parent 1`] = `
 
-<gui-grid-header>
-  Parent
-</gui-grid-header>
-<gui-side-item
-  parent="true"
-  item="[object Object]"
-  highlight="false"
->
-</gui-side-item>
+<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+    <h3 class="text-sm font-medium">
+      Parent
+    </h3>
+  </div>
+  <div class="bg-background flex w-full rounded px-4 py-3">
+    <gui-side-item
+      parent="true"
+      item="[object Object]"
+      highlight="false"
+      classname="w-full"
+    >
+    </gui-side-item>
+  </div>
+</div>
 
 `;
 
 exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
 
-<gui-grid-header>
-  Parent
-</gui-grid-header>
-<gui-side-item
-  parent="true"
-  item="[object Object]"
-  highlight="false"
->
-</gui-side-item>
-<gui-grid-header>
-  Workspaces
-</gui-grid-header>
-<div class="flex flex-col gap-4">
-  <gui-side-item
-    item="[object Object]"
-    isworkspace="false"
-    dependencies="false"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="[object Object]"
-    isworkspace="false"
-    dependencies="false"
-  >
-  </gui-side-item>
+<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+    <h3 class="text-sm font-medium">
+      Parent
+    </h3>
+  </div>
+  <div class="bg-background flex w-full rounded px-4 py-3">
+    <gui-side-item
+      parent="true"
+      item="[object Object]"
+      highlight="false"
+      classname="w-full"
+    >
+    </gui-side-item>
+  </div>
+</div>
+<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+    <h3 class="text-sm font-medium">
+      Workspaces
+    </h3>
+  </div>
+  <div class="bg-background flex w-full rounded px-4 py-3">
+    <div class="flex w-full flex-col gap-4">
+      <gui-side-item
+        item="[object Object]"
+        isworkspace="true"
+        dependencies="false"
+        classname="w-full"
+      >
+      </gui-side-item>
+      <gui-side-item
+        item="[object Object]"
+        isworkspace="true"
+        dependencies="false"
+        classname="w-full"
+      >
+      </gui-side-item>
+    </div>
+  </div>
 </div>
 
 `;
 
 exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] = `
 
-<gui-grid-header>
-  Parent
-</gui-grid-header>
-<gui-side-item
-  parent="true"
-  item="[object Object]"
-  highlight="false"
->
-</gui-side-item>
-<gui-grid-header>
-  Workspaces
-</gui-grid-header>
-<div class="flex flex-col gap-4">
-  <gui-side-item
-    item="[object Object]"
-    isworkspace="false"
-    dependencies="false"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="[object Object]"
-    isworkspace="false"
-    dependencies="false"
-  >
-  </gui-side-item>
+<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+    <h3 class="text-sm font-medium">
+      Parent
+    </h3>
+  </div>
+  <div class="bg-background flex w-full rounded px-4 py-3">
+    <gui-side-item
+      parent="true"
+      item="[object Object]"
+      highlight="false"
+      classname="w-full"
+    >
+    </gui-side-item>
+  </div>
 </div>
-<gui-grid-header>
-  Dependents
-</gui-grid-header>
-<div class="flex flex-col gap-4">
-  <gui-side-item
-    item="[object Object]"
-    isworkspace="false"
-    dependencies="false"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="[object Object]"
-    isworkspace="false"
-    dependencies="false"
-  >
-  </gui-side-item>
+<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+    <h3 class="text-sm font-medium">
+      Workspaces
+    </h3>
+  </div>
+  <div class="bg-background flex w-full rounded px-4 py-3">
+    <div class="flex w-full flex-col gap-4">
+      <gui-side-item
+        item="[object Object]"
+        isworkspace="true"
+        dependencies="false"
+        classname="w-full"
+      >
+      </gui-side-item>
+      <gui-side-item
+        item="[object Object]"
+        isworkspace="true"
+        dependencies="false"
+        classname="w-full"
+      >
+      </gui-side-item>
+    </div>
+  </div>
+</div>
+<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+    <h3 class="text-sm font-medium">
+      Dependents
+    </h3>
+  </div>
+  <div class="bg-background flex w-full rounded px-4 py-3">
+    <div class="flex w-full flex-col gap-4">
+      <gui-side-item
+        item="[object Object]"
+        isworkspace="false"
+        dependencies="false"
+        classname="w-full"
+      >
+      </gui-side-item>
+      <gui-side-item
+        item="[object Object]"
+        isworkspace="false"
+        dependencies="false"
+        classname="w-full"
+      >
+      </gui-side-item>
+    </div>
+  </div>
 </div>
 
 `;

@@ -85,7 +85,11 @@ expect.addSnapshotSerializer({
   test: () => true,
 })
 
-beforeAll(() => server.listen())
+beforeAll(() => {
+  server.listen()
+  // Mock console.error to suppress expected errors in tests
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+})
 
 afterEach(() => {
   server.resetHandlers()
@@ -94,7 +98,10 @@ afterEach(() => {
   cleanup()
 })
 
-afterAll(() => server.close())
+afterAll(() => {
+  server.close()
+  vi.restoreAllMocks()
+})
 
 test('render default', async () => {
   const Container = () => {

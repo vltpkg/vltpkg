@@ -1,35 +1,13 @@
 import React from 'react'
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { Blocks } from 'lucide-react'
 import { useGraphStore } from '@/state/index.ts'
-import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
 import {
-  MotionTabsContent,
-  tabMotion,
+  MotionContent,
+  contentMotion,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
-
-export const DuplicatesTabButton = () => {
-  const duplicatedDeps = useSelectedItemStore(
-    state => state.duplicatedDeps,
-  )
-  const duplicatedDepCount = Object.values(
-    duplicatedDeps ?? {},
-  ).reduce((acc, { count }) => acc + (count > 1 ? 1 : 0), 0)
-  return (
-    <TabsTrigger value="duplicates" variant="nestedCard">
-      Duplicates
-      {duplicatedDepCount > 0 && (
-        <DataBadge
-          variant="count"
-          classNames={{ wrapperClassName: 'ml-1' }}
-          content={String(duplicatedDepCount)}
-        />
-      )}
-    </TabsTrigger>
-  )
-}
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 
 export const DuplicatesTabContent = () => {
   const duplicatedDeps = useSelectedItemStore(
@@ -49,7 +27,9 @@ export const DuplicatesTabContent = () => {
     )
 
   return (
-    <MotionTabsContent {...tabMotion} value="duplicates">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       {duplicatedDeps && duplicatedDepCount > 0 ?
         <div className="px-6 pt-4">
           <div className="border-muted bg-secondary/30 relative flex w-full cursor-default flex-col gap-2 rounded-lg border-[1px] px-3 py-3">
@@ -100,11 +80,12 @@ export const DuplicatesTabContent = () => {
             })}
           </div>
         </div>
-      : <EmptyState
+      : <SelectedItemEmptyState
           icon={Blocks}
-          message="No duplicated dependencies found."
+          title="No duplicates"
+          description={`We couldn't find any duplicated\ndependencies for this project`}
         />
       }
-    </MotionTabsContent>
+    </MotionContent>
   )
 }

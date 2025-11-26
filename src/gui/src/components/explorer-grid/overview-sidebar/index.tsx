@@ -1,7 +1,6 @@
-import { GridHeader } from '@/components/explorer-grid/header.tsx'
+import { Fragment } from 'react'
 import { SideItem } from '@/components/explorer-grid/side-item.tsx'
 import { SuggestedQueries } from '@/components/explorer-grid/overview-sidebar/suggested-queries.tsx'
-import { cn } from '@/lib/utils.ts'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
@@ -43,7 +42,7 @@ export const OverviewSidebar = ({
   selectedItem,
 }: OverviewSidebarProps) => {
   return (
-    <>
+    <Fragment>
       <OverviewSection
         isParent
         header="Parent"
@@ -52,6 +51,7 @@ export const OverviewSidebar = ({
         selectedItem={selectedItem}
       />
       <OverviewSection
+        isWorkspace
         header="Workspaces"
         items={workspaces}
         onClick={onWorkspaceClick}
@@ -62,13 +62,11 @@ export const OverviewSidebar = ({
         onClick={onDependentClick}
       />
       {dependencies.length > 0 && (
-        <SuggestedQueries
-          className={cn(
-            workspaces.length === 0 && !parentItem && 'mt-[3rem]',
-          )}
-        />
+        <div className="px-4 py-3">
+          <SuggestedQueries />
+        </div>
       )}
-    </>
+    </Fragment>
   )
 }
 
@@ -99,28 +97,37 @@ const OverviewSection = ({
   if (Array.isArray(items) && items.length <= 0) return null
 
   return (
-    <>
-      <GridHeader>{header}</GridHeader>
-      {Array.isArray(items) ?
-        <div className="flex flex-col gap-4">
-          {items.map((item, idx) => (
-            <SideItem
-              key={`${item.id}-${idx}`}
-              item={item}
-              isWorkspace={isWorkspace}
-              dependencies={false}
-              onSelect={onClick({ item, isParent: false })}
-            />
-          ))}
-        </div>
-      : <SideItem
-          parent={isParent}
-          selectedItem={selectedItem}
-          item={items}
-          highlight={highlight}
-          onSelect={onClick({ item: items, isParent })}
-        />
-      }
-    </>
+    <div className="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+      {/* header */}
+      <div className="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+        <h3 className="text-sm font-medium">{header}</h3>
+      </div>
+
+      {/* dep list */}
+      <div className="bg-background flex w-full rounded px-4 py-3">
+        {Array.isArray(items) ?
+          <div className="flex w-full flex-col gap-4">
+            {items.map((item, idx) => (
+              <SideItem
+                key={`${item.id}-${idx}`}
+                item={item}
+                isWorkspace={isWorkspace}
+                dependencies={false}
+                onSelect={onClick({ item, isParent: false })}
+                className="w-full"
+              />
+            ))}
+          </div>
+        : <SideItem
+            parent={isParent}
+            selectedItem={selectedItem}
+            item={items}
+            highlight={highlight}
+            onSelect={onClick({ item: items, isParent })}
+            className="w-full"
+          />
+        }
+      </div>
+    </div>
   )
 }

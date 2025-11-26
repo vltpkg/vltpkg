@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import {
   Table,
   TableBody,
@@ -19,42 +18,18 @@ import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/c
 import { HeartHandshake } from 'lucide-react'
 import { cn } from '@/lib/utils.ts'
 import { useGraphStore } from '@/state/index.ts'
-import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 import {
   SortingHeader,
   tableClassNames,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
-import { DataBadge } from '@/components/ui/data-badge.tsx'
 import {
-  MotionTabsContent,
-  tabMotion,
+  MotionContent,
+  contentMotion,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
 import { getKnownHostname } from '@/utils/get-known-hostname.ts'
 
 import type { ColumnDef } from '@tanstack/react-table'
-
-export const FundingTabButton = () => {
-  const depFunding = useSelectedItemStore(state => state.depFunding)
-  const fundingCount = Object.entries(depFunding ?? {}).reduce(
-    (acc, [, { count }]) => acc + count,
-    0,
-  )
-  return (
-    <TabsTrigger
-      value="funding"
-      variant="nestedCard"
-      className="flex">
-      Funding
-      {fundingCount > 0 && (
-        <DataBadge
-          variant="count"
-          classNames={{ wrapperClassName: 'ml-1' }}
-          content={String(fundingCount)}
-        />
-      )}
-    </TabsTrigger>
-  )
-}
 
 export const FundingTabContent = () => {
   const depFunding = useSelectedItemStore(state => state.depFunding)
@@ -161,7 +136,9 @@ export const FundingTabContent = () => {
   })
 
   return (
-    <MotionTabsContent {...tabMotion} value="funding">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       {depFunding && fundingCount > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div className="flex flex-col gap-3 px-6">
@@ -252,11 +229,12 @@ export const FundingTabContent = () => {
             </TableBody>
           </Table>
         </div>
-      : <EmptyState
+      : <SelectedItemEmptyState
           icon={HeartHandshake}
-          message="No dependencies are looking for funding."
+          title="No funding"
+          description="We couldn't find any packages looking for funding."
         />
       }
-    </MotionTabsContent>
+    </MotionContent>
   )
 }

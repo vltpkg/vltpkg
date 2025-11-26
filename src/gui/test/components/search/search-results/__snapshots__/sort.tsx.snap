@@ -3,7 +3,7 @@
 exports[`renders sort menu 1`] = `
 
 <nav class>
-  <ul class="grid-cols-5 gap-[1px] rounded lg:grid">
+  <ul class="grid grid-cols-1 gap-[1px] rounded lg:grid-cols-5">
     <li
       data-active="true"
       data-sort-direction="desc"
@@ -148,7 +148,7 @@ exports[`renders sort menu 1`] = `
 exports[`renders sort menu with no results 1`] = `
 
 <nav class>
-  <ul class="grid-cols-5 gap-[1px] rounded lg:grid">
+  <ul class="grid grid-cols-1 gap-[1px] rounded lg:grid-cols-5">
     <li
       data-active="true"
       data-sort-direction="desc"
@@ -293,7 +293,7 @@ exports[`renders sort menu with no results 1`] = `
 exports[`renders sort menu with popularity selected ascending 1`] = `
 
 <nav class>
-  <ul class="grid-cols-5 gap-[1px] rounded lg:grid">
+  <ul class="grid grid-cols-1 gap-[1px] rounded lg:grid-cols-5">
     <li
       data-active="false"
       data-slot="sort-menu-item"
@@ -438,7 +438,7 @@ exports[`renders sort menu with popularity selected ascending 1`] = `
 exports[`renders sort menu with quality selected 1`] = `
 
 <nav class>
-  <ul class="grid-cols-5 gap-[1px] rounded lg:grid">
+  <ul class="grid grid-cols-1 gap-[1px] rounded lg:grid-cols-5">
     <li
       data-active="false"
       data-slot="sort-menu-item"
@@ -583,7 +583,7 @@ exports[`renders sort menu with quality selected 1`] = `
 exports[`renders sort menu with relevance selected descending 1`] = `
 
 <nav class>
-  <ul class="grid-cols-5 gap-[1px] rounded lg:grid">
+  <ul class="grid grid-cols-1 gap-[1px] rounded lg:grid-cols-5">
     <li
       data-active="true"
       data-sort-direction="desc"

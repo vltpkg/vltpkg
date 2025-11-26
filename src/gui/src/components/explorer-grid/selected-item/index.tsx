@@ -3,15 +3,21 @@ import { longDependencyTypes, shorten } from '@vltpkg/graph/browser'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.ts'
 import { Item } from '@/components/explorer-grid/selected-item/item.tsx'
-import { GridHeader } from '@/components/explorer-grid/header.tsx'
+import {
+  DependencySidebarProvider,
+  useDependencySidebarStore,
+} from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
 import { OverviewSidebar } from '@/components/explorer-grid/overview-sidebar/index.tsx'
 import { updateDependentsItem } from '@/lib/update-dependents-item.ts'
-import { FocusButton } from '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx'
+import { NumberFlow } from '@/components/number-flow.tsx'
 import { FocusedView } from '@/components/explorer-grid/selected-item/focused-view/index.tsx'
+import { AddDependenciesPopoverTrigger } from '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx'
+import { FilterButton } from '@/components/explorer-grid/dependency-sidebar/filter.tsx'
 import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 import { motion, AnimatePresence } from 'framer-motion'
 
+import type { CSSProperties } from 'react'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { QueryResponseNode } from '@vltpkg/query'
 import type { DepID } from '@vltpkg/dep-id/browser'
@@ -200,7 +206,11 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
   }
 
   return (
-    <section>
+    <DependencySidebarProvider
+      dependencies={dependencies}
+      uninstalledDependencies={uninstalledDependencies}
+      importerId={importerId}
+      onDependencyClick={dependencyClick}>
       <AnimatePresence initial={false} mode="wait">
         {focused ?
           <FocusedView
@@ -226,51 +236,141 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
               filter: 'blur(2px)',
             }}
             transition={{ ease: 'easeInOut', duration: 0.25 }}
-            className="max-w-8xl grid w-full grid-cols-8 gap-4 px-8 py-4">
-            <div className="relative col-span-full md:col-span-2">
-              <OverviewSidebar
-                dependencies={dependencies}
-                parentItem={parentItem}
-                workspaces={workspaces}
-                dependents={dependents}
-                onWorkspaceClick={updateDependentsItem({
-                  query,
-                  updateQuery,
-                  workspace: true,
-                })}
-                onDependentClick={updateDependentsItem({
-                  query,
-                  updateQuery,
-                })}
-                selectedItem={item}
-              />
-            </div>
-            <div className="col-span-full md:col-span-4">
-              <div className="flex items-center justify-between">
-                <GridHeader>Selected</GridHeader>
-                <FocusButton />
+            className="bg-background relative h-full">
+            <div className="bg-foreground/6 h-full">
+              <div
+                className="h-full grid-cols-[var(--side)_var(--main)] lg:grid"
+                style={
+                  {
+                    '--side': '1fr',
+                    '--main': '3fr',
+                  } as CSSProperties
+                }>
+                {/* overview sidebar */}
+                <div className="flex h-full w-full p-[0.5px] pt-[0px] pl-[0px]">
+                  <div className="bg-background flex h-full w-full flex-col rounded">
+                    <OverviewSidebar
+                      dependencies={dependencies}
+                      parentItem={parentItem}
+                      workspaces={workspaces}
+                      dependents={dependents}
+                      onWorkspaceClick={updateDependentsItem({
+                        query,
+                        updateQuery,
+                        workspace: true,
+                      })}
+                      onDependentClick={updateDependentsItem({
+                        query,
+                        updateQuery,
+                      })}
+                      selectedItem={item}
+                    />
+                  </div>
+                </div>
+
+                {/* content */}
+                <div
+                  className="h-full grid-cols-[var(--main)_var(--side)] grid-rows-[auto_1fr] lg:grid"
+                  style={
+                    {
+                      '--side': '1fr',
+                      '--main': '2fr',
+                    } as CSSProperties
+                  }>
+                  {/* headers */}
+                  <div className="flex w-full shrink-0 p-[0.5px] pt-[0px]">
+                    <div className="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+                      <h3 className="text-sm font-medium">
+                        Selected
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex w-full shrink-0 p-[0.5px] pt-[0px]">
+                    <DependencyHeader />
+                  </div>
+
+                  {/* item */}
+                  <div className="flex min-h-0 w-full min-w-0 p-[0.5px]">
+                    <div className="bg-background flex w-full rounded">
+                      <Item
+                        item={item}
+                        className="w-full"
+                        // This is necessary to force a re-render of the selected item
+                        key={`${item.id}-${item.name}-${stamp}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* deps */}
+                  <div className="flex min-h-0 w-full p-[0.5px]">
+                    <div className="bg-background flex w-full min-w-0 flex-col rounded">
+                      {dependencies.length > 0 || item.to?.importer ?
+                        <DependencySideBar />
+                      : ''}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col gap-6">
-                <Item
-                  item={item}
-                  // This is necessary to force a re-render of the selected item
-                  key={`${item.id}-${item.name}-${stamp}`}
-                />
-              </div>
-            </div>
-            <div className="col-span-full md:col-span-2">
-              {dependencies.length > 0 || item.to?.importer ?
-                <DependencySideBar
-                  dependencies={dependencies}
-                  importerId={importerId}
-                  onDependencyClick={dependencyClick}
-                  uninstalledDependencies={uninstalledDependencies}
-                />
-              : ''}
             </div>
           </motion.div>
         }
       </AnimatePresence>
-    </section>
+    </DependencySidebarProvider>
+  )
+}
+
+const DependencyHeader = () => {
+  const importerId = useDependencySidebarStore(
+    state => state.importerId,
+  )
+  const dependencies = useDependencySidebarStore(
+    state => state.dependencies,
+  )
+  const filteredDependencies = useDependencySidebarStore(
+    state => state.filteredDependencies,
+  )
+
+  return (
+    <div className="bg-background flex h-12 w-full items-center justify-between rounded px-6 py-3">
+      <h3 className="text-sm font-medium">
+        <span className="mr-2">Direct Dependencies</span>
+        <NumberFlow
+          start={dependencies.length}
+          end={filteredDependencies.length}
+          format={{
+            pad: 0,
+          }}
+          motionConfig={{
+            duration: 0.4,
+          }}
+          classNames={{
+            span: 'text-muted-foreground',
+          }}
+        />
+        <span className="text-muted-foreground font-mono text-sm tabular-nums">
+          /
+        </span>
+        <NumberFlow
+          start={filteredDependencies.length}
+          end={dependencies.length}
+          format={{
+            pad: 0,
+          }}
+          motionConfig={{
+            duration: 0.4,
+          }}
+          classNames={{
+            span: 'text-muted-foreground',
+          }}
+        />
+      </h3>
+      {importerId && (
+        <div className="flex items-center gap-2">
+          <AddDependenciesPopoverTrigger />
+          <FilterButton />
+        </div>
+      )}
+    </div>
   )
 }

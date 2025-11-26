@@ -3,26 +3,39 @@
 exports[`ResultItem render missing version and labels 1`] = `
 
 <div>
-  <div class="group relative">
-    <a
-      href="#"
-      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-    >
-      <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
-        <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
-          <button
-            data-state="closed"
-            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
-          >
+  <div
+    role="link"
+    aria-label="Update query to: item"
+    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+  >
+    <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div class="flex items-center gap-2">
+        <div class="relative size-6 rounded-md border">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              it
+            </span>
+          </div>
+        </div>
+        <div class="inline-flex items-baseline">
+          <h3 class="text-lg font-medium tracking-tight">
             item
-          </button>
-        </div>
-        <div class="flex flex-row flex-wrap items-center gap-3">
-        </div>
-        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
+          </h3>
+          <div class="text-muted-foreground ml-3 inline-flex items-baseline gap-1 font-mono text-sm font-medium tabular-nums">
+            <span>
+            </span>
+          </div>
         </div>
       </div>
-    </a>
+      <div class="flex items-center gap-2">
+        <div class="bg-background flex items-center justify-center rounded-lg border px-2 py-1">
+          <span class="text-muted-foreground text-sm">
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="**:data-[slot=delimiter]:text-muted-foreground flex flex-wrap items-center gap-1 **:data-[slot=delimiter]:size-5">
+    </div>
   </div>
 </div>
 
@@ -31,45 +44,51 @@ exports[`ResultItem render missing version and labels 1`] = `
 exports[`ResultItem render stacked many 1`] = `
 
 <div>
-  <div class="group relative">
-    <div class="bg-card absolute top-2 left-2 h-full w-[97.5%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
-    </div>
-    <div class="bg-card absolute top-1 left-1 h-full w-[99%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
-    </div>
-    <a
-      href="#"
-      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-    >
-      <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
-        <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
-          <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
-            data-state="closed"
-          >
-            <span class="pt-0.5">
-              1.1.1
+  <div
+    role="link"
+    aria-label="Update query to: many-edges-stacked"
+    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+  >
+    <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div class="flex items-center gap-2">
+        <div class="relative size-6 rounded-md border">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              ma
             </span>
           </div>
-          <button
-            data-state="closed"
-            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
-          >
+        </div>
+        <div class="inline-flex items-baseline">
+          <h3 class="text-lg font-medium tracking-tight">
             many-edges-stacked
-          </button>
-        </div>
-        <div class="flex flex-row flex-wrap items-center gap-3">
-        </div>
-        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
-          <div>
-            <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-fuchsia-100 dark:bg-fuchsia-950 border-[1px] border-fuchsia-500 dark:border-fuchsia-500">
-              <span class="text-xs font-medium inline-flex items-center justify-center text-fuchsia-800 dark:text-fuchsia-400">
-                peer
-              </span>
-            </div>
+          </h3>
+          <div class="text-muted-foreground ml-3 inline-flex items-baseline gap-1 font-mono text-sm font-medium tabular-nums">
+            <span>
+            </span>
           </div>
         </div>
       </div>
-    </a>
+      <div class="flex items-center gap-2">
+        <div class="bg-background flex items-center justify-center rounded-lg border px-2 py-1">
+          <span class="text-muted-foreground text-sm">
+            1.1.1
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="**:data-[slot=delimiter]:text-muted-foreground flex flex-wrap items-center gap-1 **:data-[slot=delimiter]:size-5">
+    </div>
+    <div class="flex w-full">
+      <div class="flex items-center space-x-1">
+        <div>
+          <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-fuchsia-100 dark:bg-fuchsia-950 border-[1px] border-fuchsia-500 dark:border-fuchsia-500">
+            <span class="text-xs font-medium inline-flex items-center justify-center text-fuchsia-800 dark:text-fuchsia-400">
+              peer
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -78,43 +97,51 @@ exports[`ResultItem render stacked many 1`] = `
 exports[`ResultItem render stacked two 1`] = `
 
 <div>
-  <div class="group relative">
-    <div class="bg-card absolute top-1 left-1 h-full w-[99%] rounded-xl border transition-colors group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
-    </div>
-    <a
-      href="#"
-      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-    >
-      <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
-        <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
-          <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
-            data-state="closed"
-          >
-            <span class="pt-0.5">
-              1.0.0
+  <div
+    role="link"
+    aria-label="Update query to: two-edges-stacked"
+    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+  >
+    <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div class="flex items-center gap-2">
+        <div class="relative size-6 rounded-md border">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              tw
             </span>
           </div>
-          <button
-            data-state="closed"
-            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
-          >
+        </div>
+        <div class="inline-flex items-baseline">
+          <h3 class="text-lg font-medium tracking-tight">
             two-edges-stacked
-          </button>
-        </div>
-        <div class="flex flex-row flex-wrap items-center gap-3">
-        </div>
-        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
-          <div>
-            <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-orange-200 dark:bg-orange-950 border-[1px] border-orange-500 dark:border-orange-500">
-              <span class="text-xs font-medium inline-flex items-center justify-center text-orange-700 dark:text-orange-500">
-                dev
-              </span>
-            </div>
+          </h3>
+          <div class="text-muted-foreground ml-3 inline-flex items-baseline gap-1 font-mono text-sm font-medium tabular-nums">
+            <span>
+            </span>
           </div>
         </div>
       </div>
-    </a>
+      <div class="flex items-center gap-2">
+        <div class="bg-background flex items-center justify-center rounded-lg border px-2 py-1">
+          <span class="text-muted-foreground text-sm">
+            1.0.0
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="**:data-[slot=delimiter]:text-muted-foreground flex flex-wrap items-center gap-1 **:data-[slot=delimiter]:size-5">
+    </div>
+    <div class="flex w-full">
+      <div class="flex items-center space-x-1">
+        <div>
+          <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-orange-200 dark:bg-orange-950 border-[1px] border-orange-500 dark:border-orange-500">
+            <span class="text-xs font-medium inline-flex items-center justify-center text-orange-700 dark:text-orange-500">
+              dev
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -123,41 +150,51 @@ exports[`ResultItem render stacked two 1`] = `
 exports[`ResultItem render with item 1`] = `
 
 <div>
-  <div class="group relative">
-    <a
-      href="#"
-      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-    >
-      <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
-        <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
-          <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
-            data-state="closed"
-          >
-            <span class="pt-0.5">
-              1.0.0
+  <div
+    role="link"
+    aria-label="Update query to: item"
+    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+  >
+    <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div class="flex items-center gap-2">
+        <div class="relative size-6 rounded-md border">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              it
             </span>
           </div>
-          <button
-            data-state="closed"
-            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
-          >
+        </div>
+        <div class="inline-flex items-baseline">
+          <h3 class="text-lg font-medium tracking-tight">
             item
-          </button>
-        </div>
-        <div class="flex flex-row flex-wrap items-center gap-3">
-        </div>
-        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
-          <div>
-            <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
-              <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
-                prod
-              </span>
-            </div>
+          </h3>
+          <div class="text-muted-foreground ml-3 inline-flex items-baseline gap-1 font-mono text-sm font-medium tabular-nums">
+            <span>
+            </span>
           </div>
         </div>
       </div>
-    </a>
+      <div class="flex items-center gap-2">
+        <div class="bg-background flex items-center justify-center rounded-lg border px-2 py-1">
+          <span class="text-muted-foreground text-sm">
+            1.0.0
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="**:data-[slot=delimiter]:text-muted-foreground flex flex-wrap items-center gap-1 **:data-[slot=delimiter]:size-5">
+    </div>
+    <div class="flex w-full">
+      <div class="flex items-center space-x-1">
+        <div>
+          <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
+            <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
+              prod
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -166,53 +203,64 @@ exports[`ResultItem render with item 1`] = `
 exports[`ResultItem render with type 1`] = `
 
 <div>
-  <div class="group relative">
-    <a
-      href="#"
-      class="block border bg-card text-card-foreground relative cursor-default rounded-xl shadow-none transition-colors duration-250 group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-    >
-      <div class="flex-col p-6 relative flex w-full max-w-full flex-wrap items-baseline justify-between gap-3 px-3 py-2 md:flex-row">
-        <div class="flex flex-col flex-wrap items-baseline gap-3 md:flex-row">
-          <div
-            class="group h-[30px] font-courier relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 md:-ml-1"
-            data-state="closed"
-          >
-            <span class="pt-0.5">
-              1.0.0
+  <div
+    role="link"
+    aria-label="Update query to: item"
+    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+  >
+    <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div class="flex items-center gap-2">
+        <div class="relative size-6 rounded-md border">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+              it
             </span>
           </div>
-          <button
-            data-state="closed"
-            class="grow cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium"
-          >
+        </div>
+        <div class="inline-flex items-baseline">
+          <h3 class="text-lg font-medium tracking-tight">
             item
-          </button>
-        </div>
-        <div class="flex flex-row flex-wrap items-center gap-3">
-          <div class="group font-sans h-[30px] relative z-[1] w-fit flex cursor-default items-center justify-center gap-1.5 rounded-xl border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
-            <span
-              data-id="info-badge-value"
-              class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.5rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)] lowercase left-[-0.3rem]"
-              style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
-            >
-              prod
+          </h3>
+          <div class="text-muted-foreground ml-3 inline-flex items-baseline gap-1 font-mono text-sm font-medium tabular-nums">
+            <span>
             </span>
-            <span class="flex items-center justify-center">
-              dep of: npm:from@1.0.0
-            </span>
-          </div>
-        </div>
-        <div class="absolute right-2.5 -bottom-3.5 flex gap-2">
-          <div>
-            <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
-              <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
-                prod
-              </span>
-            </div>
           </div>
         </div>
       </div>
-    </a>
+      <div class="flex items-center gap-2">
+        <div class="bg-background flex items-center justify-center rounded-lg border px-2 py-1">
+          <span class="text-muted-foreground text-sm">
+            1.0.0
+          </span>
+        </div>
+        <div class="flex items-center justify-center empty:hidden">
+        </div>
+      </div>
+    </div>
+    <div class="**:data-[slot=delimiter]:text-muted-foreground flex flex-wrap items-center gap-1 **:data-[slot=delimiter]:size-5">
+      <div class="text-muted-foreground flex items-center gap-1 text-sm font-medium">
+        <span class="bg-foreground/6 text-foreground rounded border px-2 font-mono empty:hidden">
+          prod
+        </span>
+        <p class="align-baseline">
+          dep of:
+          <span class="text-foreground ml-1">
+            npm:from@1.0.0
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="flex w-full">
+      <div class="flex items-center space-x-1">
+        <div>
+          <div class="relative flex px-2 items-center justify-center h-[19px] rounded-full cursor-default w-fit bg-blue-200 dark:bg-blue-950 border-[1px] border-blue-500 dark:border-blue-500">
+            <span class="text-xs font-medium inline-flex items-center justify-center text-blue-700 dark:text-blue-400">
+              prod
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
