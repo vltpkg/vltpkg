@@ -1,0 +1,570 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders search results view 1`] = `
+
+<section class="bg-background">
+  <div class="bg-foreground/6 relative">
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+          <div class="h-[36.5px]">
+            <h3
+              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+              style="opacity: 0; filter: blur(2px);"
+            >
+              Start typing to search
+            </h3>
+          </div>
+          <gui-input-group classname="mt-3">
+            <gui-input-group-addon>
+              <gui-search-icon>
+              </gui-search-icon>
+            </gui-input-group-addon>
+            <gui-input-group-input
+              value="react"
+              placeholder="Search packages"
+              classname
+            >
+            </gui-input-group-input>
+            <gui-input-group-addon
+              align="inline-end"
+              classname="gap-1"
+            >
+              <gui-kbd>
+                <gui-command-icon>
+                </gui-command-icon>
+              </gui-kbd>
+              <gui-kbd>
+                K
+              </gui-kbd>
+            </gui-input-group-addon>
+          </gui-input-group>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-search-results-sort>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div
+        class="flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]"
+        style="opacity: 1; filter: blur(0px);"
+      >
+        <div class="bg-background flex h-full w-full items-center justify-center rounded">
+          <gui-empty>
+            <gui-empty-header>
+              <gui-empty-media variant="icon">
+                <gui-package-search-icon>
+                </gui-package-search-icon>
+              </gui-empty-media>
+              <gui-empty-title>
+                Your results will appear here
+              </gui-empty-title>
+              <gui-empty-description>
+                <button
+                  data-slot="button"
+                  class="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 px-3 has-[>svg]:px-2.5"
+                >
+                  I'm feeling lucky
+                </button>
+              </gui-empty-description>
+            </gui-empty-header>
+          </gui-empty>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-search-results-pagination-navigation>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+`;
+
+exports[`renders search results with error 1`] = `
+
+<section class="bg-background">
+  <div class="bg-foreground/6 relative">
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+          <div class="h-[36.5px]">
+            <h3
+              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+              style="opacity: 0; filter: blur(2px);"
+            >
+              Start typing to search
+            </h3>
+          </div>
+          <gui-input-group classname="mt-3">
+            <gui-input-group-addon>
+              <gui-search-icon>
+              </gui-search-icon>
+            </gui-input-group-addon>
+            <gui-input-group-input
+              value="react"
+              placeholder="Search packages"
+              classname
+            >
+            </gui-input-group-input>
+            <gui-input-group-addon
+              align="inline-end"
+              classname="gap-1"
+            >
+              <gui-kbd>
+                <gui-command-icon>
+                </gui-command-icon>
+              </gui-kbd>
+              <gui-kbd>
+                K
+              </gui-kbd>
+            </gui-input-group-addon>
+          </gui-input-group>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-search-results-sort>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div
+        class="flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]"
+        style="opacity: 1; filter: blur(0px);"
+      >
+        <div class="bg-background flex h-full w-full items-center justify-center rounded">
+          <gui-empty>
+            <gui-empty-header>
+              <gui-empty-media variant="icon">
+                <gui-package-search-icon>
+                </gui-package-search-icon>
+              </gui-empty-media>
+              <gui-empty-title>
+                Your results will appear here
+              </gui-empty-title>
+              <gui-empty-description>
+                <button
+                  data-slot="button"
+                  class="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 px-3 has-[>svg]:px-2.5"
+                >
+                  I'm feeling lucky
+                </button>
+              </gui-empty-description>
+            </gui-empty-header>
+          </gui-empty>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-search-results-pagination-navigation>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+`;
+
+exports[`renders search results with no results 1`] = `
+
+<section class="bg-background">
+  <div class="bg-foreground/6 relative">
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+          <div class="h-[36.5px]">
+            <h3
+              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+              style="opacity: 0; filter: blur(2px);"
+            >
+              Start typing to search
+            </h3>
+          </div>
+          <gui-input-group classname="mt-3">
+            <gui-input-group-addon>
+              <gui-search-icon>
+              </gui-search-icon>
+            </gui-input-group-addon>
+            <gui-input-group-input
+              value="nonexistentpackage"
+              placeholder="Search packages"
+              classname
+            >
+            </gui-input-group-input>
+            <gui-input-group-addon
+              align="inline-end"
+              classname="gap-1"
+            >
+              <gui-kbd>
+                <gui-command-icon>
+                </gui-command-icon>
+              </gui-kbd>
+              <gui-kbd>
+                K
+              </gui-kbd>
+            </gui-input-group-addon>
+          </gui-input-group>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-search-results-sort>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div
+        class="flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]"
+        style="opacity: 1; filter: blur(0px);"
+      >
+        <div class="bg-background flex h-full w-full items-center justify-center rounded">
+          <gui-empty>
+            <gui-empty-header>
+              <gui-empty-media variant="icon">
+                <gui-package-search-icon>
+                </gui-package-search-icon>
+              </gui-empty-media>
+              <gui-empty-title>
+                Your results will appear here
+              </gui-empty-title>
+              <gui-empty-description>
+                <button
+                  data-slot="button"
+                  class="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 px-3 has-[>svg]:px-2.5"
+                >
+                  I'm feeling lucky
+                </button>
+              </gui-empty-description>
+            </gui-empty-header>
+          </gui-empty>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-search-results-pagination-navigation>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+`;
+
+exports[`renders search results with results 1`] = `
+
+<section class="bg-background">
+  <div class="bg-foreground/6 relative">
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div class="flex w-full p-[0.5px]">
+        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+          <div class="h-[36.5px]">
+            <h3
+              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+              style="opacity: 0; filter: blur(2px);"
+            >
+              Showing
+              <span class="font-mono text-2xl tabular-nums">
+                2
+              </span>
+              of
+              <span class="font-mono text-2xl tabular-nums">
+                2
+              </span>
+              results for
+              <span class="fancy-quote mr-0.5 ml-2 font-medium">
+                “
+              </span>
+              react
+              <span class="fancy-quote ml-0.5 font-medium">
+                ”
+              </span>
+            </h3>
+          </div>
+          <gui-input-group classname="mt-3">
+            <gui-input-group-addon>
+              <gui-search-icon>
+              </gui-search-icon>
+            </gui-input-group-addon>
+            <gui-input-group-input
+              value="react"
+              placeholder="Search packages"
+              classname
+            >
+            </gui-input-group-input>
+            <gui-input-group-addon
+              align="inline-end"
+              classname="gap-1"
+            >
+              <gui-kbd>
+                <gui-command-icon>
+                </gui-command-icon>
+              </gui-kbd>
+              <gui-kbd>
+                K
+              </gui-kbd>
+            </gui-input-group-addon>
+          </gui-input-group>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-search-results-sort>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <div
+        class="min-w-0"
+        style="opacity: 1; filter: blur(0px);"
+      >
+        <div
+          class="flex w-full flex-col gap-[1px] rounded p-[0.5px]"
+          style="opacity: 0;"
+        >
+          <div
+            class="bg-background rounded"
+            style="opacity: 0; filter: blur(4px);"
+          >
+            <gui-search-result item="[object Object]">
+            </gui-search-result>
+          </div>
+          <div
+            class="bg-background rounded"
+            style="opacity: 0; filter: blur(4px);"
+          >
+            <gui-search-result item="[object Object]">
+            </gui-search-result>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-search-results-pagination-navigation>
+      <div
+        aria-hidden="true"
+        class="p-[0.5px] max-lg:hidden"
+      >
+        <div class="bg-background h-full rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+`;

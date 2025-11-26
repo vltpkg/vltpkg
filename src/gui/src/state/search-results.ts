@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { fetchPackageSearch } from '@/lib/package-search.ts'
 import { PAGE_SIZE_OPTIONS } from '@/components/explorer-grid/results/page-options.tsx'
+import { LRUCache } from '@/utils/lru-cache.ts'
 
 import type { PageSizeOption } from '@/components/explorer-grid/results/page-options.tsx'
 import type { SearchObject } from '@/lib/package-search.ts'
@@ -13,6 +14,24 @@ export type SearchResultsSortBy =
   | 'date'
 
 export type SearchResultsSortDir = 'asc' | 'desc'
+
+/**
+ * LRU cache for search results page
+ * Key format: "query-page-pageSize" (e.g., "react-1-25")
+ * Note: Sorting is done client-side, so we don't include it in the cache key
+ */
+const searchResultsCache = new LRUCache<{
+  objects: SearchObject[]
+  total: number
+}>(50)
+
+const getCacheKey = (
+  query: string,
+  page: number,
+  pageSize: number,
+): string => {
+  return `${query}-${page}-${pageSize}`
+}
 
 /**
  * Client-side sorting function for search results
@@ -122,6 +141,13 @@ type SearchResultsAction = {
    */
   setSortDir: (sortDir: SearchResultsSortDir) => void
   /**
+   * Sets both sort key and direction atomically
+   */
+  setSort: (
+    sortBy: SearchResultsSortBy,
+    sortDir: SearchResultsSortDir,
+  ) => void
+  /**
    * Sets the search term in the input
    */
   setSearchTerm: (term: string) => void
@@ -196,12 +222,12 @@ export const useSearchResultsStore = create<
   },
   setSortBy: (sortBy: SearchResultsSortBy) => {
     set({ sortBy, page: 1 })
-    const { updateURLCallback } = get()
+    const { updateURLCallback, sortDir } = get()
     if (updateURLCallback) {
-      updateURLCallback({ sort: sortBy, page: '1' })
+      updateURLCallback({ sort: sortBy, dir: sortDir, page: '1' })
     }
     // Re-sort existing results
-    const { results, sortDir } = get()
+    const { results } = get()
     if (results.length > 0) {
       const sortedResults = sortResults(results, sortBy, sortDir)
       set({ results: sortedResults })
@@ -209,12 +235,28 @@ export const useSearchResultsStore = create<
   },
   setSortDir: (sortDir: SearchResultsSortDir) => {
     set({ sortDir })
-    const { updateURLCallback } = get()
+    const { updateURLCallback, sortBy } = get()
     if (updateURLCallback) {
-      updateURLCallback({ dir: sortDir })
+      updateURLCallback({ sort: sortBy, dir: sortDir })
     }
     // Re-sort existing results
-    const { results, sortBy } = get()
+    const { results } = get()
+    if (results.length > 0) {
+      const sortedResults = sortResults(results, sortBy, sortDir)
+      set({ results: sortedResults })
+    }
+  },
+  setSort: (
+    sortBy: SearchResultsSortBy,
+    sortDir: SearchResultsSortDir,
+  ) => {
+    set({ sortBy, sortDir, page: 1 })
+    const { updateURLCallback } = get()
+    if (updateURLCallback) {
+      updateURLCallback({ sort: sortBy, dir: sortDir, page: '1' })
+    }
+    // Re-sort existing results (only once)
+    const { results } = get()
     if (results.length > 0) {
       const sortedResults = sortResults(results, sortBy, sortDir)
       set({ results: sortedResults })
@@ -227,10 +269,20 @@ export const useSearchResultsStore = create<
     set({ query, searchTerm: query })
   },
   executeSearch: () => {
-    const { searchTerm, updateURLCallback } = get()
+    const { searchTerm, query, updateURLCallback } = get()
     if (!searchTerm || searchTerm.trim() === '') return
 
-    set({ query: searchTerm, page: 1 })
+    // Clear results if query is changing to prevent showing stale results
+    const isQueryChanging = searchTerm !== query
+    set({
+      query: searchTerm,
+      page: 1,
+      ...(isQueryChanging && {
+        results: [],
+        total: 0,
+        isLoading: true,
+      }),
+    })
     if (updateURLCallback) {
       updateURLCallback({ q: searchTerm, page: '1' })
     }
@@ -239,6 +291,27 @@ export const useSearchResultsStore = create<
     const { query, page, pageSize, sortBy, sortDir } = get()
 
     if (!query) return
+
+    // Check cache first (before sorting is applied)
+    const cacheKey = getCacheKey(query, page, pageSize)
+    const cached = searchResultsCache.get(cacheKey)
+
+    if (cached) {
+      // Apply client-side sorting to cached results
+      const sortedResults = sortResults(
+        cached.objects,
+        sortBy,
+        sortDir,
+      )
+
+      set({
+        results: sortedResults,
+        total: cached.total,
+        isLoading: false,
+        error: null,
+      })
+      return
+    }
 
     set({ isLoading: true, error: null })
 
@@ -249,6 +322,12 @@ export const useSearchResultsStore = create<
         size: pageSize,
         from,
         signal,
+      })
+
+      // Cache the raw results (before sorting)
+      searchResultsCache.set(cacheKey, {
+        objects: result.objects,
+        total: result.total,
       })
 
       // Apply client-side sorting since npm registry doesn't support all sort options

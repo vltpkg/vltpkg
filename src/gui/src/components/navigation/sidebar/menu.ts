@@ -23,8 +23,8 @@ export interface MenuItem {
 
 export const mainMenuItems: MenuItem[] = [
   {
-    title: 'Home',
-    url: '/',
+    title: 'Search',
+    url: '/search',
     icon: Search,
   },
   {

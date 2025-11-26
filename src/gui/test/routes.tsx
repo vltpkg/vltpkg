@@ -20,6 +20,12 @@ vi.mock('@/components/navigation/header/index.tsx', () => ({
 vi.mock('@/components/navigation/footer/minimal.tsx', () => ({
   MinimalFooter: 'gui-minimal-footer',
 }))
+vi.mock('@/components/navigation/footer/index.tsx', () => ({
+  Footer: 'gui-marketing-footer',
+}))
+vi.mock('@/components/navigation/marketing-menu/index.tsx', () => ({
+  Header: 'gui-marketing-header',
+}))
 
 vi.mock('@/components/navigation/sidebar/index.tsx', () => ({
   defaultOpen: true,
@@ -78,15 +84,18 @@ vi.mock('@/app/help/help-selectors.tsx', () => ({
 vi.mock('@/app/settings/index.tsx', () => ({
   SettingsView: 'gui-settings-view',
 }))
+vi.mock('@/app/search/index.tsx', () => ({
+  Search: 'gui-search',
+}))
+vi.mock('@/app/search/search-results.tsx', () => ({
+  SearchResults: 'gui-search-results',
+}))
 
 vi.mock('@/app/auth/sign-in.tsx', () => ({
   SignIn: 'gui-sign-in',
 }))
 vi.mock('@/app/auth/sign-up.tsx', () => ({
   SignUp: 'gui-sign-up',
-}))
-vi.mock('@/app/search/index.tsx', () => ({
-  Search: 'gui-search',
 }))
 
 expect.addSnapshotSerializer({
@@ -172,5 +181,10 @@ test('renders SignIn for the "/auth/sign-in" view', () => {
 
 test('renders SignUp for the "/auth/sign-up" view', () => {
   const { container } = renderWithRouter('/auth/sign-up')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders search for the "/search" view', () => {
+  const { container } = renderWithRouter('/search')
   expect(container.innerHTML).toMatchSnapshot()
 })

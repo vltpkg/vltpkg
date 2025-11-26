@@ -27,7 +27,7 @@
 
 @font-face {
   font-family: 'inter';
-  src: url('/fonts/inter.ttf') format('truetype');
+  src: url('/fonts/inter.ttf') format('truetype-variations');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -35,7 +35,16 @@
 
 @font-face {
   font-family: 'geistMono';
-  src: url('/fonts/geist-mono.ttf') format('truetype');
+  src: url('/fonts/geist-mono.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'notoSerif';
+  src: url('/fonts/noto-serif-variable.ttf')
+    format('truetype-variations');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -53,6 +62,36 @@
   --font-sans: inter, sans-serif;
   --font-mono: geistMono, serif;
   --font-courier: courier, monospace;
+  --font-noto-serif: notoSerif, serif;
+}
+
+@utility fancy-quote {
+  @apply font-noto-serif;
+}
+
+@utility pattern-hatch {
+  /* light */
+  --pattern-fg: rgb(0 0 0 / 0.05);
+
+  background-image: repeating-linear-gradient(
+    315deg,
+    var(--pattern-fg) 0,
+    var(--pattern-fg) 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 10px 10px;
+  background-attachment: fixed;
+
+  /* borders that match the pattern tint */
+  border-left: 1px solid var(--pattern-fg);
+  border-right: 1px solid var(--pattern-fg);
+}
+
+@variant dark {
+  .pattern-hatch {
+    --pattern-fg: rgb(255 255 255 / 0.1);
+  }
 }
 
 @theme inline {

@@ -70,6 +70,7 @@ export interface RegistryPackage {
   description?: string
   keywords?: string[]
   date: string
+  license?: string
   links: {
     npm?: string
     homepage?: string
@@ -81,9 +82,9 @@ export interface RegistryPackage {
     email?: string
     username?: string
   }
-  publisher: {
-    username: string
-    email: string
+  publisher?: {
+    username?: string
+    email?: string
   }
   maintainers: {
     username: string
@@ -93,6 +94,10 @@ export interface RegistryPackage {
 
 export interface SearchObject {
   package: RegistryPackage
+  downloads: {
+    monthly: number
+    weekly: number
+  }
   score: {
     final: number
     detail: {

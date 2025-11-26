@@ -10,6 +10,7 @@ vi.mock('react-router', () => ({
   useLocation: vi.fn().mockReturnValue({
     pathname: '/',
   } as Location),
+  NavLink: 'gui-router-nav-link',
 }))
 
 vi.mock('@/components/icons/index.ts', () => ({

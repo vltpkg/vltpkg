@@ -127,7 +127,7 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
         )}
         {...rest}>
         {startContent && (
-          <div className="absolute z-[51] pr-8">{startContent}</div>
+          <div className="absolute z-[52] pr-8">{startContent}</div>
         )}
         <div id={QUERY_BAR_ID} className="relative z-[51] w-full">
           <Input
@@ -141,7 +141,7 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
             autoCapitalize="off"
             ref={inputRef}
             className={cn(
-              'dark:bg-muted-foreground/5 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:caret-white',
+              'dark:bg-muted-foreground/5 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:border-[0] focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:caret-white',
               startContent && 'pl-10',
               endContent && 'pr-32',
               className,
