@@ -20,7 +20,7 @@ export type SpecOptionsFilled = {
   /** registries that work like https://npm.jsr.io */
   'jsr-registries': Record<string, string>
   catalog: Record<string, string>
-  catalogs: Record<string, Record<string, string>>
+  catalogs?: Record<string, Record<string, string>>
 }
 
 export type GitSelectorParsed = {
