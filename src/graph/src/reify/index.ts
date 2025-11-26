@@ -199,12 +199,8 @@ const reify_ = async (
   if (actions.length) await callLimit(actions, { limit })
 
   // create all node_modules symlinks, and link bins to nm/.bin
-  const edgeActions: Promise<unknown>[] = addEdges(
-    diff,
-    scurry,
-    remover,
-  )
-  if (edgeActions.length) await Promise.all(edgeActions)
+  const edgeActions = addEdges(diff, scurry, remover)
+  if (edgeActions.length) await callLimit(edgeActions, { limit })
 
   await internalHoist(diff.to, options, remover)
 
