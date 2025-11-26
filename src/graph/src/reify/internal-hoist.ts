@@ -14,8 +14,31 @@ type InternalHoistOptions = Pick<
   'projectRoot' | 'scurry'
 >
 
+/**
+ * Check if a node has any incoming edge from an importer.
+ * Uses cache to avoid repeated iteration over edgesIn.
+ */
+const hasImporterDep = (
+  node: Node,
+  cache: Map<Node, boolean>,
+): boolean => {
+  let result = cache.get(node)
+  if (result === undefined) {
+    result = false
+    for (const edge of node.edgesIn) {
+      if (edge.from.importer) {
+        result = true
+        break
+      }
+    }
+    cache.set(node, result)
+  }
+  return result
+}
+
 export const pickNodeToHoist = (
   nodes: Set<Node>,
+  importerDepCache: Map<Node, boolean>,
 ): Node | undefined => {
   let pick: DepIDTuple | undefined = undefined
   let pickNode: Node | undefined = undefined
@@ -31,10 +54,8 @@ export const pickNodeToHoist = (
     }
 
     // if one is a dep of an importer, privilege that one
-    const impDep = [...node.edgesIn].some(n => n.from.importer)
-    const pickImpDep = [...pickNode.edgesIn].some(
-      n => n.from.importer,
-    )
+    const impDep = hasImporterDep(node, importerDepCache)
+    const pickImpDep = hasImporterDep(pickNode, importerDepCache)
     if (impDep !== pickImpDep) {
       if (!pickImpDep) {
         pick = id
@@ -95,8 +116,10 @@ export const internalHoist = async (
   // and higher versions over lower ones. In the case of non-registry
   // deps, we just pick the first item by sorting the DepIDs.
   const links = new Map<string, { id: DepID; name: string }>()
+  // Cache importer-dep status per node across all name sets
+  const importerDepCache = new Map<Node, boolean>()
   for (const [name, nodes] of graph.nodesByName) {
-    const pickNode = pickNodeToHoist(nodes)
+    const pickNode = pickNodeToHoist(nodes, importerDepCache)
     if (pickNode) {
       let picked = false
       if (pickNode.edgesIn.size > 0) {
@@ -125,31 +148,32 @@ export const internalHoist = async (
   await mkdir(hoistDir.fullpath(), { recursive: true })
 
   const removes: Promise<void>[] = []
-  for (const entry of await hoistDir.readdir()) {
-    const name = entry.name
-    // scoped package namespace
-    if (name.startsWith('@')) {
-      for (const pkg of await entry.readdir()) {
-        await checkExisting(
-          `${name}/${pkg.name}`,
-          pkg,
-          links,
-          removes,
-          scurry,
-          remover,
-        )
+
+  // Collect all entries in parallel (including scoped package subdirs)
+  const entries: { name: string; entry: PathBase }[] = []
+  const dirs = await hoistDir.readdir()
+  await Promise.all(
+    dirs.map(async entry => {
+      if (entry.name.startsWith('@')) {
+        // Parallelize scoped package readdir
+        for (const pkg of await entry.readdir()) {
+          entries.push({
+            name: `${entry.name}/${pkg.name}`,
+            entry: pkg,
+          })
+        }
+      } else {
+        entries.push({ name: entry.name, entry })
       }
-    } else {
-      await checkExisting(
-        name,
-        entry,
-        links,
-        removes,
-        scurry,
-        remover,
-      )
-    }
-  }
+    }),
+  )
+
+  // Run all checkExisting calls in parallel
+  await Promise.all(
+    entries.map(({ name, entry }) =>
+      checkExisting(name, entry, links, removes, scurry, remover),
+    ),
+  )
   await Promise.all(removes)
 
   const symlinks: Promise<void>[] = []

@@ -393,7 +393,8 @@ t.test(
 t.test('deciding which node to hoist', async t => {
   t.test('do not pick importer', async t => {
     const n = { importer: true } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([n])), undefined)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([n]), cache), undefined)
   })
 
   t.test('do not pick node not in vlt store', async t => {
@@ -401,7 +402,8 @@ t.test('deciding which node to hoist', async t => {
       importer: false,
       inVltStore: () => false,
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([n])), undefined)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([n]), cache), undefined)
   })
 
   t.test('pick node if only one', async t => {
@@ -410,7 +412,8 @@ t.test('deciding which node to hoist', async t => {
       inVltStore: () => true,
       id: joinDepIDTuple(['registry', '', 'x@1.2.3']),
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([n])), n)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([n]), cache), n)
   })
 
   t.test('pick importer dep over non-importer dep', async t => {
@@ -426,8 +429,9 @@ t.test('deciding which node to hoist', async t => {
       id: joinDepIDTuple(['registry', '', 'x@2.3.4']),
       edgesIn: new Set([{ from: { importer: false } }]),
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([m, n])), n)
-    t.equal(pickNodeToHoist(new Set([n, m])), n)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([m, n]), cache), n)
+    t.equal(pickNodeToHoist(new Set([n, m]), cache), n)
   })
 
   t.test('pick registry node over non-registry', async t => {
@@ -443,8 +447,9 @@ t.test('deciding which node to hoist', async t => {
       id: joinDepIDTuple(['git', 'git@git.com/x', 'main']),
       edgesIn: new Set([{ from: { importer: false } }]),
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([m, n])), n)
-    t.equal(pickNodeToHoist(new Set([n, m])), n)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([m, n]), cache), n)
+    t.equal(pickNodeToHoist(new Set([n, m]), cache), n)
   })
 
   t.test('pick lexically higher of all non-reg deps', async t => {
@@ -460,8 +465,9 @@ t.test('deciding which node to hoist', async t => {
       id: joinDepIDTuple(['git', 'git@git.com/x', 'main']),
       edgesIn: new Set([{ from: { importer: false } }]),
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([m, n])), n)
-    t.equal(pickNodeToHoist(new Set([n, m])), n)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([m, n]), cache), n)
+    t.equal(pickNodeToHoist(new Set([n, m]), cache), n)
   })
 
   t.test('pick higher version registry dependency', async t => {
@@ -479,8 +485,9 @@ t.test('deciding which node to hoist', async t => {
       version: '2.3.4',
       edgesIn: new Set([{ from: { importer: false } }]),
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([m, n])), m)
-    t.equal(pickNodeToHoist(new Set([n, m])), m)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([m, n]), cache), m)
+    t.equal(pickNodeToHoist(new Set([n, m]), cache), m)
   })
 
   t.test('pick versioned dependency over unversioned', async t => {
@@ -498,8 +505,33 @@ t.test('deciding which node to hoist', async t => {
       id: joinDepIDTuple(['registry', '', 'x@2.3.4']),
       edgesIn: new Set([{ from: { importer: false } }]),
     } as unknown as Node
-    t.equal(pickNodeToHoist(new Set([m, n])), n)
-    t.equal(pickNodeToHoist(new Set([n, m])), n)
+    const cache = new Map()
+    t.equal(pickNodeToHoist(new Set([m, n]), cache), n)
+    t.equal(pickNodeToHoist(new Set([n, m]), cache), n)
+  })
+
+  t.test('cache is reused across calls', async t => {
+    const n = {
+      importer: false,
+      inVltStore: () => true,
+      id: joinDepIDTuple(['registry', '', 'x@1.2.3']),
+      edgesIn: new Set([{ from: { importer: true } }]),
+    } as unknown as Node
+    const m = {
+      importer: false,
+      inVltStore: () => true,
+      id: joinDepIDTuple(['registry', '', 'x@2.3.4']),
+      edgesIn: new Set([{ from: { importer: false } }]),
+    } as unknown as Node
+    const cache = new Map()
+    // First call populates cache (needs 2+ nodes to trigger comparison)
+    pickNodeToHoist(new Set([m, n]), cache)
+    t.equal(cache.size, 2, 'cache populated with both nodes')
+    t.equal(cache.get(n), true, 'n cached as importer dep')
+    t.equal(cache.get(m), false, 'm cached as non-importer dep')
+    // Second call reuses cache (no iteration needed)
+    pickNodeToHoist(new Set([m, n]), cache)
+    t.equal(cache.size, 2, 'cache unchanged')
   })
 })
 
