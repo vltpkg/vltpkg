@@ -75,29 +75,59 @@ function createDepIdMapping(
   return mapping
 }
 
-const nodeLabel = (node: NodeLike) =>
-  `"${String(node).replaceAll('@', '#64;')}"`
+/**
+ * Returns a node reference - full label on first occurrence, just shortId after
+ */
+const nodeRef = (
+  node: NodeLike,
+  labeledNodes: Set<DepID>,
+  depIdMapping: Map<DepID, string>,
+): string => {
+  const shortId = depIdMapping.get(node.id) ?? ''
+  if (labeledNodes.has(node.id)) {
+    return shortId
+  }
+  labeledNodes.add(node.id)
+  return `${shortId}("${String(node).replaceAll('@', '#64;')}")`
+}
 
 function parseNode(
   seenNodes: Set<DepID>,
+  labeledNodes: Set<DepID>,
   includedItems: Map<EdgeLike | NodeLike, boolean>,
   depIdMapping: Map<DepID, string>,
   node: NodeLike,
+  isImporter = false,
 ) {
   if (seenNodes.has(node.id) || !includedItems.get(node)) {
     return ''
   }
   seenNodes.add(node.id)
+  // For importers, render node label BEFORE processing edges
+  const nodeLabel =
+    isImporter ? nodeRef(node, labeledNodes, depIdMapping) : ''
   const edges: string = [...node.edgesOut.values()]
-    .map(e => parseEdge(seenNodes, includedItems, depIdMapping, e))
+    .map(e =>
+      parseEdge(
+        seenNodes,
+        labeledNodes,
+        includedItems,
+        depIdMapping,
+        e,
+      ),
+    )
     .filter(Boolean)
     .join('\n')
-  const shortId = depIdMapping.get(node.id)
-  return `${shortId}(${nodeLabel(node)})${edges.length ? '\n' : ''}${edges}`
+  // Only render node standalone for importers, others are rendered as part of edges
+  if (isImporter) {
+    return `${nodeLabel}${edges.length ? '\n' : ''}${edges}`
+  }
+  return edges
 }
 
 function parseEdge(
   seenNodes: Set<DepID>,
+  labeledNodes: Set<DepID>,
   includedItems: Map<EdgeLike | NodeLike, boolean>,
   depIdMapping: Map<DepID, string>,
   edge: EdgeLike,
@@ -106,24 +136,27 @@ function parseEdge(
     return ''
   }
 
-  const fromShortId = depIdMapping.get(edge.from.id)
   const edgeType = edge.type === 'prod' ? '' : ` (${edge.type})`
   const edgeResult =
-    `${fromShortId}(${nodeLabel(edge.from)})` +
+    nodeRef(edge.from, labeledNodes, depIdMapping) +
     ` -->|"${String(edge.spec).replaceAll('@', '#64;')}${edgeType}"| `
 
   const missingLabel =
     edge.type.endsWith('ptional') ? 'Missing Optional' : 'Missing'
   if (!edge.to) {
-    return edgeResult + `missing-${missingCount++}(${missingLabel})\n`
+    return edgeResult + `missing-${missingCount++}(${missingLabel})`
   }
 
-  const toShortId = depIdMapping.get(edge.to.id)
-  return (
-    edgeResult +
-    `${toShortId}(${nodeLabel(edge.to)})\n` +
-    parseNode(seenNodes, includedItems, depIdMapping, edge.to)
+  // Label the target node BEFORE processing its children
+  const toRef = nodeRef(edge.to, labeledNodes, depIdMapping)
+  const childEdges = parseNode(
+    seenNodes,
+    labeledNodes,
+    includedItems,
+    depIdMapping,
+    edge.to,
   )
+  return edgeResult + toRef + (childEdges ? '\n' + childEdges : '')
 }
 
 /**
@@ -172,12 +205,23 @@ export function mermaidOutput({
   // Create DepID to short identifier mapping
   const depIdMapping = createDepIdMapping(importers)
 
+  // Track nodes that have had their label printed (shared across all importers)
+  const labeledNodes = new Set<DepID>()
+
   return (
     'flowchart TD\n' +
     [...importers]
       .map(i =>
-        parseNode(new Set<DepID>(), includedItems, depIdMapping, i),
+        parseNode(
+          new Set<DepID>(),
+          labeledNodes,
+          includedItems,
+          depIdMapping,
+          i,
+          true, // isImporter
+        ),
       )
+      .filter(Boolean)
       .join('\n')
   )
 }
