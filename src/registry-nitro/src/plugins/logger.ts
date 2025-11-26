@@ -14,24 +14,33 @@ initTelemetry()
 // WeakMap to track request transactions
 const requestTransactions = new WeakMap<HTTPEvent, SpanContext>()
 
+// Extended event context type for request tracking
+type EventContext = { requestId?: string }
+
 export default definePlugin(nitro => {
   nitro.hooks.hook('request', (event: HTTPEvent) => {
-    event.context.requestId = crypto.randomUUID()
+    const requestId = crypto.randomUUID()
+    ;(
+      event as unknown as { context: EventContext }
+    ).context.requestId = requestId
+
     const method = event.req.method
     const url = event.req.url
 
     logger.info('request_start', {
-      'request.id': event.context.requestId,
+      'request.id': requestId,
       'http.method': method,
       'http.url': url,
     })
 
-    // Start a transaction for this request
-    const transaction = startRequestTransaction(method, url)
+    // Start a transaction for this request with unique requestId
+    const transaction = startRequestTransaction(method, url, {
+      'request.id': requestId,
+    })
     requestTransactions.set(event, transaction)
   })
 
-  nitro.hooks.hook('response', (res: Response, event: HTTPEvent) => {
+  nitro.hooks.hook('response', (_res: Response, event: HTTPEvent) => {
     const transaction = requestTransactions.get(event)
     if (transaction) {
       transaction.setStatus('ok')
@@ -40,7 +49,8 @@ export default definePlugin(nitro => {
     }
 
     logger.info('request_end', {
-      'request.id': event.context.requestId,
+      'request.id': (event as unknown as { context: EventContext })
+        .context.requestId,
       'http.method': event.req.method,
       'http.url': event.req.url,
     })

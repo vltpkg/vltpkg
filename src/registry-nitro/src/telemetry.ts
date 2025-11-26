@@ -176,6 +176,7 @@ export interface SpanContext {
 /**
  * Start a performance span for tracking operation timing.
  * Returns an object with end() to complete the span.
+ * When telemetry is disabled, still logs operation timing to console.
  *
  * Example:
  * ```ts
@@ -197,10 +198,28 @@ export function startSpan(
   attributes?: SpanAttributes,
 ): SpanContext {
   if (!isEnabled) {
+    const start = performance.now()
+    let status: 'ok' | 'error' = 'ok'
+    let errorMessage: string | undefined
+
     return {
-      end: () => {},
+      end: () => {
+        const duration = performance.now() - start
+        if (status === 'error') {
+          console.error(
+            `[${op}] ${name} failed after ${duration.toFixed(2)}ms${errorMessage ? `: ${errorMessage}` : ''}`,
+          )
+        } else {
+          console.log(
+            `[${op}] ${name} completed in ${duration.toFixed(2)}ms`,
+          )
+        }
+      },
       setAttributes: () => {},
-      setStatus: () => {},
+      setStatus: (s: 'ok' | 'error', message?: string) => {
+        status = s
+        errorMessage = message
+      },
     }
   }
 
@@ -219,9 +238,9 @@ export function startSpan(
         }
       }
     },
-    setStatus: (status: 'ok' | 'error', message?: string) => {
+    setStatus: (s: 'ok' | 'error', message?: string) => {
       span.setStatus({
-        code: status === 'ok' ? 1 : 2,
+        code: s === 'ok' ? 1 : 2,
         message,
       })
     },
@@ -230,6 +249,7 @@ export function startSpan(
 
 /**
  * Wrap an async function in a span for automatic timing and error capture.
+ * When telemetry is disabled, still logs operation timing to console.
  *
  * Example:
  * ```ts
@@ -245,7 +265,22 @@ export async function withSpan<T>(
   fn: () => Promise<T>,
 ): Promise<T> {
   if (!isEnabled) {
-    return fn()
+    const start = performance.now()
+    try {
+      const result = await fn()
+      const duration = performance.now() - start
+      console.log(
+        `[${op}] ${name} completed in ${duration.toFixed(2)}ms`,
+      )
+      return result
+    } catch (err) {
+      const duration = performance.now() - start
+      console.error(
+        `[${op}] ${name} failed after ${duration.toFixed(2)}ms:`,
+        err instanceof Error ? err.message : err,
+      )
+      throw err
+    }
   }
 
   return Sentry.startSpan(
@@ -272,6 +307,7 @@ export async function withSpan<T>(
 
 /**
  * Wrap a sync function in a span for automatic timing and error capture.
+ * When telemetry is disabled, still logs operation timing to console.
  */
 export function withSpanSync<T>(
   op: SpanOp,
@@ -280,7 +316,22 @@ export function withSpanSync<T>(
   fn: () => T,
 ): T {
   if (!isEnabled) {
-    return fn()
+    const start = performance.now()
+    try {
+      const result = fn()
+      const duration = performance.now() - start
+      console.log(
+        `[${op}] ${name} completed in ${duration.toFixed(2)}ms`,
+      )
+      return result
+    } catch (err) {
+      const duration = performance.now() - start
+      console.error(
+        `[${op}] ${name} failed after ${duration.toFixed(2)}ms:`,
+        err instanceof Error ? err.message : err,
+      )
+      throw err
+    }
   }
 
   return Sentry.startSpanManual(
@@ -314,23 +365,44 @@ export function withSpanSync<T>(
 /**
  * Start a transaction for an HTTP request. Call this at the beginning of
  * request handling to create a parent span that child spans will attach to.
+ * When telemetry is disabled, still logs request duration to console.
  */
 export function startRequestTransaction(
   method: string,
   path: string,
   attributes?: SpanAttributes,
 ): SpanContext {
+  const name = `${method} ${path}`
+
   if (!isEnabled) {
+    const start = performance.now()
+    let status: 'ok' | 'error' = 'ok'
+    let errorMessage: string | undefined
+
     return {
-      end: () => {},
+      end: () => {
+        const duration = performance.now() - start
+        if (status === 'error') {
+          console.error(
+            `[http.request] ${name} failed after ${duration.toFixed(2)}ms${errorMessage ? `: ${errorMessage}` : ''}`,
+          )
+        } else {
+          console.log(
+            `[http.request] ${name} completed in ${duration.toFixed(2)}ms`,
+          )
+        }
+      },
       setAttributes: () => {},
-      setStatus: () => {},
+      setStatus: (s: 'ok' | 'error', message?: string) => {
+        status = s
+        errorMessage = message
+      },
     }
   }
 
   const span = Sentry.startInactiveSpan({
     op: 'http.request',
-    name: `${method} ${path}`,
+    name,
     forceTransaction: true,
     attributes: toSpanAttributes({
       'http.method': method,
@@ -348,9 +420,9 @@ export function startRequestTransaction(
         }
       }
     },
-    setStatus: (status: 'ok' | 'error', message?: string) => {
+    setStatus: (s: 'ok' | 'error', message?: string) => {
       span.setStatus({
-        code: status === 'ok' ? 1 : 2,
+        code: s === 'ok' ? 1 : 2,
         message,
       })
     },
