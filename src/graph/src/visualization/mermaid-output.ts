@@ -76,7 +76,12 @@ function createDepIdMapping(
 }
 
 /**
- * Returns a node reference - full label on first occurrence, just shortId after
+ * Returns a node reference: on the first occurrence of a node, returns the full label;
+ * on subsequent occurrences, returns just the shortId.
+ *
+ * Note: Mutates the `labeledNodes` set as a side effect to track which nodes have already
+ * been labeled. This tracking is shared across multiple importers to prevent duplicate
+ * labels in the output.
  */
 const nodeRef = (
   node: NodeLike,
