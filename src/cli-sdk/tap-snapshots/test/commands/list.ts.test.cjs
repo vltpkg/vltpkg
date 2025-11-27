@@ -215,14 +215,10 @@ my-project
 exports[`test/commands/list.ts > TAP > list > should list mermaid in json format 1`] = `
 flowchart TD
 a("root:my-project")
-a("root:my-project") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
-b("npm:#64;foo/bazz#64;1.0.0")
-a("root:my-project") -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
-c("npm:bar#64;1.0.0")
-c("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
-d("custom:baz#64;1.0.0")
-d("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
-
+a -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
+a -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+c -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+d -->|"#64;foo/bazz#64;^1.0.0"| b
 `
 
 exports[`test/commands/list.ts > TAP > list > should list pkgs in human readable format 1`] = `
@@ -362,14 +358,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
 exports[`test/commands/list.ts > TAP > list > should list pkgs in mermaid format 1`] = `
 flowchart TD
 a("root:my-project")
-a("root:my-project") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
-b("npm:#64;foo/bazz#64;1.0.0")
-a("root:my-project") -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
-c("npm:bar#64;1.0.0")
-c("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
-d("custom:baz#64;1.0.0")
-d("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
-
+a -->|"#64;foo/bazz#64;^1.0.0"| b("npm:#64;foo/bazz#64;1.0.0")
+a -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+c -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+d -->|"#64;foo/bazz#64;^1.0.0"| b
 `
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope nodes as importers 1`] = `

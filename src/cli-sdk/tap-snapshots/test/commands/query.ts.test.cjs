@@ -235,16 +235,11 @@ Defaults to listing all dependencies of the project root and workspaces.
 exports[`test/commands/query.ts > TAP > query > should list mermaid in json format 1`] = `
 flowchart TD
 a("root:my-project")
-a("root:my-project") -->|"foo#64;^1.0.0"| b("npm:foo#64;1.0.0")
-b("npm:foo#64;1.0.0")
-a("root:my-project") -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
-c("npm:bar#64;1.0.0")
-c("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
-d("custom:baz#64;1.0.0")
-d("custom:baz#64;1.0.0") -->|"foo#64;^1.0.0"| b("npm:foo#64;1.0.0")
-
-a("root:my-project") -->|"missing#64;^1.0.0"| missing-0(Missing)
-
+a -->|"foo#64;^1.0.0"| b("npm:foo#64;1.0.0")
+a -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+c -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+d -->|"foo#64;^1.0.0"| b
+a -->|"missing#64;^1.0.0"| missing-0(Missing)
 `
 
 exports[`test/commands/query.ts > TAP > query > should list pkgs in human readable format 1`] = `
