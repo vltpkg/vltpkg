@@ -9,7 +9,6 @@ import type {
   AddImportersDependenciesMap,
   Dependency,
 } from '../src/dependencies.ts'
-import type { BuildIdealAddOptions } from '../src/ideal/types.ts'
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
@@ -30,60 +29,61 @@ const createMockPackageInfo = (
 const mockPackageInfo = createMockPackageInfo()
 
 t.test('install', async t => {
-  const options = {
-    projectRoot: t.testdirName,
-    scurry: {},
-    packageJson: {
-      read() {
-        return { name: 'my-project', version: '1.0.0' }
-      },
+  const abbrevManifest = {
+    name: 'abbrev',
+    version: '2.0.0',
+  }
+
+  const packageInfo = {
+    async manifest(spec: Spec, _options?: any) {
+      switch (spec.name) {
+        case 'abbrev':
+          return abbrevManifest
+        default:
+          return null
+      }
     },
+    async extract(): Promise<void> {},
+  } as unknown as PackageInfoClient
+
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt-lock.json': JSON.stringify({
+      lockfileVersion: 0,
+      options: {},
+      nodes: {},
+      edges: {},
+    }),
+  })
+  t.chdir(projectRoot)
+
+  const options = {
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo,
     allowScripts: ':not(*)',
   } as unknown as InstallOptions
-  let log = ''
 
   const rootDepID = joinDepIDTuple(['file', '.'])
 
-  const { install } = await t.mockImport<
-    typeof import('../src/install.ts')
-  >('../src/install.ts', {
-    '../src/ideal/build.ts': {
-      build: async ({ add }: BuildIdealAddOptions) => {
-        log += `buildideal result adds ${add.get(rootDepID)?.size || 0} new package(s)\n`
-      },
-    },
-    '../src/actual/load.ts': {
-      load: () => {
-        log += 'actual.load\n'
-        return {
-          edges: new Set(),
-          importers: new Map(),
-          nodes: new Map(),
-        }
-      },
-    },
-    '../src/reify/index.ts': {
-      reify: async () => {
-        log += 'reify\n'
-        return { buildQueue: [], diff: {} }
-      },
-    },
-    '../src/modifiers.ts': {
-      GraphModifier: {
-        maybeLoad() {
-          log += 'GraphModifier.maybeLoad\n'
-        },
-      },
-    },
-  })
+  const { install } = await import('../src/install.ts')
 
-  await install(options, new Map() as AddImportersDependenciesMap)
+  const result = await install(
+    options,
+    new Map() as AddImportersDependenciesMap,
+  )
 
-  t.matchSnapshot(log, 'should call build -> actual.load -> reify')
+  t.matchSnapshot(
+    objectLikeOutput(result.graph),
+    'should return a graph',
+  )
 
   // adding a new dependency
-  log = ''
-  await install(
+  const result2 = await install(
     options,
     new Map([
       [
@@ -101,7 +101,10 @@ t.test('install', async t => {
     ]) as AddImportersDependenciesMap,
   )
 
-  t.matchSnapshot(log, 'should call build adding new dependency')
+  t.matchSnapshot(
+    objectLikeOutput(result2.graph),
+    'should call build adding new dependency',
+  )
 })
 
 t.test('install with no package.json file in cwd', async t => {
@@ -1555,5 +1558,58 @@ t.test(
     )
     t.ok(result.graph, 'should return graph')
     t.equal(result.diff, undefined, 'should return undefined diff')
+  },
+)
+
+t.test(
+  'install failure without hidden lockfile propagates original error',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: 0,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+      // No node_modules/.vlt-lock.json (hidden lockfile)
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+    } as unknown as InstallOptions
+
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/ideal/build.ts': {
+        build: async () => {
+          throw error('test error without hidden lockfile', {})
+        },
+      },
+      '../src/reify/index.ts': {
+        reify: async () => ({ buildQueue: {}, diff: {} }),
+      },
+      'node:fs': {
+        ...(await import('node:fs')),
+        existsSync: () => true,
+        rmSync: () => {
+          throw error('rmSync error during cleanup', {})
+        },
+      },
+    })
+
+    await t.rejects(
+      install(options, new Map() as AddImportersDependenciesMap),
+      /test error without hidden lockfile/,
+      'should propagate original error when no hidden lockfile exists',
+    )
   },
 )
