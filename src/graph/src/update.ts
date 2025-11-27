@@ -10,6 +10,8 @@ import type { LoadOptions } from './actual/load.ts'
 import { Graph } from './graph.ts'
 import { graphStep } from '@vltpkg/output'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { existsSync, rmSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -67,6 +69,16 @@ export const update = async (options: UpdateOptions) => {
     /* c8 ignore start */
   } catch (err) {
     await remover.rollback().catch(() => {})
+    // Remove hidden lockfile on failure
+    try {
+      const hiddenLockfile = resolve(
+        options.projectRoot,
+        'node_modules/.vlt-lock.json',
+      )
+      if (existsSync(hiddenLockfile)) {
+        rmSync(hiddenLockfile, { force: true })
+      }
+    } catch {}
     throw err
   }
   /* c8 ignore stop */

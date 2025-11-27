@@ -5,20 +5,26 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/install.ts > TAP > install > should call build -> actual.load -> reify 1`] = `
-GraphModifier.maybeLoad
-actual.load
-buildideal result adds 0 new package(s)
-reify
-
+exports[`test/install.ts > TAP > install > should call build adding new dependency 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(abbrev@latest) -dev-> to: Node {
+        id: '··abbrev@2.0.0',
+        location: './node_modules/.vlt/··abbrev@2.0.0/node_modules/abbrev',
+        dev: true,
+        resolved: 'https://registry.npmjs.org/abbrev/-/abbrev-2.0.0.tgz'
+      }
+    ]
+  }
+]
 `
 
-exports[`test/install.ts > TAP > install > should call build adding new dependency 1`] = `
-GraphModifier.maybeLoad
-actual.load
-buildideal result adds 1 new package(s)
-reify
-
+exports[`test/install.ts > TAP > install > should return a graph 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
 `
 
 exports[`test/install.ts > TAP > install with no package.json file in cwd > should create a graph with the new dependency 1`] = `

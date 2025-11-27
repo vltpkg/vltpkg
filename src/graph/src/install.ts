@@ -16,7 +16,7 @@ import type {
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { DepID } from '@vltpkg/dep-id'
-import { existsSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual } from './lockfile/load.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
@@ -247,6 +247,16 @@ export const install = async (
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
+    // Remove hidden lockfile on failure
+    try {
+      const hiddenLockfile = resolve(
+        options.projectRoot,
+        'node_modules/.vlt-lock.json',
+      )
+      if (existsSync(hiddenLockfile)) {
+        rmSync(hiddenLockfile, { force: true })
+      }
+    } catch {}
     throw err
   }
 }
