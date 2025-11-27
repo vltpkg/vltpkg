@@ -106,7 +106,8 @@ function parseNode(
     return ''
   }
   seenNodes.add(node.id)
-  // For importers, render node label BEFORE processing edges
+  // For importers, render the node label first as a standalone line before processing edges,
+  // since they appear at the top of the graph. Non-importer nodes are labeled inline as part of edge definitions.
   const nodeLabel =
     isImporter ? nodeRef(node, labeledNodes, depIdMapping) : ''
   const edges: string = [...node.edgesOut.values()]
