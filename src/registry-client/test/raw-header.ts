@@ -8,6 +8,14 @@ t.strictSame(
   ), // 'x', 'y'
   undefined,
 )
+// Test byte-level comparison where length matches but bytes differ
+t.strictSame(
+  getRawHeader(
+    [new Uint8Array([97, 98]), new Uint8Array([121])], // 'ab', 'y'
+    'xy', // same length, different bytes
+  ),
+  undefined,
+)
 t.strictSame(
   getRawHeader([new Uint8Array([120]), new Uint8Array([121])], 'x'), // 'x', 'y'
   new Uint8Array([121]), // 'y'

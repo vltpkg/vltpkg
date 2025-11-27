@@ -436,3 +436,73 @@ t.test('maxAge', async t => {
   t.equal(nma.maxAge, 300)
   t.equal(nma.maxAge, 300, 'memoized')
 })
+
+t.test('zeroCopy option', async t => {
+  const originalBody = Buffer.from('hello, world')
+  const bodyArray = new Uint8Array(
+    originalBody.buffer,
+    originalBody.byteOffset,
+    originalBody.byteLength,
+  )
+
+  // With zeroCopy: false (default), body should be copied
+  const copied = new CacheEntry(200, toRawHeaders({}), {
+    body: bodyArray,
+    contentLength: bodyArray.byteLength,
+    zeroCopy: false,
+  })
+  // Modifying original should not affect the copy
+  const copiedBuffer = copied.buffer()
+  t.strictSame(copiedBuffer.toString(), 'hello, world')
+
+  // With zeroCopy: true, body is used directly
+  const zeroCopied = new CacheEntry(200, toRawHeaders({}), {
+    body: bodyArray,
+    contentLength: bodyArray.byteLength,
+    zeroCopy: true,
+  })
+  t.strictSame(zeroCopied.buffer().toString(), 'hello, world')
+})
+
+t.test('decode with mixed case integrity header', async t => {
+  // Test that byte-level integrity detection works with mixed case INTEGRITY header
+  const body = Buffer.from('{"test":"data"}')
+  const integrity =
+    `sha512-${createHash('sha512').update(body).digest('base64')}` as const
+  // Create entry with mixed case "Integrity" header
+  const ce = new CacheEntry(
+    200,
+    [
+      Buffer.from('content-type'),
+      Buffer.from('application/json'),
+      Buffer.from('Integrity'), // Mixed case
+      Buffer.from(integrity),
+    ],
+    { integrity, trustIntegrity: true },
+  )
+  ce.addBody(body)
+  const enc = ce.encode()
+  const dec = CacheEntry.decode(enc)
+  t.equal(dec.integrity, integrity)
+  t.strictSame(dec.json(), { test: 'data' })
+})
+
+t.test('decode tarball skips JSON parsing', async t => {
+  // Tarballs with application/octet-stream should skip JSON validation
+  const tarballBody = gzipSync(Buffer.from('fake tarball content'))
+  const ce = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/octet-stream',
+      'content-encoding': 'gzip',
+    }),
+  )
+  ce.addBody(tarballBody)
+  const enc = ce.encode()
+  const dec = CacheEntry.decode(enc)
+  // Should decode successfully without trying to parse as JSON
+  t.equal(dec.statusCode, 200)
+  t.equal(dec.isJSON, false)
+  // Body is gzipped
+  t.strictSame(dec.buffer(), tarballBody)
+})

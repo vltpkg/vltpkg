@@ -3,22 +3,33 @@ import {
   getEncondedValue,
 } from './string-encoding.ts'
 
+const textEncoder = new TextEncoder()
+
 /**
  * Give it a key, and it'll return the value of that header as a Uint8Array
+ * Uses byte-level comparison to avoid string decoding overhead.
  */
 export const getRawHeader = (
   headers: Uint8Array[],
   key: string,
 ): Uint8Array | undefined => {
-  const k = key.toLowerCase()
+  const keyBytes = textEncoder.encode(key.toLowerCase())
   for (let i = 0; i < headers.length; i += 2) {
     const name = headers[i]
-    if (
-      name &&
-      name.length === key.length &&
-      getDecodedValue(name).toLowerCase() === k
-    ) {
-      return headers[i + 1]
+    if (name && name.length === keyBytes.length) {
+      let match = true
+      for (let j = 0; j < keyBytes.length; j++) {
+        // Case-insensitive byte comparison
+        const nb = name[j]
+        const kb = keyBytes[j]
+        // nb/kb undefined check unreachable due to length validation above
+        /* c8 ignore next */
+        if (nb === undefined || kb === undefined || (nb | 0x20) !== kb) {
+          match = false
+          break
+        }
+      }
+      if (match) return headers[i + 1]
     }
   }
 }

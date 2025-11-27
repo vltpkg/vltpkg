@@ -33,6 +33,34 @@ import {
   getEncondedValue,
 } from './string-encoding.ts'
 
+// Pre-encoded "integrity" for fast byte comparison
+const INTEGRITY_BYTES = new Uint8Array([
+  105,
+  110,
+  116,
+  101,
+  103,
+  114,
+  105,
+  116,
+  121, // "integrity"
+])
+
+const bytesEqualIgnoreCase = (
+  a: Uint8Array,
+  b: Uint8Array,
+): boolean => {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    // Case-insensitive comparison (lowercase check)
+    const ai = a[i]
+    const bi = b[i]
+    if (ai === undefined || bi === undefined) return false
+    if ((ai | 0x20) !== (bi | 0x20)) return false
+  }
+  return true
+}
+
 export type JSONObj = Record<string, JSONField>
 
 const readSize = (buf: Uint8Array, offset: number) => {
@@ -106,6 +134,12 @@ export type CacheEntryOptions = {
    * explicitly allowed by the server's `cache-control` header.
    */
   'stale-while-revalidate-factor'?: number
+
+  /**
+   * When true, use the provided body buffer directly without copying.
+   * Only safe when the buffer won't be modified (e.g., cache reads for tarballs).
+   */
+  zeroCopy?: boolean
 }
 
 export class CacheEntry {
@@ -139,6 +173,7 @@ export class CacheEntry {
       'stale-while-revalidate-factor':
         staleWhileRevalidateFactor = 60,
       contentLength,
+      zeroCopy = false,
     }: CacheEntryOptions = {},
   ) {
     this.#headers = headers
@@ -156,9 +191,14 @@ export class CacheEntry {
     // if a body is provided then use that, in this case the `addBody`
     // method should no longer be used.
     if (body) {
-      const buffer = new ArrayBuffer(body.byteLength)
-      this.#body = new Uint8Array(buffer, 0, body.byteLength)
-      this.#body.set(body, 0)
+      if (zeroCopy) {
+        // Zero-copy for read-only cache entries
+        this.#body = body
+      } else {
+        const buffer = new ArrayBuffer(body.byteLength)
+        this.#body = new Uint8Array(buffer, 0, body.byteLength)
+        this.#body.set(body, 0)
+      }
       this.#bodyLength = body.byteLength
       /* c8 ignore start */
     } else if (this.#contentLength) {
@@ -538,11 +578,11 @@ export class CacheEntry {
       const val = headersBuffer.subarray(i + 4, i + size)
       // if the last one was the key integrity, then this one is the value
       if (headers.length % 2 === 1) {
-        const k = getDecodedValue(
-          headers[headers.length - 1],
-        ).toLowerCase()
-        if (k === 'integrity')
+        const k = headers[headers.length - 1]
+        // Byte-level comparison to avoid string decode overhead
+        if (k && bytesEqualIgnoreCase(k, INTEGRITY_BYTES)) {
           integrity = getDecodedValue(val) as Integrity
+        }
       }
       headers.push(val)
       i += size
@@ -561,10 +601,14 @@ export class CacheEntry {
         integrity,
         trustIntegrity: true,
         contentLength: body.byteLength,
+        zeroCopy: true, // Avoid copy for cache reads
       },
     )
 
-    if (c.isJSON) {
+    // Only validate JSON parsing for JSON content-types
+    // Tarballs (application/octet-stream) can skip this entirely
+    const ct = c.getHeaderString('content-type')
+    if (!ct || /\bjson\b/.test(ct)) {
       try {
         c.json()
       } catch {
