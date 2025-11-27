@@ -156,7 +156,8 @@ function parseEdge(
     return edgeResult + `missing-${missingCount++}(${missingLabel})`
   }
 
-  // Label the target node BEFORE processing its children
+  // Label the target node first so that if it's referenced again later in the graph,
+  // it will use the short identifier instead of repeating the full label.
   const toRef = nodeRef(edge.to, labeledNodes, depIdMapping)
   const childEdges = parseNode(
     seenNodes,
