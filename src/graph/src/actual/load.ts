@@ -292,12 +292,16 @@ const parseDir = (
       const depId = findDepID(realpath)
 
       if (depId) {
-        let h = hydrate(depId, alias, {
-          ...options,
-        })
+        let h = hydrate(depId, alias, options)
         // if the parsed registry value is using the default value, then
         // the node should inherit the registry value from its parent node
-        h.inheritedRegistry = fromNode.registry
+        if (
+          h.type === 'registry' &&
+          h.registry === h.options.registry &&
+          fromNode.registry
+        ) {
+          h.registry = fromNode.registry
+        }
 
         // Check for active modifiers and replace spec even when not loading manifests
         const { spec: modifiedSpec, queryModifier } =
@@ -345,10 +349,8 @@ const parseDir = (
       const depType = shorten(type, alias, fromNode.manifest)
       let spec = Spec.parse(alias, bareSpec, {
         ...options,
+        registry: fromNode.registry,
       })
-      // if the parsed registry value is using the default value, then
-      // the node should inherit the registry value from its parent node
-      spec.inheritedRegistry = fromNode.registry
 
       // Check for active modifiers and replace spec if a modifier is complete
       const { spec: modifiedSpec, queryModifier } =
@@ -422,10 +424,8 @@ const parseDir = (
       const depType = shorten(type, name, fromNode.manifest)
       let spec = Spec.parse(name, bareSpec, {
         ...options,
+        registry: fromNode.registry,
       })
-      // if the parsed registry value is using the default value, then
-      // the node should inherit the registry value from its parent node
-      spec.inheritedRegistry = fromNode.registry
 
       // Check for active modifiers and replace spec for missing dependencies
       const { spec: modifiedSpec, queryModifier } =
