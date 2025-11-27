@@ -209,7 +209,7 @@ export class RegistryClient {
       'fetch-retries': maxRetries = 3,
       identity = '',
       'stale-while-revalidate-factor':
-        staleWhileRevalidateFactor = 60,
+        staleWhileRevalidateFactor = 576, // 48h for a 5min cache
     } = options
     this.identity = identity
     this.staleWhileRevalidateFactor = staleWhileRevalidateFactor
