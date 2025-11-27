@@ -148,32 +148,31 @@ export const internalHoist = async (
   await mkdir(hoistDir.fullpath(), { recursive: true })
 
   const removes: Promise<void>[] = []
-
-  // Collect all entries in parallel (including scoped package subdirs)
-  const entries: { name: string; entry: PathBase }[] = []
-  const dirs = await hoistDir.readdir()
-  await Promise.all(
-    dirs.map(async entry => {
-      if (entry.name.startsWith('@')) {
-        // Parallelize scoped package readdir
-        for (const pkg of await entry.readdir()) {
-          entries.push({
-            name: `${entry.name}/${pkg.name}`,
-            entry: pkg,
-          })
-        }
-      } else {
-        entries.push({ name: entry.name, entry })
+  for (const entry of await hoistDir.readdir()) {
+    const name = entry.name
+    // scoped package namespace
+    if (name.startsWith('@')) {
+      for (const pkg of await entry.readdir()) {
+        await checkExisting(
+          `${name}/${pkg.name}`,
+          pkg,
+          links,
+          removes,
+          scurry,
+          remover,
+        )
       }
-    }),
-  )
-
-  // Run all checkExisting calls in parallel
-  await Promise.all(
-    entries.map(({ name, entry }) =>
-      checkExisting(name, entry, links, removes, scurry, remover),
-    ),
-  )
+    } else {
+      await checkExisting(
+        name,
+        entry,
+        links,
+        removes,
+        scurry,
+        remover,
+      )
+    }
+  }
   await Promise.all(removes)
 
   const symlinks: Promise<void>[] = []
