@@ -42,8 +42,11 @@ t.test('add some edges', async t => {
     },
   } as unknown as Diff
   const scurry = new PathScurry(projectRoot)
-  await Promise.all(
-    addEdges(diff, scurry, {} as unknown as RollbackRemove),
+  const actions = addEdges(
+    diff,
+    scurry,
+    {} as unknown as RollbackRemove,
   )
+  await Promise.all(actions.map(fn => fn()))
   t.strictSame(new Set(reified), new Set([a, b]))
 })

@@ -7,12 +7,13 @@ export const addEdges = (
   diff: Diff,
   scurry: PathScurry,
   remover: RollbackRemove,
-): Promise<unknown>[] => {
-  const actions: Promise<unknown>[] = []
+): (() => Promise<unknown>)[] => {
+  const actions: (() => Promise<unknown>)[] = []
   for (const edge of diff.edges.add) {
     const { to } = edge
     if (!to) continue
-    actions.push(addEdge(edge, scurry, remover, to.bins))
+    const bins = to.bins
+    actions.push(() => addEdge(edge, scurry, remover, bins))
   }
   return actions
 }
