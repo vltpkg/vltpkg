@@ -27,9 +27,9 @@ strategy to find the best bug tracker URL:
 2. **Bugs field (object with url)** – Uses `bugs.url` if available
 3. **Bugs field (object with email)** – Creates a `mailto:` link if
    only email is provided
-4. **Repository Resolution** – Falls back to the package's `repository`
-   field. For known git hosts (GitHub, GitLab, Bitbucket, etc.),
-   generates the canonical issues URL
+4. **Repository Resolution** – Falls back to the package's
+   `repository` field. For known git hosts (GitHub, GitLab, Bitbucket,
+   etc.), generates the canonical issues URL
 5. **Fallback** – If no bugs or repository info is found, falls back
    to the [vlt.io](https://vlt.io) package page
 
@@ -49,21 +49,20 @@ quickly access your own issue tracker.
 
 ### Open bugs for any package
 
-Provide a package spec to open the bug tracker for any package, whether
-it's installed in your project or not:
+Provide a package spec to open the bug tracker for any package,
+whether it's installed in your project or not:
 
 <Code
   code={`# Open bugs for a specific package
 $ vlt bugs express
 
 # Open bugs for a specific version
+
 $ vlt bugs typescript@5.0.0
 
 # Open bugs for a scoped package
-$ vlt bugs @vltpkg/graph`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt bugs @vltpkg/graph`} title="Terminal" lang="bash" />
 
 The command fetches the package manifest from the registry and
 determines the best bug tracker URL to open.
@@ -78,13 +77,12 @@ for packages in your dependency graph:
 $ vlt bugs --target="#lodash"
 
 # List bug tracker URLs for all direct dependencies
+
 $ vlt bugs --target=":root > \*"
 
 # Find bugs for all packages from a specific scope
-$ vlt bugs --target="[name^=@types]"`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt bugs --target="[name^=@types]"`} title="Terminal" lang="bash" />
 
 Note: When the query matches multiple packages, bug tracker URLs are
 listed instead of being opened automatically.
@@ -100,10 +98,9 @@ Quickly report bugs in dependencies:
 $ vlt bugs problematic-package
 
 # Report issues for packages in your graph
-$ vlt bugs --target="#problematic-package"`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt bugs --target="#problematic-package"`} title="Terminal"
+lang="bash" />
 
 ### Checking for Known Issues
 
@@ -115,10 +112,8 @@ issue:
 $ vlt bugs --target="#failing-dep"
 
 # Check issues for multiple packages
-$ vlt bugs --target=":root > \*"`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt bugs --target=":root > \*"`} title="Terminal" lang="bash" />
 
 ## Options
 
@@ -133,10 +128,9 @@ their URLs are listed.
 $ vlt bugs --target="#express"
 
 # List bugs for all direct dependencies
+
 $ vlt bugs --target=":root > \*"
 
 # List bugs for dev dependencies
-$ vlt bugs --target=":type(dev)"`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt bugs --target=":type(dev)"`} title="Terminal" lang="bash" />
