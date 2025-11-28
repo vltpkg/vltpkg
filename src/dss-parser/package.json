@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/dss-parser",
   "description": "The Dependency Selector Syntax (DSS) parser",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
