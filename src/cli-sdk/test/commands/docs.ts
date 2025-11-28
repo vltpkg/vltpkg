@@ -269,7 +269,7 @@ t.test('git+ prefix stripped from repository url', async t => {
   t.strictSame(fromUrlCalls, ['https://github.com/user/repo'])
 })
 
-t.test('fallback to npmjs.com when no repository', async t => {
+t.test('fallback to vlt.io when no repository', async t => {
   mockManifest = {
     name: 'no-repo-pkg',
   } as Manifest
@@ -287,42 +287,47 @@ t.test('fallback to npmjs.com when no repository', async t => {
 
   const result = await Command.command(config)
 
-  t.strictSame(result, {
-    name: 'no-repo-pkg',
-    url: 'https://www.npmjs.com/package/no-repo-pkg',
-  })
-  t.equal(openedUrl, 'https://www.npmjs.com/package/no-repo-pkg')
+  t.strictSame(
+    result,
+    {
+      name: 'no-repo-pkg',
+      url: 'https://vlt.io/explore/npm/no-repo-pkg/overview',
+    },
+    'opens default vlt.io URL',
+  )
+  t.equal(
+    openedUrl,
+    'https://vlt.io/explore/npm/no-repo-pkg/overview',
+    'opens default vlt.io URL',
+  )
 })
 
-t.test(
-  'fallback to npmjs.com when hosted-git-info fails',
-  async t => {
-    mockManifest = {
-      name: 'unknown-host-pkg',
-      repository: 'https://unknown-git-host.com/user/repo',
-    } as Manifest
+t.test('fallback to vlt.io when hosted-git-info fails', async t => {
+  mockManifest = {
+    name: 'unknown-host-pkg',
+    repository: 'https://unknown-git-host.com/user/repo',
+  } as Manifest
 
-    mockFromUrlResult = null
+  mockFromUrlResult = null
 
-    const config = {
-      positionals: ['unknown-host-pkg'],
-      get: () => undefined,
-      options: {
-        projectRoot: '/test/project',
-        packageJson: {
-          read: () => ({}),
-        },
+  const config = {
+    positionals: ['unknown-host-pkg'],
+    get: () => undefined,
+    options: {
+      projectRoot: '/test/project',
+      packageJson: {
+        read: () => ({}),
       },
-    } as unknown as LoadedConfig
+    },
+  } as unknown as LoadedConfig
 
-    const result = await Command.command(config)
+  const result = await Command.command(config)
 
-    t.strictSame(result, {
-      name: 'unknown-host-pkg',
-      url: 'https://www.npmjs.com/package/unknown-host-pkg',
-    })
-  },
-)
+  t.strictSame(result, {
+    name: 'unknown-host-pkg',
+    url: 'https://vlt.io/explore/npm/unknown-host-pkg/overview',
+  })
+})
 
 t.test('error when no manifest found', async t => {
   mockManifest = undefined

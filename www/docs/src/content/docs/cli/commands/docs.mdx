@@ -28,7 +28,7 @@ strategy to find the best documentation URL:
    in its `package.json`. For known git hosts (GitHub, GitLab,
    Bitbucket, etc.), generates the canonical documentation URL
 3. **Fallback** – If no repository is found or the git host is
-   unknown, falls back to the npm package page
+   unknown, falls back to the [vlt.io](https://vlt.io) package page
 
 This means you always get taken to the most relevant documentation.
 
@@ -144,17 +144,3 @@ $ vlt docs --target=":root > \*"
 # List docs for packages with build scripts
 
 $ vlt docs --target=":scripts"`} title="Terminal" lang="bash" />
-
-## Notes
-
-- The command automatically opens your default web browser for single
-  results
-- Works with any valid package specifier (names, versions, tags, etc.)
-- Does not require the package to be installed when using package
-  specifiers
-- With `--target`, it defaults to only searches packages in your
-  current dependency graph
-- Falls back gracefully to npm package pages when repository info is
-  unavailable
-- Multiple results are displayed as a formatted list instead of
-  opening URLs
