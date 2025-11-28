@@ -98,13 +98,18 @@ $ vlt install github:user/repo#semver:^1.0
 # Full git URL
 
 $ vlt install git+ssh://git@github.com:user/repo.git
+
+# OR
+
 $ vlt install git+https://github.com/user/repo.git#main
 
-# GitLab, Bitbucket
+# GitLab
 
 $ vlt install gitlab:user/repo
-$ vlt install bitbucket:user/repo`}
-title="Terminal" lang="bash" />
+
+# Bitbucket
+
+$ vlt install bitbucket:user/repo`} title="Terminal" lang="bash" />
 
 When using `#semver:<range>`, vlt looks for matching tags/refs in the
 remote repository.
