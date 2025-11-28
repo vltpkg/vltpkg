@@ -10,6 +10,7 @@ Object {
   "?": "help",
   "add": "install",
   "b": "build",
+  "bugs": "bugs",
   "build": "build",
   "cache": "cache",
   "ci": "ci",
@@ -161,6 +162,7 @@ Object {
     "hint": "command",
     "type": "string",
     "validOptions": Array [
+      "bugs",
       "build",
       "cache",
       "ci",
