@@ -102,9 +102,9 @@ const getUrlFromManifest = (
     }
   }
 
-  // Fallback to npmjs.com package page
+  // Fallback to vlt.io package page
   if (!url) {
-    url = `https://www.npmjs.com/package/${name}`
+    url = `https://vlt.io/explore/npm/${name}/overview`
   }
 
   return url
