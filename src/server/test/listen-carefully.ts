@@ -15,16 +15,19 @@ t.test('run 10 servers', async t => {
     createServer((_, res) => res.end('ok')),
     createServer((_, res) => res.end('ok')),
   ]
-  const ports = await Promise.all(
-    servers.map(s => listenCarefully(s, 8000)),
-  )
+  // Sequential startup to guarantee port allocation order
+  const ports: number[] = []
+  for (const server of servers) {
+    ports.push(await listenCarefully(server, 8000))
+  }
   t.strictSame(ports, [...new Set(ports)], 'all ports unique')
   const s = createServer((_, res) => res.end('ok'))
+  t.teardown(() => s.close())
   await t.rejects(listenCarefully(s, 8000, 2), {
     code: 'EADDRINUSE',
   })
-  for (const s of servers) {
-    s.close()
+  for (const server of servers) {
+    server.close()
   }
 })
 
