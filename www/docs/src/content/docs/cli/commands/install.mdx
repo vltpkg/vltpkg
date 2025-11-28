@@ -14,8 +14,303 @@ Usage:
   lang="bash"
 />
 
-Install the specified packages, updating package.json and
-vlt-lock.json appropriately.
+Install dependencies into `node_modules`, updating `package.json` and
+`vlt-lock.json` appropriately.
+
+By default, `vlt install` downloads and extracts packages **without
+executing lifecycle scripts**—enhancing security by preventing
+arbitrary code execution during installation. Use
+[`vlt build`](/cli/commands/build) after installation to run scripts
+selectively.
+
+## What is a Package?
+
+- A folder containing a `package.json` file
+- A gzipped tarball containing a folder with a `package.json` file
+- A URL that resolves to a gzipped tarball
+- A `<name>@<version>` that is published to a configured registry
+- A `<name>@<semver-range>` that is published to a configured registry
+- A `<name>@<tag>` that points to a package in a configured registry
+- A `<name>` by itself, which defaults to using the `latest` tag from
+  a registry
+- A `<custom>:<name>@<version>` that points to a custom registry
+  configured in `vlt.json`
+- A `registry:URL#<name>@<version>` that points to a custom registry
+  url
+- A `<git remote url>` that resolves to a folder with a `package.json`
+  file
+
+## Basic Usage
+
+### Install all dependencies
+
+<Code code="$ vlt install" title="Terminal" lang="bash" />
+
+Installs all dependencies from `package.json` without running scripts.
+
+## Adding new packages
+
+Using positional arguments that use the valid package specification
+described above.
+
+### Registry packages
+
+<Code
+  code={`# Latest version
+$ vlt install express
+
+# Scoped packages using semver ranges
+
+$ vlt install @vltpkg/graph@^1.0.0`} title="Terminal" lang="bash" />
+
+### Aliases
+
+Install multiple versions of the same package side-by-side:
+
+<Code
+  code={`# Install react v18 as my-react
+$ vlt install my-react@npm:react@18
+
+# Install both major versions under aliased names
+
+$ vlt install react18@npm:react@18 react19@npm:react@19`}
+title="Terminal" lang="bash" />
+
+In the `vlt` cli the traditional aliases also enable installing from
+custom registries:
+
+<Code
+  code={`# Install from vlt.json configured custom registry
+$ vlt install custom:@org/pkg@^1.0.0
+
+# Install using an aliased name, pointing to a custom registry
+
+$ vlt install pkg@custom:@org/pkg`} title="Terminal" lang="bash" />
+
+### Git repositories
+
+<Code
+  code={`# GitHub shorthand
+$ vlt install github:user/repo
+$ vlt install github:user/repo#v1.0.0
+$ vlt install github:user/repo#semver:^1.0
+
+# Full git URL
+
+$ vlt install git+ssh://git@github.com:user/repo.git
+
+# OR
+
+$ vlt install git+https://github.com/user/repo.git#main
+
+# GitLab
+
+$ vlt install gitlab:user/repo
+
+# Bitbucket
+
+$ vlt install bitbucket:user/repo`} title="Terminal" lang="bash" />
+
+When using `#semver:<range>`, vlt looks for matching tags/refs in the
+remote repository.
+
+### Tarballs
+
+<Code
+  code={`# Local tarball
+$ vlt install ./package.tgz
+
+# Remote tarball
+
+$ vlt install https://example.com/package.tgz`} title="Terminal"
+lang="bash" />
+
+### Local directories
+
+<Code
+  code={`# Relative path
+$ vlt install ./my-local-package
+
+# Install from parent directory
+
+$ vlt install ../shared-lib`} title="Terminal" lang="bash" />
+
+## Options
+
+### Dependency type flags
+
+| Flag              | Short | Description                     |
+| ----------------- | ----- | ------------------------------- |
+| `--save-prod`     | `-P`  | Add to `dependencies` (default) |
+| `--save-dev`      | `-D`  | Add to `devDependencies`        |
+| `--save-optional` | `-O`  | Add to `optionalDependencies`   |
+| `--save-peer`     |       | Add to `peerDependencies`       |
+
+### Lockfile options
+
+| Flag                | Description                                                         |
+| ------------------- | ------------------------------------------------------------------- |
+| `--frozen-lockfile` | Fail if lockfile is missing or out of sync with `package.json`      |
+| `--expect-lockfile` | Fail if lockfile is missing or outdated                             |
+| `--lockfile-only`   | Update only `vlt-lock.json` and `package.json`, skip `node_modules` |
+
+### Script execution
+
+| Flag                         | Description                                                     |
+| ---------------------------- | --------------------------------------------------------------- |
+| `--allow-scripts=<selector>` | Allow specific packages to run lifecycle scripts during install |
+
+<Code
+  code={`# Allow specific packages to run scripts during install
+$ vlt install --allow-scripts="#esbuild, #node-gyp"
+
+# Allow only direct dependencies to run scripts
+
+$ vlt install --allow-scripts=":root > \*"`} title="Terminal"
+lang="bash" />
+
+### Registry options
+
+| Flag              | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `--tag=<tag>`     | Default dist-tag to use (default: `latest`)    |
+| `--before=<date>` | Install relative to the provided ISO 8601 date |
+
+<Code
+  code={`# Install from beta channel
+$ vlt install express --tag=beta
+
+# Install versions published before a specific date
+
+$ vlt install lodash --before="2024-01-01"`} title="Terminal"
+lang="bash" />
+
+### Workspace options
+
+| Flag                        | Short | Description                            |
+| --------------------------- | ----- | -------------------------------------- |
+| `--workspace=<ws>`          | `-w`  | Limit operation to specific workspaces |
+| `--workspace-group=<group>` | `-g`  | Operate on named workspace groups      |
+
+<Code
+  code={`# Install in specific workspace
+$ vlt install -w packages/core lodash
+
+# Install in workspace group
+
+$ vlt install -g apps express`} title="Terminal" lang="bash" />
+
+## Phased Package Installations
+
+Traditional package managers run lifecycle scripts automatically
+during install—a security risk that allows malicious packages to
+execute arbitrary code.
+
+`vlt` separates installation into two distinct phases:
+
+1. **Install phase**: Downloads and extracts packages (no scripts)
+2. **Build phase**: Runs lifecycle scripts for selected packages
+
+<Code
+  code={`# Phase 1: Install packages safely
+$ vlt install
+
+# Phase 2: Build with control over what runs
+
+$ vlt build`} title="Terminal" lang="bash" />
+
+This separation enables you to:
+
+- Inspect dependencies before any code execution
+- Selectively allow scripts using DSS queries
+- Protect against supply chain attacks
+
+By default, `vlt build` uses `:scripts:not(:built):not(:malware)`
+which excludes packages with known malware alerts.
+
+For more details, see the [`vlt build`](/cli/commands/build)
+documentation.
+
+## Graph Modifiers
+
+Graph Modifiers provide precise control over dependency resolution
+using [Dependency Selector Syntax (DSS)](/cli/commands/query).
+Configure them in your `vlt.json`:
+
+<Code
+  code={`{
+    "modifiers": {
+      "#react": "^19",
+      ":root > #webpack > #browserslist": "^4.23.0"
+    }
+}`}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Override all instances
+
+Pin a package version across the entire dependency graph:
+
+<Code
+  code={`{
+    "modifiers": {
+      "#lodash": "^4.17.21"
+    }
+}`}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Override transitive dependencies
+
+Target specific dependency paths:
+
+<Code
+  code={`{
+  "modifiers": {
+    ":root > #webpack > #terser-webpack-plugin > #terser": "^5.31.0"
+  }
+}`}
+  title="vlt.json"
+  lang="json"
+/>
+
+When multiple selectors match, the most specific one wins.
+
+For more details on Graph Modifiers, see the
+[Graph Modifiers](/cli/graph-modifiers) documentation.
+
+## Peer Dependencies
+
+vlt handles peer dependencies by isolating their contexts, allowing
+multiple versions of the same package to coexist when necessary. When
+different parts of your dependency tree require incompatible peer
+versions, vlt automatically subdivides the graph into separate peer
+dependency contexts.
+
+**Key behavior:** vlt always attempts to use a single version of a
+package for peer dependencies. When that's not possible, it duplicates
+packages as needed, storing them in separate locations within
+`node_modules/.vlt/` and linking appropriately so each package
+resolves to its correct peer version.
+
+This happens automatically during `vlt install`—no configuration
+required.
+
+For more details, see the [Peer Dependencies](/cli/peer-dependencies)
+documentation.
+
+## Notes
+
+- Running `vlt install` with no arguments installs all dependencies
+  from `package.json`
+- The lockfile (`vlt-lock.json`) ensures reproducible installs across
+  environments
+- Use `vlt ci` as a shorthand for `vlt install --expect-lockfile` in
+  CI pipelines
+- Peer dependencies are handled automatically with context isolation
+  when version conflicts arise
 
 ## Aliases
 
