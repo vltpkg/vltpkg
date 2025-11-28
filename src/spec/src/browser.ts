@@ -767,20 +767,6 @@ export class Spec implements SpecLike<Spec> {
   }
 
   /**
-   * Sets a registry value that should be used for this spec in case
-   * it is currently just following the default registry.
-   */
-  set inheritedRegistry(reg: string | undefined) {
-    if (
-      reg != null &&
-      this.type === 'registry' &&
-      this.registry === this.options.registry
-    ) {
-      this.registry = reg
-    }
-  }
-
-  /**
    * Should only ever be called with the bit that comes AFTER the #
    * in the git remote url.
    */

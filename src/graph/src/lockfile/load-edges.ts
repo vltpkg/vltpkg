@@ -124,14 +124,10 @@ export const loadEdges = (
     }
 
     // Parse spec once we know the nodes are valid
-    const spec = Spec.parse(
-      specName,
-      valRest.substring(0, vrSplit),
-      options,
-    )
-
-    // sets a registry for this spec to inherit from
-    spec.inheritedRegistry = fromNode.registry
+    const spec = Spec.parse(specName, valRest.substring(0, vrSplit), {
+      ...options,
+      registry: fromNode.registry,
+    })
 
     if (useOptimizations) {
       edgeProcessingQueue.push({
