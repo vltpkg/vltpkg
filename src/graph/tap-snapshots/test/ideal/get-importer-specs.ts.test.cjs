@@ -5,6 +5,17 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/ideal/get-importer-specs.ts > TAP > adding to a non existing importer > should store non-importer file deps in transientAdd 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  transientAdd: Map(1) {
+    'file·nested§folder' => Map(1) { 'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' } }
+  },
+  transientRemove: Map(0) {}
+}
+`
+
 exports[`test/ideal/get-importer-specs.ts > TAP > empty graph and something to add > should result in only added specs 1`] = `
 AddImportersDependenciesMapImpl(1) {
   'file·.' => Map(2) {
@@ -46,7 +57,9 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to r
   remove: RemoveImportersDependenciesMapImpl(1) {
     'file·.' => Set(1) { 'foo' },
     modifiedDependencies: true
-  }
+  },
+  transientAdd: Map(0) {},
+  transientRemove: Map(0) {}
 }
 `
 
@@ -82,7 +95,9 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
     'workspace·packages§a' => Set(1) { 'bar' },
     'workspace·packages§b' => Set(1) { 'a' },
     modifiedDependencies: true
-  }
+  },
+  transientAdd: Map(0) {},
+  transientRemove: Map(0) {}
 }
 `
 
@@ -92,6 +107,56 @@ exports[`test/ideal/get-importer-specs.ts > TAP > installing over a dangling edg
     'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' } },
     modifiedDependencies: true
   },
-  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false }
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  transientAdd: Map(0) {},
+  transientRemove: Map(0) {}
+}
+`
+
+exports[`test/ideal/get-importer-specs.ts > TAP > removing from a non existing importer > should store non-importer file deps in transientRemove 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  transientAdd: Map(0) {},
+  transientRemove: Map(1) { 'file·nested§folder' => Set(1) { 'baz' } }
+}
+`
+
+exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd and transientRemove combined via params > should store both transientAdd and transientRemove from params 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  transientAdd: Map(1) {
+    'file·nested§folder' => Map(1) { 'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' } }
+  },
+  transientRemove: Map(1) { 'file·other§folder' => Set(1) { 'bar' } }
+}
+`
+
+exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd from file-type directory manifest > should populate transientAdd from nested directory manifest 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  transientAdd: Map(1) {
+    'file·nested' => Map(2) {
+      'bar' => { spec: Spec {bar@^2.0.0}, type: 'prod' },
+      'baz' => { spec: Spec {baz@^3.0.0}, type: 'prod' }
+    }
+  },
+  transientRemove: Map(0) {}
+}
+`
+
+exports[`test/ideal/get-importer-specs.ts > TAP > transientRemove from file-type directory with removed edge > should populate transientRemove for edge not in manifest 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) {
+    'file·.' => Map(1) {
+      'nested' => { spec: Spec {nested@file:./nested}, type: 'prod' }
+    },
+    modifiedDependencies: true
+  },
+  remove: RemoveImportersDependenciesMapImpl(0) { modifiedDependencies: false },
+  transientAdd: Map(0) {},
+  transientRemove: Map(0) {}
 }
 `

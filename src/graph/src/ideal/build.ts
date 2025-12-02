@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { graphStep } from '@vltpkg/output'
 import { load as loadActual } from '../actual/load.ts'
 import { load as loadVirtual } from '../lockfile/load.ts'
@@ -10,6 +11,7 @@ import type {
   Dependency,
 } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
+import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 
@@ -42,6 +44,23 @@ export type BuildIdealOptions = LoadActualOptions & {
    * A {@link PackageInfoClient} instance to read manifest info from.
    */
   packageInfo: PackageInfoClient
+}
+
+/**
+ * Validates that a file dependency node exists in the graph after
+ * a successful graph build. This helps providing an actionable error
+ * message in case the current working directory is a linked nested
+ * folder that hasn't yet been added as a dependency to an importer
+ * in the project.
+ */
+const validateFileDepNode = (graph: Graph, id: DepID) => {
+  const [type, path] = splitDepID(id)
+  if (type === 'file' && !graph.nodes.get(id)) {
+    throw error(
+      'The current working dir is not a dependency of this project',
+      { path },
+    )
+  }
 }
 
 /**
@@ -86,5 +105,19 @@ export const build = async (
     actual: options.actual,
   })
   done()
+
+  // when adding or removing a new dependency from a file dep,
+  // validate the receiver node was present in the graph
+  if (options.add) {
+    for (const [addKey, value] of options.add.entries()) {
+      if (value.size) validateFileDepNode(res, addKey)
+    }
+  }
+  if (options.remove) {
+    for (const [removeKey, value] of options.remove.entries()) {
+      if (value.size) validateFileDepNode(res, removeKey)
+    }
+  }
+
   return res
 }

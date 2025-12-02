@@ -1,4 +1,3 @@
-import { error } from '@vltpkg/error-cause'
 import { longDependencyTypes } from '@vltpkg/types'
 import { shorten, asDependency } from '../dependencies.ts'
 import type {
@@ -11,6 +10,8 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
   BuildIdealRemoveOptions,
+  TransientAddMap,
+  TransientRemoveMap,
 } from './types.ts'
 import type { Edge } from '../edge.ts'
 import type { Node } from '../node.ts'
@@ -18,11 +19,16 @@ import type { Graph } from '../graph.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import type { PackageJson } from '@vltpkg/package-json'
+import type { PathScurry } from 'path-scurry'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
   BuildIdealRemoveOptions &
-  SpecOptions
+  SpecOptions & {
+    scurry: PathScurry
+    packageJson: PackageJson
+  }
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
   for (const depType of longDependencyTypes) {
@@ -84,24 +90,100 @@ export const getImporterSpecs = (
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
         const edge = importer.edgesOut.get(depName)
+
+        // skip if the edge exists and already uses the same spec
+        if (edge?.to && depSpec === edge.spec.bareSpec) continue
+
         const dependency = asDependency({
           spec: Spec.parse(depName, depSpec, options),
           type: shorten(depType, depName, importer.manifest),
         })
-        if (!edge?.to) {
-          addDeps.set(depName, dependency)
-        }
+        addDeps.set(depName, dependency)
       }
     }
     addResult.set(importer.id, addDeps)
     removeResult.set(importer.id, removeDeps)
   }
 
+  // Maps to store dependencies targeting non-importer nodes (e.g., nested folders)
+  // These will be injected when the target node is placed in the graph
+  const transientAdd = new Map() as TransientAddMap
+  const transientRemove = new Map() as TransientRemoveMap
+
+  // Traverse all nodes in the graph to find file type dependencies that are directories
+  // and populate transientAdd/transientRemove with their manifest dependencies
+  // Only process when scurry and packageJson are available
+  for (const node of graph.nodes.values()) {
+    // Skip importers as they're already handled above and also skip
+    // any non-file type dependencies
+    if (graph.importers.has(node) || !node.id.startsWith('file'))
+      continue
+
+    // check if this is a file type dependency that is a directory
+    const nodePath = options.scurry.cwd.resolve(node.location)
+    const stat = nodePath.lstatSync()
+
+    if (stat?.isDirectory()) {
+      // load the manifest for this directory (throw if it does not exist)
+      const manifest = options.packageJson.read(nodePath.fullpath())
+
+      // should always set the manifest to the read manifest
+      node.manifest = manifest
+
+      // create a map of dependencies from the manifest
+      const addDeps = new Map<string, Dependency>()
+
+      // check for edges not in manifest (should be removed)
+      const removeDeps = new Set<string>()
+      for (const edge of node.edgesOut.values()) {
+        if (
+          !hasDepName(node, edge) &&
+          !add.get(node.id)?.has(edge.name)
+        ) {
+          removeDeps.add(edge.name)
+        }
+      }
+
+      // iterate over manifest dependencies to add them if
+      // they're missing from the graph
+      for (const depType of longDependencyTypes) {
+        const deps = Object.entries(manifest[depType] ?? {})
+        for (const [depName, depSpec] of deps) {
+          const edge = node.edgesOut.get(depName)
+
+          // skip if the edge exists and already uses the same spec
+          if (edge?.to && depSpec === edge.spec.bareSpec) continue
+
+          // add the dependency to the addDeps map
+          const dependency = asDependency({
+            spec: Spec.parse(depName, depSpec, options),
+            type: shorten(depType, depName, manifest),
+          })
+          addDeps.set(depName, dependency)
+        }
+      }
+
+      // store in transientAdd if there are any dependencies
+      if (addDeps.size > 0) {
+        transientAdd.set(node.id, addDeps)
+      }
+
+      // store in transientRemove if there are any to remove
+      if (removeDeps.size > 0) {
+        transientRemove.set(node.id, removeDeps)
+      }
+    }
+  }
+
   // merges any provided specs to add to the current found results
   for (const [id, addDeps] of add.entries()) {
     const deps = addResult.get(id)
     if (!deps) {
-      throw error('Not an importer', { found: id })
+      // Not an importer - only store file-type deps for later injection
+      if (id.startsWith('file')) {
+        transientAdd.set(id, addDeps)
+      }
+      continue
     }
     for (const [name, dep] of addDeps.entries()) {
       deps.set(name, dep)
@@ -115,6 +197,16 @@ export const getImporterSpecs = (
     if (importerRemoveItem) {
       for (const depName of removeSet) {
         importerRemoveItem.add(depName)
+      }
+    } else if (key.startsWith('file')) {
+      // Not an importer - only store file-type deps in transientRemove
+      const existing = transientRemove.get(key)
+      if (existing) {
+        for (const depName of removeSet) {
+          existing.add(depName)
+        }
+      } else {
+        transientRemove.set(key, new Set(removeSet))
       }
     }
   }
@@ -144,5 +236,7 @@ export const getImporterSpecs = (
   return {
     add: addResult,
     remove: removeResult,
+    transientAdd,
+    transientRemove,
   }
 }

@@ -11,6 +11,27 @@ import type { ModifierActiveEntry } from '../modifiers.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
 
+/**
+ * A map of dependencies to be added to non-importer nodes.
+ * Keys are {@link DepID} of nodes that are not importers (e.g., nested folders).
+ * When these nodes are resolved and placed in the graph, their dependencies
+ * from this map are injected into the processing queue.
+ */
+export type TransientAddMap = Omit<
+  AddImportersDependenciesMap,
+  'modifiedDependencies'
+>
+
+/**
+ * A map of dependency names to be removed from non-importer nodes.
+ * Keys are {@link DepID} of nodes that are not importers (e.g., nested folders).
+ * When these nodes are processed, their dependencies in this map are excluded.
+ */
+export type TransientRemoveMap = Omit<
+  RemoveImportersDependenciesMap,
+  'modifiedDependencies'
+>
+
 export type BuildIdealAddOptions = {
   /**
    * A {@link AddImportersDependenciesMap} in which keys are {@link DepID}

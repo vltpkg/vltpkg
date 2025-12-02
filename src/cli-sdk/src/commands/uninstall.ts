@@ -27,8 +27,8 @@ export const views = {
 } as const satisfies Views<UninstallResult>
 
 export const command: CommandFn<UninstallResult> = async conf => {
-  const monorepo = conf.options.monorepo
-  const { remove } = parseRemoveArgs(conf, monorepo)
+  const { monorepo, scurry } = conf.options
+  const { remove } = parseRemoveArgs(conf, scurry, monorepo)
   /* c8 ignore start */
   const allowScripts =
     conf.get('allow-scripts') ?

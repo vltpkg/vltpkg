@@ -1,8 +1,9 @@
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { UninstallResult } from '../../src/commands/uninstall.ts'
 
-const options = {}
+const options = { scurry: new PathScurry() }
 let log = ''
 
 const Command = await t.mockImport<
@@ -17,7 +18,7 @@ const Command = await t.mockImport<
     },
   },
   '../../src/parse-add-remove-args.ts': {
-    parseRemoveArgs: (conf: LoadedConfig) => {
+    parseRemoveArgs: (conf: LoadedConfig, _scurry: PathScurry) => {
       const items =
         conf.positionals.length > 0 ?
           `from ${conf.positionals.join(',')}`
