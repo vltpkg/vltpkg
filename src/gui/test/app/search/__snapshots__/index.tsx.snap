@@ -683,7 +683,7 @@ exports[`search renders default components 1`] = `
               </p>
             </div>
             <div class="mt-4 self-start md:mt-0 md:self-end">
-              <gui-router-nav-link to="/blog">
+              <gui-router-nav-link to="https://blog.vlt.sh">
                 <gui-flip-button
                   icon="Newspaper"
                   label="See more"

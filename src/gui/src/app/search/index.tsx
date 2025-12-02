@@ -291,7 +291,7 @@ export const Search = () => {
                   </p>
                 </div>
                 <div className="mt-4 self-start md:mt-0 md:self-end">
-                  <NavLink to="/blog">
+                  <NavLink to="https://blog.vlt.sh">
                     <FlipButton icon="Newspaper" label="See more" />
                   </NavLink>
                 </div>
