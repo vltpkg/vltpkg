@@ -13,6 +13,7 @@
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@libsql/client": "^0.15.15",
+    "@libsql/linux-x64-gnu": "^0.5.22",
     "@neondatabase/serverless": "^1.0.2",
     "@sentry/node": "^9.30.0",
     "aws4fetch": "^1.0.20",

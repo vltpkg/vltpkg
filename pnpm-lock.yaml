@@ -1865,6 +1865,9 @@ importers:
       '@libsql/client':
         specifier: ^0.15.15
         version: 0.15.15
+      '@libsql/linux-x64-gnu':
+        specifier: ^0.5.22
+        version: 0.5.22
       '@neondatabase/serverless':
         specifier: ^1.0.2
         version: 1.0.2
@@ -14481,8 +14484,7 @@ snapshots:
   '@libsql/linux-arm64-musl@0.5.22':
     optional: true
 
-  '@libsql/linux-x64-gnu@0.5.22':
-    optional: true
+  '@libsql/linux-x64-gnu@0.5.22': {}
 
   '@libsql/linux-x64-musl@0.5.22':
     optional: true
