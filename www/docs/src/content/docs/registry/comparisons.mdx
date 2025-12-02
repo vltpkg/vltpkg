@@ -15,8 +15,8 @@ against other popular npm registry solutions in the market.
 <style>
   {`
   .comparison-tables table {
+    display: table;
     width: 100% !important;
-    border-collapse: collapse;
     margin: 1.5rem 0;
     border-radius: 8px;
     overflow: hidden;
@@ -35,6 +35,11 @@ against other popular npm registry solutions in the market.
   .comparison-tables th:first-child {
     text-align: left;
     min-width: 180px;
+    padding-left: 32px;
+  }
+
+  .comparison-tables th:last-child {
+    padding-right: 32px;
   }
   
   .comparison-tables td {
@@ -46,6 +51,11 @@ against other popular npm registry solutions in the market.
   .comparison-tables td:first-child {
     text-align: left;
     font-weight: 500;
+    padding-left: 32px;
+  }
+
+  .comparison-tables td:last-child {
+    padding-right: 32px;
   }
   
   .comparison-tables tbody tr:nth-child(even) {
@@ -56,7 +66,7 @@ against other popular npm registry solutions in the market.
     background-color: rgba(243, 244, 246, 0.6);
   }
   
-  @media (prefers-color-scheme: dark) {
+  [data-theme="dark"] {
     .comparison-tables table {
       border-color: rgba(75, 85, 99, 0.3);
     }
