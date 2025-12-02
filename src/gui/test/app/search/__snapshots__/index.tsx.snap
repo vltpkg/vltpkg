@@ -713,7 +713,7 @@ exports[`search renders default components 1`] = `
       <div class="bg-foreground/3 relative overflow-hidden rounded">
         <div class="grid-cols-12 lg:grid">
           <gui-router-link
-            to="https://blog.vlt.sh//post1"
+            to="https://blog.vlt.sh/blog/post1"
             classname="col-span-4 flex p-[0.5px]"
           >
             <article class="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">
@@ -762,7 +762,7 @@ exports[`search renders default components 1`] = `
             </article>
           </gui-router-link>
           <gui-router-link
-            to="https://blog.vlt.sh//post2"
+            to="https://blog.vlt.sh/blog/post2"
             classname="col-span-4 flex p-[0.5px]"
           >
             <article class="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">
@@ -811,7 +811,7 @@ exports[`search renders default components 1`] = `
             </article>
           </gui-router-link>
           <gui-router-link
-            to="https://blog.vlt.sh//post3"
+            to="https://blog.vlt.sh/blog/post3"
             classname="col-span-4 flex p-[0.5px]"
           >
             <article class="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">
