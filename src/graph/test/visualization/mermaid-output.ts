@@ -157,6 +157,77 @@ t.test('workspaces', async t => {
   )
 })
 
+t.test('workspaces with dependencies', async t => {
+  const mainManifest = {
+    name: 'test-workspaces',
+    version: '1.0.0',
+  }
+  const dir = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({
+      workspaces: { packages: ['./packages/*'] },
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+          dependencies: {
+            which: '^6.0.0',
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  const monorepo = Monorepo.load(dir)
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+    monorepo,
+  })
+
+  // Find workspace 'a' and add its dependencies
+  const [wsA] = [...graph.importers].filter(
+    n => n.name === 'a' && !n.mainImporter,
+  )
+  if (!wsA) throw new Error('missing workspace a')
+
+  const which = graph.placePackage(
+    wsA,
+    'prod',
+    Spec.parse('which', '^6.0.0'),
+    {
+      name: 'which',
+      version: '6.0.0',
+      dependencies: {
+        isexe: '^3.1.1',
+      },
+    },
+  )
+  if (!which) throw new Error('failed to place which')
+
+  graph.placePackage(which, 'prod', Spec.parse('isexe', '^3.1.1'), {
+    name: 'isexe',
+    version: '3.1.1',
+  })
+
+  t.matchSnapshot(
+    mermaidOutput({
+      edges: [...graph.edges],
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print workspaces with dependencies',
+  )
+})
+
 t.test('cycle', async t => {
   const graph = new Graph({
     projectRoot: t.testdirName,
