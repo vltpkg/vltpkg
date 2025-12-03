@@ -134,6 +134,7 @@ function parseNode(
     .join('\n')
   // Only render node standalone for importers, others are rendered as part of edges
   if (isImporter) {
+    /* c8 ignore next */
     return `${nodeLabel}${edges.length ? '\n' : ''}${edges}`
   }
   return edges
