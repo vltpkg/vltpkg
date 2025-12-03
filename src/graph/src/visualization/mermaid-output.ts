@@ -115,7 +115,12 @@ function parseNode(
   // since they appear at the top of the graph. Non-importer nodes are labeled inline as part of edge definitions.
   const nodeLabel =
     isImporter ? nodeRef(node, labeledNodes, depIdMapping) : ''
-  const edges: string = [...node.edgesOut.values()]
+  // Include both regular edges and workspace edges (if any)
+  const allEdges = [
+    ...node.edgesOut.values(),
+    ...(node.workspaces?.values() ?? []),
+  ]
+  const edges: string = allEdges
     .map(e =>
       parseEdge(
         seenNodes,
@@ -129,6 +134,7 @@ function parseNode(
     .join('\n')
   // Only render node standalone for importers, others are rendered as part of edges
   if (isImporter) {
+    /* c8 ignore next */
     return `${nodeLabel}${edges.length ? '\n' : ''}${edges}`
   }
   return edges
@@ -188,7 +194,12 @@ export function mermaidOutput({
     seen.add(item.self)
 
     if (item.self instanceof Edge) {
-      if (edges.includes(item.self)) {
+      // Workspace edges are stored in mainImporter.workspaces and not in graph.edges,
+      // so we need to check for workspace spec type to always include them
+      if (
+        edges.includes(item.self) ||
+        item.self.spec.type === 'workspace'
+      ) {
         includedItems.set(item.self, true)
       }
       if (item.self.to) {
@@ -202,6 +213,12 @@ export function mermaidOutput({
       }
       for (const edge of item.self.edgesOut.values()) {
         traverse.add({ self: edge, parent: item.self })
+      }
+      // Also traverse workspace edges (only mainImporter has these)
+      if (item.self.workspaces) {
+        for (const edge of item.self.workspaces.values()) {
+          traverse.add({ self: edge, parent: item.self })
+        }
       }
     }
   }
@@ -218,12 +235,15 @@ export function mermaidOutput({
   // Track nodes that have had their label printed (shared across all importers)
   const labeledNodes = new Set<DepID>()
 
+  // Track nodes that have been processed (shared across all importers to avoid duplicates)
+  const seenNodes = new Set<DepID>()
+
   return (
     'flowchart TD\n' +
     [...importers]
       .map(i =>
         parseNode(
-          new Set<DepID>(),
+          seenNodes,
           labeledNodes,
           includedItems,
           depIdMapping,
