@@ -27,7 +27,7 @@ export const Pagination = ({ pagination }: Props) => {
         className="duration-250 group h-20 w-full cursor-pointer items-end hover:text-foreground"
         asChild>
         <a
-          href={prev.href}
+          href={next.href}
           className="flex flex-col gap-2 text-sm text-neutral-700 no-underline dark:text-muted-foreground">
           <span className="inline-flex items-center gap-1">Next</span>
           <span>{next.label}</span>
