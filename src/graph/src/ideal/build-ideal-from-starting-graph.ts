@@ -1,11 +1,14 @@
 import { getImporterSpecs } from './get-importer-specs.ts'
 import { refreshIdealGraph } from './refresh-ideal-graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
+import type { PackageJson } from '@vltpkg/package-json'
 import type { RefreshIdealGraphOptions } from './refresh-ideal-graph.ts'
 import type { Graph } from '../graph.ts'
 
 export type BuildIdealFromStartingGraphOptions =
-  RefreshIdealGraphOptions
+  RefreshIdealGraphOptions & {
+    packageJson: PackageJson
+  }
 
 /**
  * Builds an ideal {@link Graph} representing the dependencies that
@@ -31,50 +34,54 @@ export const buildIdealFromStartingGraph = async (
     options.remove.modifiedDependencies ||
     importerSpecs.remove.modifiedDependencies
 
-  // merge values found on importer specs with
+  // merge values found on node specs with
   // user-provided values from `options.add`
-  for (const [importerId, deps] of importerSpecs.add) {
-    const importer = options.graph.nodes.get(importerId)
+  for (const [nodeId, deps] of importerSpecs.add) {
+    const node = options.graph.nodes.get(nodeId)
     /* c8 ignore next - impossible */
-    if (!importer) continue
+    if (!node) continue
 
-    if (!options.add.has(importerId)) {
-      options.add.set(importerId, deps)
+    if (!options.add.has(nodeId)) {
+      options.add.set(nodeId, deps)
       continue
     }
 
-    // merge any deps found when reading the importers manifest
+    // merge any deps found when reading the nodes manifest
     // with the ones provided by the user in the `add` options,
     // user-provided deps should take precedence
     for (const [depName, dep] of deps) {
-      if (!options.add.get(importerId)?.has(depName)) {
-        options.add.get(importerId)?.set(depName, dep)
+      if (!options.add.get(nodeId)?.has(depName)) {
+        options.add.get(nodeId)?.set(depName, dep)
       }
 
       // update the save type for deps when using an implicit type
-      dep.type = resolveSaveType(importer, depName, dep.type)
+      dep.type = resolveSaveType(node, depName, dep.type)
     }
   }
 
-  // merge values found on importer specs with
+  // merge values found on node specs with
   // user-provided values from `options.remove`
-  for (const [importerId, deps] of importerSpecs.remove) {
-    if (!options.remove.has(importerId)) {
-      options.remove.set(importerId, deps)
+  for (const [nodeId, deps] of importerSpecs.remove) {
+    if (!options.remove.has(nodeId)) {
+      options.remove.set(nodeId, deps)
       continue
     }
 
-    // merge any deps found when reading the importers manifest
+    // merge any deps found when reading the nodes manifest
     // with the ones provided by the user in the `remove` options
     for (const depName of deps) {
-      options.remove.get(importerId)?.add(depName)
+      options.remove.get(nodeId)?.add(depName)
     }
   }
 
   // refreshs the current graph adding the nodes marked for addition
   // and removing the ones marked for removal, while also recalculating
   // peer dependencies and default locations
-  await refreshIdealGraph(options)
+  await refreshIdealGraph({
+    ...options,
+    transientAdd: importerSpecs.transientAdd,
+    transientRemove: importerSpecs.transientRemove,
+  })
 
   options.graph.gc()
 

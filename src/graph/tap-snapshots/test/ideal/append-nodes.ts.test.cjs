@@ -92,6 +92,15 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
 ]
 `
 
+exports[`test/ideal/append-nodes.ts > TAP > inject transient dependencies from transientAdd > graph should match snapshot 1`] = `
+flowchart TD
+a("root:my-project")
+a -->|"foo#64;file:./foo"| b("file(foo):foo#64;1.0.0")
+b -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
+b -->|"baz#64;^2.0.0"| d("npm:baz#64;2.0.0")
+b -->|"lorem#64;^3.0.0 (peer)"| e("npm:lorem#64;3.0.0")
+`
+
 exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registries > must match snapshot 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 0,

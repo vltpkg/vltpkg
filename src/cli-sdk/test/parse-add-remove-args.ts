@@ -3,6 +3,7 @@ import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { OptionsResults } from 'jackspeak'
 import { inspect } from 'node:util'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type {
   ConfigDefinitions,
@@ -16,6 +17,7 @@ import {
 class MockConfig {
   values: Record<string, any> = {}
   positionals: string[] = []
+  options: { projectRoot: string } = { projectRoot: process.cwd() }
 }
 
 Object.assign(Spec.prototype, {
@@ -26,24 +28,39 @@ Object.assign(Spec.prototype, {
 
 t.test('parseAddArgs', async t => {
   await t.test('no item', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.positionals = []
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return no dependency items',
     )
   })
 
   await t.test('single item', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.positionals = ['foo']
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return a single dependency item',
     )
   })
 
   await t.test('multiple items', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.positionals = [
       'foo@^1',
@@ -53,48 +70,68 @@ t.test('parseAddArgs', async t => {
       'file:./a',
     ]
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return multiple dependency items',
     )
   })
 
   await t.test('define dev type dep', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-dev': true,
     } as unknown as OptionsResults<ConfigDefinitions>
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return dependency as type=dev',
     )
   })
 
   await t.test('define optional type dep', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-optional': true,
     } as OptionsResults<ConfigDefinitions>
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return dependency as type=optional',
     )
   })
 
   await t.test('define peer dep', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-peer': true,
     } as OptionsResults<ConfigDefinitions>
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return dependency as type=peer',
     )
   })
 
   await t.test('define optional peer dep', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-optional': true,
@@ -102,12 +139,17 @@ t.test('parseAddArgs', async t => {
     } as OptionsResults<ConfigDefinitions>
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return dependency as type=peerOptional',
     )
   })
 
   await t.test('define as prod if explicitly defined', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-dev': true,
@@ -117,8 +159,28 @@ t.test('parseAddArgs', async t => {
     } as OptionsResults<ConfigDefinitions>
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
-      inspect(parseAddArgs(conf), { depth: Infinity }),
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
       'should return dependency as type=prod',
+    )
+  })
+
+  await t.test('nested folder without workspaces', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+      nested: {
+        folder: {
+          'package.json': JSON.stringify({ name: 'nested-pkg' }),
+        },
+      },
+    })
+    // PathScurry points to project root but cwd is nested folder
+    const scurry = new PathScurry(dir)
+    t.chdir(`${dir}/nested/folder`)
+    const conf = new MockConfig() as LoadedConfig
+    conf.positionals = ['foo@^1']
+    t.matchSnapshot(
+      inspect(parseAddArgs(conf, scurry), { depth: Infinity }),
+      'should return dependency with nested folder DepID',
     )
   })
 
@@ -172,6 +234,7 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
@@ -179,7 +242,9 @@ t.test('parseAddArgs', async t => {
           workspace: ['./app/a'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return dependency of a workspace',
         )
       },
@@ -190,11 +255,14 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return dependency of root',
         )
       },
@@ -205,6 +273,7 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = [
@@ -218,7 +287,9 @@ t.test('parseAddArgs', async t => {
           workspace: ['c'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return multiple deps of a workspace',
         )
       },
@@ -229,6 +300,7 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = [
@@ -242,7 +314,9 @@ t.test('parseAddArgs', async t => {
           workspace: ['a', 'b', 'c'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return multiple deps to multiple workspaces',
         )
       },
@@ -253,6 +327,7 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
@@ -260,7 +335,9 @@ t.test('parseAddArgs', async t => {
           'workspace-group': ['other'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return dependency to a group of workspaces',
         )
       },
@@ -271,6 +348,7 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
@@ -278,7 +356,9 @@ t.test('parseAddArgs', async t => {
           'workspace-group': ['utils', 'other'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return dependency to many groups of workspaces',
         )
       },
@@ -289,6 +369,7 @@ t.test('parseAddArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = [
@@ -302,7 +383,9 @@ t.test('parseAddArgs', async t => {
           'workspace-group': ['utils', 'other'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          inspect(parseAddArgs(conf, scurry, monorepo), {
+            depth: Infinity,
+          }),
           'should return multiple deps to many groups of workspaces',
         )
       },
@@ -312,28 +395,43 @@ t.test('parseAddArgs', async t => {
 
 t.test('parseRemoveArgs', async t => {
   await t.test('single item', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.positionals = ['foo']
     t.matchSnapshot(
-      inspect(parseRemoveArgs(conf)),
+      inspect(parseRemoveArgs(conf, scurry)),
       'should return a single dependency item',
     )
   })
 
   await t.test('multiple items', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.positionals = ['foo@^1', 'bar@latest', 'baz@1.0.0']
     t.matchSnapshot(
-      inspect(parseRemoveArgs(conf)),
+      inspect(parseRemoveArgs(conf, scurry)),
       'should return multiple dependency item',
     )
   })
 
   await t.test('no items', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'my-project' }),
+    })
+    t.chdir(dir)
+    const scurry = new PathScurry(dir)
     const conf = new MockConfig() as LoadedConfig
     conf.positionals = []
     t.matchSnapshot(
-      inspect(parseRemoveArgs(conf)),
+      inspect(parseRemoveArgs(conf, scurry)),
       'should return no items',
     )
   })
@@ -388,12 +486,13 @@ t.test('parseRemoveArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
         conf.values = {} as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseRemoveArgs(conf, monorepo), {
+          inspect(parseRemoveArgs(conf, scurry, monorepo), {
             depth: Infinity,
           }),
           'should remove dep from root',
@@ -404,6 +503,7 @@ t.test('parseRemoveArgs', async t => {
     await t.test('single dep of a single workspace', async t => {
       t.chdir(dir)
       unload()
+      const scurry = new PathScurry(dir)
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo']
@@ -411,7 +511,9 @@ t.test('parseRemoveArgs', async t => {
         workspace: ['./app/a'],
       } as OptionsResults<ConfigDefinitions>
       t.matchSnapshot(
-        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        inspect(parseRemoveArgs(conf, scurry, monorepo), {
+          depth: Infinity,
+        }),
         'should remove single dep of workspace',
       )
     })
@@ -419,6 +521,7 @@ t.test('parseRemoveArgs', async t => {
     await t.test('multiple deps of a single workspace', async t => {
       t.chdir(dir)
       unload()
+      const scurry = new PathScurry(dir)
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo', 'bar']
@@ -426,7 +529,9 @@ t.test('parseRemoveArgs', async t => {
         workspace: ['c'],
       } as OptionsResults<ConfigDefinitions>
       t.matchSnapshot(
-        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        inspect(parseRemoveArgs(conf, scurry, monorepo), {
+          depth: Infinity,
+        }),
         'should remove multiple deps of workspace',
       )
     })
@@ -434,6 +539,7 @@ t.test('parseRemoveArgs', async t => {
     await t.test('single dep from a workspace group', async t => {
       t.chdir(dir)
       unload()
+      const scurry = new PathScurry(dir)
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo']
@@ -441,7 +547,9 @@ t.test('parseRemoveArgs', async t => {
         'workspace-group': ['app'],
       } as OptionsResults<ConfigDefinitions>
       t.matchSnapshot(
-        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        inspect(parseRemoveArgs(conf, scurry, monorepo), {
+          depth: Infinity,
+        }),
         'should remove single dep from a single workspace group',
       )
     })
@@ -449,6 +557,7 @@ t.test('parseRemoveArgs', async t => {
     await t.test('multiple deps from a workspace group', async t => {
       t.chdir(dir)
       unload()
+      const scurry = new PathScurry(dir)
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo', 'bar']
@@ -456,7 +565,9 @@ t.test('parseRemoveArgs', async t => {
         'workspace-group': ['app'],
       } as OptionsResults<ConfigDefinitions>
       t.matchSnapshot(
-        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        inspect(parseRemoveArgs(conf, scurry, monorepo), {
+          depth: Infinity,
+        }),
         'should remove multiple dep from a single workspace group',
       )
     })
@@ -466,6 +577,7 @@ t.test('parseRemoveArgs', async t => {
       async t => {
         t.chdir(dir)
         unload()
+        const scurry = new PathScurry(dir)
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo', 'bar']
@@ -473,7 +585,7 @@ t.test('parseRemoveArgs', async t => {
           'workspace-group': ['utils', 'other'],
         } as OptionsResults<ConfigDefinitions>
         t.matchSnapshot(
-          inspect(parseRemoveArgs(conf, monorepo), {
+          inspect(parseRemoveArgs(conf, scurry, monorepo), {
             depth: Infinity,
           }),
           'should remove multiple dep from multiple workspace groups',

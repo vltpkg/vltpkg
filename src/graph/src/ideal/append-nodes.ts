@@ -11,7 +11,8 @@ import type {
   Manifest,
 } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
-import { asDependency, shorten } from '../dependencies.ts'
+import { fixupAddedNames } from '../fixup-added-names.ts'
+import { shorten } from '../dependencies.ts'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
@@ -32,6 +33,8 @@ import type {
   PeerContext,
   AppendNodeEntry,
   ProcessPlacementResult,
+  TransientAddMap,
+  TransientRemoveMap,
 } from './types.ts'
 
 type FileTypeInfo = {
@@ -286,6 +289,8 @@ const processPlacementTasks = async (
   actual?: Graph,
   seenExtracted?: Set<DepID>,
   remover?: RollbackRemove,
+  transientAdd?: TransientAddMap,
+  transientRemove?: TransientRemoveMap,
 ): Promise<ProcessPlacementResult> => {
   const childDepsToProcess: ProcessPlacementResult = []
 
@@ -302,22 +307,12 @@ const processPlacementTasks = async (
       type,
     } = fetchTask
 
-    // Handle nameless dependencies
-    if (manifest?.name && spec.name === '(unknown)') {
-      const s = add?.get(String(spec))
-      if (add && s) {
-        // removes the previous, placeholder entry key
-        add.delete(String(spec))
-        // replaces spec with a version with the correct name
-        spec = Spec.parse(manifest.name, spec.bareSpec, options)
-        // updates the add map with the fixed up spec
-        const n = asDependency({
-          ...s,
-          spec,
-        })
-        add.set(manifest.name, n)
-      }
-    }
+    // fix the name in the `add` map when needed. This allows the upcoming
+    // reify step to properly update the package.json file dependencies
+    // using the correct names retrieved from the manifest data
+    const additiveMap =
+      fromNode.importer ? add : transientAdd?.get(fromNode.id)
+    spec = fixupAddedNames(additiveMap, manifest, options, spec)
 
     // handles missing manifest resolution
     if (!manifest) {
@@ -460,6 +455,47 @@ const processPlacementTasks = async (
       }
     }
 
+    // Inject transient dependencies for non-importer nodes (nested folders)
+    // These are deps that were added from a nested folder context using
+    // relative file: specs that should resolve relative to that folder
+    const transientDeps = transientAdd?.get(node.id)
+    if (transientDeps) {
+      for (const [, dep] of transientDeps) {
+        if (dep.type === 'peer' || dep.type === 'peerOptional') {
+          nextPeerDeps.set(dep.spec.name, dep)
+          continue
+        }
+
+        // remove the dependency from nextDeps if it already exists
+        const index = nextDeps.findIndex(
+          d => d.spec.name === dep.spec.name,
+        )
+        if (index !== -1) {
+          nextDeps.splice(index, 1)
+        }
+
+        nextDeps.push(dep)
+      }
+    }
+
+    // Remove transient removals when needed
+    const transientRemovals = transientRemove?.get(node.id)
+    if (transientRemovals) {
+      for (const depName of transientRemovals) {
+        const index = nextDeps.findIndex(
+          dep => dep.spec.name === depName,
+        )
+        if (index !== -1) {
+          nextDeps.splice(index, 1)
+          continue
+        }
+
+        if (nextPeerDeps.has(depName)) {
+          nextPeerDeps.delete(depName)
+        }
+      }
+    }
+
     // finish peer placement for this node, resolving satisfied peers
     // to seen nodes from the peer context and adding unsatisfied peers
     // to `nextDeps` so they get processed along regular dependencies
@@ -509,6 +545,8 @@ export const appendNodes = async (
   actual?: Graph,
   seenExtracted?: Set<DepID>,
   remover?: RollbackRemove,
+  transientAdd?: TransientAddMap,
+  transientRemove?: TransientRemoveMap,
 ) => {
   /* c8 ignore next */
   if (seen.has(fromNode.id)) return
@@ -583,6 +621,8 @@ export const appendNodes = async (
             actual,
             seenExtracted,
             remover,
+            transientAdd,
+            transientRemove,
           )
         },
       ),

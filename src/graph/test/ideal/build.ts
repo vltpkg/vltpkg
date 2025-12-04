@@ -1,20 +1,21 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import { asDependency } from '../../src/dependencies.ts'
 import { build } from '../../src/ideal/build.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { DepIDTuple } from '@vltpkg/dep-id'
 import type { Manifest } from '@vltpkg/types'
-import type { Spec } from '@vltpkg/spec'
 import type { LockfileEdgeKey } from '../../src/index.ts'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -125,5 +126,85 @@ t.test('build from actual files', async t => {
   t.matchSnapshot(
     objectLikeOutput(graph),
     'should build an ideal tree starting from a virtual graph',
+  )
+})
+
+t.test('add with file DepID not in graph throws', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt-lock.json': JSON.stringify({
+      options: {},
+      nodes: {},
+      edges: {},
+    }),
+  })
+
+  await t.rejects(
+    build({
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      add: new Map([
+        [
+          joinDepIDTuple(['file', 'packages/unknown']),
+          new Map([
+            [
+              'foo',
+              asDependency({
+                spec: Spec.parse('foo@^1.0.0'),
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    }),
+    {
+      message:
+        'The current working dir is not a dependency of this project',
+    },
+  )
+})
+
+t.test('remove with file DepID not in graph throws', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt-lock.json': JSON.stringify({
+      options: {},
+      nodes: {},
+      edges: {},
+    }),
+  })
+
+  await t.rejects(
+    build({
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      add: new Map() as AddImportersDependenciesMap,
+      remove: new Map([
+        [
+          joinDepIDTuple(['file', 'packages/unknown']),
+          new Set(['foo']),
+        ],
+      ]) as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    }),
+    {
+      message:
+        'The current working dir is not a dependency of this project',
+    },
   )
 })

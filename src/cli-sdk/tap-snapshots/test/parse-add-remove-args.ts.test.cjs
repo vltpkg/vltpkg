@@ -67,6 +67,15 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > multiple items > s
 }
 `
 
+exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > nested folder without workspaces > should return dependency with nested folder DepID 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) {
+    'file·nested§folder' => Map(1) { 'foo' => { spec: Spec {foo@^1}, type: 'implicit' } },
+    modifiedDependencies: true
+  }
+}
+`
+
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > no item > should return no dependency items 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {

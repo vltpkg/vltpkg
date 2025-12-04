@@ -138,7 +138,7 @@ t.test('updatePackageJson', async t => {
           graph: borkedGraph,
           add,
         })(),
-      /Failed to retrieve importer node/,
+      /Failed to retrieve node/,
       'should throw a importer node retrieval error',
     )
   })

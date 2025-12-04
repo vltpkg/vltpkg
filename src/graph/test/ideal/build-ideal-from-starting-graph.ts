@@ -227,6 +227,7 @@ t.test('build from a virtual graph', async t => {
   const graph = await buildIdealFromStartingGraph({
     ...configData,
     packageInfo,
+    packageJson: new PackageJson(),
     scurry: new PathScurry(projectRoot),
     graph: virtual,
     add: new Map([
@@ -293,6 +294,7 @@ t.test('add from manifest file only', async t => {
   const graph = await buildIdealFromStartingGraph({
     ...configData,
     packageInfo,
+    packageJson: new PackageJson(),
     scurry: new PathScurry(projectRoot),
     graph: virtual,
     add: new Map() as AddImportersDependenciesMap,
@@ -381,6 +383,7 @@ t.test('remove from manifest file only', async t => {
   const graph = await buildIdealFromStartingGraph({
     ...configData,
     packageInfo,
+    packageJson: new PackageJson(),
     scurry: new PathScurry(projectRoot),
     graph: virtual,
     add: new Map() as AddImportersDependenciesMap,
@@ -632,6 +635,7 @@ t.test('build from an actual graph', async t => {
   const graph = await buildIdealFromStartingGraph({
     ...configData,
     packageInfo,
+    packageJson: new PackageJson(),
     graph: actual,
     scurry: new PathScurry(projectRoot),
     add: new Map([
@@ -716,6 +720,7 @@ t.test('optional subdeps binary distribution strategy', async t => {
   const graph = await buildIdealFromStartingGraph({
     ...configData,
     packageInfo,
+    packageJson: new PackageJson(),
     scurry: new PathScurry(projectRoot),
     actual,
     graph: virtual,

@@ -312,6 +312,55 @@ documentation.
 - Peer dependencies are handled automatically with context isolation
   when version conflicts arise
 
+## Local directories (Linked Folders)
+
+<Code
+  code={`# Relative path
+$ vlt install ./my-local-package
+
+# Install from parent directory
+
+$ vlt install ../shared-lib`} title="Terminal" lang="bash" />
+
+Local directories can be symlinked to a project via the `file:`
+protocol. Note that these differ from local tarballs
+(`file:./pkg.tgz`) which are extracted and treated as immutable.
+
+### Installing from within a Linked Folder
+
+When you `cd` into a linked folder and run `vlt install`, the vlt cli
+allows you to add dependencies to that folder's `package.json`:
+
+<Code
+  code={`# Project has: "my-lib": "file:./libs/my-lib"
+
+$ cd libs/my-lib $ vlt install lodash@^4.17.0
+
+# Adds lodash to libs/my-lib/package.json`}
+
+title="Terminal" lang="bash" />
+
+`vlt` detects your current working directory relative to the project
+root and targets the appropriate `package.json`.
+
+Note: to use `vlt install` or `vlt uninstall` to manage dependencies
+of a local linked directory, that folder needs to be already in the
+chain of dependencies of either the root project or one of its
+workspaces in order for the `vlt` cli to properly manage the
+operation.
+
+### Relative paths in Linked Folders
+
+File specs resolve relative to the linked folder's location:
+
+<Code
+  code={`# From libs/my-lib, reference ../shared
+$ cd libs/my-lib
+$ vlt install file:../shared`}
+  title="Terminal"
+  lang="bash"
+/>
+
 ## Aliases
 
 ```

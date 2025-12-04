@@ -20,6 +20,11 @@ import { build } from '../../src/ideal/build.ts'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import type {
+  TransientAddMap,
+  TransientRemoveMap,
+} from '../../src/ideal/types.ts'
+import { mermaidOutput } from '../../src/visualization/mermaid-output.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -1417,6 +1422,115 @@ t.test('early extraction during appendNodes', async t => {
       'optional dep should NOT be extracted',
     )
   })
+})
+
+t.test('inject transient dependencies from transientAdd', async t => {
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+    dependencies: {
+      bar: '^1.0.0', // <-- regular dependency
+      baz: '^1.0.0', // <-- will be overridden by transientAdd
+      ipsum: '^1.0.0', // <-- will be removed by transientRemove
+    },
+    peerDependencies: {
+      react: '^18.0.0', // <-- peer dep will be removed by transientRemove
+    },
+  }
+  const barManifest = {
+    name: 'bar',
+    version: '1.0.0',
+  }
+  const bazManifest = {
+    name: 'baz',
+    version: '2.0.0',
+  }
+  const loremManifest = {
+    name: 'lorem',
+    version: '3.0.0',
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'foo':
+          return fooManifest
+        case 'bar':
+          return barManifest
+        case 'baz':
+          return bazManifest
+        case 'lorem':
+          return loremManifest
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
+
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', 'file:foo'),
+    type: 'prod',
+  })
+
+  // Create transientAdd map with a dependency for the foo node
+  // This simulates adding a dep from a nested folder context
+  const fooDepID = joinDepIDTuple(['file', 'foo'])
+  const bazDep = asDependency({
+    spec: Spec.parse('baz', '^2.0.0'),
+    type: 'prod',
+  })
+  const loremDep = asDependency({
+    spec: Spec.parse('lorem', '^3.0.0'),
+    type: 'peer',
+  })
+  const transientAdd = new Map() as TransientAddMap
+  transientAdd.set(
+    fooDepID,
+    new Map([
+      ['baz', bazDep],
+      ['lorem', loremDep],
+    ]),
+  )
+  const transientRemove = new Map() as TransientRemoveMap
+  transientRemove.set(fooDepID, new Set(['ipsum', 'react']))
+
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [fooDep],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set<DepID>(),
+    new Map([['foo', fooDep]]),
+    undefined, // modifiers
+    undefined, // modifierRefs
+    undefined, // extractPromises
+    undefined, // actual
+    undefined, // seenExtracted
+    undefined, // remover
+    transientAdd,
+    transientRemove,
+  )
+
+  t.matchSnapshot(
+    mermaidOutput({
+      edges: [...graph.edges],
+      nodes: [...graph.nodes.values()],
+      importers: graph.importers,
+    }),
+    'graph should match snapshot',
+  )
 })
 
 t.test('skip peerOptional dependencies', async t => {
