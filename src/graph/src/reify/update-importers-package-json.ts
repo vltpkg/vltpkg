@@ -139,7 +139,7 @@ const addOrRemoveDeps = (
         nodeType,
         dep.spec,
         existing,
-        node.version,
+        n.version,
       )
       dependencies[name] = saveValue
       manifestChanged = manifestChanged || saveValue !== existing
