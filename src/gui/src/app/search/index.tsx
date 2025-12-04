@@ -291,7 +291,7 @@ export const Search = () => {
                   </p>
                 </div>
                 <div className="mt-4 self-start md:mt-0 md:self-end">
-                  <NavLink to="/blog">
+                  <NavLink to="https://blog.vlt.sh">
                     <FlipButton icon="Newspaper" label="See more" />
                   </NavLink>
                 </div>
@@ -308,7 +308,7 @@ export const Search = () => {
             <div className="grid-cols-12 lg:grid">
               {blogPosts.map((post, idx) => (
                 <Link
-                  to={`https://blog.vlt.sh/${post.slug}`}
+                  to={post.link}
                   key={`test-${idx}`}
                   className="col-span-4 flex p-[0.5px]">
                   <article className="bg-background hover:bg-foreground/1 group/article relative flex h-full w-full flex-col overflow-hidden rounded p-6 transition-colors duration-100">

@@ -4,7 +4,7 @@ export interface Post {
   banner: string
   bannerAlt: string
   date: string
-  slug: string
+  link: string
   summary: string
   title: string
 }
@@ -31,7 +31,7 @@ export const useBlogPosts = (count: number) => {
             return {
               title:
                 item.querySelector('title')?.innerHTML ?? 'title',
-              slug: item.querySelector('link')?.innerHTML ?? 'slug',
+              link: item.querySelector('link')?.innerHTML ?? 'link',
               date:
                 item.querySelector('pubDate')?.innerHTML ?? 'date',
               summary: description?.textContent ?? 'summary',
