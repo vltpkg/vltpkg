@@ -54,25 +54,25 @@ export type UpdatePackageJsonOptions = {
 }
 
 const addOrRemoveDeps = (
-  importerId: DepID,
+  nodeId: DepID,
   graph: Graph,
   addOrRemove?:
     | AddImportersDependenciesMap
     | RemoveImportersDependenciesMap,
 ): NormalizedManifest | undefined => {
-  const importer = graph.nodes.get(importerId)
-  if (!importer) {
-    throw error('Failed to retrieve importer node', {
-      found: importerId,
+  const node = graph.nodes.get(nodeId)
+  if (!node) {
+    throw error('Failed to retrieve node', {
+      found: nodeId,
     })
   }
-  const manifest = importer.manifest
+  const manifest = node.manifest
   if (!manifest) {
     throw error('Could not find manifest data for node', {
-      found: importerId,
+      found: nodeId,
     })
   }
-  const deps = addOrRemove?.get(importerId)
+  const deps = addOrRemove?.get(nodeId)
   /* c8 ignore start -- impossible but TS doesn't know that */
   if (!deps) {
     throw error('Failed to retrieve added deps info', {
@@ -97,7 +97,7 @@ const addOrRemoveDeps = (
     } else {
       const [name, dep] = deleteNameOrAddItem
       // peerOptional also needs to add peerDependenciesMeta entry
-      const depTypeShort = resolveSaveType(importer, name, dep.type)
+      const depTypeShort = resolveSaveType(node, name, dep.type)
       const depType = depTypesMap.get(depTypeShort)
       if (!depType) {
         throw error('Failed to retrieve dependency type', {
@@ -105,11 +105,11 @@ const addOrRemoveDeps = (
           found: dep.type,
         })
       }
-      const node = importer.edgesOut.get(name)?.to
-      if (!node) {
+      const n = node.edgesOut.get(name)?.to
+      if (!n) {
         throw error('Dependency node could not be found')
       }
-      const [nodeType] = splitDepID(node.id)
+      const [nodeType] = splitDepID(n.id)
 
       for (const dtype of longDependencyTypes) {
         if (dtype === depType || !manifest[dtype]) continue
@@ -149,7 +149,7 @@ const addOrRemoveDeps = (
 }
 
 /**
- * Updates the importers of a provided {@link Graph} accordingly to the
+ * Updates nodes of a provided {@link Graph} accordingly to the
  * provided add or remove arguments.
  */
 export const updatePackageJson = ({
@@ -163,8 +163,11 @@ export const updatePackageJson = ({
 
   for (const operation of operations) {
     if (operation) {
-      for (const importerId of operation.keys()) {
-        const manifest = addOrRemoveDeps(importerId, graph, operation)
+      // These node ids are from either importer nodes or dependencies
+      // that are nested folders from which the user can also add new
+      // dependencies to
+      for (const nodeId of operation.keys()) {
+        const manifest = addOrRemoveDeps(nodeId, graph, operation)
         if (manifest) {
           manifestsToUpdate.add(manifest)
         }

@@ -9,6 +9,8 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
   BuildIdealRemoveOptions,
+  TransientAddMap,
+  TransientRemoveMap,
 } from './types.ts'
 import type { Dependency } from '../dependencies.ts'
 import type { GraphModifier } from '../modifiers.ts'
@@ -43,6 +45,18 @@ export type RefreshIdealGraphOptions = BuildIdealAddOptions &
      * A {@link RollbackRemove} instance to handle extraction rollbacks
      */
     remover: RollbackRemove
+
+    /**
+     * Dependencies to be added to non-importer nodes when they are placed.
+     * Used for nested folder dependencies that are not importers.
+     */
+    transientAdd?: TransientAddMap
+
+    /**
+     * Dependencies to be removed from non-importer nodes when they are placed.
+     * Used for nested folder dependencies that are not importers.
+     */
+    transientRemove?: TransientRemoveMap
   }
 
 /**
@@ -89,6 +103,8 @@ export const refreshIdealGraph = async ({
   actual,
   remove,
   remover,
+  transientAdd,
+  transientRemove,
   ...specOptions
 }: RefreshIdealGraphOptions) => {
   const seen = new Set<DepID>()
@@ -142,6 +158,8 @@ export const refreshIdealGraph = async ({
       actual,
       seenExtracted,
       remover,
+      transientAdd,
+      transientRemove,
     )
   }
 

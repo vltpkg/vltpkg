@@ -127,6 +127,7 @@ t.test('frozen-lockfile flag', async t => {
 
   const options = {
     projectRoot: dir,
+    scurry: { relativePosix: () => '' },
     'frozen-lockfile': true,
   }
 
@@ -174,6 +175,7 @@ t.test('lockfile-only flag', async t => {
 
   const options = {
     projectRoot: dir,
+    scurry: { relativePosix: () => '' },
     'lockfile-only': true,
   }
 

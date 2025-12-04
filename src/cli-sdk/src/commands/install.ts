@@ -46,7 +46,8 @@ export const command: CommandFn<InstallResult> = async conf => {
   // TODO: we should probably throw an error if the user
   // tries to install using either view=mermaid or view=gui
   const monorepo = conf.options.monorepo
-  const { add } = parseAddArgs(conf, monorepo)
+  const scurry = conf.options.scurry
+  const { add } = parseAddArgs(conf, scurry, monorepo)
   const frozenLockfile = conf.options['frozen-lockfile']
   const expectLockfile = conf.options['expect-lockfile']
   const lockfileOnly = conf.options['lockfile-only']
