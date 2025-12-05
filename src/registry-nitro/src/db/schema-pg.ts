@@ -4,7 +4,10 @@ import {
   bigint,
   json,
   primaryKey,
+  index,
+  foreignKey,
 } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
 export const packages = pgTable(
   'packages',
@@ -36,6 +39,13 @@ export const versions = pgTable(
     primaryKey({
       columns: [table.name, table.version, table.origin],
     }),
+    index('versions_name_origin_idx').on(table.name, table.origin),
+    foreignKey({
+      columns: [table.name, table.origin],
+      foreignColumns: [packages.name, packages.origin],
+    })
+      .onDelete('cascade')
+      .onUpdate('cascade'),
   ],
 )
 
@@ -56,6 +66,20 @@ export const tarballs = pgTable(
     }),
   ],
 )
+
+export const packagesRelations = relations(packages, ({ many }) => ({
+  versions: many(versions, {
+    relationName: 'packageVersions',
+  }),
+}))
+
+export const versionsRelations = relations(versions, ({ one }) => ({
+  package: one(packages, {
+    fields: [versions.name],
+    references: [packages.name],
+    relationName: 'packageVersions',
+  }),
+}))
 
 export type Package = typeof packages.$inferSelect
 export type Version = typeof versions.$inferSelect

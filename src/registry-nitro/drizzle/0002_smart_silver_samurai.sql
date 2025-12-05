@@ -1,0 +1,1 @@
+ALTER TABLE "versions" ADD CONSTRAINT "versions_name_origin_packages_name_origin_fk" FOREIGN KEY ("name","origin") REFERENCES "public"."packages"("name","origin") ON DELETE cascade ON UPDATE cascade;

@@ -3,7 +3,10 @@ import {
   text,
   numeric,
   primaryKey,
+  index,
+  foreignKey,
 } from 'drizzle-orm/sqlite-core'
+import { relations } from 'drizzle-orm'
 
 export const packages = sqliteTable(
   'packages',
@@ -35,6 +38,13 @@ export const versions = sqliteTable(
     primaryKey({
       columns: [table.name, table.version, table.origin],
     }),
+    index('versions_name_origin_idx').on(table.name, table.origin),
+    foreignKey({
+      columns: [table.name, table.origin],
+      foreignColumns: [packages.name, packages.origin],
+    })
+      .onDelete('cascade')
+      .onUpdate('cascade'),
   ],
 )
 
@@ -55,6 +65,20 @@ export const tarballs = sqliteTable(
     }),
   ],
 )
+
+export const packagesRelations = relations(packages, ({ many }) => ({
+  versions: many(versions, {
+    relationName: 'packageVersions',
+  }),
+}))
+
+export const versionsRelations = relations(versions, ({ one }) => ({
+  package: one(packages, {
+    fields: [versions.name],
+    references: [packages.name],
+    relationName: 'packageVersions',
+  }),
+}))
 
 export type Package = typeof packages.$inferSelect
 export type Version = typeof versions.$inferSelect
