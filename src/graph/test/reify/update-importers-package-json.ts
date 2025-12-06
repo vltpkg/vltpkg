@@ -324,6 +324,68 @@ t.test('updatePackageJson', async t => {
     )
   })
 
+  await t.test(
+    'bare spec uses dependency version not importer version',
+    async t => {
+      // This test validates the fix for the bug where package.json
+      // was saved with the importer's version instead of the
+      // dependency's version when installing with a bare spec
+      // (e.g., `vlt i abbrev` resolving to abbrev@4.0.0)
+      const testRootMani = {
+        name: 'test-project',
+        version: '1.0.0', // root is at version 1.0.0
+      }
+
+      const testGraph = new Graph({
+        mainManifest: testRootMani,
+        projectRoot: t.testdirName,
+      })
+      const testRoot = testGraph.mainImporter
+
+      // Dependency resolves to version 4.0.0, different from root's 1.0.0
+      const abbrevMani = { name: 'abbrev', version: '4.0.0' }
+      // Bare spec with no version (like running `vlt i abbrev`)
+      const abbrevSpec = Spec.parse('abbrev')
+      const abbrev = testGraph.addNode(
+        undefined,
+        abbrevMani,
+        abbrevSpec,
+        abbrevMani.name,
+        abbrevMani.version,
+      )
+      testGraph.addEdge('prod', abbrevSpec, testRoot, abbrev)
+
+      updatePackageJson({
+        packageJson,
+        graph: testGraph,
+        add: new Map([
+          [
+            testRoot.id,
+            new Map([
+              [
+                'abbrev',
+                asDependency({
+                  spec: abbrevSpec,
+                  type: 'prod',
+                }),
+              ],
+            ]),
+          ],
+        ]) as AddImportersDependenciesMap,
+      })()
+
+      const res = retrieveManifestResult()
+      t.strictSame(res.length, 1, 'should have been called once')
+      // The key assertion: should be ^4.0.0 (dependency version),
+      // NOT ^1.0.0 (importer version)
+      t.strictSame(
+        res[0]?.[0]?.dependencies?.abbrev,
+        '^4.0.0',
+        'should use dependency version (4.0.0) not importer version (1.0.0)',
+      )
+    },
+  )
+
   await t.test('remove dependencies', async t => {
     updatePackageJson({
       packageJson,
