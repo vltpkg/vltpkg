@@ -13,8 +13,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > add from manifest
     importer: true,
     edgesOut: [
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: '··baz@1.0.0',
-        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        id: '·npm·baz@1.0.0',
+        location: './node_modules/.vlt/·npm·baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       }
     ]
@@ -30,13 +30,13 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
     importer: true,
     edgesOut: [
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: '··baz@1.0.0',
-        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        id: '·npm·baz@1.0.0',
+        location: './node_modules/.vlt/·npm·baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
@@ -47,13 +47,13 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
       },
       Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file·linked', location: 'linked', resolved: 'linked' },
       Edge spec(missing@^1.0.0) -prod-> to: Node {
-        id: '··missing@1.0.0',
-        location: './node_modules/.vlt/··missing@1.0.0/node_modules/missing',
+        id: '·npm·missing@1.0.0',
+        location: './node_modules/.vlt/·npm·missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
       },
       Edge spec(pnpmdep@1) -prod-> to: Node {
-        id: '··pnpmdep@1.0.0',
-        location: './node_modules/.vlt/··pnpmdep@1.0.0/node_modules/pnpmdep',
+        id: '·npm·pnpmdep@1.0.0',
+        location: './node_modules/.vlt/·npm·pnpmdep@1.0.0/node_modules/pnpmdep',
         resolved: 'https://registry.npmjs.org/pnpmdep/-/pnpmdep-1.0.0.tgz'
       }
     ]
@@ -69,18 +69,18 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     importer: true,
     edgesOut: [
       Edge spec(@scoped/a@^1.0.0) -prod-> to: Node {
-        id: '··@scoped§a@1.0.0',
-        location: './node_modules/.vlt/··@scoped§a@1.0.0/node_modules/@scoped/a',
+        id: '·npm·@scoped§a@1.0.0',
+        location: './node_modules/.vlt/·npm·@scoped§a@1.0.0/node_modules/@scoped/a',
         resolved: 'https://registry.npmjs.org/@scoped/a/-/a-1.0.0.tgz'
       },
       Edge spec(@scoped/b@^1.0.0) -prod-> to: Node {
-        id: '··@scoped§b@1.0.0',
-        location: './node_modules/.vlt/··@scoped§b@1.0.0/node_modules/@scoped/b',
+        id: '·npm·@scoped§b@1.0.0',
+        location: './node_modules/.vlt/·npm·@scoped§b@1.0.0/node_modules/@scoped/b',
         resolved: 'https://registry.npmjs.org/@scoped/b/-/b-1.0.0.tgz',
         edgesOut: [
           Edge spec(@scoped/c@^1.0.0) -prod-> to: Node {
-            id: '··@scoped§c@1.0.0',
-            location: './node_modules/.vlt/··@scoped§c@1.0.0/node_modules/@scoped/c',
+            id: '·npm·@scoped§c@1.0.0',
+            location: './node_modules/.vlt/·npm·@scoped§c@1.0.0/node_modules/@scoped/c',
             resolved: 'https://registry.npmjs.org/@scoped/c/-/c-1.0.0.tgz'
           }
         ]
@@ -97,14 +97,14 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
         resolved: 'http://example.com/foo/-/foo-1.0.0.tgz'
       },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
       },
       Edge spec(link@file:./linked) -prod-> to: Node { id: 'file·linked', location: 'linked', resolved: 'linked' },
       Edge spec(missing@^1.0.0) -prod-> to: Node {
-        id: '··missing@1.0.0',
-        location: './node_modules/.vlt/··missing@1.0.0/node_modules/missing',
+        id: '·npm·missing@1.0.0',
+        location: './node_modules/.vlt/·npm·missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
       }
     ]
@@ -115,8 +115,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     importer: true,
     edgesOut: [
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: '··baz@1.0.0',
-        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        id: '·npm·baz@1.0.0',
+        location: './node_modules/.vlt/·npm·baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       }
     ]
@@ -126,11 +126,11 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     location: './packages/workspace-a',
     importer: true,
     edgesOut: [
-      Edge spec(foo@^1.0.0) -dev-> to: Node { ref: '··foo@1.0.0' },
+      Edge spec(foo@^1.0.0) -dev-> to: Node { ref: '·npm·foo@1.0.0' },
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace·packages§workspace-b' },
       Edge spec(ipsum@^1.0.0) -dev-> to: Node {
-        id: '··ipsum@1.0.0',
-        location: './node_modules/.vlt/··ipsum@1.0.0/node_modules/ipsum',
+        id: '·npm·ipsum@1.0.0',
+        location: './node_modules/.vlt/·npm·ipsum@1.0.0/node_modules/ipsum',
         dev: true,
         resolved: 'https://registry.npmjs.org/ipsum/-/ipsum-1.0.0.tgz'
       }
@@ -147,27 +147,27 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > optional subdeps 
     importer: true,
     edgesOut: [
       Edge spec(esbuild@*) -prod-> to: Node {
-        id: '··esbuild@0.25.11',
-        location: './node_modules/.vlt/··esbuild@0.25.11/node_modules/esbuild',
+        id: '·npm·esbuild@0.25.11',
+        location: './node_modules/.vlt/·npm·esbuild@0.25.11/node_modules/esbuild',
         resolved: 'https://registry.npmjs.org/esbuild/-/esbuild-0.25.11.tgz',
         edgesOut: [
           Edge spec(@esbuild/darwin-arm64@0.25.11) -optional-> to: Node {
-            id: '··@esbuild§darwin-arm64@0.25.11',
-            location: './node_modules/.vlt/··@esbuild§darwin-arm64@0.25.11/node_modules/@esbuild/darwin-arm64',
+            id: '·npm·@esbuild§darwin-arm64@0.25.11',
+            location: './node_modules/.vlt/·npm·@esbuild§darwin-arm64@0.25.11/node_modules/@esbuild/darwin-arm64',
             optional: true,
             resolved: 'https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.11.tgz',
             integrity: 'sha512-VekY0PBCukppoQrycFxUqkCojnTQhdec0vevUL/EDOCnXd9LKWqD/bHwMPzigIJXPhC59Vd1WFIL57SKs2mg4w=='
           },
           Edge spec(@esbuild/linux-x64@0.25.11) -optional-> to: Node {
-            id: '··@esbuild§linux-x64@0.25.11',
-            location: './node_modules/.vlt/··@esbuild§linux-x64@0.25.11/node_modules/@esbuild/linux-x64',
+            id: '·npm·@esbuild§linux-x64@0.25.11',
+            location: './node_modules/.vlt/·npm·@esbuild§linux-x64@0.25.11/node_modules/@esbuild/linux-x64',
             optional: true,
             resolved: 'https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.11.tgz',
             integrity: 'sha512-Qr8AzcplUhGvdyUF08A1kHU3Vr2O88xxP0Tm8GcdVOUm25XYcMPp2YqSVHbLuXzYQMf9Bh/iKx7YPqECs6ffLA=='
           },
           Edge spec(@esbuild/win32-x64@0.25.11) -optional-> to: Node {
-            id: '··@esbuild§win32-x64@0.25.11',
-            location: './node_modules/.vlt/··@esbuild§win32-x64@0.25.11/node_modules/@esbuild/win32-x64',
+            id: '·npm·@esbuild§win32-x64@0.25.11',
+            location: './node_modules/.vlt/·npm·@esbuild§win32-x64@0.25.11/node_modules/@esbuild/win32-x64',
             optional: true,
             resolved: 'https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.11.tgz',
             integrity: 'sha512-D7Hpz6A2L4hzsRpPaCYkQnGOotdUpDzSGRIv9I+1ITdHROSFUWW95ZPZWQmGka1Fg7W3zFJowyn9WGwMJ0+KPA=='
@@ -187,8 +187,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > remove from manif
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       }

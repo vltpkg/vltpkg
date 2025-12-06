@@ -2,7 +2,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { Spec } from '@vltpkg/spec'
+import { getOptions, Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -19,6 +19,8 @@ import type {
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
+
+const specOptions = getOptions({})
 
 const packageInfo = {
   async manifest(spec: Spec) {
@@ -65,6 +67,7 @@ t.test('build from lockfile', async t => {
   })
 
   const graph = await build({
+    ...specOptions,
     scurry: new PathScurry(projectRoot),
     monorepo: Monorepo.maybeLoad(projectRoot),
     packageJson: new PackageJson(),
@@ -115,6 +118,7 @@ t.test('build from actual files', async t => {
   })
 
   const graph = await build({
+    ...specOptions,
     scurry: new PathScurry(projectRoot),
     monorepo: Monorepo.maybeLoad(projectRoot),
     packageJson: new PackageJson(),
@@ -144,6 +148,7 @@ t.test('add with file DepID not in graph throws', async t => {
 
   await t.rejects(
     build({
+      ...specOptions,
       scurry: new PathScurry(projectRoot),
       monorepo: Monorepo.maybeLoad(projectRoot),
       packageJson: new PackageJson(),
@@ -188,6 +193,7 @@ t.test('remove with file DepID not in graph throws', async t => {
 
   await t.rejects(
     build({
+      ...specOptions,
       scurry: new PathScurry(projectRoot),
       monorepo: Monorepo.maybeLoad(projectRoot),
       packageJson: new PackageJson(),
@@ -208,3 +214,67 @@ t.test('remove with file DepID not in graph throws', async t => {
     },
   )
 })
+
+t.test(
+  'aliased and non-aliased npm deps resolve to same node',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+          bar: 'npm:foo@^1.0.0',
+        },
+      }),
+    })
+
+    // Use final.name to resolve aliased specs correctly
+    const aliasAwarePackageInfo = {
+      async manifest(spec: Spec) {
+        switch (spec.final.name) {
+          case 'foo':
+            return {
+              name: 'foo',
+              version: '1.0.0',
+              dist: {
+                integrity:
+                  'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ==',
+              } as Manifest,
+            }
+          default:
+            throw new Error('404 - ' + spec.final.name, {
+              cause: { spec },
+            })
+        }
+      },
+    } as PackageInfoClient
+
+    const graph = await build({
+      ...specOptions,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: aliasAwarePackageInfo,
+      projectRoot,
+      remover: new RollbackRemove(),
+    })
+
+    // Both foo and bar should resolve to the same DepID node
+    const fooEdge = graph.mainImporter.edgesOut.get('foo')
+    const barEdge = graph.mainImporter.edgesOut.get('bar')
+
+    t.ok(fooEdge?.to, 'foo edge should have a target node')
+    t.ok(barEdge?.to, 'bar edge should have a target node')
+    t.equal(
+      fooEdge?.to?.id,
+      barEdge?.to?.id,
+      'both deps should resolve to the same node (same DepID)',
+    )
+    t.equal(
+      graph.nodes.size,
+      2,
+      'graph should have exactly 2 nodes (root + foo)',
+    )
+  },
+)

@@ -308,7 +308,7 @@ Error: failed graph traversal
   [cause]: {
     code: 'GRAPHRUN_TRAVERSAL',
     node: { id: 'workspace·www§docs' },
-    path: [ { id: '··a@1.2.3' } ],
+    path: [ { id: '·npm·a@1.2.3' } ],
     cause: Error: command failed
         at {STACK_LINE} {
       [cause]: {
@@ -327,7 +327,7 @@ Error: failed graph traversal
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output 1`] = `
 Graph traversal failure at: workspace www/docs 
-  Path: ··a@1.2.3
+  Path: ·npm·a@1.2.3
 Command: astro sync
 Args: "x"
 Cwd: /some/path/to/www/docs
@@ -341,7 +341,7 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output no file 1`] = `
 Graph traversal failure at: workspace www/docs 
-  Path: ··a@1.2.3
+  Path: ·npm·a@1.2.3
 Command: astro sync
 Args: "x"
 Cwd: /some/path/to/www/docs
@@ -357,7 +357,7 @@ Error: failed graph traversal
   [cause]: {
     code: 'GRAPHRUN_TRAVERSAL',
     node: { id: 'workspace·www§docs' },
-    path: [ { id: '··a@1.2.3' } ],
+    path: [ { id: '·npm·a@1.2.3' } ],
     cause: Error: command failed
         at {STACK_LINE} {
       [cause]: {
@@ -376,7 +376,7 @@ Error: failed graph traversal
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output 1`] = `
 Graph traversal failure at: workspace www/docs 
-  Path: ··a@1.2.3
+  Path: ·npm·a@1.2.3
 Command: astro sync
 Args: "x"
 Cwd: /some/path/to/www/docs
@@ -390,7 +390,7 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output no file 1`] = `
 Graph traversal failure at: workspace www/docs 
-  Path: ··a@1.2.3
+  Path: ·npm·a@1.2.3
 Command: astro sync
 Args: "x"
 Cwd: /some/path/to/www/docs
