@@ -12,6 +12,10 @@ vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarFooter: 'gui-sidebar-footer',
 }))
 
+vi.mock('@/components/navigation/sidebar/sidebar-logo.tsx', () => ({
+  SidebarLogo: 'gui-sidebar-logo',
+}))
+
 vi.mock(
   '@/components/navigation/sidebar/sidebar-menu-link.tsx',
   () => ({

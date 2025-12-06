@@ -88,10 +88,8 @@
   border-right: 1px solid var(--pattern-fg);
 }
 
-@variant dark {
-  .pattern-hatch {
-    --pattern-fg: rgb(255 255 255 / 0.1);
-  }
+.dark .pattern-hatch {
+  --pattern-fg: rgb(255 255 255 / 0.1);
 }
 
 @theme inline {

@@ -163,7 +163,7 @@ export const CrumbNav = ({
               )}
 
             <button
-              className="inline-flex"
+              className="inline-flex cursor-pointer"
               onClick={() => onCrumbClick(originalIndex)}>
               <Crumb
                 crumbLength={parts.length}

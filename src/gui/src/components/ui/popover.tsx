@@ -5,7 +5,13 @@ import { cn } from '@/lib/utils.ts'
 
 const Popover = PopoverPrimitive.Root
 
-const PopoverTrigger = PopoverPrimitive.Trigger
+const PopoverTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<typeof PopoverPrimitive.Trigger>
+>(({ ...props }, ref) => {
+  return <PopoverPrimitive.Trigger ref={ref} {...props} />
+})
+PopoverTrigger.displayName = 'PopoverTrigger'
 
 const PopoverClose = PopoverPrimitive.Close
 

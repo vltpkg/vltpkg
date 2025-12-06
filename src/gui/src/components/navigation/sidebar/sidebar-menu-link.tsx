@@ -1,7 +1,6 @@
 import { useEffect, useState, Fragment } from 'react'
+import { useLocation, NavLink } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Variants } from 'framer-motion'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -16,9 +15,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible.tsx'
-import { useLocation, NavLink } from 'react-router'
 import { ArrowUpRight, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils.ts'
+
+import type { Variants } from 'framer-motion'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 
 interface SidebarMenuLinkProps {
   items: MenuItem[]
@@ -121,7 +122,7 @@ const renderItems = ({
                   to={item.url ? item.url : ''}
                   onClick={item.onClick}
                   role="button"
-                  className="group/sidebar-button text-muted-foreground w-full cursor-default transition-colors transition-opacity duration-250 hover:bg-transparent data-[state=open]:hover:bg-transparent">
+                  className="group/sidebar-button text-muted-foreground w-full cursor-pointer transition-colors transition-opacity duration-250 hover:bg-transparent data-[state=open]:hover:bg-transparent">
                   {item.icon && (
                     <item.icon style={{ zIndex: depth + 1 }} />
                   )}

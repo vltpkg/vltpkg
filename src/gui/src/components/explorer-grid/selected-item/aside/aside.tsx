@@ -14,34 +14,43 @@ interface AsideProps extends PropsWithChildren {
   className?: string
 }
 
-const Aside = ({ className, children }: AsideProps) => {
+const Aside = ({ className, ...props }: AsideProps) => {
   return (
     <aside
       className={cn(
-        'order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4',
+        'flex h-fit flex-col gap-[1px] rounded pb-[1px]',
         className,
-      )}>
-      {children}
-    </aside>
+      )}
+      {...props}
+    />
   )
 }
 
-const AsideHeader = ({ children, className }: AsideProps) => {
+const AsideHeader = ({ className, ...props }: AsideProps) => {
   return (
     <h4
       className={cn(
-        'text-muted-foreground text-sm font-medium capitalize',
+        'text-muted-foreground cursor-default text-sm font-medium capitalize',
         className,
-      )}>
-      {children}
-    </h4>
+      )}
+      {...props}
+    />
   )
 }
 
-const AsideSection = ({ children, className }: AsideProps) => {
+const AsideSection = ({
+  className,
+  children,
+  ...props
+}: AsideProps) => {
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
-      {children}
+    <div
+      data-slot="aside-section"
+      className={cn('flex w-full flex-col gap-2', className)}
+      {...props}>
+      <div className="bg-background flex w-full flex-col gap-2 rounded px-6 py-3">
+        {children}
+      </div>
     </div>
   )
 }
@@ -168,7 +177,8 @@ const AsideItem = ({
       : {})}
       className={cn(
         'text-foreground flex items-center text-sm text-nowrap',
-        !isLink && 'gap-2',
+        !isLink && 'cursor-default gap-2',
+        isLink && 'cursor-pointer',
         className,
       )}>
       <span className="[&>svg]:text-muted-foreground flex items-center justify-center empty:hidden">

@@ -93,6 +93,7 @@ const QueryBuilderUi = () => {
   // Prevent ping-pong updates between input -> parse -> nodes -> serialize -> input
   const skipNextNodesEffect = useRef(false)
   const parseDebounceHandle = useRef<number | null>(null)
+  const sectionRef = useRef<HTMLElement>(null)
 
   const getQueryBarEl = (): HTMLElement => {
     const el = document.getElementById(QUERY_BAR_ID)
@@ -103,9 +104,33 @@ const QueryBuilderUi = () => {
   }
 
   // Handle clicks outside the query builder to close it
-  const handleFocusGuardClick = () => {
-    updateQueryBuilderDisplay(false)
-  }
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      const queryBarEl = getQueryBarEl()
+
+      // Check if clicking on a portal element (popover, dropdown, dialog, etc.)
+      const isPortalClick =
+        target.closest('[data-radix-popper-content-wrapper]') ??
+        target.closest('[role="dialog"]') ??
+        target.closest('[data-radix-portal]')
+
+      // Close if clicking outside both the query builder section, query bar, and portals
+      if (
+        sectionRef.current &&
+        !sectionRef.current.contains(target) &&
+        !queryBarEl.contains(target) &&
+        !isPortalClick
+      ) {
+        updateQueryBuilderDisplay(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [updateQueryBuilderDisplay])
 
   // Delete an item from the nodes array and update the query
   const deleteItem = (idx: number) => {
@@ -172,12 +197,13 @@ const QueryBuilderUi = () => {
 
   return createPortal(
     <section
+      ref={sectionRef}
       className={cn(
-        'border-muted bg-popover absolute inset-x-0 top-[34px] z-50 flex w-full rounded-b-xl border border-t-0 shadow-lg',
+        'bg-popover after:border-input after:bg-popover absolute inset-x-0 top-[34px] z-[52] flex w-full rounded-b-xl shadow-lg before:absolute before:inset-[-1px] before:top-[7px] before:z-[51] before:rounded-b-xl before:transition-[box-shadow] before:content-[""] after:absolute after:-inset-[1px] after:z-[52] after:rounded-b-xl after:border after:border-t-[0px] after:content-[""]',
         queryInputFocused &&
-          'after:border-ring after:absolute after:-inset-[5px] after:rounded-[16px] after:rounded-t-none after:border-x-[2px] after:border-b-[2px] after:content-[""]',
+          'after:border-ring before:ring-ring/50 before:ring-[3px]',
       )}>
-      <div className="relative flex w-full gap-2 px-3 py-3">
+      <div className="relative z-[53] flex w-full gap-2 px-3 py-3">
         <BuilderCombobox setNodes={setNodes} nodes={nodes} />
         {nodes && (
           <div className="flex w-full flex-wrap gap-2">
@@ -198,14 +224,6 @@ const QueryBuilderUi = () => {
           </div>
         )}
       </div>
-      {createPortal(
-        <div
-          id="query-builder-focus-guard"
-          onClick={handleFocusGuardClick}
-          className="fixed inset-0 z-50 bg-transparent"
-        />,
-        document.body,
-      )}
     </section>,
     getQueryBarEl(),
   )

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { Fragment } from 'react'
 import { useGraphStore } from '@/state/index.ts'
 import {
   useSelectedItemStore,
@@ -16,7 +16,7 @@ import {
   TooltipPortal,
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
-import { Home, ArrowBigUpDash } from 'lucide-react'
+import { Home, ArrowBigUpDash, Dot } from 'lucide-react'
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { defaultRegistry } from '@vltpkg/spec/browser'
 import {
@@ -32,8 +32,8 @@ import {
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
 import { CrumbNav } from '@/components/navigation/crumb-nav.tsx'
-import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
+import { getPackageShortName } from '@/utils/get-package-shortname.ts'
 
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -59,7 +59,8 @@ const SpecOrigin = ({
         variant="mono"
         content={`npm:${item.name}@${version}`}
         classNames={{
-          wrapperClassName: 'truncate overflow-hidden',
+          wrapperClassName:
+            'truncate overflow-hidden !bg-background !rounded-lg',
         }}
         tooltip={{
           content: defaultRegistry,
@@ -81,7 +82,8 @@ const SpecOrigin = ({
                 variant="mono"
                 content={`${item.name}@${item.version}`}
                 classNames={{
-                  wrapperClassName: 'truncate overflow-hidden',
+                  wrapperClassName:
+                    '!bg-background !rounded-lg truncate overflow-hidden',
                 }}
                 tooltip={{
                   content: scopeValue,
@@ -95,7 +97,8 @@ const SpecOrigin = ({
             variant="mono"
             content={`${ref || 'npm'}:${item.name}@${item.version}`}
             classNames={{
-              wrapperClassName: 'truncate overflow-hidden',
+              wrapperClassName:
+                '!bg-background !rounded-lg truncate overflow-hidden',
             }}
             tooltip={{
               content:
@@ -114,7 +117,8 @@ const SpecOrigin = ({
           <DataBadge
             variant="mono"
             classNames={{
-              wrapperClassName: 'truncate overflow-hidden',
+              wrapperClassName:
+                '!bg-background !rounded-lg truncate overflow-hidden',
             }}
             content={`${depType}:${ref}`}
           />
@@ -125,57 +129,10 @@ const SpecOrigin = ({
   return ''
 }
 
-interface ItemHeaderProps extends React.PropsWithChildren {
-  classNames?: {
-    wrapperClassName?: string
-    contentClassName?: string
-    breadCrumbWrapperClassName?: string
-    packageImageSpecClassName?: string
-  }
-}
-
-export const ItemHeader = ({
-  classNames,
-  children,
-}: ItemHeaderProps) => {
+export const ItemBreadcrumbs = () => {
   const breadcrumbs = useSelectedItemStore(
     state => state.selectedItem.breadcrumbs,
   )
-  const {
-    wrapperClassName,
-    contentClassName,
-    breadCrumbWrapperClassName,
-    packageImageSpecClassName,
-  } = classNames ?? {}
-
-  return (
-    <motion.div
-      animate={{ opacity: 1 }}
-      initial={{ opacity: 0 }}
-      className={cn('flex flex-col', wrapperClassName)}>
-      <div className={cn('flex w-full flex-col', contentClassName)}>
-        <div
-          className={cn(
-            'border-muted flex h-10 w-full items-center border-b-[1px] pr-6 empty:hidden',
-            breadcrumbs ? 'justify-between' : 'justify-end',
-            breadCrumbWrapperClassName,
-          )}>
-          <ItemBreadcrumbs />
-          {children}
-        </div>
-        <PackageImageSpec
-          className={cn('px-6 py-4', packageImageSpecClassName)}
-        />
-      </div>
-    </motion.div>
-  )
-}
-
-const ItemBreadcrumbs = () => {
-  const breadcrumbs = useSelectedItemStore(
-    state => state.selectedItem.breadcrumbs,
-  )
-  const { focused } = useFocusState()
 
   if (!breadcrumbs) return null
 
@@ -183,19 +140,7 @@ const ItemBreadcrumbs = () => {
     <ScrollArea
       viewportClassName="flex items-center"
       className="relative flex w-full items-center overflow-hidden overflow-x-scroll">
-      <div
-        className={cn(
-          'pointer-events-none absolute top-0 right-0 bottom-0 z-[100] h-full w-6 rounded-r-xl bg-gradient-to-l',
-          focused ? 'from-background' : 'from-card',
-        )}
-      />
-      <div
-        className={cn(
-          'pointer-events-none absolute top-0 bottom-0 left-0 z-[100] h-full w-6 rounded-l-xl bg-gradient-to-r',
-          focused ? 'from-background' : 'from-card',
-        )}
-      />
-      <CrumbNav className="px-6" breadcrumbs={breadcrumbs} />
+      <CrumbNav breadcrumbs={breadcrumbs} />
       <ScrollBar className="z-[102]" orientation="horizontal" />
     </ScrollArea>
   )
@@ -252,26 +197,31 @@ const PackageImage = () => {
     state => state.selectedItem,
   )
 
+  const packageShortName = getPackageShortName(selectedItem.name)
+
   return (
-    <Avatar className="aspect-square size-16">
-      <AvatarImage
-        className="bg-secondary aspect-square size-16 rounded-xl border-[1px] object-cover"
-        src={favicon?.src}
-        alt={favicon?.alt ?? 'Package Icon'}
-      />
-      <AvatarFallback className="flex aspect-square size-16 h-full w-full items-center justify-center rounded-xl border-[1px]">
-        {selectedItem.to?.mainImporter ?
-          <div className="bg-muted flex h-full w-full items-center justify-center rounded-xl p-4">
-            <Home
-              size={32}
-              strokeWidth={1.25}
-              className="text-muted-foreground"
-            />
-          </div>
-        : <div className="h-full w-full rounded-xl bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
-        }
-      </AvatarFallback>
-    </Avatar>
+    <div className="bg-secondary relative aspect-square size-16 rounded-xl border">
+      {favicon ?
+        <img
+          className="absolute inset-0 size-full rounded-xl object-cover"
+          src={favicon.src}
+          alt={favicon.alt}
+        />
+      : selectedItem.to?.mainImporter ?
+        <div className="absolute inset-0 flex size-full items-center justify-center rounded-xl">
+          <Home
+            size={32}
+            strokeWidth={1.25}
+            className="text-muted-foreground"
+          />
+        </div>
+      : <div className="absolute inset-0 flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+          <span className="text-muted-foreground text-2xl font-medium">
+            {packageShortName}
+          </span>
+        </div>
+      }
+    </div>
   )
 }
 
@@ -304,7 +254,11 @@ const PackageNewerVersionsAvailable = () => {
   )
 }
 
-const PackageImageSpec = ({ className }: { className?: string }) => {
+export const PackageImageSpec = ({
+  className,
+}: {
+  className?: string
+}) => {
   const selectedItem = useSelectedItemStore(
     state => state.selectedItem,
   )
@@ -347,12 +301,11 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 
         <PackageOverallScore />
       </div>
-      <Publisher />
     </div>
   )
 }
 
-const Publisher = ({ className }: { className?: string }) => {
+export const Publisher = ({ className }: { className?: string }) => {
   const publisher = useSelectedItemStore(state => state.publisher)
   const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
@@ -373,6 +326,9 @@ const Publisher = ({ className }: { className?: string }) => {
       0,
   )
 
+  const authorNameShort =
+    publisher?.name ? publisher.name.substring(0, 2) : '?'
+
   if (!publisher) return null
 
   return (
@@ -388,27 +344,38 @@ const Publisher = ({ className }: { className?: string }) => {
             src={publisherAvatar?.src}
             alt={publisherAvatar?.alt ?? 'Publisher Avatar'}
           />
-          <AvatarFallback className="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800" />
+          <AvatarFallback className="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
+            <span className="text-muted-foreground text-xs font-medium">
+              {authorNameShort}
+            </span>
+          </AvatarFallback>
         </Avatar>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-baseline text-muted-foreground cursor-default text-xs font-medium">
+            <TooltipTrigger className="text-muted-foreground inline-flex cursor-default items-center gap-1 text-xs font-medium">
               Published by:{' '}
               <span className="text-foreground">
                 {publisher.name}
               </span>
               {currentVersion?.publishedDate && (
-                <span className="ml-2">
-                  {gitHeadShort}
-                  {' • '}
-                  {formatDistanceStrict(
-                    currentVersion.publishedDate,
-                    new Date(),
-                    {
-                      addSuffix: true,
-                    },
-                  )}
-                </span>
+                <Fragment>
+                  <Dot className="size-3.5" />
+                  <span className="inline-flex items-center gap-1">
+                    {gitHeadShort && (
+                      <Fragment>
+                        {gitHeadShort}
+                        <Dot className="size-3.5" />
+                      </Fragment>
+                    )}
+                    {formatDistanceStrict(
+                      currentVersion.publishedDate,
+                      new Date(),
+                      {
+                        addSuffix: true,
+                      },
+                    )}
+                  </span>
+                </Fragment>
               )}
             </TooltipTrigger>
             <TooltipPortal>

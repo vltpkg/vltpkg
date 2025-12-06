@@ -2,7 +2,7 @@
 
 exports[`LabelsHeader renders correctly 1`] = `
 
-<div class="flex w-full justify-between gap-5">
+<div class="flex w-full justify-between gap-2">
   <gui-filter-search
     placeholder="Filter Labels"
     items="[object Object],[object Object],[object Object]"

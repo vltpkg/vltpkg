@@ -2,16 +2,14 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import {
-  OverviewTabButton,
-  OverviewTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
+import { OverviewTabContent } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
+
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { DetailsInfo } from '@/lib/external-info.ts'
 
@@ -53,35 +51,17 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsTrigger: 'gui-tabs-trigger',
-  TabsContent: 'gui-tabs-content',
-}))
-
 vi.mock('@/components/markdown-components.tsx', () => ({
   Markdown: 'gui-markdown',
 }))
 
 vi.mock('lucide-react', () => ({
   FileText: 'gui-file-text-icon',
-  RectangleHorizontal: 'gui-rectangle-horizontal-icon',
 }))
-
-vi.mock('@/components/ui/data-badge.tsx', () => ({
-  DataBadge: 'gui-data-badge',
-}))
-
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-contributors.tsx',
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
   () => ({
-    ContributorList: 'gui-contributor-list',
-  }),
-)
-
-vi.mock(
-  '@/components/explorer-grid/selected-item/aside/index.tsx',
-  () => ({
-    AsideOverview: 'gui-aside-overview',
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
   }),
 )
 
@@ -100,43 +80,7 @@ afterEach(() => {
   cleanup()
 })
 
-test('OverviewTabButton renders default', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    ...SELECTED_ITEM_DETAILS,
-    manifest: {},
-    rawManifest: null,
-    insights: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <OverviewTabButton />
-  }
-
-  const { container } = render(<Container />)
-
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('OverviewTabContent renders default', () => {
+test('OverviewTabContent renders with an empty state', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
@@ -181,74 +125,7 @@ test('OverviewTabContent renders with content', () => {
       description: '## Description\n\nThis is a custom description',
       keywords: ['testing', 'vitest'],
     },
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <OverviewTabContent />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('OverviewTabContent renders with an aside and content', () => {
-  const mockState = {
-    selectedItem: ITEM_WITH_DESCRIPTION,
-    ...ITEM_DETAILS_WITH_AUTHOR,
-    insights: undefined,
-    rawManifest: null,
-    contributors: [
-      {
-        name: 'John Doe',
-        email: 'johndoe@acme.com',
-        avatar: 'https://acme.com/johndoe',
-      },
-      {
-        name: 'Jane Doo',
-        email: 'janedoo@acme.com',
-        avatar: 'https://acme.com/janedoo',
-      },
-    ],
-    stargazersCount: 100,
-    openIssueCount: '10',
-    openPullRequestCount: '5',
-    manifest: {
-      homepage: 'https://acme.com',
-      repository: {
-        type: 'git',
-        url: 'github.com/acme/repo.git',
-      },
-      bugs: [
-        {
-          url: 'https://acme.com/bugs',
-          type: 'link',
-        },
-      ],
-      funding: [
-        {
-          url: 'https://acme.com/funding',
-          type: 'individual',
-        },
-      ],
-    },
+    readme: '## Description\n\nThis is a custom description',
     depCount: undefined,
     setDepCount: vi.fn(),
     scannedDeps: undefined,

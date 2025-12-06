@@ -2,7 +2,7 @@
 
 exports[`AsideHeader renders with text 1`] = `
 
-<h4 class="text-muted-foreground text-sm font-medium capitalize">
+<h4 class="text-muted-foreground cursor-default text-sm font-medium capitalize">
   Test Header
 </h4>
 
@@ -10,7 +10,7 @@ exports[`AsideHeader renders with text 1`] = `
 
 exports[`AsideItem renders with a copy to clipboard feature 1`] = `
 
-<div class="text-foreground flex items-center text-sm text-nowrap gap-2">
+<div class="text-foreground flex items-center text-sm text-nowrap cursor-default gap-2">
   <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
   </span>
   <span class="text-sm">
@@ -22,7 +22,7 @@ exports[`AsideItem renders with a copy to clipboard feature 1`] = `
 
 exports[`AsideItem renders with a count badge 1`] = `
 
-<div class="text-foreground flex items-center text-sm text-nowrap gap-2">
+<div class="text-foreground flex items-center text-sm text-nowrap cursor-default gap-2">
   <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
   </span>
   <gui-data-badge
@@ -41,7 +41,7 @@ exports[`AsideItem renders with a link 1`] = `
 
 <gui-link
   href="https://www.acme.com"
-  classname="text-foreground flex items-center text-sm text-nowrap"
+  classname="text-foreground flex items-center text-sm text-nowrap cursor-pointer"
 >
   <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
     <gui-link-icon size="16">
@@ -56,7 +56,7 @@ exports[`AsideItem renders with a link 1`] = `
 
 exports[`AsideItem renders with an icon 1`] = `
 
-<div class="text-foreground flex items-center text-sm text-nowrap gap-2">
+<div class="text-foreground flex items-center text-sm text-nowrap cursor-default gap-2">
   <span class="[&amp;>svg]:text-muted-foreground flex items-center justify-center empty:hidden">
     <gui-smile-icon size="16">
     </gui-smile-icon>
@@ -70,8 +70,13 @@ exports[`AsideItem renders with an icon 1`] = `
 
 exports[`AsideSection renders with children 1`] = `
 
-<div class="flex flex-col gap-2">
-  Test Section Content
+<div
+  data-slot="aside-section"
+  class="flex w-full flex-col gap-2"
+>
+  <div class="bg-background flex w-full flex-col gap-2 rounded px-6 py-3">
+    Test Section Content
+  </div>
 </div>
 
 `;

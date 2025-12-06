@@ -2,17 +2,15 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import {
-  VersionsTabButton,
-  VersionsTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
+import { VersionsTabContent } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
+
 import type { Version } from '@/lib/external-info.ts'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 
 // Mock IntersectionObserver
 const mockIntersectionObserver = vi.fn()
@@ -70,11 +68,6 @@ vi.mock('date-fns', () => ({
   formatDistanceStrict: vi.fn().mockReturnValue('1 day ago'),
 }))
 
-vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsTrigger: 'gui-tabs-trigger',
-  TabsContent: 'gui-tabs-content',
-}))
-
 vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
@@ -88,6 +81,13 @@ vi.mock('@radix-ui/react-avatar', () => ({
 vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
+  () => ({
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
+  }),
+)
 
 vi.mock('@/components/ui/copy-to-clipboard.tsx', () => ({
   CopyToClipboard: 'gui-copy-to-clipboard',
@@ -150,39 +150,6 @@ afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
-})
-
-test('VersionsTabButton renders default', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    ...SELECTED_ITEM_DETAILS,
-    versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '1.0.2' }],
-    greaterVersions: [{ ...MOCK_VERSION, version: '1.0.2' }],
-    manifest: null,
-    rawManifest: null,
-    insights: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const { container } = render(<VersionsTabButton />)
-  expect(container.innerHTML).toMatchSnapshot()
 })
 
 test('VersionsTabContent renders with versions', () => {

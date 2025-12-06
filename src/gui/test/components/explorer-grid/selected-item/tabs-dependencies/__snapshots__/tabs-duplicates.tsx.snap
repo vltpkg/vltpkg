@@ -1,52 +1,26 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`DuplicatesTabButton renders correctly 1`] = `
-
-<gui-tabs-trigger
-  value="duplicates"
-  variant="nestedCard"
->
-  Duplicates
-</gui-tabs-trigger>
-
-`;
-
-exports[`DuplicatesTabButton renders with a count 1`] = `
-
-<gui-tabs-trigger
-  value="duplicates"
-  variant="nestedCard"
->
-  Duplicates
-  <gui-data-badge
-    variant="count"
-    classnames="[object Object]"
-    content="2"
-  >
-  </gui-data-badge>
-</gui-tabs-trigger>
-
-`;
-
 exports[`DuplicatesTabContent renders with an empty state 1`] = `
 
-<gui-tabs-content
-  value="duplicates"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <gui-empty-state
+  <gui-selected-item-empty-state
     icon="gui-blocks-icon"
-    message="No duplicated dependencies found."
+    title="No duplicates"
+    description="We couldn't find any duplicated
+dependencies for this project"
   >
-  </gui-empty-state>
-</gui-tabs-content>
+  </gui-selected-item-empty-state>
+</section>
 
 `;
 
 exports[`DuplicatesTabContent renders with duplicated deps 1`] = `
 
-<gui-tabs-content
-  value="duplicates"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="px-6 pt-4">
@@ -128,6 +102,6 @@ exports[`DuplicatesTabContent renders with duplicated deps 1`] = `
       </div>
     </div>
   </div>
-</gui-tabs-content>
+</section>
 
 `;

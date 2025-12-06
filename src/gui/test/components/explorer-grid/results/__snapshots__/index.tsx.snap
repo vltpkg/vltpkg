@@ -3,45 +3,331 @@
 exports[`Results Displays items 1`] = `
 
 <gui-results-provider allitems="[object Object],[object Object],[object Object]">
-  <section class="flex h-full flex-col">
-    <div class="max-w-8xl mx-auto mt-2 w-full grow px-8 py-4">
-      <div class="flex flex-col gap-3">
-        <h3 class="inline-flex items-baseline gap-2 text-lg">
-          Results
-          <span class="text-muted-foreground font-mono text-sm tabular-nums">
-            (3)
-          </span>
-        </h3>
-        <div class="flex items-center gap-2">
-          <gui-results-sort>
-          </gui-results-sort>
+  <div class="bg-background h-full">
+    <div class="bg-foreground/6 h-full">
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pt-[0px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <div class="flex h-full w-full p-[0.5px] pt-[0px]">
+          <div class="bg-background flex h-full w-full flex-col rounded px-6 pt-12 pb-6">
+            <h3 class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
+              Showing
+              <span class="font-mono text-2xl tabular-nums">
+                3
+              </span>
+              of
+              <span class="font-mono text-2xl tabular-nums">
+                3
+              </span>
+              results
+            </h3>
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pt-[0px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
         </div>
       </div>
-      <div class="flex flex-col gap-5 mt-4">
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
-        <gui-result-item item="[object Object]">
-        </gui-result-item>
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <div class="flex overflow-x-scroll rounded p-[0.5px] [-ms-overflow-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
+          <gui-results-sort classname="w-full min-w-0">
+          </gui-results-sort>
+        </div>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+      </div>
+      <div class="pattern-hatch flex h-9 w-full md:hidden">
+      </div>
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <div class="flex h-full min-h-[calc(100svh-117px-108px-245px-49px-36px)] w-full flex-col gap-[1px] rounded p-[0.5px] md:min-h-[calc(100svh-65px-108px-49px-48px-2px)]">
+          <div class="bg-background h-fit w-full rounded">
+            <gui-result-item item="[object Object]">
+            </gui-result-item>
+          </div>
+          <div class="bg-background h-fit w-full rounded">
+            <gui-result-item item="[object Object]">
+            </gui-result-item>
+          </div>
+          <div class="bg-background h-fit w-full rounded">
+            <gui-result-item item="[object Object]">
+            </gui-result-item>
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+      </div>
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <gui-results-pagination-navigation classname="p-[0.5px]">
+        </gui-results-pagination-navigation>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
       </div>
     </div>
-    <div class="max-w-8xl mx-auto grid w-full grid-cols-12 items-center px-8 py-4">
-      <gui-result-page-options classname="col-span-3">
-      </gui-result-page-options>
-      <gui-results-pagination-navigation classname="col-span-6 col-start-4">
-      </gui-results-pagination-navigation>
-    </div>
-  </section>
+  </div>
 </gui-results-provider>
 
 `;
 
 exports[`Results renders an empty state when there are no items 1`] = `
 
-<div class="px-8 py-4">
-  <gui-empty-results-state>
-  </gui-empty-results-state>
-</div>
+<gui-results-provider allitems>
+  <div class="bg-background h-full">
+    <div class="bg-foreground/6 h-full">
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pt-[0px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <div class="flex h-full w-full p-[0.5px] pt-[0px]">
+          <div class="bg-background flex h-full w-full flex-col rounded px-6 pt-12 pb-6">
+            <h3 class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
+              No results
+            </h3>
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pt-[0px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+      </div>
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <div class="flex overflow-x-scroll rounded p-[0.5px] [-ms-overflow-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
+          <gui-results-sort classname="w-full min-w-0">
+          </gui-results-sort>
+        </div>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+      </div>
+      <div class="pattern-hatch flex h-9 w-full md:hidden">
+      </div>
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <div class="flex h-full min-h-[calc(100svh-117px-108px-245px-49px-36px)] w-full flex-col items-center justify-center gap-[1px] rounded p-[0.5px] md:min-h-[calc(100svh-65px-108px-49px-48px-2px)]">
+          <div
+            data-slot="empty"
+            class="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 border-dashed p-6 text-center text-balance md:p-12 bg-background h-full w-full rounded"
+          >
+            <div
+              data-slot="empty-header"
+              class="flex max-w-sm flex-col items-center gap-2 text-center"
+            >
+              <div
+                data-slot="empty-icon"
+                data-variant="icon"
+                class="mb-2 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg [&amp;_svg:not([class*='size-'])]:size-6"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewbox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-package-search"
+                  aria-hidden="true"
+                >
+                  <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14">
+                  </path>
+                  <path d="m7.5 4.27 9 5.15">
+                  </path>
+                  <polyline points="3.29 7 12 12 20.71 7">
+                  </polyline>
+                  <line
+                    x1="12"
+                    x2="12"
+                    y1="22"
+                    y2="12"
+                  >
+                  </line>
+                  <circle
+                    cx="18.5"
+                    cy="15.5"
+                    r="2.5"
+                  >
+                  </circle>
+                  <path d="M20.27 17.27 22 19">
+                  </path>
+                </svg>
+              </div>
+              <div
+                data-slot="empty-title"
+                class="text-lg font-medium tracking-tight"
+              >
+                No results found
+              </div>
+              <div
+                data-slot="empty-description"
+                class="text-muted-foreground [&amp;>a:hover]:text-primary text-sm/relaxed [&amp;>a]:underline [&amp;>a]:underline-offset-4"
+              >
+                Your query didn't turn up any results.
+              </div>
+            </div>
+            <div
+              data-slot="empty-content"
+              class="flex w-full max-w-sm min-w-0 flex-col items-center gap-4 text-sm text-balance"
+            >
+              <div class="flex items-center gap-2">
+                <button
+                  data-slot="button"
+                  class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2 has-[>svg]:px-3"
+                  disabled
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewbox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-house"
+                    aria-hidden="true"
+                  >
+                    <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8">
+                    </path>
+                    <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z">
+                    </path>
+                  </svg>
+                  <span>
+                    Project Root
+                  </span>
+                </button>
+                <gui-nav-link
+                  to="/help/selectors"
+                  data-slot="button"
+                  classname="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewbox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-query lucide-Query"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="currentColor"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      stroke-width="0"
+                      d="M17.4858 3.771C19.0007 3.771 20.229 4.99933 20.229 6.51416C20.2289 7.31892 19.8818 8.04125 19.3293 8.54187C18.7499 9.06698 18.1714 9.71301 18.1714 10.495V13.5039C18.1714 14.286 18.7499 14.9321 19.3293 15.4573C19.8819 15.9582 20.229 16.6809 20.229 17.4858C20.229 19.0007 19.0007 20.229 17.4858 20.229C15.971 20.229 14.7427 19.0007 14.7427 17.4858C14.7427 17.4071 14.746 17.3292 14.7526 17.2522C14.8143 16.533 14.7677 15.7374 14.2572 15.227C13.7469 14.7166 12.9518 14.6707 12.2326 14.7327C12.1558 14.7393 12.0781 14.7427 11.9995 14.7427C11.921 14.7427 11.8432 14.7393 11.7664 14.7327C11.0473 14.6707 10.2521 14.7166 9.74173 15.227C9.23131 15.7374 9.1848 16.5329 9.24638 17.2522C9.25298 17.3292 9.25635 17.4071 9.25635 17.4858C9.25634 19.0006 8.0289 20.2289 6.51416 20.229C4.99933 20.229 3.771 19.0007 3.771 17.4858C3.771 16.6809 4.11806 15.9582 4.67055 15.4573C5.24998 14.932 5.82861 14.2859 5.82861 13.5038V10.4952C5.82861 9.7131 5.25001 9.06703 4.6705 8.54184C4.11812 8.04123 3.77108 7.31891 3.771 6.51416C3.771 4.99932 4.99932 3.771 6.51416 3.771C8.02886 3.77116 9.25635 4.99942 9.25635 6.51416C9.25634 6.59286 9.25296 6.67074 9.24635 6.74769C9.18464 7.46645 9.23104 8.26132 9.74115 8.77142C10.2513 9.28159 11.0466 9.32869 11.7655 9.26729C11.8426 9.26071 11.9207 9.25733 11.9995 9.25732C12.0784 9.25732 12.1565 9.26069 12.2336 9.26729C12.9525 9.32871 13.7477 9.28163 14.2578 8.77146C14.768 8.26131 14.8144 7.46643 14.7527 6.74762C14.7461 6.67069 14.7427 6.59283 14.7427 6.51416C14.7427 4.99932 15.971 3.771 17.4858 3.771ZM15.227 9.74173C14.7166 10.2521 14.6707 11.0473 14.7327 11.7664C14.7393 11.8432 14.7427 11.921 14.7427 11.9995C14.7427 12.0781 14.7393 12.1558 14.7327 12.2326C14.6707 12.9518 14.7166 13.7469 15.227 14.2572L15.8232 14.8535C15.9827 15.013 16.2264 15.0408 16.4348 14.9545C16.6432 14.8682 16.8003 14.6749 16.8003 14.4493V9.54971C16.8003 9.32414 16.6433 9.13085 16.4348 9.04455C16.2264 8.95822 15.9827 8.98604 15.8232 9.1456L15.227 9.74173ZM8.17514 9.14487C8.01601 8.98573 7.77299 8.95794 7.56503 9.04395C7.35719 9.12991 7.20068 9.32266 7.20068 9.54757V14.4502C7.20068 14.6753 7.35729 14.8682 7.56509 14.9546C7.77296 15.041 8.01604 15.0133 8.17522 14.8541L8.77146 14.2578C9.28163 13.7477 9.32871 12.9525 9.26729 12.2336C9.26069 12.1565 9.25732 12.0784 9.25732 11.9995C9.25733 11.9207 9.26071 11.8426 9.26729 11.7655C9.32869 11.0466 9.28159 10.2513 8.77142 9.74115L8.17514 9.14487Z"
+                    >
+                    </path>
+                  </svg>
+                  <span>
+                    Available Selectors
+                  </span>
+                </gui-nav-link>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+      </div>
+      <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pl-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+        <gui-results-pagination-navigation classname="p-[0.5px]">
+        </gui-results-pagination-navigation>
+        <div
+          aria-hidden="true"
+          class="p-[0.5px] pr-[0px] max-lg:hidden"
+        >
+          <div class="bg-background h-full rounded">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</gui-results-provider>
 
 `;

@@ -6,7 +6,6 @@ import React, {
   memo,
 } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import {
   History,
   ArrowUpDown,
@@ -50,44 +49,17 @@ import { Bar, BarChart, XAxis, CartesianGrid } from 'recharts'
 import { NumberFlow } from '@/components/number-flow.tsx'
 import { useNavigate, useParams } from 'react-router'
 import { useGraphStore } from '@/state/index.ts'
-import { toHumanNumber } from '@/utils/human-number.ts'
 import { Separator } from '@/components/ui/separator.tsx'
 import { Virtuoso } from 'react-virtuoso'
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 import {
-  MotionTabsContent,
-  tabMotion,
+  contentMotion,
+  MotionContent,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
 
 import type { ChartConfig } from '@/components/ui/chart.tsx'
 import type { Version } from '@/lib/external-info.ts'
 import type { VirtuosoHandle } from 'react-virtuoso'
-
-export const VersionsTabButton = () => {
-  const versions = useSelectedItemStore(state => state.versions)
-  const greaterVersions = useSelectedItemStore(
-    state => state.greaterVersions,
-  )
-
-  const versionCount =
-    (versions?.length ?? 0) + (greaterVersions?.length ?? 0)
-  const hasVersions = versionCount > 0
-
-  return (
-    <TabsTrigger
-      variant="ghost"
-      value="versions"
-      className="w-fit px-2">
-      Versions
-      {hasVersions && (
-        <DataBadge
-          variant="count"
-          classNames={{ wrapperClassName: 'ml-1' }}
-          content={toHumanNumber(versionCount)}
-        />
-      )}
-    </TabsTrigger>
-  )
-}
 
 const VersionHeaderButton = ({
   onClick,
@@ -409,24 +381,6 @@ const VersionItem = memo(
 
 VersionItem.displayName = 'VersionItem'
 
-const EmptyState = ({ message }: { message: string }) => (
-  <div className="flex h-full min-h-64 w-full items-center justify-center overflow-hidden">
-    <div className="flex flex-col items-center justify-center gap-3 text-center">
-      <div className="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
-        <History
-          className="absolute z-[4] size-14 text-neutral-500"
-          strokeWidth={1.25}
-        />
-      </div>
-      <div className="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
-        <p className="text-muted-foreground w-full text-sm text-pretty">
-          {message}
-        </p>
-      </div>
-    </div>
-  </div>
-)
-
 const DownloadGraph = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
   const downloadsLastYear = useSelectedItemStore(
@@ -438,7 +392,7 @@ const DownloadGraph = () => {
   const chartConfig = {
     downloads: {
       label: 'Downloads',
-      color: 'oklch(var(--chart-1))',
+      color: 'var(--chart-1)',
     },
   } satisfies ChartConfig
 
@@ -654,9 +608,15 @@ export const VersionsTabContent = () => {
   ]
 
   return (
-    <MotionTabsContent {...tabMotion} value="versions">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       {isEmpty ?
-        <EmptyState message="There is no versioning information about this package yet." />
+        <SelectedItemEmptyState
+          icon={History}
+          title="No version information"
+          description={`There is no versioning information\nabout this package yet`}
+        />
       : <section className="flex flex-col px-6 py-4">
           <DownloadGraph />
 
@@ -760,8 +720,10 @@ export const VersionsTabContent = () => {
           </AnimatePresence>
 
           {!hasSearchResults && searchTerm.trim() ?
-            <EmptyState
-              message={`No versions found matching "${searchTerm}".`}
+            <SelectedItemEmptyState
+              icon={History}
+              title="No versions found"
+              description="We couldn't find any versions matching your search term."
             />
           : <div>
               {filteredVersions.length > 0 && (
@@ -816,6 +778,6 @@ export const VersionsTabContent = () => {
           }
         </section>
       }
-    </MotionTabsContent>
+    </MotionContent>
   )
 }

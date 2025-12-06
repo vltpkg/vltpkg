@@ -10,8 +10,6 @@ exports[`ExplorerGrid render default 1`] = `
 exports[`ExplorerGrid renders workspace with edges in 1`] = `
 
 <div>
-  <gui-selected-item item="[object Object]">
-  </gui-selected-item>
 </div>
 
 `;
@@ -19,10 +17,6 @@ exports[`ExplorerGrid renders workspace with edges in 1`] = `
 exports[`ExplorerGrid with empty results state 1`] = `
 
 <div>
-  <div class="px-8 py-4">
-    <gui-empty-results-state>
-    </gui-empty-results-state>
-  </div>
 </div>
 
 `;
@@ -30,38 +24,6 @@ exports[`ExplorerGrid with empty results state 1`] = `
 exports[`ExplorerGrid with results 1`] = `
 
 <div>
-  <gui-results-provider allitems="[object Object],[object Object]">
-    <section class="flex h-full flex-col">
-      <div class="max-w-8xl mx-auto mt-2 w-full grow px-8 py-4">
-        <div class="flex flex-col gap-3">
-          <h3 class="inline-flex items-baseline gap-2 text-lg">
-            Results
-            <span class="text-muted-foreground font-mono text-sm tabular-nums">
-              (3)
-            </span>
-          </h3>
-          <div class="flex items-center gap-2">
-            <gui-results-sort>
-            </gui-results-sort>
-          </div>
-        </div>
-        <div class="flex flex-col gap-5 mt-4">
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-        </div>
-      </div>
-      <div class="max-w-8xl mx-auto grid w-full grid-cols-12 items-center px-8 py-4">
-        <gui-result-page-options classname="col-span-3">
-        </gui-result-page-options>
-        <gui-results-pagination-navigation classname="col-span-6 col-start-4">
-        </gui-results-pagination-navigation>
-      </div>
-    </section>
-  </gui-results-provider>
 </div>
 
 `;
@@ -69,38 +31,6 @@ exports[`ExplorerGrid with results 1`] = `
 exports[`ExplorerGrid with stack 1`] = `
 
 <div>
-  <gui-results-provider allitems="[object Object],[object Object]">
-    <section class="flex h-full flex-col">
-      <div class="max-w-8xl mx-auto mt-2 w-full grow px-8 py-4">
-        <div class="flex flex-col gap-3">
-          <h3 class="inline-flex items-baseline gap-2 text-lg">
-            Results
-            <span class="text-muted-foreground font-mono text-sm tabular-nums">
-              (3)
-            </span>
-          </h3>
-          <div class="flex items-center gap-2">
-            <gui-results-sort>
-            </gui-results-sort>
-          </div>
-        </div>
-        <div class="flex flex-col gap-5 mt-4">
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-        </div>
-      </div>
-      <div class="max-w-8xl mx-auto grid w-full grid-cols-12 items-center px-8 py-4">
-        <gui-result-page-options classname="col-span-3">
-        </gui-result-page-options>
-        <gui-results-pagination-navigation classname="col-span-6 col-start-4">
-        </gui-results-pagination-navigation>
-      </div>
-    </section>
-  </gui-results-provider>
 </div>
 
 `;

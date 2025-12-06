@@ -9,7 +9,14 @@ const TooltipPortal = TooltipPrimitive.Portal
 
 const Tooltip = TooltipPrimitive.Root
 
-const TooltipTrigger = TooltipPrimitive.Trigger
+const TooltipTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<typeof TooltipPrimitive.Trigger>
+>(({ ...props }, ref) => {
+  return <TooltipPrimitive.Trigger ref={ref} {...props} />
+})
+
+TooltipTrigger.displayName = 'TooltipTrigger'
 
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,

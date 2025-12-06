@@ -1,25 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`TabsManifestButton renders default 1`] = `
-
-<gui-tabs-trigger
-  variant="ghost"
-  value="json"
-  classname="w-fit px-2"
->
-  JSON
-</gui-tabs-trigger>
-
-`;
-
 exports[`TabsManifestContent renders with a json object 1`] = `
 
-<gui-tabs-content
-  value="json"
-  classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
+<section
+  class="w-full h-full rounded"
   style="opacity: 0; filter: blur(2px);"
 >
   <gui-code-block
+    filename
+    hidefilename="true"
     classname="px-6 py-4"
     code="[
   {
@@ -28,9 +17,9 @@ exports[`TabsManifestContent renders with a json object 1`] = `
     &quot;overridden&quot;: false
   }
 ]"
-    lang="json"
+    language="json"
   >
   </gui-code-block>
-</gui-tabs-content>
+</section>
 
 `;

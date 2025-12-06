@@ -2,18 +2,16 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import {
-  InsightTabButton,
-  InsightTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
+import { InsightTabContent } from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
-import type { SocketSecurityDetails } from '@/lib/constants/selectors.ts'
+
 import type { PackageScore } from '@vltpkg/security-archive'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import type { SocketSecurityDetails } from '@/lib/constants/selectors.ts'
 
 const MOCK_INSIGHTS: SocketSecurityDetails[] = [
   {
@@ -51,10 +49,12 @@ vi.mock('react-router', () => ({
   Link: 'gui-link',
 }))
 
-vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsTrigger: 'gui-tabs-trigger',
-  TabsContent: 'gui-tabs-content',
-}))
+vi.mock(
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
+  () => ({
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
+  }),
+)
 
 vi.mock(
   '@/components/explorer-grid/selected-item/insight-badge.tsx',
@@ -67,10 +67,6 @@ vi.mock('lucide-react', () => ({
   ArrowUpDown: 'gui-arrow-up-down-icon',
   BadgeInfo: 'gui-badge-info-icon',
   BadgeCheck: 'gui-badge-check-icon',
-}))
-
-vi.mock('@/components/ui/progress-circle.tsx', () => ({
-  ProgressCircle: 'gui-progress-circle',
 }))
 
 vi.mock('@/components/ui/link.tsx', () => ({
@@ -208,41 +204,6 @@ test('InsightTabContent renders with no insights but a package score', () => {
 
   const Container = () => {
     return <InsightTabContent />
-  }
-  const { container } = render(<Container />)
-
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('InsightTabButton renders default', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    ...SELECTED_ITEM_DETAILS,
-    insights: undefined,
-    manifest: null,
-    rawManifest: null,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <InsightTabButton />
   }
   const { container } = render(<Container />)
 

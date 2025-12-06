@@ -4,10 +4,8 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { SELECTED_ITEM } from '../__fixtures__/item.ts'
-import {
-  InsightsTabButton,
-  InsightsTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-insights.tsx'
+import { InsightsTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-insights.tsx'
+
 import type { DepWarning } from '@/components/explorer-grid/selected-item/context.tsx'
 
 vi.mock(
@@ -81,6 +79,13 @@ vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
+  () => ({
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -126,54 +131,6 @@ const mockDepWarnings = new Map<string, DepWarning>([
     },
   ],
 ])
-
-test('InsightsTabButton renders default', () => {
-  const Container = () => {
-    return <InsightsTabButton />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('InsightsTabButton renders with insight count', () => {
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector({
-      selectedItem: SELECTED_ITEM,
-      manifest: null,
-      rawManifest: null,
-      packageScore: undefined,
-      insights: undefined,
-      author: undefined,
-      favicon: undefined,
-      publisher: undefined,
-      publisherAvatar: undefined,
-      versions: undefined,
-      greaterVersions: undefined,
-      depCount: 3,
-      setDepCount: vi.fn(),
-      scannedDeps: 3,
-      setScannedDeps: vi.fn(),
-      depsAverageScore: undefined,
-      setDepsAverageScore: vi.fn(),
-      depLicenses: undefined,
-      setDepLicenses: vi.fn(),
-      depWarnings: Array.from(mockDepWarnings.values()),
-      setDepWarnings: vi.fn(),
-      duplicatedDeps: undefined,
-      setDuplicatedDeps: vi.fn(),
-      depFunding: undefined,
-      setDepFunding: vi.fn(),
-    }),
-  )
-
-  const Container = () => {
-    return <InsightsTabButton />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
 
 test('InsightsTabContent renders with an empty state', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

@@ -1,54 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`FundingTabButton renders correctly 1`] = `
-
-<gui-tabs-trigger
-  value="funding"
-  variant="nestedCard"
-  classname="flex"
->
-  Funding
-</gui-tabs-trigger>
-
-`;
-
-exports[`FundingTabButton renders with a count 1`] = `
-
-<gui-tabs-trigger
-  value="funding"
-  variant="nestedCard"
-  classname="flex"
->
-  Funding
-  <gui-data-badge
-    variant="count"
-    classnames="[object Object]"
-    content="8"
-  >
-  </gui-data-badge>
-</gui-tabs-trigger>
-
-`;
-
 exports[`FundingTabContent renders with an empty state  1`] = `
 
-<gui-tabs-content
-  value="funding"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <gui-empty-state
+  <gui-selected-item-empty-state
     icon="gui-heart-handshake-icon"
-    message="No dependencies are looking for funding."
+    title="No funding"
+    description="We couldn't find any packages looking for funding."
   >
-  </gui-empty-state>
-</gui-tabs-content>
+  </gui-selected-item-empty-state>
+</section>
 
 `;
 
 exports[`FundingTabContent renders with an funding 1`] = `
 
-<gui-tabs-content
-  value="funding"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="flex flex-col gap-3 py-4">
@@ -175,6 +146,6 @@ exports[`FundingTabContent renders with an funding 1`] = `
       </gui-table-body>
     </gui-table>
   </div>
-</gui-tabs-content>
+</section>
 
 `;

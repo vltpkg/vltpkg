@@ -2,20 +2,33 @@
 
 exports[`renders default components 1`] = `
 
-<div class="flex flex-col antialiased">
-  <gui-nav-header>
-  </gui-nav-header>
-  <gui-sidebar-provider defaultopen="true">
-    <gui-app-sidebar>
-    </gui-app-sidebar>
-    <gui-sidebar-inset>
-      <gui-router-outlet>
-      </gui-router-outlet>
-    </gui-sidebar-inset>
-    <gui-toaster>
-    </gui-toaster>
-  </gui-sidebar-provider>
+<div class="bg-background antialiased">
+  <div class="bg-foreground/6 relative">
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full px-[1px]"
+      >
+        <gui-app-sidebar classname="bg-background rounded">
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="bg-background flex w-full flex-col rounded-t">
+        <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <gui-nav-header classname="bg-background rounded">
+          </gui-nav-header>
+        </div>
+        <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <main class="bg-background h-full w-full overflow-auto rounded">
+            <gui-router-outlet>
+            </gui-router-outlet>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+<gui-toaster>
+</gui-toaster>
 
 `;
 

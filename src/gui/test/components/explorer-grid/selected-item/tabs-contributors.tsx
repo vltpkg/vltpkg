@@ -3,10 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import {
-  ContributorTabContent,
-  ContributorList,
-} from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
+import { ContributorTabContent } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
@@ -29,17 +26,12 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsContent: 'gui-tabs-content',
-}))
-
 vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
 vi.mock('lucide-react', () => ({
   ArrowLeft: 'gui-arrow-left-icon',
-  ArrowRight: 'gui-arrow-right-icon',
   UsersRound: 'gui-users-round-icon',
   CircleHelp: 'gui-circle-help-icon',
 }))
@@ -54,6 +46,17 @@ vi.mock(
   '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx',
   () => ({
     EmptyState: 'gui-empty-state',
+  }),
+)
+
+vi.mock('@/components/ui/button.tsx', () => ({
+  Button: 'gui-button',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
+  () => ({
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
   }),
 )
 
@@ -184,76 +187,6 @@ test('ContributorTabContent renders with no contributors', () => {
 
   const Container = () => {
     return <ContributorTabContent />
-  }
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('ContributorList renders with less than 6 contributors', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    ...SELECTED_ITEM_DETAILS,
-    manifest: {},
-    rawManifest: null,
-    contributors: mockContributors.slice(0, 3),
-    insights: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <ContributorList />
-  }
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('ContributorList renders with more than 6 contributors', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    ...SELECTED_ITEM_DETAILS,
-    manifest: {},
-    rawManifest: null,
-    contributors: mockContributors,
-    insights: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <ContributorList />
   }
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()

@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router'
 import { useSearchResultsStore } from '@/state/search-results.ts'
-import { PAGE_SIZE_OPTIONS } from '@/components/explorer-grid/results/page-options.tsx'
 
-import type { PageSizeOption } from '@/components/explorer-grid/results/page-options.tsx'
 import type {
   SearchResultsSortBy,
   SearchResultsSortDir,
@@ -43,18 +41,11 @@ export const useSyncSearchResultsURL = () => {
   useEffect(() => {
     const query = searchParams.get('q') || ''
 
-    const defaultPageSize = PAGE_SIZE_OPTIONS[0]
+    const defaultPageSize = 25
     const rawPageSize = Number(
       searchParams.get('pageSize') ?? String(defaultPageSize),
     )
-    const validPageSize =
-      (
-        (PAGE_SIZE_OPTIONS as unknown as number[]).includes(
-          rawPageSize,
-        )
-      ) ?
-        (rawPageSize as PageSizeOption)
-      : (defaultPageSize as PageSizeOption)
+    const validPageSize = defaultPageSize
 
     const rawPage = Number(searchParams.get('page') ?? '1')
     const page = Math.max(rawPage, 1)

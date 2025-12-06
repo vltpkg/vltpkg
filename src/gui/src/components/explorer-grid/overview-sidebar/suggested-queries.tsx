@@ -66,7 +66,7 @@ export const SuggestedQueries = ({
   return (
     <div
       className={cn(
-        'border-muted dark:bg-muted-foreground/5 my-4 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed bg-white p-3',
+        'border-muted dark:bg-muted-foreground/5 flex cursor-default flex-col gap-2 overflow-hidden rounded-xl border-[1px] border-dashed bg-white p-3',
         className,
       )}>
       <div className="flex w-full items-center justify-between">

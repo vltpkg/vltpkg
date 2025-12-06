@@ -2,17 +2,18 @@
 
 exports[`ExplorerHeader renders correctly 1`] = `
 
-<div class="flex w-full gap-5">
+<div class="flex w-full justify-end gap-2">
   <gui-root-button classname="rounded-xl">
   </gui-root-button>
   <gui-query-bar
     tabindex="0"
+    classnames="[object Object]"
     startcontent="[object Object]"
-    wrapperclassname
-    classname="relative"
     endcontent="[object Object]"
   >
   </gui-query-bar>
+  <gui-focus-button>
+  </gui-focus-button>
 </div>
 
 `;

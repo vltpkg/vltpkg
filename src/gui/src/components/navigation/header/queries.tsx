@@ -31,7 +31,7 @@ export const QueriesHeader = () => {
   )
 
   return (
-    <div className="flex w-full items-center justify-between gap-5">
+    <div className="flex w-full items-center justify-between gap-2">
       <FilterSearch
         placeholder="Filter Queries"
         items={savedQueries}
@@ -43,8 +43,8 @@ export const QueriesHeader = () => {
         setFilteredItems={setFilteredQueries}
         sortKey="name"
         classNames={{
-          toggleClassName: 'rounded-xl',
-          sliderClassName: 'rounded-[9px]',
+          toggleClassName: 'h-9 rounded-xl px-[3px]',
+          sliderClassName: 'size-[1.9rem] rounded-[11px]',
           optionClassName: 'rounded-lg',
         }}
       />

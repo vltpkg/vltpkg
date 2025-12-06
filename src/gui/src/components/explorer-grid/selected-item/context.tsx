@@ -18,6 +18,7 @@ import { PSEUDO_SECURITY_SELECTORS } from '@/lib/constants/index.ts'
 import { generatePath, useNavigate, useParams } from 'react-router'
 import { Spec } from '@vltpkg/spec/browser'
 import { normalizeManifest } from '@vltpkg/types'
+import { isHostedEnvironment } from '@/lib/environment.ts'
 
 import type {
   SocketCategory,
@@ -55,6 +56,41 @@ export type SubTabDependencies =
   | 'licenses'
   | 'funding'
   | 'duplicates'
+
+const hostedMode = isHostedEnvironment()
+
+/**
+ * Top level or `primary` navigation layer of the selected item.
+ *
+ * When the application is deployed in a hosted environment we only show
+ * a selected subset of the tabs available until features are integrated.
+ */
+export const PRIMARY_TABS: Partial<Record<Tab, string>> =
+  hostedMode ?
+    {
+      overview: 'Overview',
+      versions: 'Versions',
+    }
+  : {
+      overview: 'Overview',
+      json: 'JSON',
+      code: 'Code',
+      insights: 'Insights',
+      versions: 'Versions',
+      dependencies: 'Dependencies',
+    }
+
+/**
+ * Second level or `secondary` navigation layer of the selected item
+ */
+export const SECONDARY_TABS: Partial<
+  Record<SubTabDependencies, string>
+> = {
+  insights: 'Insights',
+  licenses: 'Licenses',
+  duplicates: 'Duplicates',
+  funding: 'Funding',
+}
 
 export type LicenseWarningType = keyof LicenseInsights
 
@@ -449,7 +485,7 @@ export const SelectedItemProvider = ({
       asideOveriewVisible,
       manifest: selectedItem.to?.manifest ?? null,
       rawManifest: selectedItem.to?.rawManifest ?? null,
-      packageScore: selectedItem.to?.insights.score,
+      packageScore: selectedItem.to?.insights.score ?? undefined,
       insights: getSocketInsights(selectedItem.to?.insights),
       scannedDeps: undefined,
       depsAverageScore: undefined,

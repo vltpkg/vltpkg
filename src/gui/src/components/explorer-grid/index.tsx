@@ -147,10 +147,18 @@ const getItemsData = (
   return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
-export const ExplorerGrid = () => {
+export const ExplorerGrid = ({
+  isLoading,
+  loadedQuery,
+}: {
+  isLoading?: boolean
+  loadedQuery?: string
+}) => {
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
   const query = useGraphStore(state => state.query)
+  const stamp = useGraphStore(state => state.stamp)
+  const graphStamp = useGraphStore(state => state.graphStamp)
   const isExternalPackage = useGraphStore(
     state => state.isExternalPackage,
   )
@@ -183,12 +191,16 @@ export const ExplorerGrid = () => {
 
   const items = getItemsData(edges, nodes, query)
 
-  // Show loading while query is executing (edges/nodes are cleared during query)
-  if (
-    items.length === 0 &&
-    edges.length === 0 &&
-    nodes.length === 0
-  ) {
+  // Show loading when:
+  // 1. Graph is reloading (project switch)
+  // 2. Query is explicitly loading
+  // 3. The loaded query doesn't match the current query (prevents FOUC)
+  const hasQuery = query.trim().length > 0
+  // If we have a query, but it doesn't match what we've loaded, show loading.
+  // This handles initial load (loadedQuery is undefined) and transitions.
+  const queryMismatch = hasQuery && query !== loadedQuery
+
+  if (stamp !== graphStamp || isLoading || queryMismatch) {
     return null
   }
 
@@ -196,5 +208,7 @@ export const ExplorerGrid = () => {
     return <SelectedItem item={items[0]} />
   }
 
+  // Show Results component for both empty and populated results
+  // The Results component will handle the empty state internally
   return <Results allItems={items} />
 }

@@ -2,7 +2,7 @@
 
 exports[`QueriesHeader renders correctly 1`] = `
 
-<div class="flex w-full items-center justify-between gap-5">
+<div class="flex w-full items-center justify-between gap-2">
   <gui-filter-search
     placeholder="Filter Queries"
     items

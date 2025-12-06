@@ -4,6 +4,7 @@ import {
   getRepoOrigin,
   getRepositoryApiUrl,
 } from '@/utils/get-repo-url.ts'
+import { parseReadme } from './parse-readme.ts'
 import type { Spec } from '@vltpkg/spec/browser'
 import type {
   Repository,
@@ -94,6 +95,7 @@ export type DetailsInfo = {
   stargazersCount?: GitHubRepo['stargazers_count']
   openIssueCount?: string
   openPullRequestCount?: string
+  readme?: string
 }
 
 export const NAME_PATTERN = /^([^(<]+)/
@@ -249,6 +251,33 @@ export async function* fetchDetails(
       })
       .catch(() => ({}))
 
+  const fetchReadme = (
+    pkgName: string,
+    version: string,
+    repo?: { org: string; repo: string },
+    ref?: string,
+    directory?: string,
+  ): Promise<DetailsInfo> =>
+    fetch(`https://unpkg.com/${pkgName}@${version}/README.md`, {
+      signal,
+    })
+      .then(res => {
+        if (!res.ok) {
+          return Promise.resolve({})
+        }
+        return res.text().then(async (readme: string) => {
+          if (readme && repo && ref) {
+            try {
+              readme = await parseReadme(readme, repo, ref, directory)
+            } catch (e) {
+              console.error('Failed to parse readme', e)
+            }
+          }
+          return readme ? { readme } : {}
+        })
+      })
+      .catch(() => ({}))
+
   const fetchDownloadsLastYear = (): Promise<DetailsInfo> =>
     fetch(
       `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
@@ -356,6 +385,36 @@ export async function* fetchDetails(
   // if the local manifest doesn't have author info,
   // tries to retrieve it from the registry manifest
   if (spec.registry === publicRegistry) {
+    const attemptFetchReadme = (
+      mani: Manifest | NormalizedManifest,
+    ) => {
+      const version = mani.version
+      const r =
+        mani.repository ? readRepository(mani.repository) : undefined
+      const rd = r ? getRepoOrigin(r) : undefined
+      const gitHead =
+        (mani as { gitHead?: string }).gitHead || version
+      let directory = ''
+      const repository = mani.repository
+      if (
+        repository &&
+        typeof repository === 'object' &&
+        'directory' in repository
+      ) {
+        directory = (repository as { directory: string }).directory
+      }
+
+      if (version) {
+        trackPromise(
+          fetchReadme(spec.name, version, rd, gitHead, directory),
+        )
+      }
+    }
+
+    if (manifest) {
+      attemptFetchReadme(manifest)
+    }
+
     const url = new URL(spec.registry)
     url.pathname = `${spec.name}/${spec.bareSpec}`
     trackPromise(
@@ -363,6 +422,12 @@ export async function* fetchDetails(
         .then(res => res.json())
         .then((mani: Manifest & { _npmUser?: AuthorInfo }) => {
           ;(mani as NormalizedManifest) = normalizeManifest(mani)
+
+          // If we didn't have a local manifest, try fetching readme now
+          if (!manifest) {
+            attemptFetchReadme(mani)
+          }
+
           // retries favicon retrieval in case it wasn't found before
           if (!githubAPI && mani.repository) {
             const repo = readRepository(mani.repository)
