@@ -13,18 +13,18 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph aft
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '··bar@1.0.0',
-            location: './node_modules/.vlt/··bar@1.0.0/node_modules/bar',
+            id: '·npm·bar@1.0.0',
+            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
       },
-      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: '··bar@1.0.0' }
+      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: '·npm·bar@1.0.0' }
     ]
   }
 ]
@@ -38,13 +38,13 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph aft
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '··bar@1.0.0',
-            location: './node_modules/.vlt/··bar@1.0.0/node_modules/bar',
+            id: '·npm·bar@1.0.0',
+            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -62,13 +62,13 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '··bar@1.0.0',
-            location: './node_modules/.vlt/··bar@1.0.0/node_modules/bar',
+            id: '·npm·bar@1.0.0',
+            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -86,13 +86,13 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '··bar@1.0.0',
-            location: './node_modules/.vlt/··bar@1.0.0/node_modules/bar',
+            id: '·npm·bar@1.0.0',
+            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -115,8 +115,8 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with worksp
     importer: true,
     edgesOut: [
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: '··baz@1.0.0',
-        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        id: '·npm·baz@1.0.0',
+        location: './node_modules/.vlt/·npm·baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       }
     ]
@@ -127,8 +127,8 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with worksp
     importer: true,
     edgesOut: [
       Edge spec(lorem@^1.0.0) -peer-> to: Node {
-        id: '··lorem@1.0.0',
-        location: './node_modules/.vlt/··lorem@1.0.0/node_modules/lorem',
+        id: '·npm·lorem@1.0.0',
+        location: './node_modules/.vlt/·npm·lorem@1.0.0/node_modules/lorem',
         resolved: 'https://registry.npmjs.org/lorem/-/lorem-1.0.0.tgz'
       }
     ]
@@ -144,13 +144,13 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with worksp
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
       },
       Edge spec(qux@^1.0.0) -dev-> to: Node {
-        id: '··qux@1.0.0',
-        location: './node_modules/.vlt/··qux@1.0.0/node_modules/qux',
+        id: '·npm·qux@1.0.0',
+        location: './node_modules/.vlt/·npm·qux@1.0.0/node_modules/qux',
         dev: true,
         resolved: 'https://registry.npmjs.org/qux/-/qux-1.0.0.tgz'
       }

@@ -9,7 +9,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > selected packa
 [
   {
     "name": "baz",
-    "fromID": "··bar@1.0.0",
+    "fromID": "·npm·bar@1.0.0",
     "spec": "baz@custom:baz@^1.0.0",
     "type": "prod",
     "to": {
@@ -175,10 +175,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··foo@1.0.0",
+      "id": "·npm·foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -198,10 +198,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "extraneous@*",
     "type": "prod",
     "to": {
-      "id": "··extraneous@1.0.0",
+      "id": "·npm·extraneous@1.0.0",
       "name": "extraneous",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··extraneous@1.0.0/node_modules/extraneous",
+      "location": "./node_modules/.vlt/·npm·extraneous@1.0.0/node_modules/extraneous",
       "importer": false,
       "manifest": {
         "name": "extraneous",
@@ -221,10 +221,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "bar@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "··bar@1.0.0",
+      "id": "·npm·bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -271,10 +271,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "@scoped/b@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@scoped§b@1.0.0",
+      "id": "·npm·@scoped§b@1.0.0",
       "name": "@scoped/b",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@scoped§b@1.0.0/node_modules/@scoped/b",
+      "location": "./node_modules/.vlt/·npm·@scoped§b@1.0.0/node_modules/@scoped/b",
       "importer": false,
       "manifest": {
         "name": "@scoped/b",
@@ -304,10 +304,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "@scoped/a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@scoped§a@1.0.0",
+      "id": "·npm·@scoped§a@1.0.0",
       "name": "@scoped/a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@scoped§a@1.0.0/node_modules/@scoped/a",
+      "location": "./node_modules/.vlt/·npm·@scoped§a@1.0.0/node_modules/@scoped/a",
       "importer": false,
       "manifest": {
         "name": "@scoped/a",
@@ -340,10 +340,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "ipsum@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "··ipsum@1.0.0",
+      "id": "·npm·ipsum@1.0.0",
       "name": "ipsum",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··ipsum@1.0.0/node_modules/ipsum",
+      "location": "./node_modules/.vlt/·npm·ipsum@1.0.0/node_modules/ipsum",
       "importer": false,
       "manifest": {
         "name": "ipsum",
@@ -363,10 +363,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "foo@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "··foo@1.0.0",
+      "id": "·npm·foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -382,14 +382,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "blooo",
-    "fromID": "··bar@1.0.0",
+    "fromID": "·npm·bar@1.0.0",
     "spec": "blooo@1",
     "type": "prod",
     "to": {
-      "id": "··blooo@1.0.0",
+      "id": "·npm·blooo@1.0.0",
       "name": "blooo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··blooo@1.0.0/node_modules/blooo",
+      "location": "./node_modules/.vlt/·npm·blooo@1.0.0/node_modules/blooo",
       "importer": false,
       "manifest": {
         "name": "blooo",
@@ -405,7 +405,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "baz",
-    "fromID": "··bar@1.0.0",
+    "fromID": "·npm·bar@1.0.0",
     "spec": "baz@custom:baz@^1.0.0",
     "type": "prod",
     "to": {
@@ -428,14 +428,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/c",
-    "fromID": "··@scoped§b@1.0.0",
+    "fromID": "·npm·@scoped§b@1.0.0",
     "spec": "@scoped/c@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@scoped§c@1.0.0",
+      "id": "·npm·@scoped§c@1.0.0",
       "name": "@scoped/c",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@scoped§c@1.0.0/node_modules/@scoped/c",
+      "location": "./node_modules/.vlt/·npm·@scoped§c@1.0.0/node_modules/@scoped/c",
       "importer": false,
       "manifest": {
         "name": "@scoped/c",
@@ -534,10 +534,10 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
     "spec": "a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··a@1.0.0",
+      "id": "·npm·a@1.0.0",
       "name": "a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··a@1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/·npm·a@1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a",
@@ -553,14 +553,14 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   },
   {
     "name": "b",
-    "fromID": "··a@1.0.0",
+    "fromID": "·npm·a@1.0.0",
     "spec": "b@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··b@1.0.0",
+      "id": "·npm·b@1.0.0",
       "name": "b",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··b@1.0.0/node_modules/b",
+      "location": "./node_modules/.vlt/·npm·b@1.0.0/node_modules/b",
       "importer": false,
       "manifest": {
         "name": "b",
@@ -579,14 +579,14 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   },
   {
     "name": "a",
-    "fromID": "··b@1.0.0",
+    "fromID": "·npm·b@1.0.0",
     "spec": "a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··a@1.0.0",
+      "id": "·npm·a@1.0.0",
       "name": "a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··a@1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/·npm·a@1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a",
@@ -636,10 +636,10 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "spec": "foo@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "··foo@1.0.0",
+      "id": "·npm·foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -659,10 +659,10 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "spec": "bar@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "··bar@1.0.0",
+      "id": "·npm·bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -681,7 +681,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "baz",
-    "fromID": "··bar@1.0.0",
+    "fromID": "·npm·bar@1.0.0",
     "spec": "baz@custom:bar@^1.0.0",
     "type": "dev",
     "to": {
@@ -721,10 +721,10 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··foo@1.0.0",
+      "id": "·npm·foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -740,14 +740,14 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "extraneous",
-    "fromID": "··bar@1.0.0",
+    "fromID": "·npm·bar@1.0.0",
     "spec": "extraneous@extraneous@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··extraneous@1.0.0",
+      "id": "·npm·extraneous@1.0.0",
       "name": "extraneous",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··extraneous@1.0.0/node_modules/extraneous",
+      "location": "./node_modules/.vlt/·npm·extraneous@1.0.0/node_modules/extraneous",
       "importer": false,
       "manifest": {
         "name": "extraneous",
@@ -851,9 +851,9 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
     "spec": "a@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "··a@%5E1.0.0",
+      "id": "·npm·a@%5E1.0.0",
       "name": "a",
-      "location": "./node_modules/.vlt/··a@%5E1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/·npm·a@%5E1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a"

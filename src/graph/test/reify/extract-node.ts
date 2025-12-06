@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
+import { getOptions } from '@vltpkg/spec'
 import type { Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
@@ -69,7 +70,7 @@ t.test('successfully extract a node', async t => {
     node,
     scurry,
     mockRemover,
-    {},
+    getOptions({}),
     mockPackageInfo,
     mockDiff,
   )

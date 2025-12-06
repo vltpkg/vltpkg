@@ -14,13 +14,13 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '··bar@1.0.0': [
+    '·npm·bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··foo@1.0.0': [
+    '·npm·foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -33,7 +33,7 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
   },
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0',
     'file·. a': 'prod file:./a file·a',
     'file·. bar': 'prod github:foo/bar git·github%3Afoo§bar·'
   }
@@ -45,13 +45,13 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '··bar@1.0.0': [
+    '·npm·bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··foo@1.0.0': [
+    '·npm·foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -63,8 +63,8 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
   },
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
+    'file·. bar': 'prod ^1.0.0 ·npm·bar@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0',
     'file·. a': 'prod file:./a file·a'
   }
 }
@@ -75,13 +75,13 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '··bar@1.0.0': [
+    '·npm·bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··foo@1.0.0': [
+    '·npm·foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -92,8 +92,8 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
   },
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0'
+    'file·. bar': 'prod ^1.0.0 ·npm·bar@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0'
   }
 }
 `
@@ -103,19 +103,19 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '··bar@1.0.0': [
+    '·npm·bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '··baz@1.0.0': [
+    '·npm·baz@1.0.0': [
       0,
       'baz',
       <3 empty items>,
       { name: 'baz', version: '1.0.0', dist: [Object] }
     ],
-    '··foo@1.0.0': [
+    '·npm·foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -126,10 +126,10 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
   },
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
-    '··bar@1.0.0 baz': 'prod ^1.0.0 ··baz@1.0.0',
-    '··baz@1.0.0 foo': 'prod ^1.0.0 ··foo@1.0.0'
+    'file·. bar': 'prod ^1.0.0 ·npm·bar@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0',
+    '·npm·bar@1.0.0 baz': 'prod ^1.0.0 ·npm·baz@1.0.0',
+    '·npm·baz@1.0.0 foo': 'prod ^1.0.0 ·npm·foo@1.0.0'
   }
 }
 `
@@ -235,6 +235,7 @@ Set {
             ],
             "projectRoot": #
             "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
               "npm": "https://registry.npmjs.org/",
             },
             "registry": "https://registry.npmjs.org/",
@@ -358,6 +359,7 @@ Set {
             ],
             "projectRoot": #
             "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
               "npm": "https://registry.npmjs.org/",
             },
             "registry": "https://registry.npmjs.org/",

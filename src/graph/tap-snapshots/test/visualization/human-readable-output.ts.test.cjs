@@ -56,7 +56,7 @@ workspace-a
 
 exports[`test/visualization/human-readable-output.ts > TAP > aliased package > should print both edge and node names 1`] = `
 my-project
-└── a (npm:@myscope/foo@1.0.0)
+└── a (@myscope/foo@1.0.0)
 
 `
 
@@ -104,13 +104,13 @@ file·.
 
 exports[`test/visualization/human-readable-output.ts > TAP > overridden aliased package > colors > should use colors for overridden aliased package 1`] = `
 [0mmy-project
-└── a@2.0.0 (npm:@myscope/foo@2.0.0) [33m(overridden)[39m
+└── a@2.0.0 (@myscope/foo@2.0.0) [33m(overridden)[39m
 [0m
 `
 
 exports[`test/visualization/human-readable-output.ts > TAP > overridden aliased package > should print overridden aliased package with toName 1`] = `
 my-project
-└── a@2.0.0 (npm:@myscope/foo@2.0.0) (overridden)
+└── a@2.0.0 (@myscope/foo@2.0.0) (overridden)
 
 `
 

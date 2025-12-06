@@ -5,6 +5,10 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/stringify-node.ts > TAP > should format arbitraryReg node 1`] = `
+registry:https://example.com#dep@1.0.0
+`
+
 exports[`test/stringify-node.ts > TAP > should format customReg node 1`] = `
 custom:dep@1.0.0
 `

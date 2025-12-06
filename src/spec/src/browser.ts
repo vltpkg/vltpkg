@@ -15,6 +15,7 @@ export * from './types.ts'
 export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export const defaultRegistry = 'https://registry.npmjs.org/'
+export const defaultRegistryName = 'npm'
 
 export const defaultRegistries = {
   npm: defaultRegistry,
@@ -76,7 +77,10 @@ export const getOptions = (
         ...options['git-hosts'],
       }
     : defaultGitHosts,
-  registries: options?.registries ?? {},
+  registries: {
+    ...(options?.registries ?? {}),
+    ...defaultRegistries,
+  },
   'git-host-archives':
     options?.['git-host-archives'] ?
       {
@@ -113,6 +117,7 @@ const startsWithSpecIdentifier = (
   spec.startsWith('git@github.com') ||
   spec.startsWith('registry:') ||
   spec.startsWith('npm:') ||
+  spec.startsWith('jsr:') ||
   spec.startsWith('gh:') ||
   // anything that starts with a known git host key, or a
   // custom registered registry protocol e.g: `github:`, `custom:`
@@ -164,6 +169,26 @@ export const isSpec = (spec: unknown): spec is Spec =>
   typeof (spec as Spec).spec === 'string' &&
   typeof (spec as Spec).bareSpec === 'string' &&
   typeof (spec as Spec).name === 'string'
+
+/**
+ * Retrieves the short configured name of the default registry if one
+ * is available.
+ */
+export const currentDefaultRegistryName = (
+  registry: string,
+  options: SpecOptions,
+): string | undefined => {
+  for (const [name, url] of Object.entries(
+    options.registries /* c8 ignore next */ ?? {},
+  )) {
+    const specRegURL =
+      registry.endsWith('/') ? registry : registry + '/'
+    const knownRegURL = url.endsWith('/') ? url : url + '/'
+    if (specRegURL === knownRegURL) {
+      return name
+    }
+  }
+}
 
 /**
  * The base, isomorphic Spec implementation.
@@ -480,12 +505,6 @@ export class Spec implements SpecLike<Spec> {
 
     // Check registries before git hosts to avoid conflicts
     const regs = Object.entries(this.options.registries)
-    if (!this.options.registries.npm) {
-      regs.push(['npm', this.options.registry])
-    }
-    if (!this.options.registries.gh) {
-      regs.push(['gh', defaultRegistries.gh])
-    }
     if (this.bareSpec.startsWith('registry:')) {
       const reg = this.bareSpec.substring('registry:'.length)
       const h = reg.indexOf('#')

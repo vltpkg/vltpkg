@@ -288,10 +288,10 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··foo@1.0.0",
+      "id": "·npm·foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -314,10 +314,10 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··bar@1.0.0",
+      "id": "·npm·bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -339,7 +339,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "baz",
-    "fromID": "··bar@1.0.0",
+    "fromID": "·npm·bar@1.0.0",
     "spec": "baz@custom:baz@^1.0.0",
     "type": "prod",
     "to": {
@@ -379,10 +379,10 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··foo@1.0.0",
+      "id": "·npm·foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",

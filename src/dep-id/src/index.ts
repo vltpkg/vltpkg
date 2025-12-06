@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { Spec } from '@vltpkg/spec'
+import {
+  currentDefaultRegistryName,
+  defaultRegistryName,
+  Spec,
+} from '@vltpkg/spec'
 import {
   resetCaches as browserResetCaches,
   splitDepID,
@@ -49,7 +53,8 @@ export const hydrateTuple = (
   const [type, first, second] = tuple
 
   // memoized entries return early
-  const cacheKey = (name ?? '') + type + first + (second ?? '')
+  const cacheKey =
+    (name ?? '') + ',' + type + ',' + first + ',' + (second ?? '')
   const seen = seenHydratedTuples.get(cacheKey)
   if (seen) return seen
 
@@ -60,7 +65,7 @@ export const hydrateTuple = (
         throw error('no remoteURL found on remote id', {
           found: tuple,
         })
-      res = Spec.parse(name ?? '(unknown)', first)
+      res = Spec.parse(name ?? '(unknown)', first, options)
       break
     }
     case 'file': {
@@ -83,40 +88,53 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      if (!first) {
-        // just a normal name@version on the default registry
-        const s = Spec.parse(second)
-        if (name && s.name !== name) {
-          res = Spec.parse(`${name}@npm:${second}`)
-        } else {
-          res = s
-        }
+      const defaultName =
+        options.registry &&
+        currentDefaultRegistryName(options.registry, options)
+      const defaultRegistryURL =
+        options.registry ?
+          options.registry.endsWith('/') ?
+            options.registry
+          : options.registry + '/'
+        : undefined
+      const firstURL = first.endsWith('/') ? first : first + '/'
+      const hasScope = second.startsWith('@')
+      const hasAtVersion = second.includes('@', hasScope ? 1 : 0)
+      const name_ =
+        (hasAtVersion && hasScope ?
+          `@${second.split('@')[1]}`
+        : second.split('@')[0]) /* c8 ignore next */ || '(unknown)'
+      const usesDefaultRegistry =
+        !first ||
+        first === defaultName ||
+        firstURL === defaultRegistryURL
+      const noAliasedNameUsed = !name || name === name_
+      if (usesDefaultRegistry && noAliasedNameUsed) {
+        const version =
+          (hasAtVersion &&
+            second.split('@')[
+              hasScope ? 2 : 1
+            ]) /* c8 ignore next */ ||
+          second
+        res = Spec.parse(name || name_, version, options)
         break
       }
       if (!/^https?:\/\//.test(first)) {
         const reg = options.registries?.[first]
-        if (first !== 'npm' && !reg) {
+        if (first !== defaultRegistryName && !reg) {
           throw error('named registry not found in options', {
             name: first,
             found: tuple,
           })
         }
-        res = Spec.parse(
-          name ?? '(unknown)',
-          `${first}:${second}`,
-          options,
-        )
+        res = Spec.parse(name || name_, `${first}:${second}`, options)
         break
       }
-      const s = Spec.parse(
-        name ?? '(unknown)',
+      res = Spec.parse(
+        name || name_,
         `registry:${first}#${second}`,
         options,
       )
-      res =
-        name && s.final.name !== name ?
-          Spec.parse(s.final.name + '@' + s.bareSpec)
-        : s
       break
     }
     case 'git': {

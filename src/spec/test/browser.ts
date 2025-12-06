@@ -3,7 +3,13 @@ import type { InspectOptions } from 'node:util'
 import { inspect } from 'node:util'
 import t from 'tap'
 import type { Scope, SpecOptions } from '../src/browser.ts'
-import { kCustomInspect, Spec, isSpec } from '../src/browser.ts'
+import {
+  kCustomInspect,
+  getOptions,
+  Spec,
+  isSpec,
+  currentDefaultRegistryName,
+} from '../src/browser.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](
@@ -424,28 +430,73 @@ t.test('parse args', t => {
   })
 })
 
-t.test('setting default registry sets npm: alias', async t => {
-  const s = Spec.parse('a@npm:a@1', { registry: 'https://a.com/' })
-  t.matchStrict(s, {
-    type: 'registry',
-    spec: 'a@npm:a@1',
-    name: 'a',
-    bareSpec: 'npm:a@1',
-    namedRegistry: 'npm',
-    registry: 'https://a.com/',
-    subspec: {
-      type: 'registry',
-      spec: 'a@1',
-      name: 'a',
-      bareSpec: '1',
-      namedRegistry: 'npm',
-      registry: 'https://a.com/',
-      registrySpec: '1',
-      semver: '1',
-      range: { raw: '1' },
-    },
-  })
+t.test('getOptions', t => {
+  t.matchSnapshot(getOptions({}), 'should get default options')
+  t.end()
 })
+
+t.test(
+  'setting default registry does not sets npm: alias',
+  async t => {
+    const s = Spec.parse('a@npm:a@1', { registry: 'https://a.com/' })
+    t.matchStrict(s, {
+      type: 'registry',
+      spec: 'a@npm:a@1',
+      name: 'a',
+      bareSpec: 'npm:a@1',
+      namedRegistry: 'npm',
+      registry: 'https://registry.npmjs.org/',
+      subspec: {
+        type: 'registry',
+        spec: 'a@1',
+        name: 'a',
+        bareSpec: '1',
+        namedRegistry: 'npm',
+        registry: 'https://registry.npmjs.org/',
+        registrySpec: '1',
+        semver: '1',
+        range: { raw: '1' },
+      },
+    })
+  },
+)
+
+t.test(
+  'currentDefaultRegistryName retrieves short name if available',
+  t => {
+    const options: SpecOptions = {
+      registry: 'https://custom-registry.com/',
+      registries: {
+        npm: 'https://registry.npmjs.org',
+        custom: 'https://custom-registry.com/',
+      },
+    }
+    t.strictSame(
+      currentDefaultRegistryName(
+        'https://custom-registry.com/',
+        options,
+      ),
+      'custom',
+      'should find default (even when custom) registry name',
+    )
+    t.strictSame(
+      currentDefaultRegistryName(
+        'https://registry.npmjs.org',
+        options,
+      ),
+      'npm',
+      'should find any registry name',
+    )
+    t.notOk(
+      currentDefaultRegistryName(
+        'https://not-configured.example.com',
+        options,
+      ),
+      'should return undefined for unknown registries',
+    )
+    t.end()
+  },
+)
 
 t.test('mixing scopes and names', t => {
   const spec = '@a/b@x:@y/z@i:@j/k@1.2.3'

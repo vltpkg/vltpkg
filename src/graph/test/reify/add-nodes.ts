@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { Spec } from '@vltpkg/spec'
+import { getOptions, Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -35,6 +35,8 @@ const node = (props: Record<string, any>) => ({
   resolvedLocation: (scurry: PathScurry) =>
     scurry.cwd.resolve(props.location).fullpath(),
 })
+
+const specOptions = getOptions({})
 
 const diff = {
   to: {
@@ -166,9 +168,13 @@ const diff = {
 const scurry = new PathScurry(t.testdirName)
 
 await Promise.all(
-  addNodes(diff, scurry, mockRemover, {}, mockPackageInfo).map(x =>
-    x(),
-  ),
+  addNodes(
+    diff,
+    scurry,
+    mockRemover,
+    getOptions({}),
+    mockPackageInfo,
+  ).map(x => x()),
 )
 
 t.notMatch(
@@ -221,7 +227,7 @@ t.strictSame(
   extracted,
   [
     [
-      Spec.parse('foo@1.2.3'),
+      Spec.parse('foo', '1.2.3', specOptions),
       resolve(
         t.testdirName,
         'node_modules/.vlt/' +
@@ -230,7 +236,7 @@ t.strictSame(
       ),
     ],
     [
-      Spec.parse('bar@1.2.3'),
+      Spec.parse('bar', '1.2.3', specOptions),
       resolve(
         t.testdirName,
         'node_modules/.vlt/' +
