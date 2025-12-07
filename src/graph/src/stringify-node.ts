@@ -1,5 +1,5 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import { defaultRegistryName } from '@vltpkg/spec'
+import { defaultRegistryName } from '@vltpkg/spec/browser'
 import type { NodeLike } from '@vltpkg/types'
 
 export const stringifyNode = (node?: NodeLike) => {

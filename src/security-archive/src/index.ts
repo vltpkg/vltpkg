@@ -81,10 +81,7 @@ const usesTargetRegistry = (node: NodeLike): boolean => {
     return false
   }
 
-  const reg =
-    nodeRegistry === '' ?
-      specOptions.registry
-    : specOptions.registries?.[nodeRegistry]
+  const reg = specOptions.registries?.[nodeRegistry]
   return reg === targetSecurityRegisty
 }
 

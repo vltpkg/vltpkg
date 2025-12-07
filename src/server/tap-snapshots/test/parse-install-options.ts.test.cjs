@@ -44,7 +44,10 @@ Array [
             "jsr-registries": Object {
               "jsr": "https://npm.jsr.io/",
             },
-            "registries": Object {},
+            "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
+              "npm": "https://registry.npmjs.org/",
+            },
             "registry": "https://registry.npmjs.org/",
             "scope-registries": Object {},
           },
@@ -100,7 +103,10 @@ Array [
             "jsr-registries": Object {
               "jsr": "https://npm.jsr.io/",
             },
-            "registries": Object {},
+            "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
+              "npm": "https://registry.npmjs.org/",
+            },
             "registry": "https://registry.npmjs.org/",
             "scope-registries": Object {},
           },
@@ -154,7 +160,10 @@ Array [
             "jsr-registries": Object {
               "jsr": "https://npm.jsr.io/",
             },
-            "registries": Object {},
+            "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
+              "npm": "https://registry.npmjs.org/",
+            },
             "registry": "https://registry.npmjs.org/",
             "scope-registries": Object {},
           },
@@ -227,7 +236,10 @@ Array [
             "jsr-registries": Object {
               "jsr": "https://npm.jsr.io/",
             },
-            "registries": Object {},
+            "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
+              "npm": "https://registry.npmjs.org/",
+            },
             "registry": "https://registry.npmjs.org/",
             "scope-registries": Object {},
           },
@@ -291,7 +303,10 @@ Array [
             "jsr-registries": Object {
               "jsr": "https://npm.jsr.io/",
             },
-            "registries": Object {},
+            "registries": Object {
+              "gh": "https://npm.pkg.github.com/",
+              "npm": "https://registry.npmjs.org/",
+            },
             "registry": "https://registry.npmjs.org/",
             "scope-registries": Object {},
           },

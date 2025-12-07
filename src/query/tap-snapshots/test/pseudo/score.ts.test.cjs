@@ -8,21 +8,21 @@
 exports[`test/pseudo/score.ts > TAP > pseudo state form - :score without parameters > should match any packages with score data (scanned packages) 1`] = `
 Object {
   "edges": Array [
-    "file·.->··a@1.0.0",
-    "file·.->··b@1.0.0",
-    "file·.->··e@1.0.0",
-    "··b@1.0.0->··c@1.0.0",
-    "··b@1.0.0->··d@1.0.0",
-    "··d@1.0.0->··e@1.0.0",
-    "··d@1.0.0->··f@1.0.0",
+    "file·.->·npm·a@1.0.0",
+    "file·.->·npm·b@1.0.0",
+    "file·.->·npm·e@1.0.0",
+    "·npm·b@1.0.0->·npm·c@1.0.0",
+    "·npm·b@1.0.0->·npm·d@1.0.0",
+    "·npm·d@1.0.0->·npm·e@1.0.0",
+    "·npm·d@1.0.0->·npm·f@1.0.0",
   ],
   "nodes": Array [
-    "··a@1.0.0",
-    "··b@1.0.0",
-    "··c@1.0.0",
-    "··d@1.0.0",
-    "··e@1.0.0",
-    "··f@1.0.0",
+    "·npm·a@1.0.0",
+    "·npm·b@1.0.0",
+    "·npm·c@1.0.0",
+    "·npm·d@1.0.0",
+    "·npm·e@1.0.0",
+    "·npm·f@1.0.0",
   ],
 }
 `

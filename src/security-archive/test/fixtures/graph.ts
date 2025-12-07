@@ -1,18 +1,17 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec'
+import { defaultRegistryName, getOptions, Spec } from '@vltpkg/spec'
 import type {
   GraphLike,
   NodeLike,
   DependencyTypeShort,
 } from '@vltpkg/types'
-import type { SpecLike, SpecOptions } from '@vltpkg/spec/browser'
+import type { SpecLike } from '@vltpkg/spec/browser'
 
-export const specOptions = {
-  registry: 'https://registry.npmjs.org/',
+export const specOptions = getOptions({
   registries: {
     custom: 'http://example.com',
   },
-} satisfies SpecOptions
+})
 
 const projectRoot = '.'
 export const newGraph = (rootName: string): GraphLike => {
@@ -50,13 +49,13 @@ export const newNode =
       graph,
       id: joinDepIDTuple([
         'registry',
-        registry ?? '',
+        registry ?? defaultRegistryName,
         `${name}@${version}`,
       ]),
       name,
       version,
       location:
-        'node_modules/.vlt/·${registry}·${name}@${version}/node_modules/${name}',
+        'node_modules/.vlt/·${registry ?? defaultRegistryName}·${name}@${version}/node_modules/${name}',
       manifest: { name, version },
       rawManifest: undefined,
       integrity: 'sha512-deadbeef',

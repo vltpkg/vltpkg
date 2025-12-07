@@ -49,16 +49,6 @@ Object {
 }
 `
 
-exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > selects nodes with binary files > must match snapshot 1`] = `
-Object {
-  "edges": Array [],
-  "nodes": Array [
-    "object-bin-pkg",
-    "string-bin-pkg",
-  ],
-}
-`
-
 exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built > selects nodes with install lifecycle scripts > must match snapshot 1`] = `
 Object {
   "edges": Array [],
