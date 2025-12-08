@@ -1,13 +1,14 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
-import { basename, dirname, parse, resolve } from 'node:path'
+import { basename, dirname, resolve } from 'node:path'
 import { rimraf } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
 import { unzip as unzipCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
+import { stripAbsolutePath } from './strip-absolute-path.ts'
 
 const unzip = async (input: Buffer) =>
   new Promise<Buffer>(
@@ -30,22 +31,55 @@ let id = 1
 const tmp = randomBytes(6).toString('hex') + '.'
 const tmpSuffix = () => tmp + String(id++)
 
+/**
+ * Normalize and sanitize a tar entry path:
+ * 1. Normalize all path separators to forward slashes
+ * 2. Strip any absolute path roots (handles ////foo, c:\c:\foo, etc.)
+ */
+const normalizePath = (path: string): string => {
+  // normalize path separators
+  path = path.replace(/[\\/]+/g, '/')
+  // iteratively strip absolute path roots
+  const [, stripped] = stripAbsolutePath(path)
+  return stripped
+}
+
 const checkFs = (
   h: Header,
   tarDir: string | undefined,
+  target: string,
 ): h is Header & { path: string } => {
   /* c8 ignore start - impossible */
   if (!h.path) return false
   if (!tarDir) return false
   /* c8 ignore stop */
-  h.path = h.path.replace(/[\\/]+/g, '/')
-  const parsed = parse(h.path)
-  if (parsed.root) return false
-  const p = h.path.replace(/\\/, '/')
-  // any .. at the beginning, end, or middle = no good
-  if (/(\/|)^\.\.(\/|$)/.test(p)) return false
+
+  // check for .. traversal in any path segment
+  // also handle Windows drive-relative paths like c:.. which could escape
+  // (the regex is defensive - stripAbsolutePath should already handle c:..)
+  const parts = h.path.split('/')
+  /* c8 ignore next - defensive, stripAbsolutePath handles c:.. */
+  if (parts.includes('..') || /^[a-z]:\.\.$/i.test(parts[0] ?? '')) {
+    return false
+  }
+
   // packages should always be in a 'package' tarDir in the archive
-  if (!p.startsWith(tarDir)) return false
+  if (!h.path.startsWith(tarDir)) return false
+
+  // defense in depth: verify resolved path stays within target directory
+  // this should be prevented by earlier checks, but verify anyway
+  const resolvedPath = resolve(
+    target,
+    h.path.substring(tarDir.length),
+  )
+
+  const normalizedTarget = target.replace(/[\\/]+/g, '/')
+  const normalizedResolved = resolvedPath.replace(/[\\/]+/g, '/')
+  /* c8 ignore start - sanity check, should never point to outside the target directory */
+  if (!normalizedResolved.startsWith(normalizedTarget)) {
+    return false
+  }
+  /* c8 ignore stop */
   return true
 }
 
@@ -154,10 +188,14 @@ const unpackUnzipped = async (
       // find the first tarDir in the first entry, and use that.
       switch (h.type) {
         case 'File':
+          // normalize path before processing (strips absolute roots, normalizes slashes)
+          /* c8 ignore next */
+          if (!h.path) continue
+          h.path = normalizePath(h.path)
           if (!tarDir) tarDir = findTarDir(h.path, tarDir)
           /* c8 ignore next */
           if (!tarDir) continue
-          if (!checkFs(h, tarDir)) continue
+          if (!checkFs(h, tarDir, tmp)) continue
           await write(
             resolve(tmp, h.path.substring(tarDir.length)),
             body,
@@ -168,10 +206,14 @@ const unpackUnzipped = async (
           break
 
         case 'Directory':
+          // normalize path before processing (strips absolute roots, normalizes slashes)
+          /* c8 ignore next */
+          if (!h.path) continue
+          h.path = normalizePath(h.path)
           /* c8 ignore next 2 */
           if (!tarDir) tarDir = findTarDir(h.path, tarDir)
           if (!tarDir) continue
-          if (!checkFs(h, tarDir)) continue
+          if (!checkFs(h, tarDir, tmp)) continue
           await mkdirp(resolve(tmp, h.path.substring(tarDir.length)))
           break
 

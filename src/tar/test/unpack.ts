@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync } from 'node:fs'
+import { existsSync, lstatSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
@@ -147,6 +147,140 @@ t.test('unpack into a dir', t => {
     await t.rejects(() => unpack(tarball, dir), poop)
     t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
     t.end()
+  })
+
+  t.end()
+})
+
+t.test('validate unpack path sanitization', async t => {
+  // Test: Multiple absolute path prefixes should be stripped
+  t.test('strips multiple absolute path prefixes', async t => {
+    const maliciousTar = makeTar([
+      { path: '////package/safe.txt', size: 4 },
+      'safe',
+      { path: 'package/valid.txt', size: 5 },
+      'valid',
+    ])
+    const dir = t.testdir()
+    await unpack(maliciousTar, dir)
+    // The file should be extracted (path stripped to package/safe.txt)
+    t.equal(existsSync(dir + '/safe.txt'), true)
+    t.equal(readFileSync(dir + '/safe.txt', 'utf8'), 'safe')
+    t.equal(readFileSync(dir + '/valid.txt', 'utf8'), 'valid')
+    // Should NOT escape to root
+    t.equal(existsSync('/package/safe.txt'), false)
+  })
+
+  // Test: Path traversal with .. should be blocked
+  t.test('blocks path traversal with ..', async t => {
+    const traversalPaths = [
+      '../etc/passwd',
+      'package/../../../etc/passwd',
+      'package/foo/../../../../../../tmp/evil',
+      '..\\windows\\system32\\config',
+    ]
+    for (const path of traversalPaths) {
+      const maliciousTar = makeTar([
+        { path: 'package/valid.txt', size: 5 },
+        'valid',
+        { path, size: 4 },
+        'evil',
+      ])
+      const dir = t.testdir()
+      const FSP = await import('node:fs/promises')
+      const mkdirCalls: string[] = []
+      const writeFileCalls: string[] = []
+      const { unpack } = await t.mockImport<
+        typeof import('../src/unpack.ts')
+      >('../src/unpack.ts', {
+        'node:fs/promises': t.createMock(FSP, {
+          mkdir: async (path: string, ...args: any[]) => {
+            mkdirCalls.push(path)
+            return FSP.mkdir(path, ...args)
+          },
+          writeFile: async (
+            path: string,
+            data: Parameters<typeof FSP.writeFile>[1],
+            options?: Parameters<typeof FSP.writeFile>[2],
+          ) => {
+            writeFileCalls.push(path)
+            return FSP.writeFile(path, data, options)
+          },
+        }),
+      })
+      await unpack(maliciousTar, dir)
+      t.equal(
+        existsSync(dir + '/valid.txt'),
+        true,
+        `valid file exists for ${path}`,
+      )
+      // Verify no mkdir or writeFile calls contain '..'
+      for (const call of mkdirCalls) {
+        t.notMatch(
+          call,
+          /(?<!\.)\.\.(?!\.)/, // not match .. or .\.
+          `mkdir should not be called with .. in path: ${call}`,
+        )
+      }
+      for (const call of writeFileCalls) {
+        t.notMatch(
+          call,
+          /(?<!\.)\.\.(?!\.)/, // not match .. or .\.
+          `writeFile should not be called with .. in path: ${call}`,
+        )
+      }
+    }
+  })
+
+  // Test: Windows drive-relative paths should be blocked
+  t.test('blocks Windows drive-relative path escapes', async t => {
+    const driveRelativePaths = [
+      'c:../../../windows/system32/evil.dll',
+      'd:..\\..\\important\\file.txt',
+      'c:foo/../../../escape.txt',
+    ]
+    for (const path of driveRelativePaths) {
+      const maliciousTar = makeTar([
+        { path: 'package/valid.txt', size: 5 },
+        'valid',
+        { path, size: 4 },
+        'evil',
+      ])
+      const dir = t.testdir()
+      await unpack(maliciousTar, dir)
+      t.equal(
+        existsSync(dir + '/valid.txt'),
+        true,
+        `valid file exists for ${path}`,
+      )
+    }
+  })
+
+  // Test: Chained Windows roots should be stripped
+  t.test('strips chained Windows roots', async t => {
+    const maliciousTar = makeTar([
+      { path: 'c:\\c:\\d:\\package/safe.txt', size: 4 },
+      'safe',
+      { path: 'package/valid.txt', size: 5 },
+      'valid',
+    ])
+    const dir = t.testdir()
+    await unpack(maliciousTar, dir)
+    t.equal(existsSync(dir + '/valid.txt'), true)
+  })
+
+  // Test: Directory traversal via symlink-like paths (though symlinks are already filtered)
+  t.test('blocks directory entries with traversal', async t => {
+    const maliciousTar = makeTar([
+      { path: 'package/valid.txt', size: 5 },
+      'valid',
+      { path: '../../../tmp/evil-dir', type: 'Directory' },
+      { path: 'package/../../escape-dir', type: 'Directory' },
+    ])
+    const dir = t.testdir()
+    await unpack(maliciousTar, dir)
+    t.equal(existsSync(dir + '/valid.txt'), true)
+    t.equal(existsSync('/tmp/evil-dir'), false)
   })
 
   t.end()
