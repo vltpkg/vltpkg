@@ -14,7 +14,7 @@ exports[`renders search results view 1`] = `
       </div>
       <div class="flex w-full p-[0.5px]">
         <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[36.5px]">
+          <div class="h-[75px] lg:h-[36.5px]">
             <h3
               class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
               style="opacity: 0; filter: blur(2px);"
@@ -22,30 +22,6 @@ exports[`renders search results view 1`] = `
               Start typing to search
             </h3>
           </div>
-          <gui-input-group classname="mt-3">
-            <gui-input-group-addon>
-              <gui-search-icon>
-              </gui-search-icon>
-            </gui-input-group-addon>
-            <gui-input-group-input
-              value="react"
-              placeholder="Search packages"
-              classname
-            >
-            </gui-input-group-input>
-            <gui-input-group-addon
-              align="inline-end"
-              classname="gap-1"
-            >
-              <gui-kbd>
-                <gui-command-icon>
-                </gui-command-icon>
-              </gui-kbd>
-              <gui-kbd>
-                K
-              </gui-kbd>
-            </gui-input-group-addon>
-          </gui-input-group>
         </div>
       </div>
       <div
@@ -74,6 +50,8 @@ exports[`renders search results view 1`] = `
         </div>
       </div>
     </div>
+    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    </div>
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -83,11 +61,11 @@ exports[`renders search results view 1`] = `
         </div>
       </div>
       <div
-        class="flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]"
+        class="flex h-full w-full flex-col p-[0.5px] min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]"
         style="opacity: 1; filter: blur(0px);"
       >
-        <div class="bg-background flex h-full w-full items-center justify-center rounded">
-          <gui-empty>
+        <div class="bg-background flex h-full w-full flex-1 flex-col rounded">
+          <gui-empty classname="h-full w-full grow">
             <gui-empty-header>
               <gui-empty-media variant="icon">
                 <gui-package-search-icon>
@@ -97,12 +75,12 @@ exports[`renders search results view 1`] = `
                 Your results will appear here
               </gui-empty-title>
               <gui-empty-description>
-                <button
-                  data-slot="button"
-                  class="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 px-3 has-[>svg]:px-2.5"
+                <gui-button
+                  size="sm"
+                  variant="default"
                 >
                   I'm feeling lucky
-                </button>
+                </gui-button>
               </gui-empty-description>
             </gui-empty-header>
           </gui-empty>
@@ -153,7 +131,7 @@ exports[`renders search results with error 1`] = `
       </div>
       <div class="flex w-full p-[0.5px]">
         <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[36.5px]">
+          <div class="h-[75px] lg:h-[36.5px]">
             <h3
               class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
               style="opacity: 0; filter: blur(2px);"
@@ -161,30 +139,6 @@ exports[`renders search results with error 1`] = `
               Start typing to search
             </h3>
           </div>
-          <gui-input-group classname="mt-3">
-            <gui-input-group-addon>
-              <gui-search-icon>
-              </gui-search-icon>
-            </gui-input-group-addon>
-            <gui-input-group-input
-              value="react"
-              placeholder="Search packages"
-              classname
-            >
-            </gui-input-group-input>
-            <gui-input-group-addon
-              align="inline-end"
-              classname="gap-1"
-            >
-              <gui-kbd>
-                <gui-command-icon>
-                </gui-command-icon>
-              </gui-kbd>
-              <gui-kbd>
-                K
-              </gui-kbd>
-            </gui-input-group-addon>
-          </gui-input-group>
         </div>
       </div>
       <div
@@ -213,6 +167,8 @@ exports[`renders search results with error 1`] = `
         </div>
       </div>
     </div>
+    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    </div>
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -222,11 +178,11 @@ exports[`renders search results with error 1`] = `
         </div>
       </div>
       <div
-        class="flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]"
+        class="flex h-full w-full flex-col p-[0.5px] min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]"
         style="opacity: 1; filter: blur(0px);"
       >
-        <div class="bg-background flex h-full w-full items-center justify-center rounded">
-          <gui-empty>
+        <div class="bg-background flex h-full w-full flex-1 flex-col rounded">
+          <gui-empty classname="h-full w-full grow">
             <gui-empty-header>
               <gui-empty-media variant="icon">
                 <gui-package-search-icon>
@@ -236,12 +192,12 @@ exports[`renders search results with error 1`] = `
                 Your results will appear here
               </gui-empty-title>
               <gui-empty-description>
-                <button
-                  data-slot="button"
-                  class="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 px-3 has-[>svg]:px-2.5"
+                <gui-button
+                  size="sm"
+                  variant="default"
                 >
                   I'm feeling lucky
-                </button>
+                </gui-button>
               </gui-empty-description>
             </gui-empty-header>
           </gui-empty>
@@ -292,7 +248,7 @@ exports[`renders search results with no results 1`] = `
       </div>
       <div class="flex w-full p-[0.5px]">
         <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[36.5px]">
+          <div class="h-[75px] lg:h-[36.5px]">
             <h3
               class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
               style="opacity: 0; filter: blur(2px);"
@@ -300,30 +256,6 @@ exports[`renders search results with no results 1`] = `
               Start typing to search
             </h3>
           </div>
-          <gui-input-group classname="mt-3">
-            <gui-input-group-addon>
-              <gui-search-icon>
-              </gui-search-icon>
-            </gui-input-group-addon>
-            <gui-input-group-input
-              value="nonexistentpackage"
-              placeholder="Search packages"
-              classname
-            >
-            </gui-input-group-input>
-            <gui-input-group-addon
-              align="inline-end"
-              classname="gap-1"
-            >
-              <gui-kbd>
-                <gui-command-icon>
-                </gui-command-icon>
-              </gui-kbd>
-              <gui-kbd>
-                K
-              </gui-kbd>
-            </gui-input-group-addon>
-          </gui-input-group>
         </div>
       </div>
       <div
@@ -352,6 +284,8 @@ exports[`renders search results with no results 1`] = `
         </div>
       </div>
     </div>
+    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    </div>
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -361,11 +295,11 @@ exports[`renders search results with no results 1`] = `
         </div>
       </div>
       <div
-        class="flex h-full min-h-[calc(100svh-48px-50px-157.5px-50px)] w-full grow items-center justify-center p-[0.5px]"
+        class="flex h-full w-full flex-col p-[0.5px] min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]"
         style="opacity: 1; filter: blur(0px);"
       >
-        <div class="bg-background flex h-full w-full items-center justify-center rounded">
-          <gui-empty>
+        <div class="bg-background flex h-full w-full flex-1 flex-col rounded">
+          <gui-empty classname="h-full w-full grow">
             <gui-empty-header>
               <gui-empty-media variant="icon">
                 <gui-package-search-icon>
@@ -375,12 +309,12 @@ exports[`renders search results with no results 1`] = `
                 Your results will appear here
               </gui-empty-title>
               <gui-empty-description>
-                <button
-                  data-slot="button"
-                  class="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 px-3 has-[>svg]:px-2.5"
+                <gui-button
+                  size="sm"
+                  variant="default"
                 >
                   I'm feeling lucky
-                </button>
+                </gui-button>
               </gui-empty-description>
             </gui-empty-header>
           </gui-empty>
@@ -431,7 +365,7 @@ exports[`renders search results with results 1`] = `
       </div>
       <div class="flex w-full p-[0.5px]">
         <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[36.5px]">
+          <div class="h-[75px] lg:h-[36.5px]">
             <h3
               class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
               style="opacity: 0; filter: blur(2px);"
@@ -454,30 +388,6 @@ exports[`renders search results with results 1`] = `
               </span>
             </h3>
           </div>
-          <gui-input-group classname="mt-3">
-            <gui-input-group-addon>
-              <gui-search-icon>
-              </gui-search-icon>
-            </gui-input-group-addon>
-            <gui-input-group-input
-              value="react"
-              placeholder="Search packages"
-              classname
-            >
-            </gui-input-group-input>
-            <gui-input-group-addon
-              align="inline-end"
-              classname="gap-1"
-            >
-              <gui-kbd>
-                <gui-command-icon>
-                </gui-command-icon>
-              </gui-kbd>
-              <gui-kbd>
-                K
-              </gui-kbd>
-            </gui-input-group-addon>
-          </gui-input-group>
         </div>
       </div>
       <div
@@ -506,6 +416,8 @@ exports[`renders search results with results 1`] = `
         </div>
       </div>
     </div>
+    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    </div>
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -519,7 +431,7 @@ exports[`renders search results with results 1`] = `
         style="opacity: 1; filter: blur(0px);"
       >
         <div
-          class="flex w-full flex-col gap-[1px] rounded p-[0.5px]"
+          class="flex min-h-[calc(100svh-56px-148px-245px-36px-49px)] w-full flex-col gap-[1px] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)] rounded p-[0.5px]"
           style="opacity: 0;"
         >
           <div

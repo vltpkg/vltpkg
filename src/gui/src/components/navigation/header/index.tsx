@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
-import { useLocation, NavLink } from 'react-router'
-import { Vlt } from '@/components/icons/index.ts'
+import { useLocation } from 'react-router'
 import { ExplorerHeader } from '@/components/navigation/header/explorer.tsx'
 import { DashboardHeader } from '@/components/navigation/header/dashboard.tsx'
 import { QueriesHeader } from '@/components/navigation/header/queries.tsx'
 import { LabelsHeader } from '@/components/navigation/header/labels.tsx'
 import { SearchHeader } from '@/components/navigation/header/search.tsx'
-import { LinearMenu } from '@/components/navigation/linear-menu/index.tsx'
 import { BreadcrumbHeader } from '@/components/navigation/header/breadcrumb-header.tsx'
+import { MobileMenu } from '@/components/navigation/header/mobile.tsx'
+import { UserMenu } from '@/components/auth/index.tsx'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 import { cn } from '@/lib/utils.ts'
 
@@ -18,6 +18,8 @@ type HeaderProps = ComponentProps<'div'>
 const Header = ({ className }: HeaderProps) => {
   const { pathname } = useLocation()
   const isHostedMode = isHostedEnvironment()
+
+  const displayPathname = pathname.split('/')[1]
 
   const headerContent = useMemo(() => {
     if (pathname.includes('explore')) {
@@ -41,21 +43,25 @@ const Header = ({ className }: HeaderProps) => {
     if (pathname.includes('/settings') && !isHostedMode) {
       return <BreadcrumbHeader />
     }
-  }, [isHostedMode, pathname])
+  }, [pathname, isHostedMode])
 
   return (
     <div
       className={cn(
-        'bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3',
+        'flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center',
         className,
       )}>
-      <div className="flex aspect-square size-8 items-center justify-center">
-        <NavLink to="/">
-          <Vlt />
-        </NavLink>
+      <div className="flex w-full items-center justify-between">
+        <h3 className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+          {displayPathname}
+        </h3>
+        <div className="flex items-center gap-2 md:hidden">
+          <MobileMenu />
+          <UserMenu />
+        </div>
       </div>
-      <div className="flex w-full">{headerContent}</div>
-      <LinearMenu />
+      {headerContent}
+      <UserMenu className="hidden md:flex" />
     </div>
   )
 }

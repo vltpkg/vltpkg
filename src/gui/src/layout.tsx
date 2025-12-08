@@ -1,13 +1,10 @@
-import { useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
 import { useLocation, Outlet } from 'react-router'
 import {
   defaultOpen,
   AppSidebar,
 } from '@/components/navigation/sidebar/index.tsx'
-import {
-  SidebarProvider,
-  SidebarInset,
-} from '@/components/ui/sidebar.tsx'
+import { SidebarProvider } from '@/components/ui/sidebar.tsx'
 import { Toaster } from '@/components/ui/toaster.tsx'
 import { Header } from '@/components/navigation/header/index.tsx'
 import { Header as MarketingHeader } from '@/components/navigation/marketing-menu/index.tsx'
@@ -49,18 +46,32 @@ const Layout = () => {
   }
 
   return (
-    <div className="flex flex-col antialiased">
-      <Header />
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar />
-        <SidebarInset>
-          {onRestrictedRoute ?
-            <HostedWarning />
-          : <Outlet />}
-        </SidebarInset>
-        <Toaster />
-      </SidebarProvider>
-    </div>
+    <Fragment>
+      <div className="bg-background antialiased">
+        <div className="bg-foreground/6 relative">
+          <div className="min-h-svh grid-cols-[auto_4fr] md:grid">
+            <SidebarProvider
+              defaultOpen={defaultOpen}
+              className="sticky top-0 flex w-full px-[1px]">
+              <AppSidebar className="bg-background rounded" />
+            </SidebarProvider>
+            <div className="bg-background flex w-full flex-col rounded-t">
+              <div className="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+                <Header className="bg-background rounded" />
+              </div>
+              <div className="bg-foreground/6 flex min-h-0 w-full flex-1">
+                <main className="bg-background h-full w-full overflow-auto rounded">
+                  {onRestrictedRoute ?
+                    <HostedWarning />
+                  : <Outlet />}
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Toaster />
+    </Fragment>
   )
 }
 

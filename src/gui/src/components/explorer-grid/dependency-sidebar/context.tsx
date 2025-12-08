@@ -8,18 +8,18 @@ import { addRemoveDependency } from '@/lib/add-remove-dependency.ts'
 import type { StoreApi } from 'zustand'
 import type { PropsWithChildren } from 'react'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
-import type { DependencySideBarProps } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
 import type { Operation } from '@/lib/add-remove-dependency.ts'
 import type { Filter } from './filter-config.ts'
+import type { DepID } from '@vltpkg/dep-id'
 
 type DependencySidebarState = {
-  importerId?: DependencySideBarProps['importerId']
-  dependencies: DependencySideBarProps['dependencies']
-  filteredDependencies: DependencySideBarProps['dependencies']
+  importerId?: DepID
+  dependencies: GridItemData[]
+  filteredDependencies: GridItemData[]
   filters: Filter[]
   searchTerm: string
   addedDependencies: string[]
-  uninstalledDependencies: DependencySideBarProps['uninstalledDependencies']
+  uninstalledDependencies: GridItemData[]
   inProgress: boolean
   error?: string
   dependencyPopoverOpen?: boolean

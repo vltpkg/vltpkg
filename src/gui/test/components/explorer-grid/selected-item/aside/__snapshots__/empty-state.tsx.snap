@@ -3,7 +3,7 @@
 exports[`AsideOverviewEmptyState renders correctly 1`] = `
 
 <div
-  class="border-muted bg-card mt-4 flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed py-12 md:mt-0"
+  class="bg-background flex h-full w-full cursor-default flex-col items-center justify-center rounded"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="mb-6 flex justify-center">

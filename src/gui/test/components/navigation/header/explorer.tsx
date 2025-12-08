@@ -15,6 +15,10 @@ afterEach(() => {
   cleanup()
 })
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/query-bar/index.tsx', () => ({
   QueryBar: 'gui-query-bar',
 }))
@@ -32,6 +36,13 @@ vi.mock('lucide-react', () => ({
   Command: 'gui-command-icon',
 }))
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx',
+  () => ({
+    FocusButton: 'gui-focus-button',
+  }),
+)
+
 vi.mock('@/components/ui/kbd.tsx', () => ({
   Kbd: 'gui-kbd',
 }))
@@ -45,6 +56,13 @@ vi.mock('@/components/explorer-grid/save-query.tsx', () => {
     default: 'gui-save-query-button',
   }
 })
+
+vi.mock('@/components/ui/input-group.tsx', () => ({
+  InputGroup: 'gui-input-group',
+  InputGroupInput: 'gui-input-group-input',
+  InputGroupAddon: 'gui-input-group-addon',
+  InputGroupButton: 'gui-input-group-button',
+}))
 
 test('ExplorerHeader renders correctly', () => {
   const Container = () => {

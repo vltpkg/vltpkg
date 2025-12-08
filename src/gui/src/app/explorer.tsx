@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { transfer } from '@vltpkg/graph/browser'
 import { useNavigate, useParams, useLocation } from 'react-router'
-import { forwardRef, useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { Query } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
@@ -10,6 +10,7 @@ import { useQueryNavigation } from '@/components/hooks/use-query-navigation.tsx'
 import { createHostContextsMap } from '@/lib/query-host-contexts.ts'
 import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
 
+import type { ComponentProps } from 'react'
 import type { MotionProps } from 'framer-motion'
 import type { TransferData, Action, State } from '@/state/types.ts'
 
@@ -61,14 +62,19 @@ const startGraphData = async ({
 
 // 'supercharge' the `explorer-grid` component
 // so that can get access to some fancy animations
-const ExplorerGridWrapper = forwardRef<HTMLDivElement>((_, ref) => {
+const ExplorerGridWrapper = forwardRef<
+  HTMLDivElement,
+  ComponentProps<'div'> & {
+    isLoading?: boolean
+    loadedQuery?: string
+  }
+>(({ isLoading, loadedQuery, ...props }, ref) => {
   return (
-    <div ref={ref}>
-      <ExplorerGrid />
+    <div ref={ref} {...props}>
+      <ExplorerGrid isLoading={isLoading} loadedQuery={loadedQuery} />
     </div>
   )
 })
-
 ExplorerGridWrapper.displayName = 'ExplorerGridWrapper'
 
 const MotionExplorerGrid = motion.create(ExplorerGridWrapper)
@@ -205,6 +211,10 @@ const ExplorerContent = () => {
     state => state.isExternalPackage,
   )
   const ac = useRef<AbortController>(new AbortController())
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadedQuery, setLoadedQuery] = useState<string | undefined>(
+    undefined,
+  )
 
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
@@ -213,7 +223,8 @@ const ExplorerContent = () => {
     async function updateQueryData() {
       if (!q) return
 
-      // Clear edges/nodes immediately when query changes to prevent stale data
+      // Set loading state and clear edges/nodes immediately when query changes
+      setIsLoading(true)
       updateEdges([])
       updateNodes([])
 
@@ -221,16 +232,28 @@ const ExplorerContent = () => {
       ac.current = new AbortController()
       const queryResponse = await q.search(query, {
         signal: ac.current.signal,
-        scopeIDs: graph ? [graph.mainImporter.id] : undefined,
+        scopeIDs:
+          graph?.mainImporter ? [graph.mainImporter.id] : undefined,
       })
 
       updateEdges(queryResponse.edges)
       updateNodes(queryResponse.nodes)
+      setIsLoading(false)
+      setLoadedQuery(query)
     }
 
-    void updateQueryData().catch(() => {
+    void updateQueryData().catch((err: unknown) => {
+      // Ignore errors from cancelled queries
+      if (
+        err instanceof Error &&
+        (err.message === 'Query changed' || err.name === 'AbortError')
+      ) {
+        return
+      }
+      console.error(err)
       updateEdges([])
       updateNodes([])
+      setIsLoading(false)
     })
   }, [query, q, graph, updateEdges, updateNodes])
 
@@ -256,6 +279,9 @@ const ExplorerContent = () => {
         </motion.div>
       : <MotionExplorerGrid
           {...explorerMotion}
+          isLoading={isLoading}
+          loadedQuery={loadedQuery}
+          className="h-full"
           transition={{
             delay: 0.25, // to ensure it has enough time
           }}

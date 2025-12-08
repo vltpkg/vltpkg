@@ -6,12 +6,41 @@ import { FocusedView } from '@/components/explorer-grid/selected-item/focused-vi
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
+vi.mock('react-router', () => ({
+  Outlet: 'gui-router-outlet',
+  useParams: vi.fn().mockReturnValue({
+    package: 'acme',
+    version: 'latest',
+  }),
+  useNavigate: vi.fn(),
+}))
+
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
-  () => ({
-    useSelectedItemStore: vi.fn(),
-    SelectedItemProvider: 'gui-selected-item-provider',
-  }),
+  async () => {
+    const actual = await import(
+      '@/components/explorer-grid/selected-item/context.tsx'
+    )
+    return {
+      ...actual,
+      useSelectedItemStore: vi.fn(),
+      SelectedItemProvider: 'gui-selected-item-provider',
+    }
+  },
+)
+
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/context.tsx',
+  async () => {
+    const actual = await import(
+      '@/components/explorer-grid/dependency-sidebar/context.tsx'
+    )
+    return {
+      ...actual,
+      DependencySidebarProvider: 'gui-dependency-sidebar-provider',
+      useDependencySidebarStore: vi.fn(),
+    }
+  },
 )
 
 vi.mock(
@@ -21,21 +50,69 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/explorer-grid/selected-item/item.tsx', () => ({
-  SelectedItemTabs: 'gui-selected-item-tabs',
-}))
-
 vi.mock(
-  '@/components/explorer-grid/selected-item/focused-view/aside.tsx',
+  '@/components/explorer-grid/dependency-sidebar/filter.tsx',
   () => ({
-    FocusedAside: 'gui-focused-aside',
+    FilterButton: 'gui-filter-button',
   }),
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx',
+  '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx',
   () => ({
-    FocusButton: 'gui-focused-button',
+    AddDependenciesPopoverTrigger:
+      'gui-add-dependencies-popover-trigger',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/navigation.tsx',
+  () => ({
+    Navigation: 'gui-navigation',
+    NavigationButton: 'gui-navigation-button',
+    NavigationList: 'gui-navigation-list',
+    NavigationListItem: 'gui-navigation-list-item',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/item-header.tsx',
+  () => ({
+    PackageImageSpec: 'gui-package-image-spec',
+    ItemBreadcrumbs: 'gui-item-breadcrumbs',
+    Publisher: 'gui-publisher',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/index.tsx',
+  () => ({
+    DependencySideBar: 'gui-dependency-sidebar',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/aside/index.tsx',
+  () => ({
+    AsideOverview: 'gui-aside-overview',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/aside/empty-state.tsx',
+  () => ({
+    AsideOverviewEmptyState: 'gui-aside-overview-empty-state',
+  }),
+)
+
+vi.mock('@/components/ui/decorator.tsx', () => ({
+  Decorator: 'gui-decorator',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/install-helper.tsx',
+  () => ({
+    InstallHelper: 'gui-install-helper',
   }),
 )
 

@@ -1,27 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`VersionsTabButton renders default 1`] = `
-
-<gui-tabs-trigger
-  variant="ghost"
-  value="versions"
-  classname="w-fit px-2"
->
-  Versions
-  <gui-data-badge
-    variant="count"
-    classnames="[object Object]"
-    content="3"
-  >
-  </gui-data-badge>
-</gui-tabs-trigger>
-
-`;
-
 exports[`VersionsTabContent filters newer versions 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
@@ -197,14 +179,14 @@ exports[`VersionsTabContent filters newer versions 1`] = `
       </div>
     </div>
   </section>
-</gui-tabs-content>
+</section>
 
 `;
 
 exports[`VersionsTabContent filters pre-releases 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
@@ -380,14 +362,14 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
       </div>
     </div>
   </section>
-</gui-tabs-content>
+</section>
 
 `;
 
 exports[`VersionsTabContent filters versions 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
@@ -502,14 +484,14 @@ exports[`VersionsTabContent filters versions 1`] = `
       </div>
     </div>
   </section>
-</gui-tabs-content>
+</section>
 
 `;
 
 exports[`VersionsTabContent handles missing manifest version 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
@@ -624,40 +606,31 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
       </div>
     </div>
   </section>
-</gui-tabs-content>
+</section>
 
 `;
 
 exports[`VersionsTabContent renders an empty state 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div class="flex h-full min-h-64 w-full items-center justify-center overflow-hidden">
-    <div class="flex flex-col items-center justify-center gap-3 text-center">
-      <div class="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
-        <gui-history-icon
-          classname="absolute z-[4] size-14 text-neutral-500"
-          strokewidth="1.25"
-        >
-        </gui-history-icon>
-      </div>
-      <div class="flex w-2/3 flex-col items-center justify-center gap-1 text-center">
-        <p class="text-muted-foreground w-full text-sm text-pretty">
-          There is no versioning information about this package yet.
-        </p>
-      </div>
-    </div>
-  </div>
-</gui-tabs-content>
+  <gui-selected-item-empty-state
+    icon="gui-history-icon"
+    title="No version information"
+    description="There is no versioning information
+about this package yet"
+  >
+  </gui-selected-item-empty-state>
+</section>
 
 `;
 
 exports[`VersionsTabContent renders with versions 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
@@ -772,14 +745,14 @@ exports[`VersionsTabContent renders with versions 1`] = `
       </div>
     </div>
   </section>
-</gui-tabs-content>
+</section>
 
 `;
 
 exports[`VersionsTabContent toggles pre-releases 1`] = `
 
-<gui-tabs-content
-  value="versions"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
@@ -894,6 +867,6 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
       </div>
     </div>
   </section>
-</gui-tabs-content>
+</section>
 
 `;

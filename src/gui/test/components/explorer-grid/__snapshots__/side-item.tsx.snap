@@ -3,19 +3,14 @@
 exports[`SideItem render as aliased dependency 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -26,7 +21,7 @@ exports[`SideItem render as aliased dependency 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   aliased-item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -38,7 +33,7 @@ exports[`SideItem render as aliased dependency 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -76,19 +71,14 @@ exports[`SideItem render as aliased dependency 1`] = `
 exports[`SideItem render as dependency 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -99,7 +89,7 @@ exports[`SideItem render as dependency 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -111,7 +101,7 @@ exports[`SideItem render as dependency 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -149,19 +139,14 @@ exports[`SideItem render as dependency 1`] = `
 exports[`SideItem render as dependency with long name 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -172,7 +157,7 @@ exports[`SideItem render as dependency with long name 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -184,7 +169,7 @@ exports[`SideItem render as dependency with long name 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -222,19 +207,14 @@ exports[`SideItem render as dependency with long name 1`] = `
 exports[`SideItem render as dependent 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -245,7 +225,7 @@ exports[`SideItem render as dependent 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -257,7 +237,7 @@ exports[`SideItem render as dependent 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -295,19 +275,14 @@ exports[`SideItem render as dependent 1`] = `
 exports[`SideItem render as git dependency 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -318,7 +293,7 @@ exports[`SideItem render as git dependency 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -330,7 +305,7 @@ exports[`SideItem render as git dependency 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -368,19 +343,14 @@ exports[`SideItem render as git dependency 1`] = `
 exports[`SideItem render as multi-stacked dependent 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -391,7 +361,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -403,7 +373,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -415,7 +385,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <div class="absolute inset-x-0 -bottom-3 px-2.5">
               <div class="relative flex w-full items-center justify-end">
-                <div class="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                <div class="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                     4 more
                   </span>
@@ -437,9 +407,9 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
           Remove dependency
         </gui-context-menu-item>
       </gui-context-menu-content>
-      <div class="bg-card group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250">
+      <div class="bg-background absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
       </div>
-      <div class="bg-card group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/30 absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] transition-colors duration-250">
+      <div class="bg-background absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80">
       </div>
     </gui-context-menu>
   </div>
@@ -450,19 +420,14 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
 exports[`SideItem render as parent 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none parent"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors border-muted hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors border-muted hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 py-2 px-3">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 px-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -473,7 +438,7 @@ exports[`SideItem render as parent 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -485,7 +450,7 @@ exports[`SideItem render as parent 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -506,11 +471,11 @@ exports[`SideItem render as parent 1`] = `
             </div>
           </gui-card-header>
         </gui-card>
-        <gui-card classname="bg-secondary/50 mx-auto -mt-[1px] w-[95%] cursor-default rounded-none rounded-b-xl border-t-[0px] px-3 py-1.5 shadow-none dark:bg-neutral-950">
+        <gui-card classname="bg-secondary/50 mx-auto -mt-[1px] w-[95%] cursor-pointer rounded-none rounded-b-xl border-t-[0px] px-3 py-1.5 shadow-none dark:bg-neutral-950">
           <div class="flex w-full items-baseline justify-between gap-2">
             <gui-tooltip-provider delayduration="150">
               <gui-tooltip>
-                <gui-tooltip-trigger classname="grow cursor-default truncate overflow-hidden text-left text-xs font-medium">
+                <gui-tooltip-trigger classname="grow cursor-pointer truncate overflow-hidden text-left text-xs font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -522,7 +487,7 @@ exports[`SideItem render as parent 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider delayduration="150">
               <gui-tooltip>
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-24 cursor-default truncate overflow-hidden text-right text-xs">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-24 cursor-pointer truncate overflow-hidden text-right text-xs">
                   ^1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -551,19 +516,14 @@ exports[`SideItem render as parent 1`] = `
 exports[`SideItem render as two-stacked dependent 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
               <gui-data-badge
                 variant="mono"
@@ -574,7 +534,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             </div>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -586,7 +546,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -598,7 +558,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <div class="absolute inset-x-0 -bottom-3 px-2.5">
               <div class="relative flex w-full items-center justify-end">
-                <div class="relative flex h-[19px] w-fit cursor-default items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                <div class="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                     1 more
                   </span>
@@ -620,7 +580,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
           Remove dependency
         </gui-context-menu-item>
       </gui-context-menu-content>
-      <div class="bg-card group-hover/side-item:border-muted group-hover/side-item:bg-card-accent/50 absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250">
+      <div class="bg-background absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
       </div>
     </gui-context-menu>
   </div>
@@ -631,22 +591,17 @@ exports[`SideItem render as two-stacked dependent 1`] = `
 exports[`SideItem render as workspace item 1`] = `
 
 <div>
-  <div class="group relative">
-    <div
-      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
-      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[25%] group-has-[.parent]:rounded-none hidden"
-    >
-    </div>
+  <div class="group/side-item relative">
     <gui-context-menu>
-      <gui-context-menu-trigger classname="group/side-item relative">
+      <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group relative z-[10] flex cursor-default flex-col rounded-xl shadow-none transition-colors hover:border-muted hover:bg-card-accent"
+          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
-          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 px-2 py-2">
+          <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 px-2">
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="w-full cursor-default items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
+                <gui-tooltip-trigger classname="w-full cursor-pointer items-baseline justify-between truncate overflow-hidden text-left text-sm font-medium">
                   workspace-item
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>
@@ -658,7 +613,7 @@ exports[`SideItem render as workspace item 1`] = `
             </gui-tooltip-provider>
             <gui-tooltip-provider>
               <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-default truncate overflow-hidden text-right text-sm font-normal">
+                <gui-tooltip-trigger classname="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                   v1.0.0
                 </gui-tooltip-trigger>
                 <gui-tooltip-portal>

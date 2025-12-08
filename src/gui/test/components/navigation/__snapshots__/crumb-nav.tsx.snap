@@ -3,7 +3,7 @@
 exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -17,7 +17,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -31,7 +31,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -45,7 +45,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -59,7 +59,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -74,7 +74,7 @@ exports[`CrumbNav component > does not truncate when 5 or fewer breadcrumbs 1`] 
 exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicked 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -88,7 +88,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -102,7 +102,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -116,7 +116,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -130,7 +130,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -144,7 +144,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -158,7 +158,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -172,7 +172,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -186,7 +186,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -200,7 +200,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -215,7 +215,7 @@ exports[`CrumbNav component > expands breadcrumbs when ellipsis button is clicke
 exports[`CrumbNav component > renders breadcrumb with semver selector 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -230,7 +230,7 @@ exports[`CrumbNav component > renders breadcrumb with semver selector 1`] = `
 exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -244,7 +244,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -258,7 +258,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -272,7 +272,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -287,7 +287,7 @@ exports[`CrumbNav component > renders complex breadcrumb path 1`] = `
 exports[`CrumbNav component > renders multiple breadcrumb items with separators 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -301,7 +301,7 @@ exports[`CrumbNav component > renders multiple breadcrumb items with separators 
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -315,7 +315,7 @@ exports[`CrumbNav component > renders multiple breadcrumb items with separators 
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -330,7 +330,7 @@ exports[`CrumbNav component > renders multiple breadcrumb items with separators 
 exports[`CrumbNav component > renders single breadcrumb item 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -345,7 +345,7 @@ exports[`CrumbNav component > renders single breadcrumb item 1`] = `
 exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 items 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -366,7 +366,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
     <gui-ellipsis-icon size="14">
     </gui-ellipsis-icon>
   </button>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -380,7 +380,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -394,7 +394,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -409,7 +409,7 @@ exports[`CrumbNav component > renders truncated breadcrumbs when more than 5 ite
 exports[`CrumbNav component > renders with custom className 1`] = `
 
 <nav class="flex items-center gap-1 custom-nav-class">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -423,7 +423,7 @@ exports[`CrumbNav component > renders with custom className 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -438,7 +438,7 @@ exports[`CrumbNav component > renders with custom className 1`] = `
 exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -452,7 +452,7 @@ exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
@@ -467,7 +467,7 @@ exports[`CrumbNav component > renders workspace breadcrumb 1`] = `
 exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
 
 <nav class="flex items-center gap-1">
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="pseudo"
@@ -488,7 +488,7 @@ exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
     <gui-ellipsis-icon size="14">
     </gui-ellipsis-icon>
   </button>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -502,7 +502,7 @@ exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5 opacity-75 transition-opacity duration-250 hover:opacity-100"
       variant="id"
@@ -516,7 +516,7 @@ exports[`CrumbNav component > shows ellipsis button in truncated view 1`] = `
     classname="text-muted-foreground opacity-75"
   >
   </gui-chevron-right-icon>
-  <button class="inline-flex">
+  <button class="inline-flex cursor-pointer">
     <gui-query-token
       classname="px-1.5"
       variant="id"
