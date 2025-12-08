@@ -4,10 +4,8 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { SELECTED_ITEM } from '../__fixtures__/item.ts'
-import {
-  DuplicatesTabButton,
-  DuplicatesTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-duplicates.tsx'
+import { DuplicatesTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-duplicates.tsx'
+
 import type { DuplicatedDeps } from '@/components/explorer-grid/selected-item/context.tsx'
 
 vi.mock(
@@ -30,10 +28,12 @@ vi.mock(
   },
 )
 
-vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsTrigger: 'gui-tabs-trigger',
-  TabsContent: 'gui-tabs-content',
-}))
+vi.mock(
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
+  () => ({
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
+  }),
+)
 
 vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
@@ -75,84 +75,6 @@ const mockDuplicatedDeps = {
     versions: ['4.17.21'],
   },
 } satisfies DuplicatedDeps
-
-test('DuplicatesTabButton renders correctly', () => {
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector({
-      selectedItem: SELECTED_ITEM,
-      manifest: null,
-      rawManifest: null,
-      packageScore: undefined,
-      insights: undefined,
-      author: undefined,
-      favicon: undefined,
-      publisher: undefined,
-      publisherAvatar: undefined,
-      versions: undefined,
-      greaterVersions: undefined,
-      depCount: undefined,
-      setDepCount: vi.fn(),
-      scannedDeps: undefined,
-      setScannedDeps: vi.fn(),
-      depsAverageScore: undefined,
-      setDepsAverageScore: vi.fn(),
-      depLicenses: undefined,
-      setDepLicenses: vi.fn(),
-      depWarnings: undefined,
-      setDepWarnings: vi.fn(),
-      duplicatedDeps: undefined,
-      setDuplicatedDeps: vi.fn(),
-      depFunding: undefined,
-      setDepFunding: vi.fn(),
-    }),
-  )
-
-  const Container = () => {
-    return <DuplicatesTabButton />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('DuplicatesTabButton renders with a count', () => {
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector({
-      selectedItem: SELECTED_ITEM,
-      manifest: null,
-      rawManifest: null,
-      packageScore: undefined,
-      insights: undefined,
-      author: undefined,
-      favicon: undefined,
-      publisher: undefined,
-      publisherAvatar: undefined,
-      versions: undefined,
-      greaterVersions: undefined,
-      depCount: undefined,
-      setDepCount: vi.fn(),
-      scannedDeps: undefined,
-      setScannedDeps: vi.fn(),
-      depsAverageScore: undefined,
-      setDepsAverageScore: vi.fn(),
-      depLicenses: undefined,
-      setDepLicenses: vi.fn(),
-      depWarnings: undefined,
-      setDepWarnings: vi.fn(),
-      duplicatedDeps: mockDuplicatedDeps,
-      setDuplicatedDeps: vi.fn(),
-      depFunding: undefined,
-      setDepFunding: vi.fn(),
-    }),
-  )
-
-  const Container = () => {
-    return <DuplicatesTabButton />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
 
 test('DuplicatesTabContent renders with an empty state', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

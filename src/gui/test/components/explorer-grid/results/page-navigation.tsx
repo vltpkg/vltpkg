@@ -8,18 +8,14 @@ import { ResultsPaginationNavigation } from '@/components/explorer-grid/results/
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { ResultsStore } from '@/components/explorer-grid/results/context.tsx'
 
-vi.mock('@/components/ui/pagination.tsx', () => ({
-  Pagination: 'gui-pagination',
-  PaginationContent: 'gui-pagination-content',
-  PaginationItem: 'gui-pagination-item',
-  PaginationPrevious: 'gui-pagination-previous',
-  PaginationEllipsis: 'gui-pagination-ellipses',
-  PaginationLink: 'gui-pagination-link',
-  PaginationNext: 'gui-pagination-next',
-}))
-
 vi.mock('@/components/explorer-grid/results/context.tsx', () => ({
   useResultsStore: vi.fn(),
+}))
+
+vi.mock('lucide-react', () => ({
+  ChevronLeft: 'gui-chevron-left-icon',
+  ChevronRight: 'gui-chevron-right-icon',
+  MoreHorizontal: 'gui-more-horizontal-icon',
 }))
 
 expect.addSnapshotSerializer({
@@ -48,6 +44,7 @@ test('ResultsPaginationNavigation renders default', () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>

@@ -8,6 +8,12 @@ import { ResultsSort } from '@/components/explorer-grid/results/sort.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { ResultsStore } from '@/components/explorer-grid/results/context.tsx'
 
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
+
 vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
@@ -15,6 +21,8 @@ vi.mock('@/components/ui/button.tsx', () => ({
 vi.mock('lucide-react', () => ({
   ChevronUp: 'gui-chevron-up-icon',
   ChevronDown: 'gui-chevron-down-icon',
+  ChevronLeft: 'gui-chevron-left-icon',
+  ChevronRight: 'gui-chevron-right-icon',
   Layers: 'gui-layers-icon',
   SendToBack: 'gui-send-to-back-icon',
   CircleGauge: 'gui-circle-gauge-icon',
@@ -43,7 +51,7 @@ test('ResultsPaginationNavigation renders default', () => {
 
   const mockState = {
     page: 1,
-    totalPages: 0,
+    totalPages: 1,
     pageSize: 25,
     pageItems: mockItems,
     allItems: mockItems,
@@ -53,6 +61,7 @@ test('ResultsPaginationNavigation renders default', () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>

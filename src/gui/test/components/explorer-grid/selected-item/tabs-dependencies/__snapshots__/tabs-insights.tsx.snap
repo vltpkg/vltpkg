@@ -1,37 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`InsightsTabButton renders default 1`] = `
-
-<gui-tabs-trigger
-  value="insights"
-  variant="nestedCard"
->
-  Insights
-</gui-tabs-trigger>
-
-`;
-
-exports[`InsightsTabButton renders with insight count 1`] = `
-
-<gui-tabs-trigger
-  value="insights"
-  variant="nestedCard"
->
-  Insights
-  <gui-data-badge
-    variant="count"
-    classnames="[object Object]"
-    content="6"
-  >
-  </gui-data-badge>
-</gui-tabs-trigger>
-
-`;
-
 exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
 
-<gui-tabs-content
-  value="insights"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="flex flex-col gap-3 py-4">
@@ -244,29 +216,30 @@ exports[`InsightsTabContent renders with a warning for unscanned deps 1`] = `
       </gui-table-body>
     </gui-table>
   </div>
-</gui-tabs-content>
+</section>
 
 `;
 
 exports[`InsightsTabContent renders with an empty state 1`] = `
 
-<gui-tabs-content
-  value="insights"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <gui-empty-state
+  <gui-selected-item-empty-state
     icon="gui-shield-x-icon"
-    message="No insights were available."
+    title="No insights"
+    description="We couldn't find any insights for this project"
   >
-  </gui-empty-state>
-</gui-tabs-content>
+  </gui-selected-item-empty-state>
+</section>
 
 `;
 
 exports[`InsightsTabContent renders with insights 1`] = `
 
-<gui-tabs-content
-  value="insights"
+<section
+  class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
   <div class="flex flex-col gap-3 py-4">
@@ -455,6 +428,6 @@ exports[`InsightsTabContent renders with insights 1`] = `
       </gui-table-body>
     </gui-table>
   </div>
-</gui-tabs-content>
+</section>
 
 `;

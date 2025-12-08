@@ -78,7 +78,7 @@ export const SearchResultsSort = ({
 
   return (
     <SortMenu className={className} {...props}>
-      <SortMenuContent className="grid-cols-5 gap-[1px] rounded lg:grid">
+      <SortMenuContent className="grid grid-cols-1 gap-[1px] rounded lg:grid-cols-5">
         {sortOptions.map((option, idx) => (
           <SortMenuItem
             key={`${option.label}-${idx}`}

@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/sidebar.tsx'
 
 /* sidebar components */
+import { SidebarLogo } from '@/components/navigation/sidebar/sidebar-logo.tsx'
 import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
 import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.tsx'
 
@@ -17,6 +18,7 @@ import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-n
 import { SidebarSettingsNav } from '@/components/navigation/sidebar/sidebar-settings-nav.tsx'
 
 import { footerMenuItems } from '@/components/navigation/sidebar/menu.ts'
+import { cn } from '@/lib/utils.ts'
 
 /**
  * Sidebar creates a cookie 'sidebar:state' automatically
@@ -36,18 +38,18 @@ export const defaultOpen: boolean = (() => {
   return value === 'true'
 })()
 
-export const AppSidebar = () => {
+export const AppSidebar = ({ className }: { className?: string }) => {
   return (
     <Sidebar
-      className="relative flex h-full grow"
-      collapsible="icon"
-      variant="inset">
+      className={cn('relative flex h-full grow', className)}
+      collapsible="icon">
       <SidebarContent>
+        <SidebarLogo />
         <SidebarMainNav />
         <SidebarSettingsNav />
         <SidebarQueryNav />
       </SidebarContent>
-      <SidebarFooter className="mb-[0.875px]">
+      <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuLink items={footerMenuItems} />
           <SidebarToggle />

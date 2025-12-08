@@ -7,13 +7,11 @@ import { CodeTabContent } from '@/components/explorer-grid/selected-item/tabs-co
 vi.mock('lucide-react', () => ({
   ArrowLeft: 'gui-arrow-left',
   DecimalsArrowRight: 'gui-decimals-arrow-right',
+  FileCode2: 'gui-file-code-2-icon',
+  FileWarning: 'gui-file-warning-icon',
   Files: 'gui-files-icon',
   FileSliders: 'gui-file-sliders',
   Search: 'gui-search-icon',
-}))
-
-vi.mock('@/components/ui/tabs.tsx', () => ({
-  TabsTrigger: 'gui-tabs-trigger',
 }))
 
 vi.mock('@/components/ui/button.tsx', () => ({
@@ -25,24 +23,9 @@ vi.mock('@/components/ui/input.tsx', () => ({
 }))
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/helpers.tsx',
+  '@/components/explorer-grid/selected-item/empty-state.tsx',
   () => ({
-    MotionTabsContent: 'gui-motion-tabs-content',
-    tabMotion: {},
-  }),
-)
-
-vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-code/empty-state.tsx',
-  () => ({
-    EmptyState: 'gui-empty-state',
-  }),
-)
-
-vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-code/error-state.tsx',
-  () => ({
-    ErrorState: 'gui-error-state',
+    SelectedItemEmptyState: 'gui-selected-item-empty-state',
   }),
 )
 

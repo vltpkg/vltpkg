@@ -1,9 +1,7 @@
 import { create } from 'zustand'
 import { fetchPackageSearch } from '@/lib/package-search.ts'
-import { PAGE_SIZE_OPTIONS } from '@/components/explorer-grid/results/page-options.tsx'
 import { LRUCache } from '@/utils/lru-cache.ts'
 
-import type { PageSizeOption } from '@/components/explorer-grid/results/page-options.tsx'
 import type { SearchObject } from '@/lib/package-search.ts'
 
 export type SearchResultsSortBy =
@@ -88,7 +86,7 @@ type SearchResultsState = {
   /**
    * The count of items on each page
    */
-  pageSize: PageSizeOption
+  pageSize: number
   /**
    * The search results for the current page
    */
@@ -131,7 +129,7 @@ type SearchResultsAction = {
   /**
    * Sets the count of items on each page
    */
-  setPageSize: (pageSize: PageSizeOption) => void
+  setPageSize: (pageSize: number) => void
   /**
    * Sets the sort key
    */
@@ -168,7 +166,7 @@ type SearchResultsAction = {
    */
   syncFromURL: (params: {
     page?: number
-    pageSize?: PageSizeOption
+    pageSize?: number
     sortBy?: SearchResultsSortBy
     sortDir?: SearchResultsSortDir
     query?: string
@@ -188,7 +186,7 @@ type SearchResultsAction = {
 const initialState: SearchResultsState = {
   page: 1,
   total: 0,
-  pageSize: PAGE_SIZE_OPTIONS[0] as PageSizeOption,
+  pageSize: 25,
   results: [],
   isLoading: false,
   error: null,
@@ -213,7 +211,7 @@ export const useSearchResultsStore = create<
       })
     }
   },
-  setPageSize: (pageSize: PageSizeOption) => {
+  setPageSize: (pageSize: number) => {
     set({ pageSize, page: 1 })
     const { updateURLCallback } = get()
     if (updateURLCallback) {

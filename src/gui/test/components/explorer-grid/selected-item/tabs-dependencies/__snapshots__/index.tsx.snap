@@ -2,76 +2,104 @@
 
 exports[`DependenciesTabContent renders an empty state 1`] = `
 
-<gui-tabs-content
-  value="dependencies"
+<section
+  class="h-full w-full bg-foreground/6 flex flex-col gap-[1px] rounded"
   style="opacity: 0; filter: blur(2px);"
 >
-  <gui-tabs value="insights">
-    <gui-tabs-list
-      variant="nestedCard"
-      classname="overflow-x-scroll"
-    >
-      <gui-insights-tab-button>
-      </gui-insights-tab-button>
-      <gui-licenses-tab-button>
-      </gui-licenses-tab-button>
-      <gui-duplicates-tab-button>
-      </gui-duplicates-tab-button>
-      <gui-funding-tab-button>
-      </gui-funding-tab-button>
-    </gui-tabs-list>
-    <div class="bg-card min-h-64 overflow-hidden rounded-b-xl">
+  <gui-navigation classname="bg-background rounded">
+    <gui-navigation-list>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="insights"
+        >
+          Insights
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="licenses"
+        >
+          Licenses
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="duplicates"
+        >
+          Duplicates
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="funding"
+        >
+          Funding
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+    </gui-navigation-list>
+  </gui-navigation>
+  <div class="flex h-full w-full p-0">
+    <div class="bg-background flex h-full w-full rounded">
       <gui-router-outlet>
       </gui-router-outlet>
     </div>
-  </gui-tabs>
-</gui-tabs-content>
+  </div>
+</section>
 
 `;
 
 exports[`DependenciesTabContent renders default 1`] = `
 
-<gui-tabs-content
-  value="dependencies"
+<section
+  class="h-full w-full bg-foreground/6 flex flex-col gap-[1px] rounded"
   style="opacity: 0; filter: blur(2px);"
 >
-  <gui-tabs value="insights">
-    <gui-tabs-list
-      variant="nestedCard"
-      classname="overflow-x-scroll"
-    >
-      <gui-insights-tab-button>
-      </gui-insights-tab-button>
-      <gui-licenses-tab-button>
-      </gui-licenses-tab-button>
-      <gui-duplicates-tab-button>
-      </gui-duplicates-tab-button>
-      <gui-funding-tab-button>
-      </gui-funding-tab-button>
-    </gui-tabs-list>
-    <div class="bg-card min-h-64 overflow-hidden rounded-b-xl">
+  <gui-navigation classname="bg-background rounded">
+    <gui-navigation-list>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="insights"
+        >
+          Insights
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="licenses"
+        >
+          Licenses
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="duplicates"
+        >
+          Duplicates
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+      <gui-navigation-list-item>
+        <gui-navigation-button
+          navigationlayer="secondary"
+          tab="funding"
+        >
+          Funding
+        </gui-navigation-button>
+      </gui-navigation-list-item>
+    </gui-navigation-list>
+  </gui-navigation>
+  <div class="flex h-full w-full p-0">
+    <div class="bg-background flex h-full w-full rounded">
       <gui-router-outlet>
       </gui-router-outlet>
     </div>
-  </gui-tabs>
-</gui-tabs-content>
-
-`;
-
-exports[`DependenciesTabsButton renders correctly 1`] = `
-
-<gui-tabs-trigger
-  variant="ghost"
-  value="dependencies"
-  classname="w-fit px-2"
->
-  Dependencies
-  <gui-data-badge
-    variant="count"
-    classnames="[object Object]"
-    content="2"
-  >
-  </gui-data-badge>
-</gui-tabs-trigger>
+  </div>
+</section>
 
 `;

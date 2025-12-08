@@ -9,6 +9,10 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { ResultsStore } from '@/components/explorer-grid/results/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
+vi.mock('react-router', () => ({
+  NavLink: 'gui-nav-link',
+}))
+
 vi.mock('@/components/explorer-grid/results/context.tsx', () => ({
   useResultsStore: vi.fn(),
   ResultsProvider: 'gui-results-provider',
@@ -69,6 +73,7 @@ test('Results renders an empty state when there are no items', () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>
@@ -120,6 +125,7 @@ test('Results Displays items', () => {
     setSortBy: vi.fn(),
     setPageSize: vi.fn(),
     setSortDir: vi.fn(),
+    setSort: vi.fn(),
   } satisfies ResultsStore
 
   vi.mocked(useResultsStore).mockImplementation(selector =>

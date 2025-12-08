@@ -41,7 +41,7 @@ export const DashboardHeader = () => {
   )
 
   return (
-    <div className="flex w-full items-center gap-5">
+    <div className="flex w-full items-center gap-2">
       {currentView === 'table' ?
         <TableFilterSearch
           filterValue={tableFilterValue}
@@ -61,8 +61,8 @@ export const DashboardHeader = () => {
         currentView={currentView}
         setCurrentView={setCurrentView}
         classNames={{
-          toggleClassName: 'rounded-xl',
-          sliderClassName: 'rounded-[9px]',
+          toggleClassName: 'h-9 rounded-xl px-[3px]',
+          sliderClassName: 'size-[1.9rem] rounded-[11px]',
           optionClassName: 'rounded-lg',
         }}
       />
@@ -101,7 +101,7 @@ export const DashboardHeader = () => {
       <Button asChild className="ml-auto">
         <NavLink to="/create-new-project">
           <Plus size={24} />
-          <span className="hidden md:flex">Create New Project</span>
+          <span className="hidden md:flex">New Project</span>
         </NavLink>
       </Button>
     </div>

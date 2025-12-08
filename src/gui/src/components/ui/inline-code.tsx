@@ -12,6 +12,7 @@ type Color =
   | 'red'
   | 'purple'
   | 'amber'
+  | 'white'
 
 interface InlineCodeProps
   extends React.ComponentProps<'span'>,
@@ -21,7 +22,7 @@ interface InlineCodeProps
 }
 
 const variants = cva(
-  'inline-flex rounded-lg px-1.5 items-center leading-[1.6rem] h-[1.6rem] text-xs font-normal',
+  'inline-flex rounded-lg px-2 items-center py-0.5 text-inherit font-normal',
   {
     variants: {
       color: {
@@ -32,6 +33,7 @@ const variants = cva(
         amber: 'text-amber-500',
         red: 'text-red-500',
         purple: 'text-purple-500',
+        white: 'text-foreground',
       },
       variant: {
         unstyled: '',

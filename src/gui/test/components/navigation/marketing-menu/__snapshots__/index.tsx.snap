@@ -4,7 +4,7 @@ exports[`renders header 1`] = `
 
 <header class="sticky top-0 z-50 w-full max-w-full border-b border-transparent will-change-auto lg:mx-auto lg:max-w-5xl lg:rounded-2xl lg:border lg:transition-all lg:ease-out xl:max-w-[66.7%]">
   <nav
-    class="flex h-14 w-full items-center justify-between px-4 will-change-auto lg:h-12 lg:transition-all lg:ease-out"
+    class="flex h-14 w-full items-center justify-between px-4 will-change-auto max-lg:gap-3 lg:h-12 lg:transition-all lg:ease-out"
     aria-label="Main navigation"
   >
     <gui-logo>
@@ -66,7 +66,6 @@ exports[`renders header 1`] = `
     </div>
     <gui-button
       classname="lg:hidden"
-      size="sm"
       variant="outline"
       aria-expanded="false"
       aria-controls="mobile-menu"

@@ -1,11 +1,5 @@
-import { TabsContent } from '@/components/ui/tabs.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import {
-  ArrowLeft,
-  ArrowRight,
-  UsersRound,
-  CircleHelp,
-} from 'lucide-react'
+import { ArrowLeft, UsersRound, CircleHelp } from 'lucide-react'
 import {
   Avatar,
   AvatarImage,
@@ -16,7 +10,7 @@ import {
   useTabNavigation,
 } from '@/components/explorer-grid/selected-item/context.tsx'
 import { cn } from '@/lib/utils.ts'
-import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 import {
   Tooltip,
   TooltipPortal,
@@ -24,6 +18,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
+import {
+  MotionContent,
+  contentMotion,
+} from '@/components/explorer-grid/selected-item/helpers.tsx'
 import { useGraphStore } from '@/state/index.ts'
 
 import type { Contributor } from '@/lib/external-info.ts'
@@ -57,7 +55,7 @@ const ContributorHelp = ({
   )
 }
 
-const ContributorAvatar = ({
+export const ContributorAvatar = ({
   avatar,
   size = 'sm',
 }: ContributorAvatarProps) => {
@@ -115,51 +113,6 @@ const Contributor = ({
   )
 }
 
-export const ContributorList = () => {
-  const contributors = useSelectedItemStore(
-    state => state.contributors,
-  )
-  const { setActiveTab } = useTabNavigation()
-
-  const handleToContributors = () => setActiveTab('contributors')
-
-  if (!contributors || contributors.length === 0) return null
-
-  return (
-    <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
-      <ContributorHelp triggerContent="Contributors" />
-      <div className="flex items-center gap-2">
-        <div className="flex flex-wrap items-center -space-x-2">
-          {contributors.slice(0, 6).map((contributor, idx) => (
-            <ContributorAvatar
-              key={`contributor-avatar-${idx}`}
-              avatar={contributor.avatar}
-            />
-          ))}
-          {contributors.length > 6 && (
-            <div className="bg-background flex size-6 items-center justify-center rounded-full p-0.5 outline outline-[1px] outline-neutral-200 dark:outline-neutral-700">
-              <span className="text-xxs text-muted-foreground font-mono font-medium tabular-nums">
-                {contributors.length > 99 ?
-                  '99+'
-                : `+${contributors.length - 6}`}
-              </span>
-            </div>
-          )}
-        </div>
-        <Button
-          className="font-muted-foreground text-foreground hover:border-muted-foreground/20 hover:bg-muted-foreground/15 hover:text-foreground h-7 rounded-full border-[1px] border-neutral-200 bg-neutral-100 px-3 py-1.5 text-sm font-normal transition-colors duration-250 dark:border-[#313131] dark:bg-neutral-800 dark:hover:bg-neutral-700/70"
-          variant="default"
-          onClick={handleToContributors}>
-          See all contributors
-          <span>
-            <ArrowRight size={14} />
-          </span>
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 export const ContributorTabContent = () => {
   const contributors = useSelectedItemStore(
     state => state.contributors,
@@ -170,14 +123,17 @@ export const ContributorTabContent = () => {
 
   if (!contributors || contributors.length <= 0)
     return (
-      <EmptyState
+      <SelectedItemEmptyState
         icon={UsersRound}
-        message="We couldn't find any contributors for this project"
+        title="No contributors"
+        description="We couldn't find any contributors for this project"
       />
     )
 
   return (
-    <TabsContent value="contributors">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       <section className="flex flex-col gap-4 py-4">
         <div className="flex items-center gap-3 px-6">
           <Button
@@ -202,6 +158,6 @@ export const ContributorTabContent = () => {
           ))}
         </div>
       </section>
-    </TabsContent>
+    </MotionContent>
   )
 }

@@ -2,112 +2,129 @@
 
 exports[`renders Header for route / 1`] = `
 
-<div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
-  <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-router-nav-link to="/">
-      <gui-vlt-icon>
-      </gui-vlt-icon>
-    </gui-router-nav-link>
+<div class="flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center">
+  <div class="flex w-full items-center justify-between">
+    <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+    </h3>
+    <div class="flex items-center gap-2 md:hidden">
+      <gui-mobile-menu>
+      </gui-mobile-menu>
+      <gui-user-menu>
+      </gui-user-menu>
+    </div>
   </div>
-  <div class="flex w-full">
-  </div>
-  <gui-linear-menu>
-  </gui-linear-menu>
+  <gui-user-menu classname="hidden md:flex">
+  </gui-user-menu>
 </div>
 
 `;
 
 exports[`renders Header for route /explore 1`] = `
 
-<div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
-  <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-router-nav-link to="/">
-      <gui-vlt-icon>
-      </gui-vlt-icon>
-    </gui-router-nav-link>
+<div class="flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center">
+  <div class="flex w-full items-center justify-between">
+    <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+      explore
+    </h3>
+    <div class="flex items-center gap-2 md:hidden">
+      <gui-mobile-menu>
+      </gui-mobile-menu>
+      <gui-user-menu>
+      </gui-user-menu>
+    </div>
   </div>
-  <div class="flex w-full">
-    <gui-explorer-header>
-    </gui-explorer-header>
-  </div>
-  <gui-linear-menu>
-  </gui-linear-menu>
+  <gui-explorer-header>
+  </gui-explorer-header>
+  <gui-user-menu classname="hidden md:flex">
+  </gui-user-menu>
 </div>
 
 `;
 
 exports[`renders Header for route /help 1`] = `
 
-<div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
-  <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-router-nav-link to="/">
-      <gui-vlt-icon>
-      </gui-vlt-icon>
-    </gui-router-nav-link>
+<div class="flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center">
+  <div class="flex w-full items-center justify-between">
+    <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+      help
+    </h3>
+    <div class="flex items-center gap-2 md:hidden">
+      <gui-mobile-menu>
+      </gui-mobile-menu>
+      <gui-user-menu>
+      </gui-user-menu>
+    </div>
   </div>
-  <div class="flex w-full">
-    <gui-breadcrumb-header>
-    </gui-breadcrumb-header>
-  </div>
-  <gui-linear-menu>
-  </gui-linear-menu>
+  <gui-breadcrumb-header>
+  </gui-breadcrumb-header>
+  <gui-user-menu classname="hidden md:flex">
+  </gui-user-menu>
 </div>
 
 `;
 
 exports[`renders Header for route /labels 1`] = `
 
-<div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
-  <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-router-nav-link to="/">
-      <gui-vlt-icon>
-      </gui-vlt-icon>
-    </gui-router-nav-link>
+<div class="flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center">
+  <div class="flex w-full items-center justify-between">
+    <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+      labels
+    </h3>
+    <div class="flex items-center gap-2 md:hidden">
+      <gui-mobile-menu>
+      </gui-mobile-menu>
+      <gui-user-menu>
+      </gui-user-menu>
+    </div>
   </div>
-  <div class="flex w-full">
-    <gui-labels-header>
-    </gui-labels-header>
-  </div>
-  <gui-linear-menu>
-  </gui-linear-menu>
+  <gui-labels-header>
+  </gui-labels-header>
+  <gui-user-menu classname="hidden md:flex">
+  </gui-user-menu>
 </div>
 
 `;
 
 exports[`renders Header for route /queries 1`] = `
 
-<div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
-  <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-router-nav-link to="/">
-      <gui-vlt-icon>
-      </gui-vlt-icon>
-    </gui-router-nav-link>
+<div class="flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center">
+  <div class="flex w-full items-center justify-between">
+    <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+      queries
+    </h3>
+    <div class="flex items-center gap-2 md:hidden">
+      <gui-mobile-menu>
+      </gui-mobile-menu>
+      <gui-user-menu>
+      </gui-user-menu>
+    </div>
   </div>
-  <div class="flex w-full">
-    <gui-queries-header>
-    </gui-queries-header>
-  </div>
-  <gui-linear-menu>
-  </gui-linear-menu>
+  <gui-queries-header>
+  </gui-queries-header>
+  <gui-user-menu classname="hidden md:flex">
+  </gui-user-menu>
 </div>
 
 `;
 
 exports[`renders Header for route /settings 1`] = `
 
-<div class="bg-sidebar flex h-16 w-full cursor-default items-center justify-between gap-5 px-4 py-3">
-  <div class="flex aspect-square size-8 items-center justify-center">
-    <gui-router-nav-link to="/">
-      <gui-vlt-icon>
-      </gui-vlt-icon>
-    </gui-router-nav-link>
+<div class="flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center">
+  <div class="flex w-full items-center justify-between">
+    <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
+      settings
+    </h3>
+    <div class="flex items-center gap-2 md:hidden">
+      <gui-mobile-menu>
+      </gui-mobile-menu>
+      <gui-user-menu>
+      </gui-user-menu>
+    </div>
   </div>
-  <div class="flex w-full">
-    <gui-breadcrumb-header>
-    </gui-breadcrumb-header>
-  </div>
-  <gui-linear-menu>
-  </gui-linear-menu>
+  <gui-breadcrumb-header>
+  </gui-breadcrumb-header>
+  <gui-user-menu classname="hidden md:flex">
+  </gui-user-menu>
 </div>
 
 `;

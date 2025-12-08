@@ -1,76 +1,97 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Item renders connection lines 1`] = `
-
-<gui-selected-item-provider selecteditem="[object Object]">
-  <section class="relative">
-    <gui-card classname="border-muted relative rounded-xl shadow-none">
-      <gui-item-header>
-      </gui-item-header>
-      <div class="w-full">
-        <gui-tabs value="overview">
-          <gui-tabs-list
-            variant="ghost"
-            classname="w-full gap-2 overflow-x-auto px-6"
-          >
-            <gui-overview-tab-button>
-            </gui-overview-tab-button>
-            <gui-json-tab-button>
-            </gui-json-tab-button>
-            <gui-tabs-code-button>
-            </gui-tabs-code-button>
-            <gui-insight-tab-button>
-            </gui-insight-tab-button>
-            <gui-versions-tab-button>
-            </gui-versions-tab-button>
-            <gui-dependencies-tabs-button>
-            </gui-dependencies-tabs-button>
-          </gui-tabs-list>
-          <div class="bg-card min-h-64 overflow-hidden rounded-b-xl">
-            <gui-router-outlet>
-            </gui-router-outlet>
-          </div>
-        </gui-tabs>
-      </div>
-    </gui-card>
-  </section>
-</gui-selected-item-provider>
-
-`;
-
 exports[`Item renders with the default structure 1`] = `
 
 <gui-selected-item-provider selecteditem="[object Object]">
-  <section class="relative">
-    <gui-card classname="border-muted relative rounded-xl shadow-none">
-      <gui-item-header>
-      </gui-item-header>
-      <div class="w-full">
-        <gui-tabs value="overview">
-          <gui-tabs-list
-            variant="ghost"
-            classname="w-full gap-2 overflow-x-auto px-6"
-          >
-            <gui-overview-tab-button>
-            </gui-overview-tab-button>
-            <gui-json-tab-button>
-            </gui-json-tab-button>
-            <gui-tabs-code-button>
-            </gui-tabs-code-button>
-            <gui-insight-tab-button>
-            </gui-insight-tab-button>
-            <gui-versions-tab-button>
-            </gui-versions-tab-button>
-            <gui-dependencies-tabs-button>
-            </gui-dependencies-tabs-button>
-          </gui-tabs-list>
-          <div class="bg-card min-h-64 overflow-hidden rounded-b-xl">
-            <gui-router-outlet>
-            </gui-router-outlet>
-          </div>
-        </gui-tabs>
-      </div>
-    </gui-card>
+  <section class="bg-foreground/6 flex min-w-0 flex-col gap-[1px] rounded">
+    <div class="bg-background w-full rounded px-6 py-2 empty:hidden">
+      <gui-item-breadcrumbs>
+      </gui-item-breadcrumbs>
+    </div>
+    <div class="bg-background w-full rounded px-6 empty:hidden py-4">
+      <gui-package-image-spec>
+      </gui-package-image-spec>
+    </div>
+    <div class="bg-background w-full rounded px-6 py-2 empty:hidden">
+      <gui-publisher classname="flex-col items-start lg:flex-row">
+      </gui-publisher>
+    </div>
+    <div class="bg-background w-full rounded empty:hidden p-0">
+      <gui-navigation>
+        <gui-navigation-list
+          isgrid="false"
+          classname="flex overflow-x-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden"
+        >
+          <gui-navigation-list-item classname="min-w-[175px]">
+            <gui-navigation-button
+              navigationlayer="primary"
+              tab="overview"
+              classname="min-w-[175px]"
+            >
+              Overview
+            </gui-navigation-button>
+          </gui-navigation-list-item>
+          <gui-navigation-list-item classname="min-w-[175px]">
+            <gui-navigation-button
+              navigationlayer="primary"
+              tab="json"
+              classname="min-w-[175px]"
+            >
+              JSON
+            </gui-navigation-button>
+          </gui-navigation-list-item>
+          <gui-navigation-list-item classname="min-w-[175px]">
+            <gui-navigation-button
+              navigationlayer="primary"
+              tab="code"
+              classname="min-w-[175px]"
+            >
+              Code
+            </gui-navigation-button>
+          </gui-navigation-list-item>
+          <gui-navigation-list-item classname="min-w-[175px]">
+            <gui-navigation-button
+              navigationlayer="primary"
+              tab="insights"
+              classname="min-w-[175px]"
+            >
+              Insights
+            </gui-navigation-button>
+          </gui-navigation-list-item>
+          <gui-navigation-list-item classname="min-w-[175px]">
+            <gui-navigation-button
+              navigationlayer="primary"
+              tab="versions"
+              classname="min-w-[175px]"
+            >
+              Versions
+            </gui-navigation-button>
+          </gui-navigation-list-item>
+          <gui-navigation-list-item classname="min-w-[175px]">
+            <gui-navigation-button
+              navigationlayer="primary"
+              tab="dependencies"
+              count="[object Object]"
+              classname="min-w-[175px]"
+            >
+              Dependencies
+            </gui-navigation-button>
+          </gui-navigation-list-item>
+        </gui-navigation-list>
+        <button
+          data-slot="button"
+          class="cursor-pointer gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 px-4 py-2 has-[>svg]:px-3 bg-background/50 absolute z-[10] flex aspect-square h-full items-center justify-center rounded backdrop-blur-sm [&amp;_svg]:size-4 top-0 right-0"
+          style="opacity: 0; filter: blur(2px);"
+        >
+          <gui-chevron-right-icon>
+          </gui-chevron-right-icon>
+        </button>
+      </gui-navigation>
+    </div>
+    <div class="bg-background w-full rounded empty:hidden h-full p-0">
+      <gui-router-outlet>
+      </gui-router-outlet>
+    </div>
   </section>
 </gui-selected-item-provider>
 

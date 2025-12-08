@@ -1,25 +1,25 @@
 import { Fullscreen, Minimize } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
 import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
+import { isHostedEnvironment } from '@/lib/environment.ts'
 import { cn } from '@/lib/utils.ts'
 
-interface FocusButtonProps {
-  className?: string
-}
+import type { ComponentProps } from 'react'
+
+type FocusButtonProps = ComponentProps<typeof Button>
 
 export const FocusButton = ({ className }: FocusButtonProps) => {
   const { focused, setFocused } = useFocusState()
+  const isHostedMode = isHostedEnvironment()
 
   const toggleFocus = () => setFocused(!focused)
 
   return (
     <Button
+      disabled={isHostedMode}
       onClick={toggleFocus}
-      className={cn(
-        'border-muted text-muted-foreground hover:border-muted-foreground/30 relative inline-flex h-7 w-24 items-center gap-1.5 border-[1px] bg-white px-3 py-1.5 text-sm transition-colors duration-250 hover:bg-white/80 dark:bg-neutral-900 dark:hover:bg-neutral-900/80',
-        className,
-      )}
-      variant="default">
+      className={cn(className)}
+      variant="outline">
       <span>{focused ? 'Unfocus' : 'Focus'}</span>
       {focused ?
         <Minimize />

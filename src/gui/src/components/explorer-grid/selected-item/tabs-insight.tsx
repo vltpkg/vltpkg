@@ -1,6 +1,5 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
@@ -8,8 +7,8 @@ import {
   getScoreColor,
   scoreColors,
 } from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 import { Link as AnchorLink } from '@/components/ui/link.tsx'
-import { DataBadge } from '@/components/ui/data-badge.tsx'
 import {
   Label,
   PolarGrid,
@@ -18,36 +17,15 @@ import {
   RadialBarChart,
 } from 'recharts'
 import { ChartContainer } from '@/components/ui/chart.tsx'
-import { cn } from '@/lib/utils.ts'
-import { toHumanNumber } from '@/utils/human-number.ts'
 import {
-  MotionTabsContent,
-  tabMotion,
+  contentMotion,
+  MotionContent,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
+import { Button } from '@/components/ui/button.tsx'
 
 import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
 import type { PackageAlert } from '@vltpkg/security-archive'
 import type { ChartConfig } from '@/components/ui/chart.tsx'
-
-export const InsightTabButton = () => {
-  const insights = useSelectedItemStore(state => state.insights)
-
-  return (
-    <TabsTrigger
-      variant="ghost"
-      value="insights"
-      className="w-fit px-2">
-      Insights
-      {insights && insights.length !== 0 && (
-        <DataBadge
-          variant="count"
-          classNames={{ wrapperClassName: 'ml-1' }}
-          content={toHumanNumber(insights.length)}
-        />
-      )}
-    </TabsTrigger>
-  )
-}
 
 const InsightScoreChart = ({
   score,
@@ -285,7 +263,9 @@ export const InsightTabContent = () => {
   >(insights)
 
   return (
-    <MotionTabsContent {...tabMotion} value="insights">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       <>
         {packageScore && <InsightScore />}
 
@@ -311,43 +291,29 @@ export const InsightTabContent = () => {
         )}
       </>
 
-      {(!filteredInsights || filteredInsights.length === 0) && (
-        <div className="flex h-64 w-full cursor-default items-center justify-center px-6 py-4">
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <div
-              className={cn(
-                'relative flex size-32 items-center justify-center rounded-full',
-                !packageScore && !filteredInsights ?
-                  'bg-secondary/60'
-                : 'bg-emerald-500/20',
-              )}>
-              {!packageScore && !filteredInsights ?
-                <BadgeInfo
-                  className="absolute z-[3] size-14 text-neutral-500"
-                  strokeWidth={1.25}
-                />
-              : <BadgeCheck
-                  className="absolute z-[3] size-14 text-emerald-500"
-                  strokeWidth={1.25}
-                />
-              }
-            </div>
-            <p className="text-muted-foreground w-2/3 text-sm text-pretty">
-              {!packageScore && !filteredInsights ?
-                'This package has not been scanned for insights.'
-              : 'This package has no insights available.'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="w-full px-6 py-4">
-        <Link
-          to="/help/selectors"
-          className="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
-          See all Selectors & Insights
-        </Link>
-      </div>
-    </MotionTabsContent>
+      {(
+        (!filteredInsights || filteredInsights.length === 0) &&
+        !packageScore &&
+        !filteredInsights
+      ) ?
+        <SelectedItemEmptyState
+          icon={BadgeInfo}
+          title="Not scanned"
+          description="This package has not been scanned for insights"
+          content={
+            <Button asChild variant="link">
+              <Link to="/help/selectors">
+                See all Selectors & Insights
+              </Link>
+            </Button>
+          }
+        />
+      : <SelectedItemEmptyState
+          icon={BadgeCheck}
+          title="No insights"
+          description="This package has no insights available"
+        />
+      }
+    </MotionContent>
   )
 }

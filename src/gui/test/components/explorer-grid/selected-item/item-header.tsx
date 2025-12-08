@@ -2,37 +2,19 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
+import {
+  Publisher,
+  PackageImageSpec,
+  ItemBreadcrumbs,
+} from '@/components/explorer-grid/selected-item/item-header.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { getBreadcrumbs } from '@/components/navigation/crumb-nav.tsx'
 import {
   specOptions,
   SELECTED_ITEM,
-  SELECTED_ITEM_CUSTOM_REGISTRY,
-  SELECTED_ITEM_SCOPED_REGISTRY,
-  SELECTED_ITEM_DEFAULT_GIT_HOST,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import type { PackageScore } from '@vltpkg/security-archive'
-import type { SocketSecurityDetails } from '@/lib/constants/selectors.ts'
-
-const MOCK_PACKAGE_SCORE: PackageScore = {
-  overall: 0.8,
-  license: 0.9,
-  maintenance: 0.7,
-  quality: 0.6,
-  supplyChain: 0.5,
-  vulnerability: 0.4,
-}
-
-const MOCK_INSIGHTS: SocketSecurityDetails[] = [
-  {
-    selector: ':abandoned',
-    description: 'Abandoned packages',
-    category: 'Supply Chain',
-    severity: 'medium',
-  },
-]
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
@@ -65,6 +47,7 @@ vi.mock('@/components/ui/tooltip.tsx', () => ({
 vi.mock('lucide-react', () => ({
   Home: 'gui-home-icon',
   ArrowBigUpDash: 'gui-arrow-big-up-dash-icon',
+  Dot: 'gui-dot-icon',
 }))
 
 vi.mock('@/components/ui/scroll-area.tsx', () => ({
@@ -80,19 +63,23 @@ vi.mock('@/components/ui/progress-circle.tsx', () => ({
   ProgressCircle: 'gui-progress-circle',
 }))
 
-vi.mock('@/components/navigation/crumb-nav.tsx', () => ({
-  CrumbNav: 'gui-crumb-nav',
-}))
-
 vi.mock(
-  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
-  () => ({
-    useFocusState: vi.fn(() => ({
-      focused: false,
-      setFocused: vi.fn(),
-    })),
-  }),
+  '@/components/navigation/crumb-nav.tsx',
+  async importOriginal => {
+    const actual =
+      await importOriginal<
+        typeof import('@/components/navigation/crumb-nav.tsx')
+      >()
+    return {
+      ...actual,
+      CrumbNav: 'gui-crumb-nav',
+    }
+  },
 )
+
+vi.mock('date-fns', () => ({
+  formatDistanceStrict: vi.fn(() => '2 days ago'),
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -109,7 +96,83 @@ afterEach(() => {
   cleanup()
 })
 
-test('ItemHeader renders with default item', () => {
+test('ItemBreadcrumbs renders with breadcrumbs', () => {
+  const mockBreadcrumbs = getBreadcrumbs(':root > #express')
+
+  const mockState = {
+    selectedItem: {
+      ...SELECTED_ITEM,
+      breadcrumbs: mockBreadcrumbs,
+    },
+    manifest: null,
+    rawManifest: null,
+    packageScore: undefined,
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const { container } = render(<ItemBreadcrumbs />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('ItemBreadcrumbs renders null when no breadcrumbs', () => {
+  const mockState = {
+    selectedItem: {
+      ...SELECTED_ITEM,
+      breadcrumbs: undefined,
+    },
+    manifest: null,
+    rawManifest: null,
+    packageScore: undefined,
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const { container } = render(<ItemBreadcrumbs />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('PackageImageSpec renders with default item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
     manifest: null,
@@ -132,44 +195,7 @@ test('ItemHeader renders with default item', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
-    ...SELECTED_ITEM_DETAILS,
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <ItemHeader />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('ItemHeader renders with custom registry item', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM_CUSTOM_REGISTRY,
-    manifest: null,
-    rawManifest: null,
-    packageScore: undefined,
-    insights: undefined,
-    author: undefined,
-    versions: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
+    favicon: SELECTED_ITEM_DETAILS.favicon,
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -181,22 +207,30 @@ test('ItemHeader renders with custom registry item', () => {
     const updateSpecOptions = useStore(
       state => state.updateSpecOptions,
     )
-
     updateSpecOptions(specOptions)
 
-    return <ItemHeader />
+    return <PackageImageSpec />
   }
 
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('ItemHeader renders with scoped registry item', () => {
+test('PackageImageSpec renders with package score', () => {
+  const mockPackageScore = {
+    overall: 0.8,
+    license: 0.9,
+    maintenance: 0.7,
+    quality: 0.6,
+    supplyChain: 0.5,
+    vulnerability: 0.4,
+  }
+
   const mockState = {
-    selectedItem: SELECTED_ITEM_SCOPED_REGISTRY,
+    selectedItem: SELECTED_ITEM,
     manifest: null,
     rawManifest: null,
-    packageScore: undefined,
+    packageScore: mockPackageScore,
     insights: undefined,
     author: undefined,
     versions: undefined,
@@ -214,6 +248,7 @@ test('ItemHeader renders with scoped registry item', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    favicon: SELECTED_ITEM_DETAILS.favicon,
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -225,142 +260,16 @@ test('ItemHeader renders with scoped registry item', () => {
     const updateSpecOptions = useStore(
       state => state.updateSpecOptions,
     )
-
-    updateSpecOptions({
-      ...specOptions,
-      'scope-registries': {
-        '@myscope': 'http://custom-scope',
-      },
-    })
-
-    return <ItemHeader />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('ItemHeader renders with default git host item', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM_DEFAULT_GIT_HOST,
-    manifest: null,
-    rawManifest: null,
-    packageScore: undefined,
-    insights: undefined,
-    author: undefined,
-    versions: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-    ...SELECTED_ITEM_DETAILS,
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    const updateSpecOptions = useStore(
-      state => state.updateSpecOptions,
-    )
-
     updateSpecOptions(specOptions)
 
-    return <ItemHeader />
+    return <PackageImageSpec />
   }
 
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('ItemHeader renders with a package score', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    manifest: null,
-    rawManifest: null,
-    packageScore: MOCK_PACKAGE_SCORE,
-    insights: undefined,
-    author: undefined,
-    versions: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-    ...SELECTED_ITEM_DETAILS,
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <ItemHeader />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('ItemHeader renders with insights', () => {
-  const mockState = {
-    selectedItem: SELECTED_ITEM,
-    manifest: null,
-    rawManifest: null,
-    packageScore: undefined,
-    insights: MOCK_INSIGHTS,
-    author: undefined,
-    versions: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-    ...SELECTED_ITEM_DETAILS,
-  } satisfies SelectedItemStore
-
-  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
-  const Container = () => {
-    return <ItemHeader />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('ItemHeader renders with a version information', () => {
+test('Publisher renders with publisher information', () => {
   const mockVersions = [
     {
       version: '1.0.0',
@@ -386,7 +295,7 @@ test('ItemHeader renders with a version information', () => {
     manifest: mockManifest,
     rawManifest: null,
     packageScore: undefined,
-    insights: MOCK_INSIGHTS,
+    insights: undefined,
     author: undefined,
     versions: mockVersions,
     depCount: undefined,
@@ -403,6 +312,9 @@ test('ItemHeader renders with a version information', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    publisher: SELECTED_ITEM_DETAILS.publisher,
+    publisherAvatar: SELECTED_ITEM_DETAILS.publisherAvatar,
+    downloadsPerVersion: SELECTED_ITEM_DETAILS.downloadsPerVersion,
     ...SELECTED_ITEM_DETAILS,
   } satisfies SelectedItemStore
 
@@ -410,10 +322,43 @@ test('ItemHeader renders with a version information', () => {
     selector(mockState),
   )
 
-  const Container = () => {
-    return <ItemHeader />
-  }
+  const { container } = render(<Publisher />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
 
-  const { container } = render(<Container />)
+test('Publisher renders null when no publisher', () => {
+  const mockState = {
+    selectedItem: SELECTED_ITEM,
+    manifest: null,
+    rawManifest: null,
+    packageScore: undefined,
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    depCount: undefined,
+    setDepCount: vi.fn(),
+    scannedDeps: undefined,
+    setScannedDeps: vi.fn(),
+    depsAverageScore: undefined,
+    setDepsAverageScore: vi.fn(),
+    depLicenses: undefined,
+    setDepLicenses: vi.fn(),
+    depWarnings: undefined,
+    setDepWarnings: vi.fn(),
+    duplicatedDeps: undefined,
+    setDuplicatedDeps: vi.fn(),
+    depFunding: undefined,
+    setDepFunding: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    publisher: undefined,
+    publisherAvatar: undefined,
+    downloadsPerVersion: undefined,
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const { container } = render(<Publisher />)
   expect(container.innerHTML).toMatchSnapshot()
 })

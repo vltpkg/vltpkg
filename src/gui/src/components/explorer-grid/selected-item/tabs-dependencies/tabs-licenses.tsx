@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useGraphStore } from '@/state/index.ts'
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
 import {
   Table,
   TableBody,
@@ -17,43 +16,23 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/react-table'
 import { AlertTriangle, Scale } from 'lucide-react'
 import { cn } from '@/lib/utils.ts'
-import { EmptyState } from '@/components/explorer-grid/selected-item/tabs-dependencies/empty-state.tsx'
 import {
   SortingHeader,
   tableClassNames,
 } from '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
 import { Warning } from '@/components/explorer-grid/selected-item/tabs-dependencies/warning.tsx'
 import { alertStyles } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
-import { DataBadge } from '@/components/ui/data-badge.tsx'
 import {
-  MotionTabsContent,
-  tabMotion,
+  MotionContent,
+  contentMotion,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
+import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
 
+import type { ColumnDef } from '@tanstack/react-table'
 import type { LicenseWarningType } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
-
-export const LicensesTabButton = () => {
-  const depLicenses = useSelectedItemStore(state => state.depLicenses)
-  const uniqueLicenses = Object.keys(
-    depLicenses?.allLicenses ?? {},
-  ).length
-  return (
-    <TabsTrigger value="licenses" variant="nestedCard">
-      Licenses
-      {uniqueLicenses > 0 && (
-        <DataBadge
-          variant="count"
-          classNames={{ wrapperClassName: 'ml-1' }}
-          content={String(uniqueLicenses)}
-        />
-      )}
-    </TabsTrigger>
-  )
-}
 
 export const LicensesTabContent = () => {
   const depLicenses = useSelectedItemStore(state => state.depLicenses)
@@ -245,7 +224,9 @@ export const LicensesTabContent = () => {
   })
 
   return (
-    <MotionTabsContent {...tabMotion} value="licenses">
+    <MotionContent
+      {...contentMotion}
+      className="flex h-full flex-col">
       {depLicenses?.allLicenses && uniqueLicenses > 0 ?
         <div className="flex flex-col gap-3 py-4">
           <div className="px-6">
@@ -356,11 +337,12 @@ export const LicensesTabContent = () => {
             </TableBody>
           </Table>
         </div>
-      : <EmptyState
+      : <SelectedItemEmptyState
           icon={Scale}
-          message="No license data was found."
+          title="No license data"
+          description="We couldn't find any license data for this project"
         />
       }
-    </MotionTabsContent>
+    </MotionContent>
   )
 }

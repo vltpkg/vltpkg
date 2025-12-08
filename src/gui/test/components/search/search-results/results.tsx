@@ -40,10 +40,14 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/ui/input-group', () => ({
+vi.mock('@/components/ui/input-group.tsx', () => ({
   InputGroup: 'gui-input-group',
   InputGroupInput: 'gui-input-group-input',
   InputGroupAddon: 'gui-input-group-addon',
+}))
+
+vi.mock('@/components/ui/button.tsx', () => ({
+  Button: 'gui-button',
 }))
 
 vi.mock('@/components/ui/kbd', () => ({
@@ -89,6 +93,7 @@ beforeEach(() => {
     page: 1,
     sortDir: 'desc',
     sortBy: 'relevance',
+    reset: vi.fn(),
   }
 
   mockUseSearchResultsStore.mockImplementation(selector =>
@@ -148,6 +153,7 @@ test('renders search results with results', () => {
     page: 1,
     sortDir: 'desc',
     sortBy: 'relevance',
+    reset: vi.fn(),
   }
 
   // Completely replace the mock implementation
@@ -174,6 +180,7 @@ test('renders search results with no results', () => {
       page: 1,
       sortDir: 'desc',
       sortBy: 'relevance',
+      reset: vi.fn(),
     }),
   )
 
@@ -195,6 +202,7 @@ test('renders search results with error', () => {
       page: 1,
       sortDir: 'desc',
       sortBy: 'relevance',
+      reset: vi.fn(),
     }),
   )
 

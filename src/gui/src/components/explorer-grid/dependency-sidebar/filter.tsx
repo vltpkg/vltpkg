@@ -130,7 +130,7 @@ export const FilterButton = () => {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="aspect-square size-6 bg-white p-0 transition-colors dark:bg-black [&>svg]:size-4 [&>svg]:shrink-0"
+                className="aspect-square size-6 rounded-md !p-0 [&_svg]:size-3.5"
                 onClick={() => setDropdownOpen(true)}>
                 <ListFilter />
               </Button>

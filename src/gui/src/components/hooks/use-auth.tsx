@@ -35,7 +35,7 @@ export const useAuth = () => {
   const signIn = () => {
     // Redirect to Clerk via auth bridge
     const origin = window.location.origin
-    const clerkUrl = `https://accounts.vlt.io/sign-in?redirect_url=${encodeURIComponent(`https://auth.vlt.io/exchange?return_to=${encodeURIComponent(window.location.hostname)}?redirect_url=${encodeURIComponent(origin)}`)}`
+    const clerkUrl = `https://accounts.vlt.io/sign-in?redirect_uri=${encodeURIComponent(`https://auth.vlt.io/exchange?return_to=${encodeURIComponent(window.location.hostname)}?redirect_uri=${encodeURIComponent(origin)}`)}`
     window.location.href = clerkUrl
   }
 

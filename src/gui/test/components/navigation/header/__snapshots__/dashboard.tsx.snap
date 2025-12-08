@@ -2,7 +2,7 @@
 
 exports[`DashboardHeader renders correctly 1`] = `
 
-<div class="flex w-full items-center gap-5">
+<div class="flex w-full items-center gap-2">
   <gui-filter-search
     placeholder="Filter Projects"
     items
@@ -31,7 +31,7 @@ exports[`DashboardHeader renders correctly 1`] = `
       <gui-plus-icon size="24">
       </gui-plus-icon>
       <span class="hidden md:flex">
-        Create New Project
+        New Project
       </span>
     </gui-nav-link>
   </gui-button>

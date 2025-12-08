@@ -3,13 +3,17 @@
 exports[`CodeTabContent renders code view for selected file 1`] = `
 
 <div>
-  <gui-motion-tabs-content
-    value="code"
-    classname="py-4"
+  <section
+    class="w-full flex h-full flex-col"
+    style="opacity: 0; filter: blur(2px);"
   >
-    <gui-empty-state>
-    </gui-empty-state>
-  </gui-motion-tabs-content>
+    <gui-selected-item-empty-state
+      icon="gui-file-code-2-icon"
+      title="Code exploration not available"
+      description="The code for this project could not be loaded"
+    >
+    </gui-selected-item-empty-state>
+  </section>
 </div>
 
 `;
@@ -17,13 +21,13 @@ exports[`CodeTabContent renders code view for selected file 1`] = `
 exports[`CodeTabContent renders directory listing 1`] = `
 
 <div>
-  <gui-motion-tabs-content
-    value="code"
-    classname="py-4"
+  <section
+    class="w-full flex h-full flex-col"
+    style="opacity: 0; filter: blur(2px);"
   >
     <div style="opacity: 1; filter: blur(0px);">
       <div class="flex flex-col">
-        <div class="border-muted overflow-x-scroll border-b px-6 pb-4">
+        <div class="border-muted overflow-x-scroll border-b px-6 py-4">
           <h3 class="text-md inline-flex items-baseline gap-1 overflow-x-scroll font-medium whitespace-nowrap">
             <span class="cursor-pointer hover:underline">
               selected-pkg
@@ -90,7 +94,7 @@ exports[`CodeTabContent renders directory listing 1`] = `
         </gui-package-content-item>
       </div>
     </div>
-  </gui-motion-tabs-content>
+  </section>
 </div>
 
 `;
@@ -98,13 +102,17 @@ exports[`CodeTabContent renders directory listing 1`] = `
 exports[`CodeTabContent renders empty state 1`] = `
 
 <div>
-  <gui-motion-tabs-content
-    value="code"
-    classname="py-4"
+  <section
+    class="w-full flex h-full flex-col"
+    style="opacity: 0; filter: blur(2px);"
   >
-    <gui-empty-state>
-    </gui-empty-state>
-  </gui-motion-tabs-content>
+    <gui-selected-item-empty-state
+      icon="gui-file-code-2-icon"
+      title="Code exploration not available"
+      description="The code for this project could not be loaded"
+    >
+    </gui-selected-item-empty-state>
+  </section>
 </div>
 
 `;
@@ -112,13 +120,18 @@ exports[`CodeTabContent renders empty state 1`] = `
 exports[`CodeTabContent renders error state 1`] = `
 
 <div>
-  <gui-motion-tabs-content
-    value="code"
-    classname="py-4"
+  <section
+    class="w-full flex h-full flex-col"
+    style="opacity: 0; filter: blur(2px);"
   >
-    <gui-error-state errors="[object Object]">
-    </gui-error-state>
-  </gui-motion-tabs-content>
+    <gui-selected-item-empty-state
+      icon="gui-file-warning-icon"
+      title="An error occured"
+      description="One or more errors have occured:"
+      content="[object Object]"
+    >
+    </gui-selected-item-empty-state>
+  </section>
 </div>
 
 `;
@@ -126,15 +139,15 @@ exports[`CodeTabContent renders error state 1`] = `
 exports[`CodeTabContent renders loading state 1`] = `
 
 <div>
-  <gui-motion-tabs-content
-    value="code"
-    classname="py-4"
+  <section
+    class="w-full flex h-full flex-col"
+    style="opacity: 0; filter: blur(2px);"
   >
     <div style="opacity: 1; filter: blur(0px);">
       <gui-loading-state>
       </gui-loading-state>
     </div>
-  </gui-motion-tabs-content>
+  </section>
 </div>
 
 `;

@@ -1,135 +1,34 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`OverviewTabButton renders default 1`] = `
+exports[`OverviewTabContent renders with an empty state 1`] = `
 
-<gui-tabs-trigger
-  variant="ghost"
-  value="overview"
-  classname="w-fit px-2"
->
-  Overview
-</gui-tabs-trigger>
-
-`;
-
-exports[`OverviewTabContent renders default 1`] = `
-
-<gui-tabs-content
-  value="overview"
-  classname="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
+<section
+  class="h-full w-full flex flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
-    <div class="flex h-64 w-full items-center justify-center px-6 py-4">
-      <div class="flex flex-col items-center justify-center gap-3 text-center">
-        <div class="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
-          <gui-rectangle-horizontal-icon
-            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)]"
-            strokewidth="1.25"
-          >
-          </gui-rectangle-horizontal-icon>
-          <gui-file-text-icon
-            classname="fill-secondary absolute z-[3] size-14 text-neutral-500"
-            strokewidth="1"
-          >
-          </gui-file-text-icon>
-          <gui-rectangle-horizontal-icon
-            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)]"
-            strokewidth="1.25"
-          >
-          </gui-rectangle-horizontal-icon>
-        </div>
-        <p class="text-muted-foreground w-2/3 text-sm text-pretty">
-          We couldn't find a description for this project.
-        </p>
-      </div>
-    </div>
-    <gui-contributor-list>
-    </gui-contributor-list>
-  </div>
-</gui-tabs-content>
-
-`;
-
-exports[`OverviewTabContent renders with an aside and content 1`] = `
-
-<gui-tabs-content
-  value="overview"
-  classname="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
-  style="opacity: 0; filter: blur(2px);"
->
-  <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
-    <div class="flex h-64 w-full items-center justify-center px-6 py-4">
-      <div class="flex flex-col items-center justify-center gap-3 text-center">
-        <div class="bg-secondary/60 relative flex size-32 items-center justify-center rounded-full">
-          <gui-rectangle-horizontal-icon
-            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)]"
-            strokewidth="1.25"
-          >
-          </gui-rectangle-horizontal-icon>
-          <gui-file-text-icon
-            classname="fill-secondary absolute z-[3] size-14 text-neutral-500"
-            strokewidth="1"
-          >
-          </gui-file-text-icon>
-          <gui-rectangle-horizontal-icon
-            classname="fill-secondary text-muted-foreground/50 absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)]"
-            strokewidth="1.25"
-          >
-          </gui-rectangle-horizontal-icon>
-        </div>
-        <p class="text-muted-foreground w-2/3 text-sm text-pretty">
-          We couldn't find a description for this project.
-        </p>
-      </div>
-    </div>
-    <gui-contributor-list>
-    </gui-contributor-list>
-  </div>
-</gui-tabs-content>
+  <gui-selected-item-empty-state
+    icon="gui-file-text-icon"
+    title="No Overview"
+    description="We couldn't locate the metadata to display an overview for this project"
+  >
+  </gui-selected-item-empty-state>
+</section>
 
 `;
 
 exports[`OverviewTabContent renders with content 1`] = `
 
-<gui-tabs-content
-  value="overview"
-  classname="divide-x-none group divide-muted flex grid-cols-12 flex-col xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] xl:[&amp;>aside]:border-b-[0px]"
+<section
+  class="h-full w-full flex flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
-    <div class="flex flex-col gap-2 px-6 py-4">
-      <h4 class="text-muted-foreground text-sm font-medium capitalize">
-        description
-      </h4>
-      <div class="prose-sm prose-neutral max-w-none text-sm">
-        <gui-markdown>
-          ## Description
+  <div class="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6">
+    <gui-markdown>
+      ## Description
 
 This is a custom description
-        </gui-markdown>
-      </div>
-    </div>
-    <gui-contributor-list>
-    </gui-contributor-list>
-    <div class="mt-auto flex flex-col justify-end gap-2 px-6 py-4">
-      <h4 class="text-muted-foreground text-sm font-medium capitalize">
-        keywords
-      </h4>
-      <div class="flex flex-wrap gap-2">
-        <gui-data-badge
-          classnames="[object Object]"
-          content="testing"
-        >
-        </gui-data-badge>
-        <gui-data-badge
-          classnames="[object Object]"
-          content="vitest"
-        >
-        </gui-data-badge>
-      </div>
-    </div>
+    </gui-markdown>
   </div>
-</gui-tabs-content>
+</section>
 
 `;

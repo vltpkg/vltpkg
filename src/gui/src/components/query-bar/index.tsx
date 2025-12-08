@@ -1,19 +1,26 @@
 import { forwardRef, useEffect, useRef, useMemo } from 'react'
 import { useGraphStore } from '@/state/index.ts'
-import { Input } from '@/components/ui/input.tsx'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group.tsx'
 import { Query } from '@vltpkg/query'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.tsx'
+import { useKeyDown } from '@/components/hooks/use-keydown.tsx'
 import { cn } from '@/lib/utils.ts'
 
-import type { HTMLAttributes, ReactNode, ChangeEvent } from 'react'
+import type { ReactNode, ComponentProps } from 'react'
 import type { ParsedSelectorToken } from '@vltpkg/query'
 
-interface QueryBar extends HTMLAttributes<HTMLDivElement> {
-  className?: string
+interface QueryBar extends ComponentProps<'div'> {
   tabIndex?: number
   startContent?: ReactNode
   endContent?: ReactNode
-  wrapperClassName?: string
+  classNames?: {
+    wrapper?: string
+    input?: string
+  }
 }
 
 export const QUERY_BAR_ID = 'query-bar'
@@ -21,8 +28,8 @@ export const QUERY_BAR_ID = 'query-bar'
 export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
   (
     {
+      classNames,
       className,
-      wrapperClassName,
       tabIndex,
       startContent,
       endContent,
@@ -38,6 +45,8 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
     const inputRef = useRef<HTMLInputElement>(null)
     const queryHighlighterRef = useRef<HTMLDivElement>(null)
 
+    const { wrapper: wrapperCn, input: inputCn } = classNames ?? {}
+
     const parsedTokens = useMemo<ParsedSelectorToken[]>(() => {
       if (!q || !query) {
         return []
@@ -50,23 +59,8 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
       }
     }, [query, q])
 
-    useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-          event.preventDefault()
-          inputRef.current?.focus()
-        } else if (event.key === 'Escape') {
-          event.preventDefault()
-          inputRef.current?.blur()
-        }
-      }
-
-      window.addEventListener('keydown', handleKeyDown)
-
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown)
-      }
-    }, [])
+    useKeyDown(['meta+k', 'ctrl+k'], () => inputRef.current?.focus())
+    useKeyDown(['escape'], () => inputRef.current?.blur())
 
     /**
      * Sync the highlighter scroll position with the input field's caret position
@@ -119,52 +113,54 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
     }, [])
 
     return (
-      <div
+      <InputGroup
         ref={ref}
+        id={QUERY_BAR_ID}
         className={cn(
-          'relative flex grow items-center',
-          wrapperClassName,
+          'relative z-[51] rounded-xl',
+          className,
+          wrapperCn,
         )}
         {...rest}>
         {startContent && (
-          <div className="absolute z-[52] pr-8">{startContent}</div>
+          <InputGroupAddon align="inline-start">
+            {startContent}
+          </InputGroupAddon>
         )}
-        <div id={QUERY_BAR_ID} className="relative z-[51] w-full">
-          <Input
-            onFocus={onFocus}
-            onBlur={onBlur}
-            type="text"
-            role="search"
-            tabIndex={tabIndex}
-            autoCorrect="off"
-            autoComplete="off"
-            autoCapitalize="off"
-            ref={inputRef}
-            className={cn(
-              'dark:bg-muted-foreground/5 rounded-xl bg-white text-sm text-transparent caret-black focus-visible:border-[0] focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 dark:caret-white',
-              startContent && 'pl-10',
-              endContent && 'pr-32',
-              className,
-            )}
-            placeholder="Query Lookup, e.g: :root > *"
-            value={query}
-            onChange={(e: ChangeEvent) => {
-              const value = (e.currentTarget as HTMLInputElement)
-                .value
-              updateQuery(value)
-            }}
-          />
-          <QueryHighlighter
-            parsedTokens={parsedTokens}
-            ref={queryHighlighterRef}
-            query={query}
-          />
-        </div>
+        <InputGroupInput
+          ref={inputRef}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          type="text"
+          role="search"
+          tabIndex={tabIndex}
+          autoCorrect="off"
+          autoComplete="off"
+          autoCapitalize="off"
+          placeholder="Query Lookup, e.g: :root > *"
+          value={query}
+          onChange={e => updateQuery(e.currentTarget.value)}
+          className={cn(
+            'text-transparent caret-black dark:caret-white',
+            inputCn,
+          )}
+        />
         {endContent && (
-          <div className="absolute right-0 z-[51]">{endContent}</div>
+          <InputGroupAddon
+            disableParentFocus
+            align="inline-end"
+            className="pr-2">
+            {endContent}
+          </InputGroupAddon>
         )}
-      </div>
+        <QueryHighlighter
+          parsedTokens={parsedTokens}
+          ref={queryHighlighterRef}
+          query={query}
+        />
+      </InputGroup>
     )
   },
 )
+
 QueryBar.displayName = 'QueryBar'

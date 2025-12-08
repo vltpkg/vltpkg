@@ -1,21 +1,12 @@
-import { TabsTrigger } from '@/components/ui/tabs.tsx'
-import { CodeBlock } from '@/components/ui/shiki.tsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { CodeBlock } from '@/components/ui/code-block.tsx'
 import {
-  MotionTabsContent,
-  tabMotion,
+  contentMotion,
+  MotionContent,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { JSONOutputItem } from '@vltpkg/graph'
-
-export const TabsJsonButton = () => {
-  return (
-    <TabsTrigger variant="ghost" value="json" className="w-fit px-2">
-      JSON
-    </TabsTrigger>
-  )
-}
 
 const getJsonContent = (item: GridItemData): JSONOutputItem[] => {
   return [
@@ -35,15 +26,14 @@ export const TabsJsonContent = () => {
   const jsonOutput = getJsonContent(itemJson)
 
   return (
-    <MotionTabsContent
-      {...tabMotion}
-      value="json"
-      className="h-full rounded-b-lg bg-neutral-100 dark:bg-black">
+    <MotionContent {...contentMotion} className="h-full rounded">
       <CodeBlock
+        filename=""
+        hideFileName
         className="px-6 py-4"
         code={JSON.stringify(jsonOutput, null, 2)}
-        lang="json"
+        language="json"
       />
-    </MotionTabsContent>
+    </MotionContent>
   )
 }

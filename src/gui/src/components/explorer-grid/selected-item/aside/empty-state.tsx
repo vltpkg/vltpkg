@@ -14,7 +14,7 @@ export const AsideOverviewEmptyState = () => {
           ease: 'easeInOut',
           duration: 0.25,
         }}
-        className="border-muted bg-card mt-4 flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed py-12 md:mt-0">
+        className="bg-background flex h-full w-full cursor-default flex-col items-center justify-center rounded">
         <div className="mb-6 flex justify-center">
           <div className="relative">
             <div className="flex size-28 items-center justify-center rounded-full">

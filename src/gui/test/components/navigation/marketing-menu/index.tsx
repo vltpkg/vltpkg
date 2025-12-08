@@ -5,6 +5,9 @@ import { Header } from '@/components/navigation/marketing-menu/index.tsx'
 
 vi.mock('react-router', () => ({
   NavLink: 'gui-nav-link',
+  useLocation: vi.fn().mockReturnValue({
+    pathname: '/',
+  }),
 }))
 
 vi.mock('react-dom', async () => {

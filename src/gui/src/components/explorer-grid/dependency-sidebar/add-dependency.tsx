@@ -43,6 +43,8 @@ import type {
   MouseEvent,
 } from 'react'
 
+const MotionPlus = motion.create(Plus)
+
 export const AddDependenciesPopover = () => {
   const [packageName, setPackageName] = useState<string>('')
   const [packageVersion, setPackageVersion] =
@@ -220,35 +222,35 @@ export const AddDependenciesPopoverTrigger = () => {
 
   return (
     <TooltipProvider>
-      <Popover
-        onOpenChange={setDependencyPopoverOpen}
-        open={dependencyPopoverOpen}>
-        <PopoverTrigger>
-          <Tooltip delayDuration={150}>
+      <Tooltip delayDuration={150}>
+        <Popover
+          onOpenChange={setDependencyPopoverOpen}
+          open={dependencyPopoverOpen}>
+          <PopoverTrigger asChild>
             <TooltipTrigger asChild>
-              <div
+              <Button
                 onClick={toggleAddDepPopover}
-                className="border-input ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex size-6 cursor-default items-center justify-center gap-2 rounded-md border bg-white text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-black [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
-                <motion.span
+                variant="outline"
+                className="aspect-square size-6 rounded-md !p-0 [&_svg]:size-3.5">
+                <MotionPlus
                   animate={{
                     rotate: dependencyPopoverOpen ? 45 : 0,
-                  }}>
-                  <Plus />
-                </motion.span>
-              </div>
+                  }}
+                />
+              </Button>
             </TooltipTrigger>
-            <TooltipPortal>
-              <TooltipContent>Add a new dependency</TooltipContent>
-            </TooltipPortal>
-          </Tooltip>
-        </PopoverTrigger>
-        <PopoverContent
-          align="end"
-          className="top-0 right-0 w-96 p-0"
-          onCloseAutoFocus={e => e.preventDefault()}>
-          <AddDependenciesPopover />
-        </PopoverContent>
-      </Popover>
+          </PopoverTrigger>
+          <TooltipPortal>
+            <TooltipContent>Add a new dependency</TooltipContent>
+          </TooltipPortal>
+          <PopoverContent
+            align="end"
+            className="top-0 right-0 w-96 p-0"
+            onCloseAutoFocus={e => e.preventDefault()}>
+            <AddDependenciesPopover />
+          </PopoverContent>
+        </Popover>
+      </Tooltip>
     </TooltipProvider>
   )
 }

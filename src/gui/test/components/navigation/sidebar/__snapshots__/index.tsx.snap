@@ -5,9 +5,10 @@ exports[`AppSidebar renders with the correct structure 1`] = `
 <gui-sidebar
   classname="relative flex h-full grow"
   collapsible="icon"
-  variant="inset"
 >
   <gui-sidebar-content>
+    <gui-sidebar-logo>
+    </gui-sidebar-logo>
     <gui-sidebar-main-nav>
     </gui-sidebar-main-nav>
     <gui-sidebar-settings-nav>
@@ -15,7 +16,7 @@ exports[`AppSidebar renders with the correct structure 1`] = `
     <gui-sidebar-query-nav>
     </gui-sidebar-query-nav>
   </gui-sidebar-content>
-  <gui-sidebar-footer classname="mb-[0.875px]">
+  <gui-sidebar-footer>
     <gui-sidebar-menu>
       <gui-sidebar-menu-link items="[object Object],[object Object]">
       </gui-sidebar-menu-link>

@@ -10,7 +10,7 @@ const entry = [
   'benchmarks/**/*.{ts,js}',
 ]
 
-const workspaces: KnipConfig['workspaces'] = {
+const workspaces = {
   '.': {
     entry,
     // Used to download fixtures in a bash script
@@ -61,7 +61,11 @@ export default {
   workspaces: Object.fromEntries(
     getWorkspaces().map(ws => {
       const key = relative(process.cwd(), ws.dir) || '.'
-      return [key, workspaces[key] ?? { entry }]
+      const workspaceConfig = workspaces as Record<
+        string,
+        (typeof workspaces)[keyof typeof workspaces]
+      >
+      return [key, workspaceConfig[key] ?? { entry }]
     }),
   ),
 } satisfies KnipConfig

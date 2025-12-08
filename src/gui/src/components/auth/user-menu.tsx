@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { menuItems } from './menu.tsx'
+import { cn } from '@/lib/utils.ts'
 
 import type { ComponentProps } from 'react'
 import type {
@@ -26,7 +27,9 @@ import type {
   MenuGroup as MenuGroupData,
 } from './menu'
 
-export const UserLinearMenu = () => {
+export const UserMenu = ({
+  className,
+}: ComponentProps<typeof Button>) => {
   const { isSignedIn, user, signIn, signOut } = useAuth()
 
   const handleMenuAction = async (action?: string) => {
@@ -56,7 +59,7 @@ export const UserLinearMenu = () => {
 
   if (!isSignedIn) {
     return (
-      <div className="flex items-center gap-3">
+      <div className={cn('flex items-center gap-2', className)}>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -95,18 +98,21 @@ export const UserLinearMenu = () => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenu>
+        <DropdownMenu>
+          <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
-                className="group/login size-10 items-center justify-center rounded-xl border-none bg-transparent p-0"
+                className={cn(
+                  'group/login size-9 items-center justify-center rounded-xl border-none bg-transparent p-0',
+                  className,
+                )}
                 variant="outline">
                 {user?.imageUrl ?
-                  <div className="flex size-10 items-center justify-center">
+                  <div className="flex size-9 items-center justify-center">
                     <img
                       src={user.imageUrl}
                       alt={userInitials}
-                      className="border-muted size-10 rounded-xl border grayscale transition-colors duration-100 group-hover/login:grayscale-0"
+                      className="border-muted size-9 rounded-xl border grayscale transition-colors duration-100 group-hover/login:grayscale-0"
                     />
                   </div>
                 : <div className="border-muted flex aspect-square size-10 items-center justify-center rounded-xl border bg-white dark:bg-black">
@@ -117,47 +123,47 @@ export const UserLinearMenu = () => {
                 }
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="min-w-[200px] rounded-xl"
-              onCloseAutoFocus={e => e.preventDefault()}>
-              <div className="flex cursor-default items-center gap-3 px-2 py-2">
-                {user?.imageUrl ?
-                  <img
-                    src={user.imageUrl}
-                    alt={userInitials}
-                    className="border-muted aspect-square size-8 rounded-lg border object-cover grayscale"
-                  />
-                : <div className="border-muted flex aspect-square size-8 items-center justify-center rounded-lg border bg-white dark:bg-black">
-                    <span className="text-base font-medium uppercase">
-                      {userInitials}
-                    </span>
-                  </div>
-                }
-                <div className="flex flex-col gap-0.5">
-                  <p className="text-foreground text-sm font-medium">
-                    {user?.fullName || user?.username}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {user?.email}
-                  </p>
+          </TooltipTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="min-w-[200px] rounded-xl"
+            onCloseAutoFocus={e => e.preventDefault()}>
+            <div className="flex cursor-default items-center gap-3 px-2 py-2">
+              {user?.imageUrl ?
+                <img
+                  src={user.imageUrl}
+                  alt={userInitials}
+                  className="border-muted aspect-square size-8 rounded-lg border object-cover grayscale"
+                />
+              : <div className="border-muted flex aspect-square size-8 items-center justify-center rounded-lg border bg-white dark:bg-black">
+                  <span className="text-base font-medium uppercase">
+                    {userInitials}
+                  </span>
                 </div>
+              }
+              <div className="flex flex-col gap-0.5">
+                <p className="text-foreground text-sm font-medium">
+                  {user?.fullName || user?.username}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  {user?.email}
+                </p>
               </div>
-              <DropdownMenuSeparator />
-              {menuItems.map((group, idx) => (
-                <Fragment key={`auth-linear-menu-group-${idx}`}>
-                  <MenuGroup
-                    group={group}
-                    onAction={handleMenuAction}
-                  />
-                  {idx !== menuItems.length - 1 && (
-                    <DropdownMenuSeparator />
-                  )}
-                </Fragment>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipTrigger>
+            </div>
+            <DropdownMenuSeparator />
+            {menuItems.map((group, idx) => (
+              <Fragment key={`auth-linear-menu-group-${idx}`}>
+                <MenuGroup
+                  group={group}
+                  onAction={handleMenuAction}
+                />
+                {idx !== menuItems.length - 1 && (
+                  <DropdownMenuSeparator />
+                )}
+              </Fragment>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <TooltipPortal>
           <TooltipContent>
             {user?.fullName || 'User menu'}

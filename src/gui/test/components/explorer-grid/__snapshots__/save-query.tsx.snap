@@ -8,7 +8,7 @@ exports[`save-query > should render correctly 1`] = `
       <gui-tooltip>
         <gui-tooltip-trigger
           aschild="true"
-          classname="dark:bg-muted flex size-6 cursor-default items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 transition-colors hover:bg-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700"
+          classname="dark:bg-muted flex size-6 cursor-pointer items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 transition-colors hover:bg-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700"
         >
           <div class="border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex size-5 items-center justify-center gap-2 rounded-md border text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-[15px] [&amp;_svg]:shrink-0">
             <svg

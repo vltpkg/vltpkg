@@ -1,95 +1,243 @@
-import { Fragment, useRef, useCallback } from 'react'
+import { forwardRef, useRef, useEffect, useState } from 'react'
 import { Outlet } from 'react-router'
-import { Card } from '@/components/ui/card.tsx'
-import { Tabs, TabsList } from '@/components/ui/tabs.tsx'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button.tsx'
 import {
   SelectedItemProvider,
-  useSelectedItemStore,
   useTabNavigation,
+  useSelectedItemStore,
+  PRIMARY_TABS,
 } from '@/components/explorer-grid/selected-item/context.tsx'
-import { InsightTabButton } from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
-import { OverviewTabButton } from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
-import { VersionsTabButton } from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
-import { TabsJsonButton } from '@/components/explorer-grid/selected-item/tabs-json.tsx'
-import { CodeTabButton } from '@/components/explorer-grid/selected-item/tabs-code/index.tsx'
-import { DependenciesTabsButton } from '@/components/explorer-grid/selected-item/tabs-dependencies/index.tsx'
-import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
-import { AnimatePresence } from 'framer-motion'
-import { isHostedEnvironment } from '@/lib/environment.ts'
+import {
+  Navigation,
+  NavigationButton,
+  NavigationList,
+  NavigationListItem,
+} from '@/components/explorer-grid/selected-item/navigation.tsx'
+import {
+  PackageImageSpec,
+  ItemBreadcrumbs,
+  Publisher,
+} from '@/components/explorer-grid/selected-item/item-header.tsx'
+import { cn } from '@/lib/utils.ts'
 
-import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
+import type { ComponentProps } from 'react'
+import type { MotionProps } from 'framer-motion'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 
 interface ItemProps {
   item: GridItemData
+  className?: string
 }
 
-export const Item = ({ item }: ItemProps) => {
+const Section = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'bg-background w-full rounded px-6 py-2 empty:hidden',
+          className,
+        )}
+        {...props}
+      />
+    )
+  },
+)
+Section.displayName = 'Section'
+
+export const Item = ({ item, className }: ItemProps) => {
   return (
     <SelectedItemProvider key={item.id} selectedItem={item}>
-      <section className="relative">
-        <Card className="border-muted relative rounded-xl shadow-none">
-          <ItemHeader />
+      <section
+        className={cn(
+          'bg-foreground/6 flex min-w-0 flex-col gap-[1px] rounded',
+          className,
+        )}>
+        <Section>
+          <ItemBreadcrumbs />
+        </Section>
+        <Section className="py-4">
+          <PackageImageSpec />
+        </Section>
+        <Section>
+          <Publisher className="flex-col items-start lg:flex-row" />
+        </Section>
+        <Section className="p-0">
           <SelectedItemTabs />
-        </Card>
+        </Section>
+        <Section className="h-full p-0">
+          <SelectedItemView />
+        </Section>
       </section>
     </SelectedItemProvider>
   )
 }
 
 export const SelectedItemTabs = () => {
-  const selectedItem = useSelectedItemStore(
-    state => state.selectedItem,
+  const insights = useSelectedItemStore(state => state.insights)
+  const versions = useSelectedItemStore(state => state.versions)
+  const greaterVersions = useSelectedItemStore(
+    state => state.greaterVersions,
   )
-  const { setActiveTab, tab: activeTab } = useTabNavigation()
-  const currentTabRef = useRef<Tab>(activeTab)
-  const isHostedMode = isHostedEnvironment()
+  const totalDependencies = useSelectedItemStore(
+    state => state.depCount,
+  )
+  const listRef = useRef<HTMLUListElement>(null)
+  const [isAtStart, setIsAtStart] = useState(true)
+  const [isAtEnd, setIsAtEnd] = useState(false)
 
-  if (currentTabRef.current !== activeTab) {
-    currentTabRef.current = activeTab
+  const versionCount =
+    (versions?.length ?? 0) + (greaterVersions?.length ?? 0) ||
+    undefined
+
+  const getCount = (tab: Tab) => {
+    switch (tab) {
+      case 'insights':
+        return insights?.length || undefined
+      case 'versions':
+        return versionCount || undefined
+      case 'dependencies':
+        return totalDependencies || undefined
+      default:
+        return undefined
+    }
   }
 
-  const handleTabChange = useCallback(
-    (tab: string) => {
-      const newTab = tab as Tab
-      if (currentTabRef.current !== newTab) {
-        currentTabRef.current = newTab
-        setActiveTab(newTab)
-      }
-    },
-    [setActiveTab],
-  )
+  useEffect(() => {
+    const listElement = listRef.current
+    if (!listElement) return
+
+    const updateScrollState = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = listElement
+      setIsAtStart(scrollLeft <= 0)
+      setIsAtEnd(scrollLeft >= scrollWidth - clientWidth - 1) // -1 for rounding
+    }
+
+    // Initial check
+    updateScrollState()
+
+    // Listen to scroll events
+    listElement.addEventListener('scroll', updateScrollState)
+
+    // Listen to resize events (in case content changes)
+    const resizeObserver = new ResizeObserver(updateScrollState)
+    resizeObserver.observe(listElement)
+
+    return () => {
+      listElement.removeEventListener('scroll', updateScrollState)
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  // Use isAtStart and isAtEnd to check scroll position:
+  // - isAtStart: true if user is at the beginning of the scroll area
+  // - isAtEnd: true if user is at the end of the scroll area
+
+  const scrollToStart = () => {
+    const listElement = listRef.current
+    if (listElement) {
+      listElement.scrollTo({ left: 0, behavior: 'smooth' })
+    }
+  }
+
+  const scrollToEnd = () => {
+    const listElement = listRef.current
+    if (listElement) {
+      const { scrollWidth, clientWidth } = listElement
+      listElement.scrollTo({
+        left: scrollWidth - clientWidth,
+        behavior: 'smooth',
+      })
+    }
+  }
 
   return (
-    <div className="w-full">
-      <Tabs
-        uniqueId={selectedItem.id}
-        onValueChange={handleTabChange}
-        value={activeTab}>
-        <TabsList
-          variant="ghost"
-          className="w-full gap-2 overflow-x-auto px-6">
-          {isHostedMode ?
-            <Fragment>
-              <OverviewTabButton />
-              <VersionsTabButton />
-            </Fragment>
-          : <Fragment>
-              <OverviewTabButton />
-              <TabsJsonButton />
-              <CodeTabButton />
-              <InsightTabButton />
-              <VersionsTabButton />
-              <DependenciesTabsButton />
-            </Fragment>
-          }
-        </TabsList>
-        <div className="bg-card min-h-64 overflow-hidden rounded-b-xl">
-          <AnimatePresence initial={false} mode="wait">
-            <Outlet key={activeTab} />
-          </AnimatePresence>
-        </div>
-      </Tabs>
-    </div>
+    <Navigation>
+      <AnimatePresence>
+        {!isAtStart && (
+          <MotionScrollHelper
+            align="start"
+            onClick={scrollToStart}
+            {...scrollHelperMotion}>
+            <ChevronLeft />
+          </MotionScrollHelper>
+        )}
+      </AnimatePresence>
+      <NavigationList
+        ref={listRef}
+        isGrid={false}
+        className="flex overflow-x-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {(
+          Object.entries(PRIMARY_TABS) as {
+            [K in keyof typeof PRIMARY_TABS]-?: [
+              K,
+              (typeof PRIMARY_TABS)[K],
+            ]
+          }[keyof typeof PRIMARY_TABS][]
+        ).map(([tab, label], idx) => (
+          <NavigationListItem
+            key={`focused-tabs-${tab}-${idx}`}
+            className="min-w-[175px]">
+            <NavigationButton
+              navigationLayer="primary"
+              tab={tab}
+              count={getCount(tab)}
+              className="min-w-[175px]">
+              {label}
+            </NavigationButton>
+          </NavigationListItem>
+        ))}
+      </NavigationList>
+      <AnimatePresence>
+        {!isAtEnd && (
+          <MotionScrollHelper
+            align="end"
+            onClick={scrollToEnd}
+            {...scrollHelperMotion}>
+            <ChevronRight />
+          </MotionScrollHelper>
+        )}
+      </AnimatePresence>
+    </Navigation>
+  )
+}
+
+const scrollHelperMotion: MotionProps = {
+  initial: { opacity: 0, filter: 'blur(2px)' },
+  animate: { opacity: 1, filter: 'blur(0px)' },
+  exit: { opacity: 0, filter: 'blur(2px)' },
+}
+
+const ScrollHelper = forwardRef<
+  HTMLButtonElement,
+  ComponentProps<typeof Button> & { align: 'start' | 'end' }
+>(({ className, align, ...props }, ref) => {
+  return (
+    <Button
+      ref={ref}
+      variant="ghost"
+      className={cn(
+        'bg-background/50 absolute z-[10] flex aspect-square h-full items-center justify-center rounded backdrop-blur-sm [&_svg]:size-4',
+        align === 'start' && 'top-0 left-0',
+        align === 'end' && 'top-0 right-0',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+ScrollHelper.displayName = 'ScrollHelper'
+
+const MotionScrollHelper = motion.create(ScrollHelper)
+
+const SelectedItemView = () => {
+  const { tab: activeTab } = useTabNavigation()
+  return (
+    <AnimatePresence initial={false} mode="wait">
+      <Outlet key={activeTab} />
+    </AnimatePresence>
   )
 }
