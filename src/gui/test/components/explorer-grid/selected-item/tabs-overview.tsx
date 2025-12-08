@@ -7,6 +7,7 @@ import { OverviewTabContent } from '@/components/explorer-grid/selected-item/tab
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
+  MOCK_LOADING_STATE,
 } from './__fixtures__/item.ts'
 
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -111,6 +112,7 @@ test('OverviewTabContent renders with an empty state', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -150,6 +152,7 @@ test('OverviewTabContent renders with content', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

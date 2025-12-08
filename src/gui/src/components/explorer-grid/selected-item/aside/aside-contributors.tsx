@@ -23,7 +23,7 @@ export const AsideContributors = () => {
   if (!contributors || contributors.length === 0) return null
 
   const [firstContributors, restContributors] = splitArray(
-    contributors,
+    [...contributors],
     10,
   )
 

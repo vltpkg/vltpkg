@@ -1,23 +1,12 @@
-import {
-  createContext,
-  useContext,
-  useRef,
-  useCallback,
-  useEffect,
-} from 'react'
+import { createContext, useContext, useRef, useEffect } from 'react'
 import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.ts'
-import {
-  fetchDetails,
-  publicRegistry,
-  readAuthor,
-  retrieveAvatar,
-} from '@/lib/external-info.ts'
+import { fetchDetails } from '@/lib/external-info.ts'
+import type { DetailsInfo } from '@/lib/external-info.ts'
 import { PSEUDO_SECURITY_SELECTORS } from '@/lib/constants/index.ts'
 import { generatePath, useNavigate, useParams } from 'react-router'
-import { Spec } from '@vltpkg/spec/browser'
-import { normalizeManifest } from '@vltpkg/types'
+import type { Spec } from '@vltpkg/spec/browser'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 
 import type {
@@ -27,7 +16,6 @@ import type {
 } from '@/lib/constants/index.ts'
 import type { StoreApi } from 'zustand'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
-import type { DetailsInfo } from '@/lib/external-info.ts'
 import type {
   Insights,
   QueryResponseNode,
@@ -38,7 +26,6 @@ import type { PackageScore } from '@vltpkg/security-archive'
 import type {
   NormalizedManifest,
   NormalizedFunding,
-  Packument,
 } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
 
@@ -342,18 +329,16 @@ const getDependencyInformation = async (
   q: State['q'],
   graph: State['graph'],
   query: State['query'],
-  setDepLicenses: SelectedItemStore['setDepLicenses'],
-  setScannedDeps: SelectedItemStore['setScannedDeps'],
-  setDepsAverageScore: SelectedItemStore['setDepsAverageScore'],
-  setDepWarnings: SelectedItemStore['setDepWarnings'],
-  setDepCount: SelectedItemStore['setDepCount'],
-  setDuplicatedDeps: SelectedItemStore['setDuplicatedDeps'],
-  setDepFunding: SelectedItemStore['setDepFunding'],
+  store: StoreApi<SelectedItemStore>,
 ): Promise<void> => {
-  if (!q) return
+  if (!q) {
+    store.setState({ isLoadingDependencies: false })
+    return
+  }
 
   const counters = initializeCounters()
   const ac = new AbortController()
+  let errorMessage: string | null = null
 
   try {
     const deps = await q.search(query + ' *', {
@@ -385,7 +370,11 @@ const getDependencyInformation = async (
       processDuplicatedDeps(dep, counters.duplicatedDeps)
     }
   } catch (err) {
-    console.error(err)
+    console.error('getDependencyInformation error:', err)
+    errorMessage =
+      err instanceof Error ?
+        err.message
+      : 'Failed to fetch dependency information'
   } finally {
     const {
       depLicenses,
@@ -397,15 +386,20 @@ const getDependencyInformation = async (
       depFunding,
     } = counters
 
-    setDepLicenses(depLicenses)
-    setScannedDeps(scannedDeps)
-    setDepsAverageScore(
-      Math.floor((averageScore.score / averageScore.count) * 100),
-    )
-    setDepWarnings(Array.from(depWarnings.values()))
-    setDepCount(totalDepCount || undefined)
-    setDuplicatedDeps(duplicatedDeps)
-    setDepFunding(depFunding)
+    // Set all dependency info at once to avoid multiple re-renders
+    store.setState({
+      depLicenses,
+      scannedDeps,
+      depsAverageScore: Math.floor(
+        (averageScore.score / averageScore.count) * 100,
+      ),
+      depWarnings: Array.from(depWarnings.values()),
+      depCount: totalDepCount || undefined,
+      duplicatedDeps,
+      depFunding,
+      isLoadingDependencies: false,
+      dependenciesError: errorMessage,
+    })
   }
 }
 
@@ -423,6 +417,12 @@ type SelectedItemStoreState = DetailsInfo & {
   duplicatedDeps: DuplicatedDeps | undefined
   depFunding: DepFunding | undefined
   asideOveriewVisible?: boolean
+  /** Loading state for external details (downloads, stars, readme, etc.) */
+  isLoadingDetails: boolean
+  /** Loading state for dependency information */
+  isLoadingDependencies: boolean
+  /** Error message if fetching dependency information failed */
+  dependenciesError: string | null
 }
 
 type SelectedItemStoreAction = {
@@ -494,6 +494,9 @@ export const SelectedItemProvider = ({
       depCount: undefined,
       duplicatedDeps: undefined,
       depFunding: undefined,
+      isLoadingDetails: true,
+      isLoadingDependencies: true,
+      dependenciesError: null,
       setDepLicenses: (
         depLicenses: SelectedItemStoreState['depLicenses'],
       ) => set(() => ({ depLicenses })),
@@ -520,205 +523,89 @@ export const SelectedItemProvider = ({
     })),
   ).current
 
-  const fetchDetailsAsync = useCallback(
-    async (store: StoreApi<SelectedItemStore>) => {
-      const state = store.getState()
-      const item = state.selectedItem
+  // Track if we've already started fetching to prevent duplicate requests
+  const hasFetchedDetails = useRef(false)
 
-      // For external packages (from search results), use the spec directly
-      if (!item.to && item.spec) {
-        const abortController = new AbortController()
-        const spec = item.spec
-        try {
-          // Fetch the manifest from npm registry
-          let manifest: NormalizedManifest | null = null
+  useEffect(() => {
+    // Prevent duplicate fetches (React StrictMode, dependency changes, etc.)
+    if (hasFetchedDetails.current) return
+    hasFetchedDetails.current = true
 
-          // Get the final spec which contains the parsed information
-          const finalSpec = (spec as Spec).final
-          let manifestHydratedSpec: Spec | undefined
+    const fetchDetailsAsync = async () => {
+      const item = selectedItemStore.getState().selectedItem
 
-          // Extract package name and version from the spec
-          // The spec was created from something like "npm:express@4.21.1"
-          // We need to separate the package name from the version
-          const packageName = item.name // This should just be the package name (e.g., "express")
+      // Determine the spec and manifest based on item type
+      const spec =
+        item.spec ? (item.spec as Spec).final
+        : item.to?.name ?
+          hydrate(item.to.id, item.to.name, specOptions)
+        : null
 
-          const registry = finalSpec.registry || publicRegistry
-
-          if (registry === publicRegistry) {
-            try {
-              const url = new URL(registry)
-              url.pathname = packageName
-
-              const response = await fetch(String(url), {
-                signal: abortController.signal,
-              })
-
-              if (!response.ok) {
-                throw new Error(
-                  `Failed to fetch packument: ${response.status}`,
-                )
-              }
-
-              const packument = (await response.json()) as Packument
-
-              // For external packages, use the version from bareSpec if available, otherwise latest
-              // bareSpec is set when user navigates to a specific version
-              let version: string | undefined
-
-              // Check if bareSpec has a version (not the registry URL)
-              if (
-                finalSpec.bareSpec &&
-                !finalSpec.bareSpec.startsWith('http')
-              ) {
-                version = finalSpec.bareSpec
-              } else {
-                version = packument['dist-tags'].latest
-              }
-
-              const manifestData =
-                version ? packument.versions[version] : undefined
-              if (manifestData) {
-                manifest = normalizeManifest(manifestData)
-
-                // use a spec with the info from the response manifest
-                manifestHydratedSpec = Spec.parse(
-                  manifest.name || finalSpec.name,
-                  manifest.version || finalSpec.bareSpec,
-                  specOptions,
-                )
-
-                // Extract publisher info from _npmUser before it's lost
-                const npmUser =
-                  '_npmUser' in manifestData ?
-                    manifestData._npmUser
-                  : undefined
-                const publisher =
-                  (
-                    npmUser &&
-                    typeof npmUser === 'object' &&
-                    'name' in npmUser
-                  ) ?
-                    readAuthor({
-                      name: String(npmUser.name),
-                      email:
-                        'email' in npmUser ?
-                          String(npmUser.email)
-                        : undefined,
-                      url:
-                        'url' in npmUser ?
-                          String(npmUser.url)
-                        : undefined,
-                    })
-                  : undefined
-
-                // Update store with normalized manifest and publisher info
-                const stateUpdate: Partial<SelectedItemStoreState> = {
-                  manifest,
-                }
-
-                if (publisher) {
-                  stateUpdate.publisher = publisher
-
-                  // Fetch publisher avatar if email is available
-                  if (publisher.email) {
-                    retrieveAvatar(publisher.email)
-                      .then(src => {
-                        store.setState(state => ({
-                          ...state,
-                          publisherAvatar: {
-                            src,
-                            alt:
-                              publisher.name ?
-                                `${publisher.name}'s avatar`
-                              : 'avatar',
-                          },
-                        }))
-                      })
-                      .catch(() => {
-                        // Ignore avatar fetch errors
-                      })
-                  }
-                }
-
-                store.setState(state => ({
-                  ...state,
-                  ...stateUpdate,
-                }))
-              }
-            } catch (err) {
-              console.error(
-                'Failed to fetch external package manifest:',
-                err,
-              )
-            }
-          }
-
-          // Fetch additional details (downloads, stars, etc.)
-          // Pass the normalized manifest with repository info
-          // We need to create a clean spec with just the package name (no npm: prefix)
-          // and the version in bareSpec for fetchDetails to work correctly with the npm API
-          for await (const d of fetchDetails(
-            manifestHydratedSpec ?? finalSpec,
-            abortController.signal,
-            manifest ?? undefined,
-          )) {
-            store.setState(state => ({
-              ...state,
-              ...d,
-            }))
-          }
-        } finally {
-          abortController.abort()
-        }
+      if (!spec) {
+        selectedItemStore.setState({ isLoadingDetails: false })
         return
       }
 
-      // For packages from the graph, use the hydrated dep ID
-      if (!item.to?.name) return
+      const manifest = item.to?.manifest ?? undefined
 
-      const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
-      const manifest = item.to.manifest ?? {}
-      const abortController = new AbortController()
+      // For local packages (item.to exists), we can fetch README from node_modules
+      // For external packages, we fetch from unpkg
+      const packageLocation = item.to?.location
+      const projectRoot = item.to?.projectRoot
 
       try {
-        for await (const d of fetchDetails(
-          depIdSpec,
-          abortController.signal,
+        // Fetch all details in one call - this handles:
+        // - Fetching packument/manifest from registry if needed
+        // - Publisher info and avatar
+        // - Downloads, stars, issues, PRs, readme, versions, etc.
+        // For local packages, README is fetched from node_modules instead of unpkg
+        const details = await fetchDetails({
+          spec,
           manifest,
-        )) {
-          store.setState(state => ({
-            ...state,
-            ...d,
-          }))
-        }
-      } finally {
-        abortController.abort()
+          packageLocation,
+          projectRoot,
+        })
+
+        // Set all state at once (including the fetched manifest if we didn't have one)
+        selectedItemStore.setState(state => ({
+          ...state,
+          ...details,
+          // Use the fetched manifest if we didn't already have one
+          manifest:
+            state.manifest ??
+            (details.manifest as NormalizedManifest | undefined) ??
+            null,
+          isLoadingDetails: false,
+        }))
+      } catch (err) {
+        // This catch block should never be reached due to error handling in fetchDetails,
+        // but we keep it as a safety net for logging purposes
+        console.error('fetchDetails error:', err)
+        selectedItemStore.setState({ isLoadingDetails: false })
       }
-    },
-    [query, specOptions], // eslint-disable-line react-hooks/exhaustive-deps
-  )
+    }
+
+    void fetchDetailsAsync()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
+
+  // Track if we've already started fetching dependency info
+  const hasFetchedDependencies = useRef(false)
 
   useEffect(() => {
-    void fetchDetailsAsync(selectedItemStore)
-  }, [fetchDetailsAsync, selectedItemStore])
+    // Prevent duplicate fetches
+    if (hasFetchedDependencies.current) return
+    hasFetchedDependencies.current = true
 
-  useEffect(() => {
     // Skip dependency information for external packages (they have no graph context)
-    if (!selectedItem.to) return
+    if (!selectedItem.to) {
+      selectedItemStore.setState({ isLoadingDependencies: false })
+      return
+    }
 
-    void getDependencyInformation(
-      q,
-      graph,
-      query,
-      selectedItemStore.getState().setDepLicenses,
-      selectedItemStore.getState().setScannedDeps,
-      selectedItemStore.getState().setDepsAverageScore,
-      selectedItemStore.getState().setDepWarnings,
-      selectedItemStore.getState().setDepCount,
-      selectedItemStore.getState().setDuplicatedDeps,
-      selectedItemStore.getState().setDepFunding,
-    )
-  }, [q, graph, query, selectedItem.to, selectedItemStore])
+    void getDependencyInformation(q, graph, query, selectedItemStore)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
   return (
     <SelectedItemContext.Provider value={selectedItemStore}>

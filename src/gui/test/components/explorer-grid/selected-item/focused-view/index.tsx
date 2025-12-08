@@ -50,6 +50,17 @@ vi.mock(
   }),
 )
 
+vi.mock('@/components/ui/jelly-spinner.tsx', () => ({
+  JellyTriangleSpinner: 'gui-jelly-triangle-spinner',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/partial-errors-indicator.tsx',
+  () => ({
+    PartialErrorsIndicator: 'gui-partial-errors-indicator',
+  }),
+)
+
 vi.mock(
   '@/components/explorer-grid/dependency-sidebar/filter.tsx',
   () => ({

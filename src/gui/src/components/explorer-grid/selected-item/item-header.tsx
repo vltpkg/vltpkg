@@ -320,11 +320,12 @@ export const Publisher = ({ className }: { className?: string }) => {
     state => state.downloadsPerVersion,
   )
 
-  const downloadCount = toHumanNumber(
-    (currentVersion?.version &&
-      downloads?.[currentVersion.version]) ??
-      0,
-  )
+  // Use currentVersion.version if available, fallback to manifest.version for external packages
+  const versionKey = currentVersion?.version ?? manifest?.version
+  const rawDownloadCount =
+    (versionKey && downloads?.[versionKey]) || 0
+  const downloadCount =
+    rawDownloadCount > 0 ? toHumanNumber(rawDownloadCount) : null
 
   const authorNameShort =
     publisher?.name ? publisher.name.substring(0, 2) : '?'

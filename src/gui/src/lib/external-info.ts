@@ -1,106 +1,55 @@
-import { normalizeManifest } from '@vltpkg/types'
+import { Effect, Layer, Schema } from 'effect'
+import { FetchHttpClient, HttpClient } from '@effect/platform'
 import { compare, gt, prerelease } from '@vltpkg/semver'
+import { normalizeManifest } from '@vltpkg/types'
+import { parseReadme } from '@/lib/parse-readme.ts'
+import { parseAriaLabelFromSVG } from '@/utils/parse-aria-label-from-svg.ts'
 import {
   getRepoOrigin,
   getRepositoryApiUrl,
 } from '@/utils/get-repo-url.ts'
-import { parseReadme } from './parse-readme.ts'
+import { retrieveGravatar } from '@/utils/retrieve-gravatar.ts'
+
+// Re-export utilities
+export { retrieveGravatar as retrieveAvatar } from '@/utils/retrieve-gravatar.ts'
+export { parseAriaLabelFromSVG } from '@/utils/parse-aria-label-from-svg.ts'
+
 import type { Spec } from '@vltpkg/spec/browser'
-import type {
-  Repository,
-  Manifest,
-  NormalizedManifest,
-  Packument,
-  NormalizedContributorEntry,
-  Person,
-} from '@vltpkg/types'
+import type { NormalizedManifest, Repository } from '@vltpkg/types'
 
-export type Semver = `${number}.${number}.${number}`
-
-export const publicRegistry = 'https://registry.npmjs.org/'
-
-export const isSemver = (s: string): s is Semver =>
-  /^\d+\.\d+\.\d+$/.test(s)
-
-export const asSemver = (s: string): Semver => {
-  if (isSemver(s)) {
-    return s
-  }
-  throw new Error(`Invalid Semver: ${s}`)
-}
-
-export type GitHubRepo = {
-  owner?: {
-    avatar_url?: string
-    login?: string
-  }
-  updated_at?: string
-  stargazers_count?: number
-  organization?: {
-    login?: string
-  }
-  name?: string
-  default_branch?: string
-  commits_url?: string
-  contributors_url?: string
-}
-
-export type DownloadsRange = {
-  start: string
-  end: string
-  downloads: { downloads: number; day: string }[]
-}
-
-export type AuthorInfo = {
-  name: string
-  mail?: string
-  email?: string
-  url?: string
-  web?: string
-}
-
-export type ImageInfo = {
-  src: string
-  alt: string
-}
-
-export type Version = {
-  version: Semver
-  publishedDate?: string
-  publishedAuthor?: {
-    name?: string
-    email?: string
-    avatar?: string
-  }
-  unpackedSize?: number
-  integrity?: string
-  tarball?: string
-  gitHead?: string
-}
-
-export type Contributor = NormalizedContributorEntry & {
-  avatar?: string
-}
-
-export type DetailsInfo = {
-  author?: AuthorInfo
-  downloadsPerVersion?: Record<Semver, number>
-  downloadsLastYear?: DownloadsRange
-  favicon?: ImageInfo
-  publisher?: AuthorInfo
-  publisherAvatar?: ImageInfo
-  versions?: Version[]
-  greaterVersions?: Version[]
-  contributors?: Contributor[]
-  stargazersCount?: GitHubRepo['stargazers_count']
-  openIssueCount?: string
-  openPullRequestCount?: string
-  readme?: string
-}
+/**
+ * HttpClient layer with tracing propagation disabled to avoid CORS issues
+ * with the traceparent header on third-party APIs.
+ */
+const HttpClientNoTracing = Layer.effect(
+  HttpClient.HttpClient,
+  Effect.map(HttpClient.HttpClient, client =>
+    HttpClient.withTracerPropagation(client, false),
+  ),
+).pipe(Layer.provide(FetchHttpClient.layer))
 
 export const NAME_PATTERN = /^([^(<]+)/
 export const URL_PATTERN = /\(([^()]+)\)/
 export const EMAIL_PATTERN = /<([^<>]+)>/
+
+/**
+ * Schema extension that preserves unknown/excess properties in structs.
+ * Use with Schema.extend() to allow additional properties beyond those defined.
+ */
+const ExcessProperties = Schema.Record({
+  key: Schema.String,
+  value: Schema.Unknown,
+})
+
+const AuthorInfoSchema = Schema.Struct({
+  name: Schema.String,
+  mail: Schema.optional(Schema.String),
+  email: Schema.optional(Schema.String),
+  url: Schema.optional(Schema.String),
+  web: Schema.optional(Schema.String),
+})
+
+export type AuthorInfo = Schema.Schema.Type<typeof AuthorInfoSchema>
 
 export const readAuthor = (
   author: string | AuthorInfo,
@@ -138,440 +87,1341 @@ export const readRepository = (
   }
 }
 
-const getContributorAvatars = async (
-  mani: NormalizedManifest,
-): Promise<Contributor[] | undefined> => {
-  if (!mani.contributors || mani.contributors.length === 0)
-    return undefined
-  const contributors = await Promise.all(
-    mani.contributors.map(async contributor => ({
-      ...contributor,
-      avatar: await retrieveAvatar(contributor.email || ''),
-    })),
-  )
-  return contributors
-}
+/**
+ * Fetches a full (not corgi) packument for version history, etc.
+ */
 
-export const retrieveAvatar = async (
-  email: string,
-): Promise<string> => {
-  const cleaned = email.trim().toLowerCase()
-  const encoder = new TextEncoder()
-  const data = encoder.encode(cleaned)
-  const compute = await window.crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(compute))
-  const hash = hashArray
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+// ConditionalValue is recursive, so we need to define it using Schema.suspend
+const ConditionalValueSchema: Schema.Schema<any> = Schema.suspend(
+  () =>
+    Schema.Union(
+      Schema.String,
+      Schema.Null,
+      Schema.Array(ConditionalValueSchema),
+      Schema.Record({
+        key: Schema.String,
+        value: ConditionalValueSchema,
+      }),
+    ),
+)
 
-  return `https://gravatar.com/avatar/${hash}?d=retro`
-}
+const PersonSchema = Schema.Union(
+  Schema.String,
+  Schema.Undefined,
+  Schema.Struct({
+    name: Schema.String,
+    url: Schema.optional(Schema.String),
+    email: Schema.optional(Schema.String),
+  }),
+  Schema.Array(
+    Schema.Struct({
+      name: Schema.String,
+      url: Schema.optional(Schema.String),
+      email: Schema.optional(Schema.String),
+    }),
+  ),
+)
 
-export const parseAriaLabelFromSVG = (
-  svg: string,
-): string | undefined => {
-  const parser = new DOMParser()
-  const svgDoc = parser.parseFromString(svg, 'image/svg+xml')
-  const ariaLabel = svgDoc
-    .querySelector('svg')
-    ?.getAttribute('aria-label')
-  if (!ariaLabel) return undefined
-  const match = /[\d.]+\s*[kmb]?/i.exec(ariaLabel)
-  return match?.[0].trim()
-}
-
-export async function* fetchDetails(
-  s: Spec,
-  signal: AbortSignal,
-  manifest?: NormalizedManifest,
-): AsyncGenerator<DetailsInfo> {
-  const spec = s.final
-  const promisesQueue: Promise<DetailsInfo>[] = []
-  const fulfilledPromises: Promise<DetailsInfo>[] = []
-  let githubAPI: string | undefined
-  let maniAuthor: AuthorInfo | undefined
-
-  // helper function to make sure that the yield-as-soon-as-ready
-  // pattern works with concurrent requests as intended
-  function trackPromise(p: Promise<DetailsInfo>) {
-    void p.then(() => {
-      void promisesQueue.splice(promisesQueue.indexOf(p), 1)
-      fulfilledPromises.push(p)
-    })
-    promisesQueue.push(p)
-  }
-
-  const fetchGithubRepo = async (
-    githubAPI: string,
-  ): Promise<GitHubRepo> =>
-    fetch(githubAPI, { signal })
-      .then(res => res.json())
-      .then((repo: GitHubRepo) => {
-        return repo
-      })
-      .catch(() => ({}))
-
-  const fetchStargazerCount = (
-    repo: GitHubRepo,
-  ): Promise<DetailsInfo> => {
-    return Promise.resolve({
-      stargazersCount: repo.stargazers_count,
-    })
-  }
-
-  const fetchOpenIssuesCount = async (
-    org: string,
-    repo: string,
-  ): Promise<DetailsInfo> => {
-    return fetch(
-      `https://img.shields.io/github/issues/${org}/${repo}`,
-      { signal },
-    )
-      .then(res => res.text())
-      .then((res: string) => {
-        const count = parseAriaLabelFromSVG(res)
-        if (count === undefined) return {}
-        return { openIssueCount: count }
-      })
-      .catch(() => ({}))
-  }
-
-  const fetchOpenPullRequestCount = (
-    org: string,
-    repo: string,
-  ): Promise<DetailsInfo> =>
-    fetch(`https://img.shields.io/github/issues-pr/${org}/${repo}`, {
-      signal,
-    })
-      .then(res => res.text())
-      .then((res: string) => {
-        const count = parseAriaLabelFromSVG(res)
-        if (count === undefined) return {}
-        return { openPullRequestCount: count }
-      })
-      .catch(() => ({}))
-
-  const fetchReadme = (
-    pkgName: string,
-    version: string,
-    repo?: { org: string; repo: string },
-    ref?: string,
-    directory?: string,
-  ): Promise<DetailsInfo> =>
-    fetch(`https://unpkg.com/${pkgName}@${version}/README.md`, {
-      signal,
-    })
-      .then(res => {
-        if (!res.ok) {
-          return Promise.resolve({})
-        }
-        return res.text().then(async (readme: string) => {
-          if (readme && repo && ref) {
-            try {
-              readme = await parseReadme(readme, repo, ref, directory)
-            } catch (e) {
-              console.error('Failed to parse readme', e)
-            }
-          }
-          return readme ? { readme } : {}
-        })
-      })
-      .catch(() => ({}))
-
-  const fetchDownloadsLastYear = (): Promise<DetailsInfo> =>
-    fetch(
-      `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
-      {
-        signal,
-      },
-    )
-      .then(res => res.json())
-      .then(
-        (data: {
-          start: string
-          end: string
-          downloads: { downloads: number; day: string }[]
-        }) => ({
-          downloadsLastYear: {
-            start: data.start,
-            end: data.end,
-            downloads: data.downloads.map(
-              (download: { downloads: number; day: string }) => ({
-                downloads: download.downloads,
-                day: download.day,
-              }),
-            ),
-          },
+// Simplified ManifestSchema - only defines fields we actually use,
+// everything else is captured by ExcessProperties as Schema.Unknown
+const ManifestSchema = Schema.extend(
+  Schema.Struct({
+    // Fields we actually use for version processing
+    name: Schema.optional(Schema.String),
+    version: Schema.optional(Schema.String),
+    description: Schema.optional(Schema.String),
+    author: Schema.optional(PersonSchema),
+    license: Schema.optional(Schema.String),
+    homepage: Schema.optional(Schema.String),
+    gitHead: Schema.optional(Schema.String),
+    // Repository can be string or object
+    repository: Schema.optional(Schema.Unknown),
+    // Dist info for tarball, size, integrity
+    dist: Schema.optional(
+      Schema.extend(
+        Schema.Struct({
+          integrity: Schema.optional(Schema.String),
+          shasum: Schema.optional(Schema.String),
+          tarball: Schema.optional(Schema.String),
+          fileCount: Schema.optional(Schema.Number),
+          unpackedSize: Schema.optional(Schema.Number),
         }),
-      )
-      .catch(() => ({}))
+        ExcessProperties,
+      ),
+    ),
+    // npmUser for publisher info
+    _npmUser: Schema.optional(
+      Schema.extend(
+        Schema.Struct({
+          name: Schema.optional(Schema.String),
+          email: Schema.optional(Schema.String),
+        }),
+        ExcessProperties,
+      ),
+    ),
+    // Contributors for contributor avatars
+    contributors: Schema.optional(Schema.Unknown),
+  }),
+  ExcessProperties,
+)
 
-  const fetchDownloadsPerVersion = (): Promise<DetailsInfo> =>
-    fetch(
-      `https://api.npmjs.org/versions/${encodeURIComponent(spec.name)}/last-week`,
-      { signal },
-    )
-      .then(res => res.json())
-      .then((res: { downloads: Record<Semver, number> }) => {
-        return {
-          downloadsPerVersion: res.downloads,
-        }
-      })
-      .catch(() => ({}))
+type Manifest = Schema.Schema.Type<typeof ManifestSchema>
 
-  // favicon requests have a guard against duplicate requests
-  // since we retry once we fetch the manifest from the registry
-  const seenFavIconRequests = new Set<string>()
-  const fetchFavIcon = async (
-    githubAPI: string,
-  ): Promise<DetailsInfo> => {
-    if (!manifest?.repository || seenFavIconRequests.has(githubAPI))
-      return Promise.resolve({})
+const PackumentSchema = Schema.extend(
+  Schema.Struct({
+    name: Schema.String,
+    'dist-tags': Schema.Record({
+      key: Schema.String,
+      value: Schema.String,
+    }),
+    versions: Schema.Record({
+      key: Schema.String,
+      value: ManifestSchema,
+    }),
+    modified: Schema.optional(Schema.String),
+    time: Schema.optional(
+      Schema.Record({
+        key: Schema.String,
+        value: Schema.String,
+      }),
+    ),
+    readme: Schema.optional(Schema.String),
+    contributors: Schema.optional(PersonSchema),
+    maintainers: Schema.optional(PersonSchema),
+  }),
+  ExcessProperties,
+)
 
-    const repo = getRepoOrigin(manifest.repository)
-    if (repo) {
-      return {
-        favicon: {
-          src: `https://www.github.com/${repo.org}.png`,
-          alt: `${repo.org} avatar`,
-        },
-      }
-    }
+type Packument = Schema.Schema.Type<typeof PackumentSchema>
 
-    return Promise.resolve({})
-  }
-
-  // tries to retrieve author info from the in-memory manifest
-  if (manifest?.author) {
-    maniAuthor = readAuthor(manifest.author as string | Person)
-    if (maniAuthor) {
-      trackPromise(Promise.resolve({ author: maniAuthor }))
-    }
-  }
-
-  // fetch contributor avatars from the in-memory manifest
-  if (manifest) {
-    trackPromise(
-      getContributorAvatars(manifest).then(contributors => ({
-        ...(contributors && { contributors }),
-      })),
-    )
-  }
-
-  // if the spec is a git spec, use its remote as the repository url reference
-  if (spec.gitRemote) {
-    githubAPI = getRepositoryApiUrl(spec.gitRemote)
-  }
-
-  // lookup manifest for a repository field
-  if (!githubAPI && manifest?.repository) {
-    const repo = readRepository(manifest.repository)
-    if (repo) {
-      githubAPI = getRepositoryApiUrl(repo)
-    }
-  }
-
-  // if a value was found, fetch the repository info from the GitHub API
-  if (githubAPI) {
-    const api = githubAPI
-    if (api) {
-      trackPromise(fetchFavIcon(api))
-      void fetchGithubRepo(api).then(repo => {
-        trackPromise(fetchStargazerCount(repo))
-      })
-    }
-  }
-
-  // if the local manifest doesn't have author info,
-  // tries to retrieve it from the registry manifest
-  if (spec.registry === publicRegistry) {
-    const attemptFetchReadme = (
-      mani: Manifest | NormalizedManifest,
-    ) => {
-      const version = mani.version
-      const r =
-        mani.repository ? readRepository(mani.repository) : undefined
-      const rd = r ? getRepoOrigin(r) : undefined
-      const gitHead =
-        (mani as { gitHead?: string }).gitHead || version
-      let directory = ''
-      const repository = mani.repository
-      if (
-        repository &&
-        typeof repository === 'object' &&
-        'directory' in repository
-      ) {
-        directory = (repository as { directory: string }).directory
-      }
-
-      if (version) {
-        trackPromise(
-          fetchReadme(spec.name, version, rd, gitHead, directory),
-        )
-      }
-    }
-
-    if (manifest) {
-      attemptFetchReadme(manifest)
-    }
-
-    const url = new URL(spec.registry)
-    url.pathname = `${spec.name}/${spec.bareSpec}`
-    trackPromise(
-      fetch(String(url), { signal })
-        .then(res => res.json())
-        .then((mani: Manifest & { _npmUser?: AuthorInfo }) => {
-          ;(mani as NormalizedManifest) = normalizeManifest(mani)
-
-          // If we didn't have a local manifest, try fetching readme now
-          if (!manifest) {
-            attemptFetchReadme(mani)
-          }
-
-          // retries favicon retrieval in case it wasn't found before
-          if (!githubAPI && mani.repository) {
-            const repo = readRepository(mani.repository)
-            if (repo) {
-              githubAPI = getRepositoryApiUrl(repo)
-            }
-            if (githubAPI) {
-              const api = githubAPI
-              // Only make this call if it wasn't already made earlier
-              if (!seenFavIconRequests.has(api)) {
-                trackPromise(fetchFavIcon(api))
-              }
-            }
-          }
-          const remoteAuthor: AuthorInfo | undefined =
-            mani._npmUser ? readAuthor(mani._npmUser) : undefined
-          // if the remote response has publisher email info
-          // then retrieve the user avatar from gravatar
-          if (remoteAuthor?.email) {
-            trackPromise(
-              retrieveAvatar(remoteAuthor.email || '')
-                .then(src => ({
-                  publisherAvatar: {
-                    src,
-                    alt:
-                      remoteAuthor.name ?
-                        `${remoteAuthor.name}'s avatar`
-                      : 'avatar',
-                  },
-                }))
-                .catch(() => ({})),
-            )
-          }
-          return {
-            ...(!maniAuthor &&
-              mani.author && { author: remoteAuthor }),
-            ...(mani._npmUser && {
-              publisher: readAuthor(mani._npmUser),
-            }),
-          }
-        })
-        .catch(() => ({})),
-    )
+/**
+ * Fetches a full (not corgi) packument for version history, etc.
+ */
+const fetchPackument = ({ spec }: { spec: Spec }) =>
+  Effect.gen(function* () {
+    // Just bail out early if we can't resolve a registry
+    if (!spec.registry) return undefined
 
     const packumentURL = new URL(spec.registry)
     packumentURL.pathname = spec.name
-    trackPromise(
-      fetch(String(packumentURL), {
-        headers: {},
-        signal,
-      })
-        .then(res => res.json())
-        .then(async (packu: Packument) => {
-          const versions = Object.entries(packu.versions)
-            .sort((a, b) => compare(b[0], a[0]))
-            .map(async ([version, mani]) => {
-              ;(mani as NormalizedManifest) = normalizeManifest(mani)
-              const email = (
-                mani as NormalizedManifest & {
-                  _npmUser?: {
-                    name?: string
-                    email?: string
-                  }
-                }
-              )._npmUser?.email
-              const avatar =
-                email ? await retrieveAvatar(email) : undefined
 
-              const npmUser = (
-                mani as NormalizedManifest & {
-                  _npmUser?: {
-                    name?: string
-                    email?: string
-                  }
-                }
-              )._npmUser
+    const httpClient = yield* HttpClient.HttpClient
 
-              return {
-                version,
-                publishedDate: packu.time?.[version],
-                unpackedSize:
-                  packu.versions[version]?.dist?.unpackedSize,
-                integrity: packu.versions[version]?.dist?.integrity,
-                tarball: packu.versions[version]?.dist?.tarball,
-                gitHead: packu.versions[version]?.gitHead,
-                publishedAuthor: {
-                  name: npmUser?.name,
-                  email: npmUser?.email,
-                  avatar,
-                },
-              } as Version
-            })
-
-          const resolvedVersions = await Promise.all(versions)
-
-          return {
-            versions: resolvedVersions,
-            greaterVersions:
-              manifest?.version ?
-                resolvedVersions.filter(
-                  v =>
-                    manifest.version &&
-                    gt(v.version, manifest.version) &&
-                    !prerelease(v.version)?.length,
-                )
-              : undefined,
-          }
-        })
-        .catch(() => ({})),
+    const res = yield* httpClient.get(packumentURL).pipe(
+      Effect.catchTags({
+        RequestError: () => Effect.succeed(undefined),
+        ResponseError: () => Effect.succeed(undefined),
+      }),
     )
 
-    // retrieve download info from the registry per version
-    trackPromise(fetchDownloadsPerVersion())
+    if (!res) return undefined
 
-    // retrieve download range for the last year from the registry
-    trackPromise(fetchDownloadsLastYear())
+    const raw = yield* res.json
+
+    const data = yield* Schema.decodeUnknown(PackumentSchema)(
+      raw,
+    ).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    return data
+  })
+
+/**
+ * Uses a packument and the parent manifest to process
+ * versions and greater version information about the dependency
+ */
+const processPackumentVersions = async ({
+  packument,
+  manifest,
+}: {
+  packument: Packument
+  manifest: Manifest
+}) => {
+  try {
+    const versions = Object.entries(packument.versions)
+      .sort((a, b) => compare(b[0], a[0]))
+      .map(async ([version, manifest]) => {
+        const npmUser = manifest._npmUser
+
+        const avatar =
+          npmUser?.email ?
+            await retrieveGravatar(npmUser.email)
+          : undefined
+
+        return {
+          version,
+          publishedDate: packument.time?.[version],
+          unpackedSize:
+            packument.versions[version]?.dist?.unpackedSize,
+          integrity: packument.versions[version]?.dist?.integrity,
+          tarball: packument.versions[version]?.dist?.tarball,
+          gitHead: packument.versions[version]?.gitHead,
+          publishedAuthor: {
+            name: npmUser?.name,
+            email: npmUser?.email,
+            avatar,
+          },
+        }
+      })
+
+    const resolvedVersions = await Promise.all(versions)
+
+    return {
+      versions: resolvedVersions,
+      greaterVersions:
+        manifest.version ?
+          resolvedVersions.filter(
+            v =>
+              manifest.version &&
+              gt(v.version, manifest.version) &&
+              !prerelease(v.version)?.length,
+          )
+        : undefined,
+    }
+  } catch (_e: unknown) {
+    return undefined
   }
+}
 
-  const repo =
-    manifest?.repository && readRepository(manifest.repository)
-  const repoDetails = repo && getRepoOrigin(repo)
+/**
+ * Constructs a favicon for the repository
+ * if a manifest is loaded.
+ */
 
-  if (repoDetails) {
-    const { org, repo: repoName } = repoDetails
-    trackPromise(fetchOpenIssuesCount(org, repoName))
-    trackPromise(fetchOpenPullRequestCount(org, repoName))
+const FaviconSchema = Schema.Struct({
+  src: Schema.String,
+  alt: Schema.String,
+})
+
+const fetchFavIcon = ({
+  manifest,
+}: {
+  manifest?: NormalizedManifest
+}) => {
+  if (!manifest?.repository) return undefined
+  const repo = getRepoOrigin(manifest.repository)
+  if (!repo) return undefined
+  return {
+    favicon: {
+      src: `https://www.github.com/${repo.org}.png`,
+      alt: `${repo.org} avatar`,
+    },
   }
+}
 
-  // asynchronously yield results from promisesQueue as soon as they're ready
-  while (true) {
-    // when we reach the end of the promises queue, we have this extra logic
-    // here to ensure that we yield all final results, including edge cases
-    // such as when multiple promises fulfill at the same time.
-    if (promisesQueue.length === 0) {
-      let res: DetailsInfo = {}
-      for (const p of await Promise.all(fulfilledPromises)) {
-        for (const key of Object.keys(p)) {
-          res = { ...res, [key]: p[key as keyof DetailsInfo] }
+/**
+ * Fetches the open issue count of an orgs repo
+ * using a shield, by parsing out its aria-label.
+ */
+const fetchOpenIssueCount = ({
+  org,
+  repo,
+}: {
+  org: string
+  repo: string
+}) =>
+  Effect.gen(function* () {
+    const httpClient = yield* HttpClient.HttpClient
+
+    const res = yield* httpClient
+      .get(`https://img.shields.io/github/issues/${org}/${repo}`)
+      .pipe(
+        Effect.catchTags({
+          RequestError: () => Effect.succeed(undefined),
+          ResponseError: () => Effect.succeed(undefined),
+        }),
+      )
+
+    if (!res) return undefined
+
+    const raw = yield* res.text
+
+    const text = yield* Schema.decodeUnknown(Schema.String)(raw).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!text) return undefined
+
+    const result = yield* Effect.try({
+      try: () => parseAriaLabelFromSVG(text),
+      catch: () => new Error('Failed to parse SVG'),
+    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+
+    return result
+  }).pipe(
+    Effect.timeoutFail({
+      duration: API_TIMEOUT_MS,
+      onTimeout: () => new Error('GitHub issues count timed out'),
+    }),
+  )
+
+/**
+ * Fetches the open pull request count of an orgs repo
+ * using a shield, by parsing out its aria-label.
+ */
+const fetchOpenPullRequestCount = ({
+  org,
+  repo,
+}: {
+  org: string
+  repo: string
+}) =>
+  Effect.gen(function* () {
+    const httpClient = yield* HttpClient.HttpClient
+
+    const res = yield* httpClient
+      .get(`https://img.shields.io/github/issues-pr/${org}/${repo}`)
+      .pipe(
+        Effect.catchTags({
+          RequestError: () => Effect.succeed(undefined),
+          ResponseError: () => Effect.succeed(undefined),
+        }),
+      )
+
+    if (!res) return undefined
+
+    const raw = yield* res.text
+
+    const text = yield* Schema.decodeUnknown(Schema.String)(raw).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!text) return undefined
+
+    const result = yield* Effect.try({
+      try: () => parseAriaLabelFromSVG(text),
+      catch: () => new Error('Failed to parse SVG'),
+    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+
+    return result
+  }).pipe(
+    Effect.timeoutFail({
+      duration: API_TIMEOUT_MS,
+      onTimeout: () => new Error('GitHub PRs count timed out'),
+    }),
+  )
+
+/**
+ * Fetches the `README.md` of an orgs repo using `unpkg`
+ * and parses it using `parseReadme` to resolve gfm and relative
+ * references of images and links.
+ */
+
+/** Timeout for external API requests in milliseconds (15s for slow services like unpkg) */
+const API_TIMEOUT_MS = 15000
+
+/**
+ * Fetches README from unpkg for external packages.
+ * Parses relative paths to point to GitHub.
+ */
+const fetchReadmeFromUnpkg = ({
+  packageName,
+  packageVersion,
+  repository,
+  reference,
+  directory,
+}: {
+  packageName: string
+  packageVersion: string
+  repository: { org: string; repo: string }
+  reference?: string
+  directory?: string
+}) =>
+  Effect.gen(function* () {
+    if (!reference) return undefined
+
+    const httpClient = yield* HttpClient.HttpClient
+
+    const res = yield* httpClient
+      .get(
+        `https://unpkg.com/${packageName}@${packageVersion}/README.md`,
+      )
+      .pipe(
+        Effect.catchTags({
+          RequestError: () => Effect.succeed(undefined),
+          ResponseError: () => Effect.succeed(undefined),
+        }),
+      )
+
+    if (!res) return undefined
+
+    const raw = yield* res.text
+
+    const text = yield* Schema.decodeUnknown(Schema.String)(raw).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!text) return undefined
+
+    const result = yield* Effect.tryPromise({
+      try: () => parseReadme(text, repository, reference, directory),
+      catch: () =>
+        new Error(`Failed to parse ${packageName}'s README.md`),
+    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+
+    return result
+  }).pipe(
+    // Add timeout to prevent hanging on slow/unresponsive servers
+    Effect.timeoutFail({
+      duration: API_TIMEOUT_MS,
+      onTimeout: () => new Error('README fetch timed out'),
+    }),
+  )
+
+/**
+ * Finds the actual README filename in a directory (case-insensitive).
+ * Returns the actual filename if found, or undefined.
+ */
+const findReadmeFilename = async (
+  packageDir: string,
+): Promise<string | undefined> => {
+  try {
+    const res = await fetch('/fs/ls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: packageDir }),
+    })
+
+    if (!res.ok) return undefined
+
+    let rawResponse: unknown = await res.json()
+
+    // Handle double-encoded JSON (server returns JSON string)
+    if (typeof rawResponse === 'string') {
+      try {
+        rawResponse = JSON.parse(rawResponse) as unknown
+      } catch {
+        return undefined
+      }
+    }
+
+    const files = rawResponse as { name: string; type: string }[]
+
+    if (!Array.isArray(files)) return undefined
+
+    // Find a file that matches "readme" (case-insensitive) with common extensions
+    const readmeFile = files.find(
+      file =>
+        file.type === 'file' &&
+        /^readme\.(md|txt|markdown|mdown)$/i.test(file.name),
+    )
+
+    // If no extension match, try just "readme" (no extension)
+    if (!readmeFile) {
+      const readmeNoExt = files.find(
+        file => file.type === 'file' && /^readme$/i.test(file.name),
+      )
+      return readmeNoExt?.name
+    }
+
+    return readmeFile.name
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Fetches README from local node_modules via the server's /fs/read endpoint.
+ * Handles case variations by finding the actual filename in the directory.
+ * For local packages, we don't need to transform relative paths since
+ * the content is served locally.
+ */
+const fetchReadmeFromLocal = ({
+  packageLocation,
+  projectRoot,
+}: {
+  packageLocation: string
+  projectRoot: string
+}) =>
+  Effect.tryPromise({
+    try: async () => {
+      // Construct the package directory path
+      // packageLocation is like "./node_modules/express"
+      // projectRoot is the absolute path to the project
+      const packageDir = `${projectRoot}/${packageLocation.replace(/^\.\//, '')}`
+
+      // Find the actual README filename (handles case variations)
+      const readmeFilename = await findReadmeFilename(packageDir)
+
+      if (!readmeFilename) return undefined
+
+      const readmePath = `${packageDir}/${readmeFilename}`
+
+      const res = await fetch('/fs/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: readmePath, encoding: 'utf8' }),
+      })
+
+      if (!res.ok) return undefined
+
+      let data: unknown = await res.json()
+
+      // Handle double-encoded JSON (server returns JSON string)
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data) as unknown
+        } catch {
+          return undefined
         }
       }
-      yield res
-      break
-    }
-    // yield results as soon as they're ready
-    yield await Promise.race(promisesQueue)
+
+      const typedData = data as { content?: string }
+
+      if (!typedData.content) return undefined
+
+      // For local packages, return the raw markdown without URL transformation
+      // The GUI will render it as-is, and relative paths will work locally
+      return typedData.content
+    },
+    catch: () => new Error('Failed to fetch local README'),
+  }).pipe(
+    Effect.catchAll(() => Effect.succeed(undefined)),
+    Effect.timeoutFail({
+      duration: API_TIMEOUT_MS,
+      onTimeout: () => new Error('Local README fetch timed out'),
+    }),
+  )
+
+/**
+ * Fetches README either from local node_modules or from unpkg.
+ * - For local packages (packageLocation provided): fetch from /fs/read
+ * - For external packages: fetch from unpkg and transform URLs
+ */
+const fetchReadme = ({
+  packageName,
+  packageVersion,
+  repository,
+  reference,
+  directory,
+  packageLocation,
+  projectRoot,
+}: {
+  packageName: string
+  packageVersion: string
+  repository: { org: string; repo: string }
+  reference?: string
+  directory?: string
+  packageLocation?: string
+  projectRoot?: string
+}) => {
+  // If we have a local package location, fetch from node_modules
+  if (packageLocation && projectRoot) {
+    return fetchReadmeFromLocal({ packageLocation, projectRoot })
   }
+
+  // Otherwise, fetch from unpkg for external packages
+  return fetchReadmeFromUnpkg({
+    packageName,
+    packageVersion,
+    repository,
+    reference,
+    directory,
+  })
+}
+
+/**
+ * Fetches the last 365 days of downloads
+ * for a specified package
+ */
+
+const DownloadsDataSchema = Schema.Array(
+  Schema.Struct({
+    downloads: Schema.Number,
+    day: Schema.String,
+  }),
+)
+
+const DownloadsRangeSchema = Schema.Struct({
+  start: Schema.String,
+  end: Schema.String,
+  downloads: DownloadsDataSchema,
+})
+
+const YearlyDownloadsSchema = Schema.Struct({
+  start: Schema.String,
+  end: Schema.String,
+  package: Schema.String,
+  downloads: DownloadsDataSchema,
+})
+
+const VersionSchema = Schema.Struct({
+  version: Schema.String,
+  publishedDate: Schema.optional(Schema.String),
+  publishedAuthor: Schema.optional(
+    Schema.Struct({
+      name: Schema.optional(Schema.String),
+      email: Schema.optional(Schema.String),
+      avatar: Schema.optional(Schema.String),
+    }),
+  ),
+  unpackedSize: Schema.optional(Schema.Number),
+  integrity: Schema.optional(Schema.String),
+  tarball: Schema.optional(Schema.String),
+  gitHead: Schema.optional(Schema.String),
+})
+
+export type Version = Schema.Schema.Type<typeof VersionSchema>
+
+/**
+ * Fetches the last 365 days of downloads for a specified package.
+ */
+const fetchDownloadsLastYear = ({ spec }: { spec: Spec }) =>
+  Effect.gen(function* () {
+    const httpClient = yield* HttpClient.HttpClient
+
+    const res = yield* httpClient
+      .get(
+        `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
+      )
+      .pipe(
+        Effect.catchTags({
+          RequestError: () => Effect.succeed(undefined),
+          ResponseError: () => Effect.succeed(undefined),
+        }),
+      )
+
+    if (!res) return undefined
+
+    const raw = yield* res.json
+
+    const data = yield* Schema.decodeUnknown(YearlyDownloadsSchema)(
+      raw,
+    ).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!data) return undefined
+
+    return {
+      downloadsLastYear: {
+        start: data.start,
+        end: data.end,
+        downloads: data.downloads.map(
+          (download: { downloads: number; day: string }) => ({
+            downloads: download.downloads,
+            day: download.day,
+          }),
+        ),
+      },
+    }
+  })
+
+/**
+ * Fetches the last 7 days of downloads
+ * for a specified package of a specified version
+ */
+
+const WeeklyDownloadsDataSchema = Schema.Record({
+  key: Schema.String,
+  value: Schema.Number,
+})
+
+const WeeklyDownloadsSchema = Schema.Struct({
+  package: Schema.String,
+  downloads: WeeklyDownloadsDataSchema,
+})
+
+/**
+ * Fetches the last 7 days of downloads per version.
+ */
+const fetchDownloadsPerVersion = ({ spec }: { spec: Spec }) =>
+  Effect.gen(function* () {
+    const httpClient = yield* HttpClient.HttpClient
+
+    const res = yield* httpClient
+      .get(
+        `https://api.npmjs.org/versions/${encodeURIComponent(spec.name)}/last-week`,
+      )
+      .pipe(
+        Effect.catchTags({
+          RequestError: () => Effect.succeed(undefined),
+          ResponseError: () => Effect.succeed(undefined),
+        }),
+      )
+
+    if (!res) return undefined
+
+    const raw = yield* res.json
+
+    const data = yield* Schema.decodeUnknown(WeeklyDownloadsSchema)(
+      raw,
+    ).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!data) return undefined
+
+    return {
+      downloadsPerVersion: data.downloads,
+    }
+  })
+
+/**
+ * Fetches the GitHub Repository for a specified package
+ */
+
+const RepositorySchema = Schema.extend(
+  Schema.Struct({
+    owner: Schema.optional(
+      Schema.extend(
+        Schema.Struct({
+          avatar_url: Schema.optional(Schema.String),
+          login: Schema.optional(Schema.String),
+        }),
+        ExcessProperties,
+      ),
+    ),
+    updated_at: Schema.optional(Schema.String),
+    stargazers_count: Schema.optional(Schema.String),
+    organization: Schema.optional(
+      Schema.extend(
+        Schema.Struct({
+          login: Schema.optional(Schema.String),
+        }),
+        ExcessProperties,
+      ),
+    ),
+    name: Schema.optional(Schema.String),
+    default_branch: Schema.optional(Schema.String),
+    commits_url: Schema.optional(Schema.String),
+    contributors_url: Schema.optional(Schema.String),
+  }),
+  ExcessProperties,
+)
+
+/**
+ * Fetches the GitHub Repository for a specified package.
+ */
+const fetchGitHubRepo = ({ gitHubApi }: { gitHubApi: string }) =>
+  Effect.gen(function* () {
+    const httpClient = yield* HttpClient.HttpClient
+
+    const res = yield* httpClient.get(gitHubApi).pipe(
+      Effect.catchTags({
+        RequestError: () => Effect.succeed(undefined),
+        ResponseError: () => Effect.succeed(undefined),
+      }),
+    )
+
+    if (!res) return undefined
+
+    const raw = yield* res.json
+
+    const data = yield* Schema.decodeUnknown(RepositorySchema)(
+      raw,
+    ).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!data) return undefined
+
+    return data
+  }).pipe(
+    Effect.timeoutFail({
+      duration: API_TIMEOUT_MS,
+      onTimeout: () => new Error('GitHub API timed out'),
+    }),
+  )
+
+/**
+ * Fetches the registry manifest for a specific version
+ * to get publisher info and potentially fill in missing data.
+ */
+const fetchRegistryManifest = ({ spec }: { spec: Spec }) =>
+  Effect.gen(function* () {
+    if (!spec.registry) return undefined
+
+    const httpClient = yield* HttpClient.HttpClient
+
+    const url = new URL(spec.registry)
+    /**
+     * We assume that because `fetchRegistryManifest` is only called
+     * for external packages, that it will always contain a semver value
+     */
+    url.pathname = `${spec.name}/${spec.semver || 'latest'}`
+
+    const res = yield* httpClient.get(url).pipe(
+      Effect.catchTags({
+        RequestError: () => Effect.succeed(undefined),
+        ResponseError: () => Effect.succeed(undefined),
+      }),
+    )
+
+    if (!res) return undefined
+
+    const raw = yield* res.json
+
+    const data = yield* Schema.decodeUnknown(ManifestSchema)(
+      raw,
+    ).pipe(
+      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
+    )
+
+    if (!data) return undefined
+
+    // Cast to Manifest type for normalizeManifest (Schema produces readonly)
+    return normalizeManifest(
+      data as unknown as Parameters<typeof normalizeManifest>[0],
+    ) as NormalizedManifest & {
+      _npmUser?: { name?: string; email?: string }
+    }
+  })
+
+/**
+ * Fetches contributor avatars from manifest contributors
+ */
+const ContributorSchema = Schema.extend(
+  Schema.Struct({
+    email: Schema.optional(Schema.String),
+    name: Schema.optional(Schema.String),
+    avatar: Schema.optional(Schema.String),
+    writeAccess: Schema.optional(Schema.Boolean),
+    isPublisher: Schema.optional(Schema.Boolean),
+  }),
+  ExcessProperties,
+)
+
+export type Contributor = Schema.Schema.Type<typeof ContributorSchema>
+
+const fetchContributorAvatars = ({
+  manifest,
+}: {
+  manifest?: NormalizedManifest
+}) =>
+  Effect.gen(function* () {
+    if (!manifest?.contributors || manifest.contributors.length === 0)
+      return undefined
+
+    const contributors = yield* Effect.all(
+      manifest.contributors.map(contributor =>
+        Effect.tryPromise({
+          try: async () => ({
+            ...contributor,
+            avatar: await retrieveGravatar(contributor.email || ''),
+          }),
+          catch: () =>
+            new Error('Failed to fetch contributor avatar'),
+        }).pipe(
+          Effect.catchAll(() =>
+            Effect.succeed({ ...contributor, avatar: undefined }),
+          ),
+        ),
+      ),
+      { concurrency: 'unbounded' },
+    )
+
+    return contributors as Contributor[]
+  })
+
+/**
+ * Fetches publisher avatar from gravatar
+ */
+const fetchPublisherAvatar = ({ email }: { email: string }) =>
+  Effect.tryPromise({
+    try: async () => {
+      const src = await retrieveGravatar(email)
+      return { src, alt: 'avatar' }
+    },
+    catch: () => new Error('Failed to fetch publisher avatar'),
+  }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+
+export const publicRegistry = 'https://registry.npmjs.org/'
+
+/** Data source identifiers for tracking partial errors */
+export type DataSource =
+  | 'npm-packument'
+  | 'npm-manifest'
+  | 'npm-downloads'
+  | 'npm-downloads-versions'
+  | 'github-repo'
+  | 'github-issues'
+  | 'github-prs'
+  | 'readme'
+  | 'contributors'
+
+const PartialErrorSchema = Schema.Struct({
+  source: Schema.String,
+  message: Schema.String,
+})
+
+export type PartialError = Schema.Schema.Type<
+  typeof PartialErrorSchema
+>
+
+/**
+ * Wraps an Effect to track errors by data source.
+ * Returns { data, error } where error is set if the fetch failed.
+ */
+const withErrorTracking = <A>(
+  effect: Effect.Effect<A, unknown, HttpClient.HttpClient>,
+  source: DataSource,
+): Effect.Effect<
+  { data: A | undefined; error: PartialError | undefined },
+  never,
+  HttpClient.HttpClient
+> =>
+  effect.pipe(
+    Effect.map(data => ({ data, error: undefined })),
+    Effect.catchAll(err => {
+      const message =
+        err instanceof Error ? err.message
+        : (
+          typeof err === 'object' && err !== null && 'message' in err
+        ) ?
+          String((err as { message: unknown }).message)
+        : 'Unknown error'
+      return Effect.succeed({
+        data: undefined,
+        error: { source, message },
+      })
+    }),
+  )
+
+const _DetailsInfoSchema = Schema.Struct({
+  author: Schema.optional(AuthorInfoSchema),
+  downloadsPerVersion: Schema.optional(WeeklyDownloadsDataSchema),
+  downloadsLastYear: Schema.optional(DownloadsRangeSchema),
+  favicon: Schema.optional(FaviconSchema),
+  publisher: Schema.optional(AuthorInfoSchema),
+  publisherAvatar: Schema.optional(FaviconSchema),
+  versions: Schema.optional(Schema.Array(VersionSchema)),
+  greaterVersions: Schema.optional(Schema.Array(VersionSchema)),
+  contributors: Schema.optional(Schema.Array(ContributorSchema)),
+  stargazersCount: Schema.optional(Schema.String),
+  openIssueCount: Schema.optional(Schema.String),
+  openPullRequestCount: Schema.optional(Schema.String),
+  readme: Schema.optional(Schema.String),
+  // The fetched/resolved manifest (useful for callers who need it)
+  manifest: Schema.optional(Schema.Unknown),
+  // Partial errors from individual data sources
+  partialErrors: Schema.optional(Schema.Array(PartialErrorSchema)),
+})
+
+export type DetailsInfo = Schema.Schema.Type<
+  typeof _DetailsInfoSchema
+>
+
+/**
+ * Internal Effect that fetches all details for a package spec,
+ * combining multiple Effect-based fetchers running concurrently.
+ * For local packages, pass packageLocation and projectRoot to fetch README from node_modules.
+ */
+const fetchDetailsEffect = ({
+  spec,
+  manifest,
+  packageLocation,
+  projectRoot,
+}: {
+  spec: Spec
+  manifest?: NormalizedManifest
+  packageLocation?: string
+  projectRoot?: string
+}): Effect.Effect<DetailsInfo, never, HttpClient.HttpClient> =>
+  Effect.gen(function* () {
+    const finalSpec = spec.final
+    const isPublicRegistry = finalSpec.registry === publicRegistry
+    const isLocalPackage = !!packageLocation && !!projectRoot
+
+    // Determine GitHub API URL from spec or manifest
+    const manifestRepoUrl =
+      manifest?.repository ?
+        readRepository(manifest.repository)
+      : undefined
+    const gitHubApi =
+      finalSpec.gitRemote ? getRepositoryApiUrl(finalSpec.gitRemote)
+      : manifestRepoUrl ? getRepositoryApiUrl(manifestRepoUrl)
+      : undefined
+
+    // Get repository details for issues/PRs/readme
+    const repoDetails =
+      manifest?.repository ?
+        getRepoOrigin(manifest.repository)
+      : undefined
+
+    // Extract readme params if we have enough info
+    // For local packages, we can fetch README even without repository details
+    // For external packages, we need repository details to fetch from unpkg and transform URLs
+    const readmeParams =
+      isLocalPackage && packageLocation && projectRoot ?
+        // Local package: fetch from node_modules, no need for repository details
+        {
+          packageName: finalSpec.name,
+          packageVersion: manifest?.version ?? 'latest',
+          repository: repoDetails ?? { org: '', repo: '' }, // Placeholder, not used for local
+          reference: manifest?.version,
+          packageLocation,
+          projectRoot,
+        }
+      : manifest?.version && repoDetails ?
+        // External package: fetch from unpkg, needs repository details for URL transformation
+        {
+          packageName: finalSpec.name,
+          packageVersion: manifest.version,
+          repository: repoDetails,
+          reference:
+            (manifest as { gitHead?: string }).gitHead ||
+            manifest.version,
+          directory:
+            (
+              manifest.repository &&
+              typeof manifest.repository === 'object' &&
+              'directory' in manifest.repository
+            ) ?
+              (manifest.repository as { directory: string }).directory
+            : undefined,
+        }
+      : undefined
+
+    // Run all independent effects concurrently with error tracking
+    const results = yield* Effect.all(
+      {
+        packument: withErrorTracking(
+          fetchPackument({ spec: finalSpec }),
+          'npm-packument',
+        ),
+
+        // Only fetch registry manifest if:
+        // 1. It's a public registry package
+        // 2. We don't already have a manifest (local packages have one)
+        registryManifest:
+          isPublicRegistry && !manifest ?
+            withErrorTracking(
+              fetchRegistryManifest({ spec: finalSpec }),
+              'npm-manifest',
+            )
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        downloadsLastYear:
+          isPublicRegistry ?
+            withErrorTracking(
+              fetchDownloadsLastYear({ spec: finalSpec }),
+              'npm-downloads',
+            )
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        downloadsPerVersion:
+          isPublicRegistry ?
+            withErrorTracking(
+              fetchDownloadsPerVersion({ spec: finalSpec }),
+              'npm-downloads-versions',
+            )
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        gitHubRepo:
+          gitHubApi ?
+            withErrorTracking(
+              fetchGitHubRepo({ gitHubApi }),
+              'github-repo',
+            )
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        openIssueCount:
+          repoDetails ?
+            withErrorTracking(
+              fetchOpenIssueCount({
+                org: repoDetails.org,
+                repo: repoDetails.repo,
+              }),
+              'github-issues',
+            )
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        openPullRequestCount:
+          repoDetails ?
+            withErrorTracking(
+              fetchOpenPullRequestCount({
+                org: repoDetails.org,
+                repo: repoDetails.repo,
+              }),
+              'github-prs',
+            )
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        readme:
+          readmeParams ?
+            withErrorTracking(fetchReadme(readmeParams), 'readme')
+          : Effect.succeed({ data: undefined, error: undefined }),
+
+        contributors: withErrorTracking(
+          fetchContributorAvatars({ manifest }),
+          'contributors',
+        ),
+      },
+      { concurrency: 'unbounded' },
+    )
+
+    // Collect all partial errors
+    const partialErrors: PartialError[] = [
+      results.packument.error,
+      results.registryManifest.error,
+      results.downloadsLastYear.error,
+      results.downloadsPerVersion.error,
+      results.gitHubRepo.error,
+      results.openIssueCount.error,
+      results.openPullRequestCount.error,
+      results.readme.error,
+      results.contributors.error,
+    ].filter((e): e is PartialError => e !== undefined)
+
+    // Extract publisher info from registry manifest (needed early for version processing)
+    const registryManifest = results.registryManifest.data
+
+    // Process packument versions if available
+    // Use registryManifest as fallback for external packages where manifest is undefined
+    const manifestForVersions = manifest ?? registryManifest
+    const packumentData = results.packument.data
+    const versionInfo = yield* (() => {
+      if (
+        packumentData === undefined ||
+        manifestForVersions === undefined
+      ) {
+        return Effect.succeed(undefined)
+      }
+      return Effect.tryPromise({
+        try: () =>
+          processPackumentVersions({
+            packument: packumentData,
+            manifest: manifestForVersions as Manifest,
+          }),
+        catch: () => new Error('Failed to process versions'),
+      }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+    })()
+    const publisher =
+      registryManifest?._npmUser ?
+        readAuthor(registryManifest._npmUser as AuthorInfo)
+      : undefined
+
+    // Fetch publisher avatar if we have an email
+    const publisherEmail = publisher?.email
+    const publisherName = publisher?.name
+    const publisherAvatar = yield* (() => {
+      if (publisherEmail === undefined) {
+        return Effect.succeed(undefined)
+      }
+      return fetchPublisherAvatar({ email: publisherEmail }).pipe(
+        Effect.map(avatar =>
+          avatar ?
+            {
+              src: avatar.src,
+              alt:
+                publisherName ?
+                  `${publisherName}'s avatar`
+                : 'avatar',
+            }
+          : undefined,
+        ),
+      )
+    })()
+
+    // Determine author - prefer local manifest, fall back to registry
+    const localAuthor =
+      manifest?.author ?
+        readAuthor(manifest.author as string | AuthorInfo)
+      : undefined
+    const remoteAuthor =
+      registryManifest?.author ?
+        readAuthor(registryManifest.author as string | AuthorInfo)
+      : undefined
+    const author = localAuthor ?? remoteAuthor
+
+    // Determine favicon - prefer local manifest repo, fall back to registry
+    const faviconInfo =
+      fetchFavIcon({ manifest }) ??
+      (registryManifest ?
+        fetchFavIcon({ manifest: registryManifest })
+      : undefined)
+
+    // Extract registry manifest repo details once (used for multiple fallbacks)
+    const regRepoUrl =
+      registryManifest?.repository ?
+        readRepository(registryManifest.repository)
+      : undefined
+    const regRepoDetails =
+      regRepoUrl ? getRepoOrigin(regRepoUrl) : undefined
+    const regGitHubApi =
+      regRepoUrl ? getRepositoryApiUrl(regRepoUrl) : undefined
+
+    // Helper to create fallback effects without non-null assertions
+    const regManifestVersion = registryManifest?.version
+    const regManifestRepo = registryManifest?.repository
+    const regManifestGitHead = (
+      registryManifest as { gitHead?: string } | undefined
+    )?.gitHead
+
+    // Run all fallback fetches in parallel for better performance
+    const fallbackResults = yield* Effect.all(
+      {
+        // Fallback for README
+        readme:
+          (
+            results.readme.data === undefined &&
+            regManifestVersion !== undefined &&
+            regRepoDetails !== undefined
+          ) ?
+            fetchReadme({
+              packageName: finalSpec.name,
+              packageVersion: regManifestVersion,
+              repository: regRepoDetails,
+              reference: regManifestGitHead || regManifestVersion,
+              directory:
+                (
+                  regManifestRepo &&
+                  typeof regManifestRepo === 'object' &&
+                  'directory' in regManifestRepo
+                ) ?
+                  (regManifestRepo as { directory: string }).directory
+                : undefined,
+            }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+          : Effect.succeed(results.readme.data),
+
+        // Fallback for GitHub repo (stars)
+        gitHubRepo:
+          (
+            results.gitHubRepo.data === undefined &&
+            regGitHubApi !== undefined
+          ) ?
+            fetchGitHubRepo({ gitHubApi: regGitHubApi }).pipe(
+              Effect.catchAll(() => Effect.succeed(undefined)),
+            )
+          : Effect.succeed(results.gitHubRepo.data),
+
+        // Fallback for open issue count
+        openIssueCount:
+          (
+            results.openIssueCount.data === undefined &&
+            regRepoDetails !== undefined
+          ) ?
+            fetchOpenIssueCount({
+              org: regRepoDetails.org,
+              repo: regRepoDetails.repo,
+            }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+          : Effect.succeed(results.openIssueCount.data),
+
+        // Fallback for open PR count
+        openPullRequestCount:
+          (
+            results.openPullRequestCount.data === undefined &&
+            regRepoDetails !== undefined
+          ) ?
+            fetchOpenPullRequestCount({
+              org: regRepoDetails.org,
+              repo: regRepoDetails.repo,
+            }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+          : Effect.succeed(results.openPullRequestCount.data),
+
+        // Fallback for contributors (use registryManifest if manifest was undefined)
+        contributors:
+          (
+            results.contributors.data === undefined &&
+            registryManifest !== undefined
+          ) ?
+            fetchContributorAvatars({
+              manifest: registryManifest,
+            }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
+          : Effect.succeed(results.contributors.data),
+      },
+      { concurrency: 'unbounded' },
+    )
+
+    // Determine the best manifest to return (prefer passed-in, fall back to fetched)
+    const resolvedManifest = manifest ?? registryManifest
+
+    // Assemble final DetailsInfo with spread-based optional fields
+    return {
+      ...(author && { author }),
+      ...(publisher && { publisher }),
+      ...(publisherAvatar && { publisherAvatar }),
+      ...(faviconInfo?.favicon && { favicon: faviconInfo.favicon }),
+      ...(results.downloadsLastYear.data?.downloadsLastYear && {
+        downloadsLastYear:
+          results.downloadsLastYear.data.downloadsLastYear,
+      }),
+      ...(results.downloadsPerVersion.data?.downloadsPerVersion && {
+        downloadsPerVersion:
+          results.downloadsPerVersion.data.downloadsPerVersion,
+      }),
+      ...(fallbackResults.gitHubRepo?.stargazers_count && {
+        stargazersCount: fallbackResults.gitHubRepo.stargazers_count,
+      }),
+      ...(fallbackResults.openIssueCount && {
+        openIssueCount: fallbackResults.openIssueCount,
+      }),
+      ...(fallbackResults.openPullRequestCount && {
+        openPullRequestCount: fallbackResults.openPullRequestCount,
+      }),
+      ...(fallbackResults.readme && {
+        readme: fallbackResults.readme,
+      }),
+      ...(versionInfo?.versions && {
+        versions: versionInfo.versions,
+      }),
+      ...(versionInfo?.greaterVersions && {
+        greaterVersions: versionInfo.greaterVersions,
+      }),
+      ...(fallbackResults.contributors && {
+        contributors: fallbackResults.contributors,
+      }),
+      ...(resolvedManifest && { manifest: resolvedManifest }),
+      ...(partialErrors.length > 0 && { partialErrors }),
+    } as DetailsInfo
+  }).pipe(
+    // Convert Effect errors to defects that will reject the promise
+    Effect.catchAll((error: unknown) =>
+      Effect.die(
+        new Error(
+          error instanceof Error ?
+            error.message
+          : 'Failed to fetch details',
+        ),
+      ),
+    ),
+  )
+
+/**
+ * Fetches all details for a package spec, combining multiple
+ * concurrent fetchers. Returns a Promise that resolves to a
+ * complete DetailsInfo object.
+ * For local packages, pass packageLocation and projectRoot to fetch README from node_modules.
+ */
+export const fetchDetails = ({
+  spec,
+  manifest,
+  packageLocation,
+  projectRoot,
+}: {
+  spec: Spec
+  manifest?: NormalizedManifest
+  packageLocation?: string
+  projectRoot?: string
+}): Promise<DetailsInfo> =>
+  Effect.runPromise(
+    fetchDetailsEffect({
+      spec,
+      manifest,
+      packageLocation,
+      projectRoot,
+    }).pipe(Effect.provide(HttpClientNoTracing)),
+  )
+
+export {
+  fetchPackument,
+  fetchRegistryManifest,
+  fetchOpenIssueCount,
+  fetchOpenPullRequestCount,
+  fetchReadme,
+  fetchReadmeFromLocal,
+  fetchReadmeFromUnpkg,
+  fetchDownloadsLastYear,
+  fetchDownloadsPerVersion,
+  fetchGitHubRepo,
+  fetchContributorAvatars,
+  fetchPublisherAvatar,
+  fetchFavIcon,
+  processPackumentVersions,
+  withErrorTracking,
+  fetchDetailsEffect,
+  HttpClientNoTracing,
+  API_TIMEOUT_MS,
 }

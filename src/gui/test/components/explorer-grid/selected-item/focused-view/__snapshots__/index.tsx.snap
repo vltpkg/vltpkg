@@ -11,9 +11,11 @@ exports[`FocusedView renders default 1`] = `
     uninstalleddependencies
   >
     <div class="bg-background relative">
+      <gui-partial-errors-indicator>
+      </gui-partial-errors-indicator>
       <div class="bg-foreground/6">
         <div class="grid-cols-[4fr_1fr] lg:grid">
-          <div class="flex w-full flex-col gap-[1px] p-[0.5px] pl-[0px] pt-[0px]">
+          <div class="flex w-full flex-col gap-px p-[0.5px] pl-0 pt-0">
             <div class="bg-background w-full rounded px-6 py-4">
               <gui-package-image-spec>
               </gui-package-image-spec>
@@ -29,7 +31,7 @@ exports[`FocusedView renders default 1`] = `
         <div class="bg-background pattern-hatch h-9 w-full rounded lg:hidden">
         </div>
         <div class="grid-cols-[4fr_1fr] lg:grid">
-          <div class="flex w-full p-[0.5px] pl-[0px]">
+          <div class="flex w-full p-[0.5px] pl-0">
             <div class="bg-background w-full rounded">
               <gui-navigation>
                 <gui-navigation-list>
@@ -94,7 +96,7 @@ exports[`FocusedView renders default 1`] = `
           </div>
         </div>
         <div class="h-full min-w-0 grid-cols-[4fr_1fr] lg:grid lg:min-h-[calc(100svh-64px-96.5px-45px-1px)]">
-          <div class="flex w-full min-w-0 p-[0.5px] pl-[0px]">
+          <div class="flex w-full min-w-0 p-[0.5px] pl-0">
             <div class="bg-background w-full min-w-0 rounded">
               <gui-router-outlet>
               </gui-router-outlet>
@@ -103,7 +105,7 @@ exports[`FocusedView renders default 1`] = `
           <div class="bg-background pattern-hatch h-9 w-full rounded lg:hidden">
           </div>
           <div class="flex w-full min-w-0 rounded p-[0.5px]">
-            <div class="flex h-full w-full min-w-0 flex-col gap-[1px] rounded **:data-[slot=aside-section]:last-of-type:h-full [&amp;>aside]:h-full **:data-[slot=aside-section]:last-of-type:[&amp;>div]:h-full">
+            <div class="flex h-full w-full min-w-0 flex-col gap-px rounded **:data-[slot=aside-section]:last-of-type:h-full [&amp;>aside]:h-full **:data-[slot=aside-section]:last-of-type:[&amp;>div]:h-full">
               <gui-install-helper>
               </gui-install-helper>
               <gui-aside-overview-empty-state>

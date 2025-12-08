@@ -3,7 +3,10 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import { SELECTED_ITEM } from '../__fixtures__/item.ts'
+import {
+  SELECTED_ITEM,
+  MOCK_LOADING_STATE,
+} from '../__fixtures__/item.ts'
 import { FundingTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-funding.tsx'
 
 import type { DepFunding } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -124,6 +127,7 @@ test('FundingTabContent renders with an empty state ', () => {
       setDepFunding: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 
@@ -163,6 +167,7 @@ test('FundingTabContent renders with an funding', () => {
       setDepFunding: vi.fn(),
       duplicatedDeps: undefined,
       setDuplicatedDeps: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 

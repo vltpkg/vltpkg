@@ -1,911 +1,1374 @@
-import { test, expect, vi } from 'vitest'
+import { test, expect, describe, vi, beforeEach } from 'vitest'
+import { Effect } from 'effect'
+import { FetchHttpClient } from '@effect/platform'
+import type { HttpClient } from '@effect/platform'
 import { Spec } from '@vltpkg/spec/browser'
+import { normalizeManifest } from '@vltpkg/types'
 import {
-  fetchDetails,
+  // Individual Effects
+  fetchPackument,
+  fetchRegistryManifest,
+  fetchOpenIssueCount,
+  fetchOpenPullRequestCount,
+  fetchReadme,
+  fetchReadmeFromLocal,
+  fetchReadmeFromUnpkg,
+  fetchDownloadsLastYear,
+  fetchDownloadsPerVersion,
+  fetchGitHubRepo,
+  fetchContributorAvatars,
+  fetchPublisherAvatar,
+  fetchFavIcon,
+  processPackumentVersions,
+  withErrorTracking,
+  fetchDetailsEffect,
+  HttpClientNoTracing,
+  // Utility functions
   readAuthor,
   readRepository,
   parseAriaLabelFromSVG,
+  // Composed function (for integration tests)
+  fetchDetails,
 } from '@/lib/external-info.ts'
-import type { DetailsInfo } from '@/lib/external-info.ts'
-import { normalizeManifest } from '@vltpkg/types'
 
-const sleep = (time: number) =>
-  new Promise<void>(resolve => {
-    setTimeout(() => resolve(), time)
+// ============================================
+// Mock Fetch Setup
+// ============================================
+type MockResponse = {
+  status?: number
+  body?: unknown
+  isText?: boolean
+}
+
+// MockResponses can be either a full MockResponse object or just the body data directly
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+type MockResponses = Record<string, MockResponse | unknown>
+
+const createMockFetch = (mockResponses: MockResponses) =>
+  vi.fn(async (url: string | URL | Request) => {
+    const urlStr = url instanceof Request ? url.url : String(url)
+
+    // Find a matching mock response
+    for (const [pattern, response] of Object.entries(mockResponses)) {
+      if (urlStr.includes(pattern) || urlStr === pattern) {
+        // Handle both full MockResponse objects and shorthand body-only values
+        const isMockResponse =
+          typeof response === 'object' &&
+          response !== null &&
+          ('body' in response ||
+            'status' in response ||
+            'isText' in response)
+        const mockResp: MockResponse =
+          isMockResponse ?
+            (response as MockResponse)
+          : { body: response }
+
+        const status = mockResp.status ?? 200
+
+        if (status >= 400) {
+          return {
+            ok: false,
+            status,
+            json: async () => mockResp.body,
+            text: async () =>
+              mockResp.isText ?
+                (mockResp.body as string)
+              : JSON.stringify(mockResp.body),
+          }
+        }
+
+        return {
+          ok: true,
+          status,
+          json: async () => mockResp.body,
+          text: async () =>
+            mockResp.isText ?
+              (mockResp.body as string)
+            : JSON.stringify(mockResp.body),
+        }
+      }
+    }
+
+    // No match found - return error response
+    return {
+      ok: false,
+      status: 404,
+      json: async () => ({ error: `No mock for URL: ${urlStr}` }),
+      text: async () => `No mock for URL: ${urlStr}`,
+    }
+  }) as unknown as typeof fetch
+
+// Helper to run an Effect with mocked fetch
+const runWithMock = <A, E>(
+  effect: Effect.Effect<A, E, HttpClient.HttpClient>,
+  mocks: MockResponses,
+) => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = createMockFetch(mocks)
+
+  return Effect.runPromise(
+    effect.pipe(Effect.provide(HttpClientNoTracing)),
+  ).finally(() => {
+    globalThis.fetch = originalFetch
   })
+}
 
-global.fetch = vi.fn(async url => ({
-  json: async () => {
-    switch (url) {
-      case 'https://api.npmjs.org/versions/my-package/last-week': {
-        return {
-          package: 'my-package',
-          downloads: { '1.0.0': 100 },
-        }
-      }
-      case 'https://registry.npmjs.org/my-package/1.0.0': {
-        return {
-          _npmUser: {
-            name: 'Ruy Adorno',
-            email: 'ruyadorno@example.com',
-          },
-        }
-      }
-      case 'https://api.npmjs.org/versions/async-request/last-week': {
-        await sleep(Math.random() * 100)
-        return {
-          package: 'my-package',
-          downloads: { '1.0.0': 100 },
-        }
-      }
-      case 'https://registry.npmjs.org/async-request/1.0.0': {
-        await sleep(Math.random() * 100)
-        return {
-          author: {
-            name: 'Ruy Adorno',
-            email: 'ruyadorno@example.com',
-          },
-          _npmUser: {
-            name: 'Ruy Adorno',
-            email: 'ruyadorno@example.com',
-          },
-        }
-      }
-      case 'https://registry.npmjs.org/missing-downloads/1.0.0': {
-        return {
-          _npmUser: {
-            name: 'Foo',
-            email: 'foo@bar.ca',
-          },
-        }
-      }
-      case 'https://registry.npmjs.org/favicon-repo-in-local-manifest/1.0.0': {
-        return {
-          _npmUser: {
-            name: 'Ruy Adorno',
-            email: 'ruyadorno@example.com',
-          },
-        }
-      }
-      case 'https://api.github.com/repos/ruyadorno/favicon-repo-in-local-manifest': {
-        return {
-          owner: {
-            avatar_url:
-              'https://example.com/favicon-repo-in-local-manifest.jpg',
-            login: 'ruyadorno',
-          },
-          name: 'favicon-repo-in-local-manifest',
-          organization: { login: 'ruyadorno' },
-        }
-      }
-      case 'https://registry.npmjs.org/favicon-repo-in-remote-manifest/1.0.0': {
-        return {
-          repository:
-            'git+ssh://github.com/ruyadorno/favicon-repo-in-remote-manifest.git',
-        }
-      }
-      case 'https://api.github.com/repos/ruyadorno/favicon-repo-in-remote-manifest': {
-        return {
-          owner: {
-            avatar_url:
-              'https://example.com/favicon-repo-in-remote-manifest.jpg',
-            login: 'ruyadorno',
-          },
-          name: 'favicon-repo-in-remote-manifest',
-          organization: { login: 'ruyadorno' },
-        }
-      }
-      case 'https://registry.npmjs.org/package-with-githead/1.0.0': {
-        return {
-          _gitHead: 'abc123def456',
-          version: '1.0.0',
-        }
-      }
-      case 'https://registry.npmjs.org/package-with-githead': {
-        return {
-          versions: {
-            '1.0.0': {
-              version: '1.0.0',
-              gitHead: 'abc123def456',
-              dist: {
-                unpackedSize: 1000,
-                integrity: 'sha512-abc123',
-                tarball:
-                  'https://registry.npmjs.org/package-with-githead/-/package-with-githead-1.0.0.tgz',
-              },
-            },
-          },
-          time: {
-            '1.0.0': '2023-01-01T00:00:00.000Z',
-          },
-        }
-      }
-      case 'https://registry.npmjs.org/package-with-versions': {
-        return {
-          versions: {
-            '1.0.0': {
-              version: '1.0.0',
-              gitHead: 'abc123def456',
-              dist: {
-                unpackedSize: 1000,
-                integrity: 'sha512-abc123',
-                tarball:
-                  'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.0.tgz',
-              },
-            },
-            '1.0.1': {
-              version: '1.0.1',
-              gitHead: 'def456abc123',
-              dist: {
-                unpackedSize: 1000,
-                integrity: 'sha512-def456',
-                tarball:
-                  'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.1.tgz',
-              },
-            },
-            '1.0.2': {
-              version: '1.0.2',
-              gitHead: 'ghi789def456',
-              dist: {
-                unpackedSize: 1000,
-                integrity: 'sha512-ghi789',
-                tarball:
-                  'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.2.tgz',
-              },
-            },
-          },
-          time: {
-            '1.0.0': '2023-01-01T00:00:00.000Z',
-            '1.0.1': '2023-01-02T00:00:00.000Z',
-            '1.0.2': '2023-01-03T00:00:00.000Z',
-          },
-        }
-      }
-      case 'https://api.npmjs.org/downloads/range/last-year/my-package': {
-        return {
-          start: '2023-01-01',
-          end: '2023-01-31',
-          downloads: [
-            { downloads: 100, day: '2023-01-01' },
-            { downloads: 150, day: '2023-01-02' },
-          ],
-        }
-      }
-      case 'https://registry.npmjs.org/with-contributors/1.0.0': {
-        return {
-          contributors: [
-            {
-              name: 'Contributor One',
-              email: 'contrib1@example.com',
-            },
-            'Contributor Two <contrib2@example.com>',
-          ],
-        }
-      }
-      case 'https://registry.npmjs.org/with-contributors': {
-        return {
-          contributors: [
-            {
-              name: 'Contributor One',
-              email: 'contrib1@example.com',
-            },
-            'Contributor Two <contrib2@example.com>',
-          ],
-          maintainers: [
-            {
-              name: 'Maintainer One',
-              email: 'maintainer1@example.com',
-            },
-          ],
-          versions: {
-            '1.0.0': {
-              version: '1.0.0',
-              dist: {
-                unpackedSize: 1000,
-                integrity: 'sha512-abc123',
-                tarball:
-                  'https://registry.npmjs.org/with-contributors/-/with-contributors-1.0.0.tgz',
-              },
-            },
-          },
-          time: {
-            '1.0.0': '2023-01-01T00:00:00.000Z',
-          },
-        }
-      }
-      case 'https://api.github.com/repos/ruyadorno/github-repo-info': {
-        return {
-          stargazers_count: 100,
-          organization: { login: 'ruyadorno' },
-          name: 'github-repo-info',
-        }
-      }
-      case 'https://img.shields.io/github/issues/ruyadorno/github-repo-info': {
-        return '<svg aria-label="issues: 5 open">Test SVG</svg>'
-      }
-      case 'https://img.shields.io/github/issues-pr/ruyadorno/github-repo-info': {
-        return '<svg aria-label="pull requests: 3 open">Test SVG</svg>'
-      }
-      case 'https://api.github.com/repos/ruyadorno/github-repo-error': {
-        throw new Error('API error')
-      }
-      case 'https://img.shields.io/github/issues/ruyadorno/github-repo-error': {
-        throw new Error('API error')
-      }
-      case 'https://img.shields.io/github/issues-pr/ruyadorno/github-repo-error': {
-        throw new Error('API error')
-      }
-      default: {
-        throw new Error('unexpected url')
-      }
-    }
-  },
-  text: async () => {
-    if (
-      url ===
-      'https://img.shields.io/github/issues/ruyadorno/github-repo-info'
-    ) {
-      return '<svg aria-label="issues: 5 open">Test SVG</svg>'
-    }
-    if (
-      url ===
-      'https://img.shields.io/github/issues-pr/ruyadorno/github-repo-info'
-    ) {
-      return '<svg aria-label="pull requests: 3 open">Test SVG</svg>'
-    }
-    if (
-      url ===
-      'https://img.shields.io/github/issues/ruyadorno/github-repo-error'
-    ) {
-      throw new Error('API error')
-    }
-    if (
-      url ===
-      'https://img.shields.io/github/issues-pr/ruyadorno/github-repo-error'
-    ) {
-      throw new Error('API error')
-    }
-    throw new Error('unexpected url for text response')
-  },
-})) as unknown as typeof global.fetch
-
-// Mock getRepoOrigin to ensure correct behavior
-vi.mock('@/utils/get-repo-url.ts', () => ({
-  getRepositoryApiUrl: (repo: string) => {
-    if (repo.includes('org/repo')) {
-      return 'https://api.github.com/repos/org/repo'
-    }
-    if (repo.includes('ruyadorno/favicon-repo-in-local-manifest')) {
-      return 'https://api.github.com/repos/ruyadorno/favicon-repo-in-local-manifest'
-    }
-    if (repo.includes('ruyadorno/favicon-repo-in-remote-manifest')) {
-      return 'https://api.github.com/repos/ruyadorno/favicon-repo-in-remote-manifest'
-    }
-    if (repo.includes('ruyadorno/favicon-fallback')) {
-      return 'https://api.github.com/repos/ruyadorno/favicon-fallback'
-    }
-    if (repo.includes('ruyadorno/github-repo-info')) {
-      return 'https://api.github.com/repos/ruyadorno/github-repo-info'
-    }
-    if (repo.includes('ruyadorno/github-repo-error')) {
-      return 'https://api.github.com/repos/ruyadorno/github-repo-error'
-    }
-    return `https://api.github.com/repos/${repo.split('/').slice(-2).join('/')}`
-  },
-  getRepoOrigin: (repo: string | { url: string }) => {
-    const repoStr = typeof repo === 'string' ? repo : repo.url
-
-    if (
-      repoStr.includes('ruyadorno/favicon-repo-in-local-manifest')
-    ) {
-      return {
-        org: 'ruyadorno',
-        repo: 'favicon-repo-in-local-manifest',
-      }
-    }
-    if (
-      repoStr.includes('ruyadorno/favicon-repo-in-remote-manifest')
-    ) {
-      return {
-        org: 'ruyadorno',
-        repo: 'favicon-repo-in-remote-manifest',
-      }
-    }
-    if (repoStr.includes('ruyadorno/favicon-fallback')) {
-      return { org: 'ruyadorno', repo: 'favicon-fallback' }
-    }
-    if (repoStr.includes('ruyadorno/github-repo-info')) {
-      return { org: 'ruyadorno', repo: 'github-repo-info' }
-    }
-    if (repoStr.includes('ruyadorno/github-repo-error')) {
-      return { org: 'ruyadorno', repo: 'github-repo-error' }
-    }
-
-    return undefined
-  },
-}))
-
-test('readAuthor from author string pattern', () => {
-  const author =
-    'Ruy Adorno <ruyadorno@example.com> (https://ruyadorno.com)'
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-    url: 'https://ruyadorno.com',
-  })
-})
-
-test('readAuthor from author string pattern missing url', () => {
-  const author = 'Ruy Adorno <ruyadorno@example.com>'
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-  })
-})
-
-test('readAuthor from author string pattern missing email', () => {
-  const author = 'Ruy Adorno (https://ruyadorno.com)'
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-    url: 'https://ruyadorno.com',
-  })
-})
-
-test('readAuthor from author string pattern name-only', () => {
-  const author = 'Ruy Adorno'
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-  })
-})
-
-test('readAuthor from author object pattern', () => {
-  const author = {
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-    url: 'https://ruyadorno.com',
-  }
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-    url: 'https://ruyadorno.com',
-  })
-})
-
-test('readAuthor from author object pattern alternative web field', () => {
-  const author = {
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-    web: 'https://ruyadorno.com',
-  }
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-    url: 'https://ruyadorno.com',
-  })
-})
-
-test('readAuthor from author object pattern alternative mail field', () => {
-  const author = {
-    name: 'Ruy Adorno',
-    mail: 'ruyadorno@example.com',
-    web: 'https://ruyadorno.com',
-  }
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-    url: 'https://ruyadorno.com',
-  })
-})
-
-test('readAuthor from author object pattern name-only', () => {
-  const author = {
-    name: 'Ruy Adorno',
-  }
-  expect(readAuthor(author)).toEqual({
-    name: 'Ruy Adorno',
-  })
-})
-
-test('readRepository from string pattern', () => {
-  const repository = 'git+ssh://github.com/org/repo.git'
-  expect(readRepository(repository)).toEqual(
-    'git+ssh://github.com/org/repo.git',
-  )
-})
-
-test('readRepository from object pattern', () => {
-  const repository = {
-    type: 'git',
-    url: 'git+ssh://github.com/org/repo.git',
-  }
-  expect(readRepository(repository)).toEqual(
-    'git+ssh://github.com/org/repo.git',
-  )
-})
-
-test('fetchDetails returns the correct details including downloadsRange', async () => {
-  const mani = normalizeManifest({
-    name: 'my-package',
-    version: '1.0.0',
-    description: 'my-package description',
-    license: 'MIT',
-    author: 'Ruy Adorno',
-  })
-  const spec = Spec.parse('my-package', '1.0.0')
-  const res: any = {}
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res).toEqual({
-    author: {
+// ============================================
+// Unit Tests: Utility Functions
+// ============================================
+describe('readAuthor', () => {
+  test('parses author string with all fields', () => {
+    const author =
+      'Ruy Adorno <ruyadorno@example.com> (https://ruyadorno.com)'
+    expect(readAuthor(author)).toEqual({
       name: 'Ruy Adorno',
-    },
-    downloadsPerVersion: { '1.0.0': 100 },
-    downloadsLastYear: {
+      email: 'ruyadorno@example.com',
+      url: 'https://ruyadorno.com',
+    })
+  })
+
+  test('parses author string missing url', () => {
+    const author = 'Ruy Adorno <ruyadorno@example.com>'
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+      email: 'ruyadorno@example.com',
+    })
+  })
+
+  test('parses author string missing email', () => {
+    const author = 'Ruy Adorno (https://ruyadorno.com)'
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+      url: 'https://ruyadorno.com',
+    })
+  })
+
+  test('parses author string name-only', () => {
+    const author = 'Ruy Adorno'
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+    })
+  })
+
+  test('parses author object', () => {
+    const author = {
+      name: 'Ruy Adorno',
+      email: 'ruyadorno@example.com',
+      url: 'https://ruyadorno.com',
+    }
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+      email: 'ruyadorno@example.com',
+      url: 'https://ruyadorno.com',
+    })
+  })
+
+  test('parses author object with alternative web field', () => {
+    const author = {
+      name: 'Ruy Adorno',
+      email: 'ruyadorno@example.com',
+      web: 'https://ruyadorno.com',
+    }
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+      email: 'ruyadorno@example.com',
+      url: 'https://ruyadorno.com',
+    })
+  })
+
+  test('parses author object with alternative mail field', () => {
+    const author = {
+      name: 'Ruy Adorno',
+      mail: 'ruyadorno@example.com',
+      web: 'https://ruyadorno.com',
+    }
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+      email: 'ruyadorno@example.com',
+      url: 'https://ruyadorno.com',
+    })
+  })
+
+  test('parses author object name-only', () => {
+    const author = { name: 'Ruy Adorno' }
+    expect(readAuthor(author)).toEqual({
+      name: 'Ruy Adorno',
+    })
+  })
+
+  test('returns undefined for empty name', () => {
+    expect(readAuthor({ name: '' })).toBeUndefined()
+  })
+})
+
+describe('readRepository', () => {
+  test('returns string repository as-is', () => {
+    const repository = 'git+ssh://github.com/org/repo.git'
+    expect(readRepository(repository)).toBe(
+      'git+ssh://github.com/org/repo.git',
+    )
+  })
+
+  test('extracts url from repository object', () => {
+    const repository = {
+      type: 'git',
+      url: 'git+ssh://github.com/org/repo.git',
+    }
+    expect(readRepository(repository)).toBe(
+      'git+ssh://github.com/org/repo.git',
+    )
+  })
+
+  test('returns undefined for object without url', () => {
+    const repository = { type: 'git' } as unknown as {
+      type: string
+      url: string
+    }
+    expect(readRepository(repository)).toBeUndefined()
+  })
+})
+
+describe('parseAriaLabelFromSVG', () => {
+  test('extracts number with k suffix', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="issues: 2.5k open">Test SVG</svg>',
+      ),
+    ).toBe('2.5k')
+  })
+
+  test('extracts number with m suffix', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="issues: 2.5m open">Test SVG</svg>',
+      ),
+    ).toBe('2.5m')
+  })
+
+  test('extracts number with b suffix', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="issues: 2b open">Test SVG</svg>',
+      ),
+    ).toBe('2b')
+  })
+
+  test('extracts plain number', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="issues: 737 open">Test SVG</svg>',
+      ),
+    ).toBe('737')
+  })
+
+  test('handles capital letter suffix', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="downloads: 4.2K per week">Test SVG</svg>',
+      ),
+    ).toBe('4.2K')
+  })
+
+  test('handles decimal number without suffix', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="rating: 4.7 stars">Test SVG</svg>',
+      ),
+    ).toBe('4.7')
+  })
+
+  test('extracts number from different text format', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="contributors: 42 people">Test SVG</svg>',
+      ),
+    ).toBe('42')
+  })
+
+  test('extracts number at the beginning', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="123 stars on GitHub">Test SVG</svg>',
+      ),
+    ).toBe('123')
+  })
+
+  test('returns first match when multiple numbers present', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="200 stars and 50 forks">Test SVG</svg>',
+      ),
+    ).toBe('200')
+  })
+
+  test('returns undefined for missing aria-label', () => {
+    expect(
+      parseAriaLabelFromSVG('<svg>No aria label</svg>'),
+    ).toBeUndefined()
+  })
+
+  test('returns undefined for aria-label without numbers', () => {
+    expect(
+      parseAriaLabelFromSVG(
+        '<svg aria-label="No numbers here">Test SVG</svg>',
+      ),
+    ).toBeUndefined()
+  })
+})
+
+// ============================================
+// Unit Tests: Individual Effects
+// ============================================
+describe('fetchPackument', () => {
+  test('fetches and parses packument successfully', async () => {
+    const mockPackument = {
+      name: 'my-package',
+      'dist-tags': { latest: '1.0.0' },
+      versions: {
+        '1.0.0': {
+          version: '1.0.0',
+          dist: {
+            integrity: 'sha512-abc123',
+            tarball:
+              'https://registry.npmjs.org/my-package/-/my-package-1.0.0.tgz',
+          },
+        },
+      },
+      time: { '1.0.0': '2023-01-01T00:00:00.000Z' },
+    }
+
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchPackument({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package': mockPackument,
+      },
+    )
+
+    expect(result).toMatchObject({
+      name: 'my-package',
+      'dist-tags': { latest: '1.0.0' },
+    })
+  })
+
+  test('returns undefined on parse error', async () => {
+    // Mock an invalid packument response that fails schema validation
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchPackument({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package': { invalid: 'data' },
+      },
+    )
+
+    expect(result).toBeUndefined()
+  })
+
+  test('returns undefined on network error', async () => {
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchPackument({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package': { status: 500, body: {} },
+      },
+    )
+
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('fetchRegistryManifest', () => {
+  test('fetches and normalizes manifest', async () => {
+    const mockManifest = {
+      name: 'my-package',
+      version: '1.0.0',
+      _npmUser: {
+        name: 'Ruy Adorno',
+        email: 'ruyadorno@example.com',
+      },
+    }
+
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchRegistryManifest({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package/1.0.0': mockManifest,
+      },
+    )
+
+    expect(result).toMatchObject({
+      name: 'my-package',
+      version: '1.0.0',
+      _npmUser: {
+        name: 'Ruy Adorno',
+        email: 'ruyadorno@example.com',
+      },
+    })
+  })
+
+  test('returns normalized manifest data', async () => {
+    // The schema is permissive and normalizeManifest handles various inputs
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchRegistryManifest({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package/1.0.0': {
+          name: 'test',
+          version: '1.0.0',
+        },
+      },
+    )
+
+    expect(result).toMatchObject({ name: 'test', version: '1.0.0' })
+  })
+})
+
+describe('fetchOpenIssueCount', () => {
+  test('parses issue count from shields.io SVG', async () => {
+    const result = await runWithMock(
+      fetchOpenIssueCount({
+        org: 'ruyadorno',
+        repo: 'github-repo-info',
+      }),
+      {
+        'img.shields.io/github/issues/ruyadorno/github-repo-info': {
+          body: '<svg aria-label="issues: 5 open">Test SVG</svg>',
+          isText: true,
+        },
+      },
+    )
+
+    expect(result).toBe('5')
+  })
+
+  test('returns undefined on error', async () => {
+    const result = await runWithMock(
+      fetchOpenIssueCount({ org: 'ruyadorno', repo: 'nonexistent' }),
+      {
+        'img.shields.io/github/issues/ruyadorno/nonexistent': {
+          status: 404,
+          body: '',
+        },
+      },
+    )
+
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('fetchOpenPullRequestCount', () => {
+  test('parses PR count from shields.io SVG', async () => {
+    const result = await runWithMock(
+      fetchOpenPullRequestCount({
+        org: 'ruyadorno',
+        repo: 'github-repo-info',
+      }),
+      {
+        'img.shields.io/github/issues-pr/ruyadorno/github-repo-info':
+          {
+            body: '<svg aria-label="pull requests: 3 open">Test SVG</svg>',
+            isText: true,
+          },
+      },
+    )
+
+    expect(result).toBe('3')
+  })
+})
+
+describe('fetchDownloadsLastYear', () => {
+  test('fetches and parses download data', async () => {
+    const mockDownloads = {
       start: '2023-01-01',
-      end: '2023-01-31',
+      end: '2023-12-31',
+      package: 'my-package',
       downloads: [
         { downloads: 100, day: '2023-01-01' },
         { downloads: 150, day: '2023-01-02' },
       ],
-    },
-    publisher: {
-      name: 'Ruy Adorno',
-      email: 'ruyadorno@example.com',
-    },
-    publisherAvatar: {
-      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=retro',
-      alt: "Ruy Adorno's avatar",
-    },
-  })
-})
-
-test('fetchDetails from various async requests', async () => {
-  const mani = { name: 'async-request', version: '1.0.0' }
-  const spec = Spec.parse('async-request', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
     }
-  }
-  expect(res).toEqual({
-    author: {
-      name: 'Ruy Adorno',
-      email: 'ruyadorno@example.com',
-    },
-    downloadsPerVersion: { '1.0.0': 100 },
-    publisher: {
-      name: 'Ruy Adorno',
-      email: 'ruyadorno@example.com',
-    },
-    publisherAvatar: {
-      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=retro',
-      alt: "Ruy Adorno's avatar",
-    },
-  })
-})
 
-test('unable to fetch remote details', async () => {
-  const mani = normalizeManifest({
-    name: 'missing-info',
-    version: '1.0.0',
-    author: 'Ruy',
-  })
-  const spec = Spec.parse('missing-info', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res).toEqual({
-    author: { name: 'Ruy' },
-  })
-})
-
-test('no info to retrieve from details', async () => {
-  const mani = { name: 'missing-info', version: '1.0.0' }
-  const spec = Spec.parse('missing-info', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res).toEqual({})
-})
-
-test('fetchDetails with missing downloads', async () => {
-  const mani = { name: 'missing-downloads', version: '1.0.0' }
-  const spec = Spec.parse('missing-downloads', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res).toEqual({
-    publisher: {
-      name: 'Foo',
-      email: 'foo@bar.ca',
-    },
-    publisherAvatar: {
-      src: 'https://gravatar.com/avatar/9d3c411537fa65b330e063d79b17e5568a0df4cd8a4174985aa94f4c35ceba20?d=retro',
-      alt: "Foo's avatar",
-    },
-  })
-})
-
-test('fetchDetails with repository info in local manifest', async () => {
-  const mani = {
-    name: 'favicon-repo-in-local-manifest',
-    version: '1.0.0',
-    repository: {
-      type: 'git',
-      url: 'git+ssh://github.com/ruyadorno/favicon-repo-in-local-manifest.git',
-    },
-  }
-  const spec = Spec.parse('favicon-repo-in-local-manifest', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  // Assert that we have the publisher info
-  expect(res.publisher).toEqual({
-    name: 'Ruy Adorno',
-    email: 'ruyadorno@example.com',
-  })
-
-  // Assert that we have the publisher avatar
-  expect(res.publisherAvatar).toEqual({
-    src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=retro',
-    alt: "Ruy Adorno's avatar",
-  })
-
-  // Check for favicon presence
-  expect(res.favicon).toBeDefined()
-  expect(res.favicon.src).toContain('github.com')
-  expect(res.favicon.alt).toContain('avatar')
-})
-
-test('fetchDetails with repository info in remote manifest', async () => {
-  const mani = {
-    name: 'favicon-repo-in-remote-manifest',
-    version: '1.0.0',
-  }
-  const spec = Spec.parse('favicon-repo-in-remote-manifest', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-
-  // Only check for the keys in the object rather than expecting exact values
-  expect(Object.keys(res).length).toBeGreaterThanOrEqual(0)
-})
-
-test('fetchDetails with gitHead information', async () => {
-  const mani = {
-    name: 'package-with-githead',
-    version: '1.0.0',
-  }
-  const spec = Spec.parse('package-with-githead', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res.versions?.[0]).toEqual({
-    version: '1.0.0',
-    gitHead: 'abc123def456',
-    publishedDate: '2023-01-01T00:00:00.000Z',
-    unpackedSize: 1000,
-    integrity: 'sha512-abc123',
-    tarball:
-      'https://registry.npmjs.org/package-with-githead/-/package-with-githead-1.0.0.tgz',
-    publishedAuthor: {
-      name: undefined,
-      email: undefined,
-      avatar: undefined,
-    },
-  })
-})
-
-test('fetchDetails with multiple versions', async () => {
-  const mani = {
-    name: 'package-with-versions',
-    version: '1.0.0',
-  }
-  const spec = Spec.parse('package-with-versions', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res.versions).toHaveLength(3)
-  expect(res.versions?.[0]).toEqual({
-    version: '1.0.2',
-    gitHead: 'ghi789def456',
-    publishedDate: '2023-01-03T00:00:00.000Z',
-    unpackedSize: 1000,
-    integrity: 'sha512-ghi789',
-    tarball:
-      'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.2.tgz',
-    publishedAuthor: {
-      name: undefined,
-      email: undefined,
-      avatar: undefined,
-    },
-  })
-  expect(res.versions?.[1]).toEqual({
-    version: '1.0.1',
-    gitHead: 'def456abc123',
-    publishedDate: '2023-01-02T00:00:00.000Z',
-    unpackedSize: 1000,
-    integrity: 'sha512-def456',
-    tarball:
-      'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.1.tgz',
-    publishedAuthor: {
-      name: undefined,
-      email: undefined,
-      avatar: undefined,
-    },
-  })
-  expect(res.versions?.[2]).toEqual({
-    version: '1.0.0',
-    gitHead: 'abc123def456',
-    publishedDate: '2023-01-01T00:00:00.000Z',
-    unpackedSize: 1000,
-    integrity: 'sha512-abc123',
-    tarball:
-      'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.0.tgz',
-    publishedAuthor: {
-      name: undefined,
-      email: undefined,
-      avatar: undefined,
-    },
-  })
-})
-
-test('fetchDetails favicon defaults to img shortcut', async () => {
-  const mani = {
-    name: 'favicon-fallback',
-    version: '1.0.0',
-    repository: {
-      type: 'git',
-      url: 'git+ssh://github.com/ruyadorno/favicon-fallback.git',
-    },
-  }
-  const spec = Spec.parse('favicon-fallback', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-
-  // Only check for the keys in the object rather than expecting exact values
-  expect(Object.keys(res).length).toBeGreaterThanOrEqual(0)
-})
-
-test('fetchDetails with GitHub repository information', async () => {
-  const mani = {
-    name: 'github-repo-info',
-    version: '1.0.0',
-    repository: {
-      type: 'git',
-      url: 'git+ssh://github.com/ruyadorno/github-repo-info.git',
-    },
-  }
-  const spec = Spec.parse('github-repo-info', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-
-  // Check for star count but don't expect exact values for other fields
-  expect(res.stargazersCount).toBe(100)
-
-  // Other fields may or may not be present depending on implementation
-  if (res.openIssueCount) {
-    expect(res.openIssueCount).toBe('5')
-  }
-
-  if (res.openPullRequestCount) {
-    expect(res.openPullRequestCount).toBe('3')
-  }
-})
-
-test('fetchDetails with GitHub repository information and error handling', async () => {
-  const mani = {
-    name: 'github-repo-error',
-    version: '1.0.0',
-    repository: {
-      type: 'git',
-      url: 'git+ssh://github.com/ruyadorno/github-repo-error.git',
-    },
-  }
-  const spec = Spec.parse('github-repo-error', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-
-  // Only check that the test doesn't crash, rather than expecting specific values
-  expect(Object.keys(res).length).toBeGreaterThanOrEqual(0)
-})
-
-test('parseAriaLabelFromSVG', () => {
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="issues: 2.5k open">Test SVG</svg>',
-    ),
-  ).toBe('2.5k')
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="issues: 2.5m open">Test SVG</svg>',
-    ),
-  ).toBe('2.5m')
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="issues: 2b open">Test SVG</svg>',
-    ),
-  ).toBe('2b')
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="issues: 737 open">Test SVG</svg>',
-    ),
-  ).toBe('737')
-  // Test with capital letter suffix
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="downloads: 4.2K per week">Test SVG</svg>',
-    ),
-  ).toBe('4.2K')
-  // Test with decimal number without suffix
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="rating: 4.7 stars">Test SVG</svg>',
-    ),
-  ).toBe('4.7')
-  // Test with different text format
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="contributors: 42 people">Test SVG</svg>',
-    ),
-  ).toBe('42')
-  // Test with number at the beginning
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="123 stars on GitHub">Test SVG</svg>',
-    ),
-  ).toBe('123')
-  // Test with multiple numbers (should get the first match)
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="200 stars and 50 forks">Test SVG</svg>',
-    ),
-  ).toBe('200')
-  expect(
-    parseAriaLabelFromSVG('<svg>No aria label</svg>'),
-  ).toBeUndefined()
-  expect(
-    parseAriaLabelFromSVG(
-      '<svg aria-label="No numbers here">Test SVG</svg>',
-    ),
-  ).toBeUndefined()
-})
-
-test('fetchDetails with contributors in manifest', async () => {
-  const mani = {
-    name: 'with-contributors',
-    version: '1.0.0',
-    contributors: [
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchDownloadsLastYear({ spec: spec.final }),
       {
-        name: 'Contributor One',
-        email: 'contrib1@example.com',
+        'api.npmjs.org/downloads/range/last-year/my-package':
+          mockDownloads,
       },
-      {
-        name: 'Contributor Two',
-        email: 'contrib2@example.com',
+    )
+
+    expect(result).toEqual({
+      downloadsLastYear: {
+        start: '2023-01-01',
+        end: '2023-12-31',
+        downloads: [
+          { downloads: 100, day: '2023-01-01' },
+          { downloads: 150, day: '2023-01-02' },
+        ],
       },
-    ],
-  }
-  const spec = Spec.parse('with-contributors', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
-    }
-  }
-  expect(res).toEqual({
-    contributors: [
+    })
+  })
+
+  test('returns undefined on parse error', async () => {
+    // Mock an invalid downloads response that fails schema validation
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchDownloadsLastYear({ spec: spec.final }),
       {
-        name: 'Contributor One',
-        email: 'contrib1@example.com',
-        avatar:
-          'https://gravatar.com/avatar/685a2d1e5dcef38b6871bf250e6cf260de7db9676cdfafcf96c8c3a4a3200b30?d=retro',
-      },
-      {
-        name: 'Contributor Two',
-        email: 'contrib2@example.com',
-        avatar:
-          'https://gravatar.com/avatar/296b6a91e056b396b44a3035b407e2433bfa8e78a94ecb30635af80576f58810?d=retro',
-      },
-    ],
-    versions: [
-      {
-        version: '1.0.0',
-        publishedDate: '2023-01-01T00:00:00.000Z',
-        unpackedSize: 1000,
-        integrity: 'sha512-abc123',
-        tarball:
-          'https://registry.npmjs.org/with-contributors/-/with-contributors-1.0.0.tgz',
-        gitHead: undefined,
-        publishedAuthor: {
-          name: undefined,
-          email: undefined,
-          avatar: undefined,
+        'api.npmjs.org/downloads/range/last-year/my-package': {
+          invalid: 'data',
         },
       },
-    ],
-    greaterVersions: [],
+    )
+
+    expect(result).toBeUndefined()
   })
 })
 
-test('fetchDetails with no contributors in manifest', async () => {
-  const mani = {
-    name: 'no-contributors',
-    version: '1.0.0',
-  }
-  const spec = Spec.parse('no-contributors', '1.0.0')
-  const abortController = new AbortController()
-  const signal = abortController.signal
-  const res: any = {}
-  for await (const details of fetchDetails(spec, signal, mani)) {
-    for (const key of Object.keys(details)) {
-      res[key] = details[key as keyof DetailsInfo]
+describe('fetchDownloadsPerVersion', () => {
+  test('fetches and parses per-version download data', async () => {
+    const mockDownloads = {
+      package: 'my-package',
+      downloads: { '1.0.0': 100, '1.0.1': 200 },
     }
-  }
-  expect(res).toEqual({})
+
+    const spec = Spec.parse('my-package', '1.0.0')
+    const result = await runWithMock(
+      fetchDownloadsPerVersion({ spec: spec.final }),
+      {
+        'api.npmjs.org/versions/my-package/last-week': mockDownloads,
+      },
+    )
+
+    expect(result).toEqual({
+      downloadsPerVersion: { '1.0.0': 100, '1.0.1': 200 },
+    })
+  })
+})
+
+describe('fetchGitHubRepo', () => {
+  test('fetches repository info', async () => {
+    const mockRepo = {
+      stargazers_count: '1000',
+      organization: { login: 'vltpkg' },
+      name: 'vlt',
+      default_branch: 'main',
+    }
+
+    const result = await runWithMock(
+      fetchGitHubRepo({
+        gitHubApi: 'https://api.github.com/repos/vltpkg/vlt',
+      }),
+      {
+        'api.github.com/repos/vltpkg/vlt': mockRepo,
+      },
+    )
+
+    expect(result).toMatchObject({
+      stargazers_count: '1000',
+      name: 'vlt',
+    })
+  })
+
+  test('returns partial data for incomplete response', async () => {
+    // The schema is permissive - only extracts what matches
+    const result = await runWithMock(
+      fetchGitHubRepo({
+        gitHubApi: 'https://api.github.com/repos/org/repo',
+      }),
+      {
+        'api.github.com/repos/org/repo': { stargazers_count: '500' },
+      },
+    )
+
+    expect(result).toMatchObject({ stargazers_count: '500' })
+  })
+})
+
+describe('fetchReadmeFromUnpkg', () => {
+  test('fetches and parses README from unpkg', async () => {
+    const result = await runWithMock(
+      fetchReadmeFromUnpkg({
+        packageName: 'my-package',
+        packageVersion: '1.0.0',
+        repository: { org: 'ruyadorno', repo: 'my-package' },
+        reference: 'v1.0.0',
+      }),
+      {
+        'unpkg.com/my-package@1.0.0/README.md': {
+          body: '# My Package\n\nThis is a test README.',
+          isText: true,
+        },
+      },
+    )
+
+    expect(result).toContain('# My Package')
+  })
+
+  test('returns undefined when reference is missing', async () => {
+    const result = await runWithMock(
+      fetchReadmeFromUnpkg({
+        packageName: 'my-package',
+        packageVersion: '1.0.0',
+        repository: { org: 'ruyadorno', repo: 'my-package' },
+        reference: undefined,
+      }),
+      {},
+    )
+
+    expect(result).toBeUndefined()
+  })
+
+  test('returns undefined for empty README content', async () => {
+    const result = await runWithMock(
+      fetchReadmeFromUnpkg({
+        packageName: 'my-package',
+        packageVersion: '1.0.0',
+        repository: { org: 'ruyadorno', repo: 'my-package' },
+        reference: 'v1.0.0',
+      }),
+      {
+        'unpkg.com/my-package@1.0.0/README.md': {
+          body: '', // Empty string
+          isText: true,
+        },
+      },
+    )
+
+    // Empty content is considered as undefined/falsy
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('fetchReadmeFromLocal', () => {
+  const originalFetch = global.fetch
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('fetches README from local server /fs/read endpoint', async () => {
+    // Mock the /fs/ls call to find the README filename
+    // Then mock the /fs/read call to read the file
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { name: 'package.json', type: 'file' },
+          { name: 'ReadMe.md', type: 'file' }, // Case variation
+          { name: 'index.js', type: 'file' },
+        ],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          content: '# Local README\n\nLocal content',
+        }),
+      })
+
+    const result = await Effect.runPromise(
+      fetchReadmeFromLocal({
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }),
+    )
+
+    expect(result).toBe('# Local README\n\nLocal content')
+    expect(global.fetch).toHaveBeenCalledTimes(2)
+    // First call should be /fs/ls to find the README filename
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      '/fs/ls',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          path: '/Users/test/project/node_modules/my-package',
+        }),
+      }),
+    )
+    // Second call should be /fs/read with the actual filename found
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      '/fs/read',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          path: '/Users/test/project/node_modules/my-package/ReadMe.md',
+          encoding: 'utf8',
+        }),
+      }),
+    )
+
+    global.fetch = originalFetch
+  })
+
+  test('handles different README extensions (txt, markdown, etc.)', async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { name: 'package.json', type: 'file' },
+          { name: 'readme.txt', type: 'file' },
+          { name: 'README.md', type: 'file' },
+        ],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ content: '# README from txt file' }),
+      })
+
+    const result = await Effect.runPromise(
+      fetchReadmeFromLocal({
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }),
+    )
+
+    // Should find readme.txt (first match in order)
+    expect(result).toBe('# README from txt file')
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      '/fs/read',
+      expect.objectContaining({
+        body: JSON.stringify({
+          path: '/Users/test/project/node_modules/my-package/readme.txt',
+          encoding: 'utf8',
+        }),
+      }),
+    )
+
+    global.fetch = originalFetch
+  })
+
+  test('returns undefined when no README file found', async () => {
+    // Mock /fs/ls returning no README file
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        { name: 'package.json', type: 'file' },
+        { name: 'index.js', type: 'file' },
+      ],
+    })
+
+    const result = await Effect.runPromise(
+      fetchReadmeFromLocal({
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }),
+    )
+
+    expect(result).toBeUndefined()
+    expect(global.fetch).toHaveBeenCalledTimes(1) // Only /fs/ls, no /fs/read
+
+    global.fetch = originalFetch
+  })
+
+  test('returns undefined when /fs/ls returns error', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+    })
+
+    const result = await Effect.runPromise(
+      fetchReadmeFromLocal({
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }),
+    )
+
+    expect(result).toBeUndefined()
+
+    global.fetch = originalFetch
+  })
+
+  test('returns undefined when /fs/read returns error', async () => {
+    // Mock /fs/ls finding README, but /fs/read fails
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ name: 'README.md', type: 'file' }],
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      })
+
+    const result = await Effect.runPromise(
+      fetchReadmeFromLocal({
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }),
+    )
+
+    expect(result).toBeUndefined()
+
+    global.fetch = originalFetch
+  })
+
+  test('returns undefined when response has no content', async () => {
+    // Mock /fs/ls finding README, but /fs/read returns no content
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ name: 'README.md', type: 'file' }],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      })
+
+    const result = await Effect.runPromise(
+      fetchReadmeFromLocal({
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }),
+    )
+
+    expect(result).toBeUndefined()
+
+    global.fetch = originalFetch
+  })
+})
+
+describe('fetchReadme', () => {
+  const originalFetch = global.fetch
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('uses local fetch when packageLocation and projectRoot are provided', async () => {
+    // Mock the two-step process: /fs/ls to find README, then /fs/read to read it
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ name: 'README.md', type: 'file' }],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ content: '# Local README' }),
+      })
+
+    // When packageLocation is provided, fetchReadme uses fetchReadmeFromLocal
+    // which uses native fetch, not Effect's HttpClient, but we still need to
+    // provide the layer since the function's type requires it
+    const result = await Effect.runPromise(
+      fetchReadme({
+        packageName: 'my-package',
+        packageVersion: '1.0.0',
+        repository: { org: 'ruyadorno', repo: 'my-package' },
+        reference: 'v1.0.0',
+        packageLocation: './node_modules/my-package',
+        projectRoot: '/Users/test/project',
+      }).pipe(Effect.provide(HttpClientNoTracing)),
+    )
+
+    expect(result).toBe('# Local README')
+    expect(global.fetch).toHaveBeenCalledTimes(2)
+
+    global.fetch = originalFetch
+  })
+
+  test('uses unpkg fetch when packageLocation is not provided', async () => {
+    const result = await runWithMock(
+      fetchReadme({
+        packageName: 'my-package',
+        packageVersion: '1.0.0',
+        repository: { org: 'ruyadorno', repo: 'my-package' },
+        reference: 'v1.0.0',
+      }),
+      {
+        'unpkg.com/my-package@1.0.0/README.md': {
+          body: '# Unpkg README',
+          isText: true,
+        },
+      },
+    )
+
+    expect(result).toContain('# Unpkg README')
+  })
+})
+
+describe('fetchFavIcon', () => {
+  test('constructs favicon from manifest repository', () => {
+    const manifest = normalizeManifest({
+      name: 'my-package',
+      version: '1.0.0',
+      repository: {
+        type: 'git',
+        url: 'https://github.com/ruyadorno/my-package.git',
+      },
+    })
+
+    const result = fetchFavIcon({ manifest })
+
+    expect(result).toEqual({
+      favicon: {
+        src: 'https://www.github.com/ruyadorno.png',
+        alt: 'ruyadorno avatar',
+      },
+    })
+  })
+
+  test('returns undefined when no repository', () => {
+    const manifest = normalizeManifest({
+      name: 'my-package',
+      version: '1.0.0',
+    })
+
+    const result = fetchFavIcon({ manifest })
+
+    expect(result).toBeUndefined()
+  })
+
+  test('returns undefined when manifest is undefined', () => {
+    const result = fetchFavIcon({ manifest: undefined })
+
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('fetchContributorAvatars', () => {
+  test('fetches avatars for all contributors', async () => {
+    const manifest = normalizeManifest({
+      name: 'my-package',
+      version: '1.0.0',
+      contributors: [
+        { name: 'Contributor One', email: 'contrib1@example.com' },
+        { name: 'Contributor Two', email: 'contrib2@example.com' },
+      ],
+    })
+
+    const result = await runWithMock(
+      fetchContributorAvatars({ manifest }),
+      {},
+    )
+
+    expect(result).toHaveLength(2)
+    expect(result?.[0]).toMatchObject({
+      name: 'Contributor One',
+      email: 'contrib1@example.com',
+    })
+    expect(result?.[0]?.avatar).toContain('gravatar.com/avatar/')
+  })
+
+  test('returns undefined when no contributors', async () => {
+    const manifest = normalizeManifest({
+      name: 'my-package',
+      version: '1.0.0',
+    })
+
+    const result = await runWithMock(
+      fetchContributorAvatars({ manifest }),
+      {},
+    )
+
+    expect(result).toBeUndefined()
+  })
+
+  test('returns undefined when manifest is undefined', async () => {
+    const result = await runWithMock(
+      fetchContributorAvatars({ manifest: undefined }),
+      {},
+    )
+
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('fetchPublisherAvatar', () => {
+  test('fetches gravatar for email', async () => {
+    const result = await Effect.runPromise(
+      fetchPublisherAvatar({ email: 'test@example.com' }).pipe(
+        Effect.provide(FetchHttpClient.layer),
+      ),
+    )
+
+    expect(result).toMatchObject({
+      src: expect.stringContaining('gravatar.com/avatar/'),
+      alt: 'avatar',
+    })
+  })
+})
+
+describe('processPackumentVersions', () => {
+  test('processes versions from packument', async () => {
+    const packument = {
+      name: 'my-package',
+      'dist-tags': { latest: '1.0.2' },
+      versions: {
+        '1.0.0': {
+          version: '1.0.0',
+          dist: {
+            unpackedSize: 1000,
+            integrity: 'sha512-abc123',
+            tarball:
+              'https://registry.npmjs.org/my-package/-/my-package-1.0.0.tgz',
+          },
+          gitHead: 'abc123',
+        },
+        '1.0.1': {
+          version: '1.0.1',
+          dist: {
+            unpackedSize: 1100,
+            integrity: 'sha512-def456',
+            tarball:
+              'https://registry.npmjs.org/my-package/-/my-package-1.0.1.tgz',
+          },
+          gitHead: 'def456',
+        },
+      },
+      time: {
+        '1.0.0': '2023-01-01T00:00:00.000Z',
+        '1.0.1': '2023-01-02T00:00:00.000Z',
+      },
+    }
+
+    const manifest = { name: 'my-package', version: '1.0.0' }
+
+    const result = await processPackumentVersions({
+      packument: packument as any,
+      manifest: manifest as any,
+    })
+
+    expect(result?.versions).toHaveLength(2)
+    // Versions should be sorted in descending order
+    expect(result?.versions[0]?.version).toBe('1.0.1')
+    expect(result?.versions[1]?.version).toBe('1.0.0')
+
+    // greaterVersions should contain versions greater than current
+    expect(result?.greaterVersions).toHaveLength(1)
+    expect(result?.greaterVersions?.[0]?.version).toBe('1.0.1')
+  })
+
+  test('returns undefined on error', async () => {
+    const result = await processPackumentVersions({
+      packument: null as any,
+      manifest: null as any,
+    })
+
+    expect(result).toBeUndefined()
+  })
+})
+
+// ============================================
+// Unit Tests: Error Tracking
+// ============================================
+describe('withErrorTracking', () => {
+  test('returns data on success', async () => {
+    const successEffect = Effect.succeed('test-data')
+    const tracked = withErrorTracking(
+      successEffect as Effect.Effect<
+        string,
+        unknown,
+        HttpClient.HttpClient
+      >,
+      'npm-packument',
+    )
+
+    const result = await Effect.runPromise(
+      tracked.pipe(Effect.provide(FetchHttpClient.layer)),
+    )
+
+    expect(result).toEqual({ data: 'test-data', error: undefined })
+  })
+
+  test('captures error on failure', async () => {
+    const failEffect = Effect.fail(new Error('Network error'))
+    const tracked = withErrorTracking(
+      failEffect as Effect.Effect<
+        never,
+        Error,
+        HttpClient.HttpClient
+      >,
+      'github-repo',
+    )
+
+    const result = await Effect.runPromise(
+      tracked.pipe(Effect.provide(FetchHttpClient.layer)),
+    )
+
+    expect(result).toEqual({
+      data: undefined,
+      error: { source: 'github-repo', message: 'Network error' },
+    })
+  })
+
+  test('handles non-Error objects', async () => {
+    const failEffect = Effect.fail({ message: 'Custom error' })
+    const tracked = withErrorTracking(
+      failEffect as Effect.Effect<
+        never,
+        { message: string },
+        HttpClient.HttpClient
+      >,
+      'npm-downloads',
+    )
+
+    const result = await Effect.runPromise(
+      tracked.pipe(Effect.provide(FetchHttpClient.layer)),
+    )
+
+    expect(result).toEqual({
+      data: undefined,
+      error: { source: 'npm-downloads', message: 'Custom error' },
+    })
+  })
+
+  test('handles unknown error types', async () => {
+    const failEffect = Effect.fail('string error')
+    const tracked = withErrorTracking(
+      failEffect as Effect.Effect<
+        never,
+        string,
+        HttpClient.HttpClient
+      >,
+      'readme',
+    )
+
+    const result = await Effect.runPromise(
+      tracked.pipe(Effect.provide(FetchHttpClient.layer)),
+    )
+
+    expect(result).toEqual({
+      data: undefined,
+      error: { source: 'readme', message: 'Unknown error' },
+    })
+  })
+})
+
+// ============================================
+// Integration Tests: fetchDetailsEffect
+// ============================================
+describe('fetchDetailsEffect', () => {
+  test('uses author from provided manifest', async () => {
+    // Mock fetch to return 404 for all external calls
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      status: 404,
+      json: async () => ({}),
+      text: async () => '',
+    })) as unknown as typeof fetch
+
+    try {
+      const spec = Spec.parse('mypkg', '1.0.0')
+      const manifest = normalizeManifest({
+        name: 'mypkg',
+        version: '1.0.0',
+        author: 'Ruy Adorno',
+      })
+
+      const result = await Effect.runPromise(
+        fetchDetailsEffect({ spec, manifest }).pipe(
+          Effect.provide(HttpClientNoTracing),
+        ),
+      )
+
+      // Author should come from the provided manifest
+      expect(result.author).toEqual({ name: 'Ruy Adorno' })
+      // Manifest should be passed through
+      expect(result.manifest).toBeDefined()
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  test('processes packument versions when available', async () => {
+    const packumentData = {
+      name: 'mypkg',
+      'dist-tags': { latest: '1.0.0' },
+      versions: {
+        '1.0.0': {
+          version: '1.0.0',
+          dist: {
+            unpackedSize: 1000,
+            integrity: 'sha512-abc123',
+            tarball:
+              'https://registry.npmjs.org/mypkg/-/mypkg-1.0.0.tgz',
+          },
+        },
+      },
+      time: { '1.0.0': '2023-01-01T00:00:00.000Z' },
+    }
+
+    // Mock fetch - only packument succeeds
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn(async (url: string | URL | Request) => {
+      const urlStr = url instanceof Request ? url.url : url.toString()
+
+      // Only packument succeeds (base URL without version)
+      if (
+        urlStr.includes('registry.npmjs.org') &&
+        !urlStr.includes('/1.0.0')
+      ) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => packumentData,
+          text: async () => JSON.stringify(packumentData),
+        }
+      }
+
+      // Everything else fails with 404
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+        text: async () => '',
+      }
+    }) as unknown as typeof fetch
+
+    try {
+      const spec = Spec.parse('mypkg', '1.0.0')
+      const manifest = normalizeManifest({
+        name: 'mypkg',
+        version: '1.0.0',
+      })
+
+      const result = await Effect.runPromise(
+        fetchDetailsEffect({ spec, manifest }).pipe(
+          Effect.provide(HttpClientNoTracing),
+        ),
+      )
+
+      // Should have versions from packument
+      expect(result.versions).toBeDefined()
+      expect(result.versions?.length).toBeGreaterThan(0)
+      expect(result.versions?.[0]?.version).toBe('1.0.0')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  test('fetches registry manifest and versions for external packages (no manifest provided)', async () => {
+    const packumentData = {
+      name: 'react',
+      'dist-tags': { latest: '18.2.0' },
+      versions: {
+        '18.2.0': {
+          name: 'react',
+          version: '18.2.0',
+          description: 'React library',
+          author: { name: 'Meta' },
+          dist: {
+            unpackedSize: 2000,
+            integrity: 'sha512-abc123',
+            tarball:
+              'https://registry.npmjs.org/react/-/react-18.2.0.tgz',
+          },
+          _npmUser: { name: 'meta-bot', email: 'meta@example.com' },
+        },
+      },
+      time: {
+        '18.2.0': '2023-06-01T00:00:00.000Z',
+      },
+    }
+
+    const registryManifest = {
+      name: 'react',
+      version: '18.2.0',
+      description: 'React library',
+      author: { name: 'Meta' },
+      _npmUser: { name: 'meta-bot', email: 'meta@example.com' },
+    }
+
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn(async (url: string | Request | URL) => {
+      const urlStr = url instanceof Request ? url.url : String(url)
+      // Packument endpoint
+      if (urlStr === 'https://registry.npmjs.org/react') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => packumentData,
+          text: async () => JSON.stringify(packumentData),
+        } as Response
+      }
+      // Registry manifest endpoint (latest)
+      if (urlStr === 'https://registry.npmjs.org/react/latest') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => registryManifest,
+          text: async () => JSON.stringify(registryManifest),
+        } as Response
+      }
+      // Default 404 for other endpoints
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+        text: async () => '',
+      } as Response
+    }) as unknown as typeof fetch
+
+    try {
+      // Parse spec without version (like external packages)
+      const spec = Spec.parseArgs('react')
+
+      // Call without manifest (external package scenario)
+      const result = await Effect.runPromise(
+        fetchDetailsEffect({ spec }).pipe(
+          Effect.provide(HttpClientNoTracing),
+        ),
+      )
+
+      // Should have fetched manifest from registry
+      expect(result.manifest).toBeDefined()
+      expect(
+        (result.manifest as { version?: string } | undefined)
+          ?.version,
+      ).toBe('18.2.0')
+
+      // Should have versions from packument
+      expect(result.versions).toBeDefined()
+      expect(result.versions?.length).toBeGreaterThan(0)
+      expect(result.versions?.[0]?.version).toBe('18.2.0')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+})
+
+// ============================================
+// Integration Tests: fetchDetails (Promise API)
+// ============================================
+describe('fetchDetails', () => {
+  // These tests use the real fetch API via vi.mock
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('returns author from provided manifest', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+        text: async () => '',
+      })),
+    )
+
+    const spec = Spec.parse('mypkg', '1.0.0')
+    const manifest = normalizeManifest({
+      name: 'mypkg',
+      version: '1.0.0',
+      author: 'Ruy Adorno <ruy@example.com>',
+    })
+
+    const result = await fetchDetails({ spec, manifest })
+
+    expect(result.author).toEqual({
+      name: 'Ruy Adorno',
+      email: 'ruy@example.com',
+    })
+    expect(result.manifest).toBeDefined()
+  })
 })

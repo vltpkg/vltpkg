@@ -60,7 +60,7 @@ export const AsideRepo = () => {
       <AsideItem count={openIssue} icon={CircleDot}>
         Issues
       </AsideItem>
-      {(starGazers ?? 0) > 0 && (
+      {Number(starGazers ?? 0) > 0 && (
         <AsideItem count={String(starGazers)} icon={Star}>
           Stars
         </AsideItem>

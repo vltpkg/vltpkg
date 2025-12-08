@@ -7,6 +7,7 @@ import { ContributorTabContent } from '@/components/explorer-grid/selected-item/
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
+  MOCK_LOADING_STATE,
 } from './__fixtures__/item.ts'
 
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -144,6 +145,7 @@ test('ContributorTabContent renders with contributors', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -179,6 +181,7 @@ test('ContributorTabContent renders with no contributors', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

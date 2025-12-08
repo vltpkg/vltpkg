@@ -3,6 +3,8 @@ import { Outlet } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
+import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
+import { PartialErrorsIndicator } from '@/components/explorer-grid/selected-item/partial-errors-indicator.tsx'
 import {
   SelectedItemProvider,
   useTabNavigation,
@@ -51,28 +53,53 @@ Section.displayName = 'Section'
 export const Item = ({ item, className }: ItemProps) => {
   return (
     <SelectedItemProvider key={item.id} selectedItem={item}>
-      <section
-        className={cn(
-          'bg-foreground/6 flex min-w-0 flex-col gap-[1px] rounded',
-          className,
-        )}>
-        <Section>
-          <ItemBreadcrumbs />
-        </Section>
-        <Section className="py-4">
-          <PackageImageSpec />
-        </Section>
-        <Section>
-          <Publisher className="flex-col items-start lg:flex-row" />
-        </Section>
-        <Section className="p-0">
-          <SelectedItemTabs />
-        </Section>
-        <Section className="h-full p-0">
-          <SelectedItemView />
-        </Section>
-      </section>
+      <ItemContent className={className} />
     </SelectedItemProvider>
+  )
+}
+
+const ItemContent = ({ className }: { className?: string }) => {
+  const isLoadingDetails = useSelectedItemStore(
+    state => state.isLoadingDetails,
+  )
+
+  return (
+    <section
+      className={cn(
+        'bg-foreground/6 relative flex min-w-0 flex-col gap-px rounded',
+        className,
+      )}>
+      <AnimatePresence initial={false}>
+        {isLoadingDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="bg-background/80 absolute inset-0 z-11 flex items-center justify-center rounded backdrop-blur-sm">
+            <JellyTriangleSpinner size={40} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <PartialErrorsIndicator />
+
+      <Section>
+        <ItemBreadcrumbs />
+      </Section>
+      <Section className="py-4">
+        <PackageImageSpec />
+      </Section>
+      <Section>
+        <Publisher className="flex-col items-start lg:flex-row" />
+      </Section>
+      <Section className="p-0">
+        <SelectedItemTabs />
+      </Section>
+      <Section className="h-full p-0">
+        <SelectedItemView />
+      </Section>
+    </section>
   )
 }
 
@@ -220,7 +247,7 @@ const ScrollHelper = forwardRef<
       ref={ref}
       variant="ghost"
       className={cn(
-        'bg-background/50 absolute z-[10] flex aspect-square h-full items-center justify-center rounded backdrop-blur-sm [&_svg]:size-4',
+        'bg-background/50 absolute z-10 flex aspect-square h-full items-center justify-center rounded backdrop-blur-sm [&_svg]:size-4',
         align === 'start' && 'top-0 left-0',
         align === 'end' && 'top-0 right-0',
         className,
