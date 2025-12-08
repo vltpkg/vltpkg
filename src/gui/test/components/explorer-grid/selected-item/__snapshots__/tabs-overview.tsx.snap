@@ -22,7 +22,7 @@ exports[`OverviewTabContent renders with content 1`] = `
   class="h-full w-full flex flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div class="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6 lg:max-w-2/3">
+  <div class="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6">
     <gui-markdown>
       ## Description
 

@@ -51,6 +51,16 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx',
+  () => ({
+    useFocusState: vi.fn().mockReturnValue({
+      focused: false,
+      setFocused: vi.fn(),
+    }),
+  }),
+)
+
 vi.mock('@/components/markdown-components.tsx', () => ({
   Markdown: 'gui-markdown',
 }))

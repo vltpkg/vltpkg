@@ -6,14 +6,21 @@ import {
   MotionContent,
 } from '@/components/explorer-grid/selected-item/helpers.tsx'
 import { SelectedItemEmptyState } from '@/components/explorer-grid/selected-item/empty-state.tsx'
+import { useFocusState } from '@/components/explorer-grid/selected-item/focused-view/use-focus-state.tsx'
+import { cn } from '@/lib/utils.ts'
 
 export const OverviewTabContent = () => {
   const readme = useSelectedItemStore(state => state.readme)
+  const { focused } = useFocusState()
 
   return (
     <MotionContent {...contentMotion} className="flex flex-col">
       {readme ?
-        <div className="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6 lg:max-w-2/3">
+        <div
+          className={cn(
+            'prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6',
+            focused && 'lg:max-w-[760px]',
+          )}>
           <Markdown>{readme}</Markdown>
         </div>
       : <SelectedItemEmptyState
