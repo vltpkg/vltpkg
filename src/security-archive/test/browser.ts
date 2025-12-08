@@ -3,7 +3,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 import { SecurityArchive } from '../src/browser.ts'
 
 const json = {
-  '··english-days@1.0.0': {
+  [joinDepIDTuple(['registry', 'npm', 'english-days@1.0.0'])]: {
     id: '15713076833',
     author: ['wesleytodd'],
     size: 1632,
@@ -80,7 +80,7 @@ t.test('SecurityArchive.load', async t => {
   }
   t.strictSame(
     archive.get(
-      joinDepIDTuple(['registry', '', 'english-days@1.0.0']),
+      joinDepIDTuple(['registry', 'npm', 'english-days@1.0.0']),
     )!.name,
     'english-days',
     'should load have loaded security data',

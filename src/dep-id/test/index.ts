@@ -1,4 +1,4 @@
-import { Spec } from '@vltpkg/spec'
+import { defaultRegistry, getOptions, Spec } from '@vltpkg/spec'
 import type { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
@@ -29,8 +29,8 @@ t.test('valid specs', t => {
     'y@npm:x@1',
     'y@npm:x@github:a/b#branch',
     'y@registry:https://x.com#x@1',
-    'y@registry:https://registry.npmjs.org#x@1',
-    'y@registry:https://registry.npmjs.org/#x@1',
+    `y@registry:${defaultRegistry.slice(0, -1)}#x@1`,
+    `y@registry:${defaultRegistry}#x@1`,
     'x@git+ssh://host.com/x.git',
     'x@git+ssh://host.com/x.git#branch',
     'x@git+ssh://host.com/x.git#semver:1',
@@ -42,16 +42,17 @@ t.test('valid specs', t => {
     'x@b:asfd@1.2.3',
     'x@registry:https://a.example.com/#asfd@1.2.3',
     'x@registry:https://b.example.com/#asfd@1.2.3',
-    'x@registry:https://c.example.com/#asfd@1.2.3',
+    'x@registry:https://c.example.com/#asfd@1.2.3', // <- not configured
   ]
   const registries = {
     a: 'https://a.example.com/',
     b: 'https://b.example.com/',
   }
+  const options = getOptions({ registries })
 
   for (const s of specs) {
     t.test(s, t => {
-      const spec = Spec.parse(s, { registries })
+      const spec = Spec.parse(s, options)
       const tuple = getTuple(spec, mani)
       const id = getId(spec, mani)
       const idWithExtra = getId(spec, mani, ':root > #extra')
@@ -59,15 +60,15 @@ t.test('valid specs', t => {
       t.matchSnapshot([id, tuple, idWithExtra, base])
       t.equal(joinDepIDTuple(tuple), id)
       t.strictSame(splitDepID(id), tuple)
-      const h = hydrate(id, 'x', { registries })
-      const ht = hydrateTuple(tuple, 'x', { registries })
+      const h = hydrate(id, 'x', options)
+      const ht = hydrateTuple(tuple, 'x', options)
       t.strictSame(h, ht, 'same in both hydrations')
       t.matchSnapshot(String(h), 'hydrated')
-      const hunknown = hydrate(id, undefined, { registries })
+      const hunknown = hydrate(id, undefined, options)
       t.matchSnapshot(String(hunknown), 'hydrated with name unknown')
-      const hasdf = hydrate(id, 'asdf', { registries })
+      const hasdf = hydrate(id, 'asdf', options)
       t.matchSnapshot(String(hasdf), 'hydrated with name asdf')
-      const hy = hydrate(id, 'y', { registries })
+      const hy = hydrate(id, 'y', options)
       t.matchSnapshot(String(hy), 'hydrated with name y')
       t.end()
     })
@@ -92,13 +93,13 @@ t.test('valid specs', t => {
       t.matchSnapshot([id, tuple])
       t.equal(joinDepIDTuple(tuple), id)
       t.strictSame(splitDepID(id), tuple)
-      const hscoped = hydrate(id, '@scoped/x')
+      const hscoped = hydrate(id, '@scoped/x', options)
       t.matchSnapshot(String(hscoped), 'hydrated with scoped name')
-      const hunknown = hydrate(id)
+      const hunknown = hydrate(id, undefined, options)
       t.matchSnapshot(String(hunknown), 'hydrated with name unknown')
-      const hasdf = hydrate(id, 'asdf')
+      const hasdf = hydrate(id, 'asdf', options)
       t.matchSnapshot(String(hasdf), 'hydrated with name asdf')
-      const hy = hydrate(id, 'y')
+      const hy = hydrate(id, 'y', options)
       t.matchSnapshot(String(hy), 'hydrated with name y')
       t.end()
     })
@@ -143,7 +144,8 @@ t.test('hydrate only', t => {
 })
 
 t.test('hydrate from memoized entry', t => {
-  const options = {}
+  resetCaches()
+  const options = getOptions({})
   const id = `${delimiter}${delimiter}x@1.2.3` as DepID
   t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
   t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
@@ -161,13 +163,232 @@ t.test('named registry', t => {
   t.end()
 })
 
+t.test('unnamed registry', t => {
+  t.equal(
+    String(
+      hydrate(
+        `${delimiter}http://vlt.sh${delimiter}x@1.2.3` as DepID,
+        'x',
+      ),
+    ),
+    'x@registry:http://vlt.sh#x@1.2.3',
+  )
+  t.equal(
+    String(
+      hydrate(
+        `${delimiter}http://vlt.sh${delimiter}x@1.2.3` as DepID,
+      ),
+    ),
+    'x@registry:http://vlt.sh#x@1.2.3',
+  )
+  t.end()
+})
+
+t.test('default registry name', t => {
+  t.equal(
+    String(
+      splitDepID(`${delimiter}npm${delimiter}foo@1.0.0` as DepID),
+    ),
+    String(splitDepID(`${delimiter}${delimiter}foo@1.0.0` as DepID)),
+  )
+  t.end()
+})
+
 t.test('getId when manifest empty, fields just blank', t => {
   t.strictSame(getTuple(Spec.parse('x@1.2.3'), {}), [
     'registry',
-    '',
+    'npm',
     'x@1.2.3',
     undefined,
   ])
+  t.end()
+})
+
+t.test('use shorten registry name whenever possible', t => {
+  const mani = {
+    name: 'pkg',
+    version: '1.0.0',
+  }
+  const registries = {
+    custom: 'http://custom.example.com',
+    another: 'https://another.example.com/',
+  }
+  const customExpectedValue = [
+    'registry',
+    'custom',
+    'pkg@1.0.0',
+    undefined,
+  ]
+  const anotherExpectedValue = [
+    'registry',
+    'another',
+    'pkg@1.0.0',
+    undefined,
+  ]
+  const options = { registries }
+  // test variations of using slashes at the end of the registry URL
+  // and long form URL being normalized to the shorten known reg name
+  const optionHasNoSlashButSpecHas = Spec.parse(
+    'pkg',
+    'registry:http://custom.example.com/#pkg@1.0.0',
+    options,
+  )
+  t.strictSame(
+    getTuple(optionHasNoSlashButSpecHas, mani),
+    customExpectedValue,
+  )
+  const optionHasNoSlashLikeSpec = Spec.parse(
+    'pkg',
+    'registry:http://custom.example.com#pkg@1.0.0',
+    options,
+  )
+  t.strictSame(
+    getTuple(optionHasNoSlashLikeSpec, mani),
+    customExpectedValue,
+  )
+  const optionsHasSlashButSpecHasNoSlash = Spec.parse(
+    'pkg',
+    'registry:https://another.example.com#pkg@1.0.0',
+    options,
+  )
+  t.strictSame(
+    getTuple(optionsHasSlashButSpecHasNoSlash, mani),
+    anotherExpectedValue,
+  )
+  const optionHasSlashLikeSpec = Spec.parse(
+    'pkg',
+    'registry:https://another.example.com/#pkg@1.0.0',
+    options,
+  )
+  t.strictSame(
+    getTuple(optionHasSlashLikeSpec, mani),
+    anotherExpectedValue,
+  )
+  const useShortenRegistryNameInSpec = Spec.parse(
+    'pkg',
+    'custom:pkg@1.0.0',
+    options,
+  )
+  t.strictSame(
+    getTuple(useShortenRegistryNameInSpec, mani),
+    customExpectedValue,
+  )
+  const useShortenRegistryNameInSpecAnother = Spec.parse(
+    'pkg',
+    'another:pkg@1.0.0',
+    options,
+  )
+  t.strictSame(
+    getTuple(useShortenRegistryNameInSpecAnother, mani),
+    anotherExpectedValue,
+  )
+  // Now here we check that even though the custom registries are not directly
+  // present in the spec, the DepID should have the same result if it's using
+  // that same custom value set as the default registry, this is a common
+  // occurrence when transitive packages are inheriting the registry values
+  // from their parents / ancestors
+  const optionsWithCustomAsDefault = {
+    ...options,
+    registry: 'http://custom.example.com',
+  }
+  const specWithCustomDefaultRegistry = Spec.parse(
+    'pkg',
+    '1.0.0',
+    optionsWithCustomAsDefault,
+  )
+  t.strictSame(
+    getTuple(specWithCustomDefaultRegistry, mani),
+    customExpectedValue,
+  )
+  const optionsWithCustomWithExtraSlashAsDefault = {
+    ...options,
+    registry: 'http://custom.example.com/',
+  }
+  const specWithCustomWithExtraSlashAsDefault = Spec.parse(
+    'pkg',
+    '1.0.0',
+    optionsWithCustomWithExtraSlashAsDefault,
+  )
+  t.strictSame(
+    getTuple(specWithCustomWithExtraSlashAsDefault, mani),
+    customExpectedValue,
+  )
+  const specWithAnotherDefaultRegistry = Spec.parse('pkg', '1.0.0', {
+    ...options,
+    registry: 'https://another.example.com/',
+  })
+  t.strictSame(
+    getTuple(specWithAnotherDefaultRegistry, mani),
+    anotherExpectedValue,
+  )
+  const specWithAnotherWithoutExtraSlashDefaultRegistry = Spec.parse(
+    'pkg',
+    '1.0.0',
+    { ...options, registry: 'https://another.example.com' },
+  )
+  t.strictSame(
+    getTuple(specWithAnotherWithoutExtraSlashDefaultRegistry, mani),
+    anotherExpectedValue,
+  )
+  resetCaches()
+  // finally let's sanity check usage of scope-registries to make sure
+  // they interact well with custom registries and that the default resolution
+  // logic does not interfere with them
+  const specWithUnknownScopeRegistry = Spec.parse(
+    '@myscope/pkg',
+    '1.0.0',
+    {
+      ...options,
+      'scope-registries': {
+        '@myscope': 'http://myscope.example.com',
+      },
+    },
+  )
+  t.strictSame(
+    getTuple(specWithUnknownScopeRegistry, {
+      name: '@myscope/pkg',
+      version: '1.0.0',
+    }),
+    [
+      'registry',
+      'http://myscope.example.com',
+      '@myscope/pkg@1.0.0',
+      undefined,
+    ],
+  )
+  resetCaches()
+  // now test with a known registry in the scope-registries
+  const specWithScopeRegistry = Spec.parse('@myscope/pkg', '1.0.0', {
+    ...options,
+    'scope-registries': {
+      '@myscope': 'http://custom.example.com',
+    },
+  })
+  t.strictSame(
+    getTuple(specWithScopeRegistry, {
+      name: '@myscope/pkg',
+      version: '1.0.0',
+    }),
+    ['registry', 'custom', '@myscope/pkg@1.0.0', undefined],
+  )
+  resetCaches()
+  const specWithScopeRegistryWithExtraSlash = Spec.parse(
+    '@myscope/pkg',
+    '1.0.0',
+    {
+      ...options,
+      'scope-registries': {
+        '@myscope': 'http://custom.example.com/',
+      },
+    },
+  )
+  t.strictSame(
+    getTuple(specWithScopeRegistryWithExtraSlash, {
+      name: '@myscope/pkg',
+      version: '1.0.0',
+    }),
+    ['registry', 'custom', '@myscope/pkg@1.0.0', undefined],
+  )
   t.end()
 })
 
@@ -231,13 +452,59 @@ t.test('invalid values', t => {
   t.end()
 })
 
+t.test('hydrate edge cases', t => {
+  // uses a custom default registry with no short name
+  t.equal(
+    String(
+      hydrate(
+        `${delimiter}https://custom.registry.com${delimiter}pkg@1.0.0` as DepID,
+        'pkg',
+        getOptions({
+          registry: 'https://custom.registry.com',
+        }),
+      ),
+    ),
+    'pkg@1.0.0',
+  )
+  // uses a custom default registry with no short name extra slash variation
+  t.equal(
+    String(
+      hydrate(
+        `${delimiter}https://custom.registry.com/${delimiter}pkg@1.0.0` as DepID,
+        'pkg',
+        getOptions({
+          registry: 'https://custom.registry.com',
+        }),
+      ),
+    ),
+    'pkg@1.0.0',
+  )
+  // uses a custom default registry thas also has a custom short name
+  t.equal(
+    String(
+      hydrate(
+        `${delimiter}custom${delimiter}pkg@1.0.0` as DepID,
+        'pkg',
+        getOptions({
+          registry: 'https://custom.registry.com',
+          registries: {
+            custom: 'https://custom.registry.com',
+          },
+        }),
+      ),
+    ),
+    'pkg@1.0.0',
+  )
+  t.end()
+})
+
 const validDepIDs: DepID[] = [
-  `${delimiter}${delimiter}foo@1.0.0`,
+  `${delimiter}npm${delimiter}foo@1.0.0`,
   `git${delimiter}github%3Aa§b${delimiter}branch`,
   `remote${delimiter}https%3A§§x.com§x.tgz`,
   `file${delimiter}.§x.tgz`,
   `workspace${delimiter}a`,
-  `${delimiter}${delimiter}foo@1.0.0${delimiter}extra`,
+  `${delimiter}npm${delimiter}foo@1.0.0${delimiter}extra`,
   `git${delimiter}github%3Aa§b${delimiter}branch${delimiter}extra`,
   `remote${delimiter}https%3A§§x.com§x.tgz${delimiter}extra`,
   `file${delimiter}.§x.tgz${delimiter}extra`,
@@ -326,7 +593,20 @@ t.test('isPackageNameConfused', t => {
         version: '1.0.0',
       }),
       ['registry', 'npm', 'foo@1.0.0', undefined],
-      'should default to final spec name if mani name is missing',
+      'should normalize npm named registry to empty string',
+    )
+    t.end()
+  })
+
+  t.test('aliased and non-aliased generate same DepID', t => {
+    const manifest = { name: 'abbrev', version: '4.0.0' }
+    const direct = Spec.parse('abbrev', '^4.0.0')
+    const aliased = Spec.parse('foo', 'npm:abbrev@^4.0.0')
+
+    t.equal(
+      getId(direct, manifest),
+      getId(aliased, manifest),
+      'both should generate same DepID',
     )
     t.end()
   })

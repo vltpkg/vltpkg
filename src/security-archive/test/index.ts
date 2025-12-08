@@ -110,7 +110,7 @@ const englishDaysUpdatedReport = {
 
 t.test('map-like', async t => {
   const archive = new SecurityArchive()
-  const id = joinDepIDTuple(['registry', '', 'bar'])
+  const id = joinDepIDTuple(['registry', 'npm', 'bar'])
   archive.set(id, { name: 'bar' } as PackageReportData)
   t.strictSame(archive.has(id), true)
   t.strictSame(archive.get(id), { name: 'bar' })
@@ -141,7 +141,7 @@ ${JSON.stringify(englishDaysReport)}
 
   t.strictSame(
     archive.get(
-      joinDepIDTuple(['registry', '', '@ruyadorno/foo@1.0.0']),
+      joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
     ),
     fooReport,
     'should have loaded API response into the in-memory archive',
@@ -182,7 +182,7 @@ ${JSON.stringify(englishDaysReport)}
   // version, since that was loaded from the db instead and is still valid
   t.strictSame(
     archive.get(
-      joinDepIDTuple(['registry', '', '@ruyadorno/foo@1.0.0']),
+      joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
     ),
     fooReport,
     'should have loaded API response from db',
@@ -203,7 +203,7 @@ ${JSON.stringify(englishDaysReport)}
       'VALUES (?, ?, ?, ?)',
   )
   dbWrite.run(
-    joinDepIDTuple(['registry', '', '@ruyadorno/foo@1.0.0']),
+    joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
     'borked data',
     Date.now(),
     SecurityArchive.defaultTtl,
@@ -347,7 +347,7 @@ ${JSON.stringify(englishDaysReport)}
     // Manually mark the englishDays entry as expired by setting its TTL to be in the past
     const englishDaysId = joinDepIDTuple([
       'registry',
-      '',
+      'npm',
       'english-days@1.0.0',
     ])
     const currentTime = Date.now()
@@ -462,7 +462,7 @@ ${JSON.stringify(englishDaysReport)}
     })
 
     const storedData = archive.get(
-      joinDepIDTuple(['registry', '', '@ruyadorno/foo@1.0.0']),
+      joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
     )
 
     // Verify the average score is calculated correctly (0.75 + 0.85 + 0.90 + 0.95 + 0.70) / 5 = 0.83
@@ -485,7 +485,7 @@ t.test('DepID normalization', async t => {
 
   const depIDWithExtra = joinDepIDTuple([
     'registry',
-    '',
+    'npm',
     '@ruyadorno/foo@1.0.0',
     'extra-peer-dep-info',
   ])

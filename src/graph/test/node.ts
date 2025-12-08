@@ -173,7 +173,7 @@ t.test('Node', async t => {
   const unnamed = new Node(opts, undefined, unnamedMani, unnamedSpec)
   t.strictSame(
     unnamed.location,
-    `./node_modules/.vlt/${delimiter}${delimiter}@0.0.0/node_modules/${delimiter}${delimiter}@0.0.0`,
+    `./node_modules/.vlt/${delimiter}npm${delimiter}@0.0.0/node_modules/${delimiter}npm${delimiter}@0.0.0`,
     'should have a location for unnamed manifests',
   )
 

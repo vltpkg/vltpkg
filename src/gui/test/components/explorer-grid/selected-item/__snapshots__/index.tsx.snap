@@ -44,12 +44,12 @@ exports[`getDependentItems 1`] = `
     type: 'prod',
     spec: @vltpkg/spec.Spec dependent@^1.0.0,
     from: {
-      id: '··dependent@1.0.0',
+      id: '·npm·dependent@1.0.0',
       name: 'dependent',
       version: '1.0.0',
       edgesIn: Set(0) {}
     },
-    id: '··dependent@1.0.0',
+    id: '·npm·dependent@1.0.0',
     title: 'dependent@^1.0.0',
     version: '1.0.0',
     stacked: false,
@@ -61,7 +61,7 @@ exports[`getDependentItems 1`] = `
     type: 'dev',
     spec: @vltpkg/spec.Spec foo@^1.0.0,
     from: {
-      id: '··foo@1.0.0',
+      id: '·npm·foo@1.0.0',
       name: 'foo',
       version: '1.0.0',
       edgesIn: Set(2) {
@@ -89,7 +89,7 @@ exports[`getDependentItems 1`] = `
         }
       }
     },
-    id: '··foo@1.0.0',
+    id: '·npm·foo@1.0.0',
     title: 'foo@^1.0.0',
     version: '1.0.0',
     stacked: true,
@@ -101,12 +101,12 @@ exports[`getDependentItems 1`] = `
     type: 'prod',
     spec: @vltpkg/spec.Spec bar@^1.0.0,
     from: {
-      id: '··bar@1.0.0',
+      id: '·npm·bar@1.0.0',
       name: 'bar',
       version: '1.0.0',
       edgesIn: Set(0) {}
     },
-    id: '··bar@1.0.0',
+    id: '·npm·bar@1.0.0',
     title: 'bar@^1.0.0',
     version: '1.0.0',
     stacked: false,

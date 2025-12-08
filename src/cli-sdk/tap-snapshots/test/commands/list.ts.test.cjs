@@ -243,10 +243,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
     "spec": "@foo/bazz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@foo§bazz@1.0.0",
+      "id": "·npm·@foo§bazz@1.0.0",
       "name": "@foo/bazz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@foo§bazz@1.0.0/node_modules/@foo/bazz",
+      "location": "./node_modules/.vlt/·npm·@foo§bazz@1.0.0/node_modules/@foo/bazz",
       "importer": false,
       "manifest": {
         "name": "@foo/bazz",
@@ -269,10 +269,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··bar@1.0.0",
+      "id": "·npm·bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -303,10 +303,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
     "spec": "@foo/bazz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@foo§bazz@1.0.0",
+      "id": "·npm·@foo§bazz@1.0.0",
       "name": "@foo/bazz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@foo§bazz@1.0.0/node_modules/@foo/bazz",
+      "location": "./node_modules/.vlt/·npm·@foo§bazz@1.0.0/node_modules/@foo/bazz",
       "importer": false,
       "manifest": {
         "name": "@foo/bazz",
@@ -329,10 +329,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··bar@1.0.0",
+      "id": "·npm·bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
