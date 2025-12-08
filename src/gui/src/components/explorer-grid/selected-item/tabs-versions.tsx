@@ -571,10 +571,10 @@ export const VersionsTabContent = () => {
   const processedVersions = useMemo(() => {
     if (!versions) return []
 
-    // Apply all filters in sequence
+    // Apply all filters in sequence (spread to create mutable copy)
     const filteredAllVersions = filterFunctions.reduce(
       (versions, filter) => filter(versions),
-      versions,
+      [...versions],
     )
 
     // Add downloads data to each version

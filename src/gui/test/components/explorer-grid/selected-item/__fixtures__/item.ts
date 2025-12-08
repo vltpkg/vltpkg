@@ -141,3 +141,13 @@ export const SELECTED_ITEM_DETAILS: DetailsInfo = {
     alt: 'John Doe',
   },
 }
+
+/**
+ * Default loading state properties for tests.
+ * Add these to mockState to satisfy SelectedItemStore type.
+ */
+export const MOCK_LOADING_STATE = {
+  isLoadingDetails: false,
+  isLoadingDependencies: false,
+  dependenciesError: null,
+}

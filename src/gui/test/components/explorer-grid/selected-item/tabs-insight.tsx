@@ -7,6 +7,7 @@ import { InsightTabContent } from '@/components/explorer-grid/selected-item/tabs
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
+  MOCK_LOADING_STATE,
 } from './__fixtures__/item.ts'
 
 import type { PackageScore } from '@vltpkg/security-archive'
@@ -125,6 +126,7 @@ test('InsightTabContent renders an empty state', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -160,6 +162,7 @@ test('InsightTabContent renders with insights', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -196,6 +199,7 @@ test('InsightTabContent renders with no insights but a package score', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

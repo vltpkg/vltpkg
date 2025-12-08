@@ -1,5 +1,7 @@
 import { Fragment } from 'react'
 import { Outlet } from 'react-router'
+import { AnimatePresence, motion } from 'framer-motion'
+import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
 import {
   useSelectedItemStore,
   SelectedItemProvider,
@@ -29,6 +31,7 @@ import { AsideOverview } from '@/components/explorer-grid/selected-item/aside/in
 import { AsideOverviewEmptyState } from '@/components/explorer-grid/selected-item/aside/empty-state.tsx'
 import { Decorator } from '@/components/ui/decorator.tsx'
 import { InstallHelper } from '@/components/explorer-grid/selected-item/focused-view/install-helper.tsx'
+import { PartialErrorsIndicator } from '@/components/explorer-grid/selected-item/partial-errors-indicator.tsx'
 import { cn } from '@/lib/utils.ts'
 
 import type { DepID } from '@vltpkg/dep-id'
@@ -108,7 +111,7 @@ const FocusedSidebar = () => {
           : <AsideOverview />}
         </Fragment>
       : activeTab === 'dependencies' ?
-        <aside className="w-full">
+        <aside className="bg-background w-full">
           <DependencySideBar />
         </aside>
       : null}
@@ -123,51 +126,76 @@ export const FocusedView = ({ item, ...props }: FocusedViewProps) => {
       selectedItem={item}
       asideOveriewVisible={false}>
       <DependencySidebarProvider {...props}>
-        <div className="bg-background relative">
-          <div className="bg-foreground/6">
-            <FocusedBreadcrumbs className="pt-[0px] pl-[0px]" />
+        <FocusedViewContent />
+      </DependencySidebarProvider>
+    </SelectedItemProvider>
+  )
+}
 
-            <PackageDetails />
+const FocusedViewContent = () => {
+  const isLoadingDetails = useSelectedItemStore(
+    state => state.isLoadingDetails,
+  )
 
-            <div className="bg-background pattern-hatch h-9 w-full rounded lg:hidden" />
-            <div className="grid-cols-[4fr_1fr] lg:grid">
-              <div className="flex w-full p-[0.5px] pl-[0px]">
-                <div className="bg-background w-full rounded">
-                  <TabsNavigation />
-                </div>
-              </div>
+  return (
+    <div className="bg-background relative">
+      <AnimatePresence initial={false}>
+        {isLoadingDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded backdrop-blur-sm">
+            <JellyTriangleSpinner size={40} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              <FocusedResource />
+      <PartialErrorsIndicator />
+
+      <div className="bg-foreground/6">
+        <FocusedBreadcrumbs className="pt-0 pl-0" />
+
+        <PackageDetails />
+
+        <div className="bg-background pattern-hatch h-9 w-full rounded lg:hidden" />
+        <div className="grid-cols-[4fr_1fr] lg:grid">
+          <div className="flex w-full p-[0.5px] pl-0">
+            <div className="bg-background w-full rounded">
+              <TabsNavigation />
             </div>
+          </div>
 
+          <FocusedResource />
+        </div>
+
+        <div
+          className={cn(
+            'h-full min-w-0 grid-cols-[4fr_1fr] lg:grid',
+            'lg:min-h-[calc(100svh-64px-96.5px-45px-1px)]',
+          )}>
+          <div className="flex w-full min-w-0 p-[0.5px] pl-0">
+            <div className="bg-background w-full min-w-0 rounded">
+              <Outlet />
+            </div>
+          </div>
+
+          <div className="bg-background pattern-hatch h-9 w-full rounded lg:hidden" />
+
+          <div className="flex w-full min-w-0 rounded p-[0.5px]">
             <div
               className={cn(
-                'h-full min-w-0 grid-cols-[4fr_1fr] lg:grid',
-                'lg:min-h-[calc(100svh-64px-96.5px-45px-1px)]',
+                'flex h-full w-full min-w-0 flex-col gap-px rounded',
+                '**:data-[slot=aside-section]:last-of-type:h-full [&>aside]:h-full **:data-[slot=aside-section]:last-of-type:[&>div]:h-full',
               )}>
-              <div className="flex w-full min-w-0 p-[0.5px] pl-[0px]">
-                <div className="bg-background w-full min-w-0 rounded">
-                  <Outlet />
-                </div>
-              </div>
-
-              <div className="bg-background pattern-hatch h-9 w-full rounded lg:hidden" />
-
-              <div className="flex w-full min-w-0 rounded p-[0.5px]">
-                <div
-                  className={cn(
-                    'flex h-full w-full min-w-0 flex-col gap-[1px] rounded',
-                    '**:data-[slot=aside-section]:last-of-type:h-full [&>aside]:h-full **:data-[slot=aside-section]:last-of-type:[&>div]:h-full',
-                  )}>
-                  <InstallHelper />
-                  <FocusedSidebar />
-                </div>
-              </div>
+              <InstallHelper />
+              <FocusedSidebar />
             </div>
           </div>
         </div>
-      </DependencySidebarProvider>
-    </SelectedItemProvider>
+      </div>
+    </div>
   )
 }
 
@@ -180,8 +208,8 @@ const PackageDetails = ({ className }: { className?: string }) => {
     <div className={cn('grid-cols-[4fr_1fr] lg:grid', className)}>
       <div
         className={cn(
-          'flex w-full flex-col gap-[1px] p-[0.5px] pl-[0px]',
-          !breadcrumbs && 'pt-[0px]',
+          'flex w-full flex-col gap-px p-[0.5px] pl-0',
+          !breadcrumbs && 'pt-0',
         )}>
         <div className="bg-background w-full rounded px-6 py-4">
           <PackageImageSpec />

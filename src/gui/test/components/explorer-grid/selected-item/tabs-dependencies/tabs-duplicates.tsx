@@ -3,7 +3,10 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import { SELECTED_ITEM } from '../__fixtures__/item.ts'
+import {
+  SELECTED_ITEM,
+  MOCK_LOADING_STATE,
+} from '../__fixtures__/item.ts'
 import { DuplicatesTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-duplicates.tsx'
 
 import type { DuplicatedDeps } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -104,6 +107,7 @@ test('DuplicatesTabContent renders with an empty state', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 
@@ -143,6 +147,7 @@ test('DuplicatesTabContent renders with duplicated deps', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 

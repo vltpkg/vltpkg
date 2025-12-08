@@ -5,7 +5,10 @@ import { useGraphStore as useStore } from '@/state/index.ts'
 import { Item } from '@/components/explorer-grid/selected-item/item.tsx'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import { SELECTED_ITEM } from './__fixtures__/item.ts'
+import {
+  SELECTED_ITEM,
+  MOCK_LOADING_STATE,
+} from './__fixtures__/item.ts'
 
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
@@ -49,6 +52,17 @@ vi.mock(
     NavigationButton: 'gui-navigation-button',
     NavigationList: 'gui-navigation-list',
     NavigationListItem: 'gui-navigation-list-item',
+  }),
+)
+
+vi.mock('@/components/ui/jelly-spinner.tsx', () => ({
+  JellyTriangleSpinner: 'gui-jelly-triangle-spinner',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/partial-errors-indicator.tsx',
+  () => ({
+    PartialErrorsIndicator: 'gui-partial-errors-indicator',
   }),
 )
 
@@ -141,6 +155,7 @@ test('Item renders with the default structure', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore)
 
   const Container = () => {
