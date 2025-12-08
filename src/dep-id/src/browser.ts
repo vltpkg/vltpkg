@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import {
   currentDefaultRegistryName,
+  defaultRegistry,
   defaultRegistryName,
   Spec,
 } from '@vltpkg/spec/browser'
@@ -10,6 +11,9 @@ import type { Manifest } from '@vltpkg/types'
 export const delimiter: Delimiter = '·'
 export type Delimiter = '·'
 const EXTRA_PEER_SET_DELIMITER = 'ṗ:'
+
+const normalizeURL = (url: string | undefined): string | undefined =>
+  url && (url.endsWith('/') ? url : `${url}/`)
 
 /**
  * Dependency IDs are a URI-encoded set of strings, separated
@@ -91,8 +95,12 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
   const [type, first, second, extra] = list
   const f = encode(first)
   switch (type) {
-    case 'registry':
-      return `${delimiter}${f || defaultRegistryName}${delimiter}${encode(second)}${extra ? `${delimiter}${encode(extra)}` : ''}`
+    case 'registry': {
+      const registryURL = normalizeURL(first)
+      const registryValue =
+        registryURL === defaultRegistry ? defaultRegistryName : f
+      return `${delimiter}${registryValue || defaultRegistryName}${delimiter}${encode(second)}${extra ? `${delimiter}${encode(extra)}` : ''}`
+    }
     case 'git':
       return `${type}${delimiter}${f}${delimiter}${encode(second)}${extra ? `${delimiter}${encode(extra)}` : ''}`
     default:
@@ -246,12 +254,8 @@ export const hydrateTuple = (
         options.registry &&
         currentDefaultRegistryName(options.registry, options)
       const defaultRegistryURL =
-        options.registry ?
-          options.registry.endsWith('/') ?
-            options.registry
-          : options.registry + '/'
-        : undefined
-      const firstURL = first.endsWith('/') ? first : first + '/'
+        options.registry ? normalizeURL(options.registry) : undefined
+      const firstURL = normalizeURL(first)
       const hasScope = second.startsWith('@')
       const hasAtVersion = second.includes('@', hasScope ? 1 : 0)
       const name_ =
@@ -327,9 +331,8 @@ const matchRegistryURL = (
   // matches the current default registry of this Spec value
   for (const [alias, url] of Object.entries(registries)) {
     // normalize trailing slash for comparison
-    const specRegURL =
-      registry.endsWith('/') ? registry : registry + '/'
-    const knownRegURL = url.endsWith('/') ? url : url + '/'
+    const specRegURL = normalizeURL(registry)
+    const knownRegURL = normalizeURL(url)
     if (specRegURL === knownRegURL) {
       return alias
     }

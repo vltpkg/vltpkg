@@ -1,4 +1,9 @@
-import { defaultRegistry, getOptions, Spec } from '@vltpkg/spec'
+import {
+  defaultRegistry,
+  defaultRegistryName,
+  getOptions,
+  Spec,
+} from '@vltpkg/spec'
 import type { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
@@ -520,6 +525,53 @@ t.test('asDepID', t => {
   for (const id of invalidDepIDs) {
     t.throws(() => asDepID(id), id)
   }
+  t.end()
+})
+
+t.test('joinDepIDTuple', t => {
+  const defaultRegistryId: DepID = joinDepIDTuple([
+    'registry',
+    defaultRegistryName,
+    'foo@1.0.0',
+    undefined,
+  ])
+  // All the following variations of joinDepIDTuple
+  // should produce the same DepID:
+  t.strictSame(
+    defaultRegistryId,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0', undefined]),
+    'no registry name',
+  )
+  t.strictSame(
+    defaultRegistryId,
+    joinDepIDTuple([
+      'registry',
+      defaultRegistry.slice(0, -1),
+      'foo@1.0.0',
+      undefined,
+    ]),
+    'default url no slash',
+  )
+  t.strictSame(
+    defaultRegistryId,
+    joinDepIDTuple([
+      'registry',
+      defaultRegistry,
+      'foo@1.0.0',
+      undefined,
+    ]),
+    'default url with slash at the end',
+  )
+  t.strictSame(
+    defaultRegistryId,
+    joinDepIDTuple([
+      '' as 'registry',
+      defaultRegistryName,
+      'foo@1.0.0',
+      undefined,
+    ]),
+    'empty type',
+  )
   t.end()
 })
 
