@@ -7,16 +7,16 @@
 'use strict'
 exports[`test/edge.ts > TAP > Edge > must match snapshot 1`] = `
 @vltpkg/graph.Edge {
-  from: '··root@1.0.0',
+  from: '·npm·root@1.0.0',
   type: 'prod',
   spec: 'child@^1.0.0',
-  to: '··child@1.0.0'
+  to: '·npm·child@1.0.0'
 }
 `
 
 exports[`test/edge.ts > TAP > Edge > must match snapshot 2`] = `
 @vltpkg/graph.Edge {
-  from: '··child@1.0.0',
+  from: '·npm·child@1.0.0',
   type: 'prod',
   spec: 'missing@latest',
   to: undefined

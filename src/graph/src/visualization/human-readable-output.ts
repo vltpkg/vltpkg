@@ -1,3 +1,4 @@
+import { defaultRegistryName } from '@vltpkg/spec'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import { styleText as utilStyleText } from 'node:util'
@@ -187,7 +188,9 @@ export function humanReadableOutput(
         const depIdTuple =
           nextItem.node?.id && splitDepID(nextItem.node.id)
         const hasCustomReg =
-          depIdTuple?.[0] === 'registry' && depIdTuple[1]
+          depIdTuple?.[0] === 'registry' &&
+          depIdTuple[1] &&
+          depIdTuple[1] !== defaultRegistryName
         const nodeName =
           hasCustomReg ?
             `${depIdTuple[1]}:${nextItem.node?.name}`
@@ -200,7 +203,9 @@ export function humanReadableOutput(
         const nextChar = isLast ? 'last-child' : 'middle-child'
 
         const aliasedPackage =
-          nextItem.node?.name && nextItem.edge?.name !== nodeName
+          hasCustomReg ||
+          (nextItem.node?.name &&
+            nextItem.edge?.name !== nextItem.node.name)
         nextItem.name =
           nextItem.node?.confused ?
             `${nextItem.edge?.name} ${red('(confused)')}`

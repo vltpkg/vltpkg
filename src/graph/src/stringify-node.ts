@@ -1,4 +1,5 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
+import { defaultRegistryName } from '@vltpkg/spec/browser'
 import type { NodeLike } from '@vltpkg/types'
 
 export const stringifyNode = (node?: NodeLike) => {
@@ -7,7 +8,14 @@ export const stringifyNode = (node?: NodeLike) => {
   const [type, ref, nameVersion] = splitDepID(node.id)
 
   if (type === 'registry') {
-    const prefix = ref ? `${ref}:` : 'npm:'
+    let prefix = `${defaultRegistryName}:`
+    if (ref) {
+      if (/^https?:\/\//.test(ref)) {
+        prefix = `registry:${ref}#`
+      } else {
+        prefix = `${ref}:`
+      }
+    }
     return `${prefix}${nameVersion}`
   } else if (type === 'workspace') {
     return `workspace:${node.name}`

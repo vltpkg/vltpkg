@@ -43,8 +43,8 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '··bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
-    '··foo@1.0.0': [
+    '·npm·bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
+    '·npm·foo@1.0.0': [
       2,
       'foo',
       <3 empty items>,
@@ -56,8 +56,8 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
     ]
   },
   edges: {
-    'file·. foo': 'dev ^1.0.0 ··foo@1.0.0',
-    'file·. bar': 'optional ^1.0.0 ··bar@1.0.0'
+    'file·. foo': 'dev ^1.0.0 ·npm·foo@1.0.0',
+    'file·. bar': 'optional ^1.0.0 ·npm·bar@1.0.0'
   }
 }
 `
@@ -71,19 +71,19 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
     edgesOut: [
       Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file·linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '··foo@1.0.0',
-        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        id: '·npm·foo@1.0.0',
+        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@file:./bar) -prod-> to: Node {
-            id: 'file·node_modules§.vlt§%C2%B7%C2%B7foo@1.0.0§node_modules§foo§bar',
-            location: './node_modules/.vlt/file·node_modules§.vlt§%C2%B7%C2%B7foo@1.0.0§node_modules§foo§bar/node_modules/bar',
-            resolved: 'node_modules/.vlt/··foo@1.0.0/node_modules/foo/bar'
+            id: 'file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§bar',
+            location: './node_modules/.vlt/file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§bar/node_modules/bar',
+            resolved: 'node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo/bar'
           },
           Edge spec(baz@file:./baz.tgz) -prod-> to: Node {
-            id: 'file·node_modules§.vlt§%C2%B7%C2%B7foo@1.0.0§node_modules§foo§baz.tgz',
-            location: './node_modules/.vlt/file·node_modules§.vlt§%C2%B7%C2%B7foo@1.0.0§node_modules§foo§baz.tgz/node_modules/baz',
-            resolved: 'node_modules/.vlt/··foo@1.0.0/node_modules/foo/baz.tgz'
+            id: 'file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§baz.tgz',
+            location: './node_modules/.vlt/file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§baz.tgz/node_modules/baz',
+            resolved: 'node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo/baz.tgz'
           }
         ]
       }

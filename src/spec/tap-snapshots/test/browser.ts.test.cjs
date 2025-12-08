@@ -7748,6 +7748,34 @@ exports[`test/browser.ts > TAP > basic parsing tests > x@workspace:y@1.x > toStr
 x@workspace:y@1.x
 `
 
+exports[`test/browser.ts > TAP > getOptions > should get default options 1`] = `
+Object {
+  "catalog": Object {},
+  "catalogs": Object {},
+  "jsr-registries": Object {
+    "jsr": "https://npm.jsr.io/",
+  },
+  "registry": "https://registry.npmjs.org/",
+  "scope-registries": Object {},
+  "git-hosts": Object {
+    "github": "git+ssh://git@github.com:$1/$2.git",
+    "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+    "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+    "gist": "git+ssh://git@gist.github.com/$1.git",
+  },
+  "registries": Object {
+    "npm": "https://registry.npmjs.org/",
+    "gh": "https://npm.pkg.github.com/",
+  },
+  "git-host-archives": Object {
+    "github": "https://api.github.com/repos/$1/$2/tarball/$committish",
+    "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+    "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+    "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+  },
+}
+`
+
 exports[`test/browser.ts > TAP > mixing scopes and names > scopes: @a 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',

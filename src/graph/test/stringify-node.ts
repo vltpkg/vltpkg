@@ -21,6 +21,15 @@ const nodes = {
     name: 'dep',
     version: '1.0.0',
   } as NodeLike,
+  arbitraryReg: {
+    id: joinDepIDTuple([
+      'registry',
+      'https://example.com',
+      'dep@1.0.0',
+    ]),
+    name: 'dep',
+    version: '1.0.0',
+  } as NodeLike,
   git: {
     id: joinDepIDTuple(['git', 'github:a/b', '']),
     name: 'b',

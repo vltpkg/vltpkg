@@ -2,7 +2,7 @@ import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { parse, Version } from '@vltpkg/semver'
-import { Spec } from '@vltpkg/spec'
+import { defaultRegistryName, Spec } from '@vltpkg/spec'
 import type { GitSelectorParsed } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { relative, resolve } from 'node:path'
@@ -41,14 +41,17 @@ export const satisfiesTuple = (
 
   switch (spec.type) {
     case 'registry': {
+      /* c8 ignore start - should be impossible */
       if (!first) {
         // must be from the default registry
         if (spec.registry !== options.registry) {
           return false
         }
+        /* c8 ignore stop */
       } else {
         let namedRegistry = options.registries[first]
-        if (!namedRegistry && first === 'npm') {
+        /* c8 ignore next 3 */
+        if (!namedRegistry && first === defaultRegistryName) {
           namedRegistry = options.registry
         }
         if (namedRegistry && namedRegistry !== spec.registry) {

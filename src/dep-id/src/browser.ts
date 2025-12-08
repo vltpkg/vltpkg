@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { Spec } from '@vltpkg/spec/browser'
+import {
+  currentDefaultRegistryName,
+  defaultRegistryName,
+  Spec,
+} from '@vltpkg/spec/browser'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { Manifest } from '@vltpkg/types'
 
@@ -88,7 +92,7 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
   const f = encode(first)
   switch (type) {
     case 'registry':
-      return `${delimiter}${f}${delimiter}${encode(second)}${extra ? `${delimiter}${encode(extra)}` : ''}`
+      return `${delimiter}${f || defaultRegistryName}${delimiter}${encode(second)}${extra ? `${delimiter}${encode(extra)}` : ''}`
     case 'git':
       return `${type}${delimiter}${f}${delimiter}${encode(second)}${extra ? `${delimiter}${encode(extra)}` : ''}`
     default:
@@ -134,7 +138,7 @@ export const splitDepID = (id: string): DepIDTuple => {
       }
       res = [
         type || 'registry',
-        f,
+        f || defaultRegistryName,
         decodeURIComponent(second),
         decode(extra),
       ]
@@ -199,11 +203,12 @@ export const hydrateTuple = (
   tuple: DepIDTuple,
   name?: string,
   options: SpecOptions = {},
-) => {
+): Spec => {
   const [type, first, second] = tuple
 
   // memoized entries return early
-  const cacheKey = (name ?? '') + type + first + (second ?? '')
+  const cacheKey =
+    (name ?? '') + ',' + type + ',' + first + ',' + (second ?? '')
   const seen = seenHydratedTuples.get(cacheKey)
   if (seen) return seen
 
@@ -237,40 +242,53 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      if (!first) {
-        // just a normal name@version on the default registry
-        const s = Spec.parseArgs(second, options)
-        if (name && s.name !== name) {
-          res = Spec.parse(name, `npm:${second}`, options)
-        } else {
-          res = s
-        }
+      const defaultName =
+        options.registry &&
+        currentDefaultRegistryName(options.registry, options)
+      const defaultRegistryURL =
+        options.registry ?
+          options.registry.endsWith('/') ?
+            options.registry
+          : options.registry + '/'
+        : undefined
+      const firstURL = first.endsWith('/') ? first : first + '/'
+      const hasScope = second.startsWith('@')
+      const hasAtVersion = second.includes('@', hasScope ? 1 : 0)
+      const name_ =
+        (hasAtVersion && hasScope ?
+          `@${second.split('@')[1]}`
+        : second.split('@')[0]) /* c8 ignore next */ || '(unknown)'
+      const usesDefaultRegistry =
+        !first ||
+        first === defaultName ||
+        firstURL === defaultRegistryURL
+      const noAliasedNameUsed = !name || name === name_
+      if (usesDefaultRegistry && noAliasedNameUsed) {
+        const version =
+          (hasAtVersion &&
+            second.split('@')[
+              hasScope ? 2 : 1
+            ]) /* c8 ignore next */ ||
+          second
+        res = Spec.parse(name || name_, version, options)
         break
       }
       if (!/^https?:\/\//.test(first)) {
         const reg = options.registries?.[first]
-        if (first !== 'npm' && !reg) {
+        if (first !== defaultRegistryName && !reg) {
           throw error('named registry not found in options', {
             name: first,
             found: tuple,
           })
         }
-        res = Spec.parse(
-          name ?? '(unknown)',
-          `${first}:${second}`,
-          options,
-        )
+        res = Spec.parse(name || name_, `${first}:${second}`, options)
         break
       }
-      const s = Spec.parse(
-        name ?? '(unknown)',
+      res = Spec.parse(
+        name || name_,
         `registry:${first}#${second}`,
         options,
       )
-      res =
-        name && s.final.name !== name ?
-          Spec.parse(s.final.name, s.bareSpec, options)
-        : s
       break
     }
     case 'git': {
@@ -301,15 +319,41 @@ export const hydrateTuple = (
   return res
 }
 
-// Strip out the default registry, there's no need to store that
-const omitDefReg = (s?: string): string =>
-  (
-    !s ||
-    s === 'https://registry.npmjs.org' ||
-    s === 'https://registry.npmjs.org/'
-  ) ?
-    ''
-  : s
+const matchRegistryURL = (
+  registry: string,
+  registries: Record<string, string>,
+): string | undefined => {
+  // iterate on known registries to check if any known value
+  // matches the current default registry of this Spec value
+  for (const [alias, url] of Object.entries(registries)) {
+    // normalize trailing slash for comparison
+    const specRegURL =
+      registry.endsWith('/') ? registry : registry + '/'
+    const knownRegURL = url.endsWith('/') ? url : url + '/'
+    if (specRegURL === knownRegURL) {
+      return alias
+    }
+  }
+}
+
+/**
+ * Convert a Spec's registry URL to a known short registry name, if possible.
+ */
+const convertToKnownShortRegistryName = (
+  s: Spec,
+  registry?: string,
+): string | undefined => {
+  if (!s.registry) return
+  const reg = registry ?? s.registry
+  const namedRegistry = matchRegistryURL(reg, s.options.registries)
+  if (namedRegistry) return namedRegistry
+
+  const namedJSRRegistry = matchRegistryURL(
+    reg,
+    s.options['jsr-registries'],
+  )
+  if (namedJSRRegistry) return namedJSRRegistry
+}
 
 const seenTuples = new Map<string, DepIDTuple>()
 /**
@@ -326,6 +370,7 @@ export const getTuple = (
   // memoized entries return early
   const cacheKey =
     String(spec) +
+    (spec.registry ?? '') +
     (mani.name ?? '') +
     (mani.version ?? '') +
     (extra ?? '')
@@ -336,18 +381,6 @@ export const getTuple = (
   const f = spec.final
   switch (f.type) {
     case 'registry': {
-      // try to shorten to a known name if we can.
-      const reg = omitDefReg(f.registry)
-      if (!f.namedRegistry && reg) {
-        for (const [alias, host] of Object.entries(
-          spec.options.registries,
-        )) {
-          if (reg === host) {
-            f.namedRegistry = alias
-            break
-          }
-        }
-      }
       const version =
         mani.version ?
           mani.version.startsWith('v') ?
@@ -356,7 +389,11 @@ export const getTuple = (
         : f.bareSpec
       res = [
         f.type,
-        f.namedRegistry ?? reg,
+        f.namedRegistry ||
+          convertToKnownShortRegistryName(f, f.scopeRegistry) ||
+          f.scopeRegistry ||
+          f.registry ||
+          defaultRegistryName,
         `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
         extra,
       ]
