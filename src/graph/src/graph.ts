@@ -2,7 +2,7 @@ import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
-import { Spec } from '@vltpkg/spec'
+import { getOptions, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
   GraphLike,
@@ -154,10 +154,22 @@ export class Graph implements GraphLike {
   constructor(options: GraphOptions) {
     const { mainManifest, monorepo } = options
     this.#options = options
+    // hydrate spec options to their full contents, including defaults
+    const specOptions = getOptions({
+      registry: options.registry,
+      registries: options.registries,
+      'git-hosts': options['git-hosts'],
+      'git-host-archives': options['git-host-archives'],
+      'scope-registries': options['scope-registries'],
+      'jsr-registries': options['jsr-registries'],
+      catalog: options.catalog,
+      catalogs: options.catalogs,
+    })
     this.manifests = getMap(options.manifests)
     this.projectRoot = options.projectRoot
     this.#nodeOptions = {
       ...this.#options,
+      ...specOptions,
       graph: this,
     }
 
