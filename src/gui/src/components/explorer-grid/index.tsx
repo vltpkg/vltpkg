@@ -186,7 +186,10 @@ export const ExplorerGrid = ({
       breadcrumbs: undefined,
     }
 
-    return <SelectedItem item={externalItem} />
+    // Key forces remount to reset loading state when navigating between packages
+    return (
+      <SelectedItem key={externalPackageSpec} item={externalItem} />
+    )
   }
 
   const items = getItemsData(edges, nodes, query)
@@ -205,7 +208,8 @@ export const ExplorerGrid = ({
   }
 
   if (items.length === 1 && items[0]) {
-    return <SelectedItem item={items[0]} />
+    // Key forces remount to reset loading state when navigating between items
+    return <SelectedItem key={items[0].id} item={items[0]} />
   }
 
   // Show Results component for both empty and populated results

@@ -3,7 +3,10 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import { SELECTED_ITEM } from '../__fixtures__/item.ts'
+import {
+  SELECTED_ITEM,
+  MOCK_LOADING_STATE,
+} from '../__fixtures__/item.ts'
 import { InsightsTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-insights.tsx'
 
 import type { DepWarning } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -160,6 +163,7 @@ test('InsightsTabContent renders with an empty state', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 
@@ -199,6 +203,7 @@ test('InsightsTabContent renders with insights', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 
@@ -238,6 +243,7 @@ test('InsightsTabContent renders with a warning for unscanned deps', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 

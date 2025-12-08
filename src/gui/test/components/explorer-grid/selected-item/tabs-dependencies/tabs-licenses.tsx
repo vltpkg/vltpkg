@@ -6,7 +6,10 @@ import {
   getLicenseSeverity,
   useSelectedItemStore,
 } from '@/components/explorer-grid/selected-item/context.tsx'
-import { SELECTED_ITEM } from '../__fixtures__/item.ts'
+import {
+  SELECTED_ITEM,
+  MOCK_LOADING_STATE,
+} from '../__fixtures__/item.ts'
 import { LicensesTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-licenses.tsx'
 
 import type { DepLicenses } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -172,6 +175,7 @@ test('LicensesTabContent renders with an empty state', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 
@@ -211,6 +215,7 @@ test('LicensesTabContent renders with licenses', () => {
       setDuplicatedDeps: vi.fn(),
       depFunding: undefined,
       setDepFunding: vi.fn(),
+      ...MOCK_LOADING_STATE,
     }),
   )
 

@@ -8,6 +8,7 @@ import { TabsJsonContent } from '@/components/explorer-grid/selected-item/tabs-j
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
+  MOCK_LOADING_STATE,
 } from './__fixtures__/item.ts'
 
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -86,6 +87,7 @@ test('TabsManifestContent renders with a json object', () => {
     setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
     setDepFunding: vi.fn(),
+    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

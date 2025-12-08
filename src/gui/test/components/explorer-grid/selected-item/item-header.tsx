@@ -13,6 +13,7 @@ import {
   specOptions,
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
+  MOCK_LOADING_STATE,
 } from './__fixtures__/item.ts'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 
@@ -104,8 +105,6 @@ test('ItemBreadcrumbs renders with breadcrumbs', () => {
       ...SELECTED_ITEM,
       breadcrumbs: mockBreadcrumbs,
     },
-    manifest: null,
-    rawManifest: null,
     packageScore: undefined,
     insights: undefined,
     author: undefined,
@@ -125,6 +124,9 @@ test('ItemBreadcrumbs renders with breadcrumbs', () => {
     depFunding: undefined,
     setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_LOADING_STATE,
+    manifest: null,
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -141,8 +143,6 @@ test('ItemBreadcrumbs renders null when no breadcrumbs', () => {
       ...SELECTED_ITEM,
       breadcrumbs: undefined,
     },
-    manifest: null,
-    rawManifest: null,
     packageScore: undefined,
     insights: undefined,
     author: undefined,
@@ -162,6 +162,9 @@ test('ItemBreadcrumbs renders null when no breadcrumbs', () => {
     depFunding: undefined,
     setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_LOADING_STATE,
+    manifest: null,
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -175,8 +178,6 @@ test('ItemBreadcrumbs renders null when no breadcrumbs', () => {
 test('PackageImageSpec renders with default item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    manifest: null,
-    rawManifest: null,
     packageScore: undefined,
     insights: undefined,
     author: undefined,
@@ -197,6 +198,9 @@ test('PackageImageSpec renders with default item', () => {
     setDepFunding: vi.fn(),
     favicon: SELECTED_ITEM_DETAILS.favicon,
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_LOADING_STATE,
+    manifest: null,
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -228,8 +232,6 @@ test('PackageImageSpec renders with package score', () => {
 
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    manifest: null,
-    rawManifest: null,
     packageScore: mockPackageScore,
     insights: undefined,
     author: undefined,
@@ -250,6 +252,9 @@ test('PackageImageSpec renders with package score', () => {
     setDepFunding: vi.fn(),
     favicon: SELECTED_ITEM_DETAILS.favicon,
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_LOADING_STATE,
+    manifest: null,
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -288,12 +293,10 @@ test('Publisher renders with publisher information', () => {
 
   const mockManifest = {
     version: '1.0.0',
-  } satisfies SelectedItemStore['manifest']
+  } as SelectedItemStore['manifest']
 
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    manifest: mockManifest,
-    rawManifest: null,
     packageScore: undefined,
     insights: undefined,
     author: undefined,
@@ -316,6 +319,9 @@ test('Publisher renders with publisher information', () => {
     publisherAvatar: SELECTED_ITEM_DETAILS.publisherAvatar,
     downloadsPerVersion: SELECTED_ITEM_DETAILS.downloadsPerVersion,
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_LOADING_STATE,
+    manifest: mockManifest,
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -329,8 +335,6 @@ test('Publisher renders with publisher information', () => {
 test('Publisher renders null when no publisher', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    manifest: null,
-    rawManifest: null,
     packageScore: undefined,
     insights: undefined,
     author: undefined,
@@ -350,9 +354,12 @@ test('Publisher renders null when no publisher', () => {
     depFunding: undefined,
     setDepFunding: vi.fn(),
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_LOADING_STATE,
     publisher: undefined,
     publisherAvatar: undefined,
     downloadsPerVersion: undefined,
+    manifest: null,
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
