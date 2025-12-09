@@ -7,8 +7,10 @@ import { cn } from '@/lib/utils.ts'
 
 import type { ComponentProps } from 'react'
 
-interface SearchResultsInputProps
-  extends Omit<ComponentProps<typeof Input>, 'className'> {
+interface SearchResultsInputProps extends Omit<
+  ComponentProps<typeof Input>,
+  'className'
+> {
   loading?: boolean
   onButtonClick?: () => void
   classNames?: {

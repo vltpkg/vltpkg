@@ -28,9 +28,8 @@ export const reloadConfig = async (
 ): Promise<ParsedConfig> => {
   // Clear vlt-json caches to ensure fresh file reads
   try {
-    const { unload } = (await import(
-      '@vltpkg/vlt-json'
-    )) as VltJsonModule
+    const { unload } =
+      (await import('@vltpkg/vlt-json')) as VltJsonModule
     unload('user')
     unload('project')
     /* c8 ignore next */
@@ -188,9 +187,8 @@ export class ConfigManager {
   async deleteMany(keys: string[], which?: WhichConfig | 'all') {
     // Clear vlt-json caches to ensure fresh file reads
     try {
-      const { unload } = (await import(
-        '@vltpkg/vlt-json'
-      )) as VltJsonModule
+      const { unload } =
+        (await import('@vltpkg/vlt-json')) as VltJsonModule
       unload('user')
       unload('project')
       /* c8 ignore next */

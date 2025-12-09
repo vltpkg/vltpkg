@@ -22,10 +22,9 @@ const useCollapsibleContext = () => {
   return context
 }
 
-interface CollapsibleProps
-  extends React.ComponentPropsWithoutRef<
-    typeof CollapsiblePrimitive.Root
-  > {}
+interface CollapsibleProps extends React.ComponentPropsWithoutRef<
+  typeof CollapsiblePrimitive.Root
+> {}
 
 const Collapsible = ({
   open,
@@ -43,10 +42,9 @@ const Collapsible = ({
   )
 }
 
-interface CollapsibleTriggerProps
-  extends React.ComponentPropsWithoutRef<
-    typeof CollapsiblePrimitive.Trigger
-  > {}
+interface CollapsibleTriggerProps extends React.ComponentPropsWithoutRef<
+  typeof CollapsiblePrimitive.Trigger
+> {}
 
 const CollapsibleTrigger = ({
   ...props
@@ -54,10 +52,9 @@ const CollapsibleTrigger = ({
   return <CollapsiblePrimitive.CollapsibleTrigger {...props} />
 }
 
-interface CollapsibleContentProps
-  extends React.ComponentPropsWithRef<
-    typeof CollapsiblePrimitive.Content
-  > {}
+interface CollapsibleContentProps extends React.ComponentPropsWithRef<
+  typeof CollapsiblePrimitive.Content
+> {}
 
 /**
  * We can supercharge the primitive by wrapping it in a `motion.create(<react-element>)`,

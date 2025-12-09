@@ -174,8 +174,9 @@ export const UserMenu = ({
   )
 }
 
-interface MenuGroupProps
-  extends ComponentProps<typeof DropdownMenuGroup> {
+interface MenuGroupProps extends ComponentProps<
+  typeof DropdownMenuGroup
+> {
   group: MenuGroupData
   onAction: (action?: string) => void
 }
@@ -199,8 +200,9 @@ const MenuGroup = ({ group, onAction }: MenuGroupProps) => {
   )
 }
 
-interface MenuItemProps
-  extends ComponentProps<typeof DropdownMenuItem> {
+interface MenuItemProps extends ComponentProps<
+  typeof DropdownMenuItem
+> {
   item: MenuItemData
   onAction: (action?: string) => void
 }

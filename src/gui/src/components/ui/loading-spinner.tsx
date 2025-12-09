@@ -4,8 +4,7 @@ import { cn } from '@/lib/utils.ts'
 
 const spinnerVariants = 'w-6 h-6 rounded-full animate-spin'
 
-interface LoadingSpinnerProps
-  extends React.HTMLAttributes<SVGSVGElement> {
+interface LoadingSpinnerProps extends React.HTMLAttributes<SVGSVGElement> {
   className?: string
 }
 
