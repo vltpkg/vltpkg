@@ -35,11 +35,11 @@
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
-    "mime-types": "^3.0.1",
+    "mime-types": "^3.0.2",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:",
-    "resolve-import": "^2.0.0",
+    "resolve-import": "^2.1.1",
     "serve-handler": "^6.1.6"
   },
   "devDependencies": {

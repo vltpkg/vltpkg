@@ -20,17 +20,17 @@
     "unstorage": "2.0.0-alpha.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250829.0",
+    "@cloudflare/workers-types": "^4.20251209.0",
     "@eslint/js": "catalog:",
     "@neon-rs/load": "^0.1.82",
     "@types/node": "catalog:",
-    "drizzle-kit": "^0.31.4",
+    "drizzle-kit": "^0.31.8",
     "eslint": "catalog:",
     "if-env": "^1.0.4",
     "prettier": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "wrangler": "^4.33.1"
+    "wrangler": "^4.53.0"
   },
   "license": "FSL-1.1-MIT",
   "engines": {
