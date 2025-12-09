@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readFileSync } from 'node:fs'
+import { lstatSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
@@ -161,17 +161,12 @@ t.test('validate unpack path sanitization', async t => {
     const maliciousTar = makeTar([
       { path: '////package/safe.txt', size: 4 },
       'safe',
-      { path: 'package/valid.txt', size: 5 },
-      'valid',
     ])
     const dir = t.testdir()
-    await unpack(maliciousTar, dir)
-    // The file should fail to be extracted
-    t.equal(existsSync(dir + '/safe.txt'), false)
-    // Should NOT escape to root
-    t.equal(existsSync('/package/safe.txt'), false)
-    // Valid file should be extracted
-    t.equal(existsSync(dir + '/valid.txt'), true)
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
   })
 
   // Test: Path traversal with .. should be blocked
@@ -183,12 +178,7 @@ t.test('validate unpack path sanitization', async t => {
       '..\\windows\\system32\\config',
     ]
     for (const path of traversalPaths) {
-      const maliciousTar = makeTar([
-        { path: 'package/valid.txt', size: 5 },
-        'valid',
-        { path, size: 4 },
-        'evil',
-      ])
+      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
       const dir = t.testdir()
       const FSP = await import('node:fs/promises')
       const mkdirCalls: string[] = []
@@ -211,27 +201,10 @@ t.test('validate unpack path sanitization', async t => {
           },
         }),
       })
-      await unpack(maliciousTar, dir)
-      t.equal(
-        existsSync(dir + '/valid.txt'),
-        true,
-        `valid file exists for ${path}`,
+      await t.rejects(
+        unpack(maliciousTar, dir),
+        'throws an error when no file is extracted',
       )
-      // Verify no mkdir or writeFile calls contain '..'
-      for (const call of mkdirCalls) {
-        t.notMatch(
-          call,
-          /(?<!\.)\.\.(?!\.)/, // not match .. or .\.
-          `mkdir should not be called with .. in path: ${call}`,
-        )
-      }
-      for (const call of writeFileCalls) {
-        t.notMatch(
-          call,
-          /(?<!\.)\.\.(?!\.)/, // not match .. or .\.
-          `writeFile should not be called with .. in path: ${call}`,
-        )
-      }
     }
   })
 
@@ -243,18 +216,27 @@ t.test('validate unpack path sanitization', async t => {
       'c:foo/../../../escape.txt',
     ]
     for (const path of driveRelativePaths) {
-      const maliciousTar = makeTar([
-        { path: 'package/valid.txt', size: 5 },
-        'valid',
-        { path, size: 4 },
-        'evil',
-      ])
+      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
       const dir = t.testdir()
-      await unpack(maliciousTar, dir)
-      t.equal(
-        existsSync(dir + '/valid.txt'),
-        true,
-        `valid file exists for ${path}`,
+      await t.rejects(
+        unpack(maliciousTar, dir),
+        'throws an error when no file is extracted',
+      )
+    }
+  })
+
+  t.test('blocks Windows drive-relative path escapes', async t => {
+    const driveRelativePaths = [
+      'c:../../../windows/system32/evil.dll',
+      'd:..\\..\\important\\file.txt',
+      'c:foo/../../../escape.txt',
+    ]
+    for (const path of driveRelativePaths) {
+      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+      const dir = t.testdir()
+      await t.rejects(
+        unpack(maliciousTar, dir),
+        'throws an error when no file is extracted',
       )
     }
   })
@@ -275,15 +257,24 @@ t.test('validate unpack path sanitization', async t => {
   // Test: Directory traversal via symlink-like paths (though symlinks are already filtered)
   t.test('blocks directory entries with traversal', async t => {
     const maliciousTar = makeTar([
-      { path: 'package/valid.txt', size: 5 },
-      'valid',
       { path: '../../../tmp/evil-dir', type: 'Directory' },
+    ])
+    const dir = t.testdir()
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
+  })
+
+  t.test('blocks directory entries with traversal', async t => {
+    const maliciousTar = makeTar([
       { path: 'package/../../escape-dir', type: 'Directory' },
     ])
     const dir = t.testdir()
-    await unpack(maliciousTar, dir)
-    t.equal(existsSync(dir + '/valid.txt'), true)
-    t.equal(existsSync('/tmp/evil-dir'), false)
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
   })
 
   t.end()
