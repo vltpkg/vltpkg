@@ -23,6 +23,9 @@ const ex = new Pax({
   mode: 0o666,
 }).encode()
 const longPath = 'package/asdfasdfasdfasdf'
+// TODO: these fixtures will need to be rewritten each on their own
+// makeTar call, since the `tarDir` is cached in between file runs,
+// it may be masking issues.
 const tarball = makeTar([
   { path: 'package/package.json', size: pj.length },
   pj,
@@ -147,6 +150,131 @@ t.test('unpack into a dir', t => {
     await t.rejects(() => unpack(tarball, dir), poop)
     t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
     t.end()
+  })
+
+  t.end()
+})
+
+t.test('validate unpack path sanitization', async t => {
+  // Test: Multiple absolute path prefixes should be denied
+  t.test('strips multiple absolute path prefixes', async t => {
+    const maliciousTar = makeTar([
+      { path: '////package/safe.txt', size: 4 },
+      'safe',
+    ])
+    const dir = t.testdir()
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
+  })
+
+  // Test: Path traversal with .. should be blocked
+  t.test('blocks path traversal with ..', async t => {
+    const traversalPaths = [
+      '../etc/passwd',
+      'package/../../../etc/passwd',
+      'package/foo/../../../../../../tmp/evil',
+      '..\\windows\\system32\\config',
+    ]
+    for (const path of traversalPaths) {
+      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+      const dir = t.testdir()
+      const FSP = await import('node:fs/promises')
+      const mkdirCalls: string[] = []
+      const writeFileCalls: string[] = []
+      const { unpack } = await t.mockImport<
+        typeof import('../src/unpack.ts')
+      >('../src/unpack.ts', {
+        'node:fs/promises': t.createMock(FSP, {
+          mkdir: async (path: string, ...args: any[]) => {
+            mkdirCalls.push(path)
+            return FSP.mkdir(path, ...args)
+          },
+          writeFile: async (
+            path: string,
+            data: Parameters<typeof FSP.writeFile>[1],
+            options?: Parameters<typeof FSP.writeFile>[2],
+          ) => {
+            writeFileCalls.push(path)
+            return FSP.writeFile(path, data, options)
+          },
+        }),
+      })
+      await t.rejects(
+        unpack(maliciousTar, dir),
+        'throws an error when no file is extracted',
+      )
+    }
+  })
+
+  // Test: Windows drive-relative paths should be blocked
+  t.test('blocks Windows drive-relative path escapes', async t => {
+    const driveRelativePaths = [
+      'c:../../../windows/system32/evil.dll',
+      'd:..\\..\\important\\file.txt',
+      'c:foo/../../../escape.txt',
+    ]
+    for (const path of driveRelativePaths) {
+      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+      const dir = t.testdir()
+      await t.rejects(
+        unpack(maliciousTar, dir),
+        'throws an error when no file is extracted',
+      )
+    }
+  })
+
+  t.test('blocks Windows drive-relative path escapes', async t => {
+    const driveRelativePaths = [
+      'c:../../../windows/system32/evil.dll',
+      'd:..\\..\\important\\file.txt',
+      'c:foo/../../../escape.txt',
+    ]
+    for (const path of driveRelativePaths) {
+      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+      const dir = t.testdir()
+      await t.rejects(
+        unpack(maliciousTar, dir),
+        'throws an error when no file is extracted',
+      )
+    }
+  })
+
+  // Test: Chained Windows roots should be blocked
+  t.test('strips chained Windows roots', async t => {
+    const maliciousTar = makeTar([
+      { path: 'c:\\c:\\d:\\package/safe.txt', size: 4 },
+      'safe',
+    ])
+    const dir = t.testdir()
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
+  })
+
+  // Test: Directory traversal via symlink-like paths (though symlinks are already filtered)
+  t.test('blocks directory entries with traversal', async t => {
+    const maliciousTar = makeTar([
+      { path: '../../../tmp/evil-dir', type: 'Directory' },
+    ])
+    const dir = t.testdir()
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
+  })
+
+  t.test('blocks directory entries with traversal', async t => {
+    const maliciousTar = makeTar([
+      { path: 'package/../../escape-dir', type: 'Directory' },
+    ])
+    const dir = t.testdir()
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
   })
 
   t.end()
