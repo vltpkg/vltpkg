@@ -630,9 +630,7 @@ const FileExplorerGridItem = ({
 }) => {
   const { selectedItem } = useFileExplorerContext()
   const isSelected =
-    selectedItem != null &&
-    selectedItem.name === name &&
-    selectedItem.type === type
+    selectedItem?.name === name && selectedItem.type === type
   const Icon = getIcon(type)
   return (
     <div
@@ -829,15 +827,13 @@ const FileExplorerFooterSelect = ({
   onSelect?: (item: FileExplorerItem) => void
 }) => {
   const { setIsOpen, selectedItem } = useFileExplorerContext()
-  const disabled = !(
-    selectedItem && selectedItem.type === 'directory'
-  )
+  const disabled = selectedItem?.type !== 'directory'
   return (
     <FileExplorerButton
       variant="action"
       disabled={disabled}
       onClick={() => {
-        if (!selectedItem || selectedItem.type !== 'directory') return
+        if (selectedItem?.type !== 'directory') return
         setIsOpen(false)
         onSelect?.(selectedItem)
       }}>
