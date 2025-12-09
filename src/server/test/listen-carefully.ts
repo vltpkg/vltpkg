@@ -23,7 +23,10 @@ t.test('run 10 servers', async t => {
   t.strictSame(ports, [...new Set(ports)], 'all ports unique')
   const s = createServer((_, res) => res.end('ok'))
   t.teardown(() => s.close())
-  await t.rejects(listenCarefully(s, 8000, 2), {
+  // Use the first allocated port to guarantee EADDRINUSE
+  // ports[0] through ports[0]+2 are definitely occupied by test servers
+  const firstPort = ports[0]!
+  await t.rejects(listenCarefully(s, firstPort, 2), {
     code: 'EADDRINUSE',
   })
   for (const server of servers) {
