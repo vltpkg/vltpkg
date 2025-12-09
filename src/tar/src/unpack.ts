@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
-import { basename, dirname, parse, resolve } from 'node:path'
+import { basename, dirname, resolve, sep } from 'node:path'
 import { rimraf } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
@@ -33,19 +33,27 @@ const tmpSuffix = () => tmp + String(id++)
 const checkFs = (
   h: Header,
   tarDir: string | undefined,
+  target: string,
 ): h is Header & { path: string } => {
   /* c8 ignore start - impossible */
   if (!h.path) return false
   if (!tarDir) return false
   /* c8 ignore stop */
   h.path = h.path.replace(/[\\/]+/g, '/')
-  const parsed = parse(h.path)
-  if (parsed.root) return false
-  const p = h.path.replace(/\\/, '/')
-  // any .. at the beginning, end, or middle = no good
-  if (/(\/|)^\.\.(\/|$)/.test(p)) return false
+
   // packages should always be in a 'package' tarDir in the archive
-  if (!p.startsWith(tarDir)) return false
+  if (!h.path.startsWith(tarDir)) return false
+
+  // Package root
+  const absoluteBasePath = target
+  const itemAbsolutePath = resolve(
+    target,
+    h.path.slice(tarDir.length),
+  )
+
+  if (!itemAbsolutePath.startsWith(absoluteBasePath)) {
+    return false
+  }
   return true
 }
 
@@ -126,7 +134,7 @@ const unpackUnzipped = async (
   }
 
   const tmp =
-    dirname(target) + '/.' + basename(target) + '.' + tmpSuffix()
+    dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()
   const og = tmp + '.ORIGINAL'
   await Promise.all([rimraf(tmp), rimraf(og)])
 
@@ -157,7 +165,7 @@ const unpackUnzipped = async (
           if (!tarDir) tarDir = findTarDir(h.path, tarDir)
           /* c8 ignore next */
           if (!tarDir) continue
-          if (!checkFs(h, tarDir)) continue
+          if (!checkFs(h, tarDir, tmp)) continue
           await write(
             resolve(tmp, h.path.substring(tarDir.length)),
             body,
@@ -171,7 +179,7 @@ const unpackUnzipped = async (
           /* c8 ignore next 2 */
           if (!tarDir) tarDir = findTarDir(h.path, tarDir)
           if (!tarDir) continue
-          if (!checkFs(h, tarDir)) continue
+          if (!checkFs(h, tarDir, tmp)) continue
           await mkdirp(resolve(tmp, h.path.substring(tarDir.length)))
           break
 
