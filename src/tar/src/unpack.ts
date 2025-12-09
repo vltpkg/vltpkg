@@ -1,14 +1,13 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
-import { posix, resolve } from 'node:path'
+import { basename, dirname, resolve, sep } from 'node:path'
 import { rimraf } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
 import { unzip as unzipCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
-const { basename, dirname } = posix
 
 const unzip = async (input: Buffer) =>
   new Promise<Buffer>(
@@ -47,7 +46,10 @@ const checkFs = (
 
   // Package root
   const absoluteBasePath = target
-  const itemAbsolutePath = posix.resolve(target, h.path.slice(8))
+  const itemAbsolutePath = resolve(
+    target,
+    h.path.slice(tarDir.length),
+  )
 
   if (!itemAbsolutePath.startsWith(absoluteBasePath)) {
     return false
@@ -132,7 +134,7 @@ const unpackUnzipped = async (
   }
 
   const tmp =
-    dirname(target) + '/.' + basename(target) + '.' + tmpSuffix()
+    dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()
   const og = tmp + '.ORIGINAL'
   await Promise.all([rimraf(tmp), rimraf(og)])
 
