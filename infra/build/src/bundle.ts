@@ -162,6 +162,11 @@ type BundleOptions = {
 const bundleEntryPoints = async (
   o: CreateBundleOptions & BundleOptions,
 ) => {
+  // unique prefix for aliased globals
+  const u = (importName: string) => `_vlt_${importName}`
+  // import as aliased to prevent conflicts with other libraries potentially importing them.
+  const i = (importName: string) =>
+    `${importName} as ${u(importName)}`
   const { errors, warnings } = await esbuild.build({
     entryPoints: o.entryPoints,
     plugins: [nodeImports, ...(o.plugins ?? [])],
@@ -183,10 +188,17 @@ const bundleEntryPoints = async (
         // Explicitly set all global timers to the Node.js timers
         // otherwise Deno might use its web timers which have a different signature.
         // https://docs.deno.com/api/web/~/setTimeout
-        `import {setTimeout,clearTimeout,setImmediate,clearImmediate,setInterval,clearInterval} from "node:timers"`,
+        // These are aliased to prevent conflicts with other libraries potentially importing them.
+        `import {${i('setTimeout')},${i('clearTimeout')},${i('setImmediate')},${i('clearImmediate')},${i('setInterval')},${i('clearInterval')}} from "node:timers"`,
+        `globalThis.setTimeout = ${u('setTimeout')}`,
+        `globalThis.clearTimeout = ${u('clearTimeout')}`,
+        `globalThis.setImmediate = ${u('setImmediate')}`,
+        `globalThis.clearImmediate = ${u('clearImmediate')}`,
+        `globalThis.setInterval = ${u('setInterval')}`,
+        `globalThis.clearInterval = ${u('clearInterval')}`,
         // Create a require function since we are bundling to ESM
-        'import {createRequire as _vlt_createRequire} from "node:module"',
-        'var require = _vlt_createRequire(import.meta.filename)',
+        `import {${i('createRequire')}} from "node:module"`,
+        `var require = ${u('createRequire')}(import.meta.filename)`,
       ]
         .map(l => `${l};`)
         .join(EOL),
