@@ -1,4 +1,7 @@
 import * as Sentry from '@sentry/node'
+import { useRuntimeConfig } from 'nitro/runtime-config'
+
+const { platform, database, storage, telemetry } = useRuntimeConfig()
 
 /**
  * Telemetry module for logging and performance tracking.
@@ -11,13 +14,11 @@ import * as Sentry from '@sentry/node'
  */
 
 const {
-  SENTRY_DSN = '',
+  SENTRY_DSN = 'https://c17005abd13a3ea9fae9a2511436302c@o4506397716054016.ingest.us.sentry.io/4510467228237824',
   SENTRY_ENVIRONMENT = 'development',
-  VSR_PLATFORM = 'node',
-  VSR_TELEMETRY = 'false',
 } = process.env
 
-const isEnabled = VSR_TELEMETRY === 'true' && !!SENTRY_DSN
+const isEnabled = telemetry && !!SENTRY_DSN
 
 let initialized = false
 
@@ -34,10 +35,12 @@ export function initTelemetry(): void {
     environment: SENTRY_ENVIRONMENT,
     tracesSampleRate: 1.0,
     profilesSampleRate: 1.0,
-    integrations: [Sentry.httpIntegration()],
+    // integrations: [Sentry.httpIntegration()],
     initialScope: {
       tags: {
-        platform: VSR_PLATFORM,
+        platform,
+        database,
+        storage,
       },
     },
   })

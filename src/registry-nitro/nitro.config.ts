@@ -8,7 +8,7 @@ const {
   VSR_PACKUMENT_TTL = '1hr',
   VSR_MANIFEST_TTL = '24h',
   VSR_TARBALL_TTL = '1yr',
-  VSR_TELEMETRY = 'false',
+  VSR_TELEMETRY = 'true',
 } = process.env
 
 const platform = VSR_PLATFORM as 'node' | 'cloudflare' | 'vercel'
