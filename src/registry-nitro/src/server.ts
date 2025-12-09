@@ -5,6 +5,10 @@ import {
   versionHandler,
   tarballHandler,
 } from './upstream/npm.ts'
+import { initTelemetry } from './telemetry.ts'
+
+// Ensure telemetry is initialized early
+initTelemetry()
 
 const app = new H3()
 app.use(

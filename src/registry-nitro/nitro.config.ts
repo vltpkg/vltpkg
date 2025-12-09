@@ -5,9 +5,10 @@ const {
   VSR_PLATFORM = 'node',
   VSR_STORAGE = 'fs',
   VSR_DATABASE = 'sqlite',
-  VSR_PACKUMENT_TTL = '5m',
+  VSR_PACKUMENT_TTL = '1hr',
   VSR_MANIFEST_TTL = '24h',
   VSR_TARBALL_TTL = '1yr',
+  VSR_TELEMETRY = 'true',
 } = process.env
 
 const platform = VSR_PLATFORM as 'node' | 'cloudflare' | 'vercel'
@@ -15,6 +16,8 @@ const platform = VSR_PLATFORM as 'node' | 'cloudflare' | 'vercel'
 const storage = VSR_STORAGE as 'fs' | 'r2' | 's3'
 
 const database = VSR_DATABASE as 'neon' | 'sqlite'
+
+const telemetry = VSR_TELEMETRY === 'true'
 
 export default defineNitroConfig({
   preset: platform === 'cloudflare' ? 'cloudflare-module' : platform,
@@ -26,6 +29,7 @@ export default defineNitroConfig({
     database,
     storage,
     platform,
+    telemetry,
     packumentTtl: VSR_PACKUMENT_TTL,
     manifestTtl: VSR_MANIFEST_TTL,
     tarballTtl: VSR_TARBALL_TTL,
