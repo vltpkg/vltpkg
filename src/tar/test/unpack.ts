@@ -23,6 +23,9 @@ const ex = new Pax({
   mode: 0o666,
 }).encode()
 const longPath = 'package/asdfasdfasdfasdf'
+// TODO: these fixtures will need to be rewritten each on their own
+// makeTar call, since the `tarDir` is cached in between file runs,
+// it may be masking issues.
 const tarball = makeTar([
   { path: 'package/package.json', size: pj.length },
   pj,
@@ -153,7 +156,7 @@ t.test('unpack into a dir', t => {
 })
 
 t.test('validate unpack path sanitization', async t => {
-  // Test: Multiple absolute path prefixes should be stripped
+  // Test: Multiple absolute path prefixes should be denied
   t.test('strips multiple absolute path prefixes', async t => {
     const maliciousTar = makeTar([
       { path: '////package/safe.txt', size: 4 },
@@ -163,12 +166,12 @@ t.test('validate unpack path sanitization', async t => {
     ])
     const dir = t.testdir()
     await unpack(maliciousTar, dir)
-    // The file should be extracted (path stripped to package/safe.txt)
-    t.equal(existsSync(dir + '/safe.txt'), true)
-    t.equal(readFileSync(dir + '/safe.txt', 'utf8'), 'safe')
-    t.equal(readFileSync(dir + '/valid.txt', 'utf8'), 'valid')
+    // The file should fail to be extracted
+    t.equal(existsSync(dir + '/safe.txt'), false)
     // Should NOT escape to root
     t.equal(existsSync('/package/safe.txt'), false)
+    // Valid file should be extracted
+    t.equal(existsSync(dir + '/valid.txt'), true)
   })
 
   // Test: Path traversal with .. should be blocked
@@ -256,17 +259,17 @@ t.test('validate unpack path sanitization', async t => {
     }
   })
 
-  // Test: Chained Windows roots should be stripped
+  // Test: Chained Windows roots should be blocked
   t.test('strips chained Windows roots', async t => {
     const maliciousTar = makeTar([
       { path: 'c:\\c:\\d:\\package/safe.txt', size: 4 },
       'safe',
-      { path: 'package/valid.txt', size: 5 },
-      'valid',
     ])
     const dir = t.testdir()
-    await unpack(maliciousTar, dir)
-    t.equal(existsSync(dir + '/valid.txt'), true)
+    await t.rejects(
+      unpack(maliciousTar, dir),
+      'throws an error when no file is extracted',
+    )
   })
 
   // Test: Directory traversal via symlink-like paths (though symlinks are already filtered)
