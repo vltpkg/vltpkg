@@ -35,7 +35,7 @@ if (
   }
 
   const srcToDist = (path: string) =>
-    path.replace(/^\.\/src\//, './dist/')
+    path.replace(/^\.\/src\//, './dist/').replace(/\.ts$/, '.js')
 
   for (const [key, value] of Object.entries(pkg.exports)) {
     if (typeof value === 'string') {

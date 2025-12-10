@@ -144,7 +144,7 @@ jobs:
         continue-on-error: true
         run: |
           pnpm run fix:pkg
-          pnpm -r run tshy
+          pnpm -r run build
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1
