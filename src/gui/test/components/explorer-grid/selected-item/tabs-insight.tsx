@@ -8,6 +8,8 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
   MOCK_LOADING_STATE,
+  MOCK_STORE_STATE,
+  MOCK_STORE_ACTIONS,
 } from './__fixtures__/item.ts'
 
 import type { PackageScore } from '@vltpkg/security-archive'
@@ -113,19 +115,13 @@ test('InsightTabContent renders an empty state', () => {
     manifest: null,
     rawManifest: null,
     depCount: undefined,
-    setDepCount: vi.fn(),
     scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
     depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
     depLicenses: undefined,
-    setDepLicenses: vi.fn(),
     depWarnings: undefined,
-    setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
-    setDepFunding: vi.fn(),
+    ...MOCK_STORE_ACTIONS,
     ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
@@ -149,19 +145,13 @@ test('InsightTabContent renders with insights', () => {
     manifest: null,
     rawManifest: null,
     depCount: undefined,
-    setDepCount: vi.fn(),
     scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
     depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
     depLicenses: undefined,
-    setDepLicenses: vi.fn(),
     depWarnings: undefined,
-    setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
-    setDepFunding: vi.fn(),
+    ...MOCK_STORE_ACTIONS,
     ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
@@ -180,26 +170,13 @@ test('InsightTabContent renders with insights', () => {
 test('InsightTabContent renders with no insights but a package score', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
+    ...MOCK_STORE_STATE,
     ...SELECTED_ITEM_DETAILS,
+    packageScore: MOCK_PACKAGE_SCORE,
+    ...MOCK_STORE_ACTIONS,
+    ...MOCK_LOADING_STATE,
     manifest: null,
     rawManifest: null,
-    insights: undefined,
-    packageScore: MOCK_PACKAGE_SCORE,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
-    ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
