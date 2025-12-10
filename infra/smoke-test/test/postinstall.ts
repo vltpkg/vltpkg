@@ -15,6 +15,7 @@ type Packed = { root: Tarball; tarballs: Tarball[] }
 t.before(() => {
   const pnpm = realpathSync(whichSync('pnpm'))
 
+  // TODO(dogfood): use vlx and a query to pack relevant tarballs
   const proc = spawnSync(
     pnpm,
     [

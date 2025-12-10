@@ -111,6 +111,7 @@ export const ignoreCatalog = {
     ),
 }
 
+// TODO(dogfood): read from vlt.json instead
 export const getPnpmWorkspaceConfig = (): PnpmWorkspaceConfig => {
   const { catalog, packages } = parsePnpmWorkspaceYaml(
     readFileSync(resolve(ROOT, 'pnpm-workspace.yaml'), 'utf8'),

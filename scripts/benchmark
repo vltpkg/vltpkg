@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# TODO(dogfood): replace pnpm with vlt or remove this script entirely
+
 if [ "$#" -eq 0 ]; then
   FILTER="--recursive"
   # Run a few instances of download fixtures concurrently since we

@@ -13,7 +13,7 @@ const miniflareDir = join(
 
 if (!existsSync(miniflareDir)) {
   throw new Error(
-    `Miniflare directory not found at ${miniflareDir}. Make sure to run \`pnpm run db:setup\` first.`,
+    `Miniflare directory not found at ${miniflareDir}. Make sure to run \`db:setup\` script first.`,
   )
 }
 // Look for the most recently modified SQLite file
@@ -25,7 +25,7 @@ const file = readdirSync(miniflareDir, { withFileTypes: true })
 
 if (!file) {
   throw new Error(
-    `No SQLite file found in ${miniflareDir}. Make sure to run \`pnpm run db:setup\` first.`,
+    `No SQLite file found in ${miniflareDir}. Make sure to run \`db:setup\` script first.`,
   )
 }
 

@@ -202,6 +202,7 @@ const main = async () => {
           return BINS.map(async bin => {
             const prepareCmd =
               prepare ?
+                // TODO(dogfood): use vlx to execute the vlt-build bin
                 `pnpm vlt-build --bins=${bin} --outdir=${q(path.join(...source))} ${prepare}`
               : false
 
