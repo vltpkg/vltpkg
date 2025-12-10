@@ -35,13 +35,20 @@ import { PartialErrorsIndicator } from '@/components/explorer-grid/selected-item
 import { cn } from '@/lib/utils.ts'
 
 import type { DepID } from '@vltpkg/dep-id'
+import type { State, Action } from '@/state/types.ts'
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 interface FocusedViewProps {
   item: GridItemData
   dependencies: GridItemData[]
-  onDependencyClick: (dependency: GridItemData) => () => undefined
+  onDependencyClick: ({
+    item,
+  }: {
+    item: GridItemData
+    query: State['query']
+    updateQuery: Action['updateQuery']
+  }) => () => undefined
   uninstalledDependencies: GridItemData[]
   importerId?: DepID
 }

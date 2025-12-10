@@ -1,3 +1,4 @@
+import { useGraphStore } from '@/state/index.ts'
 import {
   useDependencySidebarStore,
   useOperation,
@@ -21,6 +22,9 @@ export const DependencySideBar = () => {
   const onDependencyClick = useDependencySidebarStore(
     state => state.onDependencyClick,
   )
+  const query = useGraphStore(state => state.query)
+  const updateQuery = useGraphStore(state => state.updateQuery)
+
   const { operation } = useOperation()
 
   // Memoize sorted dependencies to prevent unnecessary re-sorting
@@ -58,7 +62,11 @@ export const DependencySideBar = () => {
                 item={item}
                 key={item.id}
                 dependencies={true}
-                onSelect={onDependencyClick(item)}
+                onSelect={onDependencyClick({
+                  item,
+                  query,
+                  updateQuery,
+                })}
                 onUninstall={() =>
                   operation({
                     item: {

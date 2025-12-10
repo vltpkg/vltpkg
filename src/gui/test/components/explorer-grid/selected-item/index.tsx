@@ -1,10 +1,18 @@
 import { inspect } from 'node:util'
-import { test, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  test,
+  expect,
+  vi,
+  describe,
+  beforeEach,
+  afterEach,
+} from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import {
   SelectedItem,
+  dependencyClick,
   getDependentItems,
 } from '@/components/explorer-grid/selected-item/index.tsx'
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
@@ -12,6 +20,7 @@ import { Spec } from '@vltpkg/spec/browser'
 import { SELECTED_ITEM } from './__fixtures__/item.ts'
 
 import type { QueryResponseNode } from '@vltpkg/query'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 vi.mock('@/components/explorer-grid/selected-item/item.tsx', () => ({
   Item: 'gui-selected-item',
@@ -177,4 +186,113 @@ test('getDependentItems', () => {
   const dependents = getDependentItems(mockNode)
 
   expect(inspect(dependents, { depth: 10 })).toMatchSnapshot()
+})
+
+describe('dependencyClick', () => {
+  test('item is d, navigates: #a > #b > #c > #d', () => {
+    let query = '#a > #b > #c'
+    const updateQuery = vi.fn((newQuery: string) => {
+      query = newQuery
+    })
+    const item = {
+      to: {},
+      name: 'd',
+    } as unknown as GridItemData
+
+    const onClick = dependencyClick({ item, query, updateQuery })
+    onClick()
+
+    expect(query).toBe('#a > #b > #c > #d')
+  })
+
+  test('item #socks appends after #socks-proxy-agent, not truncate', () => {
+    let query = ':root > #socks-proxy-agent'
+
+    const updateQuery = vi.fn((newQuery: string) => {
+      query = newQuery
+    })
+
+    const item = {
+      to: {},
+      name: 'socks',
+    } as unknown as GridItemData
+
+    const onClick = dependencyClick({ item, query, updateQuery })
+    onClick()
+
+    expect(query).toBe(':root > #socks-proxy-agent > #socks')
+  })
+
+  test('clicking an existing middle segment goes back to that segment', () => {
+    let query = '#a > #b > #c > #d'
+
+    const updateQuery = vi.fn((newQuery: string) => {
+      query = newQuery
+    })
+
+    const item = {
+      to: {},
+      name: 'b', // "#b" already in the path
+    } as unknown as GridItemData
+
+    const onClick = dependencyClick({ item, query, updateQuery })
+    onClick()
+
+    expect(query).toBe('#a > #b')
+  })
+
+  test('clicking the last segment keeps query the same (no duplicate)', () => {
+    let query = '#a > #b > #c'
+
+    const updateQuery = vi.fn((newQuery: string) => {
+      query = newQuery
+    })
+
+    const item = {
+      to: {},
+      name: 'c', // last segment
+    } as unknown as GridItemData
+
+    const onClick = dependencyClick({ item, query, updateQuery })
+    onClick()
+
+    expect(query).toBe('#a > #b > #c')
+  })
+
+  test('empty query starts with the clicked item', () => {
+    let query = ''
+
+    const updateQuery = vi.fn((newQuery: string) => {
+      query = newQuery
+    })
+
+    const item = {
+      to: {},
+      name: 'root',
+    } as unknown as GridItemData
+
+    const onClick = dependencyClick({ item, query, updateQuery })
+    onClick()
+
+    expect(query).toBe('#root')
+  })
+
+  test('handles repeated segments by jumping back to the last occurrence', () => {
+    let query = '#a > #b > #c > #b > #d'
+
+    const updateQuery = vi.fn((newQuery: string) => {
+      query = newQuery
+    })
+
+    const item = {
+      to: {},
+      name: 'b', // matches last "#b"
+    } as unknown as GridItemData
+
+    const onClick = dependencyClick({ item, query, updateQuery })
+    onClick()
+
+    // drops the trailing "#d"
+    expect(query).toBe('#a > #b > #c > #b')
+  })
 })
