@@ -9,6 +9,8 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
   MOCK_LOADING_STATE,
+  MOCK_STORE_STATE,
+  MOCK_STORE_ACTIONS,
 } from './__fixtures__/item.ts'
 
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -69,24 +71,10 @@ afterEach(() => {
 test('TabsManifestContent renders with a json object', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
+    ...MOCK_STORE_STATE,
     ...SELECTED_ITEM_DETAILS,
-    insights: undefined,
     manifest: MOCK_MANIFEST,
-    rawManifest: null,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
+    ...MOCK_STORE_ACTIONS,
     ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 

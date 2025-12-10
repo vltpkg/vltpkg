@@ -6,12 +6,14 @@ exports[`OverviewTabContent renders with an empty state 1`] = `
   class="h-full w-full flex flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <gui-selected-item-empty-state
-    icon="gui-file-text-icon"
-    title="No Overview"
-    description="We couldn't locate the metadata to display an overview for this project"
-  >
-  </gui-selected-item-empty-state>
+  <div style="opacity: 0; filter: blur(2px);">
+    <gui-selected-item-empty-state
+      icon="gui-file-text-icon"
+      title="No Overview"
+      description="We couldn't locate the metadata to display an overview for this project"
+    >
+    </gui-selected-item-empty-state>
+  </div>
 </section>
 
 `;
@@ -22,12 +24,14 @@ exports[`OverviewTabContent renders with content 1`] = `
   class="h-full w-full flex flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div class="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6">
-    <gui-markdown>
-      ## Description
+  <div style="opacity: 0; filter: blur(2px);">
+    <div class="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6">
+      <gui-markdown>
+        ## Description
 
 This is a custom description
-    </gui-markdown>
+      </gui-markdown>
+    </div>
   </div>
 </section>
 

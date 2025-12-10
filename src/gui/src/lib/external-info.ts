@@ -2,7 +2,6 @@ import { Effect, Layer, Schema } from 'effect'
 import { FetchHttpClient, HttpClient } from '@effect/platform'
 import { compare, gt, prerelease } from '@vltpkg/semver'
 import { normalizeManifest } from '@vltpkg/types'
-import { parseReadme } from '@/lib/parse-readme.ts'
 import { parseAriaLabelFromSVG } from '@/utils/parse-aria-label-from-svg.ts'
 import {
   getRepoOrigin,
@@ -15,6 +14,7 @@ export { retrieveGravatar as retrieveAvatar } from '@/utils/retrieve-gravatar.ts
 export { parseAriaLabelFromSVG } from '@/utils/parse-aria-label-from-svg.ts'
 
 import type { Spec } from '@vltpkg/spec/browser'
+import type { DataSource } from '@/components/explorer-grid/selected-item/context.tsx'
 import type { NormalizedManifest, Repository } from '@vltpkg/types'
 
 /**
@@ -50,6 +50,23 @@ const AuthorInfoSchema = Schema.Struct({
 })
 
 export type AuthorInfo = Schema.Schema.Type<typeof AuthorInfoSchema>
+
+/**
+ * A Schema of partial errors in order to track the
+ * external network requests that may fail.
+ */
+export const PartialErrorSchema = Schema.Struct({
+  source: Schema.String,
+  message: Schema.String,
+})
+
+/**
+ * Partial errors which may occur as a result of failing
+ * external network requests.
+ */
+export type PartialError = Schema.Schema.Type<
+  typeof PartialErrorSchema
+>
 
 export const readAuthor = (
   author: string | AuthorInfo,
@@ -412,216 +429,6 @@ const fetchOpenPullRequestCount = ({
 const API_TIMEOUT_MS = 15000
 
 /**
- * Fetches README from unpkg for external packages.
- * Parses relative paths to point to GitHub.
- */
-const fetchReadmeFromUnpkg = ({
-  packageName,
-  packageVersion,
-  repository,
-  reference,
-  directory,
-}: {
-  packageName: string
-  packageVersion: string
-  repository: { org: string; repo: string }
-  reference?: string
-  directory?: string
-}) =>
-  Effect.gen(function* () {
-    if (!reference) return undefined
-
-    const httpClient = yield* HttpClient.HttpClient
-
-    const res = yield* httpClient
-      .get(
-        `https://unpkg.com/${packageName}@${packageVersion}/README.md`,
-      )
-      .pipe(
-        Effect.catchTags({
-          RequestError: () => Effect.succeed(undefined),
-          ResponseError: () => Effect.succeed(undefined),
-        }),
-      )
-
-    if (!res) return undefined
-
-    const raw = yield* res.text
-
-    const text = yield* Schema.decodeUnknown(Schema.String)(raw).pipe(
-      Effect.catchTag('ParseError', () => Effect.succeed(undefined)),
-    )
-
-    if (!text) return undefined
-
-    const result = yield* Effect.tryPromise({
-      try: () => parseReadme(text, repository, reference, directory),
-      catch: () =>
-        new Error(`Failed to parse ${packageName}'s README.md`),
-    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
-
-    return result
-  }).pipe(
-    // Add timeout to prevent hanging on slow/unresponsive servers
-    Effect.timeoutFail({
-      duration: API_TIMEOUT_MS,
-      onTimeout: () => new Error('README fetch timed out'),
-    }),
-  )
-
-/**
- * Finds the actual README filename in a directory (case-insensitive).
- * Returns the actual filename if found, or undefined.
- */
-const findReadmeFilename = async (
-  packageDir: string,
-): Promise<string | undefined> => {
-  try {
-    const res = await fetch('/fs/ls', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: packageDir }),
-    })
-
-    if (!res.ok) return undefined
-
-    let rawResponse: unknown = await res.json()
-
-    // Handle double-encoded JSON (server returns JSON string)
-    if (typeof rawResponse === 'string') {
-      try {
-        rawResponse = JSON.parse(rawResponse) as unknown
-      } catch {
-        return undefined
-      }
-    }
-
-    const files = rawResponse as { name: string; type: string }[]
-
-    if (!Array.isArray(files)) return undefined
-
-    // Find a file that matches "readme" (case-insensitive) with common extensions
-    const readmeFile = files.find(
-      file =>
-        file.type === 'file' &&
-        /^readme\.(md|txt|markdown|mdown)$/i.test(file.name),
-    )
-
-    // If no extension match, try just "readme" (no extension)
-    if (!readmeFile) {
-      const readmeNoExt = files.find(
-        file => file.type === 'file' && /^readme$/i.test(file.name),
-      )
-      return readmeNoExt?.name
-    }
-
-    return readmeFile.name
-  } catch {
-    return undefined
-  }
-}
-
-/**
- * Fetches README from local node_modules via the server's /fs/read endpoint.
- * Handles case variations by finding the actual filename in the directory.
- * For local packages, we don't need to transform relative paths since
- * the content is served locally.
- */
-const fetchReadmeFromLocal = ({
-  packageLocation,
-  projectRoot,
-}: {
-  packageLocation: string
-  projectRoot: string
-}) =>
-  Effect.tryPromise({
-    try: async () => {
-      // Construct the package directory path
-      // packageLocation is like "./node_modules/express"
-      // projectRoot is the absolute path to the project
-      const packageDir = `${projectRoot}/${packageLocation.replace(/^\.\//, '')}`
-
-      // Find the actual README filename (handles case variations)
-      const readmeFilename = await findReadmeFilename(packageDir)
-
-      if (!readmeFilename) return undefined
-
-      const readmePath = `${packageDir}/${readmeFilename}`
-
-      const res = await fetch('/fs/read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: readmePath, encoding: 'utf8' }),
-      })
-
-      if (!res.ok) return undefined
-
-      let data: unknown = await res.json()
-
-      // Handle double-encoded JSON (server returns JSON string)
-      if (typeof data === 'string') {
-        try {
-          data = JSON.parse(data) as unknown
-        } catch {
-          return undefined
-        }
-      }
-
-      const typedData = data as { content?: string }
-
-      if (!typedData.content) return undefined
-
-      // For local packages, return the raw markdown without URL transformation
-      // The GUI will render it as-is, and relative paths will work locally
-      return typedData.content
-    },
-    catch: () => new Error('Failed to fetch local README'),
-  }).pipe(
-    Effect.catchAll(() => Effect.succeed(undefined)),
-    Effect.timeoutFail({
-      duration: API_TIMEOUT_MS,
-      onTimeout: () => new Error('Local README fetch timed out'),
-    }),
-  )
-
-/**
- * Fetches README either from local node_modules or from unpkg.
- * - For local packages (packageLocation provided): fetch from /fs/read
- * - For external packages: fetch from unpkg and transform URLs
- */
-const fetchReadme = ({
-  packageName,
-  packageVersion,
-  repository,
-  reference,
-  directory,
-  packageLocation,
-  projectRoot,
-}: {
-  packageName: string
-  packageVersion: string
-  repository: { org: string; repo: string }
-  reference?: string
-  directory?: string
-  packageLocation?: string
-  projectRoot?: string
-}) => {
-  // If we have a local package location, fetch from node_modules
-  if (packageLocation && projectRoot) {
-    return fetchReadmeFromLocal({ packageLocation, projectRoot })
-  }
-
-  // Otherwise, fetch from unpkg for external packages
-  return fetchReadmeFromUnpkg({
-    packageName,
-    packageVersion,
-    repository,
-    reference,
-    directory,
-  })
-}
-
-/**
  * Fetches the last 365 days of downloads
  * for a specified package
  */
@@ -929,27 +736,6 @@ const fetchPublisherAvatar = ({ email }: { email: string }) =>
 
 export const publicRegistry = 'https://registry.npmjs.org/'
 
-/** Data source identifiers for tracking partial errors */
-export type DataSource =
-  | 'npm-packument'
-  | 'npm-manifest'
-  | 'npm-downloads'
-  | 'npm-downloads-versions'
-  | 'github-repo'
-  | 'github-issues'
-  | 'github-prs'
-  | 'readme'
-  | 'contributors'
-
-const PartialErrorSchema = Schema.Struct({
-  source: Schema.String,
-  message: Schema.String,
-})
-
-export type PartialError = Schema.Schema.Type<
-  typeof PartialErrorSchema
->
-
 /**
  * Wraps an Effect to track errors by data source.
  * Returns { data, error } where error is set if the fetch failed.
@@ -992,7 +778,6 @@ const _DetailsInfoSchema = Schema.Struct({
   stargazersCount: Schema.optional(Schema.String),
   openIssueCount: Schema.optional(Schema.String),
   openPullRequestCount: Schema.optional(Schema.String),
-  readme: Schema.optional(Schema.String),
   // The fetched/resolved manifest (useful for callers who need it)
   manifest: Schema.optional(Schema.Unknown),
   // Partial errors from individual data sources
@@ -1011,18 +796,13 @@ export type DetailsInfo = Schema.Schema.Type<
 const fetchDetailsEffect = ({
   spec,
   manifest,
-  packageLocation,
-  projectRoot,
 }: {
   spec: Spec
   manifest?: NormalizedManifest
-  packageLocation?: string
-  projectRoot?: string
 }): Effect.Effect<DetailsInfo, never, HttpClient.HttpClient> =>
   Effect.gen(function* () {
     const finalSpec = spec.final
     const isPublicRegistry = finalSpec.registry === publicRegistry
-    const isLocalPackage = !!packageLocation && !!projectRoot
 
     // Determine GitHub API URL from spec or manifest
     const manifestRepoUrl =
@@ -1038,40 +818,6 @@ const fetchDetailsEffect = ({
     const repoDetails =
       manifest?.repository ?
         getRepoOrigin(manifest.repository)
-      : undefined
-
-    // Extract readme params if we have enough info
-    // For local packages, we can fetch README even without repository details
-    // For external packages, we need repository details to fetch from unpkg and transform URLs
-    const readmeParams =
-      isLocalPackage && packageLocation && projectRoot ?
-        // Local package: fetch from node_modules, no need for repository details
-        {
-          packageName: finalSpec.name,
-          packageVersion: manifest?.version ?? 'latest',
-          repository: repoDetails ?? { org: '', repo: '' }, // Placeholder, not used for local
-          reference: manifest?.version,
-          packageLocation,
-          projectRoot,
-        }
-      : manifest?.version && repoDetails ?
-        // External package: fetch from unpkg, needs repository details for URL transformation
-        {
-          packageName: finalSpec.name,
-          packageVersion: manifest.version,
-          repository: repoDetails,
-          reference:
-            (manifest as { gitHead?: string }).gitHead ||
-            manifest.version,
-          directory:
-            (
-              manifest.repository &&
-              typeof manifest.repository === 'object' &&
-              'directory' in manifest.repository
-            ) ?
-              (manifest.repository as { directory: string }).directory
-            : undefined,
-        }
       : undefined
 
     // Run all independent effects concurrently with error tracking
@@ -1139,11 +885,6 @@ const fetchDetailsEffect = ({
             )
           : Effect.succeed({ data: undefined, error: undefined }),
 
-        readme:
-          readmeParams ?
-            withErrorTracking(fetchReadme(readmeParams), 'readme')
-          : Effect.succeed({ data: undefined, error: undefined }),
-
         contributors: withErrorTracking(
           fetchContributorAvatars({ manifest }),
           'contributors',
@@ -1161,7 +902,6 @@ const fetchDetailsEffect = ({
       results.gitHubRepo.error,
       results.openIssueCount.error,
       results.openPullRequestCount.error,
-      results.readme.error,
       results.contributors.error,
     ].filter((e): e is PartialError => e !== undefined)
 
@@ -1243,39 +983,9 @@ const fetchDetailsEffect = ({
     const regGitHubApi =
       regRepoUrl ? getRepositoryApiUrl(regRepoUrl) : undefined
 
-    // Helper to create fallback effects without non-null assertions
-    const regManifestVersion = registryManifest?.version
-    const regManifestRepo = registryManifest?.repository
-    const regManifestGitHead = (
-      registryManifest as { gitHead?: string } | undefined
-    )?.gitHead
-
     // Run all fallback fetches in parallel for better performance
     const fallbackResults = yield* Effect.all(
       {
-        // Fallback for README
-        readme:
-          (
-            results.readme.data === undefined &&
-            regManifestVersion !== undefined &&
-            regRepoDetails !== undefined
-          ) ?
-            fetchReadme({
-              packageName: finalSpec.name,
-              packageVersion: regManifestVersion,
-              repository: regRepoDetails,
-              reference: regManifestGitHead || regManifestVersion,
-              directory:
-                (
-                  regManifestRepo &&
-                  typeof regManifestRepo === 'object' &&
-                  'directory' in regManifestRepo
-                ) ?
-                  (regManifestRepo as { directory: string }).directory
-                : undefined,
-            }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
-          : Effect.succeed(results.readme.data),
-
         // Fallback for GitHub repo (stars)
         gitHubRepo:
           (
@@ -1351,9 +1061,6 @@ const fetchDetailsEffect = ({
       ...(fallbackResults.openPullRequestCount && {
         openPullRequestCount: fallbackResults.openPullRequestCount,
       }),
-      ...(fallbackResults.readme && {
-        readme: fallbackResults.readme,
-      }),
       ...(versionInfo?.versions && {
         versions: versionInfo.versions,
       }),
@@ -1388,20 +1095,14 @@ const fetchDetailsEffect = ({
 export const fetchDetails = ({
   spec,
   manifest,
-  packageLocation,
-  projectRoot,
 }: {
   spec: Spec
   manifest?: NormalizedManifest
-  packageLocation?: string
-  projectRoot?: string
 }): Promise<DetailsInfo> =>
   Effect.runPromise(
     fetchDetailsEffect({
       spec,
       manifest,
-      packageLocation,
-      projectRoot,
     }).pipe(Effect.provide(HttpClientNoTracing)),
   )
 
@@ -1410,9 +1111,6 @@ export {
   fetchRegistryManifest,
   fetchOpenIssueCount,
   fetchOpenPullRequestCount,
-  fetchReadme,
-  fetchReadmeFromLocal,
-  fetchReadmeFromUnpkg,
   fetchDownloadsLastYear,
   fetchDownloadsPerVersion,
   fetchGitHubRepo,
