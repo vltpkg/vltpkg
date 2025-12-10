@@ -3,12 +3,17 @@ import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.ts'
 import { fetchDetails } from '@/lib/external-info.ts'
-import type { DetailsInfo } from '@/lib/external-info.ts'
+
+import { fetchReadme } from '@/lib/fetch-readme.ts'
 import { PSEUDO_SECURITY_SELECTORS } from '@/lib/constants/index.ts'
 import { generatePath, useNavigate, useParams } from 'react-router'
-import type { Spec } from '@vltpkg/spec/browser'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 
+import type { Spec } from '@vltpkg/spec/browser'
+import type {
+  PartialError,
+  DetailsInfo,
+} from '@/lib/external-info.ts'
 import type {
   SocketCategory,
   SocketSecurityDetails,
@@ -28,6 +33,18 @@ import type {
   NormalizedFunding,
 } from '@vltpkg/types'
 import type { State } from '@/state/types.ts'
+
+/** Data source identifies for tracking partial errors */
+export type DataSource =
+  | 'npm-packument'
+  | 'npm-manifest'
+  | 'npm-downloads'
+  | 'npm-downloads-versions'
+  | 'github-repo'
+  | 'github-issues'
+  | 'github-prs'
+  | 'readme'
+  | 'contributors'
 
 export type Tab =
   | 'overview'
@@ -403,7 +420,7 @@ const getDependencyInformation = async (
   }
 }
 
-type SelectedItemStoreState = DetailsInfo & {
+export type SelectedItemStoreState = DetailsInfo & {
   selectedItem: GridItemData
   manifest: NormalizedManifest | null
   rawManifest: NormalizedManifest | null
@@ -417,15 +434,21 @@ type SelectedItemStoreState = DetailsInfo & {
   duplicatedDeps: DuplicatedDeps | undefined
   depFunding: DepFunding | undefined
   asideOveriewVisible?: boolean
-  /** Loading state for external details (downloads, stars, readme, etc.) */
+  /** Loading state for external details (downloads, stars, etc.) */
   isLoadingDetails: boolean
   /** Loading state for dependency information */
   isLoadingDependencies: boolean
   /** Error message if fetching dependency information failed */
   dependenciesError: string | null
+  /** The readme fetched either locally or from an external source */
+  readme?: string | undefined
+  /** The state of the readme loading */
+  isReadmeLoading: boolean
+  /** Partial errors from individual data sources */
+  partialErrors?: readonly PartialError[] | undefined
 }
 
-type SelectedItemStoreAction = {
+export type SelectedItemStoreAction = {
   setDepLicenses: (
     depLicenses: SelectedItemStoreState['depLicenses'],
   ) => void
@@ -447,6 +470,10 @@ type SelectedItemStoreAction = {
   ) => void
   setAsideOverviewVisible?: (
     asideOveriewVisible: SelectedItemStoreState['asideOveriewVisible'],
+  ) => void
+  setReadme: (readme: SelectedItemStoreState['readme']) => void
+  setIsReadmeLoading: (
+    isReadmeLoading: SelectedItemStoreState['isReadmeLoading'],
   ) => void
 }
 
@@ -497,6 +524,9 @@ export const SelectedItemProvider = ({
       isLoadingDetails: true,
       isLoadingDependencies: true,
       dependenciesError: null,
+      readme: undefined,
+      isReadmeLoading: true,
+      partialErrors: undefined,
       setDepLicenses: (
         depLicenses: SelectedItemStoreState['depLicenses'],
       ) => set(() => ({ depLicenses })),
@@ -520,6 +550,11 @@ export const SelectedItemProvider = ({
       setAsideOverviewVisible: (
         asideOveriewVisible: SelectedItemStoreState['asideOveriewVisible'],
       ) => set(() => ({ asideOveriewVisible })),
+      setReadme: (readme: SelectedItemStoreState['readme']) =>
+        set(() => ({ readme })),
+      setIsReadmeLoading: (
+        isReadmeLoading: SelectedItemStoreState['isReadmeLoading'],
+      ) => set(() => ({ isReadmeLoading })),
     })),
   ).current
 
@@ -530,6 +565,49 @@ export const SelectedItemProvider = ({
     // Prevent duplicate fetches (React StrictMode, dependency changes, etc.)
     if (hasFetchedDetails.current) return
     hasFetchedDetails.current = true
+
+    /**
+     * We fetch the readme seperately, since `unpkg` can often times
+     * have long wait times or fail. This way, even when other content has
+     * inevitably loaded, the overview tab can show a subloader.
+     */
+    const fetchReadmeAsync = async ({
+      spec,
+      manifest,
+      packageLocation,
+      projectRoot,
+    }: {
+      spec: Spec
+      manifest: NormalizedManifest
+      packageLocation: string | undefined
+      projectRoot: string | undefined
+    }) => {
+      try {
+        const readme = await fetchReadme({
+          spec,
+          manifest,
+          packageLocation,
+          projectRoot,
+        })
+        selectedItemStore.setState(state => ({
+          ...state,
+          ...readme,
+          // Merge partial errors instead of overwriting
+          partialErrors: (state.partialErrors ?? []).concat(
+            readme.partialErrors ?? [],
+          ),
+          isReadmeLoading: false,
+        }))
+      } catch (err: unknown) {
+        // This catch block should never be reached due to error handling in fetchDetails,
+        // but we keep it as a safety net for logging purposes
+        console.error('fetchDetails error:', err)
+        selectedItemStore.setState(state => ({
+          ...state,
+          readmeLoading: false,
+        }))
+      }
+    }
 
     const fetchDetailsAsync = async () => {
       const item = selectedItemStore.getState().selectedItem
@@ -555,13 +633,21 @@ export const SelectedItemProvider = ({
 
       try {
         // Fetch all details in one call - this handles:
-        // - Fetching packument/manifest from registry if needed
+        // - Packument from registry if needed
         // - Publisher info and avatar
         // - Downloads, stars, issues, PRs, readme, versions, etc.
         // For local packages, README is fetched from node_modules instead of unpkg
         const details = await fetchDetails({
           spec,
           manifest,
+        })
+
+        // Call this as a void, since we don't really care
+        // about its return value, it will handle setting the
+        // readme and loading states of that async.
+        void fetchReadmeAsync({
+          spec,
+          manifest: details.manifest as NormalizedManifest,
           packageLocation,
           projectRoot,
         })
@@ -575,6 +661,10 @@ export const SelectedItemProvider = ({
             state.manifest ??
             (details.manifest as NormalizedManifest | undefined) ??
             null,
+          // Merge partial errors instead of overwriting
+          partialErrors: (state.partialErrors ?? []).concat(
+            details.partialErrors ?? [],
+          ),
           isLoadingDetails: false,
         }))
       } catch (err) {

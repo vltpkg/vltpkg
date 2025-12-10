@@ -6,6 +6,8 @@ import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/c
 import {
   SELECTED_ITEM,
   MOCK_LOADING_STATE,
+  MOCK_STORE_STATE,
+  MOCK_STORE_ACTIONS,
 } from '../__fixtures__/item.ts'
 import { FundingTabContent } from '@/components/explorer-grid/selected-item/tabs-dependencies/tabs-funding.tsx'
 
@@ -100,31 +102,9 @@ const mockDepFunding = {
 test('FundingTabContent renders with an empty state ', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
+      ...MOCK_STORE_STATE,
       selectedItem: SELECTED_ITEM,
-      manifest: null,
-      rawManifest: null,
-      packageScore: undefined,
-      insights: undefined,
-      author: undefined,
-      favicon: undefined,
-      publisher: undefined,
-      publisherAvatar: undefined,
-      versions: undefined,
-      greaterVersions: undefined,
-      depCount: undefined,
-      setDepCount: vi.fn(),
-      scannedDeps: undefined,
-      setScannedDeps: vi.fn(),
-      depsAverageScore: undefined,
-      setDepsAverageScore: vi.fn(),
-      depLicenses: undefined,
-      setDepLicenses: vi.fn(),
-      depWarnings: undefined,
-      setDepWarnings: vi.fn(),
-      depFunding: undefined,
-      setDepFunding: vi.fn(),
-      duplicatedDeps: undefined,
-      setDuplicatedDeps: vi.fn(),
+      ...MOCK_STORE_ACTIONS,
       ...MOCK_LOADING_STATE,
     }),
   )
@@ -140,31 +120,10 @@ test('FundingTabContent renders with an empty state ', () => {
 test('FundingTabContent renders with an funding', () => {
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector({
+      ...MOCK_STORE_STATE,
       selectedItem: SELECTED_ITEM,
-      manifest: null,
-      rawManifest: null,
-      packageScore: undefined,
-      insights: undefined,
-      author: undefined,
-      favicon: undefined,
-      publisher: undefined,
-      publisherAvatar: undefined,
-      versions: undefined,
-      greaterVersions: undefined,
-      depCount: undefined,
-      setDepCount: vi.fn(),
-      scannedDeps: undefined,
-      setScannedDeps: vi.fn(),
-      depsAverageScore: undefined,
-      setDepsAverageScore: vi.fn(),
-      depLicenses: undefined,
-      setDepLicenses: vi.fn(),
-      depWarnings: undefined,
-      setDepWarnings: vi.fn(),
       depFunding: mockDepFunding,
-      setDepFunding: vi.fn(),
-      duplicatedDeps: undefined,
-      setDuplicatedDeps: vi.fn(),
+      ...MOCK_STORE_ACTIONS,
       ...MOCK_LOADING_STATE,
     }),
   )

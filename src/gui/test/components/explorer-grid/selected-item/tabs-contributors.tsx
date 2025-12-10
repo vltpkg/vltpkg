@@ -8,6 +8,8 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
   MOCK_LOADING_STATE,
+  MOCK_STORE_STATE,
+  MOCK_STORE_ACTIONS,
 } from './__fixtures__/item.ts'
 
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
@@ -127,24 +129,10 @@ test('ContributorTabContent renders with contributors', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
+    ...MOCK_STORE_STATE,
     manifest: {},
-    rawManifest: null,
     contributors: mockContributors.slice(0, 4),
-    insights: undefined,
-    depCount: undefined,
-    setDepCount: vi.fn(),
-    scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
-    depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
-    depLicenses: undefined,
-    setDepLicenses: vi.fn(),
-    depWarnings: undefined,
-    setDepWarnings: vi.fn(),
-    duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
-    depFunding: undefined,
-    setDepFunding: vi.fn(),
+    ...MOCK_STORE_ACTIONS,
     ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
@@ -168,19 +156,13 @@ test('ContributorTabContent renders with no contributors', () => {
     contributors: undefined,
     insights: undefined,
     depCount: undefined,
-    setDepCount: vi.fn(),
     scannedDeps: undefined,
-    setScannedDeps: vi.fn(),
     depsAverageScore: undefined,
-    setDepsAverageScore: vi.fn(),
     depLicenses: undefined,
-    setDepLicenses: vi.fn(),
     depWarnings: undefined,
-    setDepWarnings: vi.fn(),
     duplicatedDeps: undefined,
-    setDuplicatedDeps: vi.fn(),
     depFunding: undefined,
-    setDepFunding: vi.fn(),
+    ...MOCK_STORE_ACTIONS,
     ...MOCK_LOADING_STATE,
   } satisfies SelectedItemStore
 
