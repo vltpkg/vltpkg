@@ -77,7 +77,6 @@ const initialState: State = {
   q: undefined,
   specOptions: undefined,
   stamp: newStamp(),
-  graphStamp: '', // Empty until first graph data loads
   theme: localStorage.getItem('vite-ui-theme') as State['theme'],
   focused: JSON.parse(
     localStorage.getItem('focused') ?? 'false',
@@ -130,8 +129,6 @@ export const useGraphStore = create<Action & State>((set, get) => {
     updateSpecOptions: (specOptions: State['specOptions']) =>
       set(() => ({ specOptions })),
     updateStamp: () => set(() => ({ stamp: newStamp() })),
-    updateGraphStamp: (graphStamp: State['graphStamp']) =>
-      set(() => ({ graphStamp })),
     updateTheme: (theme: State['theme']) => set(() => ({ theme })),
     updateFocused: (focused: State['focused']) => {
       set(() => ({ focused }))

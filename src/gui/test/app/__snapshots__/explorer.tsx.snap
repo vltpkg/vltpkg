@@ -7,8 +7,17 @@ exports[`explorer has project root info 1`] = `
     class="h-full"
     style="opacity: 0; filter: blur(4px);"
   >
-    <gui-explorer-grid isloading="true">
+    <gui-explorer-grid isloading="false">
     </gui-explorer-grid>
+  </div>
+  <div
+    class="absolute inset-0 z-100 flex h-full w-full justify-center"
+    style="opacity: 0; filter: blur(4px);"
+  >
+    <div class="relative flex h-full w-full items-center justify-center">
+      <gui-jelly-triangle-spinner classname="text-primary">
+      </gui-jelly-triangle-spinner>
+    </div>
   </div>
 </div>
 
@@ -30,8 +39,17 @@ exports[`render default 1`] = `
     class="h-full"
     style="opacity: 0; filter: blur(4px);"
   >
-    <gui-explorer-grid isloading="true">
+    <gui-explorer-grid isloading="false">
     </gui-explorer-grid>
+  </div>
+  <div
+    class="absolute inset-0 z-100 flex h-full w-full justify-center"
+    style="opacity: 0; filter: blur(4px);"
+  >
+    <div class="relative flex h-full w-full items-center justify-center">
+      <gui-jelly-triangle-spinner classname="text-primary">
+      </gui-jelly-triangle-spinner>
+    </div>
   </div>
 </div>
 
@@ -44,8 +62,17 @@ exports[`render no results if search throws 1`] = `
     class="h-full"
     style="opacity: 0; filter: blur(4px);"
   >
-    <gui-explorer-grid isloading="true">
+    <gui-explorer-grid isloading="false">
     </gui-explorer-grid>
+  </div>
+  <div
+    class="absolute inset-0 z-100 flex h-full w-full justify-center"
+    style="opacity: 0; filter: blur(4px);"
+  >
+    <div class="relative flex h-full w-full items-center justify-center">
+      <gui-jelly-triangle-spinner classname="text-primary">
+      </gui-jelly-triangle-spinner>
+    </div>
   </div>
 </div>
 

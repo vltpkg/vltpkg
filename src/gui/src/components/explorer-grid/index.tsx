@@ -157,8 +157,6 @@ export const ExplorerGrid = ({
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
   const query = useGraphStore(state => state.query)
-  const stamp = useGraphStore(state => state.stamp)
-  const graphStamp = useGraphStore(state => state.graphStamp)
   const isExternalPackage = useGraphStore(
     state => state.isExternalPackage,
   )
@@ -195,15 +193,14 @@ export const ExplorerGrid = ({
   const items = getItemsData(edges, nodes, query)
 
   // Show loading when:
-  // 1. Graph is reloading (project switch)
-  // 2. Query is explicitly loading
-  // 3. The loaded query doesn't match the current query (prevents FOUC)
+  // 1. Query is explicitly loading
+  // 2. The loaded query doesn't match the current query (prevents FOUC)
   const hasQuery = query.trim().length > 0
   // If we have a query, but it doesn't match what we've loaded, show loading.
   // This handles initial load (loadedQuery is undefined) and transitions.
   const queryMismatch = hasQuery && query !== loadedQuery
 
-  if (stamp !== graphStamp || isLoading || queryMismatch) {
+  if (isLoading || queryMismatch) {
     return null
   }
 
