@@ -84,6 +84,7 @@ export default [
       'import/resolver': {
         typescript: {
           alwaysTryTypes: true,
+          noWarnOnMultipleProjects: true,
           project:
             // If run from the root specify glob patterns to all ts projects
             // otherwise just use the tsconfig.json in the current directory
@@ -243,6 +244,7 @@ export default [
       'jsdoc/require-param-description': 'off',
       'jsdoc/require-returns-description': 'off',
       'jsdoc/require-jsdoc': 'off',
+      'jsdoc/escape-inline-tags': 'off',
       // custom
       'vltpkg/enforce-mock-import-types': 'error',
     },
@@ -307,6 +309,8 @@ export default [
     name: `${NAME}/registry`,
     files: [`src/registry/**/*${extGlobs.ts}`],
     rules: {
+      'jsdoc/reject-any-type': 'off',
+      'jsdoc/reject-function-type': 'off',
       'import/no-unresolved': [
         'error',
         {
@@ -340,7 +344,11 @@ export default [
         'error',
         {
           // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
-          ignore: ['astro:content', 'virtual:starlight/user-config'],
+          ignore: [
+            'astro:content',
+            'virtual:starlight/user-config',
+            '^@\\/',
+          ],
         },
       ],
     },
@@ -362,7 +370,10 @@ export default [
     // looks at the state of the filesystem so these files could fail intermittently
     // based on what has been built which is no good. So we turn it off.
     name: `${NAME}/benchmarks`,
-    files: ['src/semver/benchmarks/this.js'],
+    files: [
+      'src/semver/benchmarks/this.js',
+      'src/semver/benchmarks/bun.js',
+    ],
     rules: {
       'import/no-unresolved': 'off',
     },
