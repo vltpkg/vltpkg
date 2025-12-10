@@ -27,8 +27,9 @@ const useTabsContext = () => {
   return context
 }
 
-interface TabsProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Tabs> {
+interface TabsProps extends React.ComponentPropsWithoutRef<
+  typeof TabsPrimitive.Tabs
+> {
   uniqueId?: string
 }
 
@@ -88,7 +89,8 @@ const tabsTriggerVariants = cva(
   },
 )
 interface TabsListProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>,
+  extends
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>,
     VariantProps<typeof tabsListVariants> {}
 
 const TabsList = React.forwardRef<
@@ -111,9 +113,8 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName
 
 interface TabsTriggerProps
-  extends React.ComponentPropsWithoutRef<
-      typeof TabsPrimitive.Trigger
-    >,
+  extends
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>,
     VariantProps<typeof tabsTriggerVariants> {}
 
 const TabsTrigger = React.forwardRef<

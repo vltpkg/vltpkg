@@ -388,9 +388,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
  * The InteractiveBreadcrumb is used to keep track of state
  * of the current breadcrumb item that should be used for checks.
  */
-export class InteractiveBreadcrumb
-  implements ModifierInteractiveBreadcrumb
-{
+export class InteractiveBreadcrumb implements ModifierInteractiveBreadcrumb {
   #current: ModifierBreadcrumbItem | undefined
   constructor(breadcrumb: Breadcrumb) {
     this.#current = breadcrumb.first

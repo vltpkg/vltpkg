@@ -155,9 +155,8 @@ t.test('getNodeGypShim', async t => {
 
     // Create a new test that forces re-check by clearing the memoization
     // This is done by dynamically importing the module again
-    const { getNodeGypShim: getShimFresh } = await import(
-      '../src/aliasRunner.ts'
-    )
+    const { getNodeGypShim: getShimFresh } =
+      await import('../src/aliasRunner.ts')
     const shimPath2 = await getShimFresh()
 
     t.equal(shimPath, shimPath2, 'uses existing shim')

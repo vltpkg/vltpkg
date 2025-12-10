@@ -30,7 +30,7 @@
     "@types/node": "catalog:",
     "@vltpkg/benchmark": "workspace:*",
     "eslint": "catalog:",
-    "npm-pick-manifest": "^10.0.0",
+    "npm-pick-manifest": "^11.0.3",
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
@@ -40,7 +40,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "prebenchmark": "pnpm vlt-benchmark-download-fixtures",

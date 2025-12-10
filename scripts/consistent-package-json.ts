@@ -17,7 +17,7 @@ import type {
 } from './utils.ts'
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
-const NODE_ENGINES = '>=22'
+const NODE_ENGINES = '>=22.9.0'
 const PNPM_VERSION = '10.11.0'
 
 type Workspace = WorkspaceBase & {

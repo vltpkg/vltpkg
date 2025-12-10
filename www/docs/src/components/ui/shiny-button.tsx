@@ -4,7 +4,8 @@ import { motion } from 'framer-motion'
 import React from 'react'
 
 interface ShinyButtonProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps>,
+  extends
+    Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps>,
     MotionProps {
   children: React.ReactNode
   className?: string

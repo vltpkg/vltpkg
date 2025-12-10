@@ -17,9 +17,8 @@ import type { DepLicenses } from '@/components/explorer-grid/selected-item/conte
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
   async () => {
-    const actual = await import(
-      '@/components/explorer-grid/selected-item/context.tsx'
-    )
+    const actual =
+      await import('@/components/explorer-grid/selected-item/context.tsx')
     return {
       ...actual,
       useSelectedItemStore: vi.fn(),
@@ -58,9 +57,8 @@ vi.mock(
 vi.mock(
   '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx',
   async () => {
-    const actual = await import(
-      '@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx'
-    )
+    const actual =
+      await import('@/components/explorer-grid/selected-item/tabs-dependencies/table-utilities.tsx')
     return {
       ...actual,
       SortingHeader: 'gui-sorting-header',

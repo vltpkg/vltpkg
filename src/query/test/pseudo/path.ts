@@ -157,9 +157,8 @@ t.test('createPathMatcher function', async t => {
 
 t.test(':path selector', async t => {
   // Import the real module for the path selector tests
-  const { path, normalizePath, createPathMatcher } = await import(
-    '../../src/pseudo/path.ts'
-  )
+  const { path, normalizePath, createPathMatcher } =
+    await import('../../src/pseudo/path.ts')
 
   await t.test('normalizePath function', async t => {
     await t.test('trims whitespace', async t => {

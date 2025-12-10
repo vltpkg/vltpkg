@@ -17,7 +17,7 @@ export const removeNode = (state: ParserState, node: NodeLike) => {
  */
 export const removeEdge = (state: ParserState, edge: EdgeLike) => {
   state.partial.edges.delete(edge)
-  if (edge.to && edge.to.edgesIn.size === 1) {
+  if (edge.to?.edgesIn.size === 1) {
     state.partial.nodes.delete(edge.to)
   }
 }

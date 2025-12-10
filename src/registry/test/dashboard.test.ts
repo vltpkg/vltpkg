@@ -556,7 +556,7 @@ describe('Dashboard Endpoints', () => {
           app.request('/dashboard.json', {}, env),
           app.request('/dashboard.json', {}, env),
           app.request('/dashboard.json', {}, env),
-        ]
+        ] as Promise<Response>[]
 
         const results = await Promise.all(promises)
         results.forEach(res => {
@@ -572,7 +572,7 @@ describe('Dashboard Endpoints', () => {
           app.request('/app-data.json', {}, env),
           app.request('/app-data.json', {}, env),
           app.request('/app-data.json', {}, env),
-        ]
+        ] as Promise<Response>[]
 
         const results = await Promise.all(promises)
         results.forEach(res => {
@@ -589,7 +589,7 @@ describe('Dashboard Endpoints', () => {
           app.request('/app-data.json', {}, env),
           app.request('/dashboard.json', {}, env),
           app.request('/app-data.json', {}, env),
-        ]
+        ] as Promise<Response>[]
 
         const results = await Promise.all(promises)
         results.forEach(res => {

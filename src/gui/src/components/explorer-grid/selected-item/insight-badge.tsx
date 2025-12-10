@@ -52,7 +52,8 @@ export const getAlertStyle = (
 ): InsightColor[PackageAlert['severity']] => alertStyles[severity]
 
 interface InsightBadgeProps
-  extends React.ComponentProps<'span'>,
+  extends
+    React.ComponentProps<'span'>,
     VariantProps<typeof variants> {
   children?: string
   color?: PackageAlert['severity']

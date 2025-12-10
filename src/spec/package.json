@@ -30,7 +30,7 @@
     "@types/npm-package-arg": "^6.1.4",
     "@vltpkg/benchmark": "workspace:*",
     "eslint": "catalog:",
-    "npm-package-arg": "^13.0.0",
+    "npm-package-arg": "^13.0.2",
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
@@ -40,7 +40,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "benchmark": "./scripts/benchmark.ts",

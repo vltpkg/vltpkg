@@ -25,16 +25,13 @@ export interface PromiseSpawnOptions extends SpawnOptions {
   stdioString?: boolean
   acceptFail?: boolean
 }
-export interface PromiseSpawnOptionsString
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsString extends PromiseSpawnOptions {
   stdioString?: true
 }
-export interface PromiseSpawnOptionsBuffer
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsBuffer extends PromiseSpawnOptions {
   stdioString: false
 }
-export interface PromiseSpawnOptionsStdin
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsStdin extends PromiseSpawnOptions {
   stdio?:
     | Exclude<IOTypePipe, null>
     | [
@@ -43,8 +40,7 @@ export interface PromiseSpawnOptionsStdin
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
 }
-export interface PromiseSpawnOptionsNoStdin
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsNoStdin extends PromiseSpawnOptions {
   stdio:
     | IOTypeNoPipe
     | IOTypeNoPipe[]
@@ -54,8 +50,7 @@ export interface PromiseSpawnOptionsNoStdin
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
 }
-export interface PromiseSpawnOptionsStdout
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsStdout extends PromiseSpawnOptions {
   stdio?:
     | Exclude<IOTypePipe, null>
     | [
@@ -64,16 +59,13 @@ export interface PromiseSpawnOptionsStdout
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
 }
-export interface PromiseSpawnOptionsStdoutString
-  extends PromiseSpawnOptionsStdout {
+export interface PromiseSpawnOptionsStdoutString extends PromiseSpawnOptionsStdout {
   stdioString?: true
 }
-export interface PromiseSpawnOptionsStdoutBuffer
-  extends PromiseSpawnOptionsStdout {
+export interface PromiseSpawnOptionsStdoutBuffer extends PromiseSpawnOptionsStdout {
   stdioString: false
 }
-export interface PromiseSpawnOptionsNoStdout
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsNoStdout extends PromiseSpawnOptions {
   stdio:
     | IOTypeNoPipe
     | IOTypeNoPipe[]
@@ -83,8 +75,7 @@ export interface PromiseSpawnOptionsNoStdout
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
 }
-export interface PromiseSpawnOptionsStderr
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsStderr extends PromiseSpawnOptions {
   stdio?:
     | Exclude<IOTypePipe, null>
     | [
@@ -93,16 +84,13 @@ export interface PromiseSpawnOptionsStderr
         stderr?: IOTypePipe,
       ]
 }
-export interface PromiseSpawnOptionsStderrString
-  extends PromiseSpawnOptionsStderr {
+export interface PromiseSpawnOptionsStderrString extends PromiseSpawnOptionsStderr {
   stdioString?: true
 }
-export interface PromiseSpawnOptionsStderrBuffer
-  extends PromiseSpawnOptionsStderr {
+export interface PromiseSpawnOptionsStderrBuffer extends PromiseSpawnOptionsStderr {
   stdioString: false
 }
-export interface PromiseSpawnOptionsNoStderr
-  extends PromiseSpawnOptions {
+export interface PromiseSpawnOptionsNoStderr extends PromiseSpawnOptions {
   stdio:
     | IOTypeNoPipe
     | IOTypeNoPipe[]

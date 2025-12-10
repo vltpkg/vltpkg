@@ -15,7 +15,8 @@ type Color =
   | 'white'
 
 interface InlineCodeProps
-  extends React.ComponentProps<'span'>,
+  extends
+    React.ComponentProps<'span'>,
     VariantProps<typeof variants> {
   children?: React.ReactNode
   color?: Color

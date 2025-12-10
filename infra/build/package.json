@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
-    "esbuild": "^0.25.9"
+    "esbuild": "^0.27.1"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -28,7 +28,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",

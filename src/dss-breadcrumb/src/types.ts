@@ -37,8 +37,7 @@ export type ModifierBreadcrumbItem = {
  * A breadcrumb is a linked list of items, where
  * each item has a value and a type.
  */
-export interface ModifierBreadcrumb
-  extends Iterable<ModifierBreadcrumbItem> {
+export interface ModifierBreadcrumb extends Iterable<ModifierBreadcrumbItem> {
   clear(): void
   comment: string | undefined
   first: ModifierBreadcrumbItem
