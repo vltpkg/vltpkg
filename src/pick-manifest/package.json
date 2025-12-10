@@ -8,17 +8,6 @@
     "directory": "src/pick-manifest"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/semver": "workspace:*",
@@ -33,7 +22,6 @@
     "npm-pick-manifest": "^11.0.3",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -45,15 +33,15 @@
   "scripts": {
     "prebenchmark": "pnpm vlt-benchmark-download-fixtures",
     "benchmark": "./scripts/benchmark.ts",
+    "build": "../../scripts/prepack",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
+    "prepack": "../../scripts/prepack",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
-    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {

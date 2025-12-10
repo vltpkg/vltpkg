@@ -8,17 +8,6 @@
     "directory": "src/semver"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/fast-split": "workspace:*",
@@ -33,7 +22,6 @@
     "prettier": "catalog:",
     "semver": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -47,15 +35,15 @@
     "benchmark": "./test/fixtures/vs-node-semver.ts",
     "benchmark:bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
     "benchmark:node": "hyperfine --warmup 3 'node ./benchmarks/deno.js' 'node ./benchmarks/npm.js' 'node ./benchmarks/this.js'",
+    "build": "../../scripts/prepack",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
+    "prepack": "../../scripts/prepack",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
-    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {

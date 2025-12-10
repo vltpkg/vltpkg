@@ -8,18 +8,6 @@
     "directory": "src/graph"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./browser": "./src/browser.ts"
-    }
-  },
   "dependencies": {
     "@vltpkg/cmd-shim": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
@@ -52,7 +40,6 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tar": "catalog:",
-    "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -62,15 +49,15 @@
     "node": ">=22.9.0"
   },
   "scripts": {
+    "build": "../../scripts/prepack",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
+    "prepack": "../../scripts/prepack",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
-    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {

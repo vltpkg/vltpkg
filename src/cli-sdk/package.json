@@ -8,20 +8,6 @@
     "directory": "src/cli-sdk"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./config": "./src/config/index.ts",
-      "./definition": "./src/config/definition.ts",
-      "./view": "./src/view.ts"
-    }
-  },
   "dependencies": {
     "@vltpkg/config": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
@@ -76,7 +62,6 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -86,15 +71,15 @@
     "node": ">=22.9.0"
   },
   "scripts": {
+    "build": "../../scripts/prepack",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
+    "prepack": "../../scripts/prepack",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
-    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {

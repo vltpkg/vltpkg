@@ -26,7 +26,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
+          node-version: "^22.14.0"
           check-latest: true
 
       - name: Bootstrap
@@ -72,7 +72,7 @@ jobs:
         continue-on-error: true
         run: |
           vlr fix:pkg
-          vlr --recursive tshy
+          vlr --recursive build
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1

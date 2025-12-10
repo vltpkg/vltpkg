@@ -26,6 +26,15 @@ type Workspace = WorkspaceBase & {
   relDir: string
 }
 
+const isStandardTypeScriptWorkspace = (ws: Workspace) => {
+  return (
+    ws.relDir.startsWith('src/') &&
+    !['@vltpkg/gui', '@vltpkg/vsr', '@vltpkg/vsr-nitro'].includes(
+      ws.pj.name,
+    )
+  )
+}
+
 const writeJson = (p: string, data: unknown) =>
   writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
 
@@ -145,10 +154,10 @@ const fixScripts = async (ws: Workspace) => {
         snap: 'vitest --no-watch -u',
       }
     : {}),
-    ...(ws.pj.devDependencies?.tshy ?
+    ...(isStandardTypeScriptWorkspace(ws) ?
       {
-        prepack: 'tshy',
-        tshy: 'tshy',
+        prepack: '../../scripts/prepack',
+        build: '../../scripts/prepack',
       }
     : {}),
     ...(ws.pj.dependencies?.astro ?
@@ -176,25 +185,7 @@ const fixScripts = async (ws: Workspace) => {
 }
 
 const fixTools = async (ws: Workspace) => {
-  if (ws.pj.tshy) {
-    ws.pj.files = ['dist']
-    ws.pj.tshy = sortObject(
-      {
-        ...ws.pj.tshy,
-        selfLink: false,
-        liveDev: true,
-        dialects: ['esm'],
-        exports: sortObject(
-          {
-            ...ws.pj.tshy.exports,
-            './package.json': './package.json',
-            '.': './src/index.ts',
-          },
-          ['./package.json', '.'],
-        ),
-      },
-      ['selfLink', 'liveDev', 'dialects'],
-    )
+  if (isStandardTypeScriptWorkspace(ws)) {
     mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
       sortObject({
         ...d,
@@ -393,7 +384,6 @@ const fixPackage = async (
     'private',
     'repository',
     'author',
-    'tshy',
     'bin',
     'dependencies',
     'optionalDependencies',

@@ -29,10 +29,6 @@ export type PackageJson = {
   scripts?: Record<string, unknown>
   devDependencies?: Record<string, string>
   dependencies?: Record<string, string>
-  tshy?: {
-    exports?: Record<string, string>
-    [key: string]: unknown
-  }
   tap?: Record<string, unknown>
   prettier?: string
   license?: string
