@@ -132,6 +132,23 @@ Array [
     "resolved": "https://registry.npmjs.org/baz/-/baz-1.0.0.tgz",
     "version": "1.0.0",
   },
+  Object {
+    "buildState": "none",
+    "confused": false,
+    "dev": false,
+    "id": "remote·http%3A§§example.com§tarball.tgz",
+    "importer": false,
+    "integrity": "sha512-deadbeefcafebabe==",
+    "location": "./node_modules/.vlt/remote·http%3A§§example.com§tarball.tgz/node_modules/remote-pkg",
+    "manifest": undefined,
+    "modifier": undefined,
+    "name": "remote-pkg",
+    "optional": false,
+    "platform": undefined,
+    "projectRoot": "{ROOT}",
+    "resolved": "http://example.com/tarball.tgz",
+    "version": undefined,
+  },
 ]
 `
 

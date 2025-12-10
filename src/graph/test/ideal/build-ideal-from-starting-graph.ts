@@ -125,7 +125,13 @@ const packageInfo = {
         return null
     }
   },
-  async extract(): Promise<void> {},
+  async extract(): Promise<{ integrity: string; resolved: string }> {
+    return {
+      integrity:
+        'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+      resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+    }
+  },
 } as unknown as PackageInfoClient
 
 t.test('build from a virtual graph', async t => {

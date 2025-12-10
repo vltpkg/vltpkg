@@ -30,6 +30,7 @@
     "@vltpkg/types": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
+    "ssri": "catalog:",
     "tar": "catalog:"
   },
   "devDependencies": {

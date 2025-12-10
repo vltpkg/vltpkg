@@ -21,6 +21,11 @@ const mockPackageInfo = {
       throw new Error('failer fails to extract')
     }
     extracted.push([spec, target])
+    return {
+      integrity:
+        'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+      resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+    }
   },
 } as unknown as PackageInfoClient
 

@@ -150,6 +150,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > optional subdeps 
         id: '·npm·esbuild@0.25.11',
         location: './node_modules/.vlt/·npm·esbuild@0.25.11/node_modules/esbuild',
         resolved: 'https://registry.npmjs.org/esbuild/-/esbuild-0.25.11.tgz',
+        integrity: 'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
         edgesOut: [
           Edge spec(@esbuild/darwin-arm64@0.25.11) -optional-> to: Node {
             id: '·npm·@esbuild§darwin-arm64@0.25.11',

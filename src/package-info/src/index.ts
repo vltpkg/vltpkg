@@ -19,6 +19,7 @@ import type {
   ManifestRegistry,
 } from '@vltpkg/types'
 import { asPackument, isIntegrity } from '@vltpkg/types'
+import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'node:crypto'
@@ -181,8 +182,7 @@ export class PackageInfoClient {
         // fallthrough if a remote tarball url present
       }
 
-      case 'registry':
-      case 'remote': {
+      case 'registry': {
         const trustIntegrity =
           this.#trustedIntegrities.get(r.resolved) === r.integrity
 
@@ -221,6 +221,50 @@ export class PackageInfoClient {
             spec,
             options,
             'tar unpack failed',
+            { cause: er },
+          )
+        }
+        return r
+      }
+
+      case 'remote': {
+        const response = await this.registryClient.request(r.resolved)
+        if (response.statusCode !== 200) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'failed to fetch remote tarball',
+            {
+              url: r.resolved,
+              response,
+            },
+          )
+        }
+
+        const buf = response.buffer()
+
+        // Compute integrity for remote/git-with-tarball deps
+        const computed = ssri
+          .fromData(buf, { algorithms: ['sha512'] })
+          .toString()
+        if (r.integrity && r.integrity !== computed) {
+          throw error('Integrity check failure', {
+            code: 'EINTEGRITY',
+            spec,
+            url: r.resolved,
+            wanted: r.integrity,
+            found: computed,
+          })
+        }
+        r.integrity = computed as Integrity
+
+        try {
+          await this.tarPool.unpack(buf, target)
+        } catch (er) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'remote tar unpack failed',
             { cause: er },
           )
         }
@@ -648,6 +692,12 @@ export class PackageInfoClient {
             )
           }
           const buf = response.buffer()
+
+          // Compute integrity for remote/git-with-tarball deps
+          const computed = ssri
+            .fromData(buf, { algorithms: ['sha512'] })
+            .toString()
+
           try {
             await this.tarPool.unpack(buf, dir)
           } catch (er) {
@@ -658,7 +708,11 @@ export class PackageInfoClient {
               { cause: er },
             )
           }
-          return this.packageJson.read(dir)
+
+          // return manifest with computed integrity
+          const mani = this.packageJson.read(dir)
+          mani.dist = { integrity: computed as Integrity }
+          return mani
         })
       }
 

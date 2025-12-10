@@ -361,6 +361,11 @@ export class Node implements NodeLike {
     const tuple = splitDepID(this.id)
     const [type, resolved] = tuple
     switch (type) {
+      case 'remote': {
+        this.resolved = resolved
+        this.integrity ??= this.manifest?.dist?.integrity
+        break
+      }
       case 'registry':
         this.#registryNodeResolved(tuple)
         break

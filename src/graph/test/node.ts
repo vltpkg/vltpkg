@@ -192,6 +192,32 @@ t.test('Node', async t => {
     'should stringify file node with no manifest',
   )
 
+  // test resolved for remote packages
+  const remotePkg = new Node(
+    opts,
+    joinDepIDTuple(['remote', 'https://example.com/x.tgz']),
+  )
+  remotePkg.setResolved()
+  t.strictSame(
+    remotePkg.resolved,
+    'https://example.com/x.tgz',
+    'should set expected resolved value for a remote file type',
+  )
+  t.matchSnapshot(
+    String(remotePkg),
+    'should stringify remote node as expected',
+  )
+
+  // now let's resolve again with an integrity value available
+  remotePkg.manifest = {
+    dist: { integrity: 'sha512-deadbeef' },
+  }
+  remotePkg.setResolved()
+  t.matchSnapshot(
+    remotePkg.toJSON(),
+    'should stringify remote node with integrity',
+  )
+
   const fileMani = new Node(
     opts,
     joinDepIDTuple(['file', 'my-package']),

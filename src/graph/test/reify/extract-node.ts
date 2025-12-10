@@ -24,6 +24,14 @@ const mockPackageInfo = {
       throw new Error('failer fails to extract')
     }
     extracted.push([spec, target, options])
+    // Simulate remote/git deps returning computed integrity
+    if (spec.name === 'remote-pkg') {
+      return {
+        resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+        integrity: 'sha512-computed-integrity-from-extract',
+        spec,
+      }
+    }
     return { extracted: true }
   },
 } as unknown as PackageInfoClient
@@ -503,6 +511,145 @@ t.test('extract node without diff object', async t => {
         )
       }
       t.equal(extracted.length, 0, 'no extraction attempted')
+    },
+  )
+})
+
+t.test('integrity capture from remote/git deps', async t => {
+  t.test(
+    'capture integrity from extract result when node has none',
+    async t => {
+      const node = mockNode({
+        id: joinDepIDTuple([
+          'remote',
+          'https://example.com/remote-pkg-1.0.0.tgz',
+        ]),
+        location:
+          './node_modules/.vlt/' +
+          joinDepIDTuple([
+            'remote',
+            'https://example.com/remote-pkg-1.0.0.tgz',
+          ]) +
+          '/node_modules/remote-pkg',
+        name: 'remote-pkg',
+        manifest: { name: 'remote-pkg', version: '1.0.0' },
+        integrity: undefined, // No integrity yet
+        resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+      })
+
+      const scurry = new PathScurry(t.testdirName)
+      const result = await extractNode(
+        node,
+        scurry,
+        mockRemover,
+        {},
+        mockPackageInfo,
+        mockDiff,
+      )
+
+      t.strictSame(
+        result,
+        { success: true, node },
+        'extraction successful',
+      )
+      t.equal(
+        node.integrity,
+        'sha512-computed-integrity-from-extract',
+        'integrity captured from extract result',
+      )
+    },
+  )
+
+  t.test('do not overwrite existing node integrity', async t => {
+    const existingIntegrity = 'sha512-existing-integrity'
+    const node = mockNode({
+      id: joinDepIDTuple([
+        'remote',
+        'https://example.com/remote-pkg-1.0.0.tgz',
+      ]),
+      location:
+        './node_modules/.vlt/' +
+        joinDepIDTuple([
+          'remote',
+          'https://example.com/remote-pkg-1.0.0.tgz',
+        ]) +
+        '/node_modules/remote-pkg',
+      name: 'remote-pkg',
+      manifest: { name: 'remote-pkg', version: '1.0.0' },
+      integrity: existingIntegrity, // Already has integrity
+      resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+    })
+
+    const scurry = new PathScurry(t.testdirName)
+    const result = await extractNode(
+      node,
+      scurry,
+      mockRemover,
+      {},
+      mockPackageInfo,
+      mockDiff,
+    )
+
+    t.strictSame(
+      result,
+      { success: true, node },
+      'extraction successful',
+    )
+    t.equal(
+      node.integrity,
+      existingIntegrity,
+      'existing integrity preserved',
+    )
+  })
+
+  t.test(
+    'capture integrity for optional node without diff',
+    async t => {
+      const mockGraph = {
+        nodes: new Map(),
+        removeNode: () => {},
+      }
+
+      const node = mockNode({
+        id: joinDepIDTuple([
+          'remote',
+          'https://example.com/remote-pkg-1.0.0.tgz',
+        ]),
+        location:
+          './node_modules/.vlt/' +
+          joinDepIDTuple([
+            'remote',
+            'https://example.com/remote-pkg-1.0.0.tgz',
+          ]) +
+          '/node_modules/remote-pkg',
+        name: 'remote-pkg',
+        manifest: { name: 'remote-pkg', version: '1.0.0' },
+        integrity: undefined,
+        resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+        optional: true,
+        graph: mockGraph,
+      })
+
+      const scurry = new PathScurry(t.testdirName)
+      const result = await extractNode(
+        node,
+        scurry,
+        mockRemover,
+        {},
+        mockPackageInfo,
+        undefined, // No diff
+      )
+
+      t.strictSame(
+        result,
+        { success: true, node },
+        'extraction successful',
+      )
+      t.equal(
+        node.integrity,
+        'sha512-computed-integrity-from-extract',
+        'integrity captured for optional node',
+      )
     },
   )
 })

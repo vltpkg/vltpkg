@@ -85,7 +85,9 @@ const formatNodes = (
       lockfileNode[2] = node.integrity
     }
 
-    if (resolved) {
+    // skip resolved for remote nodes since
+    // these are already part of the dep id
+    if (resolved && !node.id.startsWith('remote')) {
       lockfileNode[3] = resolved
     }
 

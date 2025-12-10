@@ -112,7 +112,10 @@ export const loadNodes = (
     node.dev = dev
     node.optional = optional
     node.integrity = integrity ?? referenceNode?.integrity
-    node.resolved = resolved ?? referenceNode?.resolved
+    node.resolved =
+      type === 'remote' ? filepath : (
+        (resolved ?? referenceNode?.resolved)
+      )
     node.projectRoot = graph.projectRoot
     if (!node.resolved) node.setResolved()
     if (location) {
