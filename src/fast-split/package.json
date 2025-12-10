@@ -24,12 +24,11 @@
   },
   "scripts": {
     "benchmark:split": "./test/fixtures/split-vs-fast-split.ts",
-    "build": "../../scripts/build-tsc-workspace.ts",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "../../scripts/build-tsc-workspace.ts",
+    "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",

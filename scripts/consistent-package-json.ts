@@ -157,8 +157,8 @@ const fixScripts = async (ws: Workspace) => {
     : {}),
     ...(isStandardTypeScriptWorkspace(ws) ?
       {
-        prepack: '../../scripts/build-tsc-workspace.ts',
-        build: '../../scripts/build-tsc-workspace.ts',
+        prepack:
+          'tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts',
       }
     : {}),
     ...(ws.pj.dependencies?.astro ?
