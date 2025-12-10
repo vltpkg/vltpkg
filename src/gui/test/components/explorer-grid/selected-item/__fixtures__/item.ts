@@ -1,8 +1,14 @@
+import { vi } from 'vitest'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { Spec, getOptions } from '@vltpkg/spec/browser'
+
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { DetailsInfo } from '@/lib/external-info.ts'
 import type { NodeLike } from '@vltpkg/types'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { Spec, getOptions } from '@vltpkg/spec/browser'
+import type {
+  SelectedItemStoreState,
+  SelectedItemStoreAction,
+} from '@/components/explorer-grid/selected-item/context.tsx'
 
 export const specOptions = getOptions({
   registries: {
@@ -146,8 +152,71 @@ export const SELECTED_ITEM_DETAILS: DetailsInfo = {
  * Default loading state properties for tests.
  * Add these to mockState to satisfy SelectedItemStore type.
  */
-export const MOCK_LOADING_STATE = {
+export const MOCK_LOADING_STATE: Pick<
+  SelectedItemStoreState,
+  | 'isLoadingDetails'
+  | 'isLoadingDependencies'
+  | 'dependenciesError'
+  | 'isReadmeLoading'
+> = {
   isLoadingDetails: false,
   isLoadingDependencies: false,
   dependenciesError: null,
+  isReadmeLoading: false,
+}
+
+/**
+ * Default store state properties for tests.
+ * These are the common undefined/null values used across most tests.
+ * Individual tests can override specific properties as needed.
+ * Note: selectedItem and loading state properties are provided separately.
+ */
+export const MOCK_STORE_STATE: Omit<
+  SelectedItemStoreState,
+  | 'selectedItem'
+  | 'isLoadingDetails'
+  | 'isLoadingDependencies'
+  | 'dependenciesError'
+  | 'isReadmeLoading'
+> = {
+  manifest: null,
+  rawManifest: null,
+  packageScore: undefined,
+  insights: undefined,
+  author: undefined,
+  favicon: undefined,
+  publisher: undefined,
+  publisherAvatar: undefined,
+  versions: undefined,
+  greaterVersions: undefined,
+  depCount: undefined,
+  scannedDeps: undefined,
+  depsAverageScore: undefined,
+  depLicenses: undefined,
+  depWarnings: undefined,
+  duplicatedDeps: undefined,
+  depFunding: undefined,
+  readme: undefined,
+  contributors: undefined,
+  stargazersCount: undefined,
+  openIssueCount: undefined,
+  openPullRequestCount: undefined,
+  downloadsLastYear: undefined,
+  downloadsPerVersion: undefined,
+  partialErrors: undefined,
+}
+
+/**
+ * Default mock action functions for tests.
+ */
+export const MOCK_STORE_ACTIONS: SelectedItemStoreAction = {
+  setDepLicenses: vi.fn(),
+  setScannedDeps: vi.fn(),
+  setDepsAverageScore: vi.fn(),
+  setDepWarnings: vi.fn(),
+  setDepCount: vi.fn(),
+  setDuplicatedDeps: vi.fn(),
+  setDepFunding: vi.fn(),
+  setReadme: vi.fn(),
+  setIsReadmeLoading: vi.fn(),
 }
