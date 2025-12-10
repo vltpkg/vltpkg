@@ -7,6 +7,7 @@ import { addRemoveDependency } from '@/lib/add-remove-dependency.ts'
 
 import type { StoreApi } from 'zustand'
 import type { PropsWithChildren } from 'react'
+import type { State, Action } from '@/state/types.ts'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { Operation } from '@/lib/add-remove-dependency.ts'
 import type { Filter } from './filter-config.ts'
@@ -37,7 +38,15 @@ type DependencySidebarAction = {
     search: DependencySidebarState['searchTerm'],
   ) => void
   setInProgress: (bool: DependencySidebarState['inProgress']) => void
-  onDependencyClick: (item: GridItemData) => () => undefined
+  onDependencyClick: ({
+    item,
+    query,
+    updateQuery,
+  }: {
+    item: GridItemData
+    query: State['query']
+    updateQuery: Action['updateQuery']
+  }) => () => undefined
   setError: (str: DependencySidebarState['error']) => void
   setDependencyPopoverOpen: (
     o: DependencySidebarState['dependencyPopoverOpen'],

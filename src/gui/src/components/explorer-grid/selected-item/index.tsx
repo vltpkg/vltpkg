@@ -18,6 +18,7 @@ import { useFocusState } from '@/components/explorer-grid/selected-item/focused-
 import { motion, AnimatePresence } from 'framer-motion'
 
 import type { CSSProperties } from 'react'
+import type { State, Action } from '@/state/types.ts'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { QueryResponseNode } from '@vltpkg/query'
 import type { DepID } from '@vltpkg/dep-id/browser'
@@ -170,6 +171,47 @@ const getItemQuery = (item: GridItemData) => {
   return name.trim()
 }
 
+export const dependencyClick =
+  ({
+    item,
+    query,
+    updateQuery,
+  }: {
+    item: GridItemData
+    query: State['query']
+    updateQuery: Action['updateQuery']
+  }) =>
+  () => {
+    const itemQuery = getItemQuery(item)
+    if (!itemQuery) return
+
+    const SEP = ' > '
+
+    // split the query into segments like [":root", "#a"]
+    const segments = query
+      .split(SEP)
+      .map(s => s.trim())
+      .filter(Boolean)
+
+    const idx = segments.lastIndexOf(itemQuery)
+
+    if (idx !== -1) {
+      // "go back" to that item: keep everything up to it
+      const newQuery = segments.slice(0, idx + 1).join(SEP)
+      updateQuery(newQuery)
+    } else {
+      // append it
+      const newQuery =
+        segments.length ?
+          [...segments, itemQuery].join(SEP)
+        : itemQuery
+
+      updateQuery(newQuery)
+    }
+
+    return undefined
+  }
+
 export const SelectedItem = ({ item }: { item: GridItemData }) => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
@@ -186,24 +228,6 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
     item.to,
   )
   const { focused } = useFocusState()
-
-  const dependencyClick = (item: GridItemData) => () => {
-    const itemQuery = getItemQuery(item)
-    if (itemQuery) {
-      if (query.includes(itemQuery)) {
-        const newQuery = query
-          .split(itemQuery)
-          .slice(0, -1)
-          .concat([''])
-          .join(itemQuery)
-        updateQuery(newQuery)
-      } else {
-        const newQuery = `${query} > ${itemQuery}`
-        updateQuery(newQuery)
-      }
-    }
-    return undefined
-  }
 
   return (
     <DependencySidebarProvider
