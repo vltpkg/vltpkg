@@ -147,11 +147,11 @@ const InsightHeader = ({
   }
 
   return (
-    <div className="border-muted mb-4 grid cursor-default grid-cols-10 gap-2 border-b-[1px] px-2 pb-4">
+    <div className="border-muted border-b-px mb-4 grid cursor-default grid-cols-10 gap-2 px-2 pb-4">
       <div className="col-span-3 flex w-full items-start">
         <button
           onClick={onInsightClick}
-          className="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
+          className="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-1 inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:-left-3 after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
           <span>Insight</span>
           <ArrowUpDown size={16} />
         </button>
@@ -159,7 +159,7 @@ const InsightHeader = ({
       <div className="col-span-2 flex w-full items-start">
         <button
           onClick={onCategoryClick}
-          className="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
+          className="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-1 inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:-left-3 after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
           <span>Category</span>
           <ArrowUpDown size={16} />
         </button>
@@ -232,7 +232,7 @@ const InsightScore = () => {
     )
 
   return (
-    <section className="border-muted mt-3 border-b-[1px] pb-6">
+    <section className="border-muted border-b-px mt-3 pb-6">
       <div className="grid grid-cols-5 gap-2 px-6">
         {scores.map(score => (
           <InsightScoreChart key={score.id} score={score} />
@@ -276,7 +276,7 @@ export const InsightTabContent = () => {
               setItems={setFilteredInsights}
             />
 
-            <div className="divide-muted flex flex-col divide-y-[1px]">
+            <div className="divide-muted divide-y-px flex flex-col">
               {filteredInsights.map((insight, idx) => (
                 <InsightItem
                   key={idx}

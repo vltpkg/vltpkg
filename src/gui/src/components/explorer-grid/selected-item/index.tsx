@@ -237,7 +237,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
             }}
             transition={{ ease: 'easeInOut', duration: 0.25 }}
             className="bg-background relative h-full">
-            <div className="bg-foreground/6 h-full">
+            <div className="bg-background-secondary h-full">
               <div
                 className="h-full grid-cols-[var(--side)_var(--main)] lg:grid"
                 style={
@@ -247,7 +247,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                   } as CSSProperties
                 }>
                 {/* overview sidebar */}
-                <div className="flex h-full w-full p-[0.5px] pt-[0px] pl-[0px]">
+                <div className="flex h-full w-full p-[0.5px] pt-0 pl-0">
                   <div className="bg-background flex h-full w-full flex-col rounded">
                     <OverviewSidebar
                       dependencies={dependencies}
@@ -278,7 +278,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                     } as CSSProperties
                   }>
                   {/* headers */}
-                  <div className="flex w-full shrink-0 p-[0.5px] pt-[0px]">
+                  <div className="flex w-full shrink-0 p-[0.5px] pt-0">
                     <div className="bg-background flex h-12 w-full items-center rounded px-6 py-3">
                       <h3 className="text-sm font-medium">
                         Selected
@@ -286,7 +286,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                     </div>
                   </div>
 
-                  <div className="flex w-full shrink-0 p-[0.5px] pt-[0px]">
+                  <div className="flex w-full shrink-0 p-[0.5px] pt-0">
                     <DependencyHeader />
                   </div>
 

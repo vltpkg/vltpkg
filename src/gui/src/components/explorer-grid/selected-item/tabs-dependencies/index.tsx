@@ -42,7 +42,7 @@ export const DependenciesTabContent = () => {
   return (
     <MotionContent
       {...contentMotion}
-      className="bg-foreground/6 flex flex-col gap-[1px] rounded">
+      className="bg-background-secondary flex flex-col gap-px rounded">
       <DependenciesTabNavigation className="bg-background rounded" />
       <Section className="p-0">
         <DependenciesTabView />

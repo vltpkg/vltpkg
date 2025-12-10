@@ -47,7 +47,7 @@ export const DependencySideBar = () => {
 
   return (
     <LayoutGroup>
-      <div className="bg-foreground/6 flex w-full flex-col gap-[1px] rounded rounded-b-none pb-[1px]">
+      <div className="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
         <FilterListEmptyState />
         <motion.div
           layout="position"
@@ -76,7 +76,7 @@ export const DependencySideBar = () => {
         {sortedUninstalledDependencies.length > 0 && (
           <motion.div
             layout="position"
-            className="flex flex-col gap-[1px]">
+            className="flex flex-col gap-px">
             <div className="bg-background flex h-12 w-full items-center rounded px-6">
               <h3 className="text-muted-foreground text-sm font-medium">
                 Uninstalled Dependencies

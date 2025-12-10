@@ -144,7 +144,10 @@ export const markdownComponents: Components = {
     />
   ),
   thead: ({ ...props }) => (
-    <TableHeader {...props} className="bg-foreground/6 font-medium" />
+    <TableHeader
+      {...props}
+      className="bg-background-secondary font-medium"
+    />
   ),
   th: ({ ...props }) => (
     <TableHead
@@ -159,7 +162,7 @@ export const markdownComponents: Components = {
   hr: ({ ...props }) => (
     <hr
       {...props}
-      className="border-primary/6 bg-foreground/6 my-8 h-[1px] border-0"
+      className="border-primary/6 bg-background-secondary my-8 h-px border-0"
     />
   ),
   ul: ({ ...props }) => (

@@ -35,9 +35,9 @@ const NavigationList = forwardRef<
     <ul
       ref={ref}
       className={cn(
-        'bg-foreground/6 gap-[1px] rounded p-0',
+        'bg-background-secondary gap-px rounded p-0',
         isGrid &&
-          'grid grid-cols-1 lg:[grid-template-columns:repeat(var(--count),minmax(0,1fr))]',
+          'grid grid-cols-1 lg:grid-cols-[repeat(var(--count),minmax(0,1fr))]',
         className,
       )}
       style={{ '--count': count } as CSSProperties}
@@ -121,7 +121,7 @@ const NavigationButton = forwardRef<
       <button
         ref={ref}
         className={cn(
-          'text-muted-foreground hover:text-foreground hover:bg-foreground/6 bg-background inline-flex h-full w-full cursor-pointer items-center justify-center rounded px-6 py-3 text-sm font-medium capitalize transition-colors duration-100',
+          'text-muted-foreground hover:text-foreground hover:bg-background-secondary bg-background inline-flex h-full w-full cursor-pointer items-center justify-center rounded px-6 py-3 text-sm font-medium capitalize transition-colors duration-100',
           navigationLayer === 'primary' &&
             activeTab === tab &&
             'bg-foreground/9 text-foreground',

@@ -64,7 +64,7 @@ const FocusedBreadcrumbs = ({
           <ItemBreadcrumbs />
         </div>
       </div>
-      <Decorator className="pt-[0px] max-lg:hidden" />
+      <Decorator className="pt-0 max-lg:hidden" />
     </div>
   )
 }
@@ -154,7 +154,7 @@ const FocusedViewContent = () => {
 
       <PartialErrorsIndicator />
 
-      <div className="bg-foreground/6">
+      <div className="bg-background-secondary">
         <FocusedBreadcrumbs className="pt-0 pl-0" />
 
         <PackageDetails />
