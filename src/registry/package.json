@@ -43,7 +43,7 @@
   },
   "license": "FSL-1.1-MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "build": "pnpm build:dist && pnpm build:assets && pnpm build:worker && pnpm build:bin",

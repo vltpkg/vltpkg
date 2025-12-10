@@ -51,7 +51,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "benchmark": "./scripts/benchmark.ts",
