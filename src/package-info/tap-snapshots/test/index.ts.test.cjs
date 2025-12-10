@@ -34,6 +34,9 @@ Object {
     "@npmcli/template-oss": "4.8.0",
     "tap": "^16.3.0",
   },
+  "dist": Object {
+    "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+  },
   "engines": Object {
     "node": "^14.17.0 || ^16.13.0 || >=18.0.0",
   },
@@ -154,6 +157,9 @@ Object {
         "@npmcli/eslint-config": "^4.0.0",
         "@npmcli/template-oss": "4.8.0",
         "tap": "^16.3.0",
+      },
+      "dist": Object {
+        "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
       },
       "engines": Object {
         "node": "^14.17.0 || ^16.13.0 || >=18.0.0",

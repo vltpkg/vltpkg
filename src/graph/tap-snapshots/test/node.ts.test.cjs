@@ -83,6 +83,34 @@ exports[`test/node.ts > TAP > Node > should stringify remote node 1`] = `
 remote(https://x.com/x.tgz):x@1.0.0
 `
 
+exports[`test/node.ts > TAP > Node > should stringify remote node as expected 1`] = `
+remote(https://example.com/x.tgz)
+`
+
+exports[`test/node.ts > TAP > Node > should stringify remote node with integrity 1`] = `
+Object {
+  "buildState": "none",
+  "confused": false,
+  "dev": false,
+  "id": "remote·https%3A§§example.com§x.tgz",
+  "importer": false,
+  "integrity": "sha512-deadbeef",
+  "location": "./node_modules/.vlt/remote·https%3A§§example.com§x.tgz/node_modules/remote·https%3A§§example.com§x.tgz",
+  "manifest": Object {
+    "dist": Object {
+      "integrity": "sha512-deadbeef",
+    },
+  },
+  "modifier": undefined,
+  "name": "remote·https%3A§§example.com§x.tgz",
+  "optional": false,
+  "platform": undefined,
+  "projectRoot": "{ROOT}",
+  "resolved": "https://example.com/x.tgz",
+  "version": undefined,
+}
+`
+
 exports[`test/node.ts > TAP > Node > should stringify remote node with no manifest 1`] = `
 remote(https://x.com/x.tgz)
 `

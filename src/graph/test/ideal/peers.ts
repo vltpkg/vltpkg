@@ -1309,7 +1309,16 @@ t.test('integration tests', async t => {
         const key = `${spec.name}@${version}`
         return mockManifests[key] || null
       },
-      async extract() {},
+      async extract(): Promise<{
+        integrity: string
+        resolved: string
+      }> {
+        return {
+          integrity:
+            'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+          resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
+        }
+      },
     } as unknown as PackageInfoClient
   }
 

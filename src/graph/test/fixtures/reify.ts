@@ -107,7 +107,7 @@ export const mockPackageInfo = {
     spec: string | Spec,
     target: string,
     options: PackageInfoClientRequestOptions = {},
-  ) => {
+  ): Promise<Resolution> => {
     spec = Spec.parse(String(spec)).final
     if (spec.type === 'file') {
       return actualPackageInfo.extract(spec, target, options)
@@ -123,6 +123,9 @@ export const mockPackageInfo = {
       mkdirSync(target, { recursive: true })
       extract({ sync: true, file: artifact, strip: 1, cwd: target })
     }
+    // Return Resolution object to match PackageInfoClient.extract signature
+    const res = await mockPackageInfo.resolve(spec, options)
+    return res
   },
 }
 

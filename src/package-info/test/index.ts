@@ -701,6 +701,71 @@ t.test('extract', opts, async t => {
   }
 })
 
+t.test('remote integrity computation', async t => {
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+
+  // Expected integrity for abbrev-2.0.0.tgz tarball
+  const expectedIntegrity =
+    'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+
+  await t.test(
+    'remote extract computes and returns integrity',
+    async t => {
+      const result = await extract(
+        `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+        dir + '/remote-int',
+        options,
+      )
+      t.equal(
+        result.integrity,
+        expectedIntegrity,
+        'should compute and return integrity for remote dep',
+      )
+    },
+  )
+
+  await t.test(
+    'remote extract with matching integrity succeeds',
+    async t => {
+      const result = await extract(
+        `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+        dir + '/remote-match',
+        {
+          ...options,
+          integrity: expectedIntegrity,
+        },
+      )
+      t.equal(
+        result.integrity,
+        expectedIntegrity,
+        'should succeed when provided integrity matches',
+      )
+    },
+  )
+
+  await t.test(
+    'remote extract with mismatched integrity throws EINTEGRITY',
+    async t => {
+      await t.rejects(
+        extract(
+          `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+          dir + '/remote-mismatch',
+          {
+            ...options,
+            resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+            integrity:
+              'sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==',
+          },
+        ),
+        { cause: { code: 'EINTEGRITY' } },
+        'should throw EINTEGRITY when integrity mismatch',
+      )
+    },
+  )
+})
+
 t.test('extraction failures', async t => {
   const dir = t.testdir()
   const { PackageInfoClient } = await t.mockImport<

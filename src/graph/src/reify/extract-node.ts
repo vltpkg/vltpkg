@@ -88,22 +88,30 @@ export const extractNode = async (
 
     if (removeOptionalFailedNode) {
       try {
-        await packageInfo.extract(spec, target, {
+        const result = await packageInfo.extract(spec, target, {
           from,
           integrity,
           resolved,
         })
+        // Store computed integrity for git/remote deps
+        if (result.integrity && !node.integrity) {
+          node.integrity = result.integrity
+        }
         return { success: true, node }
       } catch (error) {
         removeOptionalFailedNode()
         return { success: false, node, error }
       }
     } else {
-      await packageInfo.extract(spec, target, {
+      const result = await packageInfo.extract(spec, target, {
         from,
         integrity,
         resolved,
       })
+      // Store computed integrity for git/remote deps
+      if (result.integrity && !node.integrity) {
+        node.integrity = result.integrity
+      }
       return { success: true, node }
     }
   } catch (error) {
