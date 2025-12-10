@@ -32,12 +32,12 @@
     "node": ">=22.9.0"
   },
   "scripts": {
-    "build": "../../scripts/prepack",
+    "build": "../../scripts/build-tsc-workspace.ts",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "../../scripts/prepack",
+    "prepack": "../../scripts/build-tsc-workspace.ts",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
