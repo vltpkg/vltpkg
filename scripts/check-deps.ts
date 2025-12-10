@@ -54,6 +54,7 @@ const getAllProdDeps: () => Promise<{
   depsWithRoot: DependencyWithRoot[]
 }> = async () => {
   const workspaces = await new Promise<PnpmListItem[]>((res, rej) => {
+    // TODO(dogfood): use vlt query to get all production dependencies
     const proc = spawn(
       'pnpm',
       [

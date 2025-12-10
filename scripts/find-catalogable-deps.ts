@@ -74,10 +74,5 @@ const main = async () => {
  * Run this script to find dependencies that are not cataloged but could be.
  * This is not run automatically because it could have false positive that are
  * not worth blocking CI but it is helpful to run periodically.
- *
- * In the future this could be part of linting with
- * https://npmjs.com/package/eslint-plugin-pnpm but it is currently not
- * customizable enough to allow us to ignore the workspaces and packages we have
- * configured now.
  */
 await main()
