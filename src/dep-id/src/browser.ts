@@ -275,7 +275,8 @@ export const hydrateTuple = (
       }
       if (!/^https?:\/\//.test(first)) {
         const reg = options.registries?.[first]
-        if (first !== defaultRegistryName && !reg) {
+        const jsrReg = options['jsr-registries']?.[first]
+        if (first !== defaultRegistryName && !reg && !jsrReg) {
           throw error('named registry not found in options', {
             name: first,
             found: tuple,
