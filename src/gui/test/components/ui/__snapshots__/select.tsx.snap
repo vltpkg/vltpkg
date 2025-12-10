@@ -89,7 +89,7 @@ exports[`select render open 1`] = `
       data-radix-select-viewport
       role="presentation"
       class="p-1 h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
-      style="position: relative; flex: 1; overflow: hidden auto;"
+      style="position: relative; flex: 1 1 0%; overflow: hidden auto;"
     >
       <div
         role="option"

@@ -8,8 +8,7 @@ import React, {
 
 import { cn } from '@/lib/utils.ts'
 
-interface FlickeringGridProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface FlickeringGridProps extends React.HTMLAttributes<HTMLDivElement> {
   squareSize?: number
   gridGap?: number
   flickerChance?: number

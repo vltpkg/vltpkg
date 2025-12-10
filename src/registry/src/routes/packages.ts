@@ -1829,9 +1829,8 @@ async function validateUpstreamAndDelegate(
   const upstream = c.req.param('upstream')
 
   // Import validation functions dynamically to avoid circular dependencies
-  const { isValidUpstreamName, getUpstreamConfig } = await import(
-    '../utils/upstream.ts'
-  )
+  const { isValidUpstreamName, getUpstreamConfig } =
+    await import('../utils/upstream.ts')
 
   // Validate upstream name
   if (!isValidUpstreamName(upstream)) {

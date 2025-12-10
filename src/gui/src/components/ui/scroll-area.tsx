@@ -5,10 +5,9 @@ import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
 
 import { cn } from '@/lib/utils.ts'
 
-interface ScrollAreaProps
-  extends React.ComponentPropsWithoutRef<
-    typeof ScrollAreaPrimitive.Root
-  > {
+interface ScrollAreaProps extends React.ComponentPropsWithoutRef<
+  typeof ScrollAreaPrimitive.Root
+> {
   viewportClassName?: string
   scrollBarClassName?: string
   scrollBarThumbClassName?: string

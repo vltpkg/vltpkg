@@ -128,8 +128,9 @@ export const Footer = () => {
   )
 }
 
-interface AnimatedContainerProps
-  extends ComponentProps<typeof motion.div> {
+interface AnimatedContainerProps extends ComponentProps<
+  typeof motion.div
+> {
   children?: ReactNode
   delay?: number
 }

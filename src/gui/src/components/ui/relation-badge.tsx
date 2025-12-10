@@ -5,7 +5,8 @@ import type { VariantProps } from 'tailwind-variants'
 import type { DependencyTypeShort } from '@vltpkg/types'
 
 interface RelationBadgeProps
-  extends React.PropsWithChildren,
+  extends
+    React.PropsWithChildren,
     VariantProps<typeof relationBadgeVariants> {
   classNames?: {
     wrapper?: string

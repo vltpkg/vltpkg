@@ -11,30 +11,30 @@
   "dependencies": {
     "@hono/sentry": "^1.2.2",
     "@hono/zod-openapi": "^0.19.10",
-    "@libsql/client": "^0.15.14",
-    "@scalar/hono-api-reference": "^0.9.16",
+    "@libsql/client": "^0.15.15",
+    "@scalar/hono-api-reference": "^0.9.28",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/server": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
-    "drizzle-orm": "^0.44.5",
-    "hono": "^4.9.5",
+    "drizzle-orm": "^0.44.7",
+    "hono": "^4.10.8",
     "minargs": "^2.1.0",
     "path-scurry": "catalog:",
     "semver": "catalog:",
     "validate-npm-package-name": "6.0.2",
-    "wrangler": "^4.33.1",
+    "wrangler": "^4.53.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.68",
-    "@cloudflare/workers-types": "^4.20250829.0",
+    "@cloudflare/vitest-pool-workers": "^0.8.71",
+    "@cloudflare/workers-types": "^4.20251209.0",
     "@types/node": "catalog:",
     "@types/validate-npm-package-name": "^4.0.2",
     "@vltpkg/gui": "workspace:*",
     "chokidar-cli": "^3.0.0",
-    "drizzle-kit": "^0.31.4",
-    "esbuild": "^0.25.9",
+    "drizzle-kit": "^0.31.8",
+    "esbuild": "^0.25.12",
     "eslint": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
@@ -43,7 +43,7 @@
   },
   "license": "FSL-1.1-MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "build": "pnpm build:dist && pnpm build:assets && pnpm build:worker && pnpm build:bin",

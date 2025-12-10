@@ -5,9 +5,8 @@ t.cleanSnapshot = (s: string) =>
   s.replaceAll(/v\d+\.\d+\.\d+(-[a-z0-9.-]+)?/g, '{{VERSION}}')
 
 t.test('basic', async t => {
-  const { usage, command } = await import(
-    '../../src/commands/help.ts'
-  )
+  const { usage, command } =
+    await import('../../src/commands/help.ts')
   const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'jack usage')
   const result = await command({

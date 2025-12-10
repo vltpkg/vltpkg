@@ -177,8 +177,8 @@ export const shouldDeferInitialUrlSync = (
 ): boolean => {
   return Boolean(
     codePath &&
-      breadcrumbs.length === 0 &&
-      !selectedPackageContentItem,
+    breadcrumbs.length === 0 &&
+    !selectedPackageContentItem,
   )
 }
 

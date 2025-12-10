@@ -419,8 +419,8 @@ const processPlacementTasks = async (
     const bundled = new Set<string>(
       (
         node.id.startsWith('git') ||
-        node.importer ||
-        !isStringArray(bundleDeps)
+          node.importer ||
+          !isStringArray(bundleDeps)
       ) ?
         []
       : bundleDeps,

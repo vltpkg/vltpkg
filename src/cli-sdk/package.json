@@ -50,8 +50,8 @@
     "ansi-to-pre": "^1.0.6",
     "chalk": "^5.6.2",
     "graph-run": "catalog:",
-    "hosted-git-info": "^8.1.0",
-    "ink": "^6.2.2",
+    "hosted-git-info": "^9.0.2",
+    "ink": "^6.5.1",
     "ink-spinner": "^5.0.0",
     "jackspeak": "^4.1.1",
     "lz-string": "catalog:",
@@ -59,19 +59,19 @@
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "polite-json": "catalog:",
-    "pretty-bytes": "^7.0.1",
-    "react": "^19.1.1",
+    "pretty-bytes": "^7.1.0",
+    "react": "^19.2.1",
     "react-devtools-core": "^4.28.5",
-    "react-dom": "^19.1.1",
+    "react-dom": "^19.2.1",
     "signal-exit": "^4.1.0",
     "ssri": "catalog:",
-    "supports-color": "^10.2.0",
+    "supports-color": "^10.2.2",
     "tar": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
-    "@types/react": "^19.1.11",
+    "@types/react": "^19.2.7",
     "@types/ssri": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
@@ -83,7 +83,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",

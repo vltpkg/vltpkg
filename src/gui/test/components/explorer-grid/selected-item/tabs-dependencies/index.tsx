@@ -16,9 +16,8 @@ vi.mock('react-router', () => ({
 vi.mock(
   '@/components/explorer-grid/selected-item/context.tsx',
   async () => {
-    const actual = await import(
-      '@/components/explorer-grid/selected-item/context.tsx'
-    )
+    const actual =
+      await import('@/components/explorer-grid/selected-item/context.tsx')
     return {
       ...actual,
       useSelectedItemStore: vi.fn(),

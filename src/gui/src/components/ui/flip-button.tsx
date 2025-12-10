@@ -45,11 +45,10 @@ const renderIcon = (icon: Icon): LucideIcon => {
   }
 }
 
-interface FlipButtonProps
-  extends Omit<
-    ComponentProps<typeof MotionButton>,
-    'children' | 'variant'
-  > {
+interface FlipButtonProps extends Omit<
+  ComponentProps<typeof MotionButton>,
+  'children' | 'variant'
+> {
   label?: string
   icon: Icon
   variant?: 'default' | 'outline'

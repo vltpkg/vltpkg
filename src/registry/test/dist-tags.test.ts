@@ -555,7 +555,7 @@ describe('Dist-Tags Endpoints', () => {
             },
             env,
           ),
-        ]
+        ] as Promise<Response>[]
 
         const results = await Promise.all(promises)
         results.forEach(res => {

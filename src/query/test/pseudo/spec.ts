@@ -300,9 +300,8 @@ t.test('selects edges by spec.bareSpec value', async t => {
 
   await t.test('error handling - empty nodes array', async t => {
     // Test error when parseInternals is called with empty nodes array (lines 30-31)
-    const { parseInternals } = await import(
-      '../../src/pseudo/spec.ts'
-    )
+    const { parseInternals } =
+      await import('../../src/pseudo/spec.ts')
 
     t.throws(
       () => parseInternals([]),
@@ -313,9 +312,8 @@ t.test('selects edges by spec.bareSpec value', async t => {
 
   await t.test('error handling - node with no children', async t => {
     // Test error when first node has no child nodes (lines 36-37)
-    const { parseInternals } = await import(
-      '../../src/pseudo/spec.ts'
-    )
+    const { parseInternals } =
+      await import('../../src/pseudo/spec.ts')
 
     // Create a mock node that looks like a PostcssNode but has no child nodes
     const mockNode = {
@@ -336,9 +334,8 @@ t.test('selects edges by spec.bareSpec value', async t => {
       // Test the else branch in the catch block (lines 50-53)
       // This tests when asStringNode throws an error that's not "Mismatching query node"
       // or when the node is not a tag node
-      const { parseInternals } = await import(
-        '../../src/pseudo/spec.ts'
-      )
+      const { parseInternals } =
+        await import('../../src/pseudo/spec.ts')
 
       // Create a mock node that will cause asStringNode to fail in an unexpected way
       const mockChildNode = {
@@ -364,9 +361,8 @@ t.test('selects edges by spec.bareSpec value', async t => {
     async t => {
       // Test to cover the case 'string' branch (lines 82-83)
       // Create a scenario with mixed node types including string nodes
-      const { parseInternals } = await import(
-        '../../src/pseudo/spec.ts'
-      )
+      const { parseInternals } =
+        await import('../../src/pseudo/spec.ts')
 
       // Create a scenario with multiple nodes including a string node
       const stringNode = {
@@ -412,9 +408,8 @@ t.test('selects edges by spec.bareSpec value', async t => {
     async t => {
       // Test to cover the default case branch (line 86)
       // Create a scenario with unknown node types
-      const { parseInternals } = await import(
-        '../../src/pseudo/spec.ts'
-      )
+      const { parseInternals } =
+        await import('../../src/pseudo/spec.ts')
 
       const unknownNode = {
         type: 'unknown',
@@ -455,9 +450,8 @@ t.test('selects edges by spec.bareSpec value', async t => {
     async t => {
       // Try to trigger the else branch more specifically (lines 50-53)
       // by creating a single node that's not a tag and causes asStringNode to fail
-      const { parseInternals } = await import(
-        '../../src/pseudo/spec.ts'
-      )
+      const { parseInternals } =
+        await import('../../src/pseudo/spec.ts')
 
       // Create a node that looks like it might be a string but will fail asStringNode
       const problematicNode = {
