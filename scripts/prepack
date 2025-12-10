@@ -1,3 +1,5 @@
 #!/bin/sh
 
-tsc --outDir dist
+tsc -p tsconfig.publish.json
+# TODO: add step to replace src/ with dist/ in exports
+# TODO: copy package.json to dist/package.json

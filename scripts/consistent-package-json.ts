@@ -24,11 +24,12 @@ const PNPM_VERSION = '10.11.0'
 type Workspace = WorkspaceBase & {
   isRoot: boolean
   relDir: string
+  dirName: string
 }
 
 const isStandardTypeScriptWorkspace = (ws: Workspace) => {
   return (
-    ws.relDir.startsWith('src/') &&
+    ws.dirName.startsWith('src/') &&
     !['@vltpkg/gui', '@vltpkg/vsr', '@vltpkg/vsr-nitro'].includes(
       ws.pj.name,
     )
@@ -192,6 +193,22 @@ const fixTools = async (ws: Workspace) => {
         extends: `${ws.relDir}tsconfig.json`,
       }),
     )
+    writeJson(resolve(ws.dir, 'tsconfig.publish.json'), {
+      extends: `${ws.relDir}tsconfig.json`,
+      include: [
+        'src/**/*.ts',
+        'src/**/*.mts',
+        'src/**/*.tsx',
+        'src/**/*.json',
+      ],
+      exclude: ['src/package.json'],
+      compilerOptions: {
+        outDir: 'dist',
+        rootDir: 'src',
+        module: 'nodenext',
+        moduleResolution: 'nodenext',
+      },
+    })
   }
   if (ws.pj.devDependencies?.tap) {
     ws.pj.tap = sortObject(
@@ -414,6 +431,7 @@ const main = async () => {
   const config = getPnpmWorkspaceConfig()
   const workspaces = getWorkspaces().map(({ dir, pkgPath, pj }) => ({
     dir,
+    dirName: dir == ROOT ? '.' : relative(ROOT, dir),
     pj,
     pkgPath,
     isRoot: dir === ROOT,
