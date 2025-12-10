@@ -6,9 +6,7 @@
     "src/**/*.tsx",
     "src/**/*.json"
   ],
-  "exclude": [
-    "src/package.json"
-  ],
+  "exclude": ["src/package.json"],
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
