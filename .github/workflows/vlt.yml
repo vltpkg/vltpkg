@@ -48,32 +48,28 @@ jobs:
           vlt install --view=json --allow-scripts="#tailwindcss"
 
       - name: Formatting
-        continue-on-error: true
         id: format
+        continue-on-error: true
         run: vlr format:check
 
       - name: Linting
         id: lint
         continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/807
         run: vlr lint:check
 
       - name: Dependencies
         id: deps
         continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/823
         run: vlr deps:check
 
       - name: Docs
         id: docs
         continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/808
         run: vlr --workspace ./www/docs typedoc:check
 
       - name: Consistent Workspaces
         id: workspaces
         continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/804
         run: |
           vlr fix:pkg
           vlr --recursive tshy
@@ -151,10 +147,8 @@ jobs:
 
       - name: Run Typecheck
         continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/810
         run: vlr --recursive typecheck
 
       - name: Run Tests
         continue-on-error: true
-        # https://github.com/vltpkg/vltpkg/issues/801
         run: vlr --recursive test

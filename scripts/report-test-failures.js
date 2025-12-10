@@ -1,3 +1,5 @@
+// TODO(dogfood): delete this script and make vlr do what we want
+
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'

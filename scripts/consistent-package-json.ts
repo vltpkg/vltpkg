@@ -18,6 +18,7 @@ import type {
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
 const NODE_ENGINES = '>=22.9.0'
+// TODO(dogfood): remove usage of this since we will always use the latest version of vlt
 const PNPM_VERSION = '10.11.0'
 
 type Workspace = WorkspaceBase & {
