@@ -45,6 +45,11 @@ t.test('load nodes', async t => {
       null,
       './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
     ],
+    [joinDepIDTuple(['remote', 'http://example.com/tarball.tgz'])]: [
+      0,
+      'remote-pkg',
+      'sha512-deadbeefcafebabe==',
+    ],
   } as LockfileData['nodes']
   loadNodes(graph, nodes, {})
   t.matchSnapshot(
