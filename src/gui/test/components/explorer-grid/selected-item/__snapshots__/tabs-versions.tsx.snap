@@ -7,7 +7,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
-    <div class="border-muted mb-3 border-b-[1px] pb-1">
+    <div class="border-muted border-b-px mb-3 pb-1">
       <div class="flex cursor-default justify-between">
         <div class="flex flex-col gap-0.5">
           <gui-tooltip-provider>
@@ -86,7 +86,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
         <gui-dropdown-menu-trigger aschild="true">
           <gui-button
             variant="outline"
-            classname="h-9 w-fit justify-between gap-2 text-sm [&amp;>[data-chevron]]:aria-expanded:rotate-90"
+            classname="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90"
           >
             <gui-list-filter-icon size="16">
             </gui-list-filter-icon>
@@ -167,7 +167,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
@@ -190,7 +190,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="flex flex-col px-6 py-4">
-    <div class="border-muted mb-3 border-b-[1px] pb-1">
+    <div class="border-muted border-b-px mb-3 pb-1">
       <div class="flex cursor-default justify-between">
         <div class="flex flex-col gap-0.5">
           <gui-tooltip-provider>
@@ -269,7 +269,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
         <gui-dropdown-menu-trigger aschild="true">
           <gui-button
             variant="outline"
-            classname="h-9 w-fit justify-between gap-2 text-sm [&amp;>[data-chevron]]:aria-expanded:rotate-90"
+            classname="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90"
           >
             <gui-list-filter-icon size="16">
             </gui-list-filter-icon>
@@ -350,7 +350,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
@@ -391,7 +391,7 @@ exports[`VersionsTabContent filters versions 1`] = `
         <gui-dropdown-menu-trigger aschild="true">
           <gui-button
             variant="outline"
-            classname="h-9 w-fit justify-between gap-2 text-sm [&amp;>[data-chevron]]:aria-expanded:rotate-90"
+            classname="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90"
           >
             <gui-list-filter-icon size="16">
             </gui-list-filter-icon>
@@ -472,7 +472,7 @@ exports[`VersionsTabContent filters versions 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
@@ -513,7 +513,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
         <gui-dropdown-menu-trigger aschild="true">
           <gui-button
             variant="outline"
-            classname="h-9 w-fit justify-between gap-2 text-sm [&amp;>[data-chevron]]:aria-expanded:rotate-90"
+            classname="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90"
           >
             <gui-list-filter-icon size="16">
             </gui-list-filter-icon>
@@ -594,7 +594,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
@@ -652,7 +652,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
         <gui-dropdown-menu-trigger aschild="true">
           <gui-button
             variant="outline"
-            classname="h-9 w-fit justify-between gap-2 text-sm [&amp;>[data-chevron]]:aria-expanded:rotate-90"
+            classname="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90"
           >
             <gui-list-filter-icon size="16">
             </gui-list-filter-icon>
@@ -733,7 +733,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"
@@ -774,7 +774,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
         <gui-dropdown-menu-trigger aschild="true">
           <gui-button
             variant="outline"
-            classname="h-9 w-fit justify-between gap-2 text-sm [&amp;>[data-chevron]]:aria-expanded:rotate-90"
+            classname="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90"
           >
             <gui-list-filter-icon size="16">
             </gui-list-filter-icon>
@@ -855,7 +855,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
           </div>
         </div>
         <div class="relative">
-          <div class="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t">
+          <div class="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t">
           </div>
           <gui-virtuoso
             style="height: 800px;"

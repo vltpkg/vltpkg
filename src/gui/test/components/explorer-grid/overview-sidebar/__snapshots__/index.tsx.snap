@@ -11,7 +11,7 @@ exports[`OverviewSidebar contains SuggestedQueries when dependencies are present
 
 exports[`OverviewSidebar renders with a parent 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
   <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
     <h3 class="text-sm font-medium">
       Parent
@@ -32,7 +32,7 @@ exports[`OverviewSidebar renders with a parent 1`] = `
 
 exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
   <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
     <h3 class="text-sm font-medium">
       Parent
@@ -48,7 +48,7 @@ exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
     </gui-side-item>
   </div>
 </div>
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
   <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
     <h3 class="text-sm font-medium">
       Workspaces
@@ -78,7 +78,7 @@ exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
 
 exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
   <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
     <h3 class="text-sm font-medium">
       Parent
@@ -94,7 +94,7 @@ exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] =
     </gui-side-item>
   </div>
 </div>
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
   <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
     <h3 class="text-sm font-medium">
       Workspaces
@@ -119,7 +119,7 @@ exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] =
     </div>
   </div>
 </div>
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
   <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
     <h3 class="text-sm font-medium">
       Dependents

@@ -3,21 +3,21 @@
 exports[`renders default components 1`] = `
 
 <div class="bg-background antialiased">
-  <div class="bg-foreground/6 relative">
+  <div class="bg-background-secondary relative">
     <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
       <gui-sidebar-provider
         defaultopen="true"
-        classname="sticky top-0 flex w-full px-[1px]"
+        classname="sticky top-0 flex w-full px-px"
       >
         <gui-app-sidebar classname="bg-background rounded">
         </gui-app-sidebar>
       </gui-sidebar-provider>
       <div class="bg-background flex w-full flex-col rounded-t">
-        <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+        <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
           <gui-nav-header classname="bg-background rounded">
           </gui-nav-header>
         </div>
-        <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+        <div class="bg-background-secondary flex min-h-0 w-full flex-1">
           <main class="bg-background h-full w-full overflow-auto rounded">
             <gui-router-outlet>
             </gui-router-outlet>
