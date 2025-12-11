@@ -8,20 +8,6 @@
     "directory": "src/tar"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./pool": "./src/pool.ts",
-      "./unpack": "./src/unpack.ts",
-      "./unpack-request": "./src/unpack-request.ts"
-    }
-  },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
@@ -37,7 +23,6 @@
     "pacote": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -53,11 +38,10 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
+    "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
-    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {

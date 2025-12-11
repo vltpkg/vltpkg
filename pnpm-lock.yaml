@@ -75,9 +75,6 @@ catalogs:
     tar:
       specifier: ^7.5.2
       version: 7.5.2
-    tshy:
-      specifier: ^3.1.0
-      version: 3.1.0
     typedoc:
       specifier: ~0.27.9
       version: 0.27.9
@@ -90,11 +87,6 @@ catalogs:
     walk-up-path:
       specifier: ^4.0.0
       version: 4.0.0
-
-patchedDependencies:
-  tshy:
-    hash: bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e
-    path: patches/tshy.patch
 
 importers:
 
@@ -374,9 +366,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -414,9 +403,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -583,9 +569,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(supports-color@10.2.2)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -620,9 +603,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -672,9 +652,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -712,9 +689,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -742,9 +716,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -779,9 +750,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -816,9 +784,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -846,9 +811,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -876,9 +838,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -946,9 +905,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -976,9 +932,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1076,9 +1029,6 @@ importers:
       tar:
         specifier: 'catalog:'
         version: 7.5.2
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1378,9 +1328,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1412,9 +1359,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1446,9 +1390,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1528,9 +1469,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1571,9 +1509,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1620,9 +1555,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1657,9 +1589,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1721,9 +1650,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1876,9 +1802,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -1974,9 +1897,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2026,9 +1946,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2072,9 +1989,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2130,9 +2044,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2179,9 +2090,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2276,9 +2184,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2322,9 +2227,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2374,9 +2276,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2417,9 +2316,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2454,9 +2350,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2497,9 +2390,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2561,9 +2451,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2595,9 +2482,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2653,9 +2537,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2683,9 +2564,6 @@ importers:
       tap:
         specifier: 'catalog:'
         version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
-      tshy:
-        specifier: 'catalog:'
-        version: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -16216,7 +16094,7 @@ snapshots:
       rimraf: 6.1.2
       sync-content: 2.0.3
       tap-parser: 18.3.0
-      tshy: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
+      tshy: 3.1.0
       typescript: 5.9.3
       walk-up-path: 4.0.0
     transitivePeerDependencies:
@@ -16254,7 +16132,7 @@ snapshots:
       rimraf: 6.1.2
       sync-content: 2.0.3
       tap-parser: 18.3.0
-      tshy: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
+      tshy: 3.1.0
       typescript: 5.9.3
       walk-up-path: 4.0.0
     transitivePeerDependencies:
@@ -22327,7 +22205,7 @@ snapshots:
       mkdirp: 3.0.1
       path-scurry: 2.0.1
       rimraf: 6.1.2
-      tshy: 3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
+      tshy: 3.1.0
 
   tabbable@6.3.0: {}
 
@@ -22659,7 +22537,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tshy@3.1.0(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e):
+  tshy@3.1.0:
     dependencies:
       chalk: 5.6.2
       chokidar: 4.0.3

@@ -72,7 +72,6 @@ jobs:
         continue-on-error: true
         run: |
           vlr fix:pkg
-          vlr --recursive tshy
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1

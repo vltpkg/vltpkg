@@ -24,21 +24,37 @@ const PNPM_VERSION = '10.11.0'
 type Workspace = WorkspaceBase & {
   isRoot: boolean
   relDir: string
+  dirName: string
 }
 
-const writeJson = (p: string, data: unknown) =>
-  writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
+const isStandardTypeScriptWorkspace = (ws: Workspace) => {
+  return (
+    ws.dirName.startsWith('src/') &&
+    !['@vltpkg/gui', '@vltpkg/vsr', '@vltpkg/vsr-nitro'].includes(
+      ws.pj.name,
+    )
+  )
+}
 
-const mergeJson = (p: string, fn: (o: object) => unknown) =>
+const writeJson = async (p: string, data: unknown) =>
+  writeFormatted(p, JSON.stringify(data, null, 2) + '\n')
+
+const mergeJson = async (p: string, fn: (o: object) => unknown) =>
   writeJson(p, fn(JSON.parse(readFileSync(p, 'utf8')) as object))
 
-const writeFormatted = async (p: string, str: string) => {
-  const formatted = await format(str, {
-    ...(await resolveConfig(p)),
-    filepath: p,
-  })
-  writeFileSync(p, formatted)
-}
+const writeFormatted = async (p: string, str: unknown) =>
+  writeFileSync(
+    p,
+    await format(
+      typeof str === 'string' ? str : (
+        JSON.stringify(str, null, 2) + '\n'
+      ),
+      {
+        ...(await resolveConfig(p)),
+        filepath: p,
+      },
+    ),
+  )
 
 const sortObject = (
   o: Record<string, unknown>,
@@ -145,10 +161,10 @@ const fixScripts = async (ws: Workspace) => {
         snap: 'vitest --no-watch -u',
       }
     : {}),
-    ...(ws.pj.devDependencies?.tshy ?
+    ...(isStandardTypeScriptWorkspace(ws) ?
       {
-        prepack: 'tshy',
-        tshy: 'tshy',
+        prepack:
+          'tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts',
       }
     : {}),
     ...(ws.pj.dependencies?.astro ?
@@ -176,31 +192,29 @@ const fixScripts = async (ws: Workspace) => {
 }
 
 const fixTools = async (ws: Workspace) => {
-  if (ws.pj.tshy) {
-    ws.pj.files = ['dist']
-    ws.pj.tshy = sortObject(
-      {
-        ...ws.pj.tshy,
-        selfLink: false,
-        liveDev: true,
-        dialects: ['esm'],
-        exports: sortObject(
-          {
-            ...ws.pj.tshy.exports,
-            './package.json': './package.json',
-            '.': './src/index.ts',
-          },
-          ['./package.json', '.'],
-        ),
-      },
-      ['selfLink', 'liveDev', 'dialects'],
-    )
-    mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
+  if (isStandardTypeScriptWorkspace(ws)) {
+    await mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
       sortObject({
         ...d,
         extends: `${ws.relDir}tsconfig.json`,
       }),
     )
+    await writeFormatted(resolve(ws.dir, 'tsconfig.publish.json'), {
+      extends: `${ws.relDir}tsconfig.json`,
+      include: [
+        'src/**/*.ts',
+        'src/**/*.mts',
+        'src/**/*.tsx',
+        'src/**/*.json',
+      ],
+      exclude: ['src/package.json'],
+      compilerOptions: {
+        outDir: 'dist',
+        rootDir: 'src',
+        module: 'nodenext',
+        moduleResolution: 'nodenext',
+      },
+    })
   }
   if (ws.pj.devDependencies?.tap) {
     ws.pj.tap = sortObject(
@@ -393,7 +407,6 @@ const fixPackage = async (
     'private',
     'repository',
     'author',
-    'tshy',
     'bin',
     'dependencies',
     'optionalDependencies',
@@ -424,13 +437,14 @@ const main = async () => {
   const config = getPnpmWorkspaceConfig()
   const workspaces = getWorkspaces().map(({ dir, pkgPath, pj }) => ({
     dir,
+    dirName: dir == ROOT ? '.' : relative(ROOT, dir),
     pj,
     pkgPath,
     isRoot: dir === ROOT,
     relDir: `${dir == ROOT ? '.' : relative(dir, ROOT)}/`,
   }))
   for (const ws of workspaces) {
-    writeJson(ws.pkgPath, await fixPackage(ws, config))
+    await writeJson(ws.pkgPath, await fixPackage(ws, config))
   }
 }
 
