@@ -35,7 +35,9 @@ export default cwd => {
     readme: join(cwd, './README.md'),
     // get entry points from package.json exports
     entryPoints: Object.values(exports)
+      .map(p => (typeof p === 'string' ? p : p.import.default))
       .filter(p => !p.endsWith('package.json'))
+      .map(p => (console.log(p), p))
       .map(p => join(cwd, p)),
   }
 }
