@@ -1,7 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { transfer } from '@vltpkg/graph/browser'
 import { useNavigate, useParams, useLocation } from 'react-router'
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  startTransition,
+} from 'react'
 import { Query } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
@@ -12,7 +18,7 @@ import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
 
 import type { ComponentProps } from 'react'
 import type { MotionProps } from 'framer-motion'
-import type { TransferData, Action, State } from '@/state/types.ts'
+import type { TransferData, Action } from '@/state/types.ts'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -24,7 +30,6 @@ type StartGraphData = {
   updateProjectInfo: Action['updateProjectInfo']
   updateQ: Action['updateQ']
   updateSpecOptions: Action['updateSpecOptions']
-  stamp: State['stamp']
 }
 
 const startGraphData = async ({
@@ -33,9 +38,10 @@ const startGraphData = async ({
   updateProjectInfo,
   updateQ,
   updateSpecOptions,
-  stamp,
 }: StartGraphData) => {
-  const res = await fetch('/graph.json?random=' + stamp)
+  const res = await fetch(
+    '/graph.json?random=' + String(Math.random()),
+  )
   const data = (await res.json()) as TransferData & {
     hasDashboard: boolean
   }
@@ -53,11 +59,15 @@ const startGraphData = async ({
     hostContexts,
   })
 
-  updateHasDashboard(data.hasDashboard)
-  updateGraph(graph)
-  updateProjectInfo(data.projectInfo)
-  updateSpecOptions(specOptions)
-  updateQ(q)
+  // Batch all state updates together using startTransition
+  // This reduces multiple renders to a single render
+  startTransition(() => {
+    updateHasDashboard(data.hasDashboard)
+    updateGraph(graph)
+    updateProjectInfo(data.projectInfo)
+    updateSpecOptions(specOptions)
+    updateQ(q)
+  })
 }
 
 // 'supercharge' the `explorer-grid` component
@@ -97,10 +107,9 @@ export const Explorer = () => {
   const updateSpecOptions = useGraphStore(
     state => state.updateSpecOptions,
   )
-  const updateGraphStamp = useGraphStore(
-    state => state.updateGraphStamp,
-  )
   const stamp = useGraphStore(state => state.stamp)
+  const updateEdges = useGraphStore(state => state.updateEdges)
+  const updateNodes = useGraphStore(state => state.updateNodes)
   const updateIsExternalPackage = useGraphStore(
     state => state.updateIsExternalPackage,
   )
@@ -118,18 +127,24 @@ export const Explorer = () => {
 
   // Check if we're viewing an external npm package
   useEffect(() => {
-    updateIsExternalPackage(isNpmRoute)
+    // Batch state updates together to prevent multiple renders
     if (isNpmRoute && npmPackageName) {
-      // Store package name and optional version
-      const spec =
-        npmPackageVersion ?
-          `${npmPackageName}@${npmPackageVersion}`
-        : npmPackageName
-      updateExternalPackageSpec(spec)
-      // Automatically enable focused mode for external packages
-      updateFocused(true)
+      startTransition(() => {
+        updateIsExternalPackage(true)
+        // Store package name and optional version
+        const spec =
+          npmPackageVersion ?
+            `${npmPackageName}@${npmPackageVersion}`
+          : npmPackageName
+        updateExternalPackageSpec(spec)
+        // Automatically enable focused mode for external packages
+        updateFocused(true)
+      })
     } else {
-      updateExternalPackageSpec(null)
+      startTransition(() => {
+        updateIsExternalPackage(false)
+        updateExternalPackageSpec(null)
+      })
     }
   }, [
     isNpmRoute,
@@ -150,23 +165,24 @@ export const Explorer = () => {
       return
     }
 
+    // Clear stale graph data immediately when stamp changes (project switch)
+    // This prevents showing old project data while new data loads
+    updateGraph(undefined)
+    updateQ(undefined)
+    updateEdges([])
+    updateNodes([])
+
     startGraphData({
       updateHasDashboard,
       updateGraph,
       updateProjectInfo,
       updateQ,
       updateSpecOptions,
-      stamp,
+    }).catch((err: unknown) => {
+      console.error(err)
+      void navigate('/error')
+      updateErrorCause('Failed to initialize explorer.')
     })
-      .then(() => {
-        // Mark that graph data has been loaded for this stamp
-        updateGraphStamp(stamp)
-      })
-      .catch((err: unknown) => {
-        console.error(err)
-        void navigate('/error')
-        updateErrorCause('Failed to initialize explorer.')
-      })
   }, [
     isNpmRoute,
     stamp,
@@ -175,7 +191,8 @@ export const Explorer = () => {
     updateProjectInfo,
     updateQ,
     updateSpecOptions,
-    updateGraphStamp,
+    updateEdges,
+    updateNodes,
     navigate,
     updateErrorCause,
   ])
@@ -205,8 +222,6 @@ const ExplorerContent = () => {
   const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
-  const stamp = useGraphStore(state => state.stamp)
-  const graphStamp = useGraphStore(state => state.graphStamp)
   const isExternalPackage = useGraphStore(
     state => state.isExternalPackage,
   )
@@ -223,10 +238,8 @@ const ExplorerContent = () => {
     async function updateQueryData() {
       if (!q) return
 
-      // Set loading state and clear edges/nodes immediately when query changes
+      // Set loading state immediately when query changes
       setIsLoading(true)
-      updateEdges([])
-      updateNodes([])
 
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
@@ -236,10 +249,14 @@ const ExplorerContent = () => {
           graph?.mainImporter ? [graph.mainImporter.id] : undefined,
       })
 
-      updateEdges(queryResponse.edges)
-      updateNodes(queryResponse.nodes)
-      setIsLoading(false)
-      setLoadedQuery(query)
+      // Batch all result updates together using startTransition
+      // This reduces multiple renders to a single render
+      startTransition(() => {
+        updateEdges(queryResponse.edges)
+        updateNodes(queryResponse.nodes)
+        setIsLoading(false)
+        setLoadedQuery(query)
+      })
     }
 
     void updateQueryData().catch((err: unknown) => {
@@ -251,9 +268,12 @@ const ExplorerContent = () => {
         return
       }
       console.error(err)
-      updateEdges([])
-      updateNodes([])
-      setIsLoading(false)
+      // Batch error state updates
+      startTransition(() => {
+        updateEdges([])
+        updateNodes([])
+        setIsLoading(false)
+      })
     })
   }, [query, q, graph, updateEdges, updateNodes])
 
@@ -269,8 +289,9 @@ const ExplorerContent = () => {
 
   return (
     <AnimatePresence mode="popLayout">
-      {!graph || graphStamp !== stamp ?
+      {!graph ?
         <motion.div
+          key="loading"
           className="absolute inset-0 z-100 flex h-full w-full justify-center"
           {...explorerMotion}>
           <div className="relative flex h-full w-full items-center justify-center">
@@ -278,6 +299,7 @@ const ExplorerContent = () => {
           </div>
         </motion.div>
       : <MotionExplorerGrid
+          key="grid"
           {...explorerMotion}
           isLoading={isLoading}
           loadedQuery={loadedQuery}

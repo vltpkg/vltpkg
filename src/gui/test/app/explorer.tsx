@@ -109,8 +109,6 @@ test('render default', async () => {
       state => state.updateProjectInfo,
     )
     const updateGraph = useStore(state => state.updateGraph)
-    const updateGraphStamp = useStore(state => state.updateGraphStamp)
-    const stamp = useStore(state => state.stamp)
     const updateQ = useStore(state => state.updateQ)
     updateProjectInfo({
       homedirRelativeRoot: '.',
@@ -119,7 +117,6 @@ test('render default', async () => {
       vltInstalled: true,
     })
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
-    updateGraphStamp(stamp)
     // Provide a minimal Query object to avoid async loading
     const q = {
       search() {
@@ -139,8 +136,6 @@ test('explorer has project root info', async () => {
       state => state.updateProjectInfo,
     )
     const updateGraph = useStore(state => state.updateGraph)
-    const updateGraphStamp = useStore(state => state.updateGraphStamp)
-    const stamp = useStore(state => state.stamp)
     const updateQ = useStore(state => state.updateQ)
     updateProjectInfo({
       homedirRelativeRoot: '.',
@@ -149,7 +144,6 @@ test('explorer has project root info', async () => {
       vltInstalled: true,
     })
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
-    updateGraphStamp(stamp)
     // Provide a minimal Query object to avoid async loading
     const q = {
       search() {
@@ -173,22 +167,19 @@ test('update nodes and edges info on query change', async () => {
   }
 
   const Container = () => {
-    const updateGraph = useStore(state => state.updateGraph)
     const updateProjectInfo = useStore(
       state => state.updateProjectInfo,
     )
-    const updateQ = useStore(state => state.updateQ)
+    const updateGraph = useStore(state => state.updateGraph)
     const updateQuery = useStore(state => state.updateQuery)
-    const updateGraphStamp = useStore(state => state.updateGraphStamp)
-    const stamp = useStore(state => state.stamp)
-    updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
+    const updateQ = useStore(state => state.updateQ)
     updateProjectInfo({
       homedirRelativeRoot: '.',
       root: '.',
       tools: ['vlt'],
-      vltInstalled: true,
+      vltInstalled: false,
     })
-    updateGraphStamp(stamp)
+    updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
     updateQ(q as unknown as Query)
     updateQuery('#foo')
     return <Explorer />
@@ -232,8 +223,6 @@ test('render no results if search throws', async () => {
     )
     const updateQ = useStore(state => state.updateQ)
     const updateQuery = useStore(state => state.updateQuery)
-    const updateGraphStamp = useStore(state => state.updateGraphStamp)
-    const stamp = useStore(state => state.stamp)
 
     // sets a node and edge just to test it got reset later on
     const node = {
@@ -255,7 +244,6 @@ test('render no results if search throws', async () => {
       tools: ['vlt'],
       vltInstalled: true,
     })
-    updateGraphStamp(stamp)
     updateQ(q as unknown as Query)
     updateQuery('#bar')
     return <Explorer />
@@ -293,8 +281,6 @@ test('explorer not vlt installed', async () => {
     const updateProjectInfo = useStore(
       state => state.updateProjectInfo,
     )
-    const updateGraphStamp = useStore(state => state.updateGraphStamp)
-    const stamp = useStore(state => state.stamp)
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
     updateProjectInfo({
       homedirRelativeRoot: '.',
@@ -302,7 +288,6 @@ test('explorer not vlt installed', async () => {
       tools: [],
       vltInstalled: false,
     })
-    updateGraphStamp(stamp)
     return <Explorer />
   }
   render(<Container />)
