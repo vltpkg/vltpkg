@@ -97,7 +97,7 @@ const OverviewSection = ({
   if (Array.isArray(items) && items.length <= 0) return null
 
   return (
-    <div className="bg-foreground/6 flex w-full flex-col gap-[1px] rounded-t pb-[1px]">
+    <div className="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
       {/* header */}
       <div className="bg-background flex h-12 w-full items-center rounded px-6 py-3">
         <h3 className="text-sm font-medium">{header}</h3>

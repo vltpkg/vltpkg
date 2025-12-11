@@ -2,7 +2,7 @@
 
 exports[`dependency-side-bar 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded rounded-b-none pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
   <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
@@ -30,7 +30,7 @@ exports[`dependency-side-bar 1`] = `
 
 exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded rounded-b-none pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
   <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
@@ -52,7 +52,7 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
   </div>
   <gui-dependency-empty-state>
   </gui-dependency-empty-state>
-  <div class="flex flex-col gap-[1px]">
+  <div class="flex flex-col gap-px">
     <div class="bg-background flex h-12 w-full items-center rounded px-6">
       <h3 class="text-muted-foreground text-sm font-medium">
         Uninstalled Dependencies
@@ -77,7 +77,7 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
 
 exports[`dependency-side-bar has uninstalled deps only 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded rounded-b-none pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
   <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
@@ -99,7 +99,7 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
   </div>
   <gui-dependency-empty-state>
   </gui-dependency-empty-state>
-  <div class="flex flex-col gap-[1px]">
+  <div class="flex flex-col gap-px">
     <div class="bg-background flex h-12 w-full items-center rounded px-6">
       <h3 class="text-muted-foreground text-sm font-medium">
         Uninstalled Dependencies
@@ -129,7 +129,7 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
 
 exports[`dependency-side-bar no items 1`] = `
 
-<div class="bg-foreground/6 flex w-full flex-col gap-[1px] rounded rounded-b-none pb-[1px]">
+<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
   <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">

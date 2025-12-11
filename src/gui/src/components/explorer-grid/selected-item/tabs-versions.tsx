@@ -254,7 +254,7 @@ const VersionItem = memo(
       <div
         onClick={handleVersionClick}
         className={cn(
-          'group/item text-foreground flex grid-cols-12 flex-col gap-3 rounded-sm py-4 first:border-t-[0px] xl:grid xl:gap-3 xl:py-1.5',
+          'group/item text-foreground flex grid-cols-12 flex-col gap-3 rounded-sm py-4 first:border-t-0 xl:grid xl:gap-3 xl:py-1.5',
           isExternalPackage &&
             'hover:bg-muted/50 cursor-default transition-colors',
           !isExternalPackage && 'cursor-default',
@@ -295,11 +295,11 @@ const VersionItem = memo(
               <div className="flex gap-2 xl:hidden">
                 <Avatar className="size-5">
                   <AvatarImage
-                    className="outline-border rounded-sm outline outline-[1px]"
+                    className="outline-border outline-px rounded-sm"
                     src={publishedAuthor?.avatar}
                   />
                   {publishedAuthor?.avatar && (
-                    <AvatarFallback className="bg-secondary outline-border h-5 h-full w-5 w-full rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800" />
+                    <AvatarFallback className="bg-secondary outline-border outline-px h-5 w-5 rounded-sm bg-linear-to-t from-neutral-100 to-neutral-400 px-2.5 dark:from-neutral-500 dark:to-neutral-800" />
                   )}
                 </Avatar>
                 <p className="col-span-4 font-mono text-sm">
@@ -347,15 +347,15 @@ const VersionItem = memo(
             </>
           )}
         </div>
-        <div className="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
+        <div className="order-3 col-span-3 flex w-full items-center justify-center xl:order-4 xl:flex">
           <div className="flex w-full items-center justify-center gap-2">
             <Avatar className="flex size-5 items-center justify-center">
               <AvatarImage
-                className="outline-border rounded-sm outline outline-[1px]"
+                className="outline-border outline-px rounded-sm"
                 src={publishedAuthor?.avatar}
               />
               {publishedAuthor?.avatar && (
-                <AvatarFallback className="bg-secondary outline-border h-full w-full rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800" />
+                <AvatarFallback className="bg-secondary outline-border outline-px h-full w-full rounded-sm bg-linear-to-t from-neutral-100 to-neutral-400 px-2.5 dark:from-neutral-500 dark:to-neutral-800" />
               )}
             </Avatar>
             <TooltipProvider>
@@ -413,7 +413,7 @@ const DownloadGraph = () => {
   )
 
   return (
-    <div className="border-muted mb-3 border-b-[1px] pb-1">
+    <div className="border-muted border-b-px mb-3 pb-1">
       <div className="flex cursor-default justify-between">
         <div className="flex flex-col gap-0.5">
           <TooltipProvider>
@@ -637,7 +637,7 @@ export const VersionsTabContent = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-9 w-fit justify-between gap-2 text-sm [&>[data-chevron]]:aria-expanded:rotate-90">
+                  className="h-9 w-fit justify-between gap-2 text-sm *:data-chevron:aria-expanded:rotate-90">
                   <ListFilter size={16} />
                   <span className="text-sm font-normal">Filter</span>
                   <ChevronRight
@@ -708,7 +708,7 @@ export const VersionsTabContent = () => {
                           style={{
                             originY: '0px',
                           }}
-                          className="border-muted-foreground/20 text-foreground dark:bg-muted-foreground/5 relative inline-flex h-fit cursor-default items-center overflow-hidden rounded-full border-[1px] bg-white py-1 text-xs font-medium whitespace-nowrap"
+                          className="border-muted-foreground/20 text-foreground dark:bg-muted-foreground/5 border-px relative inline-flex h-fit cursor-default items-center overflow-hidden rounded-full bg-white py-1 text-xs font-medium whitespace-nowrap"
                           key={`filter-${filter.id}-${idx}`}>
                           <span className="px-3">{filter.label}</span>
                         </motion.div>
@@ -737,12 +737,12 @@ export const VersionsTabContent = () => {
                   <div className="relative">
                     {isScrolling && (
                       <>
-                        <div className="from-card absolute -inset-x-6 top-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-b" />
+                        <div className="from-card absolute -inset-x-6 top-0 z-10 h-5 w-[calc(100%+3rem)] bg-linear-to-b" />
                       </>
                     )}
                     {!isScrolledBottom && (
                       <>
-                        <div className="from-card absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-gradient-to-t" />
+                        <div className="from-card absolute -inset-x-6 bottom-0 z-10 h-10 w-[calc(100%+3rem)] bg-linear-to-t" />
                       </>
                     )}
 

@@ -3,7 +3,7 @@
 exports[`renders search results view 1`] = `
 
 <section class="bg-background">
-  <div class="bg-foreground/6 relative">
+  <div class="bg-background-secondary relative">
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -120,7 +120,7 @@ exports[`renders search results view 1`] = `
 exports[`renders search results with error 1`] = `
 
 <section class="bg-background">
-  <div class="bg-foreground/6 relative">
+  <div class="bg-background-secondary relative">
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -237,7 +237,7 @@ exports[`renders search results with error 1`] = `
 exports[`renders search results with no results 1`] = `
 
 <section class="bg-background">
-  <div class="bg-foreground/6 relative">
+  <div class="bg-background-secondary relative">
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -354,7 +354,7 @@ exports[`renders search results with no results 1`] = `
 exports[`renders search results with results 1`] = `
 
 <section class="bg-background">
-  <div class="bg-foreground/6 relative">
+  <div class="bg-background-secondary relative">
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"

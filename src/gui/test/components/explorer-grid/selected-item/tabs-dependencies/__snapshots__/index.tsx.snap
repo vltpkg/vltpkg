@@ -3,7 +3,7 @@
 exports[`DependenciesTabContent renders an empty state 1`] = `
 
 <section
-  class="h-full w-full bg-foreground/6 flex flex-col gap-[1px] rounded"
+  class="h-full w-full bg-background-secondary flex flex-col gap-px rounded"
   style="opacity: 0; filter: blur(2px);"
 >
   <gui-navigation classname="bg-background rounded">
@@ -55,7 +55,7 @@ exports[`DependenciesTabContent renders an empty state 1`] = `
 exports[`DependenciesTabContent renders default 1`] = `
 
 <section
-  class="h-full w-full bg-foreground/6 flex flex-col gap-[1px] rounded"
+  class="h-full w-full bg-background-secondary flex flex-col gap-px rounded"
   style="opacity: 0; filter: blur(2px);"
 >
   <gui-navigation classname="bg-background rounded">

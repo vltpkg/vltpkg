@@ -239,7 +239,7 @@ exports[`ResultItem render with type 1`] = `
     </div>
     <div class="**:data-[slot=delimiter]:text-muted-foreground flex flex-wrap items-center gap-1 **:data-[slot=delimiter]:size-5">
       <div class="text-muted-foreground flex items-center gap-1 text-sm font-medium">
-        <span class="bg-foreground/6 text-foreground rounded border px-2 font-mono empty:hidden">
+        <span class="bg-background-secondary text-foreground rounded border px-2 font-mono empty:hidden">
           prod
         </span>
         <p class="align-baseline">

@@ -8,7 +8,7 @@ exports[`renders pagination navigation 1`] = `
 >
   <ul
     data-slot="pagination-content"
-    class="grid-cols-8 gap-[1px] rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
+    class="grid-cols-8 gap-px rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
   >
     <li
       data-slot="pagination-item"
@@ -17,7 +17,7 @@ exports[`renders pagination navigation 1`] = `
       <a
         aria-label="Go to previous page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
       >
         <gui-chevron-left-icon data-slot="icon">
         </gui-chevron-left-icon>
@@ -33,7 +33,7 @@ exports[`renders pagination navigation 1`] = `
       <a
         aria-label="Page link for 1"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
       >
         1
       </a>
@@ -45,7 +45,7 @@ exports[`renders pagination navigation 1`] = `
       <a
         aria-label="Page link for 2"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         2
       </a>
@@ -57,7 +57,7 @@ exports[`renders pagination navigation 1`] = `
       <a
         aria-label="Page link for 3"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         3
       </a>
@@ -69,7 +69,7 @@ exports[`renders pagination navigation 1`] = `
       <a
         aria-label="Page link for 4"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         4
       </a>
@@ -81,7 +81,7 @@ exports[`renders pagination navigation 1`] = `
       <a
         aria-label="Go to next page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
       >
         <span class="capitalize">
           next
@@ -103,7 +103,7 @@ exports[`renders pagination on first page 1`] = `
 >
   <ul
     data-slot="pagination-content"
-    class="grid-cols-8 gap-[1px] rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
+    class="grid-cols-8 gap-px rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
   >
     <li
       data-slot="pagination-item"
@@ -112,7 +112,7 @@ exports[`renders pagination on first page 1`] = `
       <a
         aria-label="Go to previous page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
       >
         <gui-chevron-left-icon data-slot="icon">
         </gui-chevron-left-icon>
@@ -128,7 +128,7 @@ exports[`renders pagination on first page 1`] = `
       <a
         aria-label="Page link for 1"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
       >
         1
       </a>
@@ -140,7 +140,7 @@ exports[`renders pagination on first page 1`] = `
       <a
         aria-label="Page link for 2"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         2
       </a>
@@ -152,7 +152,7 @@ exports[`renders pagination on first page 1`] = `
       <a
         aria-label="Page link for 3"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         3
       </a>
@@ -164,7 +164,7 @@ exports[`renders pagination on first page 1`] = `
       <a
         aria-label="Page link for 4"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         4
       </a>
@@ -176,7 +176,7 @@ exports[`renders pagination on first page 1`] = `
       <a
         aria-label="Go to next page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
       >
         <span class="capitalize">
           next
@@ -198,7 +198,7 @@ exports[`renders pagination on last page 1`] = `
 >
   <ul
     data-slot="pagination-content"
-    class="grid-cols-8 gap-[1px] rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
+    class="grid-cols-8 gap-px rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
   >
     <li
       data-slot="pagination-item"
@@ -207,7 +207,7 @@ exports[`renders pagination on last page 1`] = `
       <a
         aria-label="Go to previous page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
       >
         <gui-chevron-left-icon data-slot="icon">
         </gui-chevron-left-icon>
@@ -223,7 +223,7 @@ exports[`renders pagination on last page 1`] = `
       <a
         aria-label="Page link for 1"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         1
       </a>
@@ -235,7 +235,7 @@ exports[`renders pagination on last page 1`] = `
       <a
         aria-label="Page link for 2"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         2
       </a>
@@ -247,7 +247,7 @@ exports[`renders pagination on last page 1`] = `
       <a
         aria-label="Page link for 3"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         3
       </a>
@@ -259,7 +259,7 @@ exports[`renders pagination on last page 1`] = `
       <a
         aria-label="Page link for 4"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
       >
         4
       </a>
@@ -271,7 +271,7 @@ exports[`renders pagination on last page 1`] = `
       <a
         aria-label="Go to next page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
       >
         <span class="capitalize">
           next
@@ -293,7 +293,7 @@ exports[`renders pagination with many pages 1`] = `
 >
   <ul
     data-slot="pagination-content"
-    class="grid gap-[1px] rounded transition-transform duration-100 **:data-[slot=pagination-link]:h-12 grid-cols-10 xl:grid-cols-12"
+    class="grid gap-px rounded transition-transform duration-100 **:data-[slot=pagination-link]:h-12 grid-cols-10 xl:grid-cols-12"
   >
     <li
       data-slot="pagination-item"
@@ -302,7 +302,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Go to previous page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
       >
         <gui-chevron-left-icon data-slot="icon">
         </gui-chevron-left-icon>
@@ -318,7 +318,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100"
       >
         1
       </a>
@@ -341,7 +341,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 2"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         2
       </a>
@@ -353,7 +353,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 3"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         3
       </a>
@@ -365,7 +365,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 4"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         4
       </a>
@@ -377,7 +377,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 5"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums bg-foreground/10 text-foreground"
       >
         5
       </a>
@@ -389,7 +389,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 6"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         6
       </a>
@@ -401,7 +401,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 7"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         7
       </a>
@@ -424,7 +424,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Page link for 20"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
+        class="hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100 font-mono tabular-nums"
       >
         20
       </a>
@@ -436,7 +436,7 @@ exports[`renders pagination with many pages 1`] = `
       <a
         aria-label="Go to next page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full cursor-pointer justify-center rounded p-3 transition-[color,transform] duration-100 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
       >
         <span class="capitalize">
           next
@@ -458,7 +458,7 @@ exports[`renders pagination with no results 1`] = `
 >
   <ul
     data-slot="pagination-content"
-    class="grid-cols-8 gap-[1px] rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
+    class="grid-cols-8 gap-px rounded transition-transform duration-100 xl:grid-cols-10 **:data-[slot=pagination-link]:h-12 flex justify-between"
   >
     <li
       data-slot="pagination-item"
@@ -467,7 +467,7 @@ exports[`renders pagination with no results 1`] = `
       <a
         aria-label="Go to previous page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:-translate-x-1"
       >
         <gui-chevron-left-icon data-slot="icon">
         </gui-chevron-left-icon>
@@ -483,7 +483,7 @@ exports[`renders pagination with no results 1`] = `
       <a
         aria-label="Go to next page"
         data-slot="pagination-link"
-        class="hover:text-foreground hover:bg-foreground/6 h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
+        class="hover:text-foreground hover:bg-background-secondary h-full w-full justify-center rounded p-3 transition-[color,transform] duration-100 cursor-not-allowed opacity-50 inline-flex items-center gap-1 [&amp;_svg]:shrink-0 **:data-[slot=icon]:size-4 **:data-[slot=icon]:transition-transform **:data-[slot=icon]:duration-100 hover:**:data-[slot=icon]:translate-x-1"
       >
         <span class="capitalize">
           next

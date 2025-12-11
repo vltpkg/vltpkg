@@ -8,7 +8,7 @@ exports[`SideItem render as aliased dependency 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -76,7 +76,7 @@ exports[`SideItem render as dependency 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -144,7 +144,7 @@ exports[`SideItem render as dependency with long name 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -212,7 +212,7 @@ exports[`SideItem render as dependent 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -280,7 +280,7 @@ exports[`SideItem render as git dependency 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -348,7 +348,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -385,7 +385,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <div class="absolute inset-x-0 -bottom-3 px-2.5">
               <div class="relative flex w-full items-center justify-end">
-                <div class="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                <div class="border-px relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                     4 more
                   </span>
@@ -407,9 +407,9 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
           Remove dependency
         </gui-context-menu-item>
       </gui-context-menu-content>
-      <div class="bg-background absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
+      <div class="bg-background border-px absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
       </div>
-      <div class="bg-background absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80">
+      <div class="bg-background border-px absolute inset-x-2 top-[0.4rem] z-8 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80">
       </div>
     </gui-context-menu>
   </div>
@@ -425,7 +425,7 @@ exports[`SideItem render as parent 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors border-muted hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors border-muted hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 px-2">
             <div class="flex items-center gap-2">
@@ -471,7 +471,7 @@ exports[`SideItem render as parent 1`] = `
             </div>
           </gui-card-header>
         </gui-card>
-        <gui-card classname="bg-secondary/50 mx-auto -mt-[1px] w-[95%] cursor-pointer rounded-none rounded-b-xl border-t-[0px] px-3 py-1.5 shadow-none dark:bg-neutral-950">
+        <gui-card classname="bg-secondary/50 mx-auto -mt-px w-[95%] cursor-pointer rounded-none rounded-b-xl border-t-0 px-3 py-1.5 shadow-none dark:bg-neutral-950">
           <div class="flex w-full items-baseline justify-between gap-2">
             <gui-tooltip-provider delayduration="150">
               <gui-tooltip>
@@ -521,7 +521,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 pr-2">
             <div class="flex items-center gap-2">
@@ -558,7 +558,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <div class="absolute inset-x-0 -bottom-3 px-2.5">
               <div class="relative flex w-full items-center justify-end">
-                <div class="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                <div class="border-px relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                     1 more
                   </span>
@@ -580,7 +580,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
           Remove dependency
         </gui-context-menu-item>
       </gui-context-menu-content>
-      <div class="bg-background absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
+      <div class="bg-background border-px absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
       </div>
     </gui-context-menu>
   </div>
@@ -596,7 +596,7 @@ exports[`SideItem render as workspace item 1`] = `
       <gui-context-menu-trigger classname="relative w-full">
         <gui-card
           role="article"
-          classname="group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
+          classname="group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900"
         >
           <gui-card-header classname="relative flex w-full flex-row items-baseline gap-3 p-1 px-2">
             <gui-tooltip-provider>

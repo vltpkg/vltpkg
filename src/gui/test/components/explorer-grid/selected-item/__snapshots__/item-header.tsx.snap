@@ -14,7 +14,7 @@ exports[`ItemBreadcrumbs renders with breadcrumbs 1`] = `
   <gui-crumb-nav breadcrumbs="[object Object]">
   </gui-crumb-nav>
   <gui-scroll-bar
-    classname="z-[102]"
+    classname="z-102"
     orientation="horizontal"
   >
   </gui-scroll-bar>
@@ -47,7 +47,7 @@ exports[`PackageImageSpec renders with default item 1`] = `
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
                   <gui-tooltip-trigger classname="flex items-center justify-center">
-                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <div class="cursor-default rounded-sm border border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
                       <gui-arrow-big-up-dash-icon
                         classname="text-green-600 dark:text-green-500"
                         size="16"
@@ -106,7 +106,7 @@ exports[`PackageImageSpec renders with package score 1`] = `
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
                   <gui-tooltip-trigger classname="flex items-center justify-center">
-                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <div class="cursor-default rounded-sm border border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
                       <gui-arrow-big-up-dash-icon
                         classname="text-green-600 dark:text-green-500"
                         size="16"
@@ -177,12 +177,12 @@ exports[`Publisher renders with publisher information 1`] = `
   <div class="flex items-center gap-2">
     <gui-avatar>
       <gui-avatar-image
-        classname="border-border size-5 rounded-sm border-[1px]"
+        classname="border-border size-5 rounded-sm border"
         src="https://example.com/avatar.png"
         alt="John Doe"
       >
       </gui-avatar-image>
-      <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
+      <gui-avatar-fallback classname="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-linear-to-t from-neutral-100 to-neutral-400 p-0.5 outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
         <span class="text-muted-foreground text-xs font-medium">
           Jo
         </span>

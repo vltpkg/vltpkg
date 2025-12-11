@@ -66,7 +66,7 @@ const ItemContent = ({ className }: { className?: string }) => {
   return (
     <section
       className={cn(
-        'bg-foreground/6 relative flex min-w-0 flex-col gap-px rounded',
+        'bg-background-secondary relative flex min-w-0 flex-col gap-px rounded',
         className,
       )}>
       <AnimatePresence initial={false}>

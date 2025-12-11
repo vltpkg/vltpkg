@@ -141,7 +141,7 @@ export const ItemBreadcrumbs = () => {
       viewportClassName="flex items-center"
       className="relative flex w-full items-center overflow-hidden overflow-x-scroll">
       <CrumbNav breadcrumbs={breadcrumbs} />
-      <ScrollBar className="z-[102]" orientation="horizontal" />
+      <ScrollBar className="z-102" orientation="horizontal" />
     </ScrollArea>
   )
 }
@@ -215,7 +215,7 @@ const PackageImage = () => {
             className="text-muted-foreground"
           />
         </div>
-      : <div className="absolute inset-0 flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+      : <div className="absolute inset-0 flex h-full w-full items-center justify-center rounded-xl bg-linear-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           <span className="text-muted-foreground text-2xl font-medium">
             {packageShortName}
           </span>
@@ -239,7 +239,7 @@ const PackageNewerVersionsAvailable = () => {
         <TooltipTrigger
           onClick={() => setActiveTab('versions')}
           className="flex items-center justify-center">
-          <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+          <div className="cursor-default rounded-sm border border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
             <ArrowBigUpDash
               className="text-green-600 dark:text-green-500"
               size={16}
@@ -341,11 +341,11 @@ export const Publisher = ({ className }: { className?: string }) => {
       <div className="flex items-center gap-2">
         <Avatar>
           <AvatarImage
-            className="border-border size-5 rounded-sm border-[1px]"
+            className="border-border size-5 rounded-sm border"
             src={publisherAvatar?.src}
             alt={publisherAvatar?.alt ?? 'Publisher Avatar'}
           />
-          <AvatarFallback className="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
+          <AvatarFallback className="bg-secondary outline-border flex size-5 items-center justify-center rounded-sm bg-linear-to-t from-neutral-100 to-neutral-400 p-0.5 outline-[1px] dark:from-neutral-500 dark:to-neutral-800">
             <span className="text-muted-foreground text-xs font-medium">
               {authorNameShort}
             </span>
