@@ -1,9 +1,19 @@
-import { test, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  test,
+  expect,
+  vi,
+  describe,
+  beforeEach,
+  afterEach,
+} from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
-import { ContributorTabContent } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
+import {
+  handleQueryContributor,
+  ContributorTabContent,
+} from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
@@ -175,4 +185,57 @@ test('ContributorTabContent renders with no contributors', () => {
   }
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
+})
+
+describe('handleQueryContributor', () => {
+  test('it handles names with spaces', () => {
+    let query = ''
+    const updateQuery = vi.fn(newQuery => {
+      query = newQuery
+    })
+
+    const contributor = {
+      name: 'john doe',
+    } satisfies Contributor
+
+    handleQueryContributor({ contributor, updateQuery })
+
+    expect(query).toBe(":attr(contributors, [name='john doe'])")
+  })
+
+  test('it handles emails with +', () => {
+    let query = ''
+    const updateQuery = vi.fn(newQuery => {
+      query = newQuery
+    })
+
+    const contributor = {
+      email: 'spartan-117+johndoe@cortana.com',
+      name: 'john doe',
+    } satisfies Contributor
+
+    handleQueryContributor({ contributor, updateQuery })
+
+    expect(query).toBe(
+      ":attr(contributors, [email='spartan-117+johndoe@cortana.com'])",
+    )
+  })
+
+  test('it prioritizes emails over names when both are present', () => {
+    let query = ''
+    const updateQuery = vi.fn(newQuery => {
+      query = newQuery
+    })
+
+    const contributor = {
+      email: 'spartan-117+johndoe@cortana.com',
+      name: 'john doe',
+    } satisfies Contributor
+
+    handleQueryContributor({ contributor, updateQuery })
+
+    expect(query).toBe(
+      ":attr(contributors, [email='spartan-117+johndoe@cortana.com'])",
+    )
+  })
 })

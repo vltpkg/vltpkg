@@ -25,6 +25,7 @@ import {
 import { useGraphStore } from '@/state/index.ts'
 
 import type { Contributor } from '@/lib/external-info.ts'
+import type { Action } from '@/state/types.ts'
 
 interface ContributorAvatarProps {
   avatar: Contributor['avatar']
@@ -83,8 +84,34 @@ export const ContributorAvatar = ({
   )
 }
 
+export const handleQueryContributor = ({
+  contributor,
+  updateQuery,
+}: {
+  contributor: Contributor
+  updateQuery: Action['updateQuery']
+}) => {
+  const v: { type: 'email' | 'name'; value: string } | undefined =
+    contributor.email ? { type: 'email', value: contributor.email }
+    : contributor.name ? { type: 'name', value: contributor.name }
+    : undefined
+
+  if (!v) return
+
+  /** for now we just test if theres a space or a + somewhere */
+  const containsUnescapedChars = /[+\s]/.test(v.value)
+
+  const constructedArg =
+    containsUnescapedChars ?
+      `${v.type}='${v.value}'`
+    : `${v.type}=${v.value}`
+
+  const contributorsQuery = `:attr(contributors, [${constructedArg}])`
+  updateQuery(contributorsQuery)
+}
+
 const Contributor = ({
-  contributor: { avatar, name, email },
+  contributor,
   size = 'sm',
 }: {
   contributor: Contributor
@@ -92,21 +119,22 @@ const Contributor = ({
 }) => {
   const updateQuery = useGraphStore(state => state.updateQuery)
 
-  const handleQueryContributor = (email: Contributor['email']) =>
-    updateQuery(`:attr(contributors, [email=${email}])`)
-
   return (
     <div
       role="button"
-      onClick={() => handleQueryContributor(email)}
+      onClick={() =>
+        handleQueryContributor({ contributor, updateQuery })
+      }
       className="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800">
-      <ContributorAvatar size={size} avatar={avatar} />
+      <ContributorAvatar size={size} avatar={contributor.avatar} />
       <div className="text-foreground flex flex-col justify-center text-sm">
         <p className="font-medium text-neutral-900 dark:text-neutral-200">
-          {name}
+          {contributor.name}
         </p>
-        {email && (
-          <p className="text-muted-foreground text-xs">{email}</p>
+        {contributor.email && (
+          <p className="text-muted-foreground text-xs">
+            {contributor.email}
+          </p>
         )}
       </div>
     </div>
