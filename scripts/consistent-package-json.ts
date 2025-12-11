@@ -36,19 +36,25 @@ const isStandardTypeScriptWorkspace = (ws: Workspace) => {
   )
 }
 
-const writeJson = (p: string, data: unknown) =>
-  writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
+const writeJson = async (p: string, data: unknown) =>
+  writeFormatted(p, JSON.stringify(data, null, 2) + '\n')
 
-const mergeJson = (p: string, fn: (o: object) => unknown) =>
+const mergeJson = async (p: string, fn: (o: object) => unknown) =>
   writeJson(p, fn(JSON.parse(readFileSync(p, 'utf8')) as object))
 
-const writeFormatted = async (p: string, str: string) => {
-  const formatted = await format(str, {
-    ...(await resolveConfig(p)),
-    filepath: p,
-  })
-  writeFileSync(p, formatted)
-}
+const writeFormatted = async (p: string, str: unknown) =>
+  writeFileSync(
+    p,
+    await format(
+      typeof str === 'string' ? str : (
+        JSON.stringify(str, null, 2) + '\n'
+      ),
+      {
+        ...(await resolveConfig(p)),
+        filepath: p,
+      },
+    ),
+  )
 
 const sortObject = (
   o: Record<string, unknown>,
@@ -187,13 +193,13 @@ const fixScripts = async (ws: Workspace) => {
 
 const fixTools = async (ws: Workspace) => {
   if (isStandardTypeScriptWorkspace(ws)) {
-    mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
+    await mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
       sortObject({
         ...d,
         extends: `${ws.relDir}tsconfig.json`,
       }),
     )
-    writeJson(resolve(ws.dir, 'tsconfig.publish.json'), {
+    await writeFormatted(resolve(ws.dir, 'tsconfig.publish.json'), {
       extends: `${ws.relDir}tsconfig.json`,
       include: [
         'src/**/*.ts',
@@ -438,7 +444,7 @@ const main = async () => {
     relDir: `${dir == ROOT ? '.' : relative(dir, ROOT)}/`,
   }))
   for (const ws of workspaces) {
-    writeJson(ws.pkgPath, await fixPackage(ws, config))
+    await writeJson(ws.pkgPath, await fixPackage(ws, config))
   }
 }
 
