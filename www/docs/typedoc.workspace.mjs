@@ -23,11 +23,9 @@ export default cwd => {
   if (pkg.private) {
     return
   }
-  const tshy =
-    pkg.tshy && typeof pkg.tshy === 'object' ? pkg.tshy : {}
   const exports =
-    'exports' in tshy && typeof tshy.exports === 'object' ?
-      tshy.exports
+    'exports' in pkg && typeof pkg.exports === 'object' ?
+      pkg.exports
     : null
   if (!exports) {
     return
@@ -37,7 +35,9 @@ export default cwd => {
     readme: join(cwd, './README.md'),
     // get entry points from package.json exports
     entryPoints: Object.values(exports)
+      .map(p => (typeof p === 'string' ? p : p.import.default))
       .filter(p => !p.endsWith('package.json'))
+      .map(p => (console.log(p), p))
       .map(p => join(cwd, p)),
   }
 }

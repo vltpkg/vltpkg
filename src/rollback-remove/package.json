@@ -8,17 +8,6 @@
     "directory": "src/rollback-remove"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
   "dependencies": {
     "rimraf": "catalog:"
   },
@@ -28,7 +17,6 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -42,11 +30,10 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
+    "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
-    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {

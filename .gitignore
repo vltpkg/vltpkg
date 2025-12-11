@@ -12,7 +12,6 @@
 /results/
 
 /src/*/.tap
-/src/*/.tshy-build
 /src/*/.turbo
 /src/*/dist
 /src/*/docs
@@ -25,7 +24,6 @@
 /src/*/*.log
 
 /infra/*/.tap
-/infra/*/.tshy-build
 /infra/*/.turbo
 /infra/*/dist
 /infra/*/outdir
