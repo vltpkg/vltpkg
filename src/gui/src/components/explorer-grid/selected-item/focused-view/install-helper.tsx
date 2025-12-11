@@ -42,7 +42,7 @@ const CopyButton = ({
         <TooltipTrigger asChild>
           <button
             className={cn(
-              'hover:text-foreground hover:bg-foreground/6 [&_svg]:text-muted-foreground flex size-6 cursor-pointer items-center justify-center rounded-md p-1.5 transition-all duration-100 [&_svg]:size-5',
+              'hover:text-foreground hover:bg-background-secondary [&_svg]:text-muted-foreground flex size-6 cursor-pointer items-center justify-center rounded-md p-1.5 transition-all duration-100 [&_svg]:size-5',
               className,
             )}
             {...rest}>

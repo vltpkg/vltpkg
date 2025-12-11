@@ -271,7 +271,7 @@ const ExplorerContent = () => {
     <AnimatePresence mode="popLayout">
       {!graph || graphStamp !== stamp ?
         <motion.div
-          className="absolute inset-0 z-[100] flex h-full w-full justify-center"
+          className="absolute inset-0 z-100 flex h-full w-full justify-center"
           {...explorerMotion}>
           <div className="relative flex h-full w-full items-center justify-center">
             <JellyTriangleSpinner className="text-primary" />

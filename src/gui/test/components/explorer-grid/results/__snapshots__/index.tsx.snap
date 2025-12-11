@@ -4,7 +4,7 @@ exports[`Results Displays items 1`] = `
 
 <gui-results-provider allitems="[object Object],[object Object],[object Object]">
   <div class="bg-background h-full">
-    <div class="bg-foreground/6 h-full">
+    <div class="bg-background-secondary h-full">
       <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
         <div
           aria-hidden="true"
@@ -39,7 +39,7 @@ exports[`Results Displays items 1`] = `
       <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
         <div
           aria-hidden="true"
-          class="p-[0.5px] pl-[0px] max-lg:hidden"
+          class="p-[0.5px] pl-0 max-lg:hidden"
         >
           <div class="bg-background h-full rounded">
           </div>
@@ -50,7 +50,7 @@ exports[`Results Displays items 1`] = `
         </div>
         <div
           aria-hidden="true"
-          class="p-[0.5px] pr-[0px] max-lg:hidden"
+          class="p-[0.5px] pr-0 max-lg:hidden"
         >
           <div class="bg-background h-full rounded">
           </div>
@@ -91,7 +91,7 @@ exports[`Results Displays items 1`] = `
       <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
         <div
           aria-hidden="true"
-          class="p-[0.5px] pl-[0px] max-lg:hidden"
+          class="p-[0.5px] pl-0 max-lg:hidden"
         >
           <div class="bg-background h-full rounded">
           </div>
@@ -116,7 +116,7 @@ exports[`Results renders an empty state when there are no items 1`] = `
 
 <gui-results-provider allitems>
   <div class="bg-background h-full">
-    <div class="bg-foreground/6 h-full">
+    <div class="bg-background-secondary h-full">
       <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
         <div
           aria-hidden="true"
@@ -143,7 +143,7 @@ exports[`Results renders an empty state when there are no items 1`] = `
       <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
         <div
           aria-hidden="true"
-          class="p-[0.5px] pl-[0px] max-lg:hidden"
+          class="p-[0.5px] pl-0 max-lg:hidden"
         >
           <div class="bg-background h-full rounded">
           </div>
@@ -154,7 +154,7 @@ exports[`Results renders an empty state when there are no items 1`] = `
         </div>
         <div
           aria-hidden="true"
-          class="p-[0.5px] pr-[0px] max-lg:hidden"
+          class="p-[0.5px] pr-0 max-lg:hidden"
         >
           <div class="bg-background h-full rounded">
           </div>
@@ -311,7 +311,7 @@ exports[`Results renders an empty state when there are no items 1`] = `
       <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
         <div
           aria-hidden="true"
-          class="p-[0.5px] pl-[0px] max-lg:hidden"
+          class="p-[0.5px] pl-0 max-lg:hidden"
         >
           <div class="bg-background h-full rounded">
           </div>

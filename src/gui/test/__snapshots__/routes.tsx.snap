@@ -21,21 +21,21 @@ exports[`renders Layout for the "/create-new-project" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-create-new-project>
               </gui-create-new-project>
@@ -55,21 +55,21 @@ exports[`renders Layout for the "/error" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-error-found>
               </gui-error-found>
@@ -89,21 +89,21 @@ exports[`renders Layout for the "/explore" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-explorer>
               </gui-explorer>
@@ -123,21 +123,21 @@ exports[`renders Layout for the "/help/selectors" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-help-selectors>
               </gui-help-selectors>
@@ -157,21 +157,21 @@ exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-labels>
               </gui-labels>
@@ -191,21 +191,21 @@ exports[`renders Layout for the "/queries" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-queries>
               </gui-queries>
@@ -225,21 +225,21 @@ exports[`renders Layout for the "/settings/general" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-settings-view>
               </gui-settings-view>
@@ -259,21 +259,21 @@ exports[`renders SignIn for the "/auth/sign-in" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-sign-in>
               </gui-sign-in>
@@ -293,21 +293,21 @@ exports[`renders SignUp for the "/auth/sign-up" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-foreground/6 relative">
+    <div class="bg-background-secondary relative">
       <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
         <gui-sidebar-provider
           defaultopen="true"
-          classname="sticky top-0 flex w-full px-[1px]"
+          classname="sticky top-0 flex w-full px-px"
         >
           <gui-app-sidebar classname="bg-background rounded">
           </gui-app-sidebar>
         </gui-sidebar-provider>
         <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-foreground/6 sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
+          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
             <gui-header classname="bg-background rounded">
             </gui-header>
           </div>
-          <div class="bg-foreground/6 flex min-h-0 w-full flex-1">
+          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
             <main class="bg-background h-full w-full overflow-auto rounded">
               <gui-sign-up>
               </gui-sign-up>

@@ -31,15 +31,15 @@ export const Results = ({
   return (
     <ResultsProvider allItems={allItems}>
       <div className="bg-background h-full">
-        <div className="bg-foreground/6 h-full">
+        <div className="bg-background-secondary h-full">
           <ResultsHeader />
 
           <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-            <Decorator className="pl-[0px] max-lg:hidden" />
+            <Decorator className="pl-0 max-lg:hidden" />
             <div className="flex overflow-x-scroll rounded p-[0.5px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <ResultsSort className="w-full min-w-0" />
             </div>
-            <Decorator className="pr-[0px] max-lg:hidden" />
+            <Decorator className="pr-0 max-lg:hidden" />
           </div>
 
           <div className="pattern-hatch flex h-9 w-full md:hidden" />
@@ -47,7 +47,7 @@ export const Results = ({
           <ResultsList />
 
           <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-            <Decorator className="pl-[0px] max-lg:hidden" />
+            <Decorator className="pl-0 max-lg:hidden" />
             <ResultsPaginationNavigation className="p-[0.5px]" />
             <Decorator className="pr-[0px] max-lg:hidden" />
           </div>

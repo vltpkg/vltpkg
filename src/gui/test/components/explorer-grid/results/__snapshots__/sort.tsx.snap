@@ -3,7 +3,7 @@
 exports[`ResultsPaginationNavigation renders default 1`] = `
 
 <nav class="relative">
-  <ul class="flex flex-col gap-[1px] rounded lg:flex-row lg:overflow-x-scroll lg:[-ms-overflow-style:none] lg:[scrollbar-width:none] lg:[&amp;::-webkit-scrollbar]:hidden">
+  <ul class="flex flex-col gap-px rounded lg:flex-row lg:overflow-x-scroll lg:[-ms-overflow-style:none] lg:[scrollbar-width:none] lg:[&amp;::-webkit-scrollbar]:hidden">
     <li
       data-active="true"
       data-sort-direction="asc"
@@ -14,7 +14,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
     >
       <button
         data-slot="sort-menu-button"
-        class="hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
+        class="hover:text-foreground hover:bg-background-secondary bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
       >
         <gui-list-icon
           data-slot="icon"
@@ -41,7 +41,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
     >
       <button
         data-slot="sort-menu-button"
-        class="hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
+        class="hover:text-foreground hover:bg-background-secondary bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
       >
         <gui-layers-icon
           data-slot="icon"
@@ -68,7 +68,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
     >
       <button
         data-slot="sort-menu-button"
-        class="hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
+        class="hover:text-foreground hover:bg-background-secondary bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
       >
         <gui-send-to-back-icon
           data-slot="icon"
@@ -95,7 +95,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
     >
       <button
         data-slot="sort-menu-button"
-        class="hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
+        class="hover:text-foreground hover:bg-background-secondary bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
       >
         <gui-gallery-vertical-end-icon
           data-slot="icon"
@@ -122,7 +122,7 @@ exports[`ResultsPaginationNavigation renders default 1`] = `
     >
       <button
         data-slot="sort-menu-button"
-        class="hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
+        class="hover:text-foreground hover:bg-background-secondary bg-background text-muted-foreground inline-flex h-full w-full items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3 group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10 cursor-not-allowed opacity-50"
       >
         <gui-blocks-icon
           data-slot="icon"

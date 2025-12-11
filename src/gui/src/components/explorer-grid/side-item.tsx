@@ -68,7 +68,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             <Card
               role="article"
               className={cn(
-                'group bg-background relative z-[10] flex cursor-pointer flex-col rounded-lg shadow-none transition-colors',
+                'group bg-background relative z-10 flex cursor-pointer flex-col rounded-lg shadow-none transition-colors',
                 highlight && 'border-muted',
                 onSelect &&
                   'hover:border hover:bg-neutral-100 hover:dark:bg-neutral-900',
@@ -115,7 +115,7 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
             </Card>
 
             {parent && (
-              <Card className="bg-secondary/50 mx-auto -mt-[1px] w-[95%] cursor-pointer rounded-none rounded-b-xl border-t-[0px] px-3 py-1.5 shadow-none dark:bg-neutral-950">
+              <Card className="bg-secondary/50 mx-auto -mt-px w-[95%] cursor-pointer rounded-none rounded-b-xl border-t-0 px-3 py-1.5 shadow-none dark:bg-neutral-950">
                 <div className="flex w-full items-baseline justify-between gap-2">
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
@@ -156,9 +156,9 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
           </ContextMenuContent>
           {item.stacked && (
             <>
-              <div className="bg-background absolute inset-x-1 top-[0.2rem] z-[9] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950" />
+              <div className="bg-background border-px absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950" />
               {item.size > 2 && (
-                <div className="bg-background absolute inset-x-2 top-[0.4rem] z-[8] h-full rounded-lg border-[1px] transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80" />
+                <div className="bg-background border-px absolute inset-x-2 top-[0.4rem] z-8 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80" />
               )}
             </>
           )}
@@ -181,7 +181,7 @@ const SideItemBadges = ({
     <div className="absolute inset-x-0 -bottom-3 px-2.5">
       <div className="relative flex w-full items-center justify-end">
         {itemSize > 1 && (
-          <div className="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-[1px] border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+          <div className="border-px relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
               {itemSize - 1} more
             </span>

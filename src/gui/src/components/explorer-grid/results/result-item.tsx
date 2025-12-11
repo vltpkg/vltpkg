@@ -187,7 +187,7 @@ export const ResultItem = ({ item }: ResultItemProps) => {
         {item.type && (
           <Fragment>
             <div className="text-muted-foreground flex items-center gap-1 text-sm font-medium">
-              <span className="bg-foreground/6 text-foreground rounded border px-2 font-mono empty:hidden">
+              <span className="bg-background-secondary text-foreground rounded border px-2 font-mono empty:hidden">
                 {item.stacked ? '' : item.type}
               </span>
               <p className="align-baseline">

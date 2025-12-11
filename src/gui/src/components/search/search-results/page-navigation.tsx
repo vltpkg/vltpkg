@@ -64,7 +64,7 @@ export const SearchResultsPaginationNavigation = ({
     <Pagination className={cn('', className)}>
       <PaginationContent
         className={cn(
-          'grid grid-cols-8 gap-[1px] rounded transition-transform duration-100 xl:grid-cols-10',
+          'grid grid-cols-8 gap-px rounded transition-transform duration-100 xl:grid-cols-10',
           '**:data-[slot=pagination-link]:h-12',
           results.length == 7 && 'flex justify-between',
           totalPages < 7 && 'flex justify-between',
@@ -229,7 +229,7 @@ const PaginationLink = ({
       }
       data-slot="pagination-link"
       className={cn(
-        'hover:text-foreground hover:bg-foreground/6 inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100',
+        'hover:text-foreground hover:bg-background-secondary inline-flex h-full w-full cursor-pointer items-center justify-center rounded p-3 transition-[color,transform] duration-100',
         disabled && 'cursor-not-allowed opacity-50',
         isPageNumber && 'font-mono tabular-nums',
         isActive && 'bg-foreground/10 text-foreground',

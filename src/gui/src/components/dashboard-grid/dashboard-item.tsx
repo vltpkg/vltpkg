@@ -30,7 +30,7 @@ export const DashboardItem = ({
   return (
     <article
       role="link"
-      className="dark:bg-background dark:hover:bg-foreground/3 bg-foreground/2 hover:bg-foreground/6 group/dashboard-item flex h-fit cursor-pointer flex-col rounded-lg border p-0.5 transition-colors duration-100"
+      className="dark:bg-background dark:hover:bg-foreground/3 bg-foreground/2 hover:bg-background-secondary group/dashboard-item flex h-fit cursor-pointer flex-col rounded-lg border p-0.5 transition-colors duration-100"
       onClick={onDashboardItemClick}>
       <div className="bg-background dark:bg-foreground/3 flex rounded-[calc(0.5rem-(0.125rem/2))] border">
         <div className="flex flex-col p-3">

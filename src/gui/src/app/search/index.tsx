@@ -55,7 +55,7 @@ const Card = ({
     <div className="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
       <div className="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
         <div className="order-2 flex grow flex-col gap-2 xl:order-1">
-          <h3 className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+          <h3 className="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
             {title}
           </h3>
           <p className="text-muted-foreground text-sm font-medium">
@@ -85,7 +85,7 @@ export const Search = () => {
 
   return (
     <section className="bg-background">
-      <div className="bg-foreground/6 relative">
+      <div className="bg-background-secondary relative">
         <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
           <Decorator className="max-lg:hidden" />
           <div className="flex w-full justify-center overflow-hidden">
@@ -132,8 +132,8 @@ export const Search = () => {
 
                   {/* content */}
                   <div className="flex h-full w-full flex-col items-center justify-center gap-10 px-0 text-center xl:px-8">
-                    <div className="z-[2] flex w-full flex-col items-center justify-center gap-6">
-                      <h1 className="mt-4 bg-gradient-to-tr from-neutral-600 to-neutral-900 bg-clip-text py-1 text-6xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
+                    <div className="z-2 flex w-full flex-col items-center justify-center gap-6">
+                      <h1 className="mt-4 bg-linear-to-tr from-neutral-600 to-neutral-900 bg-clip-text py-1 text-6xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
                         Discover packages{' '}
                         <span className="max-xl:hidden">
                           for your
@@ -265,10 +265,10 @@ export const Search = () => {
             <div className="bg-background relative flex w-full overflow-hidden rounded">
               <div
                 aria-hidden="true"
-                className="from-background/20 to-background pointer-events-none absolute inset-0 z-[2] bg-radial"
+                className="from-background/20 to-background pointer-events-none absolute inset-0 z-2 bg-radial"
               />
               <FlickeringGrid
-                className="pointer-events-none absolute inset-0 z-[1] h-full w-full mask-radial-to-90% mask-radial-at-center"
+                className="pointer-events-none absolute inset-0 z-1 h-full w-full mask-radial-to-90% mask-radial-at-center"
                 squareSize={4}
                 gridGap={6}
                 color="#6B7280"
@@ -277,11 +277,11 @@ export const Search = () => {
                 height={1920}
                 width={1080}
               />
-              <div className="z-[3] flex w-full flex-col justify-between px-6 pt-12 pb-6 md:flex-row md:pt-24">
+              <div className="z-3 flex w-full flex-col justify-between px-6 pt-12 pb-6 md:flex-row md:pt-24">
                 <div className="flex max-w-full flex-col md:max-w-sm">
                   <h2
                     id="blog-heading"
-                    className="tracking-loose mt-4 bg-gradient-to-tr from-neutral-600 to-neutral-900 bg-clip-text text-3xl font-medium text-balance text-transparent dark:from-neutral-400 dark:to-neutral-100">
+                    className="tracking-loose mt-4 bg-linear-to-tr from-neutral-600 to-neutral-900 bg-clip-text text-3xl font-medium text-balance text-transparent dark:from-neutral-400 dark:to-neutral-100">
                     Latest news
                   </h2>
                   <p className="text-muted-foreground mt-2 text-xs font-medium">
@@ -316,22 +316,22 @@ export const Search = () => {
                       {/* sides */}
                       <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                        className="pointer-events-none absolute inset-x-0 inset-y-0 z-2 border-x border-dashed"
                       />
                       {/* t + b */}
                       <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                        className="pointer-events-none absolute inset-y-0 left-1/2 z-2 w-svh -translate-x-1/2 border-y border-dashed"
                       />
 
                       <img
                         src={post.banner}
                         alt={post.bannerAlt}
-                        className="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                        className="dark:mask z-2 aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
                       />
                       <div
                         aria-hidden
-                        className="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                        className="dark:mask dark:pattern-hatch z-1 hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
                       />
                     </div>
                     <div className="mt-3 flex grow flex-col gap-[0.5px]">

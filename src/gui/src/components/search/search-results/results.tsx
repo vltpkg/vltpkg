@@ -97,7 +97,7 @@ export const SearchResults = () => {
 
   return (
     <section className="bg-background">
-      <div className="bg-foreground/6 relative">
+      <div className="bg-background-secondary relative">
         {/* results count */}
         <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
           <Decorator className="max-lg:hidden" />

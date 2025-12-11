@@ -24,9 +24,9 @@ exports[`InsightTabContent renders with insights 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <section class="mt-2 flex flex-col px-6 py-4">
-    <div class="border-muted mb-4 grid cursor-default grid-cols-10 gap-2 border-b-[1px] px-2 pb-4">
+    <div class="border-muted border-b-px mb-4 grid cursor-default grid-cols-10 gap-2 px-2 pb-4">
       <div class="col-span-3 flex w-full items-start">
-        <button class="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
+        <button class="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-1 inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:-left-3 after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
           <span>
             Insight
           </span>
@@ -35,7 +35,7 @@ exports[`InsightTabContent renders with insights 1`] = `
         </button>
       </div>
       <div class="col-span-2 flex w-full items-start">
-        <button class="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
+        <button class="group text-muted-foreground hover:text-foreground hover:after:bg-muted relative z-1 inline-flex w-fit cursor-default items-center justify-center gap-2 text-sm transition-colors duration-300 after:absolute after:-left-3 after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-['']">
           <span>
             Category
           </span>
@@ -49,7 +49,7 @@ exports[`InsightTabContent renders with insights 1`] = `
         </p>
       </div>
     </div>
-    <div class="divide-muted flex flex-col divide-y-[1px]">
+    <div class="divide-muted divide-y-px flex flex-col">
       <div class="hover:bg-muted grid cursor-default grid-cols-10 gap-2 rounded-sm px-2 py-4 transition-colors duration-250">
         <div class="col-span-3 flex w-full items-start">
           <gui-insight-badge
@@ -88,7 +88,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
   class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <section class="border-muted mt-3 border-b-[1px] pb-6">
+  <section class="border-muted border-b-px mt-3 pb-6">
     <div class="grid grid-cols-5 gap-2 px-6">
       <div class="flex flex-col items-center justify-center">
         <gui-chart-container

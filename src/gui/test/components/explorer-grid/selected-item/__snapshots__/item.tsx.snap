@@ -3,7 +3,7 @@
 exports[`Item renders with the default structure 1`] = `
 
 <gui-selected-item-provider selecteditem="[object Object]">
-  <section class="bg-foreground/6 relative flex min-w-0 flex-col gap-px rounded">
+  <section class="bg-background-secondary relative flex min-w-0 flex-col gap-px rounded">
     <div
       class="bg-background/80 absolute inset-0 z-11 flex items-center justify-center rounded backdrop-blur-sm"
       style="opacity: 1;"

@@ -3,7 +3,7 @@
 exports[`search renders default components 1`] = `
 
 <section class="bg-background">
-  <div class="bg-foreground/6 relative">
+  <div class="bg-background-secondary relative">
     <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
       <div
         aria-hidden="true"
@@ -343,8 +343,8 @@ exports[`search renders default components 1`] = `
                 </div>
               </div>
               <div class="flex h-full w-full flex-col items-center justify-center gap-10 px-0 text-center xl:px-8">
-                <div class="z-[2] flex w-full flex-col items-center justify-center gap-6">
-                  <h1 class="mt-4 bg-gradient-to-tr from-neutral-600 to-neutral-900 bg-clip-text py-1 text-6xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
+                <div class="z-2 flex w-full flex-col items-center justify-center gap-6">
+                  <h1 class="mt-4 bg-linear-to-tr from-neutral-600 to-neutral-900 bg-clip-text py-1 text-6xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
                     Discover packages
                     <span class="max-xl:hidden">
                       for your
@@ -502,7 +502,7 @@ exports[`search renders default components 1`] = `
             <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
               <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
                 <div class="order-2 flex grow flex-col gap-2 xl:order-1">
-                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                  <h3 class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
                     Install
                   </h3>
                   <p class="text-muted-foreground text-sm font-medium">
@@ -530,7 +530,7 @@ exports[`search renders default components 1`] = `
             <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
               <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
                 <div class="order-2 flex grow flex-col gap-2 xl:order-1">
-                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                  <h3 class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
                     Serve
                   </h3>
                   <p class="text-muted-foreground text-sm font-medium">
@@ -558,7 +558,7 @@ exports[`search renders default components 1`] = `
             <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
               <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
                 <div class="order-2 flex grow flex-col gap-2 xl:order-1">
-                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                  <h3 class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
                     Configure
                   </h3>
                   <p class="text-muted-foreground text-sm font-medium">
@@ -586,7 +586,7 @@ exports[`search renders default components 1`] = `
             <div class="flex h-full w-full flex-col overflow-hidden p-[0.5px] xl:aspect-square">
               <div class="bg-background relative flex h-full w-full flex-col gap-4 rounded px-5 pt-5 pb-5 xl:pb-0">
                 <div class="order-2 flex grow flex-col gap-2 xl:order-1">
-                  <h3 class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
+                  <h3 class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-2xl leading-tight font-medium tracking-tight text-balance text-transparent dark:from-neutral-400 dark:to-neutral-50">
                     Discover
                   </h3>
                   <p class="text-muted-foreground text-sm font-medium">
@@ -656,11 +656,11 @@ exports[`search renders default components 1`] = `
         <div class="bg-background relative flex w-full overflow-hidden rounded">
           <div
             aria-hidden="true"
-            class="from-background/20 to-background pointer-events-none absolute inset-0 z-[2] bg-radial"
+            class="from-background/20 to-background pointer-events-none absolute inset-0 z-2 bg-radial"
           >
           </div>
           <gui-flickering-grid
-            classname="pointer-events-none absolute inset-0 z-[1] h-full w-full mask-radial-to-90% mask-radial-at-center"
+            classname="pointer-events-none absolute inset-0 z-1 h-full w-full mask-radial-to-90% mask-radial-at-center"
             squaresize="4"
             gridgap="6"
             color="#6B7280"
@@ -670,11 +670,11 @@ exports[`search renders default components 1`] = `
             width="1080"
           >
           </gui-flickering-grid>
-          <div class="z-[3] flex w-full flex-col justify-between px-6 pt-12 pb-6 md:flex-row md:pt-24">
+          <div class="z-3 flex w-full flex-col justify-between px-6 pt-12 pb-6 md:flex-row md:pt-24">
             <div class="flex max-w-full flex-col md:max-w-sm">
               <h2
                 id="blog-heading"
-                class="tracking-loose mt-4 bg-gradient-to-tr from-neutral-600 to-neutral-900 bg-clip-text text-3xl font-medium text-balance text-transparent dark:from-neutral-400 dark:to-neutral-100"
+                class="tracking-loose mt-4 bg-linear-to-tr from-neutral-600 to-neutral-900 bg-clip-text text-3xl font-medium text-balance text-transparent dark:from-neutral-400 dark:to-neutral-100"
               >
                 Latest news
               </h2>
@@ -720,22 +720,22 @@ exports[`search renders default components 1`] = `
               <div class="relative">
                 <div
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-2 border-x border-dashed"
                 >
                 </div>
                 <div
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                  class="pointer-events-none absolute inset-y-0 left-1/2 z-2 w-svh -translate-x-1/2 border-y border-dashed"
                 >
                 </div>
                 <img
                   src="/post-1/banner.png"
                   alt="post-1 banner"
-                  class="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                  class="dark:mask z-2 aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
                 >
                 <div
                   aria-hidden="true"
-                  class="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                  class="dark:mask dark:pattern-hatch z-1 hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
                 >
                 </div>
               </div>
@@ -769,22 +769,22 @@ exports[`search renders default components 1`] = `
               <div class="relative">
                 <div
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-2 border-x border-dashed"
                 >
                 </div>
                 <div
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                  class="pointer-events-none absolute inset-y-0 left-1/2 z-2 w-svh -translate-x-1/2 border-y border-dashed"
                 >
                 </div>
                 <img
                   src="/post-2/banner.png"
                   alt="post-2 banner"
-                  class="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                  class="dark:mask z-2 aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
                 >
                 <div
                   aria-hidden="true"
-                  class="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                  class="dark:mask dark:pattern-hatch z-1 hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
                 >
                 </div>
               </div>
@@ -818,22 +818,22 @@ exports[`search renders default components 1`] = `
               <div class="relative">
                 <div
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-[2] border-x border-dashed"
+                  class="pointer-events-none absolute inset-x-0 inset-y-0 z-2 border-x border-dashed"
                 >
                 </div>
                 <div
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-y-0 left-1/2 z-[2] w-svh -translate-x-1/2 border-y border-dashed"
+                  class="pointer-events-none absolute inset-y-0 left-1/2 z-2 w-svh -translate-x-1/2 border-y border-dashed"
                 >
                 </div>
                 <img
                   src="/post-3/banner.png"
                   alt="post-3 banner"
-                  class="dark:mask z-[2] aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
+                  class="dark:mask z-2 aspect-video object-cover object-center dark:mask-b-from-80% dark:mask-b-to-100%"
                 >
                 <div
                   aria-hidden="true"
-                  class="dark:mask dark:pattern-hatch z-[1] hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
+                  class="dark:mask dark:pattern-hatch z-1 hidden dark:absolute dark:inset-0 dark:block dark:mask-t-from-20% dark:mask-t-to-100%"
                 >
                 </div>
               </div>

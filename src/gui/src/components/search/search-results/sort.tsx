@@ -142,7 +142,7 @@ const SortMenuItem = ({
       <button
         data-slot="sort-menu-button"
         className={cn(
-          'hover:text-foreground hover:bg-foreground/6 bg-background text-muted-foreground inline-flex h-full w-full cursor-pointer items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3',
+          'hover:text-foreground hover:bg-background-secondary bg-background text-muted-foreground inline-flex h-full w-full cursor-pointer items-center justify-center rounded px-6 py-3 text-sm font-medium transition-colors duration-100 lg:p-3',
           'group-data-[active=true]:text-foreground group-data-[active=true]:bg-foreground/10',
           disabled && 'cursor-not-allowed opacity-50',
         )}>

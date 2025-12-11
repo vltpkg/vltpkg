@@ -50,6 +50,20 @@
   font-display: swap;
 }
 
+@layer base {
+  :root {
+    --background-secondary: oklch(0.9006 0 0);
+  }
+
+  .dark {
+    --background-secondary: oklch(0.2478 0 0);
+  }
+}
+
+@theme inline {
+  --color-background-secondary: var(--background-secondary);
+}
+
 @theme {
   /* util resets */
   --container-8xl: 92rem;
@@ -90,7 +104,4 @@
 
 .dark .pattern-hatch {
   --pattern-fg: rgb(255 255 255 / 0.1);
-}
-
-@theme inline {
 }
