@@ -739,7 +739,12 @@ export class Spec implements SpecLike<Spec> {
     this.registry = url
     // @luca/cases@jsr:1.x
     if (!s.startsWith('@')) s = `${this.name}@${s}`
-    const name = `@jsr/${s.replace(/^@/, '').replace(/\//, '__')}`
+    // If the name already starts with @jsr/, it's already in JSR npm
+    // format and should be used as-is (e.g. from lockfile hydration)
+    const name =
+      s.startsWith('@jsr/') ? s : (
+        `@jsr/${s.replace(/^@/, '').replace(/\//, '__')}`
+      )
     this.subspec = this.constructor.parse(name, {
       ...this.options,
       'scope-registries': {
