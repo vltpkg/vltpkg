@@ -54,6 +54,17 @@ export const plugin = {
           )
           .on('error', rej)
       })
+
+      // Remove _media directory if it exists (contains files like LICENSE.md, CONTRIBUTING.md
+      // that are copied from source packages but shouldn't be included in the docs site)
+      const mediaDir = `${directory}/_media`
+      const mediaExists = await stat(mediaDir)
+        .then(f => f.isDirectory())
+        .catch(() => false)
+      if (mediaExists) {
+        o.logger.info(`removing ${mediaDir}`)
+        await rm(mediaDir, { recursive: true, force: true })
+      }
     },
   },
 }
