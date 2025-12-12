@@ -8154,8 +8154,8 @@ exports[`test/browser.ts > TAP > parse args > @luca/cases@jsr:@a/b@jsr:1 > inspe
     registry: 'https://npm.jsr.io/',
     subspec: @vltpkg/spec.Spec {
       type: 'registry',
-      spec: '@jsr/jsr__a__b@1',
-      name: '@jsr/jsr__a__b',
+      spec: '@jsr/a__b@1',
+      name: '@jsr/a__b',
       scope: '@jsr',
       scopeRegistry: 'https://npm.jsr.io/',
       bareSpec: '1',
