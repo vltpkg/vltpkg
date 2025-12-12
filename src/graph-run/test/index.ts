@@ -589,6 +589,95 @@ t.test('extreme async deadlock scenario', async t => {
   t.equal(visits[visits.length - 1], 'tap', 'visited tap last')
 })
 
+t.test(
+  'concurrent walks with cross-dependencies (promise-level cycle)',
+  async t => {
+    // Graph where A->C, B->D, C->D, D->C (potential promise-level deadlock)
+    const graph: Record<string, string[]> = {
+      A: ['C'],
+      B: ['D'],
+      C: ['D'],
+      D: ['C'],
+    }
+
+    const visits: string[] = []
+    const cycles: [string, string[], string[]][] = []
+
+    await graphRun({
+      graph: ['A', 'B'], // Two entry points that can deadlock
+      getDeps: async n => {
+        // Random delay to stress test race conditions
+        await setTimeout(Math.random() * 10)
+        return graph[n] ?? []
+      },
+      visit: async n => {
+        await setTimeout(Math.random() * 5)
+        visits.push(n)
+      },
+      onCycle: async (n, cycle, path) => {
+        cycles.push([n, cycle, path])
+      },
+    })
+
+    t.equal(visits.length, 4, 'all nodes visited')
+    t.ok(visits.includes('A'), 'visited A')
+    t.ok(visits.includes('B'), 'visited B')
+    t.ok(visits.includes('C'), 'visited C')
+    t.ok(visits.includes('D'), 'visited D')
+    // At least one cycle should be detected (either C->D or D->C)
+    t.ok(cycles.length >= 1, 'detected at least one cycle')
+  },
+)
+
+t.test('transitive promise-level cycle detection', async t => {
+  // Graph: A->B->C->A (cycle via transitive waiting)
+  // Entry points A and C start concurrently
+  const graph: Record<string, string[]> = {
+    A: ['B'],
+    B: ['C'],
+    C: ['A'],
+  }
+
+  const visits: string[] = []
+  const cycles: [string, string[], string[]][] = []
+
+  await graphRun({
+    graph: ['A', 'C'],
+    getDeps: async n => {
+      await setTimeout(Math.random() * 10)
+      return graph[n] ?? []
+    },
+    visit: async n => {
+      await setTimeout(Math.random() * 5)
+      visits.push(n)
+    },
+    onCycle: async (n, cycle, path) => {
+      cycles.push([n, cycle, path])
+    },
+  })
+
+  t.equal(visits.length, 3, 'all nodes visited')
+  t.ok(cycles.length >= 1, 'detected cycle')
+})
+
+t.test('promise waiting is cleaned up after completion', async t => {
+  const graph: Record<string, string[]> = {
+    A: ['B'],
+    B: [],
+  }
+
+  const runner = new Runner({
+    graph: ['A'],
+    getDeps: async n => graph[n] ?? [],
+    visit: async () => {},
+  })
+
+  await runner.run()
+
+  // After run completes, promiseWaiting should be empty
+  t.equal(runner.promiseWaiting.size, 0, 'promiseWaiting cleaned up')
+})
+
 t.test('error identifier checking', t => {
   t.equal(
     isGraphRunError<unknown>(

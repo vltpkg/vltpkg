@@ -376,6 +376,9 @@ export class Runner<Node, Result> extends RunnerBase<
   /** Map of nodes currently awaiting completion */
   readonly running = new Map<Node, Promise<void>>()
 
+  /** Track which node's promise is waiting for which other nodes */
+  readonly promiseWaiting = new Map<Node, Set<Node>>()
+
   async getDeps(n: Node) {
     /* c8 ignore next */
     if (this.abortController.signal.aborted) return []
@@ -406,6 +409,26 @@ export class Runner<Node, Result> extends RunnerBase<
     await this.options.onCycle?.(n, cycle, path)
   }
 
+  /**
+   * Check if node `target` is waiting (directly or transitively) for node `n`.
+   * If so, making `n` wait for `target` would create a deadlock.
+   */
+  #isWaitingFor(
+    target: Node,
+    n: Node,
+    visited = new Set<Node>(),
+  ): boolean {
+    if (visited.has(target)) return false
+    visited.add(target)
+    const waiting = this.promiseWaiting.get(target)
+    if (!waiting) return false
+    if (waiting.has(n)) return true
+    for (const w of waiting) {
+      if (this.#isWaitingFor(w, n, visited)) return true
+    }
+    return false
+  }
+
   async #walk(n: Node, path: Node[]) {
     const r = this.running.get(n)
     /* c8 ignore next */
@@ -416,10 +439,12 @@ export class Runner<Node, Result> extends RunnerBase<
     const p = this.#step(n, path).then(
       () => {
         this.running.delete(n)
+        this.promiseWaiting.delete(n)
       },
       /* c8 ignore start - handled deeper in the chain */
       (er: unknown) => {
         this.running.delete(n)
+        this.promiseWaiting.delete(n)
         throw er
       },
       /* c8 ignore stop */
@@ -436,6 +461,10 @@ export class Runner<Node, Result> extends RunnerBase<
     const awaiting: Promise<void>[] = []
     const depPath = [...path, n]
 
+    // Initialize waiting set for this node
+    const waitingOn = new Set<Node>()
+    this.promiseWaiting.set(n, waitingOn)
+
     for (const d of deps) {
       /* c8 ignore next */
       if (this.abortController.signal.aborted) return
@@ -444,7 +473,20 @@ export class Runner<Node, Result> extends RunnerBase<
       if (this.cycleCheck(n, depPath, d)) continue
       /* c8 ignore next */
       if (this.settled.get(d)) continue
-      awaiting.push(this.running.get(d) ?? this.#walk(d, depPath))
+
+      const runningPromise = this.running.get(d)
+      if (runningPromise) {
+        // Check if d is already waiting for n (promise-level cycle)
+        if (this.#isWaitingFor(d, n)) {
+          // Treat as cycle to prevent deadlock
+          void this.onCycle(d, [n, d], depPath)
+          continue
+        }
+      }
+
+      // Record that n is waiting for d
+      waitingOn.add(d)
+      awaiting.push(runningPromise ?? this.#walk(d, depPath))
     }
 
     /* c8 ignore next */
