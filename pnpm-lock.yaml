@@ -24,9 +24,6 @@ catalogs:
     eslint:
       specifier: ^9.39.1
       version: 9.39.1
-    graph-run:
-      specifier: ^1.1.0
-      version: 1.1.0
     lru-cache:
       specifier: ^11.2.4
       version: 11.2.4
@@ -433,6 +430,9 @@ importers:
       '@vltpkg/graph':
         specifier: workspace:*
         version: link:../graph
+      '@vltpkg/graph-run':
+        specifier: workspace:*
+        version: link:../graph-run
       '@vltpkg/init':
         specifier: workspace:*
         version: link:../init
@@ -493,9 +493,6 @@ importers:
       chalk:
         specifier: ^5.6.2
         version: 5.6.2
-      graph-run:
-        specifier: 'catalog:'
-        version: 1.1.0
       hosted-git-info:
         specifier: ^9.0.2
         version: 9.0.2
@@ -959,6 +956,9 @@ importers:
       '@vltpkg/fast-split':
         specifier: workspace:*
         version: link:../fast-split
+      '@vltpkg/graph-run':
+        specifier: workspace:*
+        version: link:../graph-run
       '@vltpkg/init':
         specifier: workspace:*
         version: link:../init
@@ -1001,9 +1001,6 @@ importers:
       '@vltpkg/workspaces':
         specifier: workspace:*
         version: link:../workspaces
-      graph-run:
-        specifier: 'catalog:'
-        version: 1.1.0
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.1
@@ -1029,6 +1026,46 @@ importers:
       tar:
         specifier: 'catalog:'
         version: 7.5.2
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.27.9(typescript@5.7.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.49.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.7.3)
+
+  src/graph-run:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
+      polite-json:
+        specifier: 'catalog:'
+        version: 5.0.0
+      walk-up-path:
+        specifier: 'catalog:'
+        version: 4.0.0
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.39.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.2
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.1(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.7.4
+      tap:
+        specifier: 'catalog:'
+        version: 21.5.0(@types/node@22.19.2)(@types/react@18.3.27)(react-devtools-core@4.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
       typedoc:
         specifier: 'catalog:'
         version: 0.27.9(typescript@5.7.3)
@@ -2500,6 +2537,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/graph-run':
+        specifier: workspace:*
+        version: link:../graph-run
       '@vltpkg/package-json':
         specifier: workspace:*
         version: link:../package-json
@@ -2512,9 +2552,6 @@ importers:
       glob:
         specifier: ^13.0.0
         version: 13.0.0
-      graph-run:
-        specifier: 'catalog:'
-        version: 1.1.0
       minimatch:
         specifier: 'catalog:'
         version: 10.1.1
@@ -8438,9 +8475,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  graph-run@1.1.0:
-    resolution: {integrity: sha512-L7Lis9kQWoh3A7QFZOzWlim61h4Suvu28txLaiuRBvQQia6zTx4Q32R9E2VTfpcI6VFfJlMcxXdxt7SItaeb1A==}
 
   graphql@16.12.0:
     resolution: {integrity: sha512-DKKrynuQRne0PNpEbzuEdHlYOMksHSUI8Zc9Unei5gTsMNA2/vMpoMz/yKba50pejK56qj98qM0SjYxAKi13gQ==}
@@ -18799,8 +18833,6 @@ snapshots:
   gopd@1.2.0: {}
 
   graceful-fs@4.2.11: {}
-
-  graph-run@1.1.0: {}
 
   graphql@16.12.0: {}
 

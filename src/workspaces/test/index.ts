@@ -1,5 +1,5 @@
 import { unload } from '@vltpkg/vlt-json'
-import type { DepResults } from 'graph-run'
+import type { DepResults } from '@vltpkg/graph-run'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Workspace } from '../src/index.ts'

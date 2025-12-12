@@ -14,6 +14,7 @@
     "@vltpkg/dss-breadcrumb": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/fast-split": "workspace:*",
+    "@vltpkg/graph-run": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
@@ -28,7 +29,6 @@
     "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
-    "graph-run": "catalog:",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:"
   },

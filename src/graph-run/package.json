@@ -1,23 +1,18 @@
 {
-  "name": "@vltpkg/workspaces",
-  "description": "Utility for working with vlt workspaces",
+  "name": "@vltpkg/graph-run",
+  "description": "Run operations on a graph, maximizing parallelism",
   "version": "1.0.0-rc.10",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/workspaces"
+    "directory": "src/graph-run"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
-    "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/graph-run": "workspace:*",
-    "@vltpkg/package-json": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "@vltpkg/vlt-json": "workspace:*",
-    "glob": "^13.0.0",
-    "minimatch": "catalog:",
-    "path-scurry": "catalog:"
+    "polite-json": "catalog:",
+    "walk-up-path": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
