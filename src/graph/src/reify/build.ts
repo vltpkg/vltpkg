@@ -4,7 +4,7 @@
 
 import type { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
-import { graphRun } from 'graph-run'
+import { graphRun } from '@vltpkg/graph-run'
 import type { PathScurry } from 'path-scurry'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Diff } from '../diff.ts'
