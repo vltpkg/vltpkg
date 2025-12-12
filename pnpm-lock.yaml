@@ -1037,19 +1037,6 @@ importers:
         version: 8.49.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.7.3)
 
   src/graph-run:
-    dependencies:
-      '@vltpkg/error-cause':
-        specifier: workspace:*
-        version: link:../error-cause
-      '@vltpkg/types':
-        specifier: workspace:*
-        version: link:../types
-      polite-json:
-        specifier: 'catalog:'
-        version: 5.0.0
-      walk-up-path:
-        specifier: 'catalog:'
-        version: 4.0.0
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
