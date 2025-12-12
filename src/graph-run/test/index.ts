@@ -589,29 +589,65 @@ t.test('extreme async deadlock scenario', async t => {
   t.equal(visits[visits.length - 1], 'tap', 'visited tap last')
 })
 
+/**
+ * Helper to wait for a condition, with timeout protection.
+ * Loops with `await setTimeout(0)` until predicate returns true.
+ */
+const waitFor = async (
+  predicate: () => boolean,
+  opts: { timeoutMs?: number; stepMs?: number } = {},
+): Promise<void> => {
+  const { timeoutMs = 5000, stepMs = 0 } = opts
+  const start = Date.now()
+  while (!predicate()) {
+    if (Date.now() - start > timeoutMs) {
+      throw new Error('waitFor timeout exceeded')
+    }
+    await setTimeout(stepMs)
+  }
+}
+
 t.test(
-  'concurrent walks with cross-dependencies (promise-level cycle)',
+  'deterministic promise-level cycle detection (L480-484)',
   async t => {
-    // Graph where A->C, B->D, C->D, D->C (potential promise-level deadlock)
+    // Graph: A->X, B->X, X->C, C->A
+    // Entry points: ['A', 'B']
+    //
+    // Goal: Force a promise-level waiting cycle that triggers #isWaitingFor().
+    // - B starts X quickly
+    // - X waits on C
+    // - Gate A until X is waiting on C
+    // - Gate C until A is waiting on X
+    // - When C processes dep A, A is running and waiting on X (which waits on C)
+    //   => #isWaitingFor(A, C) returns true => L480-484 execute
     const graph: Record<string, string[]> = {
-      A: ['C'],
-      B: ['D'],
-      C: ['D'],
-      D: ['C'],
+      A: ['X'],
+      B: ['X'],
+      X: ['C'],
+      C: ['A'],
     }
 
     const visits: string[] = []
     const cycles: [string, string[], string[]][] = []
 
-    await graphRun({
-      graph: ['A', 'B'], // Two entry points that can deadlock
+    const runner = new Runner({
+      graph: ['A', 'B'],
       getDeps: async n => {
-        // Random delay to stress test race conditions
-        await setTimeout(Math.random() * 10)
+        if (n === 'A') {
+          // Wait until X is waiting on C
+          await waitFor(
+            () => runner.promiseWaiting.get('X')?.has('C') === true,
+          )
+        }
+        if (n === 'C') {
+          // Wait until A is waiting on X
+          await waitFor(
+            () => runner.promiseWaiting.get('A')?.has('X') === true,
+          )
+        }
         return graph[n] ?? []
       },
       visit: async n => {
-        await setTimeout(Math.random() * 5)
         visits.push(n)
       },
       onCycle: async (n, cycle, path) => {
@@ -619,13 +655,30 @@ t.test(
       },
     })
 
-    t.equal(visits.length, 4, 'all nodes visited')
+    await runner.run()
+
+    // All 4 nodes visited
+    t.equal(new Set(visits).size, 4, 'all nodes visited exactly once')
     t.ok(visits.includes('A'), 'visited A')
     t.ok(visits.includes('B'), 'visited B')
+    t.ok(visits.includes('X'), 'visited X')
     t.ok(visits.includes('C'), 'visited C')
-    t.ok(visits.includes('D'), 'visited D')
-    // At least one cycle should be detected (either C->D or D->C)
-    t.ok(cycles.length >= 1, 'detected at least one cycle')
+
+    // The promise-level cycle detection produces a 2-element cycle: [n, d]
+    // where n is the node being skipped and d is the dependent.
+    // We expect ['C', 'A'] (C was skipped because A is waiting for X which waits for C)
+    const promiseCycle = cycles.find(
+      ([, cycle]) => cycle.length === 2 && cycle[0] === 'C',
+    )
+    t.ok(
+      promiseCycle,
+      'promise-level cycle detected with 2-element cycle',
+    )
+    t.strictSame(
+      promiseCycle?.[1],
+      ['C', 'A'],
+      'cycle is [C, A] from #isWaitingFor branch',
+    )
   },
 )
 
@@ -641,20 +694,24 @@ t.test('transitive promise-level cycle detection', async t => {
   const visits: string[] = []
   const cycles: [string, string[], string[]][] = []
 
-  await graphRun({
+  const runner = new Runner({
     graph: ['A', 'C'],
     getDeps: async n => {
-      await setTimeout(Math.random() * 10)
+      // Gate C until A starts walking (has promiseWaiting entry)
+      if (n === 'C') {
+        await waitFor(() => runner.promiseWaiting.has('A'))
+      }
       return graph[n] ?? []
     },
     visit: async n => {
-      await setTimeout(Math.random() * 5)
       visits.push(n)
     },
     onCycle: async (n, cycle, path) => {
       cycles.push([n, cycle, path])
     },
   })
+
+  await runner.run()
 
   t.equal(visits.length, 3, 'all nodes visited')
   t.ok(cycles.length >= 1, 'detected cycle')
