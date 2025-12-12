@@ -64,6 +64,7 @@ this repository and its corresponding license:
 | [@vltpkg/git](./src/git)                           | [ISC](./src/git/LICENSE)                              | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/git?logo=npm)              |
 | [@vltpkg/git-scp-url](./src/git-scp-url)           | [BSD-2-Clause-Patent](./src/git-scp-url/LICENSE)      | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/git-scp-url?logo=npm)      |
 | [@vltpkg/graph](./src/graph)                       | [BSD-2-Clause-Patent](./src/graph/LICENSE)            | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/graph?logo=npm)            |
+| [@vltpkg/graph-run](./src/graph-run)               | [BSD-2-Clause-Patent](./src/graph-run/LICENSE)        | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/graph-run?logo=npm)        |
 | [@vltpkg/gui](./src/gui)                           | [FSL-1.1-MIT](./src/gui/LICENSE.md)                   | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/gui?logo=npm)              |
 | [@vltpkg/init](./src/init)                         | [BSD-2-Clause-Patent](./src/init/LICENSE)             | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/init?logo=npm)             |
 | [@vltpkg/keychain](./src/keychain)                 | [BSD-2-Clause-Patent](./src/keychain/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/keychain?logo=npm)         |
