@@ -42,10 +42,10 @@ jobs:
         continue-on-error: true
         run: |
           # avoid changes from the bootstrap step
-          rm -rf node_modules
-          git checkout -- vlt-lock.json 
+          ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
-          vlt install --view=json --allow-scripts="#tailwindcss"
+          vlt install --view=human
 
       - name: Formatting
         id: format
@@ -139,10 +139,10 @@ jobs:
         continue-on-error: true
         run: |
           # avoid changes from the bootstrap step
-          rm -rf node_modules
-          git checkout -- vlt-lock.json 
+          ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
-          vlt install --view=json --allow-scripts="#tailwindcss"
+          vlt install --view=human
 
       - name: Run Typecheck
         continue-on-error: true
