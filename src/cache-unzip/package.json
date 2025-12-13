@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cache-unzip",
   "description": "Daemon that manages the @vltpkg/cache disk store",
-  "version": "1.0.0-rc.10",
+  "version": "1.0.0-rc.11",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",

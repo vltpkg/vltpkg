@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/fast-split",
   "description": "A fast way to split small-to-medium sized strings by small string delimiters",
-  "version": "1.0.0-rc.10",
+  "version": "1.0.0-rc.11",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
