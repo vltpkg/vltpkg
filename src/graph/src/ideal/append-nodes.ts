@@ -436,7 +436,11 @@ const processPlacementTasks = async (
         manifest[depTypeName]
 
       if (depRecord && shouldInstallDepType(node, depTypeName)) {
-        for (const [name, bareSpec] of Object.entries(depRecord)) {
+        // Sort Object.entries for deterministic iteration
+        const sortedEntries = Object.entries(depRecord).sort(
+          ([a], [b]) => a.localeCompare(b, 'en'),
+        )
+        for (const [name, bareSpec] of sortedEntries) {
           // might need to skip already placed peer deps here
           if (bundled.has(name)) continue
           const dep = {

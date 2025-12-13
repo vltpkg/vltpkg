@@ -5,19 +5,19 @@ import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
 import { getDependencies } from '../dependencies.ts'
 import { getOrderedDependencies } from './get-ordered-dependencies.ts'
+import type {
+  ProcessPlacementResultEntry,
+  PeerContext,
+  PeerContextEntry,
+  PeerContextEntryInput,
+  ProcessPlacementResult,
+} from './types.ts'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
-import type {
-  PeerContext,
-  PeerContextEntry,
-  PeerContextEntryInput,
-  ProcessPlacementResult,
-  ProcessPlacementResultEntry,
-} from './types.ts'
 
 /**
  * Retrieve a unique hash value for a given peer context set.
@@ -59,6 +59,24 @@ export const incompatibleSpecs = (
   }
   return false
 }
+
+/**
+ * Sort peer context entry inputs for deterministic processing.
+ * Orders: non-peer dependencies first, then peer dependencies, alphabetically by name.
+ */
+export const getOrderedPeerContextEntries = (
+  entries: PeerContextEntryInput[],
+): PeerContextEntryInput[] =>
+  [...entries].sort((a, b) => {
+    const aIsPeer =
+      a.type === 'peer' || a.type === 'peerOptional' ? 1 : 0
+    const bIsPeer =
+      b.type === 'peer' || b.type === 'peerOptional' ? 1 : 0
+    if (aIsPeer !== bIsPeer) return aIsPeer - bIsPeer
+    const aName = a.target?.name ?? a.spec.name
+    const bName = b.target?.name ?? b.spec.name
+    return aName.localeCompare(bName, 'en')
+  })
 
 /*
  * Checks if there are any conflicting versions for a given dependency
@@ -265,7 +283,10 @@ export const startPeerPlacement = (
 
   return {
     peerSetHash,
-    queuedEntries: [...queueMap.values()],
+    // Sort queuedEntries for deterministic order
+    queuedEntries: getOrderedPeerContextEntries([
+      ...queueMap.values(),
+    ]),
   }
 }
 
@@ -388,6 +409,11 @@ export const postPlacementPeerCheck = (
   // at a given level to ensure deterministic behavior when it comes to
   // forking new peer contexts
   for (const childDepsToProcess of sortedLevelResults) {
+    // Sort childDepsToProcess deterministically by node.id
+    const sortedChildDeps = [...childDepsToProcess].sort((a, b) =>
+      a.node.id.localeCompare(b.node.id, 'en'),
+    )
+
     const needsForking = new Map<
       ProcessPlacementResultEntry,
       {
@@ -398,16 +424,22 @@ export const postPlacementPeerCheck = (
     >()
     // first iterate on all child deps, adding entries to the current
     // context and collect the information on which ones need forking
-    for (const childDep of childDepsToProcess) {
+    for (const childDep of sortedChildDeps) {
       const needsFork = childDep.updateContext.putEntries()
       if (needsFork) {
         needsForking.set(childDep, needsFork)
       }
     }
+
+    // Sort needsForking entries before iterating (Map iteration order = insertion order)
+    const sortedNeedsForkingEntries = [
+      ...needsForking.entries(),
+    ].sort(([a], [b]) => a.node.id.localeCompare(b.node.id, 'en'))
+
     // then iterate again, forking contexts as needed but also try to
     // reuse the context of the previous sibling if possible
     let prevContext
-    for (const [childDep, nextEntries] of needsForking.entries()) {
+    for (const [childDep, nextEntries] of sortedNeedsForkingEntries) {
       if (
         prevContext &&
         !checkEntriesToPeerContext(prevContext, nextEntries)
@@ -431,7 +463,7 @@ export const postPlacementPeerCheck = (
     }
     // try to resolve peer dependencies now that
     // the context is fully set up
-    for (const childDep of childDepsToProcess) {
+    for (const childDep of sortedChildDeps) {
       childDep.updateContext.resolvePeerDeps()
       childDep.deps = getOrderedDependencies(childDep.deps)
     }
