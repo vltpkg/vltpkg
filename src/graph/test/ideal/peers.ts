@@ -7,6 +7,7 @@ import {
   addEntriesToPeerContext,
   endPeerPlacement,
   forkPeerContext,
+  getOrderedPeerContextEntries,
   postPlacementPeerCheck,
   retrievePeerContextHash,
   startPeerPlacement,
@@ -113,6 +114,101 @@ t.test('incompatibleSpecs', async t => {
       )
     },
   )
+})
+
+t.test('getOrderedPeerContextEntries', async t => {
+  t.test('sorts non-peer deps before peer deps', async t => {
+    const entries: PeerContextEntryInput[] = [
+      { spec: Spec.parse('z-peer', '1', configData), type: 'peer' },
+      { spec: Spec.parse('a-prod', '1', configData), type: 'prod' },
+      {
+        spec: Spec.parse('m-peer', '1', configData),
+        type: 'peerOptional',
+      },
+      { spec: Spec.parse('b-dev', '1', configData), type: 'dev' },
+    ]
+    const sorted = getOrderedPeerContextEntries(entries)
+    t.same(
+      sorted.map(e => e.spec.name),
+      ['a-prod', 'b-dev', 'm-peer', 'z-peer'],
+    )
+  })
+
+  t.test('sorts alphabetically within same type', async t => {
+    const entries: PeerContextEntryInput[] = [
+      { spec: Spec.parse('zebra', '1', configData), type: 'prod' },
+      { spec: Spec.parse('apple', '1', configData), type: 'prod' },
+      { spec: Spec.parse('mango', '1', configData), type: 'prod' },
+    ]
+    const sorted = getOrderedPeerContextEntries(entries)
+    t.same(
+      sorted.map(e => e.spec.name),
+      ['apple', 'mango', 'zebra'],
+    )
+  })
+
+  t.test('uses target.name when available', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const node1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('alpha', '^1.0.0', configData),
+      { name: 'alpha', version: '1.0.0' },
+    )!
+    const node2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('beta', '^1.0.0', configData),
+      { name: 'beta', version: '1.0.0' },
+    )!
+
+    const entries: PeerContextEntryInput[] = [
+      {
+        spec: Spec.parse('zzz', '1', configData),
+        type: 'prod',
+        target: node2,
+      },
+      {
+        spec: Spec.parse('aaa', '1', configData),
+        type: 'prod',
+        target: node1,
+      },
+    ]
+    const sorted = getOrderedPeerContextEntries(entries)
+    // Should sort by target.name (alpha, beta), not spec.name
+    t.same(
+      sorted.map(e => e.target?.name),
+      ['alpha', 'beta'],
+    )
+  })
+
+  t.test('handles empty array', async t => {
+    const entries: PeerContextEntryInput[] = []
+    const sorted = getOrderedPeerContextEntries(entries)
+    t.same(sorted, [])
+  })
+
+  t.test('does not mutate original array', async t => {
+    const entries: PeerContextEntryInput[] = [
+      { spec: Spec.parse('zebra', '1', configData), type: 'prod' },
+      { spec: Spec.parse('apple', '1', configData), type: 'prod' },
+    ]
+    const original = [...entries]
+    getOrderedPeerContextEntries(entries)
+    t.same(
+      entries.map(e => e.spec.name),
+      original.map(e => e.spec.name),
+      'original array should not be mutated',
+    )
+  })
 })
 
 t.test('addEntriesToPeerContext', async t => {
