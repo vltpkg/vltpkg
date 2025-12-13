@@ -7,7 +7,6 @@
     "@types/semver": "^7.7.1",
     "@types/ssri": "^7.1.5",
     "eslint": "^9.39.1",
-    "graph-run": "^1.1.0",
     "lru-cache": "^11.2.4",
     "lz-string": "^1.5.0",
     "minimatch": "^10.1.1",
