@@ -920,8 +920,8 @@ t.test('endPeerPlacement', async t => {
       // This tests the fix for the workspace peer dep resolution bug:
       // When a package has a peer dep (e.g., zod >= 3.0.0) and its parent
       // has a direct dep on the same package (e.g., zod@^3.25.76),
-      // the peer should resolve to the sibling's version, not an arbitrary
-      // version from elsewhere in the graph.
+      // the peer should resolve to the sibling's version, not a version
+      // from a different workspace or from the shared peer context elsewhere in the graph.
       const peerContext: PeerContext = new Map()
       const mainManifest = {
         name: 'my-project',
