@@ -323,6 +323,45 @@ t.test('addEntriesToPeerContext', async t => {
     },
   )
 
+  t.test(
+    'needs fork when sibling entries in same batch conflict with each other',
+    async t => {
+      // This tests line 150 - when multiple entries are added in the same
+      // call and a later entry conflicts with an earlier one that was just
+      // created in this same iteration
+      const peerContext: PeerContext = new Map()
+      const spec1 = Spec.parse('foo', '^1.0.0', configData)
+      const spec2 = Spec.parse('foo', '^2.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Add two conflicting specs for the same package in ONE call
+      // The first entry will create a new peer context entry
+      // The second entry should trigger line 150 when it conflicts
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [
+          { spec: spec1, type: 'peer' },
+          { spec: spec2, type: 'peer' },
+        ],
+        graph.mainImporter,
+      )
+
+      t.equal(
+        needsFork,
+        true,
+        'should need fork when sibling entries conflict',
+      )
+    },
+  )
+
   t.test('needs fork when specs do not intersect', async t => {
     const peerContext: PeerContext = new Map()
     const spec1 = Spec.parse('foo', '^1.0.0', configData)
