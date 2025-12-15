@@ -1124,7 +1124,7 @@ t.test('endPeerPlacement', async t => {
       )!
 
       // Simulate zod@3.x from current workspace (like registry)
-      const correctVersion = graph.placePackage(
+      const currentWorkspaceVersion = graph.placePackage(
         graph.mainImporter,
         'prod',
         Spec.parse('zod', '^3.25.0', configData),
