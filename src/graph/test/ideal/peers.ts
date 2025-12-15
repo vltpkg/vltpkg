@@ -935,7 +935,7 @@ t.test('endPeerPlacement', async t => {
 
       // Simulate having a different version already in the graph
       // (like zod@4.1.x from another workspace)
-      const wrongVersion = graph.placePackage(
+      const otherWorkspaceVersion = graph.placePackage(
         graph.mainImporter,
         'prod',
         Spec.parse('peer-pkg', '^2.0.0', configData),
