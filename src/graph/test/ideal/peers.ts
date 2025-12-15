@@ -1012,7 +1012,7 @@ t.test('endPeerPlacement', async t => {
       )
       t.not(
         edge?.to?.id,
-        wrongVersion.id,
+        otherWorkspaceVersion.id,
         'should NOT link to the wrong version',
       )
     },
@@ -1116,7 +1116,7 @@ t.test('endPeerPlacement', async t => {
       })
 
       // Simulate zod@4.x from another workspace (like docs)
-      const wrongVersion = graph.placePackage(
+      const otherWorkspaceVersion = graph.placePackage(
         graph.mainImporter,
         'prod',
         Spec.parse('zod', '^4.0.0', configData),
@@ -1136,7 +1136,7 @@ t.test('endPeerPlacement', async t => {
       peerContext.set('zod', {
         active: true,
         specs: new Set([Spec.parse('zod', '>=4.0.0', configData)]),
-        target: wrongVersion, // This is what would happen from docs workspace
+        target: otherWorkspaceVersion, // This is what would happen from docs workspace
         type: 'prod',
         contextDependents: new Set(),
       })
@@ -1169,7 +1169,11 @@ t.test('endPeerPlacement', async t => {
       const siblingSpec = Spec.parse('zod', '^3.25.0', configData)
       const queuedEntries: PeerContextEntryInput[] = [
         { spec: nodeSpec, target: node, type: 'prod' },
-        { spec: siblingSpec, target: correctVersion, type: 'prod' },
+        {
+          spec: siblingSpec,
+          target: currentWorkspaceVersion,
+          type: 'prod',
+        },
       ]
 
       const end = endPeerPlacement(
@@ -1199,12 +1203,12 @@ t.test('endPeerPlacement', async t => {
       t.ok(edge, 'should have edge to zod')
       t.equal(
         edge?.to?.id,
-        correctVersion.id,
+        currentWorkspaceVersion.id,
         'should link to sibling target (zod@3.25.76), not peer context target',
       )
       t.not(
         edge?.to?.id,
-        wrongVersion.id,
+        otherWorkspaceVersion.id,
         'should NOT link to peer context target (zod@4.1.11)',
       )
     },
