@@ -323,6 +323,45 @@ t.test('addEntriesToPeerContext', async t => {
     },
   )
 
+  t.test(
+    'needs fork when sibling entries in same batch conflict with each other',
+    async t => {
+      // This tests line 150 - when multiple entries are added in the same
+      // call and a later entry conflicts with an earlier one that was just
+      // created in this same iteration
+      const peerContext: PeerContext = new Map()
+      const spec1 = Spec.parse('foo', '^1.0.0', configData)
+      const spec2 = Spec.parse('foo', '^2.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Add two conflicting specs for the same package in ONE call
+      // The first entry will create a new peer context entry
+      // The second entry should trigger line 150 when it conflicts
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [
+          { spec: spec1, type: 'peer' },
+          { spec: spec2, type: 'peer' },
+        ],
+        graph.mainImporter,
+      )
+
+      t.equal(
+        needsFork,
+        true,
+        'should need fork when sibling entries conflict',
+      )
+    },
+  )
+
   t.test('needs fork when specs do not intersect', async t => {
     const peerContext: PeerContext = new Map()
     const spec1 = Spec.parse('foo', '^1.0.0', configData)
@@ -913,6 +952,306 @@ t.test('endPeerPlacement', async t => {
     )
     t.equal(nextDeps[0].spec, peerSpec, 'should have correct spec')
   })
+
+  t.test(
+    'prioritizes sibling dependency target for peer resolution',
+    async t => {
+      // This tests the fix for the workspace peer dep resolution bug:
+      // When a package has a peer dep (e.g., zod >= 3.0.0) and its parent
+      // has a direct dep on the same package (e.g., zod@^3.25.76),
+      // the peer should resolve to the sibling's version, not a version
+      // from a different workspace or from the shared peer context elsewhere in the graph.
+      const peerContext: PeerContext = new Map()
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Simulate having a different version already in the graph
+      // (like zod@4.1.x from another workspace)
+      const otherWorkspaceVersion = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('peer-pkg', '^2.0.0', configData),
+        { name: 'peer-pkg', version: '2.0.0' },
+      )!
+
+      // The sibling dependency has the correct version (like zod@3.25.76)
+      const siblingVersion = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('peer-pkg', '^1.0.0', configData),
+        { name: 'peer-pkg', version: '1.0.0' },
+      )!
+
+      // The peer spec is loose (like zod >= 3.0.0) - satisfies both versions
+      const loosePeerSpec = Spec.parse(
+        'peer-pkg',
+        '>=1.0.0',
+        configData,
+      )
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        {
+          name: 'my-pkg',
+          version: '1.0.0',
+        },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        ['peer-pkg', { spec: loosePeerSpec, type: 'peer' as const }],
+      ])
+
+      // queuedEntries includes the sibling dep with the correct target
+      // This simulates what startPeerPlacement collects from fromNode.edgesOut
+      const siblingSpec = Spec.parse('peer-pkg', '^1.0.0', configData)
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+        { spec: siblingSpec, target: siblingVersion, type: 'prod' },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.putEntries()
+      end.resolvePeerDeps()
+
+      // The peer should be resolved directly, not pushed to nextDeps
+      t.equal(
+        nextDeps.length,
+        0,
+        'peer should be resolved from sibling, not in nextDeps',
+      )
+
+      // Check that the edge was created to the correct version
+      const edge = node.edgesOut.get('peer-pkg')
+      t.ok(edge, 'should have edge to peer-pkg')
+      t.equal(
+        edge?.to?.id,
+        siblingVersion.id,
+        'should link to sibling target (correct version), not wrong version',
+      )
+      t.not(
+        edge?.to?.id,
+        otherWorkspaceVersion.id,
+        'should NOT link to the wrong version',
+      )
+    },
+  )
+
+  t.test(
+    'uses sibling spec when falling back to nextDeps',
+    async t => {
+      // When there's no resolved sibling target but the sibling has a more
+      // specific spec, use that spec for resolution
+      const peerContext: PeerContext = new Map()
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Loose peer spec
+      const loosePeerSpec = Spec.parse(
+        'peer-pkg',
+        '>=1.0.0',
+        configData,
+      )
+      // More specific sibling spec
+      const specificSiblingSpec = Spec.parse(
+        'peer-pkg',
+        '^1.5.0',
+        configData,
+      )
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        {
+          name: 'my-pkg',
+          version: '1.0.0',
+        },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        ['peer-pkg', { spec: loosePeerSpec, type: 'peer' as const }],
+      ])
+
+      // Sibling entry without a resolved target, but with a specific spec
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+        { spec: specificSiblingSpec, type: 'prod' }, // no target yet
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.putEntries()
+      end.resolvePeerDeps()
+
+      // Should fall back to nextDeps but with the sibling's more specific spec
+      t.equal(nextDeps.length, 1, 'peer should be in nextDeps')
+      t.equal(
+        nextDeps[0].spec.bareSpec,
+        specificSiblingSpec.bareSpec,
+        'should use sibling spec (^1.5.0) instead of loose peer spec (>=1.0.0)',
+      )
+      t.not(
+        nextDeps[0].spec.bareSpec,
+        loosePeerSpec.bareSpec,
+        'should NOT use the loose peer spec',
+      )
+    },
+  )
+
+  t.test(
+    'sibling takes priority over peer context entry from another workspace',
+    async t => {
+      // This tests the main bug scenario: when peer context already has an
+      // entry with a target from another workspace (e.g., zod@4.x from docs),
+      // but the current workspace has a direct dep on a different version
+      // (e.g., zod@3.x in registry), the sibling should take priority.
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Simulate zod@4.x from another workspace (like docs)
+      const otherWorkspaceVersion = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('zod', '^4.0.0', configData),
+        { name: 'zod', version: '4.1.11' },
+      )!
+
+      // Simulate zod@3.x from current workspace (like registry)
+      const currentWorkspaceVersion = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('zod', '^3.25.0', configData),
+        { name: 'zod', version: '3.25.76' },
+      )!
+
+      // Set up peer context with the WRONG version (as if from docs workspace)
+      const peerContext: PeerContext = new Map()
+      peerContext.set('zod', {
+        active: true,
+        specs: new Set([Spec.parse('zod', '>=4.0.0', configData)]),
+        target: otherWorkspaceVersion, // This is what would happen from docs workspace
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      // Loose peer spec (like @hono/zod-openapi's "zod >= 3.0.0")
+      const loosePeerSpec = Spec.parse('zod', '>=3.0.0', configData)
+      const nodeSpec = Spec.parse(
+        '@hono/zod-openapi',
+        '^0.19.0',
+        configData,
+      )
+
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        {
+          name: '@hono/zod-openapi',
+          version: '0.19.10',
+        },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        ['zod', { spec: loosePeerSpec, type: 'peer' as const }],
+      ])
+
+      // queuedEntries has the sibling with the CORRECT version
+      // This is what registry workspace's direct dep on zod@^3.25.76 produces
+      const siblingSpec = Spec.parse('zod', '^3.25.0', configData)
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+        {
+          spec: siblingSpec,
+          target: currentWorkspaceVersion,
+          type: 'prod',
+        },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.putEntries()
+      end.resolvePeerDeps()
+
+      // The peer should be resolved directly using the sibling's target
+      t.equal(
+        nextDeps.length,
+        0,
+        'peer should be resolved from sibling, not in nextDeps',
+      )
+
+      // Check that the edge was created to the CORRECT version (zod@3.x),
+      // NOT the version from the peer context (zod@4.x)
+      const edge = node.edgesOut.get('zod')
+      t.ok(edge, 'should have edge to zod')
+      t.equal(
+        edge?.to?.id,
+        currentWorkspaceVersion.id,
+        'should link to sibling target (zod@3.25.76), not peer context target',
+      )
+      t.not(
+        edge?.to?.id,
+        otherWorkspaceVersion.id,
+        'should NOT link to peer context target (zod@4.1.11)',
+      )
+    },
+  )
 })
 
 t.test('nextPeerContextIndex', async t => {
