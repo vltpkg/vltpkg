@@ -364,7 +364,35 @@ export const endPeerPlacement = (
     for (const nextDep of nextPeerDeps.values()) {
       const { spec, type } = nextDep
       if (type === 'peer' || type === 'peerOptional') {
-        // try to retrieve an entry for that peer dep from
+        // FIRST: Check if there's a sibling dependency from the parent
+        // that specifies this same package. Sibling deps take priority
+        // because they represent the workspace's direct dependency,
+        // which should be preferred over versions from other workspaces
+        // that may have been added to the peer context earlier.
+        const siblingEntry = queuedEntries.find(
+          e =>
+            (e.target?.name ?? e.spec.final.name) === spec.final.name,
+        )
+
+        if (
+          siblingEntry?.target &&
+          !node.edgesOut.has(spec.final.name) &&
+          satisfies(
+            siblingEntry.target.id,
+            spec,
+            fromNode.location,
+            fromNode.projectRoot,
+            graph.monorepo,
+          )
+        ) {
+          // The sibling's resolved target satisfies the peer spec,
+          // use it directly - this prioritizes the workspace's own
+          // direct dependency over versions from other workspaces
+          graph.addEdge(type, spec, node, siblingEntry.target)
+          continue
+        }
+
+        // THEN: Try to retrieve an entry for that peer dep from
         // the current peer context set
         const entry = peerContext.get(spec.final.name)
         if (
@@ -385,8 +413,15 @@ export const endPeerPlacement = (
           // skip unsatisfied peerOptional dependencies,
           // just create a dangling edge
           graph.addEdge(type, spec, node)
+        } else if (
+          siblingEntry &&
+          siblingEntry.spec.bareSpec !== spec.bareSpec
+        ) {
+          // Sibling has a more specific spec for this package,
+          // use it when resolving to ensure we get the right version
+          nextDeps.push({ ...nextDep, spec: siblingEntry.spec })
         } else {
-          // could not satisfy from peer context, add to next deps
+          // could not satisfy from peer context or sibling, add to next deps
           nextDeps.push(nextDep)
         }
       }
