@@ -616,8 +616,7 @@ t.test(
 
     // Remove the package from the "before" state to simulate adding it
     const bNative = before.nodes.get(nativeAddonId)
-    if (!bNative)
-      throw new Error('no native-addon node in before??')
+    if (!bNative) throw new Error('no native-addon node in before??')
     before.removeNode(bNative)
 
     const diff = new Diff(before, after)
@@ -649,11 +648,7 @@ t.test(
     const installRun = runs[0]
     t.ok(installRun, 'should have install run')
     if (installRun) {
-      t.equal(
-        installRun.arg0,
-        'install',
-        'should run install script',
-      )
+      t.equal(installRun.arg0, 'install', 'should run install script')
       t.ok(
         installRun.cwd.includes('native-addon'),
         'should run in native-addon directory',
@@ -777,11 +772,7 @@ t.test(
     const installRun = runs[0]
     t.ok(installRun, 'should have install run')
     if (installRun) {
-      t.equal(
-        installRun.arg0,
-        'install',
-        'should run install script',
-      )
+      t.equal(installRun.arg0, 'install', 'should run install script')
     }
   },
 )

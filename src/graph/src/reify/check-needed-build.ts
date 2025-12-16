@@ -56,7 +56,8 @@ const nodeNeedsBuild = (node: Node, scurry: PathScurry): boolean => {
     scurry
       .lstatSync(node.resolvedLocation(scurry) + '/binding.gyp')
       ?.isFile() ?? false
-  if (hasBindingGyp && !scripts.install && !scripts.preinstall) return true
+  if (hasBindingGyp && !scripts.install && !scripts.preinstall)
+    return true
 
   // Check for prepare scripts on importers or git dependencies
   const prepable =
