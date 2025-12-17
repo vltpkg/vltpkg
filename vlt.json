@@ -1,6 +1,5 @@
 {
   "workspaces": ["src/*", "infra/*", "www/*"],
-  "allow-scripts": "#tailwindcss, #esbuild",
   "catalog": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^22.19.2",
