@@ -2,6 +2,7 @@
 // at the end, we get back to the importers, and run their prepare
 // script as well as install script.
 
+import { join } from 'node:path'
 import type { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
 import { graphRun } from '@vltpkg/graph-run'
@@ -113,8 +114,19 @@ const visit = async (
     postprepare,
   } = scripts
 
-  // if it has install script, run it
-  const runInstall = !!(install || preinstall || postinstall)
+  // Check for binding.gyp file (npm's implicit install detection)
+  // "If there is a binding.gyp file in the root of your package and you
+  // haven't defined your own install or preinstall scripts, npm will default
+  // the install command to compile using node-gyp via node-gyp rebuild"
+  const hasBindingGyp =
+    scurry
+      .lstatSync(join(node.resolvedLocation(scurry), 'binding.gyp'))
+      ?.isFile() ?? false
+  const hasImplicitInstall = hasBindingGyp && !install && !preinstall
+
+  // if it has install script or binding.gyp (implicit install), run it
+  const runInstall =
+    !!(install || preinstall || postinstall) || hasImplicitInstall
   if (runInstall) {
     await run({
       signal,

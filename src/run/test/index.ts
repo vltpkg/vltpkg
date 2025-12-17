@@ -845,6 +845,168 @@ t.test('do not trust manifests npm mucks with', async t => {
   })
 })
 
+t.test(
+  'detect binding.gyp and run implicit node-gyp rebuild',
+  async t => {
+    // Track what commands were executed
+    const executedCommands: string[] = []
+
+    const { run: mockRun } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      '@vltpkg/promise-spawn': {
+        promiseSpawn: async (cmd: string) => {
+          executedCommands.push(cmd)
+          return {
+            command: cmd,
+            args: [],
+            cwd: '',
+            status: 0,
+            signal: null,
+            stdout: '',
+            stderr: '',
+          }
+        },
+      },
+      'foreground-child': {
+        foregroundChild: () => {},
+      },
+      'foreground-child/proxy-signals': {
+        proxySignals: () => {},
+      },
+    })
+
+    const cwd = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'native-addon',
+        version: '1.0.0',
+        // No install script defined
+      }),
+      // binding.gyp file present
+      'binding.gyp': JSON.stringify({
+        targets: [{ target_name: 'addon' }],
+      }),
+    })
+
+    // manifest from tarball has no install script
+    const manifest: Manifest = {
+      name: 'native-addon',
+      version: '1.0.0',
+    }
+
+    await mockRun({
+      cwd,
+      manifest,
+      arg0: 'install',
+      projectRoot: cwd,
+    })
+
+    // Verify the correct command was detected and executed
+    t.equal(executedCommands.length, 1, 'should execute one command')
+    t.equal(
+      executedCommands[0],
+      'node-gyp rebuild',
+      'should detect binding.gyp and use implicit node-gyp rebuild',
+    )
+  },
+)
+
+t.test(
+  'binding.gyp detection does not override existing install script',
+  async t => {
+    const cwd = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'native-addon',
+        version: '1.0.0',
+        scripts: { install: 'echo custom-install' },
+      }),
+      // binding.gyp file present
+      'binding.gyp': JSON.stringify({
+        targets: [{ target_name: 'addon' }],
+      }),
+    })
+    const manifest: Manifest = {
+      name: 'native-addon',
+      version: '1.0.0',
+      scripts: { install: 'echo custom-install' },
+    }
+    const res = await run({
+      cwd,
+      manifest,
+      arg0: 'install',
+      projectRoot: cwd,
+      color: true,
+    })
+    t.match(res, {
+      command: 'echo custom-install',
+      status: 0,
+      stdout: 'custom-install',
+    })
+  },
+)
+
+t.test(
+  'binding.gyp detection does not override existing preinstall script',
+  async t => {
+    const cwd = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'native-addon',
+        version: '1.0.0',
+        scripts: { preinstall: 'echo preinstall-only' },
+      }),
+      // binding.gyp file present
+      'binding.gyp': JSON.stringify({
+        targets: [{ target_name: 'addon' }],
+      }),
+    })
+    const manifest: Manifest = {
+      name: 'native-addon',
+      version: '1.0.0',
+      scripts: { preinstall: 'echo preinstall-only' },
+    }
+    // With no install script but preinstall exists, install event should
+    // not add implicit node-gyp rebuild (npm behavior)
+    const res = await run({
+      cwd,
+      manifest,
+      arg0: 'install',
+      projectRoot: cwd,
+      ignoreMissing: true,
+    })
+    // The install command itself should be empty/missing since only preinstall exists
+    t.match(res, {
+      command: '',
+      status: 0,
+    })
+  },
+)
+
+t.test('no binding.gyp means no implicit install', async t => {
+  const cwd = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'regular-package',
+      version: '1.0.0',
+      // No install script and no binding.gyp
+    }),
+  })
+  const manifest: Manifest = {
+    name: 'regular-package',
+    version: '1.0.0',
+  }
+  const res = await run({
+    cwd,
+    manifest,
+    arg0: 'install',
+    projectRoot: cwd,
+    ignoreMissing: true,
+  })
+  // Should return empty since no install script and no binding.gyp
+  t.match(res, {
+    command: '',
+    status: 0,
+  })
+})
+
 t.test('quote things properly only as needed', async t => {
   const manifest: Manifest = {
     name: 'x',
