@@ -532,3 +532,247 @@ t.test(
     t.ok(optionalRun, 'should have attempted optional-dep install')
   },
 )
+
+t.test(
+  'should detect binding.gyp and run implicit install script',
+  async t => {
+    const runs: RunOptions[] = []
+    const chmods: string[] = []
+
+    const mockRun = async (options: RunOptions) => {
+      runs.push(options)
+    }
+
+    const mockFSP = t.createMock(FSP, {
+      chmod: async (path: string, mode: number) => {
+        t.equal(mode & 0o111, 0o111)
+        chmods.push(path)
+      },
+    })
+
+    const { build } = await t.mockImport<
+      typeof import('../../src/reify/build.ts')
+    >('../../src/reify/build.ts', {
+      '@vltpkg/run': { run: mockRun },
+      'node:fs/promises': mockFSP,
+    })
+
+    const nativeAddonId = joinDepIDTuple([
+      'registry',
+      '',
+      'native-addon@1.0.0',
+    ])
+
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: {
+          'native-addon': '1.0.0',
+        },
+      }),
+      node_modules: {
+        'native-addon': t.fixture(
+          'symlink',
+          './.vlt/' + nativeAddonId + '/node_modules/native-addon',
+        ),
+        '.vlt': {
+          [nativeAddonId]: {
+            node_modules: {
+              'native-addon': {
+                // Package.json has NO install script
+                'package.json': JSON.stringify({
+                  name: 'native-addon',
+                  version: '1.0.0',
+                }),
+                // But has binding.gyp - npm's implicit install trigger
+                'binding.gyp': JSON.stringify({
+                  targets: [{ target_name: 'addon' }],
+                }),
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // Load the "after" state with the package present
+    const after = actual.load({
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      projectRoot,
+      loadManifests: true,
+    })
+
+    // Load the "before" state
+    const before = actual.load({
+      projectRoot,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      loadManifests: true,
+    })
+
+    // Remove the package from the "before" state to simulate adding it
+    const bNative = before.nodes.get(nativeAddonId)
+    if (!bNative) throw new Error('no native-addon node in before??')
+    before.removeNode(bNative)
+
+    const diff = new Diff(before, after)
+
+    // Run the build with scripts enabled
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set([nativeAddonId]),
+    )
+
+    // Verify the build was called for the native addon
+    t.ok(result.success, 'should have success array')
+    t.equal(
+      result.success.length,
+      1,
+      'should have 1 successfully built node',
+    )
+    t.equal(
+      result.success[0]?.name,
+      'native-addon',
+      'native-addon should be built',
+    )
+
+    // Verify install script was attempted even though none was defined
+    // (because binding.gyp exists)
+    t.equal(runs.length, 1, 'should have 1 install run')
+    const installRun = runs[0]
+    t.ok(installRun, 'should have install run')
+    if (installRun) {
+      t.equal(installRun.arg0, 'install', 'should run install script')
+      t.ok(
+        installRun.cwd.includes('native-addon'),
+        'should run in native-addon directory',
+      )
+    }
+  },
+)
+
+t.test(
+  'should NOT run implicit install when install script exists',
+  async t => {
+    const runs: RunOptions[] = []
+    const chmods: string[] = []
+
+    const mockRun = async (options: RunOptions) => {
+      runs.push(options)
+    }
+
+    const mockFSP = t.createMock(FSP, {
+      chmod: async (path: string, mode: number) => {
+        t.equal(mode & 0o111, 0o111)
+        chmods.push(path)
+      },
+    })
+
+    const { build } = await t.mockImport<
+      typeof import('../../src/reify/build.ts')
+    >('../../src/reify/build.ts', {
+      '@vltpkg/run': { run: mockRun },
+      'node:fs/promises': mockFSP,
+    })
+
+    const nativeAddonId = joinDepIDTuple([
+      'registry',
+      '',
+      'native-addon-custom@1.0.0',
+    ])
+
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: {
+          'native-addon-custom': '1.0.0',
+        },
+      }),
+      node_modules: {
+        'native-addon-custom': t.fixture(
+          'symlink',
+          './.vlt/' +
+            nativeAddonId +
+            '/node_modules/native-addon-custom',
+        ),
+        '.vlt': {
+          [nativeAddonId]: {
+            node_modules: {
+              'native-addon-custom': {
+                // Package.json HAS custom install script
+                'package.json': JSON.stringify({
+                  name: 'native-addon-custom',
+                  version: '1.0.0',
+                  scripts: {
+                    install: 'echo custom-install',
+                  },
+                }),
+                // Also has binding.gyp
+                'binding.gyp': JSON.stringify({
+                  targets: [{ target_name: 'addon' }],
+                }),
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // Load the "after" state with the package present
+    const after = actual.load({
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      projectRoot,
+      loadManifests: true,
+    })
+
+    // Load the "before" state
+    const before = actual.load({
+      projectRoot,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      loadManifests: true,
+    })
+
+    // Remove the package from the "before" state to simulate adding it
+    const bNative = before.nodes.get(nativeAddonId)
+    if (!bNative)
+      throw new Error('no native-addon-custom node in before??')
+    before.removeNode(bNative)
+
+    const diff = new Diff(before, after)
+
+    // Run the build with scripts enabled
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set([nativeAddonId]),
+    )
+
+    // Verify the build was called
+    t.ok(result.success, 'should have success array')
+    t.equal(
+      result.success.length,
+      1,
+      'should have 1 successfully built node',
+    )
+
+    // Verify install script was run (once, for the custom script)
+    t.equal(runs.length, 1, 'should have 1 install run')
+    const installRun = runs[0]
+    t.ok(installRun, 'should have install run')
+    if (installRun) {
+      t.equal(installRun.arg0, 'install', 'should run install script')
+    }
+  },
+)

@@ -252,7 +252,28 @@ const runImpl = async <
     (untrustworthy ? undefined : manifest) ??
     packageJson.read(options.cwd)
   const { scripts } = pj
-  const command = scripts?.[arg0]
+  let command = scripts?.[arg0]
+
+  // npm's implicit install behavior: "If there is a binding.gyp file in the
+  // root of your package and you haven't defined your own install or preinstall
+  // scripts, npm will default the install command to compile using node-gyp
+  // via node-gyp rebuild"
+  if (!command && arg0 === 'install') {
+    const hasNoInstallScripts =
+      !scripts?.install && !scripts?.preinstall
+    if (hasNoInstallScripts) {
+      try {
+        const bindingGypPath = resolve(options.cwd, 'binding.gyp')
+        const hasBindingGyp = statSync(bindingGypPath).isFile()
+        if (hasBindingGyp) {
+          command = 'node-gyp rebuild'
+        }
+      } catch {
+        // binding.gyp doesn't exist, that's fine
+      }
+    }
+  }
+
   if (!command) {
     if (ignoreMissing) {
       return {
@@ -277,7 +298,7 @@ const runImpl = async <
     })
   }
 
-  const precommand = !options.ignorePrePost && scripts[`pre${arg0}`]
+  const precommand = !options.ignorePrePost && scripts?.[`pre${arg0}`]
   const pre =
     precommand ?
       await execImpl({
@@ -312,7 +333,8 @@ const runImpl = async <
     return result
   }
 
-  const postcommand = !options.ignorePrePost && scripts[`post${arg0}`]
+  const postcommand =
+    !options.ignorePrePost && scripts?.[`post${arg0}`]
   if (!postcommand) return result
 
   const post = await execImpl({
