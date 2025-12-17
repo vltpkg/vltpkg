@@ -32,8 +32,8 @@ export async function getNodeGypShim(): Promise<string> {
   /* c8 ignore start - ignore platform-dependent coverage */
   const shimContent =
     process.platform === 'win32' ?
-      `@echo off\nvlx node-gyp@latest %*\n`
-    : `#!/bin/sh\nexec vlx node-gyp@latest "$@"\n`
+      `@echo off\nvlx --yes node-gyp@latest %*\n`
+    : `#!/bin/sh\nexec vlx --yes node-gyp@latest "$@"\n`
   /* c8 ignore stop */
 
   await writeFile(shimFile, shimContent, 'utf8')
