@@ -39,13 +39,12 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        continue-on-error: true
         run: |
           # avoid changes from the bootstrap step
-          rm -rf node_modules
-          git checkout -- vlt-lock.json 
+          ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
-          vlt install --view=json --allow-scripts="#tailwindcss"
+          vlt install --view=human
 
       - name: Formatting
         id: format
@@ -78,7 +77,7 @@ jobs:
           fi
 
       - name: Check Results
-        continue-on-error: true
+        continue-on-error: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
         run: |
           declare -A OUTCOMES=(
             [format]="${{ steps.format.outcome }}"
@@ -136,18 +135,36 @@ jobs:
         run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        continue-on-error: true
         run: |
           # avoid changes from the bootstrap step
-          rm -rf node_modules
-          git checkout -- vlt-lock.json 
+          ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
-          vlt install --view=json --allow-scripts="#tailwindcss"
+          vlt install --view=human
 
       - name: Run Typecheck
+        id: typecheck
         continue-on-error: true
         run: vlr --recursive typecheck
 
       - name: Run Tests
+        id: test
         continue-on-error: true
         run: vlr --recursive test
+
+      - name: Check Results
+        continue-on-error: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+        run: |
+          declare -A OUTCOMES=(
+            [typecheck]="${{ steps.typecheck.outcome }}"
+            [test]="${{ steps.test.outcome }}"
+          )
+          STATUS=0
+          for STEP in "${!OUTCOMES[@]}"; do
+            OUTCOME="${OUTCOMES[$STEP]}"
+            echo "$STEP: $OUTCOME"
+            if [ "$OUTCOME" != "success" ]; then
+              STATUS=1
+            fi
+          done
+          exit $STATUS
