@@ -64,7 +64,9 @@ t.test('with view', t => {
 })
 
 t.test('getCwd', async t => {
-  // fallback to projectRoot when no nodes/monorepo
+  // fallback to process.cwd() when no nodes/monorepo
+  // This matches npx behavior and is required for tools like node-gyp
+  // that must run in the directory where they were invoked
   {
     const e = new ExecCommand(
       {
@@ -81,7 +83,7 @@ t.test('getCwd', async t => {
       (async () => ({})) as any,
       (async () => ({})) as any,
     )
-    t.equal(e.getCwd(), t.testdirName)
+    t.equal(e.getCwd(), process.cwd())
   }
 
   // when nodes are selected via --scope, cwd is the first node absolute path

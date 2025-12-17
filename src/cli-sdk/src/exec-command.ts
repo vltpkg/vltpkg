@@ -305,9 +305,11 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       assert(first, error('no nodes found'))
       return resolve(this.projectRoot, first)
     }
+    // When no workspace/monorepo targeting is specified, use the current
+    // working directory. This matches npx behavior and is required for
+    // tools like node-gyp that must run in the correct directory.
     return (
-      this.#monorepo?.values().next().value?.fullpath ??
-      this.projectRoot
+      this.#monorepo?.values().next().value?.fullpath ?? process.cwd()
     )
   }
 
