@@ -1,4 +1,5 @@
 import { XDG } from '@vltpkg/xdg'
+import { statSync } from 'node:fs'
 import { chmod, mkdir, stat, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
@@ -63,4 +64,15 @@ export async function getNodeGypShimDir(): Promise<string> {
  */
 export function hasNodeGypReference(command: string): boolean {
   return command.includes('node-gyp')
+}
+
+/**
+ * Check if a binding.gyp file exists
+ */
+export function hasNodeGypBinding(cwd: string): boolean {
+  try {
+    return statSync(join(cwd, 'binding.gyp')).isFile()
+  } catch {
+    return false
+  }
 }

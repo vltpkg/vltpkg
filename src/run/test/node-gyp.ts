@@ -6,7 +6,8 @@ import {
   getNodeGypShim,
   getNodeGypShimDir,
   hasNodeGypReference,
-} from '../src/aliasRunner.ts'
+  hasNodeGypBinding,
+} from '../src/node-gyp.ts'
 
 // cleans up any existing shim before tests
 const shimPath = join(new XDG('vlt').runtime('run'), 'node-gyp')
@@ -58,6 +59,35 @@ t.test('hasNodeGypReference', async t => {
   })
 })
 
+t.test('hasNodeGypBinding', async t => {
+  t.test('detects binding.gyp file when present', async t => {
+    const cwd = t.testdir({
+      'binding.gyp': JSON.stringify({
+        targets: [{ target_name: 'addon' }],
+      }),
+    })
+    t.equal(hasNodeGypBinding(cwd), true)
+  })
+
+  t.test('returns false when binding.gyp is not present', async t => {
+    const cwd = t.testdir({
+      'package.json': JSON.stringify({ name: 'test' }),
+    })
+    t.equal(hasNodeGypBinding(cwd), false)
+  })
+
+  t.test('returns false when binding.gyp is a directory', async t => {
+    const cwd = t.testdir({
+      'binding.gyp': {},
+    })
+    t.equal(hasNodeGypBinding(cwd), false)
+  })
+
+  t.test('returns false for non-existent directory', async t => {
+    t.equal(hasNodeGypBinding('/path/that/does/not/exist'), false)
+  })
+})
+
 t.test('getNodeGypShim', async t => {
   t.test('creates shim file from scratch', async t => {
     // Get the shim path and delete it to test creation
@@ -68,8 +98,8 @@ t.test('getNodeGypShim', async t => {
 
     // Dynamically import to get fresh module with cleared memoization
     const { getNodeGypShim: freshGetShim } = await t.mockImport<
-      typeof import('../src/aliasRunner.ts')
-    >('../src/aliasRunner.ts')
+      typeof import('../src/node-gyp.ts')
+    >('../src/node-gyp.ts')
 
     const shimPath = await freshGetShim()
 
@@ -156,7 +186,7 @@ t.test('getNodeGypShim', async t => {
     // Create a new test that forces re-check by clearing the memoization
     // This is done by dynamically importing the module again
     const { getNodeGypShim: getShimFresh } =
-      await import('../src/aliasRunner.ts')
+      await import('../src/node-gyp.ts')
     const shimPath2 = await getShimFresh()
 
     t.equal(shimPath, shimPath2, 'uses existing shim')
