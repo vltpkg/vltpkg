@@ -47,6 +47,15 @@ t.test('run', async t => {
             failpost: 'echo {}',
             postfailpost: fail,
 
+            failmain: fail,
+
+            failpostnopre: 'echo {}',
+            postfailpostnopre: fail,
+
+            prefailpostwithpre: 'echo {}',
+            failpostwithpre: 'echo {}',
+            postfailpostwithpre: fail,
+
             passprepost:
               `${node} "${fixture}" child run ` +
               `${cwd} ${projectRoot} passprepost`,
@@ -191,6 +200,87 @@ t.test('run', async t => {
         status: 0,
         signal: null,
         stdout: '{}',
+        stderr: '',
+      },
+    })
+  })
+
+  t.test('fail main (no pre)', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'failmain'],
+      { acceptFail: true, env: { NODE_OPTIONS } },
+    )
+    const command =
+      node +
+      ' -e "process.exitCode=1;console.log(JSON.stringify(process.env.npm_lifecycle_event))"'
+    t.strictSame(JSON.parse(result.stdout), {
+      command,
+      args: [],
+      cwd,
+      status: 1,
+      signal: null,
+      stdout: 'failmain',
+      stderr: '',
+    })
+  })
+
+  t.test('fail post (no pre)', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'failpostnopre'],
+      { acceptFail: true, env: { NODE_OPTIONS } },
+    )
+    t.strictSame(JSON.parse(result.stdout), {
+      command: 'echo {}',
+      args: [],
+      cwd,
+      status: 1,
+      signal: null,
+      stdout: {},
+      stderr: '',
+      post: {
+        command: fail,
+        args: [],
+        cwd,
+        status: 1,
+        signal: null,
+        stdout: '"postfailpostnopre"',
+        stderr: '',
+      },
+    })
+  })
+
+  t.test('fail post (with pre)', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'failpostwithpre'],
+      { acceptFail: true, env: { NODE_OPTIONS } },
+    )
+    t.strictSame(JSON.parse(result.stdout), {
+      command: 'echo {}',
+      args: [],
+      cwd,
+      status: 1,
+      signal: null,
+      stdout: {},
+      stderr: '',
+      pre: {
+        command: 'echo {}',
+        args: [],
+        cwd,
+        status: 0,
+        signal: null,
+        stdout: '{}',
+        stderr: '',
+      },
+      post: {
+        command: fail,
+        args: [],
+        cwd,
+        status: 1,
+        signal: null,
+        stdout: '"postfailpostwithpre"',
         stderr: '',
       },
     })
