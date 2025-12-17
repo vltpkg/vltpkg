@@ -3,6 +3,7 @@ import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { exec, isRunResult, run } from '../src/index.ts'
+import * as nodeGypUtils from '../src/node-gyp.ts'
 
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
@@ -45,6 +46,15 @@ t.test('run', async t => {
 
             failpost: 'echo {}',
             postfailpost: fail,
+
+            failmain: fail,
+
+            failpostnopre: 'echo {}',
+            postfailpostnopre: fail,
+
+            prefailpostwithpre: 'echo {}',
+            failpostwithpre: 'echo {}',
+            postfailpostwithpre: fail,
 
             passprepost:
               `${node} "${fixture}" child run ` +
@@ -190,6 +200,87 @@ t.test('run', async t => {
         status: 0,
         signal: null,
         stdout: '{}',
+        stderr: '',
+      },
+    })
+  })
+
+  t.test('fail main (no pre)', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'failmain'],
+      { acceptFail: true, env: { NODE_OPTIONS } },
+    )
+    const command =
+      node +
+      ' -e "process.exitCode=1;console.log(JSON.stringify(process.env.npm_lifecycle_event))"'
+    t.strictSame(JSON.parse(result.stdout), {
+      command,
+      args: [],
+      cwd,
+      status: 1,
+      signal: null,
+      stdout: 'failmain',
+      stderr: '',
+    })
+  })
+
+  t.test('fail post (no pre)', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'failpostnopre'],
+      { acceptFail: true, env: { NODE_OPTIONS } },
+    )
+    t.strictSame(JSON.parse(result.stdout), {
+      command: 'echo {}',
+      args: [],
+      cwd,
+      status: 1,
+      signal: null,
+      stdout: {},
+      stderr: '',
+      post: {
+        command: fail,
+        args: [],
+        cwd,
+        status: 1,
+        signal: null,
+        stdout: '"postfailpostnopre"',
+        stderr: '',
+      },
+    })
+  })
+
+  t.test('fail post (with pre)', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'failpostwithpre'],
+      { acceptFail: true, env: { NODE_OPTIONS } },
+    )
+    t.strictSame(JSON.parse(result.stdout), {
+      command: 'echo {}',
+      args: [],
+      cwd,
+      status: 1,
+      signal: null,
+      stdout: {},
+      stderr: '',
+      pre: {
+        command: 'echo {}',
+        args: [],
+        cwd,
+        status: 0,
+        signal: null,
+        stdout: '{}',
+        stderr: '',
+      },
+      post: {
+        command: fail,
+        args: [],
+        cwd,
+        status: 1,
+        signal: null,
+        stdout: '"postfailpostwithpre"',
         stderr: '',
       },
     })
@@ -841,7 +932,6 @@ t.test('do not trust manifests npm mucks with', async t => {
     signal: null,
     stdout: 'ok',
     stderr: '',
-    pre: undefined,
   })
 })
 
@@ -1061,10 +1151,9 @@ t.test('node-gyp shim injection into PATH', async t => {
   const { exec: execWithMock } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
-    '../src/aliasRunner.ts': {
-      getNodeGypShim: async () => '/mock/shim/directory/node-gyp',
-      getNodeGypShimDir: async () => MOCK_SHIM_DIR,
-      hasNodeGypReference: (cmd: string) => cmd.includes('node-gyp'),
+    '../src/node-gyp.ts': {
+      ...nodeGypUtils,
+      getNodeGypShim: async () => `${MOCK_SHIM_DIR}/node-gyp`,
     },
   })
 

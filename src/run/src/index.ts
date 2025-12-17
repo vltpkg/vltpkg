@@ -15,7 +15,11 @@ import { walkUp } from 'walk-up-path'
 import {
   getNodeGypShimDir,
   hasNodeGypReference,
-} from './aliasRunner.ts'
+  hasNodeGypBinding,
+} from './node-gyp.ts'
+
+// Re-export all named exports from node-gyp.ts
+export * from './node-gyp.ts'
 
 /** map of which node_modules/.bin folders exist */
 const dotBins = new Map<string, boolean>()
@@ -252,42 +256,57 @@ const runImpl = async <
     (untrustworthy ? undefined : manifest) ??
     packageJson.read(options.cwd)
   const { scripts } = pj
-  let command = scripts?.[arg0]
 
-  // npm's implicit install behavior: "If there is a binding.gyp file in the
-  // root of your package and you haven't defined your own install or preinstall
-  // scripts, npm will default the install command to compile using node-gyp
-  // via node-gyp rebuild"
-  if (!command && arg0 === 'install') {
-    const hasNoInstallScripts =
-      !scripts?.install && !scripts?.preinstall
-    if (hasNoInstallScripts) {
-      try {
-        const bindingGypPath = resolve(options.cwd, 'binding.gyp')
-        const hasBindingGyp = statSync(bindingGypPath).isFile()
-        if (hasBindingGyp) {
-          command = 'node-gyp rebuild'
-        }
-      } catch {
-        // binding.gyp doesn't exist, that's fine
-      }
-    }
-  }
+  const command =
+    scripts?.[arg0] ??
+    // npm's implicit install behavior: "If there is a binding.gyp file in the
+    // root of your package and you haven't defined your own install or preinstall
+    // scripts, npm will default the install command to compile using node-gyp
+    // via node-gyp rebuild"
+    ((
+      arg0 === 'install' &&
+      !scripts?.install &&
+      !scripts?.preinstall &&
+      hasNodeGypBinding(options.cwd)
+    ) ?
+      'node-gyp rebuild'
+    : undefined)
 
-  if (!command) {
+  // Check for pre/post commands even if main command doesn't exist for cases
+  // like packages that have only a preinstall or postinstall script.
+  const precommand = !options.ignorePrePost && scripts?.[`pre${arg0}`]
+  const postcommand =
+    !options.ignorePrePost && scripts?.[`post${arg0}`]
+
+  const emptyResult = () =>
+    ({
+      command: '',
+      args: execArgs.args ?? [],
+      cwd: options.cwd,
+      status: 0,
+      signal: null,
+      stdout: empty,
+      stderr: empty,
+    }) as R
+
+  const execCommand = (command: string, preOrPost?: 'pre' | 'post') =>
+    execImpl({
+      arg0: command,
+      ...execArgs,
+      'script-shell': shell,
+      // pre/post scripts always have empty args, main script uses execArgs.args
+      args: preOrPost ? [] : (execArgs.args ?? []),
+      env: {
+        ...execArgs.env,
+        npm_package_json: pjPath,
+        npm_lifecycle_event: `${preOrPost ?? ''}${arg0}`,
+        npm_lifecycle_script: command,
+      },
+    })
+
+  if (!command && !precommand && !postcommand) {
     if (ignoreMissing) {
-      return {
-        command: '',
-        /* c8 ignore next */
-        args: execArgs.args ?? [],
-        cwd: options.cwd,
-        status: 0,
-        signal: null,
-        stdout: empty,
-        stderr: empty,
-        // `as` to workaround "could be instantiated with arbitrary type".
-        // it's private and used in 2 places, we know that it isn't.
-      } as R
+      return emptyResult()
     }
     throw error('Script not defined in package.json', {
       name: arg0,
@@ -298,64 +317,42 @@ const runImpl = async <
     })
   }
 
-  const precommand = !options.ignorePrePost && scripts?.[`pre${arg0}`]
   const pre =
-    precommand ?
-      await execImpl({
-        arg0: precommand,
-        ...execArgs,
-        'script-shell': shell,
-        args: [],
-        env: {
-          ...execArgs.env,
-          npm_package_json: pjPath,
-          npm_lifecycle_event: `pre${arg0}`,
-          npm_lifecycle_script: precommand,
-        },
-      })
-    : undefined
-  if (pre && (pre.status || pre.signal)) {
-    return pre as RunImplResult<R>
-  }
-  const result: RunImplResult<R> = await execImpl({
-    arg0: command,
-    ...execArgs,
-    'script-shell': shell,
-    env: {
-      ...execArgs.env,
-      npm_package_json: pjPath,
-      npm_lifecycle_event: arg0,
-      npm_lifecycle_script: command,
-    },
-  })
-  result.pre = pre
-  if (result.signal || result.status) {
-    return result
+    precommand ? await execCommand(precommand, 'pre') : undefined
+
+  if (pre?.status || pre?.signal) {
+    return {
+      ...pre,
+    }
   }
 
-  const postcommand =
-    !options.ignorePrePost && scripts?.[`post${arg0}`]
-  if (!postcommand) return result
+  const main = command ? await execCommand(command) : emptyResult()
 
-  const post = await execImpl({
-    arg0: postcommand,
-    ...execArgs,
-    'script-shell': shell,
-    args: [],
-    env: {
-      ...execArgs.env,
-      npm_package_json: pjPath,
-      npm_lifecycle_event: `post${arg0}`,
-      npm_lifecycle_script: postcommand,
-    },
-  })
-
-  if (post.status || post.signal) {
-    const { status, signal } = post
-    return Object.assign(result, { post, status, signal })
+  if (main.signal || main.status) {
+    return {
+      ...main,
+      ...(pre ? { pre } : {}),
+    }
   }
-  result.post = post
-  return result
+
+  const post =
+    postcommand ? await execCommand(postcommand, 'post') : undefined
+
+  if (post?.signal || post?.status) {
+    return {
+      ...main,
+      ...(pre ? { pre } : {}),
+      post,
+      signal: post.signal,
+      status: post.status,
+    } as RunImplResult<R>
+  }
+
+  return {
+    ...main,
+    ...(pre ? { pre } : {}),
+    ...(post ? { post } : {}),
+  }
 }
 
 /**
@@ -487,10 +484,3 @@ export const runExecFG = async (
   options: RunExecOptions,
 ): Promise<RunFGResult | SpawnResultNoStdio> =>
   runExecImpl<SpawnResultNoStdio>(options, runFG, execFG)
-
-// Export shim utilities
-export {
-  getNodeGypShim,
-  getNodeGypShimDir,
-  hasNodeGypReference,
-} from './aliasRunner.ts'
