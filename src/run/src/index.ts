@@ -278,15 +278,16 @@ const runImpl = async <
   const postcommand =
     !options.ignorePrePost && scripts?.[`post${arg0}`]
 
-  const emptyResult = {
-    command: '',
-    args: execArgs.args ?? [],
-    cwd: options.cwd,
-    status: 0,
-    signal: null,
-    stdout: empty,
-    stderr: empty,
-  } as R
+  const emptyResult = () =>
+    ({
+      command: '',
+      args: execArgs.args ?? [],
+      cwd: options.cwd,
+      status: 0,
+      signal: null,
+      stdout: empty,
+      stderr: empty,
+    }) as R
 
   const execCommand = (command: string, preOrPost?: 'pre' | 'post') =>
     execImpl({
@@ -305,7 +306,7 @@ const runImpl = async <
 
   if (!command && !precommand && !postcommand) {
     if (ignoreMissing) {
-      return emptyResult
+      return emptyResult()
     }
     throw error('Script not defined in package.json', {
       name: arg0,
@@ -325,7 +326,7 @@ const runImpl = async <
     }
   }
 
-  const main = command ? await execCommand(command) : emptyResult
+  const main = command ? await execCommand(command) : emptyResult()
 
   if (main.signal || main.status) {
     return {

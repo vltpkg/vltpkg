@@ -842,7 +842,6 @@ t.test('do not trust manifests npm mucks with', async t => {
     signal: null,
     stdout: 'ok',
     stderr: '',
-    pre: undefined,
   })
 })
 

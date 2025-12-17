@@ -42,7 +42,6 @@ t.test('run script in a project', async t => {
     stderr: null,
     status: 0,
     signal: null,
-    pre: undefined,
   })
   t.strictSame(logs(), [])
   t.strictSame(errs(), [])
@@ -81,7 +80,6 @@ t.test('run script in a single workspace', async t => {
     stderr: null,
     status: 0,
     signal: null,
-    pre: undefined,
   })
   t.strictSame(logs(), [])
   t.strictSame(errs(), [])
@@ -137,7 +135,6 @@ t.test('run script across several workspaces', async t => {
         signal: null,
         stdout: '',
         stderr: '',
-        pre: undefined,
       },
       'src/b': {
         command: pass,
@@ -147,7 +144,6 @@ t.test('run script across several workspaces', async t => {
         signal: null,
         stdout: '',
         stderr: '',
-        pre: undefined,
       },
     })
     t.strictSame(
@@ -221,7 +217,6 @@ t.test('run script across workspaces with some missing', async t => {
         signal: null,
         stdout: '',
         stderr: '',
-        pre: undefined,
       },
     })
     t.strictSame(new Set(logs()), new Set([['src/a', 'ok']]))
@@ -414,7 +409,6 @@ t.test('one ws fails, without bail', async t => {
       signal: null,
       stdout: '',
       stderr: '',
-      pre: undefined,
     },
     'src/a': {
       command: fail,
@@ -424,7 +418,6 @@ t.test('one ws fails, without bail', async t => {
       signal: null,
       stdout: '',
       stderr: '',
-      pre: undefined,
     },
   })
   t.match(

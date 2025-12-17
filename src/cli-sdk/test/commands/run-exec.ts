@@ -40,7 +40,6 @@ t.test('run script in a project', async t => {
     stderr: null,
     status: 0,
     signal: null,
-    pre: undefined,
   })
   t.strictSame(logs(), [])
   t.strictSame(errs(), [])
@@ -79,7 +78,6 @@ t.test('run script in a single workspace', async t => {
     stderr: null,
     status: 0,
     signal: null,
-    pre: undefined,
   })
   t.strictSame(logs(), [])
   t.strictSame(errs(), [])
@@ -132,7 +130,6 @@ t.test('run script across several workspaces', async t => {
       signal: null,
       stdout: '',
       stderr: '',
-      pre: undefined,
     },
   })
   t.strictSame(
