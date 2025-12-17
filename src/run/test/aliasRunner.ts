@@ -84,7 +84,7 @@ t.test('getNodeGypShim', async t => {
     const content = await readFile(shimPath, 'utf8')
     t.match(
       content,
-      /vlx node-gyp@latest/,
+      /vlx --yes node-gyp@latest/,
       'shim contains vlx command',
     )
 
@@ -117,7 +117,7 @@ t.test('getNodeGypShim', async t => {
     const content = await readFile(shimPath, 'utf8')
     t.match(
       content,
-      /vlx node-gyp@latest/,
+      /vlx --yes node-gyp@latest/,
       'shim contains vlx command',
     )
 
@@ -222,13 +222,13 @@ t.test('shim integration', async t => {
     if (process.platform === 'win32') {
       t.match(
         content,
-        /vlx node-gyp@latest %\*/,
+        /vlx --yes node-gyp@latest %\*/,
         'Windows shim calls vlx with args',
       )
     } else {
       t.match(
         content,
-        /exec vlx node-gyp@latest "\$@"/,
+        /exec vlx --yes node-gyp@latest "\$@"/,
         'Unix shim calls vlx with args',
       )
     }
@@ -245,7 +245,7 @@ t.test('cross-platform compatibility', async t => {
 
     const content = await readFile(shimPath, 'utf8')
     t.ok(content.length > 0, 'shim has content')
-    t.match(content, /vlx node-gyp@latest/, 'shim calls vlx')
+    t.match(content, /vlx --yes node-gyp@latest/, 'shim calls vlx')
 
     if (process.platform === 'win32') {
       t.match(content, /@echo off/, 'Windows batch file format')
