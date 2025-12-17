@@ -3,6 +3,7 @@ import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { exec, isRunResult, run } from '../src/index.ts'
+import * as nodeGypUtils from '../src/node-gyp.ts'
 
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
@@ -1061,10 +1062,9 @@ t.test('node-gyp shim injection into PATH', async t => {
   const { exec: execWithMock } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
-    '../src/aliasRunner.ts': {
-      getNodeGypShim: async () => '/mock/shim/directory/node-gyp',
-      getNodeGypShimDir: async () => MOCK_SHIM_DIR,
-      hasNodeGypReference: (cmd: string) => cmd.includes('node-gyp'),
+    '../src/node-gyp.ts': {
+      ...nodeGypUtils,
+      getNodeGypShim: async () => `${MOCK_SHIM_DIR}/node-gyp`,
     },
   })
 
