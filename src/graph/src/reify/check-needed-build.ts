@@ -1,6 +1,7 @@
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
+import { join } from 'node:path'
 
 /**
  * Build data containing the queue of DepIDs that need building
@@ -54,7 +55,7 @@ const nodeNeedsBuild = (node: Node, scurry: PathScurry): boolean => {
   // the install command to compile using node-gyp via node-gyp rebuild"
   const hasBindingGyp =
     scurry
-      .lstatSync(node.resolvedLocation(scurry) + '/binding.gyp')
+      .lstatSync(join(node.resolvedLocation(scurry), 'binding.gyp'))
       ?.isFile() ?? false
   if (hasBindingGyp && !scripts.install && !scripts.preinstall)
     return true
