@@ -2,100 +2,67 @@
 
 exports[`SelectedItem renders default 1`] = `
 
-<div
-  class="bg-background relative h-full"
-  style="opacity: 1; filter: blur(0px);"
->
-  <div class="bg-background-secondary h-full">
-    <div
-      class="h-full grid-cols-[var(--side)_var(--main)] lg:grid"
-      style="--side: 1fr; --main: 3fr;"
-    >
-      <div class="flex h-full w-full p-[0.5px] pt-0 pl-0">
-        <div class="bg-background flex h-full w-full flex-col rounded">
-          <gui-overview-sidebar
-            dependencies
-            workspaces
-            dependents
-            selecteditem="[object Object]"
-          >
-          </gui-overview-sidebar>
-        </div>
-      </div>
-      <div
-        class="h-full grid-cols-[var(--main)_var(--side)] grid-rows-[auto_1fr] lg:grid"
-        style="--side: 1fr; --main: 2fr;"
-      >
-        <div class="flex w-full shrink-0 p-[0.5px] pt-0">
-          <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
-            <h3 class="text-sm font-medium">
-              Selected
-            </h3>
-          </div>
-        </div>
-        <div class="flex w-full shrink-0 p-[0.5px] pt-0">
-          <div class="bg-background flex h-12 w-full items-center justify-between rounded px-6 py-3">
-            <h3 class="text-sm font-medium">
-              <span class="mr-2">
-                Direct Dependencies
-              </span>
-              <div
-                class="inline-flex"
-                data-id="number-flow-wrapper"
-              >
-                <p
-                  data-id="number-flow-p"
-                  class="overflow-hidden"
-                >
-                  <span
-                    data-key="number-flow-span-0-0"
-                    class="inline-block text-sm tabular-nums font-mono text-muted-foreground"
-                    style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
-                  >
-                    0
-                  </span>
-                </p>
-              </div>
-              <span class="text-muted-foreground font-mono text-sm tabular-nums">
-                /
-              </span>
-              <div
-                class="inline-flex"
-                data-id="number-flow-wrapper"
-              >
-                <p
-                  data-id="number-flow-p"
-                  class="overflow-hidden"
-                >
-                  <span
-                    data-key="number-flow-span-0-0"
-                    class="inline-block text-sm tabular-nums font-mono text-muted-foreground"
-                    style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
-                  >
-                    0
-                  </span>
-                </p>
-              </div>
-            </h3>
-          </div>
-        </div>
-        <div class="flex min-h-0 w-full min-w-0 p-[0.5px]">
-          <div class="bg-background flex w-full rounded">
-            <gui-selected-item
-              item="[object Object]"
-              classname="w-full"
+<gui-selected-item-provider selecteditem="[object Object]">
+  <gui-dependency-sidebar-provider
+    dependencies
+    uninstalleddependencies
+  >
+    <div class="bg-background border-background-secondary relative h-full border-y">
+      <div class="h-full transition-[grid-template-columns] duration-300 ease-in-out will-change-[grid-template-columns] lg:grid grid-cols-[1fr_2fr_1fr]">
+        <div class="transition-[filter, opacity] flex w-full min-w-0 overflow-hidden duration-300 lg:pl-0 lg:blur-none">
+          <div class="flex w-full min-w-0 flex-col">
+            <gui-overview-sidebar
+              dependencies
+              workspaces
+              dependents
+              selecteditem="[object Object]"
             >
+            </gui-overview-sidebar>
+          </div>
+        </div>
+        <div class="border-background-secondary relative flex w-full min-w-0 flex-col border-t transition-[border] duration-300 lg:border-t-0 lg:border-x">
+          <div class="flex w-full">
+            <div class="border-background-secondary relative flex h-12 w-full items-center gap-3 border-b px-6 py-3">
+              <gui-focused-button>
+              </gui-focused-button>
+              <h3 class="text-sm font-medium">
+                Selected
+              </h3>
+              <gui-item-breadcrumbs>
+              </gui-item-breadcrumbs>
+              <gui-cross
+                top="true"
+                right="true"
+              >
+              </gui-cross>
+              <gui-cross
+                bottom="true"
+                right="true"
+              >
+              </gui-cross>
+              <gui-cross
+                top="true"
+                left="true"
+              >
+              </gui-cross>
+              <gui-cross
+                bottom="true"
+                left="true"
+              >
+              </gui-cross>
+            </div>
+          </div>
+          <div class="flex h-full w-full min-w-0">
+            <gui-selected-item classname="w-full">
             </gui-selected-item>
           </div>
         </div>
-        <div class="flex min-h-0 w-full p-[0.5px]">
-          <div class="bg-background flex w-full min-w-0 flex-col rounded">
-          </div>
-        </div>
+        <gui-dependency-sidebar classname="min-w-0 overflow-hidden">
+        </gui-dependency-sidebar>
       </div>
     </div>
-  </div>
-</div>
+  </gui-dependency-sidebar-provider>
+</gui-selected-item-provider>
 
 `;
 

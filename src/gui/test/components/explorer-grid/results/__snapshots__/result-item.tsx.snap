@@ -6,13 +6,13 @@ exports[`ResultItem render missing version and labels 1`] = `
   <div
     role="link"
     aria-label="Update query to: item"
-    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+    class="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none"
   >
     <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
       <div class="flex items-center gap-2">
         <div class="relative size-6 rounded-md border">
-          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
               it
             </span>
           </div>
@@ -47,13 +47,13 @@ exports[`ResultItem render stacked many 1`] = `
   <div
     role="link"
     aria-label="Update query to: many-edges-stacked"
-    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+    class="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none"
   >
     <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
       <div class="flex items-center gap-2">
         <div class="relative size-6 rounded-md border">
-          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
               ma
             </span>
           </div>
@@ -100,13 +100,13 @@ exports[`ResultItem render stacked two 1`] = `
   <div
     role="link"
     aria-label="Update query to: two-edges-stacked"
-    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+    class="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none"
   >
     <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
       <div class="flex items-center gap-2">
         <div class="relative size-6 rounded-md border">
-          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
               tw
             </span>
           </div>
@@ -153,13 +153,13 @@ exports[`ResultItem render with item 1`] = `
   <div
     role="link"
     aria-label="Update query to: item"
-    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+    class="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none"
   >
     <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
       <div class="flex items-center gap-2">
         <div class="relative size-6 rounded-md border">
-          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
               it
             </span>
           </div>
@@ -206,13 +206,13 @@ exports[`ResultItem render with type 1`] = `
   <div
     role="link"
     aria-label="Update query to: item"
-    class="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none"
+    class="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none"
   >
     <div class="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
       <div class="flex items-center gap-2">
         <div class="relative size-6 rounded-md border">
-          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-            <span class="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+          <div class="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+            <span class="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
               it
             </span>
           </div>

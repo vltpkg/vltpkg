@@ -8,6 +8,22 @@ import { useDependencySidebarStore } from '@/components/explorer-grid/dependency
 import type { DependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
+vi.mock('react-router', () => ({
+  useLocation: vi.fn().mockReturnValue({
+    pathname: '/explore',
+  }),
+  useNavigate: vi.fn().mockReturnValue({
+    navigate: vi.fn(),
+  }),
+}))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/context.tsx',
+  () => ({
+    useSelectedItemStore: vi.fn(),
+  }),
+)
+
 vi.mock(
   '@/components/explorer-grid/dependency-sidebar/context.tsx',
   () => ({
@@ -32,7 +48,6 @@ vi.mock(
   '@/components/explorer-grid/dependency-sidebar/filter.tsx',
   () => ({
     FilterButton: 'gui-filter-button',
-    FilterList: 'gui-filter-list',
     FilterListEmptyState: 'gui-filter-list-empty-state',
   }),
 )
@@ -43,6 +58,22 @@ vi.mock(
     DependencyEmptyState: 'gui-dependency-empty-state',
   }),
 )
+
+vi.mock('@/components/number-flow.tsx', () => ({
+  NumberFlow: 'gui-number-flow',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx',
+  () => ({
+    AddDependenciesPopoverTrigger:
+      'gui-add-dependencies-popover-trigger',
+  }),
+)
+
+vi.mock('@/components/ui/cross.tsx', () => ({
+  Cross: 'gui-cross',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

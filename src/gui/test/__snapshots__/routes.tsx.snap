@@ -21,26 +21,22 @@ exports[`renders Layout for the "/create-new-project" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-create-new-project>
-              </gui-create-new-project>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-create-new-project>
+            </gui-create-new-project>
+          </main>
         </div>
       </div>
     </div>
@@ -55,26 +51,22 @@ exports[`renders Layout for the "/error" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-error-found>
-              </gui-error-found>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-error-found>
+            </gui-error-found>
+          </main>
         </div>
       </div>
     </div>
@@ -89,26 +81,22 @@ exports[`renders Layout for the "/explore" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-explorer>
-              </gui-explorer>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-explorer>
+            </gui-explorer>
+          </main>
         </div>
       </div>
     </div>
@@ -123,26 +111,22 @@ exports[`renders Layout for the "/help/selectors" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-help-selectors>
-              </gui-help-selectors>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-help-selectors>
+            </gui-help-selectors>
+          </main>
         </div>
       </div>
     </div>
@@ -157,26 +141,22 @@ exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-labels>
-              </gui-labels>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-labels>
+            </gui-labels>
+          </main>
         </div>
       </div>
     </div>
@@ -191,26 +171,22 @@ exports[`renders Layout for the "/queries" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-queries>
-              </gui-queries>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-queries>
+            </gui-queries>
+          </main>
         </div>
       </div>
     </div>
@@ -225,26 +201,22 @@ exports[`renders Layout for the "/settings/general" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-settings-view>
-              </gui-settings-view>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-settings-view>
+            </gui-settings-view>
+          </main>
         </div>
       </div>
     </div>
@@ -259,26 +231,22 @@ exports[`renders SignIn for the "/auth/sign-in" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-sign-in>
-              </gui-sign-in>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-sign-in>
+            </gui-sign-in>
+          </main>
         </div>
       </div>
     </div>
@@ -293,26 +261,22 @@ exports[`renders SignUp for the "/auth/sign-up" view 1`] = `
 
 <gui-layout>
   <div class="bg-background antialiased">
-    <div class="bg-background-secondary relative">
-      <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-        <gui-sidebar-provider
-          defaultopen="true"
-          classname="sticky top-0 flex w-full px-px"
-        >
-          <gui-app-sidebar classname="bg-background rounded">
-          </gui-app-sidebar>
-        </gui-sidebar-provider>
-        <div class="bg-background flex w-full flex-col rounded-t">
-          <div class="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-            <gui-header classname="bg-background rounded">
-            </gui-header>
-          </div>
-          <div class="bg-background-secondary flex min-h-0 w-full flex-1">
-            <main class="bg-background h-full w-full overflow-auto rounded">
-              <gui-sign-up>
-              </gui-sign-up>
-            </main>
-          </div>
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-sign-up>
+            </gui-sign-up>
+          </main>
         </div>
       </div>
     </div>
@@ -326,16 +290,29 @@ exports[`renders SignUp for the "/auth/sign-up" view 1`] = `
 exports[`renders search for the "/search" view 1`] = `
 
 <gui-layout>
-  <div class="flex flex-col antialiased">
-    <gui-marketing-header>
-    </gui-marketing-header>
-    <gui-search-results>
-    </gui-search-results>
-    <gui-marketing-footer>
-    </gui-marketing-footer>
-    <gui-toaster>
-    </gui-toaster>
+  <div class="bg-background antialiased">
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-search-results>
+            </gui-search-results>
+          </main>
+        </div>
+      </div>
+    </div>
   </div>
+  <gui-toaster>
+  </gui-toaster>
 </gui-layout>
 
 `;

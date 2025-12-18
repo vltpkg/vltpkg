@@ -8,6 +8,8 @@ exports[`AsideOverview renders null when all sections are empty 1`] = `
 exports[`AsideOverview renders when all sections are present 1`] = `
 
 <gui-aside>
+  <gui-install-helper>
+  </gui-install-helper>
   <gui-aside-repo>
   </gui-aside-repo>
   <gui-aside-funding>

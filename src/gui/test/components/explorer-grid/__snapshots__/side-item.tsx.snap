@@ -385,7 +385,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <div class="absolute inset-x-0 -bottom-3 px-2.5">
               <div class="relative flex w-full items-center justify-end">
-                <div class="border-px relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                <div class="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                     4 more
                   </span>
@@ -407,9 +407,9 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
           Remove dependency
         </gui-context-menu-item>
       </gui-context-menu-content>
-      <div class="bg-background border-px absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
+      <div class="bg-background absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg border transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
       </div>
-      <div class="bg-background border-px absolute inset-x-2 top-[0.4rem] z-8 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80">
+      <div class="bg-background absolute inset-x-2 top-[0.4rem] z-8 h-full rounded-lg border transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80">
       </div>
     </gui-context-menu>
   </div>
@@ -558,7 +558,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             </gui-tooltip-provider>
             <div class="absolute inset-x-0 -bottom-3 px-2.5">
               <div class="relative flex w-full items-center justify-end">
-                <div class="border-px relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+                <div class="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                     1 more
                   </span>
@@ -580,7 +580,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
           Remove dependency
         </gui-context-menu-item>
       </gui-context-menu-content>
-      <div class="bg-background border-px absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
+      <div class="bg-background absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg border transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950">
       </div>
     </gui-context-menu>
   </div>

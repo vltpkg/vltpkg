@@ -12,8 +12,6 @@ exports[`ExplorerHeader renders correctly 1`] = `
     endcontent="[object Object]"
   >
   </gui-query-bar>
-  <gui-focus-button>
-  </gui-focus-button>
 </div>
 
 `;

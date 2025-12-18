@@ -7,35 +7,39 @@ exports[`DependenciesTabContent renders an empty state 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <gui-navigation classname="bg-background rounded">
-    <gui-navigation-list>
-      <gui-navigation-list-item>
+    <gui-navigation-list classname="flex w-full">
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="insights"
+          classname="w-full"
         >
           Insights
         </gui-navigation-button>
       </gui-navigation-list-item>
-      <gui-navigation-list-item>
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="licenses"
+          classname="w-full"
         >
           Licenses
         </gui-navigation-button>
       </gui-navigation-list-item>
-      <gui-navigation-list-item>
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="duplicates"
+          classname="w-full"
         >
           Duplicates
         </gui-navigation-button>
       </gui-navigation-list-item>
-      <gui-navigation-list-item>
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="funding"
+          classname="w-full"
         >
           Funding
         </gui-navigation-button>
@@ -59,35 +63,39 @@ exports[`DependenciesTabContent renders default 1`] = `
   style="opacity: 0; filter: blur(2px);"
 >
   <gui-navigation classname="bg-background rounded">
-    <gui-navigation-list>
-      <gui-navigation-list-item>
+    <gui-navigation-list classname="flex w-full">
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="insights"
+          classname="w-full"
         >
           Insights
         </gui-navigation-button>
       </gui-navigation-list-item>
-      <gui-navigation-list-item>
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="licenses"
+          classname="w-full"
         >
           Licenses
         </gui-navigation-button>
       </gui-navigation-list-item>
-      <gui-navigation-list-item>
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="duplicates"
+          classname="w-full"
         >
           Duplicates
         </gui-navigation-button>
       </gui-navigation-list-item>
-      <gui-navigation-list-item>
+      <gui-navigation-list-item classname="w-full">
         <gui-navigation-button
           navigationlayer="secondary"
           tab="funding"
+          classname="w-full"
         >
           Funding
         </gui-navigation-button>

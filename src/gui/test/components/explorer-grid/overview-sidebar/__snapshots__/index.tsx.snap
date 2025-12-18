@@ -11,13 +11,13 @@ exports[`OverviewSidebar contains SuggestedQueries when dependencies are present
 
 exports[`OverviewSidebar renders with a parent 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
-  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+<div class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
     <h3 class="text-sm font-medium">
       Parent
     </h3>
   </div>
-  <div class="bg-background flex w-full rounded px-4 py-3">
+  <div class="flex w-full px-4 py-3">
     <gui-side-item
       parent="true"
       item="[object Object]"
@@ -32,13 +32,13 @@ exports[`OverviewSidebar renders with a parent 1`] = `
 
 exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
-  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+<div class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
     <h3 class="text-sm font-medium">
       Parent
     </h3>
   </div>
-  <div class="bg-background flex w-full rounded px-4 py-3">
+  <div class="flex w-full px-4 py-3">
     <gui-side-item
       parent="true"
       item="[object Object]"
@@ -48,13 +48,13 @@ exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
     </gui-side-item>
   </div>
 </div>
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
-  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+<div class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
     <h3 class="text-sm font-medium">
       Workspaces
     </h3>
   </div>
-  <div class="bg-background flex w-full rounded px-4 py-3">
+  <div class="flex w-full px-4 py-3">
     <div class="flex w-full flex-col gap-4">
       <gui-side-item
         item="[object Object]"
@@ -78,13 +78,13 @@ exports[`OverviewSidebar renders with a parent and workspaces 1`] = `
 
 exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
-  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+<div class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
     <h3 class="text-sm font-medium">
       Parent
     </h3>
   </div>
-  <div class="bg-background flex w-full rounded px-4 py-3">
+  <div class="flex w-full px-4 py-3">
     <gui-side-item
       parent="true"
       item="[object Object]"
@@ -94,13 +94,13 @@ exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] =
     </gui-side-item>
   </div>
 </div>
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
-  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+<div class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
     <h3 class="text-sm font-medium">
       Workspaces
     </h3>
   </div>
-  <div class="bg-background flex w-full rounded px-4 py-3">
+  <div class="flex w-full px-4 py-3">
     <div class="flex w-full flex-col gap-4">
       <gui-side-item
         item="[object Object]"
@@ -119,13 +119,13 @@ exports[`OverviewSidebar renders with a parent, workspaces, and dependents 1`] =
     </div>
   </div>
 </div>
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
-  <div class="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+<div class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
     <h3 class="text-sm font-medium">
       Dependents
     </h3>
   </div>
-  <div class="bg-background flex w-full rounded px-4 py-3">
+  <div class="flex w-full px-4 py-3">
     <div class="flex w-full flex-col gap-4">
       <gui-side-item
         item="[object Object]"

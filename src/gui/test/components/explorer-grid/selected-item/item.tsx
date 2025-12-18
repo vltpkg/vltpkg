@@ -118,6 +118,10 @@ vi.mock(
   }),
 )
 
+vi.mock('@/components/ui/button.tsx', () => ({
+  Button: 'gui-button',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
