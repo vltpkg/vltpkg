@@ -30,10 +30,8 @@ const RootButton = ({ className }: RootButtonProps) => {
             disabled={query === DEFAULT_QUERY}
             onClick={onClick}
             size="icon"
-            className={cn(
-              'border-muted bg-card text-muted-foreground hover:bg-card/50 dark:bg-card dark:hover:bg-card/50 rounded-sm border-[1px]',
-              className,
-            )}>
+            variant="outline"
+            className={cn('shadow-sm', className)}>
             <House />
           </Button>
         </TooltipTrigger>

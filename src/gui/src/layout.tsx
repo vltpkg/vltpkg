@@ -34,7 +34,7 @@ const Layout = () => {
 
   usePreflight()
 
-  if (pathname === '/' || pathname.includes('/search')) {
+  if (pathname === '/') {
     return (
       <div className="flex flex-col antialiased">
         <MarketingHeader />
@@ -48,24 +48,20 @@ const Layout = () => {
   return (
     <Fragment>
       <div className="bg-background antialiased">
-        <div className="bg-background-secondary relative">
-          <div className="min-h-svh grid-cols-[auto_4fr] md:grid">
-            <SidebarProvider
-              defaultOpen={defaultOpen}
-              className="sticky top-0 flex w-full px-px">
-              <AppSidebar className="bg-background rounded" />
-            </SidebarProvider>
-            <div className="bg-background flex w-full flex-col rounded-t">
-              <div className="bg-background-secondary sticky top-0 z-10 flex w-full shrink-0 rounded-t pb-[1px]">
-                <Header className="bg-background rounded" />
-              </div>
-              <div className="bg-background-secondary flex min-h-0 w-full flex-1">
-                <main className="bg-background h-full w-full overflow-auto rounded">
-                  {onRestrictedRoute ?
-                    <HostedWarning />
-                  : <Outlet />}
-                </main>
-              </div>
+        <div className="min-h-svh grid-cols-[auto_4fr] md:grid">
+          <SidebarProvider
+            defaultOpen={defaultOpen}
+            className="sticky top-0 flex w-full border-r">
+            <AppSidebar />
+          </SidebarProvider>
+          <div className="flex w-full flex-col">
+            <Header className="bg-background sticky top-0 z-40 w-full" />
+            <div className="flex min-h-0 w-full flex-1">
+              <main className="h-full w-full overflow-auto">
+                {onRestrictedRoute ?
+                  <HostedWarning />
+                : <Outlet />}
+              </main>
             </div>
           </div>
         </div>

@@ -6,11 +6,12 @@ import {
   EmptyTitle,
   EmptyHeader,
 } from '@/components/ui/empty-state.tsx'
+import { cn } from '@/lib/utils.ts'
 
-import type { ReactElement } from 'react'
+import type { ReactElement, ComponentProps } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
-interface SelectedItemEmptyStateProps {
+type SelectedItemEmptyStateProps = ComponentProps<typeof Empty> & {
   icon: LucideIcon
   title: string
   description: string
@@ -22,9 +23,13 @@ export const SelectedItemEmptyState = ({
   title,
   description,
   content,
+  className,
+  ...rest
 }: SelectedItemEmptyStateProps) => {
   return (
-    <Empty className="h-fit items-center justify-start">
+    <Empty
+      className={cn('h-fit items-center justify-start', className)}
+      {...rest}>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon />

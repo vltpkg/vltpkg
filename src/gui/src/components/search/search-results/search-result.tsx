@@ -96,9 +96,9 @@ export const SearchResult = forwardRef<
       aria-label={`Package ${pkg.name}`}
       ref={ref}
       to={`/explore/npm/${encodeURIComponent(pkg.name)}`}
-      className="focus:ring-foreground/15 focus:[&>article]:bg-foreground/3 bg-background hover:[&>article]:bg-foreground/3 h-full w-full rounded focus:ring-1 focus:outline-none"
+      className="focus:[&>article]:bg-background-secondary bg-background hover:[&>article]:bg-background-secondary h-full w-full rounded transition-colors duration-100 focus:outline-none"
       {...props}>
-      <article className="bg-background flex flex-col gap-2 rounded px-6 py-3">
+      <article className="bg-background flex flex-col gap-2 rounded px-6 py-3 transition-colors duration-100">
         <div className="flex items-center gap-2">
           {packageIcon?.src ?
             <div className="relative size-6 rounded-md border">
@@ -123,8 +123,8 @@ export const SearchResult = forwardRef<
                 />
               </AnimatePresence>
             </div>
-          : <div className="flex aspect-square size-6 items-center justify-center rounded-md border bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-              <span className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+          : <div className="flex aspect-square size-6 items-center justify-center rounded-md border bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+              <span className="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
                 {packageShortName}
               </span>
             </div>
@@ -147,7 +147,7 @@ export const SearchResult = forwardRef<
             {pkg.keywords.map((keyword, idx) => (
               <span
                 key={`${pkg.name}-keyword-${keyword}-${idx}`}
-                className="bg-primary/6 ring-primary/3 rounded border-[1px] px-2 text-sm font-medium text-neutral-500 ring-[1px]">
+                className="bg-primary/6 ring-primary/3 border-px rounded px-2 text-sm font-medium text-neutral-500 ring-[1px]">
                 {keyword}
               </span>
             ))}

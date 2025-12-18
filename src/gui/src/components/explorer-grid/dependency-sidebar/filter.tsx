@@ -422,12 +422,12 @@ const EmptyStateDependency = ({
   return (
     <div
       className={cn(
-        'border-muted bg-muted/60 h-12 w-64 rounded-lg border',
+        'border-background-secondary bg-background h-12 w-64 rounded-xl border',
         className,
       )}>
       <div className="flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="border-muted-foreground/20 bg-muted-foreground/20 text-xxs text-muted-foreground/60 flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] px-2 font-mono tabular-nums">
+          <div className="border-background-secondary text-xxs text-muted-foreground/60 flex h-6 max-w-12 items-center justify-center truncate rounded border px-2 font-mono tabular-nums">
             {spec}
           </div>
           <div className="text-muted-foreground/60 text-xs font-medium">
@@ -488,7 +488,7 @@ export const FilterListEmptyState = () => {
             ease: 'easeInOut',
             duration: 0.25,
           }}
-          className="border-muted flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed py-12">
+          className="flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 py-12">
           <div className="mb-6 flex justify-center">
             <div className="relative">
               <div className="relative space-y-2">
@@ -497,16 +497,15 @@ export const FilterListEmptyState = () => {
                     key={`${dep.name}-${idx}`}
                     {...dep}
                     className={cn(
-                      idx === 0 && 'rotate-1 transform opacity-40',
+                      idx === 0 && 'scale-[0.95] rotate-1 transform',
                       idx === 1 &&
-                        '-mt-10 -rotate-1 transform opacity-40',
-                      idx === 2 && 'relative z-10 -mt-10 opacity-50',
+                        '-mt-10 scale-[0.97] -rotate-1 transform',
+                      idx === 2 &&
+                        'relative z-10 -mt-10 scale-[0.99]',
                     )}
                   />
                 ))}
               </div>
-
-              <div className="bg-background/30 pointer-events-none absolute inset-0 rounded-lg" />
             </div>
           </div>
 

@@ -97,14 +97,14 @@ const OverviewSection = ({
   if (Array.isArray(items) && items.length <= 0) return null
 
   return (
-    <div className="bg-background-secondary flex w-full flex-col gap-px rounded-t pb-px">
+    <div className="flex w-full flex-col">
       {/* header */}
-      <div className="bg-background flex h-12 w-full items-center rounded px-6 py-3">
+      <div className="border-background-secondary flex h-12 w-full items-center border-b px-6 py-3">
         <h3 className="text-sm font-medium">{header}</h3>
       </div>
 
       {/* dep list */}
-      <div className="bg-background flex w-full rounded px-4 py-3">
+      <div className="flex w-full px-4 py-3">
         {Array.isArray(items) ?
           <div className="flex w-full flex-col gap-4">
             {items.map((item, idx) => (
