@@ -11,7 +11,10 @@ import { cn } from '@/lib/utils.ts'
 import type { ReactElement, ComponentProps } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
-type SelectedItemEmptyStateProps = ComponentProps<typeof Empty> & {
+type SelectedItemEmptyStateProps = Omit<
+  ComponentProps<typeof Empty>,
+  'content'
+> & {
   icon: LucideIcon
   title: string
   description: string

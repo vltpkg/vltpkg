@@ -142,7 +142,7 @@ test('Item renders with the default structure', () => {
   } satisfies SelectedItemStore)
 
   const Container = () => {
-    return <Item item={SELECTED_ITEM} />
+    return <Item />
   }
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()

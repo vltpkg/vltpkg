@@ -113,7 +113,11 @@ const OverviewSection = ({
                 item={item}
                 isWorkspace={isWorkspace}
                 dependencies={false}
-                onSelect={onClick({ item, isParent: false })}
+                onSelect={() =>
+                  onClick({ item, isParent: false })(
+                    {} as React.MouseEvent,
+                  )
+                }
                 className="w-full"
               />
             ))}
@@ -123,7 +127,11 @@ const OverviewSection = ({
             selectedItem={selectedItem}
             item={items}
             highlight={highlight}
-            onSelect={onClick({ item: items, isParent })}
+            onSelect={() =>
+              onClick({ item: items, isParent })(
+                {} as React.MouseEvent,
+              )
+            }
             className="w-full"
           />
         }
