@@ -47,9 +47,17 @@ const nodeNeedsBuild = (
   // If the manifest is not available on the node, read it from disk.
   // This can happen when the ideal graph is loaded from a lockfile
   // and there's no actual graph available to hydrate the manifest data from.
-  const manifest = (node.manifest ??= packageJson.read(
-    node.resolvedLocation(scurry),
-  ))
+  let manifest = node.manifest
+  if (!manifest) {
+    try {
+      manifest = packageJson.read(node.resolvedLocation(scurry))
+      node.manifest = manifest
+    } catch {
+      // If the manifest cannot be read (missing/corrupted), treat as
+      // "no build needed" to avoid failing the entire reification.
+      return false
+    }
+  }
 
   const { scripts = {} } = manifest
 
