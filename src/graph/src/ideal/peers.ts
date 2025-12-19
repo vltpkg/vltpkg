@@ -165,17 +165,33 @@ export const addEntriesToPeerContext = (
         target.id !== entry.target?.id &&
         target.version !== entry.target?.version
       ) {
-        // we have a compatible entry that has a new, compatible target
-        // so we need to update all dependents to point to the new target
-        for (const dependents of entry.contextDependents) {
-          const edge = dependents.edgesOut.get(name)
-          if (edge?.to && edge.to !== target) {
-            edge.to.edgesIn.delete(edge)
-            edge.to = target
-            target.edgesIn.add(edge)
+        // Check if the existing target also satisfies the new spec.
+        // If it does, we should keep the existing target rather than
+        // switching to the new one. This preserves pinned versions
+        // and prevents unnecessary target changes.
+        const existingTargetSatisfiesNewSpec =
+          entry.target &&
+          satisfies(
+            entry.target.id,
+            spec,
+            fromNode.location,
+            fromNode.projectRoot,
+            monorepo,
+          )
+
+        if (!existingTargetSatisfiesNewSpec) {
+          // Only update all dependents to point to the new target if
+          // the existing target doesn't satisfy the new spec
+          for (const dependents of entry.contextDependents) {
+            const edge = dependents.edgesOut.get(name)
+            if (edge?.to && edge.to !== target) {
+              edge.to.edgesIn.delete(edge)
+              edge.to = target
+              target.edgesIn.add(edge)
+            }
           }
+          entry.target = target
         }
-        entry.target = target
       }
 
       // otherwise sets the value in case it was nullish
@@ -206,12 +222,17 @@ export const forkPeerContext = (
 
   // copy existing entries marking them as inactive, it's also important
   // to note that specs and contextDependents are new objects so that changes
-  // to those in the new context do not affect the previous one
+  // to those in the new context do not affect the previous one.
+  // IMPORTANT: We preserve the target from the parent context so that packages
+  // in the forked context can still resolve peer deps to the same version as
+  // the parent context. This fixes an issue where forked contexts would lose
+  // track of already-resolved peer dependencies (like a pinned typescript version)
+  // and resolve to different versions.
   for (const [name, entry] of peerContext.entries()) {
     nextPeerContext.set(name, {
       active: false,
       specs: new Set(entry.specs),
-      target: undefined,
+      target: entry.target,
       type: entry.type,
       contextDependents: new Set(entry.contextDependents),
     })
@@ -222,10 +243,20 @@ export const forkPeerContext = (
   for (const entry of entries) {
     const { dependent, spec, target, type } = entry
     const name = target?.name /* c8 ignore next */ ?? spec.final.name
+
+    // IMPORTANT: If the new entry has no target but the parent context had one,
+    // preserve the parent's target. This ensures that when a fork happens due to
+    // spec "incompatibility" (e.g., pinned version vs range), we don't lose the
+    // already-resolved target. The satisfies check in resolvePeerDeps will later
+    // verify if the preserved target actually satisfies the new spec.
+    const existingEntry = nextPeerContext.get(name)
+    const preservedTarget =
+      !target && existingEntry?.target ? existingEntry.target : target
+
     const newEntry = {
       active: true,
       specs: new Set([spec]),
-      target,
+      target: preservedTarget,
       type,
       contextDependents:
         dependent ? new Set([dependent]) : new Set<Node>(),
@@ -354,8 +385,9 @@ export const endPeerPlacement = (
   /**
    * Try to resolve peer dependencies using already seen target
    * values from the current peer context set.
+   * @param {PeerContext} currentContext The current peer context (may be forked from original)
    */
-  resolvePeerDeps: () => {
+  resolvePeerDeps: (currentContext: PeerContext) => {
     // iterate on the set of peer dependencies of the current node
     // and try to resolve them from the existing peer context set,
     // when possible, add them as edges in the graph right away, if not,
@@ -393,8 +425,8 @@ export const endPeerPlacement = (
         }
 
         // THEN: Try to retrieve an entry for that peer dep from
-        // the current peer context set
-        const entry = peerContext.get(spec.final.name)
+        // the current peer context set (which may have been forked)
+        const entry = currentContext.get(spec.final.name)
         if (
           !node.edgesOut.has(spec.final.name) &&
           entry?.target &&
@@ -499,7 +531,9 @@ export const postPlacementPeerCheck = (
     // try to resolve peer dependencies now that
     // the context is fully set up
     for (const childDep of sortedChildDeps) {
-      childDep.updateContext.resolvePeerDeps()
+      // Pass the current peerContext (which may have been forked)
+      // so resolvePeerDeps uses the correct context with preserved targets
+      childDep.updateContext.resolvePeerDeps(childDep.peerContext)
       childDep.deps = getOrderedDependencies(childDep.deps)
     }
   }
