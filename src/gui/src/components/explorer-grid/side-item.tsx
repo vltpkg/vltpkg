@@ -23,11 +23,14 @@ import type { GridItemData, GridItemOptions } from './types.ts'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
-  onSelect?: (e: React.MouseEvent) => void
+  onSelect?: () => void
   onUninstall?: (item: GridItemData) => void
   isWorkspace?: boolean
   selectedItem?: GridItemData
   className?: string
+  item: GridItemData & {
+    version?: string | undefined
+  }
 }
 
 export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
@@ -92,20 +95,21 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
                     </TooltipPortal>
                   </Tooltip>
                 </TooltipProvider>
-                {!item.id.startsWith('uninstalled-dep:') && (
-                  <TooltipProvider>
-                    <Tooltip delayDuration={150}>
-                      <TooltipTrigger className="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
-                        {`v${item.version}`}
-                      </TooltipTrigger>
-                      <TooltipPortal>
-                        <TooltipContent align="start">
+                {!item.id.startsWith('uninstalled-dep:') &&
+                  item.version && (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={150}>
+                        <TooltipTrigger className="font-courier text-muted-foreground w-full max-w-14 cursor-pointer truncate overflow-hidden text-right text-sm font-normal">
                           {`v${item.version}`}
-                        </TooltipContent>
-                      </TooltipPortal>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                          <TooltipContent align="start">
+                            {`v${item.version}`}
+                          </TooltipContent>
+                        </TooltipPortal>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
 
                 <SideItemBadges
                   labels={item.labels}
@@ -156,9 +160,9 @@ export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
           </ContextMenuContent>
           {item.stacked && (
             <>
-              <div className="bg-background border-px absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950" />
+              <div className="bg-background absolute inset-x-1 top-[0.2rem] z-9 h-full rounded-lg border transition-colors duration-250 group-hover/side-item:bg-neutral-100/90 group-hover/side-item:dark:bg-neutral-950" />
               {item.size > 2 && (
-                <div className="bg-background border-px absolute inset-x-2 top-[0.4rem] z-8 h-full rounded-lg transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80" />
+                <div className="bg-background absolute inset-x-2 top-[0.4rem] z-8 h-full rounded-lg border transition-colors duration-250 group-hover/side-item:bg-neutral-100/80 group-hover/side-item:dark:bg-neutral-950/80" />
               )}
             </>
           )}
@@ -181,7 +185,7 @@ const SideItemBadges = ({
     <div className="absolute inset-x-0 -bottom-3 px-2.5">
       <div className="relative flex w-full items-center justify-end">
         {itemSize > 1 && (
-          <div className="border-px relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
+          <div className="relative flex h-[19px] w-fit cursor-pointer items-center justify-center rounded-full border border-gray-500 bg-gray-200 px-2 dark:border-gray-500 dark:bg-gray-950">
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
               {itemSize - 1} more
             </span>

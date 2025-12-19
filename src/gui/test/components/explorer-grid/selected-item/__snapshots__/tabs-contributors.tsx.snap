@@ -6,9 +6,9 @@ exports[`ContributorTabContent renders with contributors 1`] = `
   class="w-full flex h-full flex-col"
   style="opacity: 0; filter: blur(2px);"
 >
-  <section class="flex flex-col gap-4 py-4">
-    <div class="flex items-center gap-3 px-6">
-      <gui-button classname="border-muted text-foreground inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] bg-transparent px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900">
+  <section class="flex h-full flex-col gap-4 py-4">
+    <div class="flex h-fit items-center gap-3 px-6">
+      <gui-button classname="border-muted text-foreground inline-flex h-fit w-fit items-center gap-1.5 rounded-md border bg-transparent px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900">
         <gui-arrow-left-icon>
         </gui-arrow-left-icon>
         <span>
@@ -32,19 +32,19 @@ exports[`ContributorTabContent renders with contributors 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="flex flex-col gap-2">
+    <div class="flex h-fit flex-col gap-2">
       <div
         role="button"
         class="flex cursor-default gap-2 bg-transparent px-6 py-2 transition-colors duration-250 hover:bg-neutral-100 dark:hover:bg-neutral-800"
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
-            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            classname="rounded-full outline outline-neutral-200 dark:outline-neutral-700 size-9"
             src="https://acme.com/avatar.png"
           >
           </gui-avatar-image>
           <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            <div class="h-full w-full rounded-full bg-linear-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
@@ -63,12 +63,12 @@ exports[`ContributorTabContent renders with contributors 1`] = `
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
-            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            classname="rounded-full outline outline-neutral-200 dark:outline-neutral-700 size-9"
             src="https://acme.com/avatar.png"
           >
           </gui-avatar-image>
           <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            <div class="h-full w-full rounded-full bg-linear-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
@@ -87,12 +87,12 @@ exports[`ContributorTabContent renders with contributors 1`] = `
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
-            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            classname="rounded-full outline outline-neutral-200 dark:outline-neutral-700 size-9"
             src="https://acme.com/avatar.png"
           >
           </gui-avatar-image>
           <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            <div class="h-full w-full rounded-full bg-linear-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
         </gui-avatar>
@@ -111,12 +111,12 @@ exports[`ContributorTabContent renders with contributors 1`] = `
       >
         <gui-avatar classname="size-9">
           <gui-avatar-image
-            classname="rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700 size-9"
+            classname="rounded-full outline outline-neutral-200 dark:outline-neutral-700 size-9"
             src="https://acme.com/avatar.png"
           >
           </gui-avatar-image>
           <gui-avatar-fallback classname="flex aspect-square items-center justify-center size-9">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            <div class="h-full w-full rounded-full bg-linear-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
           </gui-avatar-fallback>
         </gui-avatar>

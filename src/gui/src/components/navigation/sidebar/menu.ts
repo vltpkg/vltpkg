@@ -1,10 +1,5 @@
 import { Query, Config } from '@/components/icons/index.ts'
-import {
-  CircleHelp,
-  LayoutDashboard,
-  Library,
-  Search,
-} from 'lucide-react'
+import { LayoutDashboard, Library, Search } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface MenuItem {
@@ -56,20 +51,14 @@ export const settingsMenuItems: MenuItem[] = [
 
 export const footerMenuItems: MenuItem[] = [
   {
-    title: 'Help',
-    icon: CircleHelp,
-    items: [
-      {
-        title: 'Selectors',
-        url: '/help/selectors',
-        icon: Query,
-      },
-      {
-        title: 'Documentation',
-        url: 'https://docs.vlt.sh',
-        icon: Library,
-      },
-    ],
+    title: 'Selectors',
+    url: '/help/selectors',
+    icon: Query,
+  },
+  {
+    title: 'Documentation',
+    url: 'https://docs.vlt.sh',
+    icon: Library,
   },
   {
     title: 'Settings',

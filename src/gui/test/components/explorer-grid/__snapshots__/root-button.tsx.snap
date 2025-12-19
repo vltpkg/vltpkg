@@ -8,7 +8,8 @@ exports[`root-button > should render correctly 1`] = `
       <gui-button
         disabled="true"
         size="icon"
-        classname="border-muted bg-card text-muted-foreground hover:bg-card/50 dark:bg-card dark:hover:bg-card/50 rounded-sm border-[1px]"
+        variant="outline"
+        classname="shadow-sm"
       >
         <gui-house-icon>
         </gui-house-icon>

@@ -199,11 +199,11 @@ const QueryBuilderUi = () => {
     <section
       ref={sectionRef}
       className={cn(
-        'bg-popover after:border-input after:bg-popover absolute inset-x-0 top-[34px] z-[52] flex w-full rounded-b-xl shadow-lg before:absolute before:inset-[-1px] before:top-[7px] before:z-[51] before:rounded-b-xl before:transition-[box-shadow] before:content-[""] after:absolute after:-inset-[1px] after:z-[52] after:rounded-b-xl after:border after:border-t-[0px] after:content-[""]',
+        'bg-popover after:border-input after:bg-popover absolute inset-x-0 top-[34px] z-52 flex w-full rounded-b-xl shadow-lg backdrop-blur-sm before:absolute before:-inset-px before:top-[7px] before:z-51 before:rounded-b-xl before:transition-shadow before:content-[""] after:absolute after:-inset-px after:z-52 after:rounded-b-xl after:border after:border-t-0 after:content-[""]',
         queryInputFocused &&
           'after:border-ring before:ring-ring/50 before:ring-[3px]',
       )}>
-      <div className="relative z-[53] flex w-full gap-2 px-3 py-3">
+      <div className="relative z-53 flex w-full gap-2 px-3 py-3">
         <BuilderCombobox setNodes={setNodes} nodes={nodes} />
         {nodes && (
           <div className="flex w-full flex-wrap gap-2">

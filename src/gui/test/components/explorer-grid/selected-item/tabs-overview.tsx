@@ -78,6 +78,17 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/aside/index.tsx',
+  () => ({
+    AsideOverview: 'gui-aside-overview',
+  }),
+)
+
+vi.mock('@/components/ui/cross.tsx', () => ({
+  Cross: 'gui-cross',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

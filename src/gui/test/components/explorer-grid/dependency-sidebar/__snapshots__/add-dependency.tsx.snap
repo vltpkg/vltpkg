@@ -4,12 +4,7 @@ exports[`add-dependencies-popover error 1`] = `
 
 <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
   <div class="flex items-center justify-between px-6 py-4">
-    <gui-card-title classname="flex items-center text-lg font-medium">
-      <gui-battery-low-icon
-        size="18"
-        classname="mr-2"
-      >
-      </gui-battery-low-icon>
+    <gui-card-title classname="flex items-center text-base font-medium tracking-tight">
       Error
     </gui-card-title>
   </div>
@@ -36,12 +31,7 @@ exports[`add-dependencies-popover in progress 1`] = `
 
 <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
   <div class="flex items-center justify-between px-6 py-4">
-    <gui-card-title classname="flex items-center text-lg font-medium">
-      <gui-package-plus-icon
-        size="18"
-        classname="mr-2"
-      >
-      </gui-package-plus-icon>
+    <gui-card-title classname="flex items-center text-base font-medium tracking-tight">
       Add new dependency
     </gui-card-title>
   </div>
@@ -57,13 +47,8 @@ exports[`add-dependencies-popover render default 1`] = `
 
 <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
   <div class="flex items-center justify-between px-6 py-4">
-    <gui-card-title classname="flex items-center text-lg font-medium">
-      <gui-package-plus-icon
-        size="18"
-        classname="mr-2"
-      >
-      </gui-package-plus-icon>
-      Add new dependency
+    <gui-card-title classname="flex items-center text-base font-medium tracking-tight">
+      Add dependency
     </gui-card-title>
   </div>
 </gui-card-header>
@@ -128,6 +113,7 @@ exports[`add-dependencies-popover render default 1`] = `
   <div class="flex w-full justify-end">
     <gui-button
       classname="mt-2 mr-2"
+      size="sm"
       role="cancel"
       variant="secondary"
       tabindex="4"
@@ -135,6 +121,7 @@ exports[`add-dependencies-popover render default 1`] = `
       Cancel
     </gui-button>
     <gui-button
+      size="sm"
       classname="mt-2"
       role="submit"
       tabindex="5"

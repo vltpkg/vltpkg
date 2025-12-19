@@ -2,25 +2,22 @@
 
 exports[`dependency-empty-state renders default 1`] = `
 
-<div
-  class="border-muted bg-card flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl border-[1px] border-dashed py-12"
-  style="opacity: 1; filter: blur(0px);"
->
+<div class="flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-xl py-12">
   <div class="mb-6 flex justify-center">
     <div class="relative">
       <div class="relative space-y-2">
-        <div class="border-muted-foreground/20 bg-muted/30 h-12 w-64 rotate-1 transform rounded-xl border-[1px] border-dashed">
+        <div class="border-background-secondary bg-background h-12 w-64 scale-[0.95] rotate-1 transform rounded-2xl border border-dashed">
         </div>
-        <div class="border-muted-foreground/30 bg-muted/50 -mt-10 h-12 w-64 -rotate-1 transform rounded-xl border-[1px] border-dashed">
+        <div class="border-background-secondary bg-background -mt-10 h-12 w-64 scale-[0.97] -rotate-1 transform rounded-2xl border border-dashed">
         </div>
-        <div class="border-muted-foreground/40 bg-background relative z-10 -mt-10 flex h-12 w-64 items-center justify-between rounded-xl border-[1px] border-dashed px-4">
+        <div class="border-background-secondary bg-background relative z-10 -mt-10 flex h-12 w-64 scale-[0.99] items-center justify-between rounded-xl border border-dashed px-4">
           <div class="flex items-center gap-3">
-            <div class="border-muted-foreground/30 bg-muted/60 h-6 w-12 rounded-lg border-[1px] border-dashed">
+            <div class="border-background-secondary bg-background-secondary border-px h-4 w-12 rounded-2xl border-dashed">
             </div>
-            <div class="border-muted-foreground/30 bg-muted/60 h-4 w-24 rounded-lg border-[1px] border-dashed">
+            <div class="border-background-secondary bg-background-secondary border-px h-4 w-28 rounded-2xl border-dashed">
             </div>
           </div>
-          <div class="border-muted-foreground/30 bg-muted/60 h-4 w-12 rounded-lg border-[1px] border-dashed">
+          <div class="border-background-secondary bg-background-secondary border-px h-4 w-10 rounded-2xl border-dashed">
           </div>
         </div>
       </div>

@@ -1,10 +1,10 @@
-import { forwardRef, Children, useRef, useCallback } from 'react'
+import { forwardRef, useRef, useCallback } from 'react'
 import { useTabNavigation } from '@/components/explorer-grid/selected-item/context.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { cn } from '@/lib/utils.ts'
 
-import type { ComponentProps, CSSProperties } from 'react'
+import type { ComponentProps } from 'react'
 import type {
   Tab,
   SubTabDependencies,
@@ -25,22 +25,15 @@ Navigation.displayName = 'Navigation'
 
 const NavigationList = forwardRef<
   HTMLUListElement,
-  ComponentProps<'ul'> & {
-    isGrid?: boolean
-  }
->(({ className, isGrid = true, ...props }, ref) => {
-  const count = Children.count(props.children)
-
+  ComponentProps<'ul'>
+>(({ className, ...props }, ref) => {
   return (
     <ul
       ref={ref}
       className={cn(
         'bg-background-secondary gap-px rounded p-0',
-        isGrid &&
-          'grid grid-cols-1 lg:grid-cols-[repeat(var(--count),minmax(0,1fr))]',
         className,
       )}
-      style={{ '--count': count } as CSSProperties}
       {...props}
     />
   )
@@ -140,7 +133,9 @@ const NavigationButton = forwardRef<
         {count && (
           <DataBadge
             variant="count"
-            classNames={{ wrapperClassName: 'ml-2' }}
+            classNames={{
+              wrapperClassName: 'cursor-pointer ml-2',
+            }}
             content={toHumanNumber(count)}
           />
         )}

@@ -63,7 +63,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx',
+  '@/components/explorer-grid/selected-item/focused-button.tsx',
   () => ({
     FocusButton: 'gui-focused-button',
   }),
@@ -78,6 +78,31 @@ vi.mock(
     }),
   }),
 )
+
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/context.tsx',
+  () => ({
+    DependencySidebarProvider: 'gui-dependency-sidebar-provider',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/context.tsx',
+  () => ({
+    SelectedItemProvider: 'gui-selected-item-provider',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/item-header.tsx',
+  () => ({
+    ItemBreadcrumbs: 'gui-item-breadcrumbs',
+  }),
+)
+
+vi.mock('@/components/ui/cross.tsx', () => ({
+  Cross: 'gui-cross',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

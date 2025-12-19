@@ -3,10 +3,13 @@
 exports[`OverviewTabContent renders with an empty state 1`] = `
 
 <section
-  class="h-full w-full flex flex-col"
+  class="relative flex h-full w-full flex-col overflow-hidden"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div style="opacity: 0; filter: blur(2px);">
+  <div
+    class="h-full"
+    style="opacity: 0; filter: blur(2px);"
+  >
     <gui-selected-item-empty-state
       icon="gui-file-text-icon"
       title="No Overview"
@@ -14,6 +17,16 @@ exports[`OverviewTabContent renders with an empty state 1`] = `
     >
     </gui-selected-item-empty-state>
   </div>
+  <gui-cross
+    bottom="true"
+    left="true"
+  >
+  </gui-cross>
+  <gui-cross
+    bottom="true"
+    right="true"
+  >
+  </gui-cross>
 </section>
 
 `;
@@ -21,18 +34,40 @@ exports[`OverviewTabContent renders with an empty state 1`] = `
 exports[`OverviewTabContent renders with content 1`] = `
 
 <section
-  class="h-full w-full flex flex-col"
+  class="relative flex h-full w-full flex-col overflow-hidden"
   style="opacity: 0; filter: blur(2px);"
 >
-  <div style="opacity: 0; filter: blur(2px);">
-    <div class="prose-sm prose-neutral prose-li:list-disc w-full max-w-none p-6">
-      <gui-markdown>
-        ## Description
+  <div
+    class="h-full w-full min-w-0"
+    style="opacity: 0; filter: blur(2px);"
+  >
+    <div class="divide-background-secondary flex h-full w-full min-w-0 flex-col justify-between divide-x lg:flex-row">
+      <div class="prose-sm prose-neutral prose-li:list-disc relative order-2 h-full max-w-none min-w-0 flex-1 overflow-y-auto p-6 lg:order-1">
+        <gui-markdown>
+          ## Description
 
 This is a custom description
-      </gui-markdown>
+        </gui-markdown>
+        <gui-cross
+          right="true"
+          top="true"
+        >
+        </gui-cross>
+      </div>
+      <gui-aside-overview classname="order-1 h-fit transition-all duration-300 lg:order-2 lg:h-full lg:min-w-0 lg:overflow-x-hidden lg:overflow-y-auto lg:shrink lg:basis-[200px]">
+      </gui-aside-overview>
     </div>
   </div>
+  <gui-cross
+    bottom="true"
+    left="true"
+  >
+  </gui-cross>
+  <gui-cross
+    bottom="true"
+    right="true"
+  >
+  </gui-cross>
 </section>
 
 `;

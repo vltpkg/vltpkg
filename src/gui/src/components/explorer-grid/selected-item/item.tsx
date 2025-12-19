@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button.tsx'
 import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
 import { PartialErrorsIndicator } from '@/components/explorer-grid/selected-item/partial-errors-indicator.tsx'
 import {
-  SelectedItemProvider,
   useTabNavigation,
   useSelectedItemStore,
   PRIMARY_TABS,
@@ -19,20 +18,13 @@ import {
 } from '@/components/explorer-grid/selected-item/navigation.tsx'
 import {
   PackageImageSpec,
-  ItemBreadcrumbs,
   Publisher,
 } from '@/components/explorer-grid/selected-item/item-header.tsx'
 import { cn } from '@/lib/utils.ts'
 
 import type { ComponentProps } from 'react'
 import type { MotionProps } from 'framer-motion'
-import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { Tab } from '@/components/explorer-grid/selected-item/context.tsx'
-
-interface ItemProps {
-  item: GridItemData
-  className?: string
-}
 
 const Section = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
   ({ className, ...props }, ref) => {
@@ -50,15 +42,7 @@ const Section = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
 )
 Section.displayName = 'Section'
 
-export const Item = ({ item, className }: ItemProps) => {
-  return (
-    <SelectedItemProvider key={item.id} selectedItem={item}>
-      <ItemContent className={className} />
-    </SelectedItemProvider>
-  )
-}
-
-const ItemContent = ({ className }: { className?: string }) => {
+export const Item = ({ className }: { className?: string }) => {
   const isLoadingDetails = useSelectedItemStore(
     state => state.isLoadingDetails,
   )
@@ -83,17 +67,13 @@ const ItemContent = ({ className }: { className?: string }) => {
       </AnimatePresence>
 
       <PartialErrorsIndicator />
-
-      <Section>
-        <ItemBreadcrumbs />
-      </Section>
       <Section className="py-4">
         <PackageImageSpec />
       </Section>
       <Section>
         <Publisher className="flex-col items-start lg:flex-row" />
       </Section>
-      <Section className="p-0">
+      <Section className="bg-background p-0">
         <SelectedItemTabs />
       </Section>
       <Section className="h-full p-0">
@@ -195,8 +175,7 @@ export const SelectedItemTabs = () => {
       </AnimatePresence>
       <NavigationList
         ref={listRef}
-        isGrid={false}
-        className="flex overflow-x-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        className="flex w-full overflow-x-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {(
           Object.entries(PRIMARY_TABS) as {
             [K in keyof typeof PRIMARY_TABS]-?: [
@@ -206,13 +185,13 @@ export const SelectedItemTabs = () => {
           }[keyof typeof PRIMARY_TABS][]
         ).map(([tab, label], idx) => (
           <NavigationListItem
-            key={`focused-tabs-${tab}-${idx}`}
-            className="min-w-[175px]">
+            className="w-full"
+            key={`focused-tabs-${tab}-${idx}`}>
             <NavigationButton
               navigationLayer="primary"
               tab={tab}
               count={getCount(tab)}
-              className="min-w-[175px]">
+              className="w-full">
               {label}
             </NavigationButton>
           </NavigationListItem>

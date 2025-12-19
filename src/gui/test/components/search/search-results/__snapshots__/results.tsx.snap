@@ -2,115 +2,137 @@
 
 exports[`renders search results view 1`] = `
 
-<section class="bg-background">
-  <div class="bg-background-secondary relative">
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div class="flex w-full p-[0.5px]">
-        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[75px] lg:h-[36.5px]">
-            <h3
-              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-              style="opacity: 0; filter: blur(2px);"
-            >
-              Start typing to search
-            </h3>
-          </div>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
+      </gui-cross>
+      <div class="h-[75px] lg:h-[36.5px]">
+        <h3
+          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+          style="opacity: 0; filter: blur(2px);"
+        >
+          Start typing to search
+        </h3>
       </div>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-search-results-sort>
       </gui-search-results-sort>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
     </div>
-    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div
-        class="flex h-full w-full flex-col p-[0.5px] min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]"
-        style="opacity: 1; filter: blur(0px);"
-      >
-        <div class="bg-background flex h-full w-full flex-1 flex-col rounded">
-          <gui-empty classname="h-full w-full grow">
-            <gui-empty-header>
-              <gui-empty-media variant="icon">
-                <gui-package-search-icon>
-                </gui-package-search-icon>
-              </gui-empty-media>
-              <gui-empty-title>
-                Your results will appear here
-              </gui-empty-title>
-              <gui-empty-description>
-                <gui-button
-                  size="sm"
-                  variant="default"
-                >
-                  I'm feeling lucky
-                </gui-button>
-              </gui-empty-description>
-            </gui-empty-header>
-          </gui-empty>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+  </div>
+  <div class="pattern-hatch bg-background h-9 lg:hidden">
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] border-background-secondary col-start-2 col-end-3 border-x"
+      style="opacity: 1; filter: blur(0px);"
+    >
+      <gui-empty classname="h-full w-full grow">
+        <gui-empty-header>
+          <gui-empty-media variant="icon">
+            <gui-package-search-icon>
+            </gui-package-search-icon>
+          </gui-empty-media>
+          <gui-empty-title>
+            Your results will appear here
+          </gui-empty-title>
+          <gui-empty-description>
+            <gui-button
+              size="sm"
+              variant="default"
+            >
+              I'm feeling lucky
+            </gui-button>
+          </gui-empty-description>
+        </gui-empty-header>
+      </gui-empty>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-search-results-pagination-navigation>
       </gui-search-results-pagination-navigation>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
     </div>
   </div>
 </section>
@@ -119,115 +141,137 @@ exports[`renders search results view 1`] = `
 
 exports[`renders search results with error 1`] = `
 
-<section class="bg-background">
-  <div class="bg-background-secondary relative">
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div class="flex w-full p-[0.5px]">
-        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[75px] lg:h-[36.5px]">
-            <h3
-              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-              style="opacity: 0; filter: blur(2px);"
-            >
-              Start typing to search
-            </h3>
-          </div>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
+      </gui-cross>
+      <div class="h-[75px] lg:h-[36.5px]">
+        <h3
+          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+          style="opacity: 0; filter: blur(2px);"
+        >
+          Start typing to search
+        </h3>
       </div>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-search-results-sort>
       </gui-search-results-sort>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
     </div>
-    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div
-        class="flex h-full w-full flex-col p-[0.5px] min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]"
-        style="opacity: 1; filter: blur(0px);"
-      >
-        <div class="bg-background flex h-full w-full flex-1 flex-col rounded">
-          <gui-empty classname="h-full w-full grow">
-            <gui-empty-header>
-              <gui-empty-media variant="icon">
-                <gui-package-search-icon>
-                </gui-package-search-icon>
-              </gui-empty-media>
-              <gui-empty-title>
-                Your results will appear here
-              </gui-empty-title>
-              <gui-empty-description>
-                <gui-button
-                  size="sm"
-                  variant="default"
-                >
-                  I'm feeling lucky
-                </gui-button>
-              </gui-empty-description>
-            </gui-empty-header>
-          </gui-empty>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+  </div>
+  <div class="pattern-hatch bg-background h-9 lg:hidden">
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] border-background-secondary col-start-2 col-end-3 border-x"
+      style="opacity: 1; filter: blur(0px);"
+    >
+      <gui-empty classname="h-full w-full grow">
+        <gui-empty-header>
+          <gui-empty-media variant="icon">
+            <gui-package-search-icon>
+            </gui-package-search-icon>
+          </gui-empty-media>
+          <gui-empty-title>
+            Your results will appear here
+          </gui-empty-title>
+          <gui-empty-description>
+            <gui-button
+              size="sm"
+              variant="default"
+            >
+              I'm feeling lucky
+            </gui-button>
+          </gui-empty-description>
+        </gui-empty-header>
+      </gui-empty>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-search-results-pagination-navigation>
       </gui-search-results-pagination-navigation>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
     </div>
   </div>
 </section>
@@ -236,115 +280,137 @@ exports[`renders search results with error 1`] = `
 
 exports[`renders search results with no results 1`] = `
 
-<section class="bg-background">
-  <div class="bg-background-secondary relative">
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div class="flex w-full p-[0.5px]">
-        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[75px] lg:h-[36.5px]">
-            <h3
-              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-              style="opacity: 0; filter: blur(2px);"
-            >
-              Start typing to search
-            </h3>
-          </div>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
+      </gui-cross>
+      <div class="h-[75px] lg:h-[36.5px]">
+        <h3
+          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+          style="opacity: 0; filter: blur(2px);"
+        >
+          Start typing to search
+        </h3>
       </div>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-search-results-sort>
       </gui-search-results-sort>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
     </div>
-    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div
-        class="flex h-full w-full flex-col p-[0.5px] min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]"
-        style="opacity: 1; filter: blur(0px);"
-      >
-        <div class="bg-background flex h-full w-full flex-1 flex-col rounded">
-          <gui-empty classname="h-full w-full grow">
-            <gui-empty-header>
-              <gui-empty-media variant="icon">
-                <gui-package-search-icon>
-                </gui-package-search-icon>
-              </gui-empty-media>
-              <gui-empty-title>
-                Your results will appear here
-              </gui-empty-title>
-              <gui-empty-description>
-                <gui-button
-                  size="sm"
-                  variant="default"
-                >
-                  I'm feeling lucky
-                </gui-button>
-              </gui-empty-description>
-            </gui-empty-header>
-          </gui-empty>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+  </div>
+  <div class="pattern-hatch bg-background h-9 lg:hidden">
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] border-background-secondary col-start-2 col-end-3 border-x"
+      style="opacity: 1; filter: blur(0px);"
+    >
+      <gui-empty classname="h-full w-full grow">
+        <gui-empty-header>
+          <gui-empty-media variant="icon">
+            <gui-package-search-icon>
+            </gui-package-search-icon>
+          </gui-empty-media>
+          <gui-empty-title>
+            Your results will appear here
+          </gui-empty-title>
+          <gui-empty-description>
+            <gui-button
+              size="sm"
+              variant="default"
+            >
+              I'm feeling lucky
+            </gui-button>
+          </gui-empty-description>
+        </gui-empty-header>
+      </gui-empty>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-search-results-pagination-navigation>
       </gui-search-results-pagination-navigation>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
     </div>
   </div>
 </section>
@@ -353,128 +419,152 @@ exports[`renders search results with no results 1`] = `
 
 exports[`renders search results with results 1`] = `
 
-<section class="bg-background">
-  <div class="bg-background-secondary relative">
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div class="flex w-full p-[0.5px]">
-        <div class="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <div class="h-[75px] lg:h-[36.5px]">
-            <h3
-              class="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-              style="opacity: 0; filter: blur(2px);"
-            >
-              Showing
-              <span class="font-mono text-2xl tabular-nums">
-                2
-              </span>
-              of
-              <span class="font-mono text-2xl tabular-nums">
-                2
-              </span>
-              results for
-              <span class="fancy-quote mr-0.5 ml-2 font-medium">
-                “
-              </span>
-              react
-              <span class="fancy-quote ml-0.5 font-medium">
-                ”
-              </span>
-            </h3>
-          </div>
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
+      </gui-cross>
+      <div class="h-[75px] lg:h-[36.5px]">
+        <h3
+          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+          style="opacity: 0; filter: blur(2px);"
+        >
+          Showing
+          <span class="font-mono text-2xl tabular-nums">
+            2
+          </span>
+          of
+          <span class="font-mono text-2xl tabular-nums">
+            2
+          </span>
+          results for
+          <span class="fancy-quote mr-0.5 ml-2 font-medium">
+            “
+          </span>
+          react
+          <span class="fancy-quote ml-0.5 font-medium">
+            ”
+          </span>
+        </h3>
       </div>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-sort classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-search-results-sort>
       </gui-search-results-sort>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
     </div>
-    <div class="pattern-hatch bg-background h-9 rounded lg:hidden">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
+    >
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+  </div>
+  <div class="pattern-hatch bg-background h-9 lg:hidden">
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      class="min-w-0 border-background-secondary col-start-2 col-end-3 border-x"
+      style="opacity: 1; filter: blur(0px);"
+    >
       <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <div
-        class="min-w-0"
-        style="opacity: 1; filter: blur(0px);"
+        class="bg-background-secondary flex min-h-[calc(100svh-64px-109.5px-50px-49px)] w-full flex-col gap-px lg:min-h-[calc(100svh-64px-109.5px-50px-49px)]"
+        style="opacity: 0;"
       >
         <div
-          class="flex min-h-[calc(100svh-56px-148px-245px-36px-49px)] w-full flex-col gap-[1px] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)] rounded p-[0.5px]"
-          style="opacity: 0;"
+          class="rounded"
+          style="opacity: 0; filter: blur(4px);"
         >
-          <div
-            class="bg-background rounded"
-            style="opacity: 0; filter: blur(4px);"
-          >
-            <gui-search-result item="[object Object]">
-            </gui-search-result>
-          </div>
-          <div
-            class="bg-background rounded"
-            style="opacity: 0; filter: blur(4px);"
-          >
-            <gui-search-result item="[object Object]">
-            </gui-search-result>
-          </div>
+          <gui-search-result item="[object Object]">
+          </gui-search-result>
         </div>
-      </div>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
+        <div
+          class="rounded"
+          style="opacity: 0; filter: blur(4px);"
+        >
+          <gui-search-result item="[object Object]">
+          </gui-search-result>
         </div>
       </div>
     </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
+  </div>
+  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
+    </div>
+    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
+      <gui-cross
+        top="true"
+        right="true"
       >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
-      <gui-search-results-pagination-navigation classname="w-full p-[0.5px]">
+      </gui-cross>
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        right="true"
+      >
+      </gui-cross>
+      <gui-search-results-pagination-navigation>
       </gui-search-results-pagination-navigation>
-      <div
-        aria-hidden="true"
-        class="p-[0.5px] max-lg:hidden"
-      >
-        <div class="bg-background h-full rounded">
-        </div>
-      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    >
     </div>
   </div>
 </section>

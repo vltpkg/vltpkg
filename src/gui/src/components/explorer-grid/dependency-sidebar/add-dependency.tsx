@@ -1,10 +1,5 @@
 import { useState } from 'react'
-import {
-  Plus,
-  BatteryLow,
-  PackageCheck,
-  PackagePlus,
-} from 'lucide-react'
+import { Plus, PackageCheck } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button.tsx'
 import { CardHeader, CardTitle } from '@/components/ui/card.tsx'
@@ -90,8 +85,7 @@ export const AddDependenciesPopover = () => {
       <>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center justify-between px-6 py-4">
-            <CardTitle className="flex items-center text-lg font-medium">
-              <PackagePlus size={18} className="mr-2" />
+            <CardTitle className="flex items-center text-base font-medium tracking-tight">
               Add new dependency
             </CardTitle>
           </div>
@@ -108,8 +102,7 @@ export const AddDependenciesPopover = () => {
       <>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center justify-between px-6 py-4">
-            <CardTitle className="flex items-center text-lg font-medium">
-              <BatteryLow size={18} className="mr-2" />
+            <CardTitle className="flex items-center text-base font-medium tracking-tight">
               Error
             </CardTitle>
           </div>
@@ -135,9 +128,8 @@ export const AddDependenciesPopover = () => {
     <>
       <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <CardTitle className="flex items-center text-lg font-medium">
-            <PackagePlus size={18} className="mr-2" />
-            Add new dependency
+          <CardTitle className="flex items-center text-base font-medium tracking-tight">
+            Add dependency
           </CardTitle>
         </div>
       </CardHeader>
@@ -197,13 +189,18 @@ export const AddDependenciesPopover = () => {
         <div className="flex w-full justify-end">
           <Button
             className="mt-2 mr-2"
+            size="sm"
             role="cancel"
             variant="secondary"
             tabIndex={4}
             onClick={closePopover}>
             Cancel
           </Button>
-          <Button className="mt-2" role="submit" tabIndex={5}>
+          <Button
+            size="sm"
+            className="mt-2"
+            role="submit"
+            tabIndex={5}>
             <PackageCheck size={16} />
             Install package
           </Button>

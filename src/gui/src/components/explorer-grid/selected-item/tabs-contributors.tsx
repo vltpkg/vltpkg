@@ -67,7 +67,7 @@ export const ContributorAvatar = ({
       {avatar && (
         <AvatarImage
           className={cn(
-            'rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700',
+            'rounded-full outline outline-neutral-200 dark:outline-neutral-700',
             avatarSize,
           )}
           src={avatar}
@@ -78,7 +78,7 @@ export const ContributorAvatar = ({
           'flex aspect-square items-center justify-center',
           avatarSize,
         )}>
-        <div className="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
+        <div className="h-full w-full rounded-full bg-linear-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
       </AvatarFallback>
     </Avatar>
   )
@@ -162,11 +162,11 @@ export const ContributorTabContent = () => {
     <MotionContent
       {...contentMotion}
       className="flex h-full flex-col">
-      <section className="flex flex-col gap-4 py-4">
-        <div className="flex items-center gap-3 px-6">
+      <section className="flex h-full flex-col gap-4 py-4">
+        <div className="flex h-fit items-center gap-3 px-6">
           <Button
             onClick={() => handleBackToOverview()}
-            className="border-muted text-foreground inline-flex h-fit w-fit items-center gap-1.5 rounded-md border-[1px] bg-transparent px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900">
+            className="border-muted text-foreground inline-flex h-fit w-fit items-center gap-1.5 rounded-md border bg-transparent px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900">
             <ArrowLeft />
             <span>Back</span>
           </Button>
@@ -176,7 +176,7 @@ export const ContributorTabContent = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex h-fit flex-col gap-2">
           {contributors.map((contributor, idx) => (
             <Contributor
               size="rg"

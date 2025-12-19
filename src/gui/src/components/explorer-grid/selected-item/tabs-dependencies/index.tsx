@@ -92,7 +92,7 @@ const DependenciesTabNavigation = ({
 
   return (
     <Navigation className={cn(className)} {...props}>
-      <NavigationList>
+      <NavigationList className="flex w-full">
         {(
           Object.entries(SECONDARY_TABS) as {
             [K in keyof typeof SECONDARY_TABS]-?: [
@@ -102,11 +102,13 @@ const DependenciesTabNavigation = ({
           }[keyof typeof SECONDARY_TABS][]
         ).map(([tab, label], idx) => (
           <NavigationListItem
-            key={`focused-tabs-${activeSubTab}-${tab}-${idx}`}>
+            key={`focused-tabs-${activeSubTab}-${tab}-${idx}`}
+            className="w-full">
             <NavigationButton
               navigationLayer="secondary"
               tab={tab}
-              count={getCount(tab)}>
+              count={getCount(tab)}
+              className="w-full">
               {label}
             </NavigationButton>
           </NavigationListItem>

@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, forwardRef } from 'react'
 import { NavLink } from 'react-router'
 import { PackageSearch, Home } from 'lucide-react'
 import { Query } from '@/components/icons/index.ts'
@@ -11,7 +11,6 @@ import {
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.ts'
 import { ResultItem } from '@/components/explorer-grid/results/result-item.tsx'
 import { ResultsPaginationNavigation } from '@/components/explorer-grid/results/page-navigation.tsx'
-import { Decorator } from '@/components/ui/decorator.tsx'
 import {
   Empty,
   EmptyMedia,
@@ -20,8 +19,26 @@ import {
   EmptyContent,
   EmptyDescription,
 } from '@/components/ui/empty-state.tsx'
+import { Cross } from '@/components/ui/cross.tsx'
+import { cn } from '@/lib/utils.ts'
 
+import type { ComponentProps } from 'react'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
+
+const Decorator = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
+  ({ className, ...rest }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'border-background-secondary max-lg:hidden',
+        className,
+      )}
+      {...rest}
+    />
+  ),
+)
+
+Decorator.displayName = 'Decorator'
 
 export const Results = ({
   allItems,
@@ -31,26 +48,32 @@ export const Results = ({
   return (
     <ResultsProvider allItems={allItems}>
       <div className="bg-background h-full">
-        <div className="bg-background-secondary h-full">
-          <ResultsHeader />
+        <ResultsHeader />
 
-          <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-            <Decorator className="pl-0 max-lg:hidden" />
-            <div className="flex overflow-x-scroll rounded p-[0.5px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <ResultsSort className="w-full min-w-0" />
-            </div>
-            <Decorator className="pr-0 max-lg:hidden" />
+        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+          <Decorator className="border-y" />
+          <div className="border-background-secondary bg-background-secondary relative flex min-w-0 border-x border-y [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Cross top left />
+            <Cross top right />
+            <Cross bottom left />
+            <Cross bottom right />
+            <ResultsSort className="w-full min-w-0" />
           </div>
+          <Decorator className="border-y" />
+        </div>
 
-          <div className="pattern-hatch flex h-9 w-full md:hidden" />
+        <div className="pattern-hatch flex h-9 w-full md:hidden" />
 
-          <ResultsList />
+        <ResultsList />
 
-          <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-            <Decorator className="pl-0 max-lg:hidden" />
-            <ResultsPaginationNavigation className="p-[0.5px]" />
-            <Decorator className="pr-[0px] max-lg:hidden" />
+        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+          <Decorator className="border-t" />
+          <div className="border-background-secondary bg-background-secondary relative flex w-full border-x border-t">
+            <Cross top left />
+            <Cross top right />
+            <ResultsPaginationNavigation className="w-full" />
           </div>
+          <Decorator className="border-t" />
         </div>
       </div>
     </ResultsProvider>
@@ -68,28 +91,26 @@ const ResultsHeader = () => {
 
   return (
     <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <Decorator className="pt-[0px] pl-[0px] max-lg:hidden" />
-      <div className="flex h-full w-full p-[0.5px] pt-[0px]">
-        <div className="bg-background flex h-full w-full flex-col rounded px-6 pt-12 pb-6">
-          <h3 className="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
-            {noResults ?
-              'No results'
-            : <Fragment>
-                Showing{' '}
-                <span className="font-mono text-2xl tabular-nums">
-                  {allPageItemsCount}
-                </span>{' '}
-                of{' '}
-                <span className="font-mono text-2xl tabular-nums">
-                  {allItemsCount}
-                </span>{' '}
-                results
-              </Fragment>
-            }
-          </h3>
-        </div>
+      <Decorator className="border-t" />
+      <div className="border-background-secondary flex h-full w-full flex-col border-x border-t px-6 pt-12 pb-6">
+        <h3 className="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
+          {noResults ?
+            'No results'
+          : <Fragment>
+              Showing{' '}
+              <span className="font-mono text-2xl tabular-nums">
+                {allPageItemsCount}
+              </span>{' '}
+              of{' '}
+              <span className="font-mono text-2xl tabular-nums">
+                {allItemsCount}
+              </span>{' '}
+              results
+            </Fragment>
+          }
+        </h3>
       </div>
-      <Decorator className="pt-[0px] pr-[0px] max-lg:hidden" />
+      <Decorator className="border-t" />
     </div>
   )
 }
@@ -106,10 +127,9 @@ const ResultsList = () => {
 
   return (
     <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <Decorator className="pl-[0px] max-lg:hidden" />
       {noResults ?
-        <div className="flex h-full min-h-[calc(100svh-117px-108px-245px-49px-36px)] w-full flex-col items-center justify-center gap-[1px] rounded p-[0.5px] md:min-h-[calc(100svh-65px-108px-49px-48px-2px)]">
-          <Empty className="bg-background h-full w-full rounded">
+        <div className="border-background-secondary col-start-2 col-end-3 flex h-full min-h-[calc(100svh-60px-109.5px-246px-36px)] w-full flex-col items-center justify-center border-x md:min-h-[calc(100svh-64px-109.5px-50px-49px)]">
+          <Empty className="h-full w-full">
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <PackageSearch />
@@ -138,7 +158,7 @@ const ResultsList = () => {
             </EmptyContent>
           </Empty>
         </div>
-      : <div className="flex h-full min-h-[calc(100svh-117px-108px-245px-49px-36px)] w-full flex-col gap-[1px] rounded p-[0.5px] md:min-h-[calc(100svh-65px-108px-49px-48px-2px)]">
+      : <div className="bg-background-secondary border-background-secondary col-start-2 col-end-3 flex h-full min-h-[calc(100svh-60px-109.5px-246px-36px)] w-full flex-col gap-px border-x md:min-h-[calc(100svh-64px-109.5px-50px-49px)]">
           {pageItems.map((item, idx) => (
             <div
               className="bg-background h-fit w-full rounded"
@@ -148,7 +168,6 @@ const ResultsList = () => {
           ))}
         </div>
       }
-      <Decorator className="pr-[0px] max-lg:hidden" />
     </div>
   )
 }

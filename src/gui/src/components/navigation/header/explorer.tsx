@@ -8,7 +8,6 @@ import { QueryMatches } from '@/components/explorer-grid/query-matches.tsx'
 import { Kbd } from '@/components/ui/kbd.tsx'
 import { QueryBuilder } from '@/components/query-builder/index.tsx'
 import SaveQueryButton from '@/components/explorer-grid/save-query.tsx'
-import { FocusButton } from '@/components/explorer-grid/selected-item/focused-view/focused-button.tsx'
 import {
   InputGroup,
   InputGroupInput,
@@ -76,7 +75,7 @@ export const ExplorerHeader = () => {
         <form
           onSubmit={handleNavigate}
           className="flex w-full justify-end">
-          <InputGroup className="w-full rounded-xl lg:max-w-[400px]">
+          <InputGroup className="w-full rounded-xl">
             <InputGroupAddon align="inline-start">
               <Search />
             </InputGroupAddon>
@@ -98,10 +97,10 @@ export const ExplorerHeader = () => {
                   Search
                 </InputGroupButton>
               )}
-              <Kbd className="!rounded-md">
+              <Kbd className="rounded-md!">
                 <Command />
               </Kbd>
-              <Kbd className="!rounded-md">K</Kbd>
+              <Kbd className="rounded-md!">K</Kbd>
             </InputGroupAddon>
           </InputGroup>
         </form>
@@ -113,7 +112,7 @@ export const ExplorerHeader = () => {
             tabIndex={0}
             classNames={{
               wrapper: cn(
-                'w-[600px]',
+                'w-full',
                 queryBuilderOpen &&
                   queryBuilderDisplay &&
                   'rounded-b-none',
@@ -128,17 +127,16 @@ export const ExplorerHeader = () => {
                   <SaveQueryButton />
                 </div>
                 <div className="flex items-center gap-1">
-                  <Kbd className="!rounded-md">
+                  <Kbd className="rounded-md!">
                     <Command size={12} />
                   </Kbd>
-                  <Kbd className="!rounded-md">k</Kbd>
+                  <Kbd className="rounded-md!">k</Kbd>
                 </div>
               </div>
             }
           />
         </Fragment>
       }
-      <FocusButton />
     </div>
   )
 }

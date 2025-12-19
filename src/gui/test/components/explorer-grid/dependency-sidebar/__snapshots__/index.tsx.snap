@@ -2,10 +2,36 @@
 
 exports[`dependency-side-bar 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
+<aside class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center justify-between border-b px-6 py-3">
+    <h3 class="text-sm font-medium">
+      <span class="mr-2">
+        Dependencies
+      </span>
+      <gui-number-flow
+        start="3"
+        end="3"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+      <span class="text-muted-foreground font-mono text-sm tabular-nums">
+        /
+      </span>
+      <gui-number-flow
+        start="3"
+        end="3"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+    </h3>
+  </div>
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
-  <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
+  <div class="flex flex-col gap-4 px-6 py-3">
     <gui-side-item
       item="GridItemData { @vltpkg/semver }"
       dependencies="true"
@@ -22,18 +48,42 @@ exports[`dependency-side-bar 1`] = `
     >
     </gui-side-item>
   </div>
-  <gui-dependency-empty-state>
-  </gui-dependency-empty-state>
-</div>
+</aside>
 
 `;
 
 exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
+<aside class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center justify-between border-b px-6 py-3">
+    <h3 class="text-sm font-medium">
+      <span class="mr-2">
+        Dependencies
+      </span>
+      <gui-number-flow
+        start="3"
+        end="3"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+      <span class="text-muted-foreground font-mono text-sm tabular-nums">
+        /
+      </span>
+      <gui-number-flow
+        start="3"
+        end="3"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+    </h3>
+  </div>
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
-  <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
+  <div class="flex flex-col gap-4 px-6 py-3">
     <gui-side-item
       item="GridItemData { @vltpkg/semver }"
       dependencies="true"
@@ -50,15 +100,23 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
     >
     </gui-side-item>
   </div>
-  <gui-dependency-empty-state>
-  </gui-dependency-empty-state>
-  <div class="flex flex-col gap-px">
-    <div class="bg-background flex h-12 w-full items-center rounded px-6">
+  <div class="flex flex-col">
+    <div class="border-background-secondary relative flex h-12 w-full items-center border-b px-6 border-t">
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
       <h3 class="text-muted-foreground text-sm font-medium">
-        Uninstalled Dependencies
+        Uninstalled
       </h3>
     </div>
-    <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
+    <div class="flex flex-col gap-4 px-6 py-3">
       <gui-side-item
         item="GridItemData { @ruyadorno/redact }"
         dependencies="false"
@@ -71,16 +129,42 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
       </gui-side-item>
     </div>
   </div>
-</div>
+</aside>
 
 `;
 
 exports[`dependency-side-bar has uninstalled deps only 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
+<aside class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center justify-between border-b px-6 py-3">
+    <h3 class="text-sm font-medium">
+      <span class="mr-2">
+        Dependencies
+      </span>
+      <gui-number-flow
+        start="0"
+        end="3"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+      <span class="text-muted-foreground font-mono text-sm tabular-nums">
+        /
+      </span>
+      <gui-number-flow
+        start="3"
+        end="0"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+    </h3>
+  </div>
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
-  <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
+  <div class="flex flex-col gap-4 px-6 py-3">
     <gui-side-item
       item="GridItemData { @vltpkg/semver }"
       dependencies="true"
@@ -97,15 +181,23 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
     >
     </gui-side-item>
   </div>
-  <gui-dependency-empty-state>
-  </gui-dependency-empty-state>
-  <div class="flex flex-col gap-px">
-    <div class="bg-background flex h-12 w-full items-center rounded px-6">
+  <div class="flex flex-col">
+    <div class="border-background-secondary relative flex h-12 w-full items-center border-b px-6 border-t">
+      <gui-cross
+        top="true"
+        left="true"
+      >
+      </gui-cross>
+      <gui-cross
+        bottom="true"
+        left="true"
+      >
+      </gui-cross>
       <h3 class="text-muted-foreground text-sm font-medium">
-        Uninstalled Dependencies
+        Uninstalled
       </h3>
     </div>
-    <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
+    <div class="flex flex-col gap-4 px-6 py-3">
       <gui-side-item
         item="GridItemData { @vltpkg/semver }"
         dependencies="false"
@@ -123,19 +215,43 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
       </gui-side-item>
     </div>
   </div>
-</div>
+</aside>
 
 `;
 
 exports[`dependency-side-bar no items 1`] = `
 
-<div class="bg-background-secondary flex w-full flex-col gap-px rounded rounded-b-none pb-px">
+<aside class="flex w-full flex-col">
+  <div class="border-background-secondary flex h-12 w-full items-center justify-between border-b px-6 py-3">
+    <h3 class="text-sm font-medium">
+      <span class="mr-2">
+        Dependencies
+      </span>
+      <gui-number-flow
+        start="0"
+        end="0"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+      <span class="text-muted-foreground font-mono text-sm tabular-nums">
+        /
+      </span>
+      <gui-number-flow
+        start="0"
+        end="0"
+        format="[object Object]"
+        motionconfig="[object Object]"
+        classnames="[object Object]"
+      >
+      </gui-number-flow>
+    </h3>
+  </div>
   <gui-filter-list-empty-state>
   </gui-filter-list-empty-state>
-  <div class="bg-background flex flex-col gap-4 rounded px-6 py-3">
-  </div>
   <gui-dependency-empty-state>
   </gui-dependency-empty-state>
-</div>
+</aside>
 
 `;

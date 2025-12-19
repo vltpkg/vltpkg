@@ -118,6 +118,10 @@ vi.mock(
   }),
 )
 
+vi.mock('@/components/ui/button.tsx', () => ({
+  Button: 'gui-button',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -138,7 +142,7 @@ test('Item renders with the default structure', () => {
   } satisfies SelectedItemStore)
 
   const Container = () => {
-    return <Item item={SELECTED_ITEM} />
+    return <Item />
   }
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()

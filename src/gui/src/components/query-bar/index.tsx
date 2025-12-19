@@ -117,7 +117,7 @@ export const QueryBar = forwardRef<HTMLDivElement, QueryBar>(
         ref={ref}
         id={QUERY_BAR_ID}
         className={cn(
-          'relative z-[51] rounded-xl',
+          'relative z-51 rounded-xl',
           className,
           wrapperCn,
         )}
