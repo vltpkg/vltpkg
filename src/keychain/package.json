@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/keychain",
   "description": "The filesystem keychain for `@vltpkg/registry-client`",
-  "version": "1.0.0-rc.12",
+  "version": "1.0.0-rc.13",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
