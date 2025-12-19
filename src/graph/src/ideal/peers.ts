@@ -385,7 +385,7 @@ export const endPeerPlacement = (
   /**
    * Try to resolve peer dependencies using already seen target
    * values from the current peer context set.
-   * @param currentContext The current peer context (may be forked from original)
+   * @param {PeerContext} currentContext The current peer context (may be forked from original)
    */
   resolvePeerDeps: (currentContext: PeerContext) => {
     // iterate on the set of peer dependencies of the current node
