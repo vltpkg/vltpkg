@@ -403,75 +403,78 @@ t.test('addEntriesToPeerContext', async t => {
     )
   })
 
-  t.test('updates target and rewires edges', async t => {
-    const peerContext: PeerContext = new Map()
-    const spec = Spec.parse('foo', '^1.0.0', configData)
-    const mainManifest = {
-      name: 'my-project',
-      version: '1.0.0',
-    }
-    const graph = new Graph({
-      projectRoot: t.testdirName,
-      ...configData,
-      mainManifest,
-    })
+  t.test(
+    'preserves existing target when it satisfies new spec',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
 
-    const target1 = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      { name: 'foo', version: '1.0.0' },
-    )!
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
 
-    const dependent = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      Spec.parse('bar', '^1.0.0', configData),
-      { name: 'bar', version: '1.0.0' },
-    )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
 
-    // Add peer edge from dependent to target1
-    graph.addEdge('peer', spec, dependent, target1)
+      // Add peer edge from dependent to target1
+      graph.addEdge('peer', spec, dependent, target1)
 
-    // Add first target
-    addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target1, type: 'peer', dependent }],
-      dependent,
-    )
+      // Add first target
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
 
-    // Create new target
-    const target2 = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      { name: 'foo', version: '1.0.1' },
-    )!
+      // Create new target
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.1' },
+      )!
 
-    // Add new target - should NOT update edges since existing target still satisfies
-    const needsFork = addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target2, type: 'peer' }],
-      dependent,
-    )
+      // Add new target - should NOT update edges since existing target still satisfies
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
 
-    t.equal(needsFork, false, 'should not need fork')
-    const entry = peerContext.get('foo')
-    // The existing target (1.0.0) still satisfies the spec, so it should be preserved
-    t.equal(
-      entry?.target?.id,
-      target1.id,
-      'should preserve existing target since it still satisfies',
-    )
+      t.equal(needsFork, false, 'should not need fork')
+      const entry = peerContext.get('foo')
+      // The existing target (1.0.0) still satisfies the spec, so it should be preserved
+      t.equal(
+        entry?.target?.id,
+        target1.id,
+        'should preserve existing target since it still satisfies',
+      )
 
-    // Check edge was NOT rewired - it should still point to the original target
-    const edge = dependent.edgesOut.get('foo')
-    t.equal(
-      edge?.to?.id,
-      target1.id,
-      'edge should still point to original target',
-    )
-  })
+      // Check edge was NOT rewired - it should still point to the original target
+      const edge = dependent.edgesOut.get('foo')
+      t.equal(
+        edge?.to?.id,
+        target1.id,
+        'edge should still point to original target',
+      )
+    },
+  )
   t.test(
     'adds entry with no target then updates with target',
     async t => {
