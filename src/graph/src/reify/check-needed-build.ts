@@ -1,4 +1,5 @@
 import type { PathScurry } from 'path-scurry'
+import type { PackageJson } from '@vltpkg/package-json'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
 import { join } from 'node:path'
@@ -22,6 +23,10 @@ export type CheckNeededBuildOptions = {
    * PathScurry instance for filesystem access
    */
   scurry: PathScurry
+  /**
+   * PackageJson instance for reading manifests from disk
+   */
+  packageJson: PackageJson
 }
 
 /**
@@ -31,13 +36,20 @@ export type CheckNeededBuildOptions = {
  * 3. Is an importer or git dependency with prepare scripts (prepare, preprepare, postprepare)
  * 4. Has binary files that need to be linked
  */
-const nodeNeedsBuild = (node: Node, scurry: PathScurry): boolean => {
+const nodeNeedsBuild = (
+  node: Node,
+  scurry: PathScurry,
+  packageJson: PackageJson,
+): boolean => {
   // If the node has already been built during reify, no need to build again
   if (node.built) return false
 
-  const { manifest } = node
-  /* c8 ignore next */
-  if (!manifest) return false
+  // If the manifest is not available on the node, read it from disk.
+  // This can happen when the ideal graph is loaded from a lockfile
+  // and there's no actual graph available to hydrate the manifest data from.
+  const manifest = (node.manifest ??= packageJson.read(
+    node.resolvedLocation(scurry),
+  ))
 
   const { scripts = {} } = manifest
 
@@ -82,11 +94,11 @@ const nodeNeedsBuild = (node: Node, scurry: PathScurry): boolean => {
 export const checkNeededBuild = (
   options: CheckNeededBuildOptions,
 ): BuildData => {
-  const { diff, scurry } = options
+  const { diff, scurry, packageJson } = options
 
   // Filter nodes to only include those that actually need to be built
   const nodesToBuild = [...diff.nodes.add].filter(node =>
-    nodeNeedsBuild(node, scurry),
+    nodeNeedsBuild(node, scurry, packageJson),
   )
 
   // Set buildState = 'needed' on all nodes that require building
