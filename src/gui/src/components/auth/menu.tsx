@@ -1,5 +1,4 @@
-import { User, LogOut, BookOpen, LayoutDashboard } from 'lucide-react'
-import { Config, Query, Github } from '@/components/icons/index.ts'
+import { User, LogOut } from 'lucide-react'
 
 import type { LucideIcon } from 'lucide-react'
 
@@ -23,36 +22,6 @@ export const menuItems: MenuGroup[] = [
         label: 'Profile',
         icon: User,
         action: 'profile',
-      },
-      {
-        label: 'Dashboard',
-        icon: LayoutDashboard,
-        to: '/dashboard',
-      },
-      {
-        label: 'Queries',
-        icon: Query,
-        to: '/queries',
-      },
-      {
-        to: '/settings',
-        label: 'Settings',
-        icon: Config,
-      },
-    ],
-  },
-  {
-    label: 'Resources',
-    children: [
-      {
-        to: 'https://github.com/vltpkg/vltpkg',
-        label: 'GitHub',
-        icon: Github,
-      },
-      {
-        to: 'https://docs.vlt.sh',
-        label: 'Support',
-        icon: BookOpen,
       },
     ],
   },

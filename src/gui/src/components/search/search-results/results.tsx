@@ -17,18 +17,23 @@ import { useSearchResultsStore } from '@/state/search-results.ts'
 import { useSyncSearchResultsURL } from '@/components/search/search-results/use-sync-url.tsx'
 import { useDebounce } from '@/components/hooks/use-debounce.tsx'
 import { cn } from '@/lib/utils.ts'
+import { Cross } from '@/components/ui/cross.tsx'
 import { FAVORITE_PACKAGES } from '@/lib/constants/favorite-packages.ts'
 
 import type { ComponentProps } from 'react'
 import type { MotionProps } from 'framer-motion'
 
-const Decorator = ({ className }: { className?: string }) => {
-  return (
-    <div aria-hidden="true" className={cn('p-[0.5px]', className)}>
-      <div className="bg-background h-full rounded" />
-    </div>
-  )
-}
+const Decorator = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <div
+      aria-hidden
+      className={cn('block h-full w-full max-lg:hidden', className)}
+      ref={ref}
+      {...props}
+    />
+  ),
+)
+Decorator.displayName = 'Decorator'
 
 const titleMotion: MotionProps = {
   initial: {
@@ -96,103 +101,111 @@ export const SearchResults = () => {
   }, [reset])
 
   return (
-    <section className="bg-background">
-      <div className="bg-background-secondary relative">
-        {/* results count */}
-        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-          <Decorator className="max-lg:hidden" />
-          <div className="flex w-full p-[0.5px]">
-            <div className="bg-background flex w-full flex-col items-center justify-center rounded px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-              <div className="h-[75px] lg:h-[36.5px]">
-                <AnimatePresence mode="popLayout">
-                  {query && results.length !== 0 ?
-                    <motion.h3
-                      key={`has-results-${query}`}
-                      className="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-                      {...titleMotion}>
-                      Showing{' '}
-                      <span className="font-mono text-2xl tabular-nums">
-                        {resultsOnPage.length.toLocaleString()}
-                      </span>{' '}
-                      of{' '}
-                      <span className="font-mono text-2xl tabular-nums">
-                        {totalResults.toLocaleString()}
-                      </span>{' '}
-                      results for
-                      <span className="fancy-quote mr-0.5 ml-2 font-medium">
-                        &ldquo;
-                      </span>
-                      {query}
-                      <span className="fancy-quote ml-0.5 font-medium">
-                        &rdquo;
-                      </span>
-                    </motion.h3>
-                  : <motion.h3
-                      key="has-no-results"
-                      className="inline-block bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-                      {...titleMotion}>
-                      Start typing to search
-                    </motion.h3>
-                  }
-                </AnimatePresence>
-              </div>
-            </div>
+    <section className="bg-background overflow-y-hidden">
+      {/* results count */}
+      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <Decorator className="border-background-secondary border-t" />
+        <div className="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
+          <Cross top right />
+          <Cross top left />
+          <div className="h-[75px] lg:h-[36.5px]">
+            <AnimatePresence mode="popLayout">
+              {query && results.length !== 0 ?
+                <motion.h3
+                  key={`has-results-${query}`}
+                  className="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+                  {...titleMotion}>
+                  Showing{' '}
+                  <span className="font-mono text-2xl tabular-nums">
+                    {resultsOnPage.length.toLocaleString()}
+                  </span>{' '}
+                  of{' '}
+                  <span className="font-mono text-2xl tabular-nums">
+                    {totalResults.toLocaleString()}
+                  </span>{' '}
+                  results for
+                  <span className="fancy-quote mr-0.5 ml-2 font-medium">
+                    &ldquo;
+                  </span>
+                  {query}
+                  <span className="fancy-quote ml-0.5 font-medium">
+                    &rdquo;
+                  </span>
+                </motion.h3>
+              : <motion.h3
+                  key="has-no-results"
+                  className="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
+                  {...titleMotion}>
+                  Start typing to search
+                </motion.h3>
+              }
+            </AnimatePresence>
           </div>
-          <Decorator className="max-lg:hidden" />
         </div>
+        <Decorator className="border-background-secondary border-t" />
+      </div>
 
-        {/* sorting filters */}
-        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-          <Decorator className="max-lg:hidden" />
-          <SearchResultsSort className="w-full p-[0.5px]" />
-          <Decorator className="max-lg:hidden" />
+      {/* sorting filters */}
+      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <Decorator className="border-background-secondary border-y" />
+        <div className="bg-background-secondary border-background-secondary relative w-full border-x border-y">
+          <Cross top right />
+          <Cross top left />
+          <Cross bottom right />
+          <Cross bottom left />
+          <SearchResultsSort />
         </div>
+        <Decorator className="border-background-secondary border-y" />
+      </div>
 
-        <div className="pattern-hatch bg-background h-9 rounded lg:hidden" />
+      <div className="pattern-hatch bg-background h-9 lg:hidden" />
+      {/* list view */}
+      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <AnimatePresence mode="popLayout" initial={false}>
+          {query && (results.length > 0 || isLoading) ?
+            <MotionSearchResultsList
+              key="results-list"
+              {...searchResultsSectionMotion}
+              className="border-background-secondary col-start-2 col-end-3 border-x"
+            />
+          : <MotionSearchResultsSection
+              key="results-list-empty-state"
+              {...searchResultsSectionMotion}
+              className="border-background-secondary col-start-2 col-end-3 border-x">
+              <Empty className="h-full w-full grow">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <PackageSearch />
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    Your results will appear here
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={handleLucky}>
+                      I'm feeling lucky
+                    </Button>
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            </MotionSearchResultsSection>
+          }
+        </AnimatePresence>
+      </div>
 
-        {/* list view */}
-        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-          <Decorator className="max-lg:hidden" />
-          <AnimatePresence mode="popLayout" initial={false}>
-            {query && (results.length > 0 || isLoading) ?
-              <MotionSearchResultsList
-                key="results-list"
-                {...searchResultsSectionMotion}
-                className="rounded p-[0.5px]"
-              />
-            : <MotionSearchResultsSection
-                key="results-list-empty-state"
-                {...searchResultsSectionMotion}>
-                <Empty className="h-full w-full grow">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <PackageSearch />
-                    </EmptyMedia>
-                    <EmptyTitle>
-                      Your results will appear here
-                    </EmptyTitle>
-                    <EmptyDescription>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={handleLucky}>
-                        I'm feeling lucky
-                      </Button>
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              </MotionSearchResultsSection>
-            }
-          </AnimatePresence>
-          <Decorator className="max-lg:hidden" />
+      {/* pagination */}
+      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
+        <Decorator className="border-background-secondary border-t" />
+        <div className="bg-background-secondary border-background-secondary relative w-full border-x border-t">
+          <Cross top right />
+          <Cross top left />
+          <Cross bottom left />
+          <Cross bottom right />
+          <SearchResultsPaginationNavigation />
         </div>
-
-        {/* pagination */}
-        <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-          <Decorator className="max-lg:hidden" />
-          <SearchResultsPaginationNavigation className="w-full p-[0.5px]" />
-          <Decorator className="max-lg:hidden" />
-        </div>
+        <Decorator className="border-background-secondary border-t" />
       </div>
     </section>
   )
@@ -286,7 +299,7 @@ const SearchResultsList = forwardRef<
     !isLoading && results.length === 0 && query
 
   return (
-    <div className="min-w-0" ref={ref} {...props}>
+    <div className={cn('min-w-0', className)} ref={ref} {...props}>
       <AnimatePresence mode="wait">
         {isLoading && showLoading ?
           <MotionSearchResultsSection
@@ -328,10 +341,7 @@ const SearchResultsList = forwardRef<
         : shouldShowResults ?
           <motion.div
             key={`results-${query}-${page}-${sortDir}-${sortBy}`}
-            className={cn(
-              'flex min-h-[calc(100svh-56px-148px-245px-36px-49px)] w-full flex-col gap-[1px] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]',
-              className,
-            )}
+            className="bg-background-secondary flex min-h-[calc(100svh-64px-109.5px-50px-49px)] w-full flex-col gap-px lg:min-h-[calc(100svh-64px-109.5px-50px-49px)]"
             variants={searchResultsContainerVariants}
             initial="hidden"
             animate="visible"
@@ -342,16 +352,13 @@ const SearchResultsList = forwardRef<
                 <motion.div
                   key={uniqueKey}
                   variants={searchResultItemVariants}
-                  className="bg-background rounded">
+                  className="rounded">
                   <SearchResult item={result} />
                 </motion.div>
               )
             })}
           </motion.div>
-        : <MotionSearchResultsSection
-            empty
-            key="no-results-results-loading"
-          />
+        : <MotionSearchResultsSection key="no-results-results-loading" />
         }
       </AnimatePresence>
     </div>
@@ -363,25 +370,18 @@ const MotionSearchResultsList = motion.create(SearchResultsList)
 
 const SearchResultsSection = forwardRef<
   HTMLDivElement,
-  ComponentProps<'div'> & {
-    empty?: boolean
-  }
->(({ className, empty, children, ...props }, ref) => {
+  ComponentProps<'div'>
+>(({ className, ...props }, ref) => {
   return (
     <div
       ref={ref}
       className={cn(
-        'flex h-full w-full flex-col p-[0.5px]',
-        'min-h-[calc(100svh-56px-148px-245px-36px-49px)] lg:min-h-[calc(100svh-48px-109.5px-49px-49px)]',
+        'relative flex h-full w-full flex-col',
+        'min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)]',
         className,
       )}
-      {...props}>
-      {!empty && (
-        <div className="bg-background flex h-full w-full flex-1 flex-col rounded">
-          {children}
-        </div>
-      )}
-    </div>
+      {...props}
+    />
   )
 })
 SearchResultsSection.displayName = 'SearchResultsSection'

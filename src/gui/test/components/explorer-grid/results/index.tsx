@@ -13,6 +13,15 @@ vi.mock('react-router', () => ({
   NavLink: 'gui-nav-link',
 }))
 
+vi.mock('lucide-react', () => ({
+  PackageSearch: 'gui-package-search-icon',
+  Home: 'gui-home-icon',
+}))
+
+vi.mock('@/components/icons/index.ts', () => ({
+  Query: 'gui-query-icon',
+}))
+
 vi.mock('@/components/explorer-grid/results/context.tsx', () => ({
   useResultsStore: vi.fn(),
   ResultsProvider: 'gui-results-provider',
@@ -46,6 +55,10 @@ vi.mock(
     ResultPageOptions: 'gui-result-page-options',
   }),
 )
+
+vi.mock('@/components/ui/cross.tsx', () => ({
+  Cross: 'gui-cross',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

@@ -32,9 +32,13 @@ import {
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
 import { CrumbNav } from '@/components/navigation/crumb-nav.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { ContributorAvatar } from '@/components/explorer-grid/selected-item/tabs-contributors.tsx'
+import { splitArray } from '@/utils/split-array.ts'
 import { toHumanNumber } from '@/utils/human-number.ts'
 import { getPackageShortName } from '@/utils/get-package-shortname.ts'
 
+import type { ComponentProps } from 'react'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
@@ -129,7 +133,9 @@ const SpecOrigin = ({
   return ''
 }
 
-export const ItemBreadcrumbs = () => {
+export const ItemBreadcrumbs = ({
+  className,
+}: ComponentProps<typeof ScrollArea>) => {
   const breadcrumbs = useSelectedItemStore(
     state => state.selectedItem.breadcrumbs,
   )
@@ -139,7 +145,10 @@ export const ItemBreadcrumbs = () => {
   return (
     <ScrollArea
       viewportClassName="flex items-center"
-      className="relative flex w-full items-center overflow-hidden overflow-x-scroll">
+      className={cn(
+        'relative flex w-full items-center overflow-hidden overflow-x-scroll',
+        className,
+      )}>
       <CrumbNav breadcrumbs={breadcrumbs} />
       <ScrollBar className="z-102" orientation="horizontal" />
     </ScrollArea>
@@ -174,7 +183,7 @@ const PackageOverallScore = ({
               value={averageScore}
               variant={chartColor as ProgressCircleVariant}
               strokeWidth={5}
-              className="size-9">
+              className="size-7">
               <p
                 className="font-mono text-xs font-medium tabular-nums"
                 style={{ color: textColor }}>
@@ -239,7 +248,7 @@ const PackageNewerVersionsAvailable = () => {
         <TooltipTrigger
           onClick={() => setActiveTab('versions')}
           className="flex items-center justify-center">
-          <div className="cursor-default rounded-sm border border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+          <div className="cursor-pointer rounded-sm border border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
             <ArrowBigUpDash
               className="text-green-600 dark:text-green-500"
               size={16}
@@ -262,7 +271,19 @@ export const PackageImageSpec = ({
   const selectedItem = useSelectedItemStore(
     state => state.selectedItem,
   )
+  const { setActiveTab } = useTabNavigation()
+  const contributors = useSelectedItemStore(
+    state => state.contributors,
+  )
   const specOptions = useGraphStore(state => state.specOptions)
+
+  const handleContributorsNavigate = () =>
+    setActiveTab('contributors')
+
+  const [firstContributors, restContributors] = splitArray(
+    [...(contributors ?? [])],
+    6,
+  )
 
   return (
     <div
@@ -299,7 +320,37 @@ export const PackageImageSpec = ({
           </ScrollArea>
         </div>
 
-        <PackageOverallScore />
+        <div className="flex h-fit items-center gap-2">
+          <div
+            className={cn(
+              'flex flex-wrap',
+              contributors && contributors.length > 2 ?
+                '-space-x-2'
+              : 'space-x-2',
+            )}>
+            {firstContributors.map((contributor, idx) => (
+              <button
+                key={`contributor-${idx}`}
+                onClick={handleContributorsNavigate}
+                className="cursor-pointer">
+                <ContributorAvatar
+                  size="sm"
+                  avatar={contributor.avatar}
+                />
+              </button>
+            ))}
+            {restContributors.length !== 0 && (
+              <Button
+                onClick={handleContributorsNavigate}
+                variant="outline"
+                className="text-muted-foreground bg-background! h-6.5 min-w-6.5 items-center justify-center rounded-full p-1 font-mono text-xs tabular-nums">
+                +{restContributors.length}
+              </Button>
+            )}
+          </div>
+
+          <PackageOverallScore className="flex cursor-pointer items-center justify-center" />
+        </div>
       </div>
     </div>
   )
@@ -353,7 +404,7 @@ export const Publisher = ({ className }: { className?: string }) => {
         </Avatar>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-muted-foreground inline-flex cursor-default items-center gap-1 text-xs font-medium">
+            <TooltipTrigger className="text-muted-foreground inline-flex cursor-pointer items-center gap-1 text-xs font-medium">
               Published by:{' '}
               <span className="text-foreground">
                 {publisher.name}

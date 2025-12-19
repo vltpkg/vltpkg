@@ -19,8 +19,6 @@ const Header = ({ className }: HeaderProps) => {
   const { pathname } = useLocation()
   const isHostedMode = isHostedEnvironment()
 
-  const displayPathname = pathname.split('/')[1]
-
   const headerContent = useMemo(() => {
     if (pathname.includes('explore')) {
       return <ExplorerHeader />
@@ -48,20 +46,12 @@ const Header = ({ className }: HeaderProps) => {
   return (
     <div
       className={cn(
-        'flex w-full cursor-default flex-col items-start justify-between gap-5 px-6 py-3 md:h-16 md:flex-row md:items-center',
+        'flex w-full cursor-default items-center justify-between gap-5 px-6 py-3 md:h-16',
         className,
       )}>
-      <div className="flex w-full items-center justify-between">
-        <h3 className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-lg font-medium tracking-tight text-transparent capitalize dark:from-neutral-400 dark:to-neutral-50">
-          {displayPathname}
-        </h3>
-        <div className="flex items-center gap-2 md:hidden">
-          <MobileMenu />
-          <UserMenu />
-        </div>
-      </div>
       {headerContent}
-      <UserMenu className="hidden md:flex" />
+      <MobileMenu className="md:hidden" />
+      <UserMenu />
     </div>
   )
 }

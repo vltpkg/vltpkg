@@ -24,6 +24,10 @@ vi.mock('lucide-react', () => ({
   Check: 'gui-check-icon',
 }))
 
+vi.mock('@/components/ui/cross.tsx', () => ({
+  Cross: 'gui-cross',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

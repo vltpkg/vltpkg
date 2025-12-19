@@ -99,7 +99,7 @@ export const ResultItem = ({ item }: ResultItemProps) => {
       role="link"
       aria-label={`Update query to: ${item.name}`}
       onClick={updateResultItem({ item, query, updateQuery })}
-      className="focus:ring-foreground/15 focus:bg-foreground/3 bg-background hover:bg-foreground/3 flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 focus:ring-1 focus:outline-none">
+      className="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none">
       {/* item header */}
       <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
         <div className="flex items-center gap-2">
@@ -111,8 +111,8 @@ export const ResultItem = ({ item }: ResultItemProps) => {
                 alt={packageIcon.alt}
                 className="absolute inset-0 size-full rounded-md object-cover"
               />
-            : <div className="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-                <span className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+            : <div className="absolute inset-0 flex aspect-square items-center justify-center rounded-[calc(0.375rem+1px)] bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+                <span className="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
                   {packageShortName}
                 </span>
               </div>
@@ -172,7 +172,7 @@ export const ResultItem = ({ item }: ResultItemProps) => {
                   />
                 </div>
               : <div className="flex aspect-square size-4 items-center justify-center rounded border bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-                  <span className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-xs text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+                  <span className="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-xs text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
                     {authorNameShort}
                   </span>
                 </div>

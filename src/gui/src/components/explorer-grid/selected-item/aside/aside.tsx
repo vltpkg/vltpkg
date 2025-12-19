@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { Link as GuiLink } from '@/components/ui/link.tsx'
 import { Link as LucideLink, Copy, Check } from 'lucide-react'
+import { Cross } from '@/components/ui/cross.tsx'
 import { cn } from '@/lib/utils.ts'
 
 import type { PropsWithChildren } from 'react'
@@ -18,7 +19,7 @@ const Aside = ({ className, ...props }: AsideProps) => {
   return (
     <aside
       className={cn(
-        'flex h-fit flex-col gap-[1px] rounded pb-[1px]',
+        'divide-background-secondary flex h-fit flex-col divide-y',
         className,
       )}
       {...props}
@@ -46,11 +47,14 @@ const AsideSection = ({
   return (
     <div
       data-slot="aside-section"
-      className={cn('flex w-full flex-col gap-2', className)}
+      className={cn(
+        'relative flex w-full flex-col gap-2 px-6 py-3',
+        className,
+      )}
       {...props}>
-      <div className="bg-background flex w-full flex-col gap-2 rounded px-6 py-3">
-        {children}
-      </div>
+      <Cross top right />
+      <Cross top left />
+      {children}
     </div>
   )
 }

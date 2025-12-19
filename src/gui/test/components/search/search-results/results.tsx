@@ -75,6 +75,10 @@ vi.mock('@/components/ui/empty-state', () => ({
   EmptyDescription: 'gui-empty-description',
 }))
 
+vi.mock('@/components/ui/cross.tsx', () => ({
+  Cross: 'gui-cross',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

@@ -61,6 +61,13 @@ vi.mock(
   }),
 )
 
+vi.mock(
+  '@/components/explorer-grid/selected-item/install-helper.tsx',
+  () => ({
+    InstallHelper: 'gui-install-helper',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

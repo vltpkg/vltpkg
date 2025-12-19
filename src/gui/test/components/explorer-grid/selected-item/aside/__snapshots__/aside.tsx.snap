@@ -72,11 +72,19 @@ exports[`AsideSection renders with children 1`] = `
 
 <div
   data-slot="aside-section"
-  class="flex w-full flex-col gap-2"
+  class="relative flex w-full flex-col gap-2 px-6 py-3"
 >
-  <div class="bg-background flex w-full flex-col gap-2 rounded px-6 py-3">
-    Test Section Content
-  </div>
+  <gui-cross
+    top="true"
+    right="true"
+  >
+  </gui-cross>
+  <gui-cross
+    top="true"
+    left="true"
+  >
+  </gui-cross>
+  Test Section Content
 </div>
 
 `;

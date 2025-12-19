@@ -48,7 +48,7 @@ export const MobileMenu = ({ className }: MobileMenuProps) => {
           <SheetTitle>Menu</SheetTitle>
           <Button
             variant="ghost"
-            className="aspect-square !p-0"
+            className="aspect-square p-0!"
             onClick={handleOpen}>
             <CloseIcon />
           </Button>

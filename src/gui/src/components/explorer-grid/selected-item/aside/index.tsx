@@ -4,8 +4,8 @@ import { AsideRepo } from '@/components/explorer-grid/selected-item/aside/aside-
 import { AsideBugs } from '@/components/explorer-grid/selected-item/aside/aside-bugs.tsx'
 import { AsideMetadata } from '@/components/explorer-grid/selected-item/aside/aside-metadata.tsx'
 import { AsideKeywords } from '@/components/explorer-grid/selected-item/aside/aside-keywords.tsx'
-import { AsideContributors } from '@/components/explorer-grid/selected-item/aside/aside-contributors.tsx'
 import { AsideDescription } from '@/components/explorer-grid/selected-item/aside/aside-description.tsx'
+import { InstallHelper } from '@/components/explorer-grid/selected-item/install-helper.tsx'
 import { useEmptyCheck } from '@/components/explorer-grid/selected-item/aside/use-empty-check.tsx'
 
 interface AsideOverviewProps {
@@ -25,12 +25,12 @@ export const AsideOverview = ({ className }: AsideOverviewProps) => {
 
   return (
     <Aside className={className}>
+      <InstallHelper />
       <AsideDescription />
       <AsideRepo />
       <AsideFunding />
       <AsideBugs />
       <AsideMetadata />
-      <AsideContributors />
       <AsideKeywords />
     </Aside>
   )
