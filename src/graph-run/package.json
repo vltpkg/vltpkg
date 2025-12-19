@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/graph-run",
   "description": "Run operations on a graph, maximizing parallelism",
-  "version": "1.0.0-rc.12",
+  "version": "1.0.0-rc.13",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
