@@ -448,7 +448,7 @@ t.test('addEntriesToPeerContext', async t => {
       { name: 'foo', version: '1.0.1' },
     )!
 
-    // Add new target - should update edges
+    // Add new target - should NOT update edges since existing target still satisfies
     const needsFork = addEntriesToPeerContext(
       peerContext,
       [{ spec, target: target2, type: 'peer' }],
@@ -457,14 +457,19 @@ t.test('addEntriesToPeerContext', async t => {
 
     t.equal(needsFork, false, 'should not need fork')
     const entry = peerContext.get('foo')
-    t.equal(entry?.target?.id, target2.id, 'should update target')
+    // The existing target (1.0.0) still satisfies the spec, so it should be preserved
+    t.equal(
+      entry?.target?.id,
+      target1.id,
+      'should preserve existing target since it still satisfies',
+    )
 
-    // Check edge was rewired
+    // Check edge was NOT rewired - it should still point to the original target
     const edge = dependent.edgesOut.get('foo')
     t.equal(
       edge?.to?.id,
-      target2.id,
-      'edge should point to new target',
+      target1.id,
+      'edge should still point to original target',
     )
   })
   t.test(
@@ -824,7 +829,7 @@ t.test('endPeerPlacement', async t => {
       queuedEntries,
     )
     end.putEntries()
-    end.resolvePeerDeps()
+    end.resolvePeerDeps(peerContext)
 
     t.equal(
       nextDeps.length,
@@ -883,7 +888,7 @@ t.test('endPeerPlacement', async t => {
       queuedEntries,
     )
     end.putEntries()
-    end.resolvePeerDeps()
+    end.resolvePeerDeps(peerContext)
 
     t.equal(
       nextDeps.length,
@@ -943,7 +948,7 @@ t.test('endPeerPlacement', async t => {
       queuedEntries,
     )
     end.putEntries()
-    end.resolvePeerDeps()
+    end.resolvePeerDeps(peerContext)
 
     t.equal(
       nextDeps.length,
@@ -1032,7 +1037,7 @@ t.test('endPeerPlacement', async t => {
         queuedEntries,
       )
       end.putEntries()
-      end.resolvePeerDeps()
+      end.resolvePeerDeps(peerContext)
 
       // The peer should be resolved directly, not pushed to nextDeps
       t.equal(
@@ -1120,7 +1125,7 @@ t.test('endPeerPlacement', async t => {
         queuedEntries,
       )
       end.putEntries()
-      end.resolvePeerDeps()
+      end.resolvePeerDeps(peerContext)
 
       // Should fall back to nextDeps but with the sibling's more specific spec
       t.equal(nextDeps.length, 1, 'peer should be in nextDeps')
@@ -1227,7 +1232,7 @@ t.test('endPeerPlacement', async t => {
         queuedEntries,
       )
       end.putEntries()
-      end.resolvePeerDeps()
+      end.resolvePeerDeps(peerContext)
 
       // The peer should be resolved directly using the sibling's target
       t.equal(
@@ -1541,6 +1546,281 @@ t.test('postPlacementPeerCheck', async t => {
     },
   )
 })
+
+t.test(
+  'pinned peer dep version is used consistently for all siblings',
+  async t => {
+    // This test reproduces the bug in https://github.com/vltpkg/vltpkg/issues/1378
+    // When a project has a pinned TypeScript version (e.g., 5.7.3) and
+    // typescript-eslint, all @typescript-eslint/* packages should resolve
+    // their typescript peer dependency to the same pinned version.
+    const mainManifest = {
+      name: 'test-ts-eslint-peer-bug',
+      version: '1.0.0',
+      devDependencies: {
+        typescript: '5.7.3',
+        'typescript-eslint': '^8.49.0',
+      },
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+    })
+
+    const mockManifests: Record<string, Manifest> = {
+      // Pinned typescript version
+      'typescript@5.7.3': {
+        name: 'typescript',
+        version: '5.7.3',
+      },
+      // Newer typescript version (what would be fetched without sibling resolution)
+      'typescript@5.9.3': {
+        name: 'typescript',
+        version: '5.9.3',
+      },
+      // typescript-eslint meta package
+      'typescript-eslint@8.50.0': {
+        name: 'typescript-eslint',
+        version: '8.50.0',
+        dependencies: {
+          '@typescript-eslint/eslint-plugin': '8.50.0',
+          '@typescript-eslint/parser': '8.50.0',
+          '@typescript-eslint/utils': '8.50.0',
+        },
+        peerDependencies: {
+          typescript: '>=4.8.4 <6.0.0',
+        },
+      },
+      // eslint-plugin - has peer dep on typescript
+      '@typescript-eslint/eslint-plugin@8.50.0': {
+        name: '@typescript-eslint/eslint-plugin',
+        version: '8.50.0',
+        dependencies: {
+          '@typescript-eslint/type-utils': '8.50.0',
+        },
+        peerDependencies: {
+          typescript: '>=4.8.4 <6.0.0',
+        },
+      },
+      // parser - has peer dep on typescript
+      '@typescript-eslint/parser@8.50.0': {
+        name: '@typescript-eslint/parser',
+        version: '8.50.0',
+        peerDependencies: {
+          typescript: '>=4.8.4 <6.0.0',
+        },
+      },
+      // utils - has peer dep on typescript
+      '@typescript-eslint/utils@8.50.0': {
+        name: '@typescript-eslint/utils',
+        version: '8.50.0',
+        peerDependencies: {
+          typescript: '>=4.8.4 <6.0.0',
+        },
+      },
+      // type-utils - nested dep, also has peer dep on typescript
+      '@typescript-eslint/type-utils@8.50.0': {
+        name: '@typescript-eslint/type-utils',
+        version: '8.50.0',
+        peerDependencies: {
+          typescript: '>=4.8.4 <6.0.0',
+        },
+      },
+    }
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const bareSpec = spec.bareSpec
+
+        // Handle pinned version
+        if (spec.name === 'typescript') {
+          if (bareSpec === '5.7.3') {
+            return mockManifests['typescript@5.7.3']
+          }
+          // For peer dep ranges, this simulates what would happen if we
+          // don't properly use the sibling resolution - return latest
+          // that satisfies the range
+          return mockManifests['typescript@5.9.3']
+        }
+
+        // For typescript-eslint packages, return the manifest
+        const key = `${spec.name}@8.50.0`
+        if (mockManifests[key]) {
+          return mockManifests[key]
+        }
+
+        return null
+      },
+      async extract(): Promise<{
+        integrity: string
+        resolved: string
+      }> {
+        return {
+          integrity:
+            'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+          resolved: 'https://example.com/pkg.tgz',
+        }
+      },
+    } as unknown as PackageInfoClient
+
+    const scurry = new PathScurry(dir)
+    const projectRoot = dir
+    const packageJson = new PackageJson()
+    const actual = actualLoad({
+      projectRoot,
+      scurry,
+      mainManifest,
+      loadManifests: true,
+      packageJson,
+    })
+
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const addMap = new Map([
+      [
+        rootDepID,
+        new Map<string, Dependency>([
+          [
+            'typescript',
+            asDependency({
+              spec: Spec.parse('typescript', '5.7.3'),
+              type: 'dev',
+            }),
+          ],
+          [
+            'typescript-eslint',
+            asDependency({
+              spec: Spec.parse('typescript-eslint', '^8.49.0'),
+              type: 'dev',
+            }),
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap
+
+    const graph = await build({
+      projectRoot,
+      scurry,
+      mainManifest,
+      loadManifests: true,
+      packageJson,
+      actual,
+      packageInfo,
+      remover: new RollbackRemove(),
+      add: addMap,
+    })
+
+    // Verify that all packages resolve their typescript peer dep to 5.7.3
+    const typescriptNodes = graph.nodesByName.get('typescript')
+    t.ok(typescriptNodes, 'should have typescript nodes')
+    t.equal(
+      typescriptNodes?.size,
+      1,
+      'should have exactly one typescript node (5.7.3)',
+    )
+
+    const tsNode = [...(typescriptNodes ?? [])][0]
+    t.equal(
+      tsNode?.version,
+      '5.7.3',
+      'typescript node should be pinned version',
+    )
+
+    // Check that all @typescript-eslint/* packages point to 5.7.3
+    const packagesWithTypescriptPeer = [
+      'typescript-eslint',
+      '@typescript-eslint/eslint-plugin',
+      '@typescript-eslint/parser',
+      '@typescript-eslint/utils',
+      '@typescript-eslint/type-utils',
+    ]
+
+    for (const pkgName of packagesWithTypescriptPeer) {
+      const nodes = graph.nodesByName.get(pkgName)
+      if (!nodes || nodes.size === 0) continue
+
+      for (const node of nodes) {
+        const tsEdge = node.edgesOut.get('typescript')
+        if (tsEdge?.type === 'peer') {
+          t.equal(
+            tsEdge.to?.version,
+            '5.7.3',
+            `${pkgName} peer dep on typescript should resolve to 5.7.3, not ${tsEdge.to?.version}`,
+          )
+        }
+      }
+    }
+  },
+)
+
+t.test(
+  'forked peer context preserves target from parent context',
+  async t => {
+    // This test verifies that when a peer context is forked due to
+    // conflicting peer requirements, the forked context preserves the
+    // resolved targets from the parent context. This is important for
+    // ensuring that pinned versions are used consistently even when
+    // peer context forking occurs.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create the pinned typescript node (version 5.7.3)
+    const pinnedTypescript = graph.placePackage(
+      graph.mainImporter,
+      'dev',
+      Spec.parse('typescript', '5.7.3', configData),
+      { name: 'typescript', version: '5.7.3' },
+    )!
+
+    // Set up initial peer context with typescript@5.7.3
+    const initialContext = graph.peerContexts[0]!
+    addEntriesToPeerContext(
+      initialContext,
+      [
+        {
+          spec: Spec.parse('typescript', '^5.0.0', configData),
+          target: pinnedTypescript,
+          type: 'dev',
+        },
+      ],
+      graph.mainImporter,
+    )
+
+    // Now fork the context due to some other conflicting peer dep
+    // (e.g., different react versions)
+    const conflictingSpec = Spec.parse('react', '^18.0.0', configData)
+    const forkedContext = forkPeerContext(graph, initialContext, [
+      { spec: conflictingSpec, type: 'peer' },
+    ])
+
+    // Verify the forked context preserves the typescript target
+    const tsEntry = forkedContext.get('typescript')
+    t.ok(tsEntry, 'forked context should have typescript entry')
+    t.equal(
+      tsEntry?.target,
+      pinnedTypescript,
+      'forked context should preserve typescript target from parent',
+    )
+    t.equal(
+      tsEntry?.active,
+      false,
+      'inherited entry should be inactive',
+    )
+
+    // The entry can still be used for peer dep resolution
+    // because it has the target preserved
+    t.equal(
+      tsEntry?.target?.version,
+      '5.7.3',
+      'target should be the pinned version',
+    )
+  },
+)
 
 t.test('integration tests', async t => {
   // Mock package info that resolves real npm packages
