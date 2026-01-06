@@ -35,7 +35,7 @@ export const shallowHosts = new Set([
 export const clone = async (
   repo: string,
   ref = 'HEAD',
-  target?: string  ,
+  target?: string,
   opts: GitOptions = {},
 ) => {
   repo = String(gitScpURL(repo) ?? repo).replace(/^git\+/, '')
