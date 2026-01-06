@@ -202,9 +202,8 @@ const fetchAll = async (
   const rc = conf.options.packageInfo.registryClient
   const { cache } = rc
   const map: CacheMap = {}
-  const cacheEntries: AsyncIterable<[string, Buffer]> = cache
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  for await (const [key, val] of cacheEntries) {
+  for await (const [key, val] of cache) {
     const entry = CacheEntry.decode(val)
     if (!test(entry, key, val)) continue
     map[key] = entry.toJSON()

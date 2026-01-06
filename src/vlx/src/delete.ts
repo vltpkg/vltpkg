@@ -19,9 +19,8 @@ export const vlxDelete = async (
 ) => {
   const removed: string[] = []
   const promises: Promise<void>[] = []
-  const vlxPaths: AsyncIterable<string> = vlxList()
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  for await (const p of vlxPaths) {
+  for await (const p of vlxList()) {
     // if the request for info fails, delete it
     const key = basename(p)
     try {

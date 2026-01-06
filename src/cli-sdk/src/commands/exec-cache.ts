@@ -139,9 +139,8 @@ const ls = async (
   view?: ExecCacheView,
 ): Promise<string[]> => {
   const results: string[] = []
-  const vlxPaths: AsyncIterable<string> = vlx.list()
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  for await (const path of vlxPaths) {
+  for await (const path of vlx.list()) {
     const key = basename(path)
     if (args.length && !args.some(a => key.includes(a))) continue
     results.push(key)
@@ -160,28 +159,15 @@ const info = async (
       String(conf.get('allow-scripts'))
     : ':not(*)'
   const results: VlxInfo[] = []
-  if (keys.length) {
-    for (const key of keys) {
-      const info = vlx.info(key, {
-        ...conf.options,
-        query: undefined,
-        allowScripts,
-      })
-      results.push(info)
-      view?.stdout(info)
-    }
-  } else {
-    const vlxPaths: AsyncIterable<string> = vlx.list()
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    for await (const key of vlxPaths) {
-      const info = vlx.info(key, {
-        ...conf.options,
-        query: undefined,
-        allowScripts,
-      })
-      results.push(info)
-      view?.stdout(info)
-    }
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  for await (const key of keys.length ? keys : vlx.list()) {
+    const info = vlx.info(key, {
+      ...conf.options,
+      query: undefined,
+      allowScripts,
+    })
+    results.push(info)
+    view?.stdout(info)
   }
   return results
 }

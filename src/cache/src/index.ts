@@ -131,9 +131,8 @@ export class Cache extends LRUCache<
    */
   async *walk() {
     const dir = await opendir(this.#path, { bufferSize: 1024 })
-    const dirEntries: AsyncIterable<import('node:fs').Dirent> = dir
     // eslint-disable-next-line @typescript-eslint/await-thenable
-    for await (const entry of dirEntries) {
+    for await (const entry of dir) {
       const f = resolve(this.#path, entry.name)
       if (f.endsWith('.key')) {
         const entry: [string, Buffer] = await Promise.all([
