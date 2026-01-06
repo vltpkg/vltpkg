@@ -14,8 +14,7 @@ export const getRawHeader = (
   for (let i = 0; i < headers.length; i += 2) {
     const name = headers[i]
     if (
-      name &&
-      name.length === key.length &&
+      name?.length === key.length &&
       getDecodedValue(name).toLowerCase() === k
     ) {
       return headers[i + 1]
@@ -37,8 +36,7 @@ export const setRawHeader = (
   for (let i = 0; i < headers.length; i += 2) {
     const name = headers[i]
     if (
-      name &&
-      name.length === k.length &&
+      name?.length === k.length &&
       getDecodedValue(name).toLowerCase() === k
     ) {
       return [

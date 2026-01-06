@@ -296,7 +296,7 @@ export class SpawnPromise<
       proc.stderr
         ?.on('data', c => stderr.push(c as Buffer))
         .on('error', er => reject(er))
-      proc.on('close', (status = null, signal = null) => {
+      proc.on('close', (status, signal) => {
         if ((status || signal) && !opts.acceptFail) {
           reject(undefined, status, signal)
         } else {
