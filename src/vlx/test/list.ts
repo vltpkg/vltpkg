@@ -30,7 +30,9 @@ t.test('list the dirs', async t => {
   const expect = new Set(
     ['a', 'b', 'c'].map(d => resolve(t.testdirName, 'vlt/vlx', d)),
   )
-  for await (const dir of vlxList()) {
+  const vlxPaths: AsyncIterable<string> = vlxList()
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  for await (const dir of vlxPaths) {
     set.add(dir)
   }
   t.strictSame(set, expect)

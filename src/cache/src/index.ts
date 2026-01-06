@@ -1,6 +1,5 @@
 import { error } from '@vltpkg/error-cause'
 import type { Integrity } from '@vltpkg/types'
-import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'node:crypto'
 import { opendirSync, readFileSync } from 'node:fs'
 import type { Dirent } from 'node:fs'
@@ -95,7 +94,7 @@ export class Cache extends LRUCache<
     const {
       onDiskWrite,
       onDiskDelete,
-      path = new XDG('vlt').cache(),
+      path,
       fetchMethod: _,
       sizeCalculation = options.maxSize || options.maxEntrySize ?
         (v: Buffer, k: string) => v.length + k.length
@@ -132,7 +131,9 @@ export class Cache extends LRUCache<
    */
   async *walk() {
     const dir = await opendir(this.#path, { bufferSize: 1024 })
-    for await (const entry of dir) {
+    const dirEntries: AsyncIterable<import('node:fs').Dirent> = dir
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    for await (const entry of dirEntries) {
       const f = resolve(this.#path, entry.name)
       if (f.endsWith('.key')) {
         const entry: [string, Buffer] = await Promise.all([

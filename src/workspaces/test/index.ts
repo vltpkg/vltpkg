@@ -295,7 +295,9 @@ export const isOdd = (n) => !isEven(n)
     new Set([m.get('utils/is-even'), m.get('utils/is-odd')]),
   )
   const asyncWalk: Workspace[] = []
-  for await (const ws of m) {
+  const asyncMonorepo: AsyncIterable<Workspace> = m
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  for await (const ws of asyncMonorepo) {
     asyncWalk.push(ws)
   }
   t.strictSame(
@@ -372,7 +374,9 @@ t.test('iterating empty monorepo is no-op', async t => {
   for (const _ of m) {
     t.fail('should not iterate over anything')
   }
-  for await (const _ of m) {
+  const asyncMonorepo: AsyncIterable<Workspace> = m
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  for await (const _ of asyncMonorepo) {
     t.fail('should not iterate over anything (async)')
   }
   if (t.passing()) {

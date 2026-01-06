@@ -116,7 +116,9 @@ t.test('walk over cached items', async t => {
   await c.promise()
   const a = new Cache({ path: t.testdirName })
   const entries: [string, Buffer][] = []
-  for await (const kv of a) {
+  const asyncIterable: AsyncIterable<[string, Buffer]> = a
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  for await (const kv of asyncIterable) {
     entries.push(kv)
   }
   const entriesSync: [string, Buffer][] = []

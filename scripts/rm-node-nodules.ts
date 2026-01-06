@@ -12,7 +12,9 @@ const ROOT = resolve(import.meta.dirname, '..')
 
 const main = async () => {
   const dirs = ['node_modules']
-  for await (const dir of glob('*/*/node_modules', { cwd: ROOT })) {
+  const globResults = glob('*/*/node_modules', { cwd: ROOT })
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  for await (const dir of globResults) {
     dirs.push(dir)
   }
 
