@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
-import { SearchResults as SearchResultsView } from '@/components/search/search-results/results.tsx'
+import { SearchResultsProvider as SearchResultsView } from '@/components/search/search-results/results.tsx'
 
 export const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -22,9 +22,5 @@ export const SearchResults = () => {
     }
   }, [query, searchParams, setSearchParams])
 
-  return (
-    <section>
-      <SearchResultsView />
-    </section>
-  )
+  return <SearchResultsView />
 }
