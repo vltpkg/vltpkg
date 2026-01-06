@@ -2,29 +2,31 @@
 
 exports[`renders default components 1`] = `
 
-<div class="bg-background antialiased">
-  <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
-    <gui-sidebar-provider
-      defaultopen="true"
-      classname="sticky top-0 flex w-full border-r"
-    >
-      <gui-app-sidebar>
-      </gui-app-sidebar>
-    </gui-sidebar-provider>
-    <div class="flex w-full flex-col">
-      <gui-nav-header classname="bg-background sticky top-0 z-40 w-full">
-      </gui-nav-header>
-      <div class="flex min-h-0 w-full flex-1">
-        <main class="h-full w-full overflow-auto">
-          <gui-router-outlet>
-          </gui-router-outlet>
-        </main>
+<gui-nuqs-adapter>
+  <div class="bg-background antialiased">
+    <div class="min-h-svh grid-cols-[auto_4fr] md:grid">
+      <gui-sidebar-provider
+        defaultopen="true"
+        classname="sticky top-0 flex w-full border-r"
+      >
+        <gui-app-sidebar>
+        </gui-app-sidebar>
+      </gui-sidebar-provider>
+      <div class="flex w-full flex-col">
+        <gui-nav-header classname="bg-background sticky top-0 z-40 w-full">
+        </gui-nav-header>
+        <div class="flex min-h-0 w-full flex-1">
+          <main class="h-full w-full overflow-auto">
+            <gui-router-outlet>
+            </gui-router-outlet>
+          </main>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<gui-toaster>
-</gui-toaster>
+  <gui-toaster>
+  </gui-toaster>
+</gui-nuqs-adapter>
 
 `;
 

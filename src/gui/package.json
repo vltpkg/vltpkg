@@ -49,6 +49,7 @@
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.503.0",
     "lz-string": "catalog:",
+    "nuqs": "^2.8.5",
     "postcss-selector-parser": "catalog:",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

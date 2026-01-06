@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useLocation, Outlet } from 'react-router'
 import {
   defaultOpen,
@@ -12,6 +12,7 @@ import { usePreflight } from '@/components/hooks/use-preflight.tsx'
 import { isHostedEnvironment } from '@/lib/environment.ts'
 import { HostedWarning } from '@/components/hosted-warning.tsx'
 import { Footer } from '@/components/navigation/footer/index.tsx'
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v7'
 
 const Layout = () => {
   const isHostedMode = isHostedEnvironment()
@@ -46,7 +47,7 @@ const Layout = () => {
   }
 
   return (
-    <Fragment>
+    <NuqsAdapter>
       <div className="bg-background antialiased">
         <div className="min-h-svh grid-cols-[auto_4fr] md:grid">
           <SidebarProvider
@@ -67,7 +68,7 @@ const Layout = () => {
         </div>
       </div>
       <Toaster />
-    </Fragment>
+    </NuqsAdapter>
   )
 }
 
