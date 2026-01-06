@@ -110,12 +110,24 @@ importers:
       '@vltpkg/benchmark':
         specifier: workspace:*
         version: link:infra/benchmark
+      '@vltpkg/cli-sdk':
+        specifier: workspace:*
+        version: link:src/cli-sdk
+      '@vltpkg/graph':
+        specifier: workspace:*
+        version: link:src/graph
       '@vltpkg/infra-build':
         specifier: workspace:*
         version: link:infra/build
+      '@vltpkg/query':
+        specifier: workspace:*
+        version: link:src/query
       '@vltpkg/semver':
         specifier: workspace:*
         version: link:src/semver
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:src/types
       eslint:
         specifier: 'catalog:'
         version: 9.39.1(jiti@2.6.1)
