@@ -1,51 +1,32 @@
-import { useEffect, useRef } from 'react'
-import { useSearchResultsStore } from '@/state/search-results.ts'
+import { useQueryState, parseAsString } from 'nuqs'
 import { SearchResultsInput } from '@/components/search/search-results/input.tsx'
-import { useDebounce } from '@/components/hooks/use-debounce.tsx'
+import { useSearchResultsStore } from '@/state/search-results.ts'
 
 export const SearchHeader = () => {
-  const searchTerm = useSearchResultsStore(state => state.searchTerm)
-  const setSearchTerm = useSearchResultsStore(
-    state => state.setSearchTerm,
-  )
-  const executeSearch = useSearchResultsStore(
-    state => state.executeSearch,
+  const [searchTerm, setSearchTerm] = useQueryState(
+    'q',
+    parseAsString.withDefault(''),
   )
   const isLoading = useSearchResultsStore(state => state.isLoading)
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
-  const isInitialMount = useRef(true)
-
-  // search when debounced term changes (but not on initial mount)
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-
-    if (debouncedSearchTerm && debouncedSearchTerm.trim() !== '') {
-      executeSearch()
-    }
-  }, [debouncedSearchTerm, executeSearch])
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      executeSearch()
+      // The URL update will trigger the search automatically
     }
   }
 
   const handleButtonClick = () => {
-    executeSearch()
+    // The URL update will trigger the search automatically
   }
 
   return (
     <div className="flex w-full items-center justify-start">
       <SearchResultsInput
         value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
+        onChange={e => void setSearchTerm(e.target.value)}
         onKeyDown={handleKeyDown}
         onButtonClick={handleButtonClick}
         loading={isLoading}
