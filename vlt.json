@@ -31,8 +31,5 @@
   },
   "config": {
     "allow-scripts": "#tailwindcss, #esbuild, #node-pty"
-  },
-  "modifiers": {
-    "#typescript /* TODO: remove when #1378 is fixed */": "5.7.3"
   }
 }

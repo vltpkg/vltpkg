@@ -74,7 +74,6 @@ const fixture = {
 const mockVlxList = (path: string) =>
   async function* () {
     const dir = await opendir(path)
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     for await (const dirent of dir) {
       yield resolve(path, dirent.name)
     }

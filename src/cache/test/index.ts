@@ -116,7 +116,6 @@ t.test('walk over cached items', async t => {
   await c.promise()
   const a = new Cache({ path: t.testdirName })
   const entries: [string, Buffer][] = []
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   for await (const kv of a) {
     entries.push(kv)
   }

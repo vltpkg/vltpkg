@@ -139,7 +139,6 @@ const ls = async (
   view?: ExecCacheView,
 ): Promise<string[]> => {
   const results: string[] = []
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   for await (const path of vlx.list()) {
     const key = basename(path)
     if (args.length && !args.some(a => key.includes(a))) continue
@@ -159,7 +158,6 @@ const info = async (
       String(conf.get('allow-scripts'))
     : ':not(*)'
   const results: VlxInfo[] = []
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   for await (const key of keys.length ? keys : vlx.list()) {
     const info = vlx.info(key, {
       ...conf.options,

@@ -131,7 +131,6 @@ export class Cache extends LRUCache<
    */
   async *walk() {
     const dir = await opendir(this.#path, { bufferSize: 1024 })
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     for await (const entry of dir) {
       const f = resolve(this.#path, entry.name)
       if (f.endsWith('.key')) {
