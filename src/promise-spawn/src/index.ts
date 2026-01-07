@@ -263,10 +263,10 @@ export class SpawnPromise<
         if (er !== undefined) {
           errorResult.cause = er
         }
-        if (status !== undefined) {
+        if (status != null) {
           errorResult.status = status
         }
-        if (signal !== undefined) {
+        if (signal != null) {
           errorResult.signal = signal
         }
         Object.assign(errorResult, extra)
