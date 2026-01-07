@@ -4,4 +4,4 @@ ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
 if [ ! -f "$ROOT_DIR/.build-bundle/vlrx.js" ]; then
   (cd $ROOT_DIR && pnpm vlt-build --bins=vlrx --outdir=".build-bundle" bundle > /dev/null 2>&1)
 fi
-NODE_OPTIONS="--no-warnings --enable-source-maps" node "$ROOT_DIR/.build-bundle/vlrx.js" "$@"
+NODE_OPTIONS="--no-warnings --enable-source-maps" $(which node) "$ROOT_DIR/.build-bundle/vlrx.js" "$@"

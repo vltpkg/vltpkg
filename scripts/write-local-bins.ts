@@ -147,6 +147,7 @@ const createVariants = ({
           Compile: REPLACE_DIR,
         },
       }),
+      node: windows ? '(Get-Command node).Source' : '$(which node)',
     }),
   } as const
 }

@@ -8,5 +8,5 @@ if (-not (Test-Path "$RootDir\.build-bundle\vlrx.js")) {
 }
 & {
   $env:NODE_OPTIONS = "--no-warnings --enable-source-maps"
-  node "$RootDir\.build-bundle\vlrx.js" @ScriptArgs
+  (Get-Command node).Source "$RootDir\.build-bundle\vlrx.js" @ScriptArgs
 }
