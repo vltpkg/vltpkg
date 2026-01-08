@@ -102,6 +102,7 @@ t.test('command', async t => {
       options: {
         packageJson: new PackageJson(),
         registry: 'https://registry.npmjs.org',
+        tag: 'latest',
       },
       positionals: ['publish'],
     })
@@ -323,6 +324,7 @@ t.test('command', async t => {
       options: {
         packageJson: new PackageJson(),
         registry: 'https://registry.npmjs.org',
+        tag: 'latest',
       },
       positionals: ['publish'],
     })
@@ -424,6 +426,7 @@ t.test('command', async t => {
       options: {
         packageJson: new PackageJson(),
         registry: 'https://registry.npmjs.org',
+        tag: 'latest',
       },
       positionals: ['publish'],
       values: { 'dry-run': true },

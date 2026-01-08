@@ -266,6 +266,7 @@ export class SpawnPromise<
         if (status !== undefined) {
           errorResult.status = status
         }
+        /* c8 ignore next 3 - hard to test on win32 so coverage fails */
         if (signal !== undefined) {
           errorResult.signal = signal
         }
@@ -292,11 +293,11 @@ export class SpawnPromise<
       proc.on('error', reject)
       proc.stdout
         ?.on('data', c => stdout.push(c as Buffer))
-        .on('error', er => reject(er))
+        .on('error', reject)
       proc.stderr
         ?.on('data', c => stderr.push(c as Buffer))
-        .on('error', er => reject(er))
-      proc.on('close', (status = null, signal = null) => {
+        .on('error', reject)
+      proc.on('close', (status, signal) => {
         if ((status || signal) && !opts.acceptFail) {
           reject(undefined, status, signal)
         } else {

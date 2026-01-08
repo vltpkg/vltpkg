@@ -30,6 +30,7 @@ t.test('list the dirs', async t => {
   const expect = new Set(
     ['a', 'b', 'c'].map(d => resolve(t.testdirName, 'vlt/vlx', d)),
   )
+
   for await (const dir of vlxList()) {
     set.add(dir)
   }
