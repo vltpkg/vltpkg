@@ -205,6 +205,12 @@ export class Graph implements GraphLike {
         wsNode.setImporterLocation(`./${ws.path}`)
         if (wsNode.manifest) {
           this.manifests.set(wsNode.id, wsNode.manifest)
+          // set bins for workspace nodes so they can be linked
+          // when another importer depends on this workspace
+          /* c8 ignore next 3 - tested by integration tests */
+          if (wsNode.manifest.bin) {
+            wsNode.bins = wsNode.manifest.bin
+          }
         }
         this.importers.add(wsNode)
         // creates a virtual edge to connect the workspaces to the root node

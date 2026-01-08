@@ -7,6 +7,7 @@ import type {
 } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import {
   lstatSync,
@@ -783,5 +784,69 @@ t.test('allowScripts with query selector :scripts', async t => {
     result.buildQueue?.length,
     0,
     'lodash has no scripts so nothing was run',
+  )
+})
+
+t.test('reify with workspace bin script', async t => {
+  const projectRoot = t.testdir({
+    cache: {},
+    'vlt.json': JSON.stringify({
+      cache: resolve(t.testdirName, 'cache'),
+      workspaces: { packages: ['./packages/*'] },
+    }),
+    'package.json': JSON.stringify({
+      name: 'my-root',
+      version: '1.0.0',
+      dependencies: {
+        'my-workspace': 'workspace:*',
+      },
+    }),
+    packages: {
+      'my-workspace': {
+        'package.json': JSON.stringify({
+          name: 'my-workspace',
+          version: '1.0.0',
+          bin: {
+            'my-bin': './bin.js',
+          },
+        }),
+        'bin.js': '#!/usr/bin/env node\nconsole.log("hello")',
+      },
+    },
+  })
+
+  t.chdir(projectRoot)
+  unload('project')
+
+  const monorepo = Monorepo.maybeLoad(projectRoot)
+  const graph = await ideal.build({
+    projectRoot,
+    monorepo,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    remover: new RollbackRemove(),
+  })
+
+  await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    graph,
+    monorepo,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+
+  // Verify the workspace bin was placed in node_modules/.bin
+  t.equal(
+    // note: not lstat, since this is going to be a shim on windows,
+    // but a symlink on posix
+    statSync(
+      resolve(projectRoot, 'node_modules/.bin/my-bin'),
+    ).isFile(),
+    true,
+    'workspace bin was created',
   )
 })

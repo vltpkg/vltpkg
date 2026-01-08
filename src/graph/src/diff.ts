@@ -95,7 +95,12 @@ export class Diff {
       const fromEdge = fromNode?.edgesOut.get(edge.spec.name)
       if (fromEdge?.to?.id === edge.to?.id) continue
       if (fromEdge?.to) this.edges.delete.add(fromEdge)
-      if (edge.to) this.edges.add.add(edge)
+      if (edge.to) {
+        this.edges.add.add(edge)
+        if (!edge.optional) {
+          this.optionalOnly = false
+        }
+      }
     }
     for (const edge of this.from.edges) {
       // the node with this dep, in the to graph
