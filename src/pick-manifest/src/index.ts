@@ -143,8 +143,8 @@ export function pickManifest<T extends Packumentish>(
   const {
     name,
     time: verTimes,
-    versions = {},
-    'dist-tags': distTags = {},
+    versions,
+    'dist-tags': distTags,
   } = packument
 
   const time = before && verTimes ? +new Date(before) : Infinity

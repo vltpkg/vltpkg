@@ -167,7 +167,7 @@ const commandSingle = async (
   )
 
   const {
-    tag = 'latest',
+    tag,
     access,
     registry,
     'dry-run': dry = false,

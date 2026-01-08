@@ -25,6 +25,7 @@ void typechecks
 
 t.test('basic carat range selection', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -43,6 +44,7 @@ t.test('basic carat range selection', t => {
 
 t.test('correctly handles Range vs Spec objects', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -87,6 +89,7 @@ t.test('correctly handles Range vs Spec objects', t => {
 t.test('handles edge cases with similar objects', t => {
   const metadata = {
     name: 'test-package',
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -132,6 +135,7 @@ t.test('handles edge cases with similar objects', t => {
 t.test('do not be confused by subspecs', t => {
   const metadata = {
     name: 'bar',
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -153,6 +157,7 @@ t.test('do not be confused by subspecs', t => {
 
 t.test('caret range object selection', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -171,6 +176,7 @@ t.test('caret range object selection', t => {
 
 t.test('caret spec object selection', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -189,6 +195,7 @@ t.test('caret spec object selection', t => {
 
 t.test('basic tilde range selection', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -207,6 +214,7 @@ t.test('basic tilde range selection', t => {
 
 t.test('basic mathematical range selection', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -231,6 +239,7 @@ t.test('basic mathematical range selection', t => {
 
 t.test('basic version selection', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -299,6 +308,7 @@ t.test('skips any invalid version keys', t => {
   // Various third-party registries are prone to having trash as
   // keys. npm simply skips them. Yay robustness.
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       'lol ok': { version: '1.0.1' },
@@ -312,6 +322,7 @@ t.test('skips any invalid version keys', t => {
 
 t.test('ETARGET if range does not match anything', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '2.0.0': { version: '2.0.0' },
@@ -407,15 +418,25 @@ t.test('explicit dist-tag must match that version', t => {
 
 t.test('not found if metadata has no versions', t => {
   t.equal(
-    pickManifest({ versions: {} } as unknown as Packument, '*'),
+    pickManifest(
+      { 'dist-tags': {}, versions: {} } as unknown as Packument,
+      '*',
+    ),
     undefined,
   )
-  t.equal(pickManifest({} as unknown as Packument, '*'), undefined)
+  t.equal(
+    pickManifest(
+      { 'dist-tags': {}, versions: {} } as unknown as Packument,
+      '*',
+    ),
+    undefined,
+  )
   t.end()
 })
 
 t.test('matches even if requested version has spaces', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -434,6 +455,7 @@ t.test('matches even if requested version has spaces', t => {
 
 t.test('matches skip deprecated versions', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -448,6 +470,7 @@ t.test('matches skip deprecated versions', t => {
 
 t.test('matches deprecated versions if we have to', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -464,6 +487,7 @@ t.test(
   'prefer non-deprecated versions if all platform mismatch',
   t => {
     const metadata = {
+      'dist-tags': {},
       versions: {
         '1.0.0': { version: '1.0.0' },
         '1.0.1': { version: '1.0.1' },
@@ -513,6 +537,7 @@ t.test('prefer valid platform matches if all deprecated', t => {
 
 t.test('prefer non-prerelease versions', t => {
   const metadata = {
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },
@@ -534,6 +559,7 @@ t.test(
   'prefer non-prerelease versions when prerelease comes first',
   t => {
     const metadata = {
+      'dist-tags': {},
       versions: {
         '1.0.0': { version: '1.0.0' },
         '2.0.999-pre': { version: '2.0.999-pre' },
@@ -559,6 +585,7 @@ t.test(
   'will use deprecated version if no other suitable match',
   t => {
     const metadata = {
+      'dist-tags': {},
       versions: {
         '1.0.0': { version: '1.0.0' },
         '1.0.1': { version: '1.0.1' },
@@ -783,6 +810,7 @@ t.test('prefers versions that satisfy the os/arch requirement', t => {
 t.test('handles complex Spec objects with subspecs correctly', t => {
   const metadata = {
     name: 'baz',
+    'dist-tags': {},
     versions: {
       '1.0.0': { version: '1.0.0' },
       '1.0.1': { version: '1.0.1' },

@@ -224,7 +224,7 @@ t.test(
     class TestPathScurry extends PathScurry {
       lstatSync(path: string) {
         const result = super.lstatSync(path)
-        if (result && result.fullpath() === dir) {
+        if (result?.fullpath() === dir) {
           // Override readdir to throw an error for the root directory
           result.readdir = async () => {
             throw new Error('Permission denied')

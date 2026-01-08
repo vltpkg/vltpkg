@@ -53,7 +53,7 @@ t.test('defaults to returning strings', async t => {
   const result = await promiseSpawn('pass', [])
   t.hasStrict(result, {
     status: 0,
-    signal: null,
+    signal: undefined,
     stdout: 'OK',
     stderr: '',
   })
@@ -83,7 +83,7 @@ t.test('extra context is returned', async t => {
   )
   t.hasStrict(result, {
     status: 0,
-    signal: null,
+    signal: undefined,
     stdout: 'OK',
     stderr: '',
     extra: 'property',
@@ -113,7 +113,7 @@ t.test('stdioString false returns buffers', async t => {
   })
   t.hasStrict(result, {
     status: 0,
-    signal: null,
+    signal: undefined,
     stdout: Buffer.from('OK\n'),
     stderr: Buffer.from(''),
   })
@@ -144,7 +144,7 @@ t.test(
     })
     t.hasStrict(result, {
       status: 0,
-      signal: null,
+      signal: undefined,
       stdout: null,
       stderr: null,
     })
@@ -170,7 +170,7 @@ t.test(
     })
     t.hasStrict(result, {
       status: 0,
-      signal: null,
+      signal: undefined,
       stdout: null,
       stderr: null,
     })
@@ -201,7 +201,7 @@ t.test(
     const result = await p
     t.hasStrict(result, {
       status: 0,
-      signal: null,
+      signal: undefined,
       stdout: null,
       stderr: '',
     })
@@ -235,7 +235,7 @@ t.test(
     const result = await p
     t.hasStrict(result, {
       status: 0,
-      signal: null,
+      signal: undefined,
       stdout: 'OK',
       stderr: null,
     })
@@ -265,7 +265,7 @@ t.test('exposes stdin', async t => {
   const result = await p
   t.hasStrict(result, {
     status: 0,
-    signal: null,
+    signal: undefined,
     stdout: 'hello',
     stderr: '',
   })
@@ -419,7 +419,7 @@ t.test(
         args: [],
         cwd: process.cwd(),
         status: 1,
-        signal: null,
+        signal: undefined,
         stdout: '',
         stderr: 'Error!',
       },
@@ -670,7 +670,7 @@ t.test('cwd can be a url', async t => {
     const result = await promiseSpawn('pass', [], { cwd })
     t.hasStrict(result, {
       status: 0,
-      signal: null,
+      signal: undefined,
       stdout: 'OK',
       stderr: '',
       cwd: cwd.toString(),

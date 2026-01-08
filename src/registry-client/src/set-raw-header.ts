@@ -18,8 +18,7 @@ export const setRawHeader = (
   for (let i = 0; i < headers.length; i += 2) {
     const k = headers[i]
     if (
-      k &&
-      k.length === keyBuf.length &&
+      k?.length === keyBuf.length &&
       getDecodedValue(k).toLowerCase() === key
     ) {
       headers[i + 1] = valBuf
