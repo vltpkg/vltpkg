@@ -84,7 +84,7 @@ export type AppendNodeEntry = {
           type: DependencySaveType
         }[]
       | undefined
-    resolvePeerDeps: (currentContext: PeerContext) => void
+    resolvePeerDeps: () => void
   }
 }
 
