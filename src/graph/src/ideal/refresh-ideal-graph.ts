@@ -64,6 +64,11 @@ export type RefreshIdealGraphOptions = BuildIdealAddOptions &
  */
 const getOrderedImporters = (graph: Graph): Node[] => {
   const orderedImporters = [...graph.importers].sort((a, b) => {
+    // mainImporter always comes first
+    /* c8 ignore next */
+    if (a === graph.mainImporter) return -1
+    if (b === graph.mainImporter) return 1
+
     // sorts importers first by usage of peer deps
     const aIsPeer =
       (
