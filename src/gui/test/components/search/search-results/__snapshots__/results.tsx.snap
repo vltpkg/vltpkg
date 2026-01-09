@@ -1,277 +1,791 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renders search results view 1`] = `
+exports[`renders search results with loading state 1`] = `
 
 <section class="bg-background overflow-y-hidden">
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <div class="h-[75px] lg:h-[36.5px]">
-        <h3
-          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-          style="opacity: 0; filter: blur(2px);"
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
         >
-          Start typing to search
-        </h3>
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
       </div>
     </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
     >
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-search-results-sort>
-      </gui-search-results-sort>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-  </div>
-  <div class="pattern-hatch bg-background h-9 lg:hidden">
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] border-background-secondary col-start-2 col-end-3 border-x"
-      style="opacity: 1; filter: blur(0px);"
-    >
-      <gui-empty classname="h-full w-full grow">
-        <gui-empty-header>
-          <gui-empty-media variant="icon">
-            <gui-package-search-icon>
-            </gui-package-search-icon>
-          </gui-empty-media>
-          <gui-empty-title>
-            Your results will appear here
-          </gui-empty-title>
-          <gui-empty-description>
-            <gui-button
-              size="sm"
-              variant="default"
+      <gui-table-caption style="opacity: 1; filter: blur(0px); transform: none;">
+        Start typing to search
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-sparkle-icon>
+            </gui-sparkle-icon>
+            relevance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-trending-up-icon>
+            </gui-trending-up-icon>
+            popularity
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-shield-icon>
+            </gui-shield-icon>
+            quality
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-wrench-icon>
+            </gui-wrench-icon>
+            maintenance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-calendar-icon>
+            </gui-calendar-icon>
+            published
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
+        <div
+          class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] bg-background rounded"
+          style="opacity: 0; filter: blur(4px);"
+        >
+          <gui-empty classname="h-full w-full">
+            <gui-empty-header>
+              <gui-empty-media variant="icon">
+                <gui-package-search-icon>
+                </gui-package-search-icon>
+              </gui-empty-media>
+              <gui-empty-title>
+                No results found
+              </gui-empty-title>
+              <gui-empty-description>
+                We couldn't find any results for
+                <strong>
+                  react
+                </strong>
+              </gui-empty-description>
+            </gui-empty-header>
+          </gui-empty>
+        </div>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
             >
-              I'm feeling lucky
-            </gui-button>
-          </gui-empty-description>
-        </gui-empty-header>
-      </gui-empty>
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="true"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-search-results-pagination-navigation>
-      </gui-search-results-pagination-navigation>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
-    >
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
     </div>
   </div>
 </section>
 
 `;
 
-exports[`renders search results with error 1`] = `
+exports[`renders search results with many results triggering pagination 1`] = `
 
 <section class="bg-background overflow-y-hidden">
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <div class="h-[75px] lg:h-[36.5px]">
-        <h3
-          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-          style="opacity: 0; filter: blur(2px);"
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
         >
-          Start typing to search
-        </h3>
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
       </div>
     </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
     >
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-search-results-sort>
-      </gui-search-results-sort>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-  </div>
-  <div class="pattern-hatch bg-background h-9 lg:hidden">
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] border-background-secondary col-start-2 col-end-3 border-x"
-      style="opacity: 1; filter: blur(0px);"
-    >
-      <gui-empty classname="h-full w-full grow">
-        <gui-empty-header>
-          <gui-empty-media variant="icon">
-            <gui-package-search-icon>
-            </gui-package-search-icon>
-          </gui-empty-media>
-          <gui-empty-title>
-            Your results will appear here
-          </gui-empty-title>
-          <gui-empty-description>
-            <gui-button
-              size="sm"
-              variant="default"
+      <gui-table-caption style="opacity: 1; filter: blur(0px); transform: none;">
+        Showing
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          50
+        </span>
+        of
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          50
+        </span>
+        results for
+        <span class="fancy-quote mr-0.5 ml-2 font-medium max-lg:hidden">
+          “
+        </span>
+        react
+        <span class="fancy-quote ml-0.5 font-medium max-lg:hidden">
+          ”
+        </span>
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-sparkle-icon>
+            </gui-sparkle-icon>
+            relevance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-trending-up-icon>
+            </gui-trending-up-icon>
+            popularity
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-shield-icon>
+            </gui-shield-icon>
+            quality
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-wrench-icon>
+            </gui-wrench-icon>
+            maintenance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-calendar-icon>
+            </gui-calendar-icon>
+            published
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
+        <div
+          class="flex flex-col gap-px rounded"
+          style="opacity: 0;"
+        >
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-0"
             >
-              I'm feeling lucky
-            </gui-button>
-          </gui-empty-description>
-        </gui-empty-header>
-      </gui-empty>
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+              package-0@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-1"
+            >
+              package-1@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-2"
+            >
+              package-2@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-3"
+            >
+              package-3@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-4"
+            >
+              package-4@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-5"
+            >
+              package-5@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-6"
+            >
+              package-6@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-7"
+            >
+              package-7@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-8"
+            >
+              package-8@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-9"
+            >
+              package-9@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-10"
+            >
+              package-10@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-11"
+            >
+              package-11@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-12"
+            >
+              package-12@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-13"
+            >
+              package-13@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-14"
+            >
+              package-14@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-15"
+            >
+              package-15@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-16"
+            >
+              package-16@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-17"
+            >
+              package-17@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-18"
+            >
+              package-18@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-19"
+            >
+              package-19@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-20"
+            >
+              package-20@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-21"
+            >
+              package-21@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-22"
+            >
+              package-22@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-23"
+            >
+              package-23@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-24"
+            >
+              package-24@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-25"
+            >
+              package-25@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-26"
+            >
+              package-26@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-27"
+            >
+              package-27@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-28"
+            >
+              package-28@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-29"
+            >
+              package-29@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-30"
+            >
+              package-30@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-31"
+            >
+              package-31@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-32"
+            >
+              package-32@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-33"
+            >
+              package-33@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-34"
+            >
+              package-34@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-35"
+            >
+              package-35@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-36"
+            >
+              package-36@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-37"
+            >
+              package-37@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-38"
+            >
+              package-38@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-39"
+            >
+              package-39@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-40"
+            >
+              package-40@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-41"
+            >
+              package-41@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-42"
+            >
+              package-42@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-43"
+            >
+              package-43@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-44"
+            >
+              package-44@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-45"
+            >
+              package-45@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-46"
+            >
+              package-46@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-47"
+            >
+              package-47@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-48"
+            >
+              package-48@1.0.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="package-49"
+            >
+              package-49@1.0.0
+            </div>
+          </gui-table-row>
+        </div>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
+            >
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="true"
+            >
+              1
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="false"
+            >
+              2
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="false"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-search-results-pagination-navigation>
-      </gui-search-results-pagination-navigation>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
-    >
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
     </div>
   </div>
 </section>
@@ -281,136 +795,186 @@ exports[`renders search results with error 1`] = `
 exports[`renders search results with no results 1`] = `
 
 <section class="bg-background overflow-y-hidden">
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <div class="h-[75px] lg:h-[36.5px]">
-        <h3
-          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-          style="opacity: 0; filter: blur(2px);"
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
         >
-          Start typing to search
-        </h3>
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
       </div>
     </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
     >
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-search-results-sort>
-      </gui-search-results-sort>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-  </div>
-  <div class="pattern-hatch bg-background h-9 lg:hidden">
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] border-background-secondary col-start-2 col-end-3 border-x"
-      style="opacity: 1; filter: blur(0px);"
-    >
-      <gui-empty classname="h-full w-full grow">
-        <gui-empty-header>
-          <gui-empty-media variant="icon">
-            <gui-package-search-icon>
-            </gui-package-search-icon>
-          </gui-empty-media>
-          <gui-empty-title>
-            Your results will appear here
-          </gui-empty-title>
-          <gui-empty-description>
-            <gui-button
-              size="sm"
-              variant="default"
+      <gui-table-caption style="opacity: 1; filter: blur(0px); transform: none;">
+        Start typing to search
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-sparkle-icon>
+            </gui-sparkle-icon>
+            relevance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-trending-up-icon>
+            </gui-trending-up-icon>
+            popularity
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-shield-icon>
+            </gui-shield-icon>
+            quality
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-wrench-icon>
+            </gui-wrench-icon>
+            maintenance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="true"
+            isactive="false"
+          >
+            <gui-calendar-icon>
+            </gui-calendar-icon>
+            published
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
+        <div
+          class="relative flex h-full w-full flex-col min-h-[calc(100svh-64px-109.5px-50px-49px)] lg:min-h-[calc(100svh-64px-109.5px-50px-49px)] bg-background rounded"
+          style="opacity: 0; filter: blur(4px);"
+        >
+          <gui-empty classname="h-full w-full">
+            <gui-empty-header>
+              <gui-empty-media variant="icon">
+                <gui-package-search-icon>
+                </gui-package-search-icon>
+              </gui-empty-media>
+              <gui-empty-title>
+                No results found
+              </gui-empty-title>
+              <gui-empty-description>
+                We couldn't find any results for
+                <strong>
+                  react
+                </strong>
+              </gui-empty-description>
+            </gui-empty-header>
+          </gui-empty>
+        </div>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
             >
-              I'm feeling lucky
-            </gui-button>
-          </gui-empty-description>
-        </gui-empty-header>
-      </gui-empty>
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="true"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-search-results-pagination-navigation>
-      </gui-search-results-pagination-navigation>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
-    >
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
     </div>
   </div>
 </section>
@@ -420,151 +984,208 @@ exports[`renders search results with no results 1`] = `
 exports[`renders search results with results 1`] = `
 
 <section class="bg-background overflow-y-hidden">
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
     <div
       aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+      class="h-full w-full max-lg:hidden flex flex-col"
     >
-    </div>
-    <div class="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <div class="h-[75px] lg:h-[36.5px]">
-        <h3
-          class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-          style="opacity: 0; filter: blur(2px);"
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
         >
-          Showing
-          <span class="font-mono text-2xl tabular-nums">
-            2
-          </span>
-          of
-          <span class="font-mono text-2xl tabular-nums">
-            2
-          </span>
-          results for
-          <span class="fancy-quote mr-0.5 ml-2 font-medium">
-            “
-          </span>
-          react
-          <span class="fancy-quote ml-0.5 font-medium">
-            ”
-          </span>
-        </h3>
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
       </div>
     </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
     >
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-y">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-search-results-sort>
-      </gui-search-results-sort>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-y"
-    >
-    </div>
-  </div>
-  <div class="pattern-hatch bg-background h-9 lg:hidden">
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      class="min-w-0 border-background-secondary col-start-2 col-end-3 border-x"
-      style="opacity: 1; filter: blur(0px);"
-    >
-      <div
-        class="bg-background-secondary flex min-h-[calc(100svh-64px-109.5px-50px-49px)] w-full flex-col gap-px lg:min-h-[calc(100svh-64px-109.5px-50px-49px)]"
-        style="opacity: 0;"
-      >
+      <gui-table-caption style="opacity: 1; filter: blur(0px); transform: none;">
+        Showing
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          2
+        </span>
+        of
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          2
+        </span>
+        results for
+        <span class="fancy-quote mr-0.5 ml-2 font-medium max-lg:hidden">
+          “
+        </span>
+        react
+        <span class="fancy-quote ml-0.5 font-medium max-lg:hidden">
+          ”
+        </span>
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-sparkle-icon>
+            </gui-sparkle-icon>
+            relevance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-trending-up-icon>
+            </gui-trending-up-icon>
+            popularity
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-shield-icon>
+            </gui-shield-icon>
+            quality
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-wrench-icon>
+            </gui-wrench-icon>
+            maintenance
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            enablesorting="true"
+            disabled="false"
+            isactive="false"
+          >
+            <gui-calendar-icon>
+            </gui-calendar-icon>
+            published
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
         <div
-          class="rounded"
-          style="opacity: 0; filter: blur(4px);"
+          class="flex flex-col gap-px rounded"
+          style="opacity: 0;"
         >
-          <gui-search-result item="[object Object]">
-          </gui-search-result>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="react"
+            >
+              react@18.2.0
+            </div>
+          </gui-table-row>
+          <gui-table-row style="opacity: 0; filter: blur(4px);">
+            <div
+              data-testid="search-result"
+              data-name="react-dom"
+            >
+              react-dom@18.2.0
+            </div>
+          </gui-table-row>
         </div>
-        <div
-          class="rounded"
-          style="opacity: 0; filter: blur(4px);"
-        >
-          <gui-search-result item="[object Object]">
-          </gui-search-result>
-        </div>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
+            >
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="true"
+            >
+              1
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="true"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
+    <div
+      aria-hidden="true"
+      class="h-full w-full max-lg:hidden flex flex-col"
+    >
+      <div class="h-[108px]">
       </div>
-    </div>
-  </div>
-  <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
-    >
-    </div>
-    <div class="bg-background-secondary border-background-secondary relative w-full border-x border-t">
-      <gui-cross
-        top="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-cross
-        top="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        left="true"
-      >
-      </gui-cross>
-      <gui-cross
-        bottom="true"
-        right="true"
-      >
-      </gui-cross>
-      <gui-search-results-pagination-navigation>
-      </gui-search-results-pagination-navigation>
-    </div>
-    <div
-      aria-hidden="true"
-      class="block h-full w-full max-lg:hidden border-background-secondary border-t"
-    >
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
     </div>
   </div>
 </section>

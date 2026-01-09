@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router'
-import { SearchResultsProvider as SearchResultsView } from '@/components/search/search-results/results.tsx'
+import { SearchResults as SearchResultsView } from '@/components/search/search-results/results.tsx'
 
 export const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams()
