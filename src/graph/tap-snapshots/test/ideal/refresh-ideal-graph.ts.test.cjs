@@ -122,6 +122,18 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with worksp
     ]
   },
   Node {
+    id: 'workspace·packages§workspace-d',
+    location: './packages/workspace-d',
+    importer: true,
+    edgesOut: [
+      Edge spec(ipsum@^1.0.0) -peer-> to: Node {
+        id: '·npm·ipsum@1.0.0',
+        location: './node_modules/.vlt/·npm·ipsum@1.0.0/node_modules/ipsum',
+        resolved: 'https://registry.npmjs.org/ipsum/-/ipsum-1.0.0.tgz'
+      }
+    ]
+  },
+  Node {
     id: 'workspace·packages§workspace-c',
     location: './packages/workspace-c',
     importer: true,
