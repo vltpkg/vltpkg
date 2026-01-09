@@ -8,6 +8,72 @@ vi.mock('react-router', () => ({
   useLocation: vi.fn().mockReturnValue({
     pathname: '/',
   }),
+  useNavigate: vi.fn(() => vi.fn()),
+}))
+
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn(() => ['', vi.fn()]),
+  parseAsString: {
+    withDefault: vi.fn(() => ({})),
+  },
+}))
+
+vi.mock('@/state/search-results.ts', () => ({
+  useSearchResultsStore: vi.fn(selector =>
+    selector({
+      isLoading: false,
+      results: [],
+      total: 0,
+      error: null,
+      query: '',
+      fetchResults: vi.fn(),
+      setQuery: vi.fn(),
+      reset: vi.fn(),
+    }),
+  ),
+}))
+
+vi.mock('lucide-react', () => ({
+  Search: 'gui-search-icon',
+  Loader2: 'gui-loader-icon',
+  Command: 'gui-command-icon',
+}))
+
+vi.mock('framer-motion', () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="animate-presence">{children}</div>
+  ),
+  motion: {
+    create: (component: unknown) => component,
+  },
+}))
+
+vi.mock('@/components/hooks/use-keydown.tsx', () => ({
+  useKeyDown: vi.fn(),
+}))
+
+vi.mock('@/components/ui/input-group.tsx', () => ({
+  InputGroup: 'gui-input-group',
+  InputGroupInput: 'gui-input-group-input',
+  InputGroupAddon: 'gui-input-group-addon',
+}))
+
+vi.mock('@/components/ui/kbd.tsx', () => ({
+  Kbd: 'gui-kbd',
+}))
+
+vi.mock('@/components/icons/index.ts', () => ({
+  Vlt: 'gui-vlt-icon',
+}))
+
+vi.mock('@/lib/environment.ts', () => ({
+  isHostedEnvironment: vi.fn(() => false),
+}))
+
+vi.mock('@/components/hooks/use-auth.tsx', () => ({
+  useAuth: vi.fn(() => ({
+    isSignedIn: false,
+  })),
 }))
 
 vi.mock('react-dom', async () => {
@@ -80,7 +146,51 @@ afterEach(() => {
   cleanup()
 })
 
-test('renders header', () => {
+test('renders header on home page', () => {
+  const { container } = render(<Header />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders header on search page', async () => {
+  const { useLocation } = await import('react-router')
+  vi.mocked(useLocation).mockReturnValue({
+    pathname: '/search',
+    search: '',
+    hash: '',
+    state: null,
+    key: 'default',
+  })
+
+  const { container } = render(<Header />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders header on search page with loading state', async () => {
+  const { useLocation } = await import('react-router')
+  const { useSearchResultsStore } =
+    await import('@/state/search-results.ts')
+
+  vi.mocked(useLocation).mockReturnValue({
+    pathname: '/search',
+    search: '',
+    hash: '',
+    state: null,
+    key: 'default',
+  })
+
+  vi.mocked(useSearchResultsStore).mockImplementation(selector =>
+    selector({
+      isLoading: true,
+      results: [],
+      total: 0,
+      error: null,
+      query: 'react',
+      fetchResults: vi.fn(),
+      setQuery: vi.fn(),
+      reset: vi.fn(),
+    }),
+  )
+
   const { container } = render(<Header />)
   expect(container.innerHTML).toMatchSnapshot()
 })

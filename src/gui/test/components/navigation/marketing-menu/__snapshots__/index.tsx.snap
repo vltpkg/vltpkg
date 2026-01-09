@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renders header 1`] = `
+exports[`renders header on home page 1`] = `
 
 <header class="sticky top-0 z-50 w-full max-w-full border-b border-transparent will-change-auto lg:mx-auto lg:max-w-5xl lg:rounded-2xl lg:border lg:transition-all lg:ease-out xl:max-w-[66.7%]">
   <nav
@@ -63,6 +63,167 @@ exports[`renders header 1`] = `
           Dashboard
         </gui-nav-link>
       </gui-button>
+    </div>
+    <gui-button
+      classname="lg:hidden"
+      variant="outline"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Open menu"
+    >
+      Menu
+    </gui-button>
+  </nav>
+</header>
+
+`;
+
+exports[`renders header on search page 1`] = `
+
+<header class="sticky top-0 z-50 w-full max-w-full border-b border-transparent will-change-auto lg:mx-auto lg:max-w-5xl lg:rounded-2xl lg:border lg:transition-all lg:ease-out xl:max-w-[66.7%]">
+  <nav
+    class="flex h-14 w-full items-center justify-between px-4 will-change-auto max-lg:gap-3 lg:h-12 lg:transition-all lg:ease-out"
+    aria-label="Main navigation"
+  >
+    <div class="flex w-full items-center gap-3">
+      <gui-nav-link to="/dashboard">
+        <gui-vlt-icon classname="size-6 shrink-0">
+        </gui-vlt-icon>
+      </gui-nav-link>
+      <gui-input-group classname="w-full grow rounded-xl">
+        <gui-input-group-addon align="inline-start">
+          <div data-testid="animate-presence">
+            <gui-search-icon
+              initial="[object Object]"
+              animate="[object Object]"
+              exit="[object Object]"
+            >
+            </gui-search-icon>
+          </div>
+        </gui-input-group-addon>
+        <gui-input-group-input
+          value
+          placeholder="Search packages"
+        >
+        </gui-input-group-input>
+        <gui-input-group-addon
+          align="inline-end"
+          classname="flex gap-1"
+        >
+          <gui-kbd classname="!rounded-md">
+            <gui-command-icon>
+            </gui-command-icon>
+          </gui-kbd>
+          <gui-kbd classname="!rounded-md">
+            K
+          </gui-kbd>
+        </gui-input-group-addon>
+      </gui-input-group>
+      <div class="flex items-center gap-2 max-lg:hidden">
+        <gui-button
+          variant="outline"
+          aschild="true"
+        >
+          <gui-nav-link
+            to="https://docs.vlt.sh/registry/getting-started"
+            rel="noopener noreferrer"
+          >
+            Get Started
+          </gui-nav-link>
+        </gui-button>
+        <gui-button
+          variant="default"
+          aschild="true"
+        >
+          <gui-nav-link
+            to="/dashboard"
+            rel="noopener noreferrer"
+          >
+            Dashboard
+          </gui-nav-link>
+        </gui-button>
+      </div>
+    </div>
+    <gui-button
+      classname="lg:hidden"
+      variant="outline"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Open menu"
+    >
+      Menu
+    </gui-button>
+  </nav>
+</header>
+
+`;
+
+exports[`renders header on search page with loading state 1`] = `
+
+<header class="sticky top-0 z-50 w-full max-w-full border-b border-transparent will-change-auto lg:mx-auto lg:max-w-5xl lg:rounded-2xl lg:border lg:transition-all lg:ease-out xl:max-w-[66.7%]">
+  <nav
+    class="flex h-14 w-full items-center justify-between px-4 will-change-auto max-lg:gap-3 lg:h-12 lg:transition-all lg:ease-out"
+    aria-label="Main navigation"
+  >
+    <div class="flex w-full items-center gap-3">
+      <gui-nav-link to="/dashboard">
+        <gui-vlt-icon classname="size-6 shrink-0">
+        </gui-vlt-icon>
+      </gui-nav-link>
+      <gui-input-group classname="w-full grow rounded-xl">
+        <gui-input-group-addon align="inline-start">
+          <div data-testid="animate-presence">
+            <gui-loader-icon
+              initial="[object Object]"
+              animate="[object Object]"
+              exit="[object Object]"
+              classname="animate-spin"
+            >
+            </gui-loader-icon>
+          </div>
+        </gui-input-group-addon>
+        <gui-input-group-input
+          value
+          placeholder="Search packages"
+        >
+        </gui-input-group-input>
+        <gui-input-group-addon
+          align="inline-end"
+          classname="flex gap-1"
+        >
+          <gui-kbd classname="!rounded-md">
+            <gui-command-icon>
+            </gui-command-icon>
+          </gui-kbd>
+          <gui-kbd classname="!rounded-md">
+            K
+          </gui-kbd>
+        </gui-input-group-addon>
+      </gui-input-group>
+      <div class="flex items-center gap-2 max-lg:hidden">
+        <gui-button
+          variant="outline"
+          aschild="true"
+        >
+          <gui-nav-link
+            to="https://docs.vlt.sh/registry/getting-started"
+            rel="noopener noreferrer"
+          >
+            Get Started
+          </gui-nav-link>
+        </gui-button>
+        <gui-button
+          variant="default"
+          aschild="true"
+        >
+          <gui-nav-link
+            to="/dashboard"
+            rel="noopener noreferrer"
+          >
+            Dashboard
+          </gui-nav-link>
+        </gui-button>
+      </div>
     </div>
     <gui-button
       classname="lg:hidden"
