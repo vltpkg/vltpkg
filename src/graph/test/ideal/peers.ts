@@ -5,6 +5,7 @@ import t from 'tap'
 import { Graph } from '../../src/graph.ts'
 import {
   addEntriesToPeerContext,
+  checkEntriesToPeerContext,
   endPeerPlacement,
   forkPeerContext,
   getOrderedPeerContextEntries,
@@ -111,6 +112,223 @@ t.test('incompatibleSpecs', async t => {
         needsFork,
         true,
         'should need fork when git specs have different refs',
+      )
+    },
+  )
+
+  t.test(
+    'correctly compares aliased specs using .final property',
+    async t => {
+      // This test validates the fix that ensures incompatibleSpecs
+      // uses spec.final when comparing specs. Without this fix,
+      // alias specs (like npm:foo@^1.0.0) or catalog specs
+      // (like foo@catalog:) would be incorrectly
+      // marked as incompatible because their range property is
+      // on .final, not directly on the spec object.
+      const peerContext: PeerContext = new Map()
+
+      // Create an npm-aliased spec: my-foo@npm:foo@^1.0.0
+      // This spec has:
+      // - bareSpec: 'npm:foo@^1.0.0'
+      // - range: undefined (range is on .final)
+      // - final.range: Range for ^1.0.0
+      const aliasSpec = Spec.parse(
+        'my-foo',
+        'npm:foo@^1.0.0',
+        configData,
+      )
+
+      // Verify the alias structure is what we expect
+      t.ok(aliasSpec.subspec, 'alias spec should have subspec')
+      t.equal(
+        aliasSpec.final.name,
+        'foo',
+        'final should resolve to foo',
+      )
+      t.ok(aliasSpec.final.range, 'final should have range')
+
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Add the aliased spec to peer context
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec: aliasSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      // Now try to add a compatible non-aliased spec: foo@^1.5.0
+      // This should NOT need a fork because ^1.5.0 intersects with ^1.0.0
+      const compatibleSpec = Spec.parse('foo', '^1.5.0', configData)
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec: compatibleSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      t.equal(
+        needsFork,
+        false,
+        'should NOT need fork - ^1.5.0 intersects with ^1.0.0 (via .final)',
+      )
+
+      // Also test the reverse: add non-aliased first, then aliased
+      const peerContext2: PeerContext = new Map()
+      const directSpec = Spec.parse('bar', '^2.0.0', configData)
+      addEntriesToPeerContext(
+        peerContext2,
+        [{ spec: directSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      // Add compatible aliased spec
+      const aliasSpec2 = Spec.parse(
+        'my-bar',
+        'npm:bar@^2.1.0',
+        configData,
+      )
+      const needsFork2 = addEntriesToPeerContext(
+        peerContext2,
+        [{ spec: aliasSpec2, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      t.equal(
+        needsFork2,
+        false,
+        'should NOT need fork - aliased ^2.1.0 intersects with ^2.0.0',
+      )
+    },
+  )
+
+  t.test('correctly detects incompatible aliased specs', async t => {
+    // Verify that truly incompatible ranges are still detected
+    // even when using aliased specs
+    const peerContext: PeerContext = new Map()
+    const aliasSpec1 = Spec.parse(
+      'my-foo',
+      'npm:foo@^1.0.0',
+      configData,
+    )
+    const aliasSpec2 = Spec.parse(
+      'other-foo',
+      'npm:foo@^2.0.0',
+      configData,
+    )
+
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Add first aliased spec
+    addEntriesToPeerContext(
+      peerContext,
+      [{ spec: aliasSpec1, type: 'peer' }],
+      graph.mainImporter,
+    )
+
+    // Add incompatible aliased spec (different major version)
+    const needsFork = addEntriesToPeerContext(
+      peerContext,
+      [{ spec: aliasSpec2, type: 'peer' }],
+      graph.mainImporter,
+    )
+
+    t.equal(
+      needsFork,
+      true,
+      'should need fork - ^1.0.0 does NOT intersect with ^2.0.0',
+    )
+  })
+
+  t.test(
+    'handles mixed alias and direct specs in checkEntriesToPeerContext',
+    async t => {
+      // This specifically tests the checkEntriesToPeerContext function
+      // which also needed the .final fix
+      const peerContext: PeerContext = new Map()
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Set up a peer context with an active aliased entry
+      const aliasSpec = Spec.parse(
+        'my-pkg',
+        'npm:pkg@^3.0.0',
+        configData,
+      )
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec: aliasSpec, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      // Mark the entry as active (simulating an active peer context)
+      const entry = peerContext.get('pkg')
+      if (entry) entry.active = true
+
+      // Test with compatible direct spec
+      const compatibleDirectSpec = Spec.parse(
+        'pkg',
+        '^3.5.0',
+        configData,
+      )
+      const needsFork1 = checkEntriesToPeerContext(peerContext, [
+        { spec: compatibleDirectSpec, type: 'peer' },
+      ])
+      t.equal(
+        needsFork1,
+        false,
+        'compatible direct spec should not need fork',
+      )
+
+      // Test with incompatible direct spec
+      const incompatibleDirectSpec = Spec.parse(
+        'pkg',
+        '^4.0.0',
+        configData,
+      )
+      const needsFork2 = checkEntriesToPeerContext(peerContext, [
+        { spec: incompatibleDirectSpec, type: 'peer' },
+      ])
+      t.equal(
+        needsFork2,
+        true,
+        'incompatible direct spec should need fork',
+      )
+
+      // Test with compatible aliased spec
+      const compatibleAliasSpec = Spec.parse(
+        'other-pkg',
+        'npm:pkg@^3.2.0',
+        configData,
+      )
+      const needsFork3 = checkEntriesToPeerContext(peerContext, [
+        { spec: compatibleAliasSpec, type: 'peer' },
+      ])
+      t.equal(
+        needsFork3,
+        false,
+        'compatible aliased spec should not need fork',
       )
     },
   )

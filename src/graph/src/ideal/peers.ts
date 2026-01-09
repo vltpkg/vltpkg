@@ -42,7 +42,8 @@ export const incompatibleSpecs = (
   entry: PeerContextEntry,
 ): boolean => {
   if (entry.specs.size > 0) {
-    for (const s of entry.specs) {
+    for (const s_ of entry.specs) {
+      const s = s_.final
       if (
         // only able to check range intersections for registry types
         (spec.type === 'registry' &&
@@ -97,7 +98,7 @@ export const checkEntriesToPeerContext = (
     if (!entry?.active) continue
 
     // validate if the provided spec is compatible with existing specs
-    if (incompatibleSpecs(spec, entry)) {
+    if (incompatibleSpecs(spec.final, entry)) {
       return true
     }
   }
@@ -147,7 +148,9 @@ export const addEntriesToPeerContext = (
     // perform an extra check that confirms the new spec does not
     // conflicts with existing specs in this entry, this handles the
     // case of adding sibling deps that conflicts with one another
-    if (incompatibleSpecs(spec, entry)) return true
+    if (incompatibleSpecs(spec.final, entry)) {
+      return true
+    }
 
     if (
       target &&
