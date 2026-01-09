@@ -25,7 +25,9 @@ import type { ExtractResult } from '../reify/extract-node.ts'
 import { extractNode } from '../reify/extract-node.ts'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import {
+  checkPeerEdgesCompatible,
   endPeerPlacement,
+  forkPeerContext,
   postPlacementPeerCheck,
   startPeerPlacement,
 } from './peers.ts'
@@ -165,6 +167,28 @@ const fetchManifestsForDeps = async (
       fromNode,
       queryModifier,
     )
+
+    // Check if existing node's peer edges are compatible with new parent
+    const peerCompatResult =
+      existingNode ?
+        checkPeerEdgesCompatible(
+          existingNode,
+          fromNode,
+          peerContext,
+          graph,
+        )
+      : { compatible: true }
+
+    // Fork peer context if incompatible peer edges detected
+    let effectivePeerContext = peerContext
+    /* c8 ignore start */
+    if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
+      effectivePeerContext = forkPeerContext(graph, peerContext, [
+        peerCompatResult.forkEntry,
+      ])
+    }
+    /* c8 ignore stop */
+
     // defines what nodes are eligible to be reused
     const validExistingNode =
       existingNode &&
@@ -172,8 +196,10 @@ const fetchManifestsForDeps = async (
       // Regular deps can always reuse
       /* c8 ignore start */
       (!peer ||
-        // otherwise reusing peer deps only in case of a peerSetHash matche
-        existingNode.peerSetHash === fromNode.peerSetHash)
+        // otherwise reusing peer deps only in case of a peerSetHash match
+        existingNode.peerSetHash === fromNode.peerSetHash) &&
+      // Check if existing node's peer edges are compatible with new parent
+      peerCompatResult.compatible
     /* c8 ignore stop */
 
     if (
@@ -220,7 +246,7 @@ const fetchManifestsForDeps = async (
       edgeOptional,
       manifestPromise,
       depth,
-      peerContext,
+      peerContext: effectivePeerContext,
     }
 
     fetchTasks.push(fetchTask)

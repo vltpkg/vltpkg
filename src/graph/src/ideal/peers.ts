@@ -3,7 +3,8 @@
 
 import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
-import { getDependencies } from '../dependencies.ts'
+import { Spec } from '@vltpkg/spec'
+import { getDependencies, shorten } from '../dependencies.ts'
 import { getOrderedDependencies } from './get-ordered-dependencies.ts'
 import type {
   ProcessPlacementResultEntry,
@@ -12,12 +13,175 @@ import type {
   PeerContextEntryInput,
   ProcessPlacementResult,
 } from './types.ts'
-import type { Spec, SpecOptions } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
+import { longDependencyTypes } from '@vltpkg/types'
 import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
+
+/**
+ * Result of checking if an existing node's peer edges are compatible
+ * with a new parent's context. The `forkEntry` property is optional
+ * and will only be present if the node's peer edges are incompatible.
+ */
+type PeerEdgeCompatResult = {
+  compatible: boolean
+  /** When incompatible, entry to add to forked context */
+  forkEntry?: {
+    spec: Spec
+    target: Node
+    type: DependencySaveType
+  }
+}
+
+/**
+ * Check if an existing node's peer edges would still resolve to the same
+ * targets from a new parent's context. Returns incompatible info if any
+ * peer would resolve differently, meaning the node should NOT be reused.
+ */
+export const checkPeerEdgesCompatible = (
+  existingNode: Node,
+  fromNode: Node,
+  peerContext: PeerContext,
+  graph: Graph,
+): PeerEdgeCompatResult => {
+  // No peer deps means always compatible
+  if (
+    !existingNode.manifest?.peerDependencies ||
+    Object.keys(existingNode.manifest.peerDependencies).length === 0
+  )
+    return { compatible: true }
+
+  const peerDeps = existingNode.manifest.peerDependencies
+
+  for (const [peerName, peerSpec] of Object.entries(peerDeps)) {
+    const existingEdge = existingNode.edgesOut.get(peerName)
+    if (!existingEdge?.to) continue // dangling peer, skip
+
+    // Check the peer context for what this parent's context would provide
+    const contextEntry = peerContext.get(peerName)
+
+    // If context has a different target for this peer, not compatible
+    if (
+      contextEntry?.target &&
+      contextEntry.target.id !== existingEdge.to.id
+    ) {
+      // Verify the context target would actually satisfy the peer spec
+      const spec = Spec.parse(peerName, peerSpec, {
+        ...graph.mainImporter.options,
+        registry: fromNode.registry,
+      })
+      if (
+        satisfies(
+          contextEntry.target.id,
+          spec,
+          fromNode.location,
+          fromNode.projectRoot,
+          graph.monorepo,
+        )
+      ) {
+        return {
+          compatible: false,
+          forkEntry: {
+            spec,
+            target: contextEntry.target,
+            type: contextEntry.type,
+          },
+        }
+      }
+    }
+
+    // Also check parent's already-placed siblings
+    const siblingEdge = fromNode.edgesOut.get(peerName)
+    if (siblingEdge?.to && siblingEdge.to.id !== existingEdge.to.id) {
+      const spec = Spec.parse(peerName, peerSpec, {
+        ...graph.mainImporter.options,
+        registry: fromNode.registry,
+      })
+      if (
+        satisfies(
+          siblingEdge.to.id,
+          spec,
+          fromNode.location,
+          fromNode.projectRoot,
+          graph.monorepo,
+        )
+      ) {
+        return {
+          compatible: false,
+          forkEntry: {
+            spec,
+            target: siblingEdge.to,
+            type: siblingEdge.type,
+          },
+        }
+      }
+    }
+
+    // Check parent's manifest for not-yet-placed siblings
+    // This handles the case where sibling hasn't been placed yet but will be
+    const parentManifest = fromNode.manifest
+    if (parentManifest) {
+      for (const depType of longDependencyTypes) {
+        const depRecord = parentManifest[depType]
+        if (depRecord?.[peerName]) {
+          // Parent declares this peer as a dependency
+          // Check if there's an existing graph node that would satisfy it differently
+          const parentSpec = Spec.parse(
+            peerName,
+            depRecord[peerName],
+            {
+              ...graph.mainImporter.options,
+              registry: fromNode.registry,
+            },
+          )
+          // Look for a node in the graph that satisfies parent's spec but differs from existing edge
+          for (const candidateNode of graph.nodes.values()) {
+            if (
+              candidateNode.name === peerName &&
+              candidateNode.id !== existingEdge.to.id &&
+              satisfies(
+                candidateNode.id,
+                parentSpec,
+                fromNode.location,
+                fromNode.projectRoot,
+                graph.monorepo,
+              )
+            ) {
+              // Also verify this candidate satisfies the peer spec
+              const peerSpecParsed = Spec.parse(peerName, peerSpec, {
+                ...graph.mainImporter.options,
+                registry: fromNode.registry,
+              })
+              if (
+                satisfies(
+                  candidateNode.id,
+                  peerSpecParsed,
+                  fromNode.location,
+                  fromNode.projectRoot,
+                  graph.monorepo,
+                )
+              ) {
+                return {
+                  compatible: false,
+                  forkEntry: {
+                    spec: peerSpecParsed,
+                    target: candidateNode,
+                    type: shorten(depType),
+                  },
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { compatible: true }
+}
 
 /**
  * Retrieve a unique hash value for a given peer context set.
