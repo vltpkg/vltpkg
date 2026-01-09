@@ -410,6 +410,22 @@ t.test('refreshIdealGraph with workspaces', async t => {
           ),
         },
       },
+      // Second workspace with peerDeps to cover sorting both aIsPeer and bIsPeer
+      'workspace-d': {
+        'package.json': JSON.stringify({
+          name: 'workspace-d',
+          version: '1.0.0',
+          peerDependencies: {
+            ipsum: '^1.0.0',
+          },
+        }),
+        node_modules: {
+          ipsum: t.fixture(
+            'symlink',
+            `../../../node_modules/.vlt/${joinDepIDTuple(['registry', '', 'ipsum@1.0.0'])}/node_modules/ipsum`,
+          ),
+        },
+      },
     },
     node_modules: {
       '.vlt': {
@@ -418,6 +434,16 @@ t.test('refreshIdealGraph with workspaces', async t => {
             lorem: {
               'package.json': JSON.stringify({
                 name: 'lorem',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+        [joinDepIDTuple(['registry', '', 'ipsum@1.0.0'])]: {
+          node_modules: {
+            ipsum: {
+              'package.json': JSON.stringify({
+                name: 'ipsum',
                 version: '1.0.0',
               }),
             },
@@ -455,9 +481,10 @@ t.test('refreshIdealGraph with workspaces', async t => {
           return bazManifest
         case 'qux':
           return quxManifest
-        case 'lorem': {
+        case 'lorem':
+        case 'ipsum': {
           throw new Error(
-            'lorem should be loaded from the actual graph',
+            `${spec.name} should be loaded from the actual graph`,
           )
         }
         default:
@@ -493,7 +520,7 @@ t.test('refreshIdealGraph with workspaces', async t => {
 
   t.equal(
     graph.importers.size,
-    4,
+    5,
     'should have expected number of importers',
   )
 
@@ -572,3 +599,112 @@ t.test('refreshIdealGraph with workspaces', async t => {
   const workspaceBBarEdge = workspaceB.edgesOut.get('bar')
   t.notOk(workspaceBBarEdge, 'workspace-b should not have bar edge')
 })
+
+t.test(
+  'refreshIdealGraph processes mainImporter before workspaces',
+  async t => {
+    // Use "z-" prefix for main project so it would sort LAST alphabetically
+    // Use "a-" prefix for workspaces so they would sort FIRST alphabetically
+    // This proves mainImporter is always processed first regardless of name
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'z-main-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: ['./packages/*'],
+      }),
+      packages: {
+        'a-workspace': {
+          'package.json': JSON.stringify({
+            name: 'a-workspace',
+            version: '1.0.0',
+          }),
+        },
+      },
+    })
+
+    const mainDepManifest = { name: 'main-dep', version: '1.0.0' }
+    const wsDepManifest = { name: 'ws-dep', version: '1.0.0' }
+
+    // Track order of manifest fetches to verify processing order
+    const fetchOrder: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        fetchOrder.push(spec.name)
+        if (spec.name === 'main-dep') return mainDepManifest
+        if (spec.name === 'ws-dep') return wsDepManifest
+        return null
+      },
+    } as PackageInfoClient
+
+    const mainManifest = {
+      name: 'z-main-project',
+      version: '1.0.0',
+    }
+
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const monorepo = Monorepo.load(projectRoot, {
+      config: { workspaces: ['./packages/*'] },
+      scurry,
+      packageJson,
+    })
+    const graph = new Graph({
+      projectRoot,
+      ...configData,
+      mainManifest,
+      monorepo,
+    })
+
+    // Add deps to both main importer and workspace
+    const add = new Map<DepID, Map<string, Dependency>>([
+      [
+        graph.mainImporter.id,
+        new Map<string, Dependency>([
+          [
+            'main-dep',
+            {
+              spec: Spec.parse('main-dep', '^1.0.0'),
+              type: 'prod',
+            } satisfies Dependency,
+          ],
+        ]),
+      ],
+      [
+        joinDepIDTuple(['workspace', 'packages/a-workspace']),
+        new Map<string, Dependency>([
+          [
+            'ws-dep',
+            {
+              spec: Spec.parse('ws-dep', '^1.0.0'),
+              type: 'prod',
+            } satisfies Dependency,
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap
+    add.modifiedDependencies = true
+
+    await refreshIdealGraph({
+      add,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      graph,
+      packageInfo,
+      scurry,
+      remover: new RollbackRemove(),
+    })
+
+    // Verify mainImporter's dependency was fetched FIRST
+    t.equal(
+      fetchOrder[0],
+      'main-dep',
+      'mainImporter dependency should be fetched first',
+    )
+    t.equal(
+      fetchOrder[1],
+      'ws-dep',
+      'workspace dependency should be fetched second',
+    )
+  },
+)
