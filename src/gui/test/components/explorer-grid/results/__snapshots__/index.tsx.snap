@@ -1,37 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Results Displays items 1`] = `
+exports[`Results displays items with pagination 1`] = `
 
-<gui-results-provider allitems="[object Object],[object Object],[object Object]">
-  <div class="bg-background h-full">
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary max-lg:hidden border-t">
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
+    <div class="border-background-secondary max-lg:hidden flex flex-col">
+      <div class="h-[108px]">
       </div>
-      <div class="border-background-secondary flex h-full w-full flex-col border-x border-t px-6 pt-12 pb-6">
-        <h3 class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
-          Showing
-          <span class="font-mono text-2xl tabular-nums">
-            3
-          </span>
-          of
-          <span class="font-mono text-2xl tabular-nums">
-            3
-          </span>
-          results
-        </h3>
-      </div>
-      <div class="border-background-secondary max-lg:hidden border-t">
-      </div>
-    </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary max-lg:hidden border-y">
-      </div>
-      <div class="border-background-secondary bg-background-secondary relative flex min-w-0 border-x border-y [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
-        <gui-cross
-          top="true"
-          left="true"
-        >
-        </gui-cross>
+      <div class="relative h-[46px] border-y">
         <gui-cross
           top="true"
           right="true"
@@ -39,7 +15,16 @@ exports[`Results Displays items 1`] = `
         </gui-cross>
         <gui-cross
           bottom="true"
-          left="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
         >
         </gui-cross>
         <gui-cross
@@ -47,79 +32,472 @@ exports[`Results Displays items 1`] = `
           right="true"
         >
         </gui-cross>
-        <gui-results-sort classname="w-full min-w-0">
-        </gui-results-sort>
-      </div>
-      <div class="border-background-secondary max-lg:hidden border-y">
       </div>
     </div>
-    <div class="pattern-hatch flex h-9 w-full md:hidden">
-    </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="bg-background-secondary border-background-secondary col-start-2 col-end-3 flex h-full min-h-[calc(100svh-60px-109.5px-246px-36px)] w-full flex-col gap-px border-x md:min-h-[calc(100svh-64px-109.5px-50px-49px)]">
-        <div class="bg-background h-fit w-full rounded">
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-        </div>
-        <div class="bg-background h-fit w-full rounded">
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-        </div>
-        <div class="bg-background h-fit w-full rounded">
-          <gui-result-item item="[object Object]">
-          </gui-result-item>
-        </div>
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
+    >
+      <gui-table-caption>
+        Showing
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          3
+        </span>
+        of
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          3
+        </span>
+        results
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-list-icon>
+            </gui-list-icon>
+            alphabetical
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-layers-icon>
+            </gui-layers-icon>
+            version
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-send-to-back-icon>
+            </gui-send-to-back-icon>
+            dependency type
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-gallery-vertical-end-icon>
+            </gui-gallery-vertical-end-icon>
+            dependents
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-blocks-icon>
+            </gui-blocks-icon>
+            module type
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·a@1.0.0"
+          >
+            a@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·b@1.0.0"
+          >
+            b@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·c@1.0.0"
+          >
+            c@1.0.0
+          </div>
+        </gui-table-row>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
+            >
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="true"
+            >
+              1
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="true"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
+    <div class="border-background-secondary max-lg:hidden flex flex-col">
+      <div class="h-[108px]">
       </div>
-    </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary max-lg:hidden border-t">
-      </div>
-      <div class="border-background-secondary bg-background-secondary relative flex w-full border-x border-t">
+      <div class="relative h-[46px] border-y">
         <gui-cross
           top="true"
           left="true"
         >
         </gui-cross>
         <gui-cross
-          top="true"
-          right="true"
+          bottom="true"
+          left="true"
         >
         </gui-cross>
-        <gui-results-pagination-navigation classname="w-full">
-        </gui-results-pagination-navigation>
       </div>
-      <div class="border-background-secondary max-lg:hidden border-t">
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
       </div>
     </div>
   </div>
-</gui-results-provider>
+</section>
+
+`;
+
+exports[`Results displays many items triggering pagination 1`] = `
+
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
+    <div class="border-background-secondary max-lg:hidden flex flex-col">
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+    </div>
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
+    >
+      <gui-table-caption>
+        Showing
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          10
+        </span>
+        of
+        <span class="mx-1.5 font-mono text-2xl tabular-nums">
+          50
+        </span>
+        results
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-list-icon>
+            </gui-list-icon>
+            alphabetical
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-layers-icon>
+            </gui-layers-icon>
+            version
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-send-to-back-icon>
+            </gui-send-to-back-icon>
+            dependency type
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-gallery-vertical-end-icon>
+            </gui-gallery-vertical-end-icon>
+            dependents
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="false"
+          >
+            <gui-blocks-icon>
+            </gui-blocks-icon>
+            module type
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-0@1.0.0"
+          >
+            package-0@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-1@1.0.0"
+          >
+            package-1@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-2@1.0.0"
+          >
+            package-2@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-3@1.0.0"
+          >
+            package-3@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-4@1.0.0"
+          >
+            package-4@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-5@1.0.0"
+          >
+            package-5@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-6@1.0.0"
+          >
+            package-6@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-7@1.0.0"
+          >
+            package-7@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-8@1.0.0"
+          >
+            package-8@1.0.0
+          </div>
+        </gui-table-row>
+        <gui-table-row>
+          <div
+            data-testid="result-item"
+            data-id="·npm·package-9@1.0.0"
+          >
+            package-9@1.0.0
+          </div>
+        </gui-table-row>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
+            >
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="true"
+            >
+              1
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="false"
+            >
+              2
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="false"
+            >
+              3
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="false"
+            >
+              4
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item>
+            <gui-table-pagination-list-button
+              as="number"
+              active="false"
+            >
+              5
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="false"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
+    <div class="border-background-secondary max-lg:hidden flex flex-col">
+      <div class="h-[108px]">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
+      </div>
+    </div>
+  </div>
+</section>
 
 `;
 
 exports[`Results renders an empty state when there are no items 1`] = `
 
-<gui-results-provider allitems>
-  <div class="bg-background h-full">
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary max-lg:hidden border-t">
+<section class="bg-background overflow-y-hidden">
+  <div class="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
+    <div class="border-background-secondary max-lg:hidden flex flex-col">
+      <div class="h-[108px]">
       </div>
-      <div class="border-background-secondary flex h-full w-full flex-col border-x border-t px-6 pt-12 pb-6">
-        <h3 class="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100">
-          No results
-        </h3>
-      </div>
-      <div class="border-background-secondary max-lg:hidden border-t">
-      </div>
-    </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary max-lg:hidden border-y">
-      </div>
-      <div class="border-background-secondary bg-background-secondary relative flex min-w-0 border-x border-y [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
-        <gui-cross
-          top="true"
-          left="true"
-        >
-        </gui-cross>
+      <div class="relative h-[46px] border-y">
         <gui-cross
           top="true"
           right="true"
@@ -127,7 +505,16 @@ exports[`Results renders an empty state when there are no items 1`] = `
         </gui-cross>
         <gui-cross
           bottom="true"
-          left="true"
+          right="true"
+        >
+        </gui-cross>
+      </div>
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          right="true"
         >
         </gui-cross>
         <gui-cross
@@ -135,98 +522,172 @@ exports[`Results renders an empty state when there are no items 1`] = `
           right="true"
         >
         </gui-cross>
-        <gui-results-sort classname="w-full min-w-0">
-        </gui-results-sort>
-      </div>
-      <div class="border-background-secondary max-lg:hidden border-y">
       </div>
     </div>
-    <div class="pattern-hatch flex h-9 w-full md:hidden">
-    </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary col-start-2 col-end-3 flex h-full min-h-[calc(100svh-60px-109.5px-246px-36px)] w-full flex-col items-center justify-center border-x md:min-h-[calc(100svh-64px-109.5px-50px-49px)]">
-        <div
-          data-slot="empty"
-          class="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-lg border-dashed p-6 text-center text-balance md:p-12 h-full w-full"
-        >
-          <div
-            data-slot="empty-header"
-            class="flex max-w-sm flex-col items-center gap-2 text-center"
+    <gui-table
+      variant="list"
+      classname="border-x border-t-0"
+    >
+      <gui-table-caption>
+        No results
+      </gui-table-caption>
+      <gui-table-filter-list>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="true"
           >
-            <div
-              data-slot="empty-icon"
-              data-variant="icon"
-              class="mb-2 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg [&amp;_svg:not([class*='size-'])]:size-6"
-            >
+            <gui-list-icon>
+            </gui-list-icon>
+            alphabetical
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="true"
+          >
+            <gui-layers-icon>
+            </gui-layers-icon>
+            version
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="true"
+          >
+            <gui-send-to-back-icon>
+            </gui-send-to-back-icon>
+            dependency type
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="true"
+          >
+            <gui-gallery-vertical-end-icon>
+            </gui-gallery-vertical-end-icon>
+            dependents
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+        <gui-table-filter-list-item>
+          <gui-table-filter-list-button
+            classname="capitalize"
+            isactive="false"
+            enablesorting="true"
+            disabled="true"
+          >
+            <gui-blocks-icon>
+            </gui-blocks-icon>
+            module type
+          </gui-table-filter-list-button>
+        </gui-table-filter-list-item>
+      </gui-table-filter-list>
+      <gui-table-body classname="min-h-[calc(100svh-64px-108px-46px-46px)]">
+        <gui-empty classname="bg-background h-full w-full rounded">
+          <gui-empty-header>
+            <gui-empty-media variant="icon">
               <gui-package-search-icon>
               </gui-package-search-icon>
-            </div>
-            <div
-              data-slot="empty-title"
-              class="text-lg font-medium tracking-tight"
-            >
+            </gui-empty-media>
+            <gui-empty-title>
               No results found
-            </div>
-            <div
-              data-slot="empty-description"
-              class="text-muted-foreground [&amp;>a:hover]:text-primary text-sm/relaxed [&amp;>a]:underline [&amp;>a]:underline-offset-4"
-            >
+            </gui-empty-title>
+            <gui-empty-description>
               Your query didn't turn up any results.
-            </div>
-          </div>
-          <div
-            data-slot="empty-content"
-            class="flex w-full max-w-sm min-w-0 flex-col items-center gap-4 text-sm text-balance"
-          >
+            </gui-empty-description>
+          </gui-empty-header>
+          <gui-empty-content>
             <div class="flex items-center gap-2">
-              <button
-                data-slot="button"
-                class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2 has-[>svg]:px-3"
-                disabled
+              <gui-button
+                size="sm"
+                disabled="true"
               >
                 <gui-home-icon>
                 </gui-home-icon>
                 <span>
                   Project Root
                 </span>
-              </button>
-              <gui-nav-link
-                to="/help/selectors"
-                data-slot="button"
-                classname="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3"
+              </gui-button>
+              <gui-button
+                variant="outline"
+                aschild="true"
+                size="sm"
               >
-                <gui-query-icon>
-                </gui-query-icon>
-                <span>
-                  Available Selectors
-                </span>
-              </gui-nav-link>
+                <gui-nav-link to="/help/selectors">
+                  <gui-query-icon>
+                  </gui-query-icon>
+                  <span>
+                    Available Selectors
+                  </span>
+                </gui-nav-link>
+              </gui-button>
             </div>
-          </div>
-        </div>
+          </gui-empty-content>
+        </gui-empty>
+      </gui-table-body>
+      <gui-table-footer>
+        <gui-table-pagination-list classname="h-full grid-cols-12 lg:h-[45px] flex justify-between">
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="previous"
+              disabled="true"
+            >
+              Previous
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+          <gui-table-pagination-list-item classname="max-lg:col-span-12">
+            <gui-table-pagination-list-button
+              as="next"
+              disabled="true"
+            >
+              Next
+            </gui-table-pagination-list-button>
+          </gui-table-pagination-list-item>
+        </gui-table-pagination-list>
+      </gui-table-footer>
+    </gui-table>
+    <div class="border-background-secondary max-lg:hidden flex flex-col">
+      <div class="h-[108px]">
       </div>
-    </div>
-    <div class="grid-cols-[1fr_4fr_1fr] lg:grid">
-      <div class="border-background-secondary max-lg:hidden border-t">
-      </div>
-      <div class="border-background-secondary bg-background-secondary relative flex w-full border-x border-t">
+      <div class="relative h-[46px] border-y">
         <gui-cross
           top="true"
           left="true"
         >
         </gui-cross>
         <gui-cross
-          top="true"
-          right="true"
+          bottom="true"
+          left="true"
         >
         </gui-cross>
-        <gui-results-pagination-navigation classname="w-full">
-        </gui-results-pagination-navigation>
       </div>
-      <div class="border-background-secondary max-lg:hidden border-t">
+      <div class="grow">
+      </div>
+      <div class="relative h-[46px] border-y">
+        <gui-cross
+          top="true"
+          left="true"
+        >
+        </gui-cross>
+        <gui-cross
+          bottom="true"
+          left="true"
+        >
+        </gui-cross>
       </div>
     </div>
   </div>
-</gui-results-provider>
+</section>
 
 `;

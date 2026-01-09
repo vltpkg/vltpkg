@@ -7,15 +7,11 @@ import { Spec } from '@vltpkg/spec/browser'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { transfer } from '@vltpkg/graph/browser'
 import { Query } from '@vltpkg/query'
-import { useResultsStore } from '@/components/explorer-grid/results/context.tsx'
-
-import type { ResultsStore } from '@/components/explorer-grid/results/context.tsx'
 import type {
   QueryResponseEdge,
   QueryResponseNode,
 } from '@vltpkg/query'
 import type { RawNode } from '@/state/types.ts'
-import type { GridItemData } from '@/components/explorer-grid/types'
 
 vi.mock('@/components/explorer-grid/results/index.tsx', () => ({
   Results: 'gui-results',
@@ -36,25 +32,6 @@ vi.mock('@/components/explorer-grid/results/sort.tsx', () => ({
   ResultsSort: 'gui-results-sort',
 }))
 
-vi.mock('@/components/explorer-grid/results/context.tsx', () => ({
-  ResultsProvider: 'gui-results-provider',
-  useResultsStore: vi.fn(),
-}))
-
-vi.mock(
-  '@/components/explorer-grid/results/page-navigation.tsx',
-  () => ({
-    ResultsPaginationNavigation: 'gui-results-pagination-navigation',
-  }),
-)
-
-vi.mock(
-  '@/components/explorer-grid/results/page-options.tsx',
-  () => ({
-    ResultPageOptions: 'gui-result-page-options',
-  }),
-)
-
 vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
   SideItem: 'gui-side-item',
 }))
@@ -74,13 +51,6 @@ vi.mock(
   }),
 )
 
-vi.mock(
-  '@/components/explorer-grid/results/empty-results-state.tsx',
-  () => ({
-    EmptyResultsState: 'gui-empty-results-state',
-  }),
-)
-
 vi.mock('@/components/ui/badge.tsx', () => ({
   Badge: 'gui-badge',
 }))
@@ -97,25 +67,6 @@ afterEach(() => {
 })
 
 test('ExplorerGrid render default', async () => {
-  const mockState = {
-    page: 1,
-    totalPages: 0,
-    pageSize: 25,
-    pageItems: [],
-    allItems: [],
-    sortBy: 'alphabetical',
-    sortDir: 'asc',
-    setPage: vi.fn(),
-    setSortBy: vi.fn(),
-    setPageSize: vi.fn(),
-    setSortDir: vi.fn(),
-    setSort: vi.fn(),
-  } satisfies ResultsStore
-
-  vi.mocked(useResultsStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
   render(<ExplorerGrid />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
@@ -142,33 +93,6 @@ test('ExplorerGrid with results', async () => {
     insights: {},
     toJSON() {},
   } as QueryResponseNode
-
-  const mockState = {
-    page: 1,
-    totalPages: 0,
-    pageSize: 25,
-    pageItems: [
-      rootNode as unknown as GridItemData,
-      aNode as unknown as GridItemData,
-      bNode as unknown as GridItemData,
-    ],
-    allItems: [
-      rootNode as unknown as GridItemData,
-      aNode as unknown as GridItemData,
-      bNode as unknown as GridItemData,
-    ],
-    sortBy: 'alphabetical',
-    sortDir: 'asc',
-    setPage: vi.fn(),
-    setSortBy: vi.fn(),
-    setPageSize: vi.fn(),
-    setSortDir: vi.fn(),
-    setSort: vi.fn(),
-  } satisfies ResultsStore
-
-  vi.mocked(useResultsStore).mockImplementation(selector =>
-    selector(mockState),
-  )
 
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
@@ -220,33 +144,6 @@ test('ExplorerGrid with stack', async () => {
     insights: {},
     toJSON() {},
   } as QueryResponseNode
-
-  const mockState = {
-    page: 1,
-    totalPages: 0,
-    pageSize: 25,
-    pageItems: [
-      rootNode as unknown as GridItemData,
-      aNode as unknown as GridItemData,
-      bNode as unknown as GridItemData,
-    ],
-    allItems: [
-      rootNode as unknown as GridItemData,
-      aNode as unknown as GridItemData,
-      bNode as unknown as GridItemData,
-    ],
-    sortBy: 'alphabetical',
-    sortDir: 'asc',
-    setPage: vi.fn(),
-    setSortBy: vi.fn(),
-    setPageSize: vi.fn(),
-    setSortDir: vi.fn(),
-    setSort: vi.fn(),
-  } satisfies ResultsStore
-
-  vi.mocked(useResultsStore).mockImplementation(selector =>
-    selector(mockState),
-  )
 
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
@@ -358,25 +255,6 @@ test('ExplorerGrid renders workspace with edges in', async () => {
 })
 
 test('ExplorerGrid with empty results state', async () => {
-  const mockState = {
-    page: 1,
-    totalPages: 0,
-    pageSize: 25,
-    pageItems: [],
-    allItems: [],
-    sortBy: 'alphabetical',
-    sortDir: 'asc',
-    setPage: vi.fn(),
-    setSortBy: vi.fn(),
-    setPageSize: vi.fn(),
-    setSortDir: vi.fn(),
-    setSort: vi.fn(),
-  } satisfies ResultsStore
-
-  vi.mocked(useResultsStore).mockImplementation(selector =>
-    selector(mockState),
-  )
-
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
