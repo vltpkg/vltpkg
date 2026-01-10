@@ -15,7 +15,7 @@ filters:
   - type: path
     pattern: "^src/graph/src/ideal/"
   - type: file_name
-    pattern: "^(build|build-ideal-from-starting-graph|append-nodes|get-importer-specs|remove-satisfied-specs|add-nodes|remove-nodes|types)\\.ts$"
+    pattern: "^(build|build-ideal-from-starting-graph|append-nodes|get-importer-specs|remove-satisfied-specs|refresh-ideal-graph|remove-nodes|types)\\.ts$"
   # High-level orchestration reference
   - type: content
     pattern: "ideal\\.build\(|buildIdealFromStartingGraph\("
@@ -52,13 +52,13 @@ actions:
         - Prunes already-satisfied dependencies using `remove-satisfied-specs.ts`.
         - Flags whether dependencies were modified (`modifiedDependencies`).
       - Merges user-provided `add`/`remove` over computed deltas; user input wins.
-      - Invokes `add-nodes.ts` to fetch and incorporate remote manifests and expand the graph.
+      - Invokes `refresh-ideal-graph.ts` to fetch and incorporate remote manifests and expand the graph.
       - After expansion, calls `setDefaultLocation()` on nodes to normalize store layout hints.
       - Finally, removes dependencies listed in `remove` via `remove-nodes.ts` and garbage-collects unreachable nodes (`graph.gc()`).
 
   - type: architecture_guide
     message: |
-      ## Node Appending and Reuse (`append-nodes.ts`, `add-nodes.ts`)
+      ## Node Appending and Reuse (`append-nodes.ts`, `refresh-ideal-graph.ts`)
 
       - Resolves dependency specs to nodes by first attempting `graph.findResolution()` to reuse existing nodes that satisfy the spec.
       - When a satisfying node is not found, fetches manifests/artifacts via `@vltpkg/package-info`, selects appropriate versions (respecting platform/engine constraints), and places new nodes with correct flags.

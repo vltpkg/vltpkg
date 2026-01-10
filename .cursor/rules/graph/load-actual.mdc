@@ -40,12 +40,15 @@ actions:
       2. If `skipHiddenLockfile` is not set, attempt fast-path by loading the Hidden Lockfile via `lockfile.loadHidden()` (file: `node_modules/.vlt-lock.json`). If successful, return that Graph.
       3. Otherwise, construct a new `Graph` seeded with importers (the project and discovered workspaces).
       4. Optionally compare stored modifiers (`node_modules/.vlt/vlt.json`) to `options.modifiers.config`. If `skipLoadingNodesOnModifiersChange` is true and modifiers changed, only importers are loaded (skip dependency traversal).
-      5. Perform a breadth-first traversal starting from each importer's `node_modules` folder:
+      5. For each importer, call `modifiers.tryImporter(importer)` to initialize modifier tracking.
+      6. Perform a breadth-first traversal starting from each importer's `node_modules` folder:
          - Read entries (skipping hidden items), descend into `@scope` folders, and consider only symbolic links as potential dependency links.
          - Resolve real paths, derive alias (symlink name) and normalized package name (handling scopes) for each entry.
          - Place nodes and edges in the graph, reading manifests when required.
-      6. Mark extraneous dependencies (present on disk but not listed in importer manifests) when manifests are loaded.
-      7. Add dangling edges for missing dependencies (declared but not found on disk).
+      7. Mark extraneous dependencies (present on disk but not listed in importer manifests) when manifests are loaded.
+      8. Add dangling edges for missing dependencies (declared but not found on disk).
+      9. Call `modifiers.rollbackActiveEntries()` to clean up partially applied modifier entries.
+      10. Cache the loaded graph to hidden lockfile (`node_modules/.vlt-lock.json`) if `node_modules` exists.
 
       The traversal is implemented by helper functions within `load.ts`:
       - `readDir(scurry, currDir, fromNodeName?)` — Scans `node_modules`, recursing into `@scope` directories, returning alias/name/realpath for symlink entries.
@@ -62,6 +65,20 @@ actions:
 
       Placed nodes set `node.location` to a relative path like `./node_modules/...` or `./<realpath>`. Nodes outside the store are treated accordingly by `node.nodeModules(scurry)`.
 
+  - type: architecture_guide
+    message: |
+      ## Modifiers Application
+
+      The loader uses `maybeApplyModifierToSpec()` helper to apply modifiers:
+      - Before placing packages, calls `modifiers.tryDependencies(fromNode, deps)` to find active selectors.
+      - For each dependency, checks if a modifier is complete (breadcrumb fully matched).
+      - If complete and modifier has a spec, replaces the original spec with the modifier's spec (marked as `overridden`).
+      - Records `queryModifier` with the node for later phases to reason about modified resolutions.
+      - After placing a package, calls `modifiers.updateActiveEntry(node, activeModifier)` to track progress.
+      - After traversal, `modifiers.rollbackActiveEntries()` clears any partially applied entries.
+
+      Modifiers are also applied to missing dependencies (declared but not found on disk).
+
   - type: integration_guide
     message: |
       ## Options and Behavior
@@ -75,12 +92,9 @@ actions:
         - `false`: Do not read manifests; infer default `prod` edges and hydrate specs from `DepID` when possible. No missing/extraneous detection.
       - `skipHiddenLockfile?: boolean` — If `false` (default), attempt Hidden Lockfile fast-path.
       - `skipLoadingNodesOnModifiersChange?: boolean` — Load only importers if modifiers differ from `node_modules/.vlt/vlt.json` saved config.
-      - `expectLockfile?` / `frozenLockfile?` — Reserved for commands that enforce lockfile presence/sync (not central to traversal mechanics).
-
-      ### Modifiers Application
-      - Before placing packages, the loader consults `modifiers.tryDependencies(fromNode, deps)` to find active selectors.
-      - For each dependency, it may replace the spec (eg. apply an override) and record a `queryModifier` that is saved with the `Node` so later phases can reason about modified resolutions.
-      - After traversal, `modifiers.rollbackActiveEntries()` clears any partially applied entries.
+      - `expectLockfile?: boolean` — Fail if lockfile is missing or out of date (used by `ci` command).
+      - `frozenLockfile?: boolean` — Fail if lockfile is missing or out of sync with package.json. Stricter than `expectLockfile`.
+      - `lockfileOnly?: boolean` — Only update the lockfile without node_modules operations. Skips package extraction, filesystem operations, and hidden lockfile saves.
 
   - type: development_workflow
     message: |
@@ -92,9 +106,15 @@ actions:
       - The Actual Graph is commonly diffed against an Ideal Graph using `new Diff(actual, ideal)`, then applied by `reify`.
       - Prefer the Hidden Lockfile fast-path when available to skip filesystem traversal.
 
+      ### Store Config Object
+      The loader reads/validates `node_modules/.vlt/vlt.json` via `isStoreConfigObject()` and `asStoreConfigObject()`:
+      - Contains `modifiers` record used to detect modifier changes between installs.
+      - If modifiers changed and `skipLoadingNodesOnModifiersChange` is set, only importers are loaded.
+
       ### Performance Tips
       - Reuse `packageJson`, `scurry`, and `monorepo` instances across phases.
       - Use `skipLoadingNodesOnModifiersChange` strategically when rebuilding after modifier changes.
+      - Hidden lockfile is automatically saved after traversal to speed up subsequent loads.
 
 examples:
   - input: |
@@ -125,9 +145,14 @@ examples:
       const from = actual.load({ projectRoot, packageJson, scurry, loadManifests: false })
     output: "Actual graph loaded without reading manifests; no extraneous/missing computed"
 
+  - input: |
+      // Lockfile-only mode (skip node_modules operations)
+      const from = actual.load({ projectRoot, packageJson, scurry, lockfileOnly: true })
+    output: "Actual graph loaded for lockfile-only updates"
+
 metadata:
   priority: high
-  version: 1.0
+  version: 1.1
   tags:
     - graph
     - actual
@@ -141,4 +166,3 @@ metadata:
     - graph_lockfiles
     - graph_modifiers
 </rule>
-
