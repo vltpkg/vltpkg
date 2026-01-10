@@ -1,4 +1,11 @@
-import { forwardRef, useState, useEffect, Fragment } from 'react'
+import {
+  forwardRef,
+  useState,
+  useEffect,
+  Fragment,
+  memo,
+  useMemo,
+} from 'react'
 import { NavLink } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -41,7 +48,7 @@ const packageImageMotion: MotionProps = {
   },
 }
 
-export const SearchResult = forwardRef<
+const SearchResultComponent = forwardRef<
   HTMLAnchorElement,
   SearchResultProps
 >(({ item, className, ...props }, ref) => {
@@ -53,54 +60,66 @@ export const SearchResult = forwardRef<
     useState<boolean>(false)
   const { package: pkg } = item
 
+  // Memoize all derived values to avoid recalculation on every render
+  const derivedValues = useMemo(() => {
+    const packageIcon = getPackageIcon(pkg.links.repository)
+    const packageShortName = getPackageShortName(pkg.name)
+    const publisherNameShort =
+      pkg.publisher?.username ?
+        pkg.publisher.username.substring(0, 2)
+      : '?'
+
+    let formattedDate = ''
+    if (pkg.date) {
+      const publishDate = new Date(pkg.date)
+      const daysDiff = differenceInDays(new Date(), publishDate)
+
+      if (daysDiff < 14) {
+        formattedDate = `${formatDistanceToNow(publishDate, { addSuffix: false })} ago`
+      } else {
+        formattedDate = format(publishDate, 'MMM d, yyyy')
+      }
+    }
+
+    return {
+      packageIcon,
+      packageShortName,
+      publisherNameShort,
+      formattedDate,
+    }
+  }, [
+    pkg.links.repository,
+    pkg.name,
+    pkg.publisher?.username,
+    pkg.date,
+  ])
+
+  // Fetch avatar only once when component mounts or email changes
   useEffect(() => {
-    if (pkg.publisher?.email) {
-      void fetchPublisherAvatar(pkg.publisher.email).then(
-        setPublisherAvatar,
-      )
+    const email = pkg.publisher?.email
+    if (email) {
+      let cancelled = false
+      void retrieveAvatar(email).then(avatar => {
+        if (!cancelled) {
+          setPublisherAvatar(avatar)
+        }
+      })
+      return () => {
+        cancelled = true
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const fetchPublisherAvatar = async (email: string) => {
-    return await retrieveAvatar(email)
-  }
-
-  const getFormattedDate = () => {
-    if (!pkg.date) return ''
-
-    const publishDate = new Date(pkg.date)
-    const daysDiff = differenceInDays(new Date(), publishDate)
-
-    if (daysDiff < 14) {
-      // Show relative time for recent packages (within 14 days)
-      return `${formatDistanceToNow(publishDate, { addSuffix: false })} ago`
-    } else {
-      // Show regular date for older packages
-      return format(publishDate, 'MMM d, yyyy')
-    }
-  }
-
-  const formattedDate = getFormattedDate()
-  const packageIcon = getPackageIcon(pkg.links.repository)
-
-  const packageShortName = getPackageShortName(pkg.name)
-
-  const publisherNameShort =
-    pkg.publisher?.username ?
-      pkg.publisher.username.substring(0, 2)
-    : '?'
+  }, [pkg.publisher?.email])
 
   return (
     <NavLink
       aria-label={`Package ${pkg.name}`}
       ref={ref}
       to={`/explore/npm/${encodeURIComponent(pkg.name)}`}
-      className="focus:[&>article]:bg-background-secondary bg-background hover:[&>article]:bg-background-secondary h-full w-full rounded transition-colors duration-100 focus:outline-none"
+      className="h-fit w-full"
       {...props}>
-      <article className="bg-background flex flex-col gap-2 rounded px-6 py-3 transition-colors duration-100">
+      <article className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          {packageIcon?.src ?
+          {derivedValues.packageIcon?.src ?
             <div className="relative size-6 rounded-md border">
               <AnimatePresence mode="popLayout">
                 {!imageLoaded && (
@@ -117,15 +136,15 @@ export const SearchResult = forwardRef<
                   {...packageImageMotion}
                   aria-label="Package image"
                   onLoad={() => setImageLoaded(true)}
-                  src={packageIcon.src}
-                  alt={packageIcon.alt}
+                  src={derivedValues.packageIcon.src}
+                  alt={derivedValues.packageIcon.alt}
                   className="absolute inset-0 size-full rounded-md object-cover"
                 />
               </AnimatePresence>
             </div>
           : <div className="flex aspect-square size-6 items-center justify-center rounded-md border bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
               <span className="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
-                {packageShortName}
+                {derivedValues.packageShortName}
               </span>
             </div>
           }
@@ -155,7 +174,7 @@ export const SearchResult = forwardRef<
         )}
 
         {/* metadata */}
-        <div className="**:data-[slot=delimiter]:text-muted-foreground flex items-center gap-1 **:data-[slot=delimiter]:size-5">
+        <div className="**:data-[slot=delimiter]:text-muted-foreground flex items-center gap-1 overflow-x-auto whitespace-nowrap **:data-[slot=delimiter]:size-5">
           <div className="flex items-center gap-1">
             {publisherAvatar ?
               <div className="relative size-4 rounded border">
@@ -184,9 +203,9 @@ export const SearchResult = forwardRef<
                   />
                 </AnimatePresence>
               </div>
-            : <div className="flex aspect-square size-4 items-center justify-center rounded border bg-gradient-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
-                <span className="bg-gradient-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
-                  {publisherNameShort}
+            : <div className="flex aspect-square size-4 items-center justify-center rounded border bg-linear-to-tr from-neutral-300 to-neutral-100 dark:from-neutral-900 dark:to-neutral-700">
+                <span className="bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text text-sm text-transparent empty:hidden dark:from-neutral-400 dark:to-neutral-100">
+                  {derivedValues.publisherNameShort}
                 </span>
               </div>
             }
@@ -198,7 +217,7 @@ export const SearchResult = forwardRef<
           </div>
           <Dot data-slot="delimiter" />
           <p className="text-muted-foreground text-sm font-medium">
-            {formattedDate}
+            {derivedValues.formattedDate}
           </p>
           {pkg.license && (
             <Fragment>
@@ -220,4 +239,6 @@ export const SearchResult = forwardRef<
   )
 })
 
-SearchResult.displayName = 'SearchResult'
+SearchResultComponent.displayName = 'SearchResult'
+
+export const SearchResult = memo(SearchResultComponent)

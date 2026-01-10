@@ -1,51 +1,50 @@
-import { useEffect, useRef } from 'react'
-import { useSearchResultsStore } from '@/state/search-results.ts'
+import { useRef } from 'react'
+import { useQueryState, parseAsString } from 'nuqs'
 import { SearchResultsInput } from '@/components/search/search-results/input.tsx'
-import { useDebounce } from '@/components/hooks/use-debounce.tsx'
+import { useKeyDown } from '@/components/hooks/use-keydown.tsx'
+import { useSearchResultsStore } from '@/state/search-results.ts'
+
+import type { SearchResultsInputHandle } from '@/components/search/search-results/input.tsx'
 
 export const SearchHeader = () => {
-  const searchTerm = useSearchResultsStore(state => state.searchTerm)
-  const setSearchTerm = useSearchResultsStore(
-    state => state.setSearchTerm,
-  )
-  const executeSearch = useSearchResultsStore(
-    state => state.executeSearch,
+  const searchInputRef = useRef<SearchResultsInputHandle>(null)
+  const [searchTerm, setSearchTerm] = useQueryState(
+    'q',
+    parseAsString.withDefault(''),
   )
   const isLoading = useSearchResultsStore(state => state.isLoading)
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
-  const isInitialMount = useRef(true)
+  // Cmd/Ctrl + K to focus search
+  useKeyDown(['meta+k', 'ctrl+k'], () => {
+    searchInputRef.current?.focus()
+  })
 
-  // search when debounced term changes (but not on initial mount)
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
+  // Esc to blur search input
+  useKeyDown('escape', () => {
+    if (searchInputRef.current?.isFocused()) {
+      searchInputRef.current.blur()
     }
-
-    if (debouncedSearchTerm && debouncedSearchTerm.trim() !== '') {
-      executeSearch()
-    }
-  }, [debouncedSearchTerm, executeSearch])
+  })
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      executeSearch()
+      // The URL update will trigger the search automatically
     }
   }
 
   const handleButtonClick = () => {
-    executeSearch()
+    // The URL update will trigger the search automatically
   }
 
   return (
     <div className="flex w-full items-center justify-start">
       <SearchResultsInput
+        ref={searchInputRef}
         value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
+        onChange={e => void setSearchTerm(e.target.value)}
         onKeyDown={handleKeyDown}
         onButtonClick={handleButtonClick}
         loading={isLoading}

@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useRef, useImperativeHandle } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input.tsx'
@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button.tsx'
 import { cn } from '@/lib/utils.ts'
 
 import type { ComponentProps } from 'react'
+
+export interface SearchResultsInputHandle {
+  focus: () => void
+  blur: () => void
+  isFocused: () => boolean
+}
 
 interface SearchResultsInputProps extends Omit<
   ComponentProps<typeof Input>,
@@ -21,7 +27,7 @@ interface SearchResultsInputProps extends Omit<
 }
 
 export const SearchResultsInput = forwardRef<
-  HTMLDivElement,
+  SearchResultsInputHandle,
   SearchResultsInputProps
 >(
   (
@@ -37,12 +43,25 @@ export const SearchResultsInput = forwardRef<
     ref,
   ) => {
     const { wrapper, input, button } = classNames ?? {}
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    // Expose focus, blur, and isFocused methods via imperative handle
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        inputRef.current?.focus()
+      },
+      blur: () => {
+        inputRef.current?.blur()
+      },
+      isFocused: () => {
+        return document.activeElement === inputRef.current
+      },
+    }))
 
     return (
-      <div
-        ref={ref}
-        className={cn('relative flex items-center', wrapper)}>
+      <div className={cn('relative flex items-center', wrapper)}>
         <Input
+          ref={inputRef}
           placeholder={placeholder}
           value={value}
           onChange={onChange}

@@ -22,9 +22,5 @@ export const SearchResults = () => {
     }
   }, [query, searchParams, setSearchParams])
 
-  return (
-    <section>
-      <SearchResultsView />
-    </section>
-  )
+  return <SearchResultsView />
 }

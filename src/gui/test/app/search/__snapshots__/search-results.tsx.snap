@@ -2,18 +2,14 @@
 
 exports[`SearchResults > renders SearchResultsView when query parameter is present 1`] = `
 
-<section>
-  <gui-search-results>
-  </gui-search-results>
-</section>
+<gui-search-results>
+</gui-search-results>
 
 `;
 
 exports[`SearchResults > renders empty state when no query parameter is present 1`] = `
 
-<section>
-  <gui-search-results>
-  </gui-search-results>
-</section>
+<gui-search-results>
+</gui-search-results>
 
 `;

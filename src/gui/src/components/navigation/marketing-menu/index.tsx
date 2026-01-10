@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { createPortal } from 'react-dom'
-import { NavLink, useLocation } from 'react-router'
+import { NavLink, useLocation, useNavigate } from 'react-router'
 import { Search, Loader2, Command } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useQueryState, parseAsString } from 'nuqs'
 import { useSearchResultsStore } from '@/state/search-results.ts'
 import { useKeyDown } from '@/components/hooks/use-keydown.tsx'
-import { useDebounce } from '@/components/hooks/use-debounce.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { Kbd } from '@/components/ui/kbd.tsx'
 import { useScroll } from '@/components/hooks/use-scroll.tsx'
@@ -56,13 +56,11 @@ export const Header = () => {
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const isLoading = useSearchResultsStore(state => state.isLoading)
-  const searchTerm = useSearchResultsStore(state => state.searchTerm)
-  const setSearchTerm = useSearchResultsStore(
-    state => state.setSearchTerm,
-  )
-  const executeSearch = useSearchResultsStore(
-    state => state.executeSearch,
+  const [urlQuery, setUrlQuery] = useQueryState(
+    'q',
+    parseAsString.withDefault(''),
   )
 
   const isHostedMode = isHostedEnvironment()
@@ -71,6 +69,13 @@ export const Header = () => {
   const homeUrl = !isSignedIn && isHostedMode ? '/' : '/dashboard'
 
   const isSearch = pathname.includes('search')
+
+  const handleSearchChange = (value: string) => {
+    void setUrlQuery(value)
+    if (!isSearch && value.trim()) {
+      void navigate(`/search?q=${encodeURIComponent(value)}`)
+    }
+  }
 
   useEffect(() => {
     if (open) {
@@ -87,24 +92,21 @@ export const Header = () => {
     }
   }, [open])
 
-  useKeyDown(['meta+k', 'ctrl+k'], () => inputRef.current?.focus())
+  useKeyDown(['meta+k', 'ctrl+k'], () => {
+    inputRef.current?.focus()
+    if (!isSearch) {
+      void navigate('/search')
+    }
+  })
   useKeyDown(['escape'], () => inputRef.current?.blur())
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
-
+  // On initial load in search page, focus the input
   useEffect(() => {
-    executeSearch()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm])
-
-  // On initial load, when there is no searchTerm, focus the input asap
-  // so the user can start searching right away
-  useEffect(() => {
-    if (!searchTerm || searchTerm.trim() === '') {
+    if (isSearch && (!urlQuery || urlQuery.trim() === '')) {
       inputRef.current?.focus()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isSearch])
 
   return (
     <header
@@ -145,8 +147,8 @@ export const Header = () => {
                 </AnimatePresence>
               </InputGroupAddon>
               <InputGroupInput
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                value={urlQuery}
+                onChange={e => handleSearchChange(e.target.value)}
                 ref={inputRef}
                 placeholder="Search packages"
               />

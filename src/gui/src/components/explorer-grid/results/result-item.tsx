@@ -99,9 +99,9 @@ export const ResultItem = ({ item }: ResultItemProps) => {
       role="link"
       aria-label={`Update query to: ${item.name}`}
       onClick={updateResultItem({ item, query, updateQuery })}
-      className="focus:bg-background-secondary bg-background hover:bg-background-secondary flex h-full w-full cursor-pointer flex-col gap-2 rounded px-6 py-3 transition-colors duration-100 focus:outline-none">
+      className="flex h-fit w-full cursor-pointer flex-col gap-2">
       {/* item header */}
-      <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div className="flex flex-col items-start justify-between md:flex-row md:items-center">
         <div className="flex items-center gap-2">
           <div className="relative size-6 rounded-md border">
             {packageIcon?.src ?

@@ -46,6 +46,9 @@ vi.mock('@/app/dashboard.tsx', () => ({
 vi.mock('@/app/search/index.tsx', () => ({
   Search: 'gui-search-layout',
 }))
+vi.mock('nuqs/adapters/react-router/v7', () => ({
+  NuqsAdapter: 'gui-nuqs-adapter',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

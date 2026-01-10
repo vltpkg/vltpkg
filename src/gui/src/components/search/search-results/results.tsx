@@ -1,10 +1,29 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import {
+  Fragment,
+  forwardRef,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react'
+import { useQueryState, parseAsString, parseAsInteger } from 'nuqs'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CircleAlert, PackageSearch } from 'lucide-react'
+import {
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import {
+  CircleAlert,
+  Sparkle,
+  Shield,
+  Wrench,
+  Calendar,
+  TrendingUp,
+  PackageSearch,
+} from 'lucide-react'
 import { SearchResult } from '@/components/search/search-results/search-result.tsx'
-import { Button } from '@/components/ui/button.tsx'
-import { SearchResultsSort } from '@/components/search/search-results/sort.tsx'
-import { SearchResultsPaginationNavigation } from './page-navigation.tsx'
 import { JellyTriangleSpinner } from '@/components/ui/jelly-spinner.tsx'
 import {
   Empty,
@@ -13,15 +32,41 @@ import {
   EmptyHeader,
   EmptyDescription,
 } from '@/components/ui/empty-state.tsx'
+import { Cross } from '@/components/ui/cross.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableFooter,
+  TableRow,
+  TablePaginationList,
+  TablePaginationListItem,
+  TablePaginationListButton,
+  TableFilterList,
+  TableFilterListItem,
+  TableFilterListButton,
+} from '@/components/table/index.tsx'
+import { FAVORITE_PACKAGES } from '@/lib/constants/favorite-packages.ts'
 import { useSearchResultsStore } from '@/state/search-results.ts'
-import { useSyncSearchResultsURL } from '@/components/search/search-results/use-sync-url.tsx'
 import { useDebounce } from '@/components/hooks/use-debounce.tsx'
 import { cn } from '@/lib/utils.ts'
-import { Cross } from '@/components/ui/cross.tsx'
-import { FAVORITE_PACKAGES } from '@/lib/constants/favorite-packages.ts'
 
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+} from '@tanstack/react-table'
 import type { ComponentProps } from 'react'
 import type { MotionProps } from 'framer-motion'
+import type { LucideIcon } from 'lucide-react'
+import type { SearchObject } from '@/lib/package-search'
+
+// Extend ColumnDef to include icon property
+type CustomColumnDef<TData> = ColumnDef<TData> & {
+  icon?: LucideIcon
+}
 
 const Decorator = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
   ({ className, ...props }, ref) => (
@@ -35,181 +80,33 @@ const Decorator = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
 )
 Decorator.displayName = 'Decorator'
 
-const titleMotion: MotionProps = {
-  initial: {
-    opacity: 0,
-    filter: 'blur(2px)',
-  },
-  animate: {
-    opacity: 1,
-    filter: 'blur(0px)',
-  },
-  exit: {
-    opacity: 0,
-    filter: 'blur(2px)',
-  },
-}
-
-export const SearchResults = () => {
-  const query = useSearchResultsStore(state => state.query)
-  const isLoading = useSearchResultsStore(state => state.isLoading)
-  const searchTerm = useSearchResultsStore(state => state.searchTerm)
-  const setSearchTerm = useSearchResultsStore(
-    state => state.setSearchTerm,
-  )
-  const executeSearch = useSearchResultsStore(
-    state => state.executeSearch,
-  )
-  const resultsOnPage = useSearchResultsStore(state => state.results)
-  const totalResults = useSearchResultsStore(state => state.total)
-  const reset = useSearchResultsStore(state => state.reset)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const results = useSearchResultsStore(state => state.results)
-
-  // Sync URL params with zustand store
-  useSyncSearchResultsURL()
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
-
-  const handleLucky = () => {
-    const idx = Math.floor(Math.random() * FAVORITE_PACKAGES.length)
-    const randomPackage = FAVORITE_PACKAGES[idx]
-    setSearchTerm(randomPackage ?? 'vlt')
+/** Decorator to display on the sides of the table */
+const SideDecorator = forwardRef<
+  HTMLDivElement,
+  ComponentProps<typeof Decorator> & {
+    side: { right?: true } | { left?: true }
   }
-
-  useEffect(() => {
-    executeSearch()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm])
-
-  // On initial load, when there is no searchTerm, focus the input asap
-  // so the user can start searching right away
-  useEffect(() => {
-    if (!searchTerm || searchTerm.trim() === '') {
-      inputRef.current?.focus()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Reset store when navigating away from search page
-  useEffect(() => {
-    return () => {
-      // Reset store when component unmounts (navigating away from search page)
-      // If user navigates back with URL params, useSyncSearchResultsURL will restore state
-      reset()
-    }
-  }, [reset])
-
+>(({ className, side }, ref) => {
   return (
-    <section className="bg-background overflow-y-hidden">
-      {/* results count */}
-      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-        <Decorator className="border-background-secondary border-t" />
-        <div className="bg-background border-background-secondary relative flex w-full flex-col items-center justify-center border-x border-t px-6 pt-12 pb-6 lg:items-start lg:justify-start">
-          <Cross top right />
-          <Cross top left />
-          <div className="h-[75px] lg:h-[36.5px]">
-            <AnimatePresence mode="popLayout">
-              {query && results.length !== 0 ?
-                <motion.h3
-                  key={`has-results-${query}`}
-                  className="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-                  {...titleMotion}>
-                  Showing{' '}
-                  <span className="font-mono text-2xl tabular-nums">
-                    {resultsOnPage.length.toLocaleString()}
-                  </span>{' '}
-                  of{' '}
-                  <span className="font-mono text-2xl tabular-nums">
-                    {totalResults.toLocaleString()}
-                  </span>{' '}
-                  results for
-                  <span className="fancy-quote mr-0.5 ml-2 font-medium">
-                    &ldquo;
-                  </span>
-                  {query}
-                  <span className="fancy-quote ml-0.5 font-medium">
-                    &rdquo;
-                  </span>
-                </motion.h3>
-              : <motion.h3
-                  key="has-no-results"
-                  className="inline-block bg-linear-to-tr from-neutral-500 to-neutral-900 bg-clip-text align-baseline text-3xl font-medium tracking-tight text-transparent dark:from-neutral-400 dark:to-neutral-100"
-                  {...titleMotion}>
-                  Start typing to search
-                </motion.h3>
-              }
-            </AnimatePresence>
-          </div>
-        </div>
-        <Decorator className="border-background-secondary border-t" />
+    <Decorator className={cn('flex flex-col', className)} ref={ref}>
+      <div className="h-[108px]" />
+      <div className="relative h-[46px] border-y">
+        <Cross top {...side} />
+        <Cross bottom {...side} />
       </div>
-
-      {/* sorting filters */}
-      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-        <Decorator className="border-background-secondary border-y" />
-        <div className="bg-background-secondary border-background-secondary relative w-full border-x border-y">
-          <Cross top right />
-          <Cross top left />
-          <Cross bottom right />
-          <Cross bottom left />
-          <SearchResultsSort />
-        </div>
-        <Decorator className="border-background-secondary border-y" />
+      <div className="grow" />
+      <div className="relative h-[46px] border-y">
+        <Cross top {...side} />
+        <Cross bottom {...side} />
       </div>
-
-      <div className="pattern-hatch bg-background h-9 lg:hidden" />
-      {/* list view */}
-      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-        <AnimatePresence mode="popLayout" initial={false}>
-          {query && (results.length > 0 || isLoading) ?
-            <MotionSearchResultsList
-              key="results-list"
-              {...searchResultsSectionMotion}
-              className="border-background-secondary col-start-2 col-end-3 border-x"
-            />
-          : <MotionSearchResultsSection
-              key="results-list-empty-state"
-              {...searchResultsSectionMotion}
-              className="border-background-secondary col-start-2 col-end-3 border-x">
-              <Empty className="h-full w-full grow">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <PackageSearch />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                    Your results will appear here
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={handleLucky}>
-                      I'm feeling lucky
-                    </Button>
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            </MotionSearchResultsSection>
-          }
-        </AnimatePresence>
-      </div>
-
-      {/* pagination */}
-      <div className="grid-cols-[1fr_4fr_1fr] lg:grid">
-        <Decorator className="border-background-secondary border-t" />
-        <div className="bg-background-secondary border-background-secondary relative w-full border-x border-t">
-          <Cross top right />
-          <Cross top left />
-          <Cross bottom left />
-          <Cross bottom right />
-          <SearchResultsPaginationNavigation />
-        </div>
-        <Decorator className="border-background-secondary border-t" />
-      </div>
-    </section>
+    </Decorator>
   )
-}
+})
+SideDecorator.displayName = 'SideDecorator'
+
+/** Supercharge table components */
+const MotionTableRow = motion.create(TableRow)
+const MotionTableCaption = motion.create(TableCaption)
 
 const searchResultsSectionMotion: MotionProps = {
   initial: {
@@ -227,6 +124,24 @@ const searchResultsSectionMotion: MotionProps = {
   transition: {
     duration: 0.3,
     ease: [0.22, 1, 0.36, 1],
+  },
+}
+
+const tableCaptionMotion: MotionProps = {
+  initial: {
+    opacity: 0,
+    filter: 'blur(4px)',
+    y: 4,
+  },
+  animate: {
+    opacity: 1,
+    filter: 'blur(0px)',
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    filter: 'blur(4px)',
+    y: -4,
   },
 }
 
@@ -264,22 +179,106 @@ const searchResultItemVariants = {
   },
 }
 
-type SearchResultsListProps = ComponentProps<'div'>
+const columns: CustomColumnDef<SearchObject>[] = [
+  {
+    id: 'relevance',
+    icon: Sparkle,
+    enableSorting: true,
+    accessorFn: i => i.searchScore ?? i.score.final,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.searchScore ?? rowA.original.score.final
+      const b = rowB.original.searchScore ?? rowB.original.score.final
+      return b - a
+    },
+  },
+  {
+    id: 'popularity',
+    icon: TrendingUp,
+    enableSorting: true,
+    accessorFn: i => i.score.detail.popularity,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.score.detail.popularity
+      const b = rowB.original.score.detail.popularity
+      return b - a
+    },
+  },
+  {
+    id: 'quality',
+    icon: Shield,
+    enableSorting: true,
+    accessorFn: i => i.score.detail.quality,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.score.detail.quality
+      const b = rowB.original.score.detail.quality
+      return b - a
+    },
+  },
+  {
+    id: 'maintenance',
+    icon: Wrench,
+    enableSorting: true,
+    accessorFn: i => i.score.detail.maintenance,
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.score.detail.maintenance
+      const b = rowB.original.score.detail.maintenance
+      return b - a
+    },
+  },
+  {
+    id: 'published',
+    icon: Calendar,
+    enableSorting: true,
+    accessorFn: i => i.package.date,
+    sortingFn: (rowA, rowB) => {
+      const a = new Date(rowA.original.package.date).getTime()
+      const b = new Date(rowB.original.package.date).getTime()
+      return b - a
+    },
+  },
+]
 
-const SearchResultsList = forwardRef<
-  HTMLDivElement,
-  SearchResultsListProps
->(({ className, ...props }, ref) => {
+export const SearchResults = () => {
+  const [urlQuery, setUrlQuery] = useQueryState(
+    'q',
+    parseAsString.withDefault(''),
+  )
+  const [urlPage, setUrlPage] = useQueryState(
+    'page',
+    parseAsInteger.withDefault(1),
+  )
+  const [urlPageSize] = useQueryState(
+    'pageSize',
+    parseAsInteger.withDefault(25),
+  )
+  const [urlSortBy, setUrlSortBy] = useQueryState(
+    'sortBy',
+    parseAsString.withDefault(''),
+  )
+  const [urlSortDir, setUrlSortDir] = useQueryState(
+    'sortDir',
+    parseAsString.withDefault('asc'),
+  )
+
+  const [columnFilters, setColumnFilters] =
+    useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+  const reset = useSearchResultsStore(state => state.reset)
   const results = useSearchResultsStore(state => state.results)
+  const totalResults = useSearchResultsStore(state => state.total)
+  const fetchResults = useSearchResultsStore(
+    state => state.fetchResults,
+  )
+  const setQuery = useSearchResultsStore(state => state.setQuery)
+
+  // Debounce the URL query
+  const debouncedQuery = useDebounce(urlQuery, 300)
   const isLoading = useSearchResultsStore(state => state.isLoading)
   const error = useSearchResultsStore(state => state.error)
-  const query = useSearchResultsStore(state => state.query)
-  const page = useSearchResultsStore(state => state.page)
-  const sortDir = useSearchResultsStore(state => state.sortDir)
-  const sortBy = useSearchResultsStore(state => state.sortBy)
   const [showLoading, setShowLoading] = useState(false)
 
-  // Only show loading spinner after 2 seconds
+  // Only show loading spinner after .5 seconds to prevent flashing
   useEffect(() => {
     if (!isLoading) {
       setShowLoading(false)
@@ -288,7 +287,7 @@ const SearchResultsList = forwardRef<
 
     const timer = setTimeout(() => {
       setShowLoading(true)
-    }, 2000)
+    }, 500)
 
     return () => clearTimeout(timer)
   }, [isLoading])
@@ -296,77 +295,361 @@ const SearchResultsList = forwardRef<
   // Don't show old results if we're loading
   const shouldShowResults = !isLoading && results.length > 0
   const shouldShowNoResults =
-    !isLoading && results.length === 0 && query
+    !isLoading && results.length === 0 && debouncedQuery
+
+  // Convert URL state to TanStack Table format
+  const sorting = useMemo<SortingState>(() => {
+    if (!urlSortBy) return []
+    return [{ id: urlSortBy, desc: urlSortDir === 'desc' }]
+  }, [urlSortBy, urlSortDir])
+
+  const setSorting = useCallback(
+    (
+      updater: SortingState | ((old: SortingState) => SortingState),
+    ) => {
+      const newSorting =
+        typeof updater === 'function' ? updater(sorting) : updater
+      if (newSorting.length === 0) {
+        void setUrlSortBy(null)
+        void setUrlSortDir(null)
+      } else {
+        const firstSort = newSorting[0]
+        if (firstSort) {
+          void setUrlSortBy(firstSort.id)
+          void setUrlSortDir(firstSort.desc ? 'desc' : 'asc')
+        }
+      }
+    },
+    [sorting, setUrlSortBy, setUrlSortDir],
+  )
+
+  const table = useReactTable({
+    data: results,
+    columns,
+    pageCount: Math.ceil(totalResults / urlPageSize),
+    manualPagination: true,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+      pagination: {
+        pageIndex: urlPage - 1,
+        pageSize: urlPageSize,
+      },
+    },
+  })
+
+  // Fetch results when URL params change, reset on unmount
+  useEffect(() => {
+    if (!debouncedQuery || debouncedQuery.trim() === '') {
+      reset()
+      return
+    }
+
+    setQuery(debouncedQuery)
+    void fetchResults(urlPage, urlPageSize)
+
+    return reset
+  }, [
+    debouncedQuery,
+    urlPage,
+    urlPageSize,
+    setQuery,
+    fetchResults,
+    reset,
+  ])
+
+  const handleLucky = () => {
+    const idx = Math.floor(Math.random() * FAVORITE_PACKAGES.length)
+    const randomPackage = FAVORITE_PACKAGES[idx]
+    void setUrlQuery(randomPackage ?? 'vlt')
+  }
+
+  // Calculate pagination state
+  const pageIndex = table.getState().pagination.pageIndex
+  const pageCount = table.getPageCount()
+  const pagination = useMemo(() => {
+    const currentPage = pageIndex + 1
+    const totalPages = pageCount
+    const maxVisible = 6
+
+    const pages: number[] = []
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      const halfVisible = Math.floor(maxVisible / 2)
+      let start = Math.max(1, currentPage - halfVisible)
+      const end = Math.min(totalPages, start + maxVisible - 1)
+
+      if (end - start < maxVisible - 1) {
+        start = Math.max(1, end - maxVisible + 1)
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+    }
+
+    return {
+      currentPage,
+      totalPages,
+      visiblePages: pages,
+      showStartEllipsis: (pages[0] ?? 1) > 1,
+      showEndEllipsis:
+        (pages[pages.length - 1] ?? totalPages) < totalPages,
+    }
+  }, [pageIndex, pageCount])
 
   return (
-    <div className={cn('min-w-0', className)} ref={ref} {...props}>
-      <AnimatePresence mode="wait">
-        {isLoading && showLoading ?
-          <MotionSearchResultsSection
-            key="loading"
-            {...searchResultsSectionMotion}>
-            <JellyTriangleSpinner />
-          </MotionSearchResultsSection>
-        : error ?
-          <MotionSearchResultsSection
-            key="error"
-            {...searchResultsSectionMotion}>
-            <Empty className="h-full w-full">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <CircleAlert className="text-red-500" />
-                </EmptyMedia>
-                <EmptyTitle>An error occurred</EmptyTitle>
-                <EmptyDescription>{error}</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </MotionSearchResultsSection>
-        : shouldShowNoResults ?
-          <MotionSearchResultsSection
-            key="no-results"
-            {...searchResultsSectionMotion}>
-            <Empty className="h-full w-full">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <PackageSearch />
-                </EmptyMedia>
-                <EmptyTitle>No results found</EmptyTitle>
-                <EmptyDescription>
-                  We couldn't find any results for{' '}
-                  <strong>{query}</strong>
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </MotionSearchResultsSection>
-        : shouldShowResults ?
-          <motion.div
-            key={`results-${query}-${page}-${sortDir}-${sortBy}`}
-            className="bg-background-secondary flex min-h-[calc(100svh-64px-109.5px-50px-49px)] w-full flex-col gap-px lg:min-h-[calc(100svh-64px-109.5px-50px-49px)]"
-            variants={searchResultsContainerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit">
-            {results.map((result, idx) => {
-              const uniqueKey = `result-${result.package.name || 'unknown'}-${result.package.version || 'unknown'}-${idx}`
-              return (
-                <motion.div
-                  key={uniqueKey}
-                  variants={searchResultItemVariants}
-                  className="rounded">
-                  <SearchResult item={result} />
-                </motion.div>
-              )
-            })}
-          </motion.div>
-        : <MotionSearchResultsSection key="no-results-results-loading" />
-        }
-      </AnimatePresence>
-    </div>
-  )
-})
-SearchResultsList.displayName = 'SearchResultsList'
+    <section className="bg-background overflow-y-hidden">
+      <div className="grid-cols-[1fr_4fr_1fr] border-t lg:grid">
+        <SideDecorator side={{ right: true }} />
+        <Table variant="list" className="border-x border-t-0">
+          <AnimatePresence mode="wait" initial={false}>
+            {totalResults !== 0 ?
+              <MotionTableCaption
+                {...tableCaptionMotion}
+                key={`table-caption-${debouncedQuery}`}>
+                Showing{' '}
+                <span className="mx-1.5 font-mono text-2xl tabular-nums">
+                  {table.getPaginationRowModel().rows.length}
+                </span>{' '}
+                of{' '}
+                <span className="mx-1.5 font-mono text-2xl tabular-nums">
+                  {totalResults.toLocaleString()}
+                </span>{' '}
+                results for{' '}
+                <span className="fancy-quote mr-0.5 ml-2 font-medium max-lg:hidden">
+                  &ldquo;
+                </span>
+                {debouncedQuery}
+                <span className="fancy-quote ml-0.5 font-medium max-lg:hidden">
+                  &rdquo;
+                </span>
+              </MotionTableCaption>
+            : <MotionTableCaption
+                {...tableCaptionMotion}
+                key={`table-caption-empty-${debouncedQuery}`}>
+                Start typing to search
+              </MotionTableCaption>
+            }
+          </AnimatePresence>
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableFilterList key={headerGroup.id}>
+              {headerGroup.headers.map(header => {
+                const columnDef = header.column
+                  .columnDef as CustomColumnDef<SearchObject>
+                const Icon = columnDef.icon
+                const isSorted = header.column.getIsSorted()
+                const canSort = header.column.getCanSort()
 
-const MotionSearchResultsList = motion.create(SearchResultsList)
+                return (
+                  <TableFilterListItem key={header.id}>
+                    <TableFilterListButton
+                      className="capitalize"
+                      enableSorting={canSort}
+                      disabled={results.length === 0}
+                      isActive={isSorted !== false}
+                      dir={
+                        isSorted === 'asc' ? 'asc'
+                        : isSorted === 'desc' ?
+                          'desc'
+                        : undefined
+                      }
+                      onClick={() => {
+                        if (canSort && header.id) {
+                          const currentSort = isSorted
+                          if (!currentSort) {
+                            void setUrlSortBy(header.id)
+                            void setUrlSortDir('asc')
+                          } else if (currentSort === 'asc') {
+                            void setUrlSortDir('desc')
+                          } else {
+                            void setUrlSortBy(null)
+                            void setUrlSortDir(null)
+                          }
+                        }
+                      }}>
+                      {Icon && <Icon />}
+                      {header.id}
+                    </TableFilterListButton>
+                  </TableFilterListItem>
+                )
+              })}
+            </TableFilterList>
+          ))}
+          <TableBody className="min-h-[calc(100svh-64px-108px-46px-46px)]">
+            <AnimatePresence mode="wait">
+              {isLoading && showLoading ?
+                <MotionSearchResultsSection
+                  className="bg-background h-full w-full items-center justify-center rounded"
+                  key="loading"
+                  {...searchResultsSectionMotion}>
+                  <JellyTriangleSpinner />
+                </MotionSearchResultsSection>
+              : error ?
+                <MotionSearchResultsSection
+                  key="error"
+                  {...searchResultsSectionMotion}
+                  className="bg-background rounded">
+                  <Empty className="h-full w-full">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <CircleAlert className="text-red-500" />
+                      </EmptyMedia>
+                      <EmptyTitle>An error occurred</EmptyTitle>
+                      <EmptyDescription>{error}</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </MotionSearchResultsSection>
+              : shouldShowNoResults ?
+                <MotionSearchResultsSection
+                  key="no-results"
+                  {...searchResultsSectionMotion}
+                  className="bg-background rounded">
+                  <Empty className="h-full w-full">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <PackageSearch />
+                      </EmptyMedia>
+                      <EmptyTitle>No results found</EmptyTitle>
+                      <EmptyDescription>
+                        We couldn't find any results for{' '}
+                        <strong>{debouncedQuery}</strong>
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </MotionSearchResultsSection>
+              : shouldShowResults ?
+                <motion.div
+                  key={`results-${debouncedQuery}-${urlPage}`}
+                  variants={searchResultsContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="flex flex-col gap-px rounded">
+                  {table.getRowModel().rows.map(row => (
+                    <MotionTableRow
+                      key={row.id}
+                      variants={searchResultItemVariants}>
+                      <SearchResult item={row.original} />
+                    </MotionTableRow>
+                  ))}
+                </motion.div>
+              : <MotionSearchResultsSection
+                  key="results-list-empty-state"
+                  {...searchResultsSectionMotion}
+                  className="bg-background rounded">
+                  <Empty className="h-full w-full">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <PackageSearch />
+                      </EmptyMedia>
+                      <EmptyTitle>
+                        Your results will appear here
+                      </EmptyTitle>
+                      <EmptyDescription>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={handleLucky}>
+                          I'm feeling lucky
+                        </Button>
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </MotionSearchResultsSection>
+              }
+            </AnimatePresence>
+          </TableBody>
+          <TableFooter>
+            <TablePaginationList
+              className={cn(
+                'grid h-full grid-cols-12 lg:h-[45px]',
+                pagination.visiblePages.length < 6 &&
+                  'flex justify-between',
+                pagination.showEndEllipsis && 'grid-cols-10',
+              )}>
+              <TablePaginationListItem className="max-lg:col-span-12">
+                <TablePaginationListButton
+                  as="previous"
+                  disabled={urlPage <= 1}
+                  onClick={() => {
+                    void setUrlPage(Math.max(1, urlPage - 1))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}>
+                  Previous
+                </TablePaginationListButton>
+              </TablePaginationListItem>
+
+              {pagination.visiblePages.map(page => (
+                <TablePaginationListItem key={page}>
+                  <TablePaginationListButton
+                    as="number"
+                    active={urlPage === page}
+                    onClick={() => {
+                      void setUrlPage(page)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}>
+                    {page.toLocaleString()}
+                  </TablePaginationListButton>
+                </TablePaginationListItem>
+              ))}
+
+              {pagination.showEndEllipsis && (
+                <Fragment>
+                  <TablePaginationListItem className="col-span-3 lg:col-span-1">
+                    <TablePaginationListButton as="ellipsis" />
+                  </TablePaginationListItem>
+                  <TablePaginationListItem>
+                    <TablePaginationListButton
+                      as="number"
+                      active={urlPage === pagination.totalPages}
+                      onClick={() => {
+                        void setUrlPage(pagination.totalPages)
+                        window.scrollTo({
+                          top: 0,
+                          behavior: 'smooth',
+                        })
+                      }}>
+                      {pagination.totalPages.toLocaleString()}
+                    </TablePaginationListButton>
+                  </TablePaginationListItem>
+                </Fragment>
+              )}
+
+              <TablePaginationListItem className="max-lg:col-span-12">
+                <TablePaginationListButton
+                  as="next"
+                  disabled={urlPage >= pagination.totalPages}
+                  onClick={() => {
+                    void setUrlPage(
+                      Math.min(pagination.totalPages, urlPage + 1),
+                    )
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}>
+                  Next
+                </TablePaginationListButton>
+              </TablePaginationListItem>
+            </TablePaginationList>
+          </TableFooter>
+        </Table>
+        <SideDecorator side={{ left: true }} />
+      </div>
+    </section>
+  )
+}
 
 const SearchResultsSection = forwardRef<
   HTMLDivElement,
