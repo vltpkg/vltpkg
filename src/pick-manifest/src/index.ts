@@ -219,12 +219,13 @@ export const platformCheck = (
   if (wantArch && !checkList(wantArch, cpu)) return false
   // libc checks only apply when the package specifies libc requirements
   if (libc) {
+    /* c8 ignore start - system specific */
     // if wantLibc is not provided, detect it
     const libcFamily = wantLibc ?? detectLibc()
     // if libc can't be determined, fail the check (can't install libc-specific packages)
-    /* c8 ignore next - system specific */ if (!libcFamily)
-      return false
+    if (!libcFamily) return false
     if (!checkList(libcFamily, libc)) return false
+    /* c8 ignore stop */
   }
   return true
 }
