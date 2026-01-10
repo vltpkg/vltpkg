@@ -15,7 +15,7 @@ filters:
   - type: path
     pattern: "^src/graph/src/reify/"
   - type: file_name
-    pattern: "^(index|add-nodes|add-edges|add-edge|delete-nodes|delete-edges|delete-edge|internal-hoist|build|rollback|optional-fail|bin-paths|calculate-save-value|update-importers-package-json)\\.ts$"
+    pattern: "^(index|refresh-ideal-graph|add-edges|add-edge|delete-nodes|delete-edges|delete-edge|internal-hoist|build|rollback|optional-fail|bin-paths|calculate-save-value|update-importers-package-json)\\.ts$"
   # Diff usage is central to reify
   - type: content
     pattern: "new Diff\(actual, graph\)|diff\\.nodes|diff\\.edges"
@@ -80,7 +80,7 @@ actions:
       ## Module Responsibilities
 
       - `index.ts` — Orchestrates the entire reify process; loads Actual, computes Diff, coordinates steps, writes lockfiles.
-      - `add-nodes.ts` — Extracts new nodes into the store using `@vltpkg/package-info.extract()`; handles platform gating and deprecated/optional cases with `optionalFail()`.
+      - `refresh-ideal-graph.ts` — Extracts new nodes into the store using `@vltpkg/package-info.extract()`; handles platform gating and deprecated/optional cases with `optionalFail()`.
       - `add-edge.ts` / `add-edges.ts` — Creates symlinks and bin links; on Windows, uses cmd shims via `@vltpkg/cmd-shim`.
       - `delete-edge.ts` / `delete-edges.ts` — Removes outdated links and related `.bin` entries (including `*.cmd`/`*.ps1` on Windows).
       - `internal-hoist.ts` — Determines and symlinks preferred candidates into `node_modules/.vlt/node_modules`.
