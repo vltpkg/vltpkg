@@ -956,13 +956,7 @@ t.test('platformCheck handles libc field', t => {
 
   // Test that libc requires a known libc family
   t.equal(
-    platformCheck(
-      { libc: ['glibc'] },
-      '20.0.0',
-      'linux',
-      'x64',
-      undefined,
-    ),
+    platformCheck({ libc: ['glibc'] }, '20.0.0', 'linux', 'x64', ''),
     false,
     'libc field with undefined libc fails',
   )
