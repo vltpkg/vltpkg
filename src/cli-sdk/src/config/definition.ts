@@ -424,7 +424,6 @@ export const definition = j
                     supported.`,
     },
     'workspace-group': {
-      short: 'g',
       description: `Specify named workspace group names to load and operate on
                     when doing recursive operations on workspaces.`,
     },
