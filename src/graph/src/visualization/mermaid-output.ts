@@ -274,7 +274,9 @@ export function mermaidOutput(options: MermaidOutputGraph) {
     .join('\n')
 
   const styleDefinition =
-    highlightSelection ? '\nclassDef selected fill:gold' : ''
+    highlightSelection ?
+      '\nclassDef selected fill:gold,color:#242424'
+    : ''
 
   return 'flowchart TD\n' + graphOutput + styleDefinition
 }
