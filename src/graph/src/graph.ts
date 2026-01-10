@@ -454,13 +454,14 @@ export class Graph implements GraphLike {
 
     // add extra manifest info if available
     if (manifest) {
-      const { bin, engines, os, cpu } = manifest
+      const { bin, engines, os, cpu, libc } = manifest
       // add platform info if available
-      if (engines || os || cpu) {
+      if (engines || os || cpu || libc) {
         const platform: NodeLike['platform'] = {}
         if (engines) platform.engines = engines
         if (os) platform.os = os
         if (cpu) platform.cpu = cpu
+        if (libc) platform.libc = libc
         toNode.platform = platform
       }
       // add bin info if available

@@ -3,7 +3,15 @@ import { Spec } from '@vltpkg/spec'
 import { isSpec } from '@vltpkg/spec/browser'
 import t from 'tap'
 import type { Manifest, Packument } from '@vltpkg/types'
-import { pickManifest, platformCheck } from '../src/index.ts'
+import {
+  pickManifest,
+  platformCheck,
+  detectLibc,
+  LDD_PATH,
+  resetLibcCache,
+} from '../src/index.ts'
+
+type PickManifestModule = typeof import('../src/index.ts')
 
 // don't need to run, just for typechecking
 const typechecks = () => {
@@ -857,6 +865,411 @@ t.test('handles complex Spec objects with subspecs correctly', t => {
     '1.0.2',
     'picked correct version from deeply nested Spec object',
   )
+
+  t.end()
+})
+
+t.test('detectLibc returns string or undefined', t => {
+  const result = detectLibc()
+  // Should return 'glibc', 'musl', or undefined depending on platform
+  if (process.platform === 'linux') {
+    t.ok(
+      result === 'glibc' || result === 'musl' || result === undefined,
+      'on linux, returns glibc, musl, or undefined',
+    )
+    const cached = detectLibc()
+    t.equal(result, cached, 'should return cached result')
+  } else {
+    t.equal(result, undefined, 'on non-linux, returns undefined')
+  }
+  t.end()
+})
+
+t.test('platformCheck handles libc field', t => {
+  // Test that packages without libc field always pass
+  t.equal(
+    platformCheck({}, '20.0.0', 'linux', 'x64', 'glibc'),
+    true,
+    'no libc field always passes',
+  )
+
+  // Test that packages with libc field check against provided libc
+  t.equal(
+    platformCheck(
+      { libc: ['glibc'] },
+      '20.0.0',
+      'linux',
+      'x64',
+      'glibc',
+    ),
+    true,
+    'matching libc passes',
+  )
+  t.equal(
+    platformCheck(
+      { libc: ['musl'] },
+      '20.0.0',
+      'linux',
+      'x64',
+      'glibc',
+    ),
+    false,
+    'non-matching libc fails',
+  )
+
+  // Test negation
+  t.equal(
+    platformCheck(
+      { libc: ['!musl'] },
+      '20.0.0',
+      'linux',
+      'x64',
+      'glibc',
+    ),
+    true,
+    'negated libc that does not match passes',
+  )
+  t.equal(
+    platformCheck(
+      { libc: ['!glibc'] },
+      '20.0.0',
+      'linux',
+      'x64',
+      'glibc',
+    ),
+    false,
+    'negated libc that matches fails',
+  )
+
+  // Test libc as string (not array)
+  t.equal(
+    platformCheck(
+      { libc: 'glibc' },
+      '20.0.0',
+      'linux',
+      'x64',
+      'glibc',
+    ),
+    true,
+    'libc as string works',
+  )
+
+  // Test that libc requires a known libc family
+  t.equal(
+    platformCheck(
+      { libc: ['glibc'] },
+      '20.0.0',
+      'linux',
+      'x64',
+      undefined,
+    ),
+    false,
+    'libc field with undefined libc fails',
+  )
+
+  t.end()
+})
+
+t.test('prefers versions that satisfy the libc requirement', t => {
+  // Test with packages that all have libc restrictions
+  const packWithRestrictions = {
+    'dist-tags': {
+      latest: '1.3.0',
+    },
+    versions: {
+      '1.0.0': { version: '1.0.0', libc: ['glibc'] },
+      '1.1.0': { version: '1.1.0', libc: ['musl'] },
+      '1.2.0': { version: '1.2.0', libc: ['glibc', 'musl'] },
+      '1.3.0': { version: '1.3.0', libc: ['musl'] },
+    },
+  } as unknown as Packument
+
+  t.equal(
+    pickManifest(packWithRestrictions, '1.x', { libc: 'glibc' })
+      ?.version,
+    '1.2.0',
+    'picks highest glibc-compatible version',
+  )
+  t.equal(
+    pickManifest(packWithRestrictions, '1.x', { libc: 'musl' })
+      ?.version,
+    '1.3.0',
+    'picks latest musl-compatible version (dist-tag)',
+  )
+
+  // Test that packages without libc restrictions are preferred
+  // when libc cannot be determined
+  const packWithUnrestricted = {
+    'dist-tags': {
+      latest: '1.3.0',
+    },
+    versions: {
+      '1.0.0': { version: '1.0.0', libc: ['glibc'] },
+      '1.4.0': { version: '1.4.0' }, // no libc restriction
+    },
+  } as unknown as Packument
+
+  t.equal(
+    pickManifest(packWithUnrestricted, '1.x', { libc: undefined })
+      ?.version,
+    '1.4.0',
+    'picks version without libc restriction when libc unknown',
+  )
+  t.end()
+})
+
+t.test('libc platform check with negation patterns', t => {
+  const pack = {
+    'dist-tags': {
+      latest: '1.2.0',
+    },
+    versions: {
+      '1.0.0': { version: '1.0.0', libc: ['!musl'] },
+      '1.1.0': { version: '1.1.0', libc: ['!glibc'] },
+      '1.2.0': { version: '1.2.0', libc: ['!musl'] },
+    },
+  } as unknown as Packument
+
+  t.equal(
+    pickManifest(pack, '1.x', { libc: 'glibc' })?.version,
+    '1.2.0',
+    'picks version that does not exclude glibc',
+  )
+  t.equal(
+    pickManifest(pack, '1.x', { libc: 'musl' })?.version,
+    '1.1.0',
+    'picks version that does not exclude musl',
+  )
+  t.end()
+})
+
+t.test('LDD_PATH constant is exported', t => {
+  t.equal(LDD_PATH, '/usr/bin/ldd', 'LDD_PATH has correct value')
+  t.end()
+})
+
+t.test('getFamilyFromFilesystem (mocked)', async t => {
+  // Test glibc detection from filesystem
+  t.test('detects glibc from ldd file content', async t => {
+    const { getFamilyFromFilesystem } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': {
+          readFileSync: () => 'GNU C Library (glibc) 2.31',
+        },
+      })
+    t.equal(getFamilyFromFilesystem(), 'glibc')
+  })
+
+  // Test musl detection from filesystem
+  t.test('detects musl from ldd file content', async t => {
+    const { getFamilyFromFilesystem } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': {
+          readFileSync: () => 'musl libc (x86_64)',
+        },
+      })
+    t.equal(getFamilyFromFilesystem(), 'musl')
+  })
+
+  // Test unknown libc in ldd file
+  t.test('returns null for unrecognized ldd content', async t => {
+    const { getFamilyFromFilesystem } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': {
+          readFileSync: () => 'some other libc implementation',
+        },
+      })
+    t.equal(getFamilyFromFilesystem(), null)
+  })
+
+  // Test file read error
+  t.test('returns undefined when file cannot be read', async t => {
+    const { getFamilyFromFilesystem } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': {
+          readFileSync: () => {
+            throw new Error('ENOENT')
+          },
+        },
+      })
+    t.equal(getFamilyFromFilesystem(), undefined)
+  })
+
+  t.end()
+})
+
+t.test('getFamilyFromReport (mocked)', async t => {
+  // Test glibc detection from report
+  t.test('detects glibc from process.report', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.intercept(process, 'report', {
+      value: {
+        excludeNetwork: false,
+        getReport: () => ({
+          header: { glibcRuntimeVersion: '2.31' },
+        }),
+      },
+    })
+    const { getFamilyFromReport } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': { readFileSync: () => '' },
+      })
+    t.equal(getFamilyFromReport(), 'glibc')
+  })
+
+  // Test musl detection from report (via sharedObjects)
+  t.test('detects musl from sharedObjects (ld-musl-)', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.intercept(process, 'report', {
+      value: {
+        excludeNetwork: false,
+        getReport: () => ({
+          sharedObjects: ['/lib/ld-musl-x86_64.so.1'],
+        }),
+      },
+    })
+    const { getFamilyFromReport } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': { readFileSync: () => '' },
+      })
+    t.equal(getFamilyFromReport(), 'musl')
+  })
+
+  // Test musl detection from report (via libc.musl-)
+  t.test('detects musl from sharedObjects (libc.musl-)', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.intercept(process, 'report', {
+      value: {
+        excludeNetwork: false,
+        getReport: () => ({
+          sharedObjects: ['/lib/libc.musl-x86_64.so.1'],
+        }),
+      },
+    })
+    const { getFamilyFromReport } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': { readFileSync: () => '' },
+      })
+    t.equal(getFamilyFromReport(), 'musl')
+  })
+
+  // Test unknown libc from report
+  t.test('returns null for unrecognized report', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.intercept(process, 'report', {
+      value: {
+        excludeNetwork: false,
+        getReport: () => ({
+          header: {},
+          sharedObjects: ['/lib/libc.so.6'],
+        }),
+      },
+    })
+    const { getFamilyFromReport } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': { readFileSync: () => '' },
+      })
+    t.equal(getFamilyFromReport(), null)
+  })
+
+  // Test report error
+  t.test('returns null when report throws', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.intercept(process, 'report', {
+      value: {
+        excludeNetwork: false,
+        getReport: () => {
+          throw new Error('report failed')
+        },
+      },
+    })
+    const { getFamilyFromReport } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': { readFileSync: () => '' },
+      })
+    t.equal(getFamilyFromReport(), null)
+  })
+
+  t.end()
+})
+
+t.test('detectLibc integration (mocked)', async t => {
+  // Test non-linux platform
+  t.test('returns undefined on non-linux', async t => {
+    t.intercept(process, 'platform', { value: 'darwin' })
+    const { detectLibc: detectLibcMocked } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': { readFileSync: () => '' },
+      })
+    t.equal(detectLibcMocked(), undefined)
+  })
+
+  // Test filesystem detection takes precedence
+  t.test(
+    'filesystem detection takes precedence over report',
+    async t => {
+      t.intercept(process, 'platform', { value: 'linux' })
+      t.intercept(process, 'report', {
+        value: {
+          excludeNetwork: false,
+          getReport: () => ({
+            sharedObjects: ['/lib/ld-musl-x86_64.so.1'],
+          }),
+        },
+      })
+      const { detectLibc: detectLibcMocked } =
+        await t.mockImport<PickManifestModule>('../src/index.ts', {
+          'node:fs': {
+            readFileSync: () => 'GNU C Library (glibc) 2.31',
+          },
+        })
+      t.equal(detectLibcMocked(), 'glibc')
+    },
+  )
+
+  // Test fallback to report when filesystem fails
+  t.test(
+    'falls back to report when filesystem detection fails',
+    async t => {
+      t.intercept(process, 'platform', { value: 'linux' })
+      t.intercept(process, 'report', {
+        value: {
+          excludeNetwork: false,
+          getReport: () => ({
+            header: { glibcRuntimeVersion: '2.31' },
+          }),
+        },
+      })
+      const { detectLibc: detectLibcMocked } =
+        await t.mockImport<PickManifestModule>('../src/index.ts', {
+          'node:fs': {
+            readFileSync: () => {
+              throw new Error('ENOENT')
+            },
+          },
+        })
+      t.equal(detectLibcMocked(), 'glibc')
+    },
+  )
+
+  // Test caching behavior
+  t.test('returns cached result on subsequent calls', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    const { detectLibc: detectLibcMocked } =
+      await t.mockImport<PickManifestModule>('../src/index.ts', {
+        'node:fs': {
+          readFileSync: () => 'GNU C Library (glibc) 2.31',
+        },
+      })
+    const first = detectLibcMocked()
+    const second = detectLibcMocked()
+    t.equal(first, second)
+    t.equal(first, 'glibc')
+  })
+
+  // Test resetLibcCache
+  resetLibcCache()
+  t.pass('resetLibcCache does not throw')
 
   t.end()
 })

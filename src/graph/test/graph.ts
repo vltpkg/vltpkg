@@ -1355,6 +1355,66 @@ t.test('node platform data setting', async t => {
   })
 
   t.test(
+    'should set libc property from manifest (string)',
+    async t => {
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('libc-string-pkg@^1.0.0'),
+        normalizeManifest({
+          name: 'libc-string-pkg',
+          version: '1.0.0',
+          libc: 'glibc',
+        }),
+      )
+
+      t.ok(node, 'node was created successfully')
+      t.ok(node?.platform, 'platform property is set')
+      t.strictSame(
+        node?.platform?.libc,
+        ['glibc'],
+        'libc property correctly normalized to array on node.platform',
+      )
+      t.notOk(
+        node?.platform?.engines,
+        'engines property is not set when not in manifest',
+      )
+      t.notOk(
+        node?.platform?.os,
+        'os property is not set when not in manifest',
+      )
+      t.notOk(
+        node?.platform?.cpu,
+        'cpu property is not set when not in manifest',
+      )
+    },
+  )
+
+  t.test(
+    'should set libc property from manifest (array)',
+    async t => {
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('libc-array-pkg@^1.0.0'),
+        {
+          name: 'libc-array-pkg',
+          version: '1.0.0',
+          libc: ['glibc', 'musl'],
+        },
+      )
+
+      t.ok(node, 'node was created successfully')
+      t.ok(node?.platform, 'platform property is set')
+      t.strictSame(
+        node?.platform?.libc,
+        ['glibc', 'musl'],
+        'libc property correctly set as array on node.platform',
+      )
+    },
+  )
+
+  t.test(
     'should set all platform properties when present',
     async t => {
       const node = graph.placePackage(
@@ -1369,6 +1429,7 @@ t.test('node platform data setting', async t => {
           },
           os: ['linux', 'darwin'],
           cpu: 'x64',
+          libc: 'glibc',
         }),
       )
 
@@ -1390,6 +1451,11 @@ t.test('node platform data setting', async t => {
         node?.platform?.cpu,
         ['x64'],
         'cpu property correctly normalized to array',
+      )
+      t.strictSame(
+        node?.platform?.libc,
+        ['glibc'],
+        'libc property correctly normalized to array',
       )
     },
   )

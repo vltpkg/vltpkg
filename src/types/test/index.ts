@@ -51,6 +51,7 @@ import {
   normalizeEngines,
   normalizeOs,
   normalizeCpu,
+  normalizeLibc,
   fixManifestVersion,
   parsePerson,
   isBoolean,
@@ -65,6 +66,7 @@ import {
   isNormalizedEngines,
   isNormalizedOs,
   isNormalizedCpu,
+  isNormalizedLibc,
   isNormalizedManifest,
   isNormalizedManifestRegistry,
   maybeBoolean,
@@ -2850,6 +2852,134 @@ t.test('normalizeCpu', t => {
   t.end()
 })
 
+t.test('normalizeLibc', t => {
+  t.test('handles undefined and null', t => {
+    t.equal(normalizeLibc(undefined), undefined)
+    t.equal(normalizeLibc(null), undefined)
+    t.end()
+  })
+
+  t.test('handles string libc', t => {
+    const result = normalizeLibc('glibc')
+    t.same(result, ['glibc'])
+    t.end()
+  })
+
+  t.test('handles string with whitespace', t => {
+    const result = normalizeLibc('  musl  ')
+    t.same(result, ['musl'])
+    t.end()
+  })
+
+  t.test('handles empty string', t => {
+    const result = normalizeLibc('')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles string with only whitespace', t => {
+    const result = normalizeLibc('   ')
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles valid array of libc', t => {
+    const result = normalizeLibc(['glibc', 'musl'])
+    t.same(result, ['glibc', 'musl'])
+    t.end()
+  })
+
+  t.test('handles array with whitespace', t => {
+    const result = normalizeLibc(['  glibc  ', '  musl  '])
+    t.same(result, ['glibc', 'musl'])
+    t.end()
+  })
+
+  t.test('handles array with empty strings', t => {
+    const result = normalizeLibc(['glibc', '', 'musl', '   '])
+    t.same(result, ['glibc', 'musl'])
+    t.end()
+  })
+
+  t.test('handles array with non-string entries', t => {
+    const result = normalizeLibc([
+      'glibc',
+      123,
+      'musl',
+      null,
+      undefined,
+      true,
+    ])
+    t.same(result, ['glibc', 'musl'])
+    t.end()
+  })
+
+  t.test('handles empty array', t => {
+    const result = normalizeLibc([])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles array with only invalid entries', t => {
+    const result = normalizeLibc(['', '  ', 123, null, undefined])
+    t.equal(result, undefined)
+    t.end()
+  })
+
+  t.test('handles already normalized libc', t => {
+    const alreadyNormalized = ['glibc', 'musl']
+    const result = normalizeLibc(alreadyNormalized)
+    t.same(result, ['glibc', 'musl'])
+    t.end()
+  })
+
+  t.test('handles invalid input types', t => {
+    t.equal(normalizeLibc(123), undefined)
+    t.equal(normalizeLibc(true), undefined)
+    t.equal(normalizeLibc({}), undefined)
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('isNormalizedLibc', t => {
+  t.test('valid normalized libc arrays', t => {
+    t.equal(isNormalizedLibc(['glibc']), true)
+    t.equal(isNormalizedLibc(['musl']), true)
+    t.equal(isNormalizedLibc(['glibc', 'musl']), true)
+    t.end()
+  })
+
+  t.test('invalid libc arrays', t => {
+    t.equal(isNormalizedLibc([]), false, 'empty array')
+    t.equal(
+      isNormalizedLibc(['  glibc']),
+      false,
+      'leading whitespace',
+    )
+    t.equal(
+      isNormalizedLibc(['glibc  ']),
+      false,
+      'trailing whitespace',
+    )
+    t.equal(isNormalizedLibc(['']), false, 'empty string')
+    t.equal(isNormalizedLibc([123]), false, 'non-string')
+    t.end()
+  })
+
+  t.test('invalid types', t => {
+    t.equal(isNormalizedLibc(null), false)
+    t.equal(isNormalizedLibc(undefined), false)
+    t.equal(isNormalizedLibc('glibc'), false)
+    t.equal(isNormalizedLibc(123), false)
+    t.equal(isNormalizedLibc({}), false)
+    t.end()
+  })
+
+  t.end()
+})
+
 t.test('isNormalizedEngines', async t => {
   t.test('valid normalized engines', t => {
     t.equal(isNormalizedEngines({}), true)
@@ -3006,6 +3136,38 @@ t.test('normalizeManifest with new fields', t => {
     t.end()
   })
 
+  t.test('normalizes manifest with libc string', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      libc: 'glibc',
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.libc, ['glibc'])
+    t.end()
+  })
+
+  t.test('normalizes manifest with libc array', t => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      libc: ['glibc', '  musl  ', ''],
+    }
+    const result = normalizeManifest(manifest)
+    t.equal(
+      result,
+      manifest,
+      'should modify original object in-place',
+    )
+    t.same(result.libc, ['glibc', 'musl'])
+    t.end()
+  })
+
   t.test('normalizes manifest with all new fields', t => {
     const manifest = {
       name: 'test',
@@ -3013,6 +3175,7 @@ t.test('normalizeManifest with new fields', t => {
       engines: { node: '>=18.0.0', npm: '^7.0.0' },
       os: 'linux',
       cpu: ['x64', 'arm64'],
+      libc: 'glibc',
       bin: { cli: 'bin/cli.js' },
     }
     const result = normalizeManifest(manifest)
@@ -3024,6 +3187,7 @@ t.test('normalizeManifest with new fields', t => {
     t.same(result.engines, { node: '>=18.0.0', npm: '^7.0.0' })
     t.same(result.os, ['linux'])
     t.same(result.cpu, ['x64', 'arm64'])
+    t.same(result.libc, ['glibc'])
     t.same(result.bin, { cli: 'bin/cli.js' })
     t.end()
   })
@@ -3035,6 +3199,7 @@ t.test('normalizeManifest with new fields', t => {
       engines: null as any,
       os: '' as any,
       cpu: [] as any,
+      libc: [] as any,
     }
     const result = normalizeManifest(manifest)
     t.equal(
@@ -3045,9 +3210,11 @@ t.test('normalizeManifest with new fields', t => {
     t.equal(result.engines, undefined)
     t.equal(result.os, undefined)
     t.equal(result.cpu, undefined)
+    t.equal(result.libc, undefined)
     t.notOk('engines' in result)
     t.notOk('os' in result)
     t.notOk('cpu' in result)
+    t.notOk('libc' in result)
     t.end()
   })
 
@@ -3059,12 +3226,14 @@ t.test('normalizeManifest with new fields', t => {
       engines: { node: '>=18.0.0' },
       os: 'linux',
       cpu: 'x64',
+      libc: 'musl',
       dependencies: { foo: '^1.0.0' },
     }
     const result = normalizeManifest(manifest)
     t.same(result.engines, { node: '>=18.0.0' })
     t.same(result.os, ['linux'])
     t.same(result.cpu, ['x64'])
+    t.same(result.libc, ['musl'])
     t.same(result.name, manifest.name)
     t.same(result.description, manifest.description)
     t.same(result.dependencies, manifest.dependencies)
@@ -3082,6 +3251,7 @@ t.test('isNormalizedManifest with new fields', async t => {
       engines: { node: '>=18.0.0', npm: '^7.0.0' },
       os: ['linux', 'darwin'],
       cpu: ['x64', 'arm64'],
+      libc: ['glibc', 'musl'],
     }
     t.equal(isNormalizedManifest(manifest), true)
     t.end()
@@ -3110,6 +3280,13 @@ t.test('isNormalizedManifest with new fields', async t => {
         cpu: ['x64', 123], // Invalid cpu
       }
       t.equal(isNormalizedManifest(manifestWithInvalidCpu), false)
+
+      const manifestWithInvalidLibc = {
+        name: 'test',
+        version: '1.0.0',
+        libc: ['glibc', ''], // Invalid libc
+      }
+      t.equal(isNormalizedManifest(manifestWithInvalidLibc), false)
       t.end()
     },
   )
