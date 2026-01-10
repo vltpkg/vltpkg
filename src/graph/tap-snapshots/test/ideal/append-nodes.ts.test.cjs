@@ -92,6 +92,19 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
 ]
 `
 
+exports[`test/ideal/append-nodes.ts > TAP > fork peer context when existing node has incompatible peer edges > graph with forked peer contexts 1`] = `
+flowchart TD
+a("root:my-project")
+a -->|"parent-a#64;^1.0.0"| b("npm:parent-a#64;1.0.0")
+b -->|"react#64;^18.0.0"| d("npm:react#64;18.3.1")
+b -->|"flexible#64;^1.0.0"| e("npm:flexible#64;1.0.0")
+e -->|"react#64;>=17.0.0 (peer)"| d
+a -->|"parent-b#64;^1.0.0"| c("npm:parent-b#64;1.0.0")
+c -->|"react#64;^19.0.0"| f("npm:react#64;19.2.0")
+c -->|"flexible#64;^1.0.0"| g("npm:flexible#64;1.0.0")
+g -->|"react#64;>=17.0.0 (peer)"| f
+`
+
 exports[`test/ideal/append-nodes.ts > TAP > inject transient dependencies from transientAdd > graph should match snapshot 1`] = `
 flowchart TD
 a("root:my-project")
