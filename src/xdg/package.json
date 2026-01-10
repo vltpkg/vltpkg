@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/xdg",
   "description": "platform-specific app directories following XDG spec",
-  "version": "1.0.0-rc.13",
+  "version": "1.0.0-rc.14",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
