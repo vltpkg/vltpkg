@@ -5,7 +5,8 @@ Serialize and deserialize `@vltpkg/graph.Graph` to/from lockfiles.
 ## Files
 
 - `vlt-lock.json` — Main lockfile (committed to source control)
-- `node_modules/.vlt-lock.json` — Hidden lockfile with manifests and build state (performance cache)
+- `node_modules/.vlt-lock.json` — Hidden lockfile with manifests and
+  build state (performance cache)
 
 ## API
 
@@ -19,13 +20,24 @@ const packageJson = new PackageJson()
 const mainManifest = packageJson.read(projectRoot)
 
 // Load from vlt-lock.json
-const graph = lockfile.load({ projectRoot, mainManifest, packageJson })
+const graph = lockfile.load({
+  projectRoot,
+  mainManifest,
+  packageJson,
+})
 
 // Load from node_modules/.vlt-lock.json (faster, has manifests)
-const graph = lockfile.loadHidden({ projectRoot, mainManifest, packageJson })
+const graph = lockfile.loadHidden({
+  projectRoot,
+  mainManifest,
+  packageJson,
+})
 
 // Load from in-memory data
-const graph = lockfile.loadObject({ projectRoot, mainManifest }, lockfileData)
+const graph = lockfile.loadObject(
+  { projectRoot, mainManifest },
+  lockfileData,
+)
 ```
 
 ### Saving
@@ -59,12 +71,12 @@ type LockfileData = {
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `projectRoot` | Project root directory |
-| `mainManifest` | Root package.json contents |
-| `packageJson` | Shared PackageJson instance |
-| `monorepo` | Shared Monorepo instance |
-| `scurry` | Shared PathScurry instance |
-| `modifiers` | GraphModifier instance |
-| `actual` | Actual graph to hydrate data from |
+| Option         | Description                       |
+| -------------- | --------------------------------- |
+| `projectRoot`  | Project root directory            |
+| `mainManifest` | Root package.json contents        |
+| `packageJson`  | Shared PackageJson instance       |
+| `monorepo`     | Shared Monorepo instance          |
+| `scurry`       | Shared PathScurry instance        |
+| `modifiers`    | GraphModifier instance            |
+| `actual`       | Actual graph to hydrate data from |

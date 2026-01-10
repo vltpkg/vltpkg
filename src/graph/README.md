@@ -77,8 +77,8 @@ match the Ideal graph. Returns `{ diff, buildQueue }`.
 ### `install(options, add?): Promise<{ graph, diff, buildQueue }>`
 
 High-level install orchestration that handles graph building, reify,
-and lockfile management. Supports `--frozen-lockfile`, `--clean-install`,
-and `--lockfile-only` modes.
+and lockfile management. Supports `--frozen-lockfile`,
+`--clean-install`, and `--lockfile-only` modes.
 
 ### `mermaidOutput(graph): string`
 
@@ -221,6 +221,7 @@ Graph construction modes supported by the library:
 
 Finally, `src/diff.ts` computes changes and `src/reify/` applies them
 to the filesystem.
+
 - 📖 [Reify README](./src/reify/README.md)
 - 📖 [Architecture Guide](./ARCHITECTURE.md)
 
@@ -235,7 +236,8 @@ to the filesystem.
   (registry, git, tarball)
 - `@vltpkg/package-json`: Read and cache local `package.json` files
 - `@vltpkg/workspaces`: Monorepo workspace discovery and grouping
-- `@vltpkg/rollback-remove`: Safe file removal with rollback capability
+- `@vltpkg/rollback-remove`: Safe file removal with rollback
+  capability
 - `@vltpkg/vlt-json`: Load `vlt.json` configuration (modifiers, etc.)
 
 ## References

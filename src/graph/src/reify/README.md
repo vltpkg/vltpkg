@@ -1,6 +1,7 @@
 # @vltpkg/graph.reify
 
-Apply graph changes to `node_modules`, transforming the actual state to match the ideal graph.
+Apply graph changes to `node_modules`, transforming the actual state
+to match the ideal graph.
 
 ## USAGE
 
@@ -12,17 +13,17 @@ import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { PathScurry } from 'path-scurry'
 
 const { diff, buildQueue } = await reify({
-  graph,           // Ideal graph to apply
+  graph, // Ideal graph to apply
   projectRoot: '/path/to/project',
   packageInfo: new PackageInfoClient({ cache }),
   packageJson: new PackageJson(),
   scurry: new PathScurry(projectRoot),
   remover: new RollbackRemove(),
-  allowScripts: '*',  // DSS query for packages allowed to run scripts
+  allowScripts: '*', // DSS query for packages allowed to run scripts
   // Optional
-  actual,   // Pre-loaded actual graph
-  add,      // AddImportersDependenciesMap
-  remove,   // RemoveImportersDependenciesMap
+  actual, // Pre-loaded actual graph
+  add, // AddImportersDependenciesMap
+  remove, // RemoveImportersDependenciesMap
 })
 ```
 
@@ -43,20 +44,20 @@ const { diff, buildQueue } = await reify({
 ```ts
 type ReifyResult = {
   diff: Diff
-  buildQueue?: DepID[]  // Nodes that needed building
+  buildQueue?: DepID[] // Nodes that needed building
 }
 ```
 
 ## Modules
 
-| File | Purpose |
-|------|---------|
-| `index.ts` | Orchestrates reify process |
-| `add-nodes.ts` | Extract packages to store |
-| `add-edge.ts` | Create symlinks + bin links |
-| `delete-edge.ts` | Remove symlinks + bin links |
-| `internal-hoist.ts` | Hoist preferred versions |
-| `build.ts` | Run lifecycle scripts |
-| `rollback.ts` | Revert on failure |
-| `optional-fail.ts` | Handle optional dep failures |
-| `update-importers-package-json.ts` | Update package.json files |
+| File                               | Purpose                      |
+| ---------------------------------- | ---------------------------- |
+| `index.ts`                         | Orchestrates reify process   |
+| `add-nodes.ts`                     | Extract packages to store    |
+| `add-edge.ts`                      | Create symlinks + bin links  |
+| `delete-edge.ts`                   | Remove symlinks + bin links  |
+| `internal-hoist.ts`                | Hoist preferred versions     |
+| `build.ts`                         | Run lifecycle scripts        |
+| `rollback.ts`                      | Revert on failure            |
+| `optional-fail.ts`                 | Handle optional dep failures |
+| `update-importers-package-json.ts` | Update package.json files    |

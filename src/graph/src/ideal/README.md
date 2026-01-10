@@ -1,6 +1,7 @@
 # @vltpkg/graph.ideal
 
-Build the ideal dependency graph representing the desired `node_modules` state.
+Build the ideal dependency graph representing the desired
+`node_modules` state.
 
 ## USAGE
 
@@ -18,7 +19,7 @@ const graph = await ideal.build({
   scurry: new PathScurry(projectRoot),
   remover: new RollbackRemove(),
   // Optional: add/remove dependencies
-  add,    // AddImportersDependenciesMap
+  add, // AddImportersDependenciesMap
   remove, // RemoveImportersDependenciesMap
   // Optional: pass actual graph for early extraction
   actual,
@@ -27,7 +28,8 @@ const graph = await ideal.build({
 
 ## Behavior
 
-1. Loads starting graph from `vlt-lock.json` (preferred) or `node_modules`
+1. Loads starting graph from `vlt-lock.json` (preferred) or
+   `node_modules`
 2. Merges `add`/`remove` with importer manifest deltas
 3. Fetches manifests in parallel (breadth-first)
 4. Reuses existing nodes that satisfy specs
@@ -42,7 +44,7 @@ const add: AddImportersDependenciesMap = new Map([
   ['file·.', new Map([['lodash', { spec, type: 'prod' }]])],
 ])
 
-// Remove dependencies from importers  
+// Remove dependencies from importers
 const remove: RemoveImportersDependenciesMap = new Map([
   ['file·.', new Set(['unwanted-dep'])],
 ])
