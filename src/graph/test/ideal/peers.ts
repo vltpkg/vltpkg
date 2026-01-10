@@ -6,6 +6,7 @@ import { Graph } from '../../src/graph.ts'
 import {
   addEntriesToPeerContext,
   checkEntriesToPeerContext,
+  checkPeerEdgesCompatible,
   endPeerPlacement,
   forkPeerContext,
   getOrderedPeerContextEntries,
@@ -31,6 +32,7 @@ import type {
   AddImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { Monorepo } from '@vltpkg/workspaces'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -38,6 +40,411 @@ const configData = {
     npm: 'https://registry.npmjs.org/',
   },
 } satisfies SpecOptions
+
+t.test('checkPeerEdgesCompatible', async t => {
+  t.test('returns compatible when node has no peer deps', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Node without peer dependencies
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    )!
+
+    const peerContext: PeerContext = new Map()
+
+    const result = checkPeerEdgesCompatible(
+      node,
+      graph.mainImporter,
+      peerContext,
+      graph,
+    )
+
+    t.same(result, { compatible: true })
+  })
+
+  t.test(
+    'returns compatible when peer edge has no target (dangling)',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Node with peer dependency but dangling edge
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+
+      // Create dangling edge (no target)
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node)
+
+      const peerContext: PeerContext = new Map()
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        graph.mainImporter,
+        peerContext,
+        graph,
+      )
+
+      t.same(result, { compatible: true })
+    },
+  )
+
+  t.test(
+    'returns incompatible when peer context has different target',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two react versions
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react19 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        { name: 'react', version: '19.2.0' },
+      )!
+
+      // Node with peer dep pointing to react18
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '>=18.0.0' },
+        },
+      )!
+
+      // Add peer edge to react18
+      const peerSpec = Spec.parse('react', '>=18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      // Peer context has react19
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: new Set([Spec.parse('react', '^19.0.0', configData)]),
+        target: react19,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        graph.mainImporter,
+        peerContext,
+        graph,
+      )
+
+      t.equal(result.compatible, false)
+      t.ok(result.forkEntry)
+      t.equal(result.forkEntry?.target.id, react19.id)
+    },
+  )
+
+  t.test(
+    'returns incompatible when sibling edge has different target',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two react versions
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react19 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        { name: 'react', version: '19.2.0' },
+      )!
+
+      // Node with peer dep pointing to react18
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '>=18.0.0' },
+        },
+      )!
+
+      // Add peer edge to react18
+      const peerSpec = Spec.parse('react', '>=18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      // Create a parent that has sibling edge to react19
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('parent', '^1.0.0', configData),
+        { name: 'parent', version: '1.0.0' },
+      )!
+      graph.addEdge(
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        parent,
+        react19,
+      )
+
+      const peerContext: PeerContext = new Map()
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        parent,
+        peerContext,
+        graph,
+      )
+
+      t.equal(result.compatible, false)
+      t.ok(result.forkEntry)
+      t.equal(result.forkEntry?.target.id, react19.id)
+    },
+  )
+
+  t.test(
+    'returns incompatible when parent manifest declares peer with different candidate',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two react versions
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react19 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        { name: 'react', version: '19.2.0' },
+      )!
+
+      // Node with peer dep pointing to react18
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '>=18.0.0' },
+        },
+      )!
+
+      // Add peer edge to react18
+      const peerSpec = Spec.parse('react', '>=18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      // Create parent with manifest declaring react@^19
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('parent', '^1.0.0', configData),
+        {
+          name: 'parent',
+          version: '1.0.0',
+          dependencies: { react: '^19.0.0' },
+        },
+      )!
+
+      const peerContext: PeerContext = new Map()
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        parent,
+        peerContext,
+        graph,
+      )
+
+      t.equal(result.compatible, false)
+      t.ok(result.forkEntry)
+      t.equal(result.forkEntry?.target.id, react19.id)
+    },
+  )
+
+  t.test(
+    'returns compatible when peer context target matches existing edge',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create react
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+
+      // Node with peer dep pointing to react18
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+
+      // Add peer edge to react18
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      // Peer context also has react18
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+        target: react18,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        graph.mainImporter,
+        peerContext,
+        graph,
+      )
+
+      t.same(result, { compatible: true })
+    },
+  )
+
+  t.test(
+    'returns compatible when context target does not satisfy peer spec',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two incompatible react versions
+      const react17 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^17.0.0', configData),
+        { name: 'react', version: '17.0.2' },
+      )!
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+
+      // Node with strict peer dep (^18.0.0) pointing to react18
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      // Peer context has react17 which doesn't satisfy ^18.0.0
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: new Set([Spec.parse('react', '^17.0.0', configData)]),
+        target: react17,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        graph.mainImporter,
+        peerContext,
+        graph,
+      )
+
+      // Should be compatible because react17 doesn't satisfy ^18.0.0
+      t.same(result, { compatible: true })
+    },
+  )
+})
 
 t.test('retrievePeerContextHash', async t => {
   t.test('returns undefined for undefined context', async t => {
@@ -2142,6 +2549,131 @@ t.test('integration tests', async t => {
           nodes: [...graph.nodes.values()],
         }),
         'should build graph with multiple conflicting peer dependency contexts',
+      )
+    },
+  )
+
+  await t.test(
+    'outlier peer - workspace sibling with different peer context',
+    async t => {
+      // This tests the scenario where:
+      // - Root has react@18 and workspace:a
+      // - workspace:a also has react@18 and package-with-flexible-peer-deps
+      // - package-peer-parent-2 has react@^19.1.0 (different from workspaces)
+      // - The flexible peer deps package should resolve to correct react per context
+      const mainManifest = {
+        name: 'outlier-peer',
+        version: '1.0.0',
+        dependencies: {
+          '@ruyadorno/package-peer-parent-2': '^1.0.0',
+          react: '18',
+        },
+      }
+      const aManifest = {
+        name: 'a',
+        version: '1.0.0',
+        dependencies: {
+          '@ruyadorno/package-with-flexible-peer-deps': '^1.0.0',
+          react: '18',
+        },
+      }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(mainManifest),
+        packages: {
+          a: {
+            'package.json': JSON.stringify(aManifest),
+          },
+        },
+      })
+
+      const scurry = new PathScurry(dir)
+      const projectRoot = dir
+      const packageJson = new PackageJson()
+      const packageInfo = createMockPackageInfo()
+      const options = {
+        projectRoot,
+        scurry,
+        mainManifest,
+        loadManifests: true,
+        packageJson,
+        monorepo: new Monorepo(dir, {
+          config: {
+            packages: ['packages/*'],
+          },
+          scurry,
+          packageJson,
+          load: { paths: 'packages/*' },
+        }),
+      }
+
+      const actual = actualLoad({
+        projectRoot,
+        scurry,
+        mainManifest,
+        loadManifests: true,
+        packageJson,
+      })
+
+      const rootDepID = joinDepIDTuple(['file', '.'])
+      const addMap = new Map([
+        [
+          rootDepID,
+          new Map<string, Dependency>([
+            [
+              '@ruyadorno/package-peer-parent-2',
+              asDependency({
+                spec: Spec.parse(
+                  '@ruyadorno/package-peer-parent-2',
+                  '^1.0.0',
+                ),
+                type: 'prod',
+              }),
+            ],
+            [
+              'react',
+              asDependency({
+                spec: Spec.parse('react', '18'),
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap
+
+      const graph = await build({
+        ...options,
+        actual,
+        packageInfo,
+        remover: new RollbackRemove(),
+        add: addMap,
+      })
+
+      t.matchSnapshot(
+        mermaidOutput({
+          edges: [...graph.edges],
+          importers: graph.importers,
+          nodes: [...graph.nodes.values()],
+        }),
+        'should build graph with outlier peer context handling',
+      )
+
+      // Verify flexible peer deps in parent-2 context points to react@19
+      const parent2 = [
+        ...graph.nodesByName.get('@ruyadorno/package-peer-parent-2')!,
+      ][0]
+      t.ok(parent2, 'parent-2 should exist')
+
+      const flexibleInParent2Context = [
+        ...graph.nodesByName.get(
+          '@ruyadorno/package-with-flexible-peer-deps',
+        )!,
+      ].find(n => {
+        const reactEdge = n.edgesOut.get('react')
+        return reactEdge?.to?.version === '18.3.1'
+      })
+      t.ok(
+        flexibleInParent2Context,
+        'flexible peer deps should have context pointing to react@18',
       )
     },
   )
