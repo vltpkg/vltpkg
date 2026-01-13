@@ -7,6 +7,7 @@ export type MermaidOutputGraph = {
   edges: EdgeLike[]
   importers: Set<NodeLike>
   nodes: NodeLike[]
+  highlightSelection?: boolean
 }
 
 type TraverseItem = {
@@ -15,6 +16,14 @@ type TraverseItem = {
 }
 
 let missingCount = 0
+
+const isSelected = (
+  options: MermaidOutputGraph,
+  edge?: EdgeLike,
+  node?: NodeLike,
+) =>
+  (!node || options.nodes.includes(node)) &&
+  /* c8 ignore next */ (!edge || options.edges.includes(edge))
 
 /**
  * Generates a short identifier for a given index following the pattern:
@@ -87,16 +96,24 @@ const nodeRef = (
   node: NodeLike,
   labeledNodes: Set<DepID>,
   depIdMapping: Map<DepID, string>,
+  options: MermaidOutputGraph,
 ): string => {
   const shortId =
     depIdMapping.get(
       node.id,
     ) /* c8 ignore next - should not be possible */ ?? ''
+  const selectedClass =
+    (
+      options.highlightSelection &&
+      isSelected(options, undefined, node)
+    ) ?
+      ':::selected'
+    : ''
   if (labeledNodes.has(node.id)) {
-    return shortId
+    return shortId + selectedClass
   }
   labeledNodes.add(node.id)
-  return `${shortId}("${String(node).replaceAll('@', '#64;')}")`
+  return `${shortId}("${String(node).replaceAll('@', '#64;')}")${selectedClass}`
 }
 
 function parseNode(
@@ -104,6 +121,7 @@ function parseNode(
   labeledNodes: Set<DepID>,
   includedItems: Map<EdgeLike | NodeLike, boolean>,
   depIdMapping: Map<DepID, string>,
+  options: MermaidOutputGraph,
   node: NodeLike,
   isImporter = false,
 ) {
@@ -114,7 +132,9 @@ function parseNode(
   // For importers, render the node label first as a standalone line before processing edges,
   // since they appear at the top of the graph. Non-importer nodes are labeled inline as part of edge definitions.
   const nodeLabel =
-    isImporter ? nodeRef(node, labeledNodes, depIdMapping) : ''
+    isImporter ?
+      nodeRef(node, labeledNodes, depIdMapping, options)
+    : ''
   // Include both regular edges and workspace edges (if any)
   const allEdges = [
     ...node.edgesOut.values(),
@@ -127,6 +147,7 @@ function parseNode(
         labeledNodes,
         includedItems,
         depIdMapping,
+        options,
         e,
       ),
     )
@@ -145,6 +166,7 @@ function parseEdge(
   labeledNodes: Set<DepID>,
   includedItems: Map<EdgeLike | NodeLike, boolean>,
   depIdMapping: Map<DepID, string>,
+  options: MermaidOutputGraph,
   edge: EdgeLike,
 ) {
   if (!includedItems.get(edge)) {
@@ -153,7 +175,7 @@ function parseEdge(
 
   const edgeType = edge.type === 'prod' ? '' : ` (${edge.type})`
   const edgeResult =
-    nodeRef(edge.from, labeledNodes, depIdMapping) +
+    nodeRef(edge.from, labeledNodes, depIdMapping, options) +
     ` -->|"${String(edge.spec).replaceAll('@', '#64;')}${edgeType}"| `
 
   const missingLabel =
@@ -164,12 +186,13 @@ function parseEdge(
 
   // Label the target node first so that if it's referenced again later in the graph,
   // it will use the short identifier instead of repeating the full label.
-  const toRef = nodeRef(edge.to, labeledNodes, depIdMapping)
+  const toRef = nodeRef(edge.to, labeledNodes, depIdMapping, options)
   const childEdges = parseNode(
     seenNodes,
     labeledNodes,
     includedItems,
     depIdMapping,
+    options,
     edge.to,
   )
   return edgeResult + toRef + (childEdges ? '\n' + childEdges : '')
@@ -178,11 +201,8 @@ function parseEdge(
 /**
  * Returns a mermaid string representation of the graph.
  */
-export function mermaidOutput({
-  edges,
-  importers,
-  nodes,
-}: MermaidOutputGraph) {
+export function mermaidOutput(options: MermaidOutputGraph) {
+  const { edges, importers, nodes, highlightSelection } = options
   const seen = new Set<EdgeLike | NodeLike>()
   const includedItems = new Map<EdgeLike | NodeLike, boolean>()
   const traverse = new Set<TraverseItem>(
@@ -238,20 +258,25 @@ export function mermaidOutput({
   // Track nodes that have been processed (shared across all importers to avoid duplicates)
   const seenNodes = new Set<DepID>()
 
-  return (
-    'flowchart TD\n' +
-    [...importers]
-      .map(i =>
-        parseNode(
-          seenNodes,
-          labeledNodes,
-          includedItems,
-          depIdMapping,
-          i,
-          true, // isImporter
-        ),
-      )
-      .filter(Boolean)
-      .join('\n')
-  )
+  const graphOutput = [...importers]
+    .map(i =>
+      parseNode(
+        seenNodes,
+        labeledNodes,
+        includedItems,
+        depIdMapping,
+        options,
+        i,
+        true, // isImporter
+      ),
+    )
+    .filter(Boolean)
+    .join('\n')
+
+  const styleDefinition =
+    highlightSelection ?
+      '\nclassDef selected fill:gold,color:#242424'
+    : ''
+
+  return 'flowchart TD\n' + graphOutput + styleDefinition
 }
