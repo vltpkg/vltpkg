@@ -328,6 +328,11 @@ export const definition = j
                     packages based on their \`cpu\` value.`,
       default: process.arch,
     },
+    libc: {
+      description: `Override the libc family to use as the selector when choosing
+                    packages based on their \`libc\` value (e.g. glibc, musl).
+                    By default, this is auto-detected on Linux systems.`,
+    },
     'node-version': {
       hint: 'version',
       description: `Node version to use when choosing packages based on

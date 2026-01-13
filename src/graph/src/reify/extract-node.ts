@@ -73,6 +73,7 @@ export const extractNode = async (
         process.version,
         process.platform,
         process.arch,
+        // libc is auto-detected by platformCheck when not provided
       ))
   ) {
     removeOptionalFailedNode()

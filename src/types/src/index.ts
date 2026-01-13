@@ -434,6 +434,11 @@ export type NormalizedOs = string[]
 export type NormalizedCpu = string[]
 
 /**
+ * Normalized libc list - always an array of strings
+ */
+export type NormalizedLibc = string[]
+
+/**
  * Normalized bugs - always an array of {@link NormalizedBugsEntry}
  */
 export type NormalizedBugs = NormalizedBugsEntry[]
@@ -666,6 +671,37 @@ export const normalizeCpu = (
 }
 
 /**
+ * Normalize libc information to a {@link NormalizedLibc} consistent format.
+ */
+export const normalizeLibc = (
+  libc: unknown,
+): NormalizedLibc | undefined => {
+  if (!libc) return
+
+  let libcArray: string[] = []
+
+  if (typeof libc === 'string') {
+    // Handle single libc string
+    libcArray = [libc.trim()].filter(item => item.length > 0)
+  } else if (Array.isArray(libc)) {
+    // If all libc entries are already normalized, return them directly
+    if (isNormalizedLibc(libc)) {
+      return libc
+    }
+    // Handle array of strings, filter out empty/invalid entries
+    libcArray = libc
+      .filter((item): item is string => typeof item === 'string')
+      .map(item => item.trim())
+      .filter(item => item.length > 0)
+  } else {
+    // Invalid format
+    return
+  }
+
+  return libcArray.length > 0 ? libcArray : undefined
+}
+
+/**
  * Type guard to check if a value is a {@link NormalizedEngines}.
  */
 export const isNormalizedEngines = (
@@ -695,6 +731,23 @@ export const isNormalizedOs = (o: unknown): o is NormalizedOs => {
  * Type guard to check if a value is a {@link NormalizedCpu}.
  */
 export const isNormalizedCpu = (o: unknown): o is NormalizedCpu => {
+  return (
+    Array.isArray(o) &&
+    o.length > 0 &&
+    o.every(
+      item =>
+        typeof item === 'string' &&
+        !!item &&
+        !item.startsWith(' ') &&
+        !item.endsWith(' '),
+    )
+  )
+}
+
+/**
+ * Type guard to check if a value is a {@link NormalizedLibc}.
+ */
+export const isNormalizedLibc = (o: unknown): o is NormalizedLibc => {
   return (
     Array.isArray(o) &&
     o.length > 0 &&
@@ -757,6 +810,8 @@ export type Manifest = {
   os?: string[] | string
   /** supported CPU architectures this package can run on */
   cpu?: string[] | string
+  /** supported libc implementations this package can run on (e.g. glibc, musl) */
+  libc?: string[] | string
   /** URLs that can be visited to fund this project */
   funding?: Funding
   /** The homepage of the repository */
@@ -808,6 +863,7 @@ export type NormalizedFields = {
   engines: NormalizedEngines | undefined
   os: NormalizedOs | undefined
   cpu: NormalizedCpu | undefined
+  libc: NormalizedLibc | undefined
   bin: NormalizedBin | undefined
 }
 
@@ -1107,6 +1163,7 @@ export const normalizeManifest = <
   const normalizedEngines = normalizeEngines(manifest.engines)
   const normalizedOs = normalizeOs(manifest.os)
   const normalizedCpu = normalizeCpu(manifest.cpu)
+  const normalizedLibc = normalizeLibc(manifest.libc)
   const normalizedBin = normalizeBinPaths(manifest)
 
   // holds the same object reference but renames the variable here
@@ -1161,6 +1218,12 @@ export const normalizeManifest = <
     delete normalizedManifest.cpu
   }
 
+  if (normalizedLibc) {
+    normalizedManifest.libc = normalizedLibc
+  } else {
+    delete normalizedManifest.libc
+  }
+
   if (normalizedBin) {
     normalizedManifest.bin = normalizedBin
   } else {
@@ -1199,7 +1262,8 @@ export const isNormalizedManifest = (
     ('keywords' in o ? isNormalizedKeywords(o.keywords) : true) &&
     ('engines' in o ? isNormalizedEngines(o.engines) : true) &&
     ('os' in o ? isNormalizedOs(o.os) : true) &&
-    ('cpu' in o ? isNormalizedCpu(o.cpu) : true)
+    ('cpu' in o ? isNormalizedCpu(o.cpu) : true) &&
+    ('libc' in o ? isNormalizedLibc(o.libc) : true)
   )
 }
 
@@ -1471,6 +1535,7 @@ export type NodeLike = {
     engines?: Record<string, string>
     os?: string[] | string
     cpu?: string[] | string
+    libc?: string[] | string
   }
   bins?: Record<string, string>
   buildState?: 'none' | 'needed' | 'built' | 'failed'
