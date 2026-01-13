@@ -61,6 +61,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --identity=<name>
     --if-present
     --jsr-registries=<name=url>
+    --libc=<libc>
     --lockfile-only
     --no-bail
     --no-color
@@ -124,6 +125,7 @@ Unknown config option: asdf
     identity
     if-present
     jsr-registries
+    libc
     lockfile-only
     no-bail
     no-color

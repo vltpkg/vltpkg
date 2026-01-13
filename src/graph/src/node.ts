@@ -198,6 +198,7 @@ export class Node implements NodeLike {
     engines?: Record<string, string>
     os?: string[] | string
     cpu?: string[] | string
+    libc?: string[] | string
   }
 
   /**

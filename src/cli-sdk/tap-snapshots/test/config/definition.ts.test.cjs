@@ -291,6 +291,10 @@ Object {
     "multiple": true,
     "type": "string",
   },
+  "libc": Object {
+    "description": "Override the libc family to use as the selector when choosing packages based on their \`libc\` value (e.g. glibc, musl). By default, this is auto-detected on Linux systems.",
+    "type": "string",
+  },
   "lockfile-only": Object {
     "description": "Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.",
     "type": "boolean",
@@ -538,6 +542,7 @@ Array [
   "--identity=<name>",
   "--if-present",
   "--jsr-registries=<name=url>",
+  "--libc=<libc>",
   "--lockfile-only",
   "--no-bail",
   "--no-color",
@@ -598,6 +603,7 @@ Array [
   "identity",
   "if-present",
   "jsr-registries",
+  "libc",
   "lockfile-only",
   "no-bail",
   "no-color",

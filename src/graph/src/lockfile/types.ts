@@ -14,6 +14,7 @@ export type LockfilePlatform = {
   engines?: Record<string, string>
   os?: string[] | string
   cpu?: string[] | string
+  libc?: string[] | string
 }
 
 /**
