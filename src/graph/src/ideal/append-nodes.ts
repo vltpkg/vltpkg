@@ -204,7 +204,7 @@ const fetchManifestsForDeps = async (
 
     if (
       validExistingNode ||
-      // importers are handled at the ./add-nodes.ts top-level
+      // importers are handled at the ./refresh-ideal-graph.ts top-level
       // so we should just skip whenever we find one
       existingNode?.importer
     ) {

@@ -1,10 +1,15 @@
+---
+description: Breadth-first dependency graph building with peer context management
+globs: src/graph/src/ideal/append-nodes.ts,src/graph/src/ideal/refresh-ideal-graph.ts,src/graph/src/ideal/types.ts
+alwaysApply: false
+---
 # Graph Ideal Append Nodes Architecture
 
-Detailed guide for understanding and working with the `append-nodes.ts` module in `@vltpkg/graph`, which implements breadth-first dependency graph building with deterministic ordering.
+Detailed guide for understanding and working with the `append-nodes.ts` module in `@vltpkg/graph`, which implements breadth-first dependency graph building with deterministic ordering and peer dependency context management.
 
 <rule>
 name: graph_ideal_append_nodes
-description: Architecture and implementation guide for the append-nodes module that builds dependency graphs in breadth-first order
+description: Architecture and implementation guide for the append-nodes module that builds dependency graphs in breadth-first order with peer context handling
 filters:
   # Target the append-nodes module specifically
   - type: path
@@ -15,13 +20,16 @@ filters:
   # Target files working with graph ideal building
   - type: path
     pattern: "^src/graph/src/ideal/"
+  # Target peer context related content
+  - type: content
+    pattern: "peerContext|peerSetHash|startPeerPlacement|endPeerPlacement|postPlacementPeerCheck"
 
 actions:
   - type: guide
     message: |
       ## Overview
 
-      The `append-nodes.ts` module implements the core dependency graph building logic for the Ideal Graph construction phase. It processes dependencies in **breadth-first order** with **deterministic ordering** to ensure reproducible graph builds.
+      The `append-nodes.ts` module implements the core dependency graph building logic for the Ideal Graph construction phase. It processes dependencies in **breadth-first order** with **deterministic ordering** to ensure reproducible graph builds, while managing **peer dependency contexts** to handle version conflicts.
 
       ### Key Responsibilities
       - Fetch manifests for dependencies in parallel
@@ -29,62 +37,133 @@ actions:
       - Handle modifiers, optional dependencies, and error conditions
       - Process child dependencies level by level
       - Maintain deterministic ordering for reproducible builds
+      - **Manage peer dependency contexts** to handle incompatible peer versions
+      - **Track and fork peer contexts** when version conflicts arise
+      - **Resolve peer dependencies** using context-aware node lookup
+
+      📋 **See `@graph/peers.mdc`** for detailed peer dependency isolation and `peerSetHash` mechanisms
 
   - type: architecture_guide
     message: |
       ## Core Architecture
 
-      The module uses a **3-phase approach** for breadth-first processing:
+      The module uses a **3-phase approach** for breadth-first processing with integrated peer context management:
 
       ### Phase 1: Manifest Fetching (`fetchManifestsForDeps`)
       ```typescript
       // Fetches manifests for all dependencies at a level in parallel
       const placementTasks = await fetchManifestsForDeps(
-        packageInfo, graph, fromNode, sortedDeps, scurry, modifierRefs, depth
+        packageInfo, graph, fromNode, sortedDeps, scurry, peerContext, modifierRefs, depth
       )
       ```
       - Processes existing node resolution via `graph.findResolution()`
+      - **Checks peer edge compatibility** via `checkPeerEdgesCompatible()` before reusing nodes
+      - **Forks peer context** if existing node's peer edges are incompatible with new parent
       - Handles modifier spec swapping for edge modifiers
       - Fetches manifests in parallel using `Promise.all()`
-      - Creates `ManifestFetchTask` and `NodePlacementTask` structures
+      - Creates `ManifestFetchTask` and `NodePlacementTask` structures with peer context
 
       ### Phase 2: Node Placement (`processPlacementTasks`)
       ```typescript
       // Places nodes in the graph and collects child dependencies
-      const { childDepsToProcess } = await processPlacementTasks(
-        add, graph, options, placementTasks, modifiers
+      const childDepsToProcess = await processPlacementTasks(
+        graph, options, placementTasks, add, modifiers, ...
       )
       ```
-      - Handles nameless dependencies (e.g., `github:foo/bar`)
-      - Places nodes using `graph.placePackage()`
-      - Processes optional dependency failures with `removeOptionalSubgraph()`
-      - Collects child dependencies for next level processing
+      - **Starts peer placement** via `startPeerPlacement()` to get `peerSetHash` and queued entries
+      - Places nodes using `graph.placePackage()` with `joinExtra({ peerSetHash, modifier })`
+      - Collects peer dependencies separately from regular dependencies (`nextPeerDeps`)
+      - **Ends peer placement** via `endPeerPlacement()` returning context update functions
+      - Handles optional dependency failures with `removeOptionalSubgraph()`
 
       ### Phase 3: Level Coordination (`appendNodes`)
       ```typescript
-      // Orchestrates breadth-first processing across levels
-      let currentLevelDeps: AppendNodeEntry[] = [{ node: fromNode, deps, modifierRefs, depth: 0 }]
+      // Orchestrates breadth-first processing across levels with peer context
+      const [initialPeerContext] = graph.peerContexts
+      let currentLevelDeps: AppendNodeEntry[] = [{ node, deps, peerContext: initialPeerContext, ... }]
       while (currentLevelDeps.length > 0) {
-        // Process all nodes at current level in parallel
-        // Collect child dependencies for next level
+        const levelResults = await Promise.all(currentLevelDeps.map(...))
+        // Post-placement peer check: fork contexts, resolve peer deps
+        postPlacementPeerCheck(graph, levelResults)
         currentLevelDeps = nextLevelDeps
       }
       ```
-      - Manages level-by-level processing queue
+      - Manages level-by-level processing queue with peer context propagation
+      - **Performs post-placement peer check** via `postPlacementPeerCheck()` after each level
       - Ensures `seen` set consistency to prevent cycles
       - Maintains deterministic ordering with `spec.name.localeCompare()`
+
+  - type: peer_integration_guide
+    message: |
+      ## Peer Dependency Integration
+
+      The append-nodes module integrates tightly with the peer dependency system (`peers.ts`) through a 3-step workflow:
+
+      ### Step 1: Pre-Placement Compatibility Check (`fetchManifestsForDeps`)
+      ```typescript
+      // Check if existing node's peer edges are compatible with new parent
+      const peerCompatResult = existingNode ?
+        checkPeerEdgesCompatible(existingNode, fromNode, peerContext, graph)
+        : { compatible: true }
+
+      // Fork peer context if incompatible peer edges detected
+      if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
+        effectivePeerContext = forkPeerContext(graph, peerContext, [peerCompatResult.forkEntry])
+      }
+      ```
+      - Validates that reusing an existing node won't cause peer version conflicts
+      - Returns `forkEntry` containing the conflicting spec and target when incompatible
+      - Prevents incorrect node reuse that would break peer dependency contracts
+
+      ### Step 2: Peer Placement Lifecycle (`processPlacementTasks`)
+      ```typescript
+      // START: Collect sibling deps and calculate peerSetHash
+      const { peerSetHash, queuedEntries } = startPeerPlacement(
+        peerContext, manifest, fromNode, options
+      )
+
+      // Place node with peer context hash
+      const node = graph.placePackage(
+        fromNode, type, spec, manifest, id,
+        joinExtra({ peerSetHash, modifier: queryModifier })
+      )
+
+      // END: Get context update functions for post-processing
+      const updateContext = endPeerPlacement(
+        peerContext, nextDeps, nextPeerDeps, graph, spec, fromNode, node, type, queuedEntries
+      )
+      ```
+      - `startPeerPlacement()`: Collects sibling dependencies, generates `peerSetHash` if manifest has peer deps
+      - `endPeerPlacement()`: Returns `{ putEntries, resolvePeerDeps }` functions for deferred execution
+
+      ### Step 3: Post-Level Peer Resolution (`appendNodes`)
+      ```typescript
+      // After processing all placement tasks at a level
+      postPlacementPeerCheck(graph, levelResults)
+      ```
+      - Calls `putEntries()` on all children to update peer contexts
+      - Detects which children need forked contexts and creates them
+      - Reuses sibling contexts when compatible (avoids unnecessary forking)
+      - Calls `resolvePeerDeps()` to resolve peer deps from context or add to next level
+
+      📋 **See `@graph/peers.mdc`** for `PeerContext`, `PeerContextEntry`, and forking algorithms
 
   - type: data_structures_guide
     message: |
       ## Key Data Structures
 
-      ### `AppendNodeEntry`
+      ### `AppendNodeEntry` (defined in `types.ts`)
       ```typescript
       type AppendNodeEntry = {
-        node: Node              // The node whose dependencies to process
-        deps: Dependency[]      // Dependencies to fetch and place
+        node: Node                  // The node whose dependencies to process
+        deps: Dependency[]          // Dependencies to fetch and place
         modifierRefs?: Map<string, ModifierActiveEntry>  // Active modifiers
-        depth: number           // Current processing depth
+        depth: number               // Current processing depth
+        peerContext: PeerContext    // Current peer dependency context
+        updateContext: {            // Peer context update functions
+          putEntries: () => PeerContextEntryInput[] | undefined  // Add to context, return entries if fork needed
+          resolvePeerDeps: () => void  // Resolve peer deps from context
+        }
       }
       ```
 
@@ -100,6 +179,7 @@ actions:
         edgeOptional: boolean                         // Is optional dependency
         manifestPromise: Promise<Manifest | undefined> // Async manifest fetch
         depth: number                                 // Processing depth
+        peerContext: PeerContext                      // Peer context for this fetch
       }
       ```
 
@@ -107,47 +187,97 @@ actions:
       ```typescript
       type NodePlacementTask = {
         fetchTask: ManifestFetchTask      // Original fetch context
-        manifest: Manifest | undefined   // Resolved manifest
+        manifest: Manifest | undefined    // Resolved manifest
         node?: Node                       // Created node (set during processing)
         childDeps?: Dependency[]          // Child dependencies to process
         childModifierRefs?: Map<string, ModifierActiveEntry> // Child modifier refs
+        childPeerContext?: PeerContext    // Peer context for children
+      }
+      ```
+
+      ### `PeerContext` (from `types.ts`)
+      ```typescript
+      type PeerContext = Map<string, PeerContextEntry> & {
+        index?: number  // Unique index for peerSetHash generation
       }
       ```
 
   - type: processing_flow_guide
     message: |
-      ## Processing Flow
+      ## Processing Flow with Peer Context
 
       ### 1. Entry Point
       ```typescript
-      appendNodes(add, packageInfo, graph, fromNode, deps, scurry, options, seen, modifiers, modifierRefs)
+      appendNodes(packageInfo, graph, fromNode, deps, scurry, options, seen, add, modifiers, modifierRefs, ...)
       ```
       - **Input**: Node and its dependencies to process
-      - **Output**: Fully built graph with all transitive dependencies
+      - **Output**: Fully built graph with all transitive dependencies and resolved peer contexts
 
-      ### 2. Level Processing Loop
+      ### 2. Initial Peer Context Setup
+      ```typescript
+      // Get the initial peer context from the graph (always index 0)
+      const [initialPeerContext] = graph.peerContexts
+      let currentLevelDeps: AppendNodeEntry[] = [{
+        node: fromNode,
+        deps,
+        modifierRefs,
+        depth: 0,
+        peerContext: initialPeerContext,
+        updateContext: { putEntries: () => undefined, resolvePeerDeps: () => {} }
+      }]
+      ```
+
+      ### 3. Level Processing Loop with Peer Context
       ```typescript
       while (currentLevelDeps.length > 0) {
-        // Step 2a: Process all nodes at current level in parallel
-        const levelResults = await Promise.all(currentLevelDeps.map(async ({ node, deps, ... }) => {
-          seen.add(node.id)  // Mark as seen to prevent cycles
-          
-          // Step 2b: Fetch manifests for this node's dependencies
-          const placementTasks = await fetchManifestsForDeps(...)
-          
-          // Step 2c: Place nodes and collect child dependencies
-          return await processPlacementTasks(...)
+        // Step 3a: Process all nodes at current level in parallel
+        const levelResults = await Promise.all(currentLevelDeps.map(async ({ node, deps, peerContext, ... }) => {
+          seen.add(node.id)
+
+          // Step 3b: Fetch manifests with peer compatibility checks
+          const placementTasks = await fetchManifestsForDeps(
+            packageInfo, graph, node, sortedDeps, scurry, peerContext, ...
+          )
+
+          // Step 3c: Place nodes with peer context, collect updateContext functions
+          return await processPlacementTasks(graph, options, placementTasks, ...)
         }))
-        
-        // Step 2d: Collect all child dependencies for next level
+
+        // Step 3d: Post-placement peer check - fork contexts, resolve peer deps
+        postPlacementPeerCheck(graph, levelResults)
+
+        // Step 3e: Collect child dependencies with updated peer contexts
         currentLevelDeps = collectChildDependencies(levelResults)
       }
       ```
 
-      ### 3. Deterministic Ordering
-      Dependencies are sorted by `spec.name` using `localeCompare()` before processing:
-      ```typescript
-      nodeDeps.sort((a, b) => a.spec.name.localeCompare(b.spec.name, 'en'))
+      ### 4. Peer Context Flow Diagram
+      ```
+      Initial Context (index: 0)
+             │
+             ▼
+      ┌─────────────────────────────────────────┐
+      │ Level N Processing                      │
+      │  - fetchManifestsForDeps()              │
+      │    └─ checkPeerEdgesCompatible()        │
+      │  - processPlacementTasks()              │
+      │    ├─ startPeerPlacement() → peerSetHash│
+      │    └─ endPeerPlacement() → updateContext│
+      └─────────────────────────────────────────┘
+             │
+             ▼
+      ┌─────────────────────────────────────────┐
+      │ postPlacementPeerCheck()                │
+      │  - putEntries() for each child          │
+      │  - forkPeerContext() if conflicts       │
+      │  - resolvePeerDeps() from context       │
+      └─────────────────────────────────────────┘
+             │
+             ▼
+      Child nodes with updated peer contexts
+             │
+             ▼
+      Level N+1 Processing (repeat)
       ```
 
   - type: error_handling_guide
@@ -175,22 +305,31 @@ actions:
       ```typescript
       // Mark nodes as seen when processing starts (not when complete)
       seen.add(node.id)
-      
+
       // Check before adding to next level
       if (!seen.has(childDep.node.id)) {
         nextLevelDeps.push(childDep)
       }
       ```
 
+      ### Peer Dependency Node Reuse Validation
+      ```typescript
+      // Defines what nodes are eligible to be reused
+      const validExistingNode =
+        existingNode &&
+        !existingNode.detached &&
+        // Regular deps can always reuse
+        (!peer ||
+          // Peer deps only reuse if peerSetHash matches
+          existingNode.peerSetHash === fromNode.peerSetHash) &&
+        // Check peer edge compatibility
+        peerCompatResult.compatible
+      ```
+
       ### Nameless Dependencies
       ```typescript
       // Handle specs like 'github:foo/bar' that don't specify a name
-      if (manifest?.name && spec.name === '(unknown)') {
-        // Update the add map with the correct name from manifest
-        add.delete(String(spec))
-        spec = Spec.parse(manifest.name, spec.bareSpec, options)
-        add.set(manifest.name, asDependency({ ...s, spec }))
-      }
+      spec = fixupAddedNames(additiveMap, manifest, options, spec)
       ```
 
   - type: modifier_integration_guide
@@ -201,9 +340,9 @@ actions:
       ```typescript
       // Check if a modifier should replace the spec
       const queryModifier = activeModifier?.modifier.query
-      const completeModifier = activeModifier?.interactiveBreadcrumb.current === 
+      const completeModifier = activeModifier?.interactiveBreadcrumb.current ===
                                activeModifier.modifier.breadcrumb.last
-      
+
       if (queryModifier && completeModifier && 'spec' in activeModifier.modifier) {
         spec = activeModifier.modifier.spec
         if (spec.bareSpec === '-') {
@@ -212,13 +351,26 @@ actions:
       }
       ```
 
+      ### Modifier and Peer Context Combined
+      ```typescript
+      // Both modifier query and peerSetHash are combined in the extra parameter
+      const node = graph.placePackage(
+        fromNode,
+        type,
+        spec,
+        normalizeManifest(manifest),
+        fileTypeInfo?.id,
+        joinExtra({ peerSetHash, modifier: queryModifier })  // Combined extra
+      )
+      ```
+
       ### Modifier Updates
       ```typescript
       // Update modifier state after node placement
       if (activeModifier) {
         modifiers?.updateActiveEntry(node, activeModifier)
       }
-      
+
       // Generate modifier refs for child dependencies
       childModifierRefs = modifiers?.tryDependencies(node, nextDeps)
       ```
@@ -236,31 +388,67 @@ actions:
       - **Streaming Processing**: Processes level by level, not all at once
       - **Seen Set**: Prevents duplicate processing and infinite cycles
       - **Shared References**: Reuses existing nodes via `graph.findResolution()`
+      - **Peer Context Reuse**: Attempts to reuse sibling peer contexts before forking
 
       ### Deterministic Ordering
       - **Reproducible Builds**: Same input always produces same graph structure
       - **Consistent Output**: Sorting by `spec.name` ensures predictable order
+      - **Sorted Peer Context Processing**: `postPlacementPeerCheck` sorts by `node.id` for determinism
       - **Debug Friendly**: Deterministic processing aids in debugging
+
+      ### Early Extraction
+      - Eligible nodes can be extracted to vlt store during graph building
+      - Extraction happens in parallel with graph construction
+      - Skips peer dependencies and optional dependencies for extraction
 
   - type: integration_patterns
     message: |
       ## Integration with Graph System
 
       ### Used By
-      - `src/graph/src/ideal/add-nodes.ts` - High-level dependency addition
+      - `src/graph/src/ideal/refresh-ideal-graph.ts` - High-level dependency resolution, exports `nextPeerContextIndex()`
       - `src/graph/src/ideal/build-ideal-from-starting-graph.ts` - Ideal graph construction
 
-      ### Dependencies
+      ### Dependencies from `peers.ts`
+      - `checkPeerEdgesCompatible()` - Validate existing node peer compatibility
+      - `forkPeerContext()` - Create new peer context when conflicts arise
+      - `startPeerPlacement()` - Begin peer placement, get peerSetHash and queued entries
+      - `endPeerPlacement()` - End peer placement, get updateContext functions
+      - `postPlacementPeerCheck()` - Post-level peer context updates and resolution
+
+      ### Dependencies from Graph Core
       - `graph.findResolution()` - Find existing satisfying nodes
-      - `graph.placePackage()` - Place new nodes with edges
+      - `graph.placePackage()` - Place new nodes with edges and extra (modifier + peerSetHash)
       - `graph.addEdge()` - Create edges to existing nodes
+      - `graph.peerContexts` - Array of peer contexts tracked by the graph
+      - `graph.nextPeerContextIndex()` - Get next unique peer context index
+
+      ### Dependencies from Other Modules
       - `removeOptionalSubgraph()` - Handle optional failures
+      - `joinExtra()` - Combine modifier and peerSetHash into extra parameter
+      - `fixupAddedNames()` - Handle nameless dependencies
 
       ### Data Flow
       ```
-      Ideal Build → Add Nodes → Append Nodes → Graph Updates
-                                      ↓
-                               Manifest Fetching → Node Placement → Child Collection
+      refresh-ideal-graph.ts
+             │
+             ▼
+      appendNodes() ──┬──► fetchManifestsForDeps()
+                      │         │
+                      │         ├─► checkPeerEdgesCompatible()
+                      │         └─► forkPeerContext() (if needed)
+                      │
+                      ├──► processPlacementTasks()
+                      │         │
+                      │         ├─► startPeerPlacement()
+                      │         ├─► graph.placePackage()
+                      │         └─► endPeerPlacement()
+                      │
+                      └──► postPlacementPeerCheck()
+                                │
+                                ├─► putEntries()
+                                ├─► forkPeerContext() (if needed)
+                                └─► resolvePeerDeps()
       ```
 
   - type: testing_considerations
@@ -270,46 +458,100 @@ actions:
       ### Test Coverage Requirements
       - **100% Coverage**: All paths must be tested including error conditions
       - **Edge Cases**: Optional failures, cycles, nameless deps, modifiers
+      - **Peer Context Cases**: Context forking, peerSetHash generation, peer resolution
       - **Deterministic Output**: Tests verify consistent ordering
+
+      ### Peer-Related Test Cases
+      1. **Peer Edge Compatibility**: Test `checkPeerEdgesCompatible()` with compatible/incompatible scenarios
+      2. **Context Forking**: Verify `forkPeerContext()` creates isolated contexts
+      3. **PeerSetHash Assignment**: Confirm nodes with peer deps get correct peerSetHash
+      4. **Sibling Context Reuse**: Test that compatible siblings share peer contexts
+      5. **Peer Resolution from Context**: Verify peer deps resolve from context when satisfied
 
       ### Common Issues
       1. **Cycle Detection**: Ensure `seen` set is managed correctly
       2. **Optional Handling**: Verify optional subgraph removal works
       3. **Manifest Errors**: Test both network and parsing failures
       4. **Modifier State**: Ensure modifiers are updated correctly
+      5. **Peer Context Leaks**: Verify forked contexts don't affect parent contexts
 
       ### Debugging Tips
       - Check `seen` set state for cycle issues
       - Verify deterministic ordering with different input orders
       - Trace level-by-level processing for dependency issues
       - Monitor `graph.nodes` and `graph.edges` growth
+      - Inspect `graph.peerContexts` array for context forking behavior
+      - Check `node.peerSetHash` values to trace peer context assignments
 
 examples:
   - input: |
-      // Example: Adding a new dependency to the graph
+      // Example: Adding a new dependency with peer context awareness
       await appendNodes(
-        new Map(),           // add map
         packageInfo,         // manifest fetcher
-        graph,              // target graph
-        importerNode,       // starting node
-        [{ spec: lodashSpec, type: 'prod' }], // dependencies
-        scurry,             // path resolver
-        options,            // spec options
-        new Set(),          // seen set
-        modifiers,          // modifier system
-        modifierRefs        // active modifier refs
+        graph,               // target graph
+        importerNode,        // starting node
+        [{ spec: reactDomSpec, type: 'prod' }], // dependencies
+        scurry,              // path resolver
+        options,             // spec options
+        new Set(),           // seen set
+        add,                 // add map
+        modifiers,           // modifier system
+        modifierRefs,        // active modifier refs
+        extractPromises,     // early extraction promises
+        actual,              // actual graph for extraction
+        seenExtracted,       // extraction tracking set
+        remover,             // rollback remover
+        transientAdd,        // transient additions
+        transientRemove      // transient removals
       )
-    output: "Breadth-first processing with deterministic ordering and parallel manifest fetching"
+    output: "Breadth-first processing with peer context management and early extraction"
 
   - input: |
-      // Example: Processing with modifiers
-      const modifierRefs = modifiers?.tryDependencies(node, deps)
-      await appendNodes(add, packageInfo, graph, node, deps, scurry, options, seen, modifiers, modifierRefs)
-    output: "Modifier integration for spec swapping and query tracking"
+      // Example: Processing with peer context lifecycle
+      // In fetchManifestsForDeps:
+      const peerCompatResult = checkPeerEdgesCompatible(existingNode, fromNode, peerContext, graph)
+      if (!peerCompatResult.compatible) {
+        effectivePeerContext = forkPeerContext(graph, peerContext, [peerCompatResult.forkEntry])
+      }
+
+      // In processPlacementTasks:
+      const { peerSetHash, queuedEntries } = startPeerPlacement(peerContext, manifest, fromNode, options)
+      const node = graph.placePackage(fromNode, type, spec, manifest, id, joinExtra({ peerSetHash, modifier }))
+      const updateContext = endPeerPlacement(peerContext, nextDeps, nextPeerDeps, graph, spec, fromNode, node, type, queuedEntries)
+
+      // In appendNodes main loop:
+      postPlacementPeerCheck(graph, levelResults)
+    output: "Complete peer context lifecycle from compatibility check through resolution"
+
+  - input: |
+      // Example: Post-placement peer check with context forking
+      // From postPlacementPeerCheck in peers.ts
+      for (const childDep of sortedChildDeps) {
+        const needsFork = childDep.updateContext.putEntries()
+        if (needsFork) {
+          needsForking.set(childDep, needsFork)
+        }
+      }
+
+      for (const [childDep, nextEntries] of sortedNeedsForkingEntries) {
+        if (prevContext && !checkEntriesToPeerContext(prevContext, nextEntries)) {
+          // Reuse sibling's context
+          childDep.peerContext = prevContext
+        } else {
+          // Fork new context
+          childDep.peerContext = forkPeerContext(graph, childDep.peerContext, nextEntries)
+          prevContext = childDep.peerContext
+        }
+      }
+
+      for (const childDep of sortedChildDeps) {
+        childDep.updateContext.resolvePeerDeps()
+      }
+    output: "Post-placement peer context forking and resolution with sibling context reuse"
 
 metadata:
   priority: high
-  version: 1.0
+  version: 2.0
   tags:
     - graph
     - ideal
@@ -319,10 +561,13 @@ metadata:
     - modifiers
     - deterministic
     - parallel
+    - peer-dependencies
+    - peer-context
   related_rules:
     - graph_data_structure
     - graph_ideal
     - graph_modifiers
     - graph_peers
+    - graph_lockfiles
     - monorepo_structure
 </rule>

@@ -41,57 +41,87 @@ At a glance:
   `node_modules/.vlt-lock.json` mirroring the current on-disk state to
   accelerate subsequent loads of the Actual graph.
 - Modifiers: Configuration for selectively altering dependency
-  resolution; Ideal/Actual builders support skipping node loads when
-  modifiers change.
+  resolution via DSS queries in `vlt.json`.
+- Peer Contexts: Isolation mechanism for peer dependencies that allows
+  multiple versions of the same package when peer requirements differ.
 
 ## API
 
-### `actual.load({ projectRoot: string }): Graph`
+### `actual.load(options): Graph`
 
 Recursively loads the `node_modules` folder found at `projectRoot` in
 order to create a graph representation of the current installed
 packages.
 
-### `async ideal.build({ projectRoot: string }): Promise<Graph>`
+### `ideal.build(options): Promise<Graph>`
 
-This method returns a new `Graph` object, reading from the
-`package.json` file located at `projectRoot` dir and building up the
-graph representation of nodes and edges from the files read from the
-local file system.
+Builds the ideal dependency graph by loading from lockfile (preferred)
+or actual graph, then expanding dependencies by fetching manifests.
+Requires `packageInfo` and `remover` in addition to standard options.
 
-### `lockfile.load({ mainManifest: Manifest, projectRoot: string }): Graph`
+### `lockfile.load(options): Graph`
 
 Loads the lockfile file found at `projectRoot` and returns the graph.
 
-### `reify(options): Promise<Diff>`
+### `lockfile.save(options): void`
+
+Saves the graph to `vlt-lock.json`.
+
+### `reify(options): Promise<ReifyResult>`
 
 Computes a `Diff` between the Actual and Ideal graphs and applies the
 minimal filesystem changes (creating/deleting links, writing
 lockfiles, hoisting, lifecycle scripts) to make the on-disk install
-match the Ideal graph.
+match the Ideal graph. Returns `{ diff, buildQueue }`.
+
+### `install(options, add?): Promise<{ graph, diff, buildQueue }>`
+
+High-level install orchestration that handles graph building, reify,
+and lockfile management. Supports `--frozen-lockfile`,
+`--clean-install`, and `--lockfile-only` modes.
+
+### `mermaidOutput(graph): string`
+
+Generates Mermaid flowchart syntax from graph data.
+
+### `humanReadableOutput(graph, options): string`
+
+Generates ASCII tree output with optional colors. Used in `vlt ls`.
+
+### `jsonOutput(graph): JSONOutputItem[]`
+
+Returns array of `{name, fromID, spec, type, to, overridden}` items.
 
 ## Usage
 
-Here's a quick example of how to use the `@vltpkg/graph.ideal.build`
-method to build a graph representation of the install defined at the
-`projectRoot` directory.
+### High-Level Install
 
-```
-import { ideal } from '@vltpkg/graph'
+```ts
+import { install } from '@vltpkg/graph'
 
-const graph = await ideal.build({ projectRoot: process.cwd() })
+const { graph, diff, buildQueue } = await install({
+  projectRoot: process.cwd(),
+  packageInfo,
+  packageJson,
+  scurry,
+  allowScripts: '*',
+})
 ```
 
 ### Load Actual Graph and Reify
 
 ```ts
 import { actual, ideal, reify } from '@vltpkg/graph'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
+
+const remover = new RollbackRemove()
 
 // Load current on-disk state
 const from = actual.load({
   projectRoot: process.cwd(),
   packageJson,
   scurry,
+  loadManifests: true,
 })
 
 // Build intended end state (may start from lockfile or actual)
@@ -100,15 +130,18 @@ const to = await ideal.build({
   packageInfo,
   packageJson,
   scurry,
+  remover,
 })
 
 // Apply minimal changes to match Ideal
-await reify({
+const { diff, buildQueue } = await reify({
   graph: to,
   actual: from,
   packageInfo,
   packageJson,
   scurry,
+  remover,
+  allowScripts: '*',
 })
 ```
 
@@ -118,15 +151,48 @@ await reify({
 import { lockfile } from '@vltpkg/graph'
 
 // Load virtual graph from vlt-lock.json
-const g = lockfile.load({
+const graph = lockfile.load({
   projectRoot,
   mainManifest,
   packageJson,
-  scurry,
 })
 
-// Save both lockfile formats
-lockfile.save({ graph: g, projectRoot, packageJson, scurry })
+// Save to vlt-lock.json
+lockfile.save({ graph })
+```
+
+### Graph Visualization
+
+```ts
+import {
+  mermaidOutput,
+  humanReadableOutput,
+  jsonOutput,
+} from '@vltpkg/graph'
+
+// Mermaid flowchart (for docs, dashboards)
+const mermaid = mermaidOutput({
+  edges: [...graph.edges],
+  nodes: [...graph.nodes.values()],
+  importers: graph.importers,
+})
+
+// ASCII tree with colors (used in `vlt ls`)
+const tree = humanReadableOutput(
+  {
+    edges: [...graph.edges],
+    nodes: [...graph.nodes.values()],
+    importers: graph.importers,
+  },
+  { colors: true },
+)
+
+// JSON array of dependency items
+const json = jsonOutput({
+  edges: [...graph.edges],
+  nodes: [...graph.nodes.values()],
+  importers: graph.importers,
+})
 ```
 
 ## Architecture
@@ -137,6 +203,7 @@ Graph construction modes supported by the library:
   - Load and save via `src/lockfile/load.ts` and
     `src/lockfile/save.ts`
   - Hidden lockfile: `node_modules/.vlt-lock.json` for faster loads
+  - 📖 [Lockfile README](./src/lockfile/README.md)
 
 - Actual Graphs (filesystem-based)
   - Loaded by traversing `node_modules` via `src/actual/load.ts`
@@ -150,9 +217,13 @@ Graph construction modes supported by the library:
     `src/ideal/get-importer-specs.ts`
   - Fetches and expands manifests using `@vltpkg/package-info`, reuses
     existing nodes that satisfy specs
+  - 📖 [Ideal README](./src/ideal/README.md)
 
 Finally, `src/diff.ts` computes changes and `src/reify/` applies them
 to the filesystem.
+
+- 📖 [Reify README](./src/reify/README.md)
+- 📖 [Architecture Guide](./ARCHITECTURE.md)
 
 ## Related Workspaces
 
@@ -160,10 +231,14 @@ to the filesystem.
 - `@vltpkg/spec`: Parse/normalize dependency specifiers and registry
   semantics
 - `@vltpkg/semver`: Semantic version parsing/comparison
+- `@vltpkg/satisfies`: Check if a DepID satisfies a Spec
 - `@vltpkg/package-info`: Fetch remote manifests and artifacts
   (registry, git, tarball)
 - `@vltpkg/package-json`: Read and cache local `package.json` files
 - `@vltpkg/workspaces`: Monorepo workspace discovery and grouping
+- `@vltpkg/rollback-remove`: Safe file removal with rollback
+  capability
+- `@vltpkg/vlt-json`: Load `vlt.json` configuration (modifiers, etc.)
 
 ## References
 
