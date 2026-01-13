@@ -5,6 +5,17 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/visualization/mermaid-output.ts > TAP > actual graph > highlight selection > should print selected packages with highlight 1`] = `
+flowchart TD
+a("root:my-project")
+a -->|"bar#64;^1.0.0 (optional)"| g("npm:bar#64;1.0.0")
+g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0"):::selected
+a -->|"workspace-b#64;workspace:*"| b("workspace:workspace-b")
+a -->|"workspace-a#64;workspace:*"| c("workspace:workspace-a")
+c -->|"workspace-b#64;workspace:* (dev)"| b
+classDef selected fill:gold,color:#242424
+`
+
 exports[`test/visualization/mermaid-output.ts > TAP > actual graph > selected packages > should print selected packages 1`] = `
 flowchart TD
 a("root:my-project")

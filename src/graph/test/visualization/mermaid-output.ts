@@ -113,6 +113,24 @@ t.test('actual graph', async t => {
       'should print selected packages',
     )
   })
+
+  await t.test('highlight selection', async t => {
+    const edges = [...graph.edges].filter(e => e.name === 'baz')
+    const nodes = [
+      graph.nodes.get(
+        joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']),
+      )!,
+    ]
+    t.matchSnapshot(
+      mermaidOutput({
+        edges,
+        importers: graph.importers,
+        nodes,
+        highlightSelection: true,
+      }),
+      'should print selected packages with highlight',
+    )
+  })
 })
 
 t.test('workspaces', async t => {
