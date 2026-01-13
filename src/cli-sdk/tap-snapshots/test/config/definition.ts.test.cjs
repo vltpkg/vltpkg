@@ -502,7 +502,6 @@ Object {
   "workspace-group": Object {
     "description": "Specify named workspace group names to load and operate on when doing recursive operations on workspaces.",
     "multiple": true,
-    "short": "g",
     "type": "string",
   },
   "yes": Object {
