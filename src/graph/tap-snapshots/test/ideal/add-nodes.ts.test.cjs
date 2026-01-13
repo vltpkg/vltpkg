@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding a previously missing dependency bar 1`] = `
+exports[`test/ideal/refresh-ideal-graph.ts > TAP > addNodes > graph after adding a previously missing dependency bar 1`] = `
 [
   Node {
     id: 'file·.',
@@ -30,7 +30,7 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding a previou
 ]
 `
 
-exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding foo when there is an already existing foo 1`] = `
+exports[`test/ideal/refresh-ideal-graph.ts > TAP > addNodes > graph after adding foo when there is an already existing foo 1`] = `
 [
   Node {
     id: 'file·.',
@@ -54,7 +54,7 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding foo when 
 ]
 `
 
-exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph with an added foo 1`] = `
+exports[`test/ideal/refresh-ideal-graph.ts > TAP > addNodes > graph with an added foo 1`] = `
 [
   Node {
     id: 'file·.',
@@ -78,7 +78,7 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph with an added foo 1`] 
 ]
 `
 
-exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph with missing package bar 1`] = `
+exports[`test/ideal/refresh-ideal-graph.ts > TAP > addNodes > graph with missing package bar 1`] = `
 [
   Node {
     id: 'file·.',
@@ -103,6 +103,6 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph with missing package b
 ]
 `
 
-exports[`test/ideal/add-nodes.ts > TAP > addNodes > initial graph 1`] = `
+exports[`test/ideal/refresh-ideal-graph.ts > TAP > addNodes > initial graph 1`] = `
 [ Node { id: 'file·.', location: '.', importer: true } ]
 `
