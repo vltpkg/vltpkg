@@ -36,6 +36,21 @@ type PeerEdgeCompatResult = {
   }
 }
 
+const getForkKey = (
+  peerContext: PeerContext,
+  entries: PeerContextEntryInput[],
+) => {
+  const base = peerContext.index ?? 0
+  const sig = entries
+    .map(
+      e =>
+        `${e.spec.final.name}|${e.type}|${e.target?.id ?? '∅'}|${e.spec}`,
+    )
+    .sort()
+    .join(';')
+  return `${base}::${sig}`
+}
+
 /**
  * Check if an existing node's peer edges would still resolve to the same
  * targets from a new parent's context. Returns incompatible info if any
@@ -68,6 +83,44 @@ export const checkPeerEdgesCompatible = (
       contextEntry?.target &&
       contextEntry.target.id !== existingEdge.to.id
     ) {
+      let ignoreContextMismatch = false
+      // If the parent (fromNode) declares this peerName as a direct dependency,
+      // and the peerContext target does NOT satisfy the parent's spec, then
+      // this peerContext entry is not actually applicable for this parent.
+      // In that case, do not treat it as incompatibility (prevents cross-importer
+      // peerContext leakage from forcing unnecessary forks).
+      const parentManifest = fromNode.manifest
+      if (parentManifest) {
+        for (const depType of longDependencyTypes) {
+          const depRecord = parentManifest[depType]
+          const declared = depRecord?.[peerName]
+          if (!declared) continue
+          const parentSpec = Spec.parse(peerName, declared, {
+            ...graph.mainImporter.options,
+            registry: fromNode.registry,
+          })
+          if (
+            !satisfies(
+              contextEntry.target.id,
+              parentSpec,
+              fromNode.location,
+              fromNode.projectRoot,
+              graph.monorepo,
+            )
+          ) {
+            // This parent won't use the context target anyway, so ignore mismatch.
+            ignoreContextMismatch = true
+            break
+          }
+          // Parent spec is satisfied by context target, so mismatch is meaningful.
+          break
+        }
+      }
+
+      if (ignoreContextMismatch) {
+        continue
+      }
+
       // Verify the context target would actually satisfy the peer spec
       const spec = Spec.parse(peerName, peerSpec, {
         ...graph.mainImporter.options,
@@ -365,11 +418,18 @@ export const forkPeerContext = (
   peerContext: PeerContext,
   entries: PeerContextEntryInput[],
 ): PeerContext => {
+  const forkKey = getForkKey(peerContext, entries)
+  const cached = graph.peerContextForkCache.get(forkKey)
+  if (cached) {
+    return cached
+  }
+
   // create a new peer context set
   const nextPeerContext: PeerContext = new Map()
   nextPeerContext.index = graph.nextPeerContextIndex()
   // register it in the graph
   graph.peerContexts[nextPeerContext.index] = nextPeerContext
+  graph.peerContextForkCache.set(forkKey, nextPeerContext)
 
   // copy existing entries marking them as inactive, it's also important
   // to note that specs and contextDependents are new objects so that changes
@@ -523,6 +583,47 @@ export const endPeerPlacement = (
    * values from the current peer context set.
    */
   resolvePeerDeps: () => {
+    const findFromQueuedPeerClosure = (
+      name: string,
+      peerSpec: Spec,
+    ): Node | undefined => {
+      // Explore peer edges of already-known sibling targets (and their peer targets),
+      // to prefer "local" providers over whatever was stored in the global peerContext.
+      const start = queuedEntries
+        .map(e => e.target)
+        .filter((n): n is Node => !!n)
+      const seen = new Set<string>()
+      const q: { n: Node; depth: number }[] = start.map(n => ({
+        n,
+        depth: 0,
+      }))
+      while (q.length) {
+        const cur = q.shift()!
+        if (seen.has(cur.n.id)) continue
+        seen.add(cur.n.id)
+        const edge = cur.n.edgesOut.get(name)
+        if (
+          edge?.to &&
+          satisfies(
+            edge.to.id,
+            peerSpec,
+            fromNode.location,
+            fromNode.projectRoot,
+            graph.monorepo,
+          )
+        ) {
+          return edge.to
+        }
+        if (cur.depth >= 3) continue
+        for (const e of cur.n.edgesOut.values()) {
+          if ((e.type === 'peer' || e.type === 'peerOptional') && e.to) {
+            q.push({ n: e.to, depth: cur.depth + 1 })
+          }
+        }
+      }
+      return undefined
+    }
+
     // iterate on the set of peer dependencies of the current node
     // and try to resolve them from the existing peer context set,
     // when possible, add them as edges in the graph right away, if not,
@@ -542,10 +643,11 @@ export const endPeerPlacement = (
         )
 
         if (
-          siblingEntry?.target &&
-          !node.edgesOut.has(spec.final.name) &&
+          (siblingEntry?.target ||
+            fromNode.edgesOut.get(spec.final.name)?.to) &&
           satisfies(
-            siblingEntry.target.id,
+            (siblingEntry?.target ||
+              fromNode.edgesOut.get(spec.final.name)?.to)!.id,
             spec,
             fromNode.location,
             fromNode.projectRoot,
@@ -555,7 +657,30 @@ export const endPeerPlacement = (
           // The sibling's resolved target satisfies the peer spec,
           // use it directly - this prioritizes the workspace's own
           // direct dependency over versions from other workspaces
-          graph.addEdge(type, spec, node, siblingEntry.target)
+          const siblingTarget =
+            siblingEntry?.target ||
+            fromNode.edgesOut.get(spec.final.name)?.to
+
+          // If this peer edge already exists but points somewhere else, override
+          // to the sibling target (workspace direct deps must win).
+          const existingPeerEdge = node.edgesOut.get(spec.final.name)
+          if (existingPeerEdge?.to && siblingTarget) {
+            if (existingPeerEdge.to !== siblingTarget) {
+              existingPeerEdge.to.edgesIn.delete(existingPeerEdge)
+              existingPeerEdge.to = siblingTarget
+              siblingTarget.edgesIn.add(existingPeerEdge)
+            }
+          } else {
+            graph.addEdge(type, spec, node, siblingTarget)
+          }
+          continue
+        }
+
+        // NEXT: try to resolve this peer from the peer-edge closure of
+        // known sibling targets (eg. peer dependency cycles).
+        const localPeer = findFromQueuedPeerClosure(spec.final.name, spec)
+        if (localPeer && !node.edgesOut.has(spec.final.name)) {
+          graph.addEdge(type, spec, node, localPeer)
           continue
         }
 
@@ -656,6 +781,7 @@ export const postPlacementPeerCheck = (
         childDep.peerContext = prevContext
         continue
       }
+      const __agentPrevIndex = childDep.peerContext.index
       childDep.peerContext = forkPeerContext(
         graph,
         childDep.peerContext,

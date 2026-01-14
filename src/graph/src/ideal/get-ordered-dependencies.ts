@@ -54,6 +54,13 @@ export const getOrderedDependencies = (
         return aIsPeer - bIsPeer
       }
 
+      // Prefer unscoped packages before scoped ones.
+      // This helps ensure common direct deps like "react" are placed before
+      // scoped deps that may need to resolve peers against them.
+      const aScoped = aSpec.name.startsWith('@') ? 1 : 0
+      const bScoped = bSpec.name.startsWith('@') ? 1 : 0
+      if (aScoped !== bScoped) return aScoped - bScoped
+
       return aSpec.name.localeCompare(bSpec.name, 'en')
     },
   )

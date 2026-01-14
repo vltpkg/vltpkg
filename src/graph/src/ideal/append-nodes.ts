@@ -193,11 +193,11 @@ const fetchManifestsForDeps = async (
     const validExistingNode =
       existingNode &&
       !existingNode.detached &&
-      // Regular deps can always reuse
+      // Regular deps can always reuse.
+      // Peer deps can reuse as well if their peer edges are compatible.
+      // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0·ṗ:*.)
       /* c8 ignore start */
-      (!peer ||
-        // otherwise reusing peer deps only in case of a peerSetHash match
-        existingNode.peerSetHash === fromNode.peerSetHash) &&
+      (!peer || peerCompatResult.compatible) &&
       // Check if existing node's peer edges are compatible with new parent
       peerCompatResult.compatible
     /* c8 ignore stop */
