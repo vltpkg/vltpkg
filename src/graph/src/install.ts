@@ -23,6 +23,7 @@ import { getImporterSpecs } from './ideal/get-importer-specs.ts'
 import { lockfile } from './index.ts'
 import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
+import { Monorepo } from '@vltpkg/workspaces'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -67,6 +68,15 @@ export const install = async (
     }
   }
 
+  // Load an unfiltered monorepo to ensure all workspace importers are
+  // included in the graph. This is necessary because the options.monorepo
+  // may be filtered by -w/--workspace flags, which would cause nodes/edges
+  // from other workspaces to be lost during graph construction.
+  const fullMonorepo = Monorepo.maybeLoad(options.projectRoot, {
+    packageJson: options.packageJson,
+    scurry: options.scurry,
+  })
+
   if (options.frozenLockfile) {
     // validates no add/remove operations are requested
     if (add?.modifiedDependencies) {
@@ -85,6 +95,7 @@ export const install = async (
     const lockfileGraph = loadVirtual({
       ...options,
       mainManifest,
+      monorepo: fullMonorepo,
     })
 
     const emptyAdd = Object.assign(
@@ -196,6 +207,7 @@ export const install = async (
       mainManifest,
       loadManifests: true,
       modifiers: undefined, // modifiers should not be used here
+      monorepo: fullMonorepo,
     })
     // if the actual graph has no dependencies, it's simpler to ignore it
     // this allows us to check for its availability later on for properly
@@ -212,6 +224,7 @@ export const install = async (
       modifiers,
       remove,
       remover,
+      monorepo: fullMonorepo,
     })
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
