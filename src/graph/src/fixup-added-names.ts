@@ -2,6 +2,7 @@ import { Spec } from '@vltpkg/spec'
 import type { Dependency } from './dependencies.ts'
 import type { Manifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
+import { calculateSaveValue } from './reify/calculate-save-value.ts'
 
 /**
  * When adding new dependencies, it's very common to not have a dependency
@@ -12,10 +13,13 @@ import type { SpecOptions } from '@vltpkg/spec'
  *
  * This helper function fixes unknown names in the `add` map by replacing
  * placeholder specs with the correct names from the provided manifest.
+ *
+ * It also fixes empty bareSpec values (from CLI args like `vlt install foo`)
+ * by calculating the proper semver range from the resolved manifest version.
  */
 export const fixupAddedNames = (
   add: Map<string, Dependency> | undefined,
-  manifest: Pick<Manifest, 'name'> | undefined,
+  manifest: Pick<Manifest, 'name' | 'version'> | undefined,
   options: SpecOptions,
   spec: Spec,
 ): Spec => {
@@ -35,5 +39,24 @@ export const fixupAddedNames = (
       add.set(manifest.name, n)
     }
   }
+
+  // Fix empty bareSpec (usually from CLI args like `vlt install foo`)
+  // by calculating the proper semver range from the resolved manifest version
+  if (add && manifest?.version && !spec.bareSpec) {
+    const addEntry = add.get(spec.name)
+    if (addEntry) {
+      const saveValue = calculateSaveValue(
+        spec.final.type,
+        spec,
+        undefined,
+        manifest.version,
+      )
+      if (saveValue && saveValue !== spec.bareSpec) {
+        spec = Spec.parse(spec.name, saveValue, options)
+        addEntry.spec = spec
+      }
+    }
+  }
+
   return spec
 }
