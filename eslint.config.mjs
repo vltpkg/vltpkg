@@ -308,7 +308,7 @@ export default [
   },
   {
     name: `${NAME}/registry`,
-    files: [`src/registry/**/*${extGlobs.ts}`],
+    files: [`src/vsr/**/*${extGlobs.ts}`],
     rules: {
       'jsdoc/reject-any-type': 'off',
       'jsdoc/reject-function-type': 'off',

@@ -25,7 +25,7 @@ const workspaces = {
     // Used within a resolve-import call
     ignoreDependencies: ['@vltpkg/gui'],
   },
-  'src/registry': {
+  'src/vsr': {
     entry: [...entry, 'src/bin/**/*.ts'],
     ignoreDependencies: ['@vltpkg/gui', 'esbuild'],
   },

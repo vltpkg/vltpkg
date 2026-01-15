@@ -6,7 +6,7 @@ alwaysApply: false
 # vltpkg Registry Development Rules
 
 ## Registry Overview
-The vltpkg registry (`src/registry/`) is a high-performance npm-compatible package registry built on Cloudflare Workers with:
+The vltpkg registry (`src/vsr/`) is a high-performance npm-compatible package registry built on Cloudflare Workers with:
 - **Multi-upstream support**: Routes packages to different registries (npm, jsr, local, custom)
 - **Intelligent caching**: Stale-while-revalidate strategy with racing cache for performance
 - **Proxy capabilities**: Can proxy packages from upstream registries while maintaining local packages
