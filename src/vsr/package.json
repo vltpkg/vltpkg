@@ -4,7 +4,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/registry"
+    "directory": "src/vsr"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "bin": "./dist/bin/vsr.js",
