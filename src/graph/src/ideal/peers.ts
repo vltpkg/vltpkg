@@ -537,8 +537,6 @@ export const endPeerPlacement = (
    * Add the new entries to the current peer context set.
    */
   putEntries: () => {
-    // keep track of whether we need to fork the current peer context set
-    let needsToForkPeerContext = false
     // add queued entries from this node parents along
     // with a self-ref to the current peer context set
     const prevEntries = [
@@ -549,14 +547,7 @@ export const endPeerPlacement = (
         type,
       },
     ]
-    addEntriesToPeerContext(
-      peerContext,
-      prevEntries,
-      fromNode,
-      graph.monorepo,
-    )
 
-    // add this node's direct dependencies next
     const nextEntries = [
       ...nextDeps.map(dep => ({ ...dep, dependent: node })),
       ...[...nextPeerDeps.values()].map(dep => ({
@@ -564,8 +555,27 @@ export const endPeerPlacement = (
         dependent: node,
       })),
     ]
+
+    const conflictPrev = checkEntriesToPeerContext(peerContext, prevEntries)
+    const conflictNext =
+      nextEntries.length > 0 &&
+      checkEntriesToPeerContext(peerContext, nextEntries)
+
+    if (conflictPrev || conflictNext) {
+      // returns all entries that need to be added to a forked context
+      // giving priority to parent entries (prevEntries) by placing them last
+      return [...nextEntries, ...prevEntries]
+    }
+
+    addEntriesToPeerContext(
+      peerContext,
+      prevEntries,
+      fromNode,
+      graph.monorepo,
+    )
+
     if (nextEntries.length > 0) {
-      needsToForkPeerContext = addEntriesToPeerContext(
+      addEntriesToPeerContext(
         peerContext,
         nextEntries,
         node,
@@ -573,9 +583,7 @@ export const endPeerPlacement = (
       )
     }
 
-    // returns all entries that need to be added to a forked
-    // context or undefined if the current context was updated directly
-    return needsToForkPeerContext ? nextEntries : undefined
+    return undefined
   },
 
   /**
@@ -781,7 +789,6 @@ export const postPlacementPeerCheck = (
         childDep.peerContext = prevContext
         continue
       }
-      const __agentPrevIndex = childDep.peerContext.index
       childDep.peerContext = forkPeerContext(
         graph,
         childDep.peerContext,
