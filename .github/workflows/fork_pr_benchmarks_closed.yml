@@ -7,7 +7,7 @@ on:
 jobs:
   archive_fork_pr_branch:
     name: Archive closed fork PR branch with Bencher
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
       - uses: bencherdev/bencher@main

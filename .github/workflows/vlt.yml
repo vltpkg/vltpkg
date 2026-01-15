@@ -14,7 +14,7 @@ concurrency:
 jobs:
   lint:
     name: Lint (with vlt)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -107,7 +107,7 @@ jobs:
         node-version: [22.x]
         platform:
           - name: Ubuntu
-            os: ubuntu-latest
+            os: blacksmith-4vcpu-ubuntu-2404
             shell: bash
       fail-fast: false
 
