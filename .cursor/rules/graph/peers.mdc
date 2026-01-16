@@ -58,6 +58,15 @@ actions:
       - The `peerSetHash` is appended to the node's DepID as part of the `extra` parameter
       - Multiple versions of the same package can exist in the graph, differentiated by their `peerSetHash`
 
+      ### Helper Functions
+      The module uses several internal helper functions to reduce duplication:
+      - **`nodeSatisfiesSpec(node, spec, fromNode, graph)`**: Wraps common `satisfies()` call pattern
+      - **`parseSpec(name, bareSpec, fromNode, graph)`**: Wraps `Spec.parse` with registry options
+      - **`getForkKey(peerContext, entries)`**: Generates cache key for fork operations (format: `{baseIndex}::{signatures}`)
+      - **`shouldIgnoreContextMismatch()`**: Prevents cross-importer peer context leakage
+      - **`buildIncompatibleResult()`**: Creates fork entry when target satisfies peer spec
+      - **`findFromPeerClosure()`**: BFS search through peer edges (depth limit: 3) for cycle resolution
+
   - type: architecture_guide
     message: |
       ## DepID Extra Parameter (`src/dep-id/src/browser.ts`)
@@ -120,6 +129,46 @@ actions:
       - Ensures consistent graph resolution when reusing nodes across peer contexts
       - Sorting happens in `addNode()` after adding new nodes to the set
 
+      ### Peer Context Fork Cache
+      - `graph.peerContextForkCache: Map<string, PeerContext>` caches forked contexts
+      - Prevents creating duplicate contexts for identical fork operations
+      - Key format: `{baseIndex}::{sortedEntrySignatures}` (constructed by `getForkKey()`)
+      - Significantly reduces memory usage in multi-workspace scenarios
+
+  - type: architecture_guide
+    message: |
+      ## Key Algorithms
+
+      ### `checkPeerEdgesCompatible()` - 3-Phase Compatibility Check
+      Determines if a node can be reused given the current peer context:
+
+      1. **CHECK 1 - Context Mismatch**: If peer context has a different target for this peer name
+         - Returns incompatible with fork entry pointing to context's preferred target
+         - Exception: Ignores mismatch if parent's direct dep satisfies a different spec
+
+      2. **CHECK 2 - Placed Siblings**: Check already-placed sibling nodes in the graph
+         - Searches `graph.nodesByName` for nodes that satisfy both parent's and peer's specs
+         - Returns incompatible if a better candidate exists
+
+      3. **CHECK 3 - Unplaced Siblings**: Check queued entries in peer context
+         - Ensures consistency with not-yet-placed siblings
+
+      ### `resolvePeerDeps()` - 4-Priority Resolution
+      Resolves peer dependencies after node placement:
+
+      1. **PRIORITY 1 - Direct Sibling**: Sibling of the same parent (same-level dep)
+      2. **PRIORITY 2 - Peer Closure**: BFS through peer edges of sibling targets (depth limit: 3)
+         - Handles cycles like A→B(peer)→C(peer)→A(peer)
+      3. **PRIORITY 3 - Peer Context**: Look up target in peer context entries
+      4. **PRIORITY 4 - Defer**: Add to next level deps for later resolution
+
+      ### `postPlacementPeerCheck()` - 3-Phase Post-Level Processing
+      Called after all nodes at a level are placed:
+
+      1. **PHASE 1 - Collect**: Call `putEntries()` on all children, collect which need forking
+      2. **PHASE 2 - Fork/Reuse**: Create new contexts or reuse sibling contexts when compatible
+      3. **PHASE 3 - Resolve**: Call `resolvePeerDeps()` on all children
+
   - type: integration_guide
     message: |
       ## Query Selectors for Peer Dependencies
@@ -152,6 +201,33 @@ actions:
 
       **Loading**: `loadNodes()` in `src/graph/src/lockfile/load-nodes.ts` uses `splitExtra()` to parse both modifier and peerSetHash from the DepID
 
+  - type: architecture_guide
+    message: |
+      ## Workspace Peer Context Isolation
+
+      Each workspace importer gets its **own peer context** to prevent cross-workspace peer leakage.
+
+      ### The Problem
+      Without isolation, peer targets from the root importer could incorrectly influence workspace dependencies:
+      - Root: `react@^18` → resolves to `react@18.3.1`
+      - Workspace A: `react@^19` with peer-dependent package
+      - Without isolation: peer dep might incorrectly resolve to 18.3.1
+
+      ### The Solution
+      In `appendNodes()`, non-main importers get fresh peer contexts:
+      ```typescript
+      if (fromNode.importer && fromNode !== graph.mainImporter) {
+        const nextPeerContext: PeerContext = new Map()
+        nextPeerContext.index = graph.nextPeerContextIndex()
+        graph.peerContexts[nextPeerContext.index] = nextPeerContext
+        initialPeerContext = nextPeerContext
+      }
+      ```
+
+      ### Test Coverage
+      - `test/ideal/peers.ts`: "multi-workspace peer context isolation with 4 workspaces"
+      - `test/ideal/append-nodes.ts`: "creates fresh peer context for non-main workspace importers"
+
   - type: development_workflow
     message: |
       ## Testing Peer Dependencies
@@ -164,6 +240,8 @@ actions:
       - Optional peer dependencies
       - Flexible peer ranges that can be satisfied by multiple versions
       - Mixed contexts where some dependencies share peers and others don't
+      - **Multi-workspace peer context isolation** (4+ workspaces with different peer requirements)
+      - **Outlier peer contexts** (workspace sibling with different peer targets)
 
       Testing patterns:
       - Build ideal graphs with packages declaring peer dependencies
@@ -172,6 +250,7 @@ actions:
       - Validate lockfile serialization includes peerSetHash
       - Confirm query selectors return expected peer dependency sets
       - Test mermaid diagram generation showing peer context isolation
+      - **Verify `graph.peerContexts.length > 1` for multi-workspace isolation**
 
   - type: development_workflow
     message: |
@@ -208,9 +287,40 @@ examples:
       const resolved = graph.findResolution(spec, fromNode, extra)
     output: "Resolution respects peer context isolation"
 
+  - input: |
+      // Using helper functions to check peer compatibility
+      import { nodeSatisfiesSpec, parseSpec, checkPeerEdgesCompatible } from './peers.ts'
+      
+      // Check if node satisfies spec with proper context
+      const satisfies = nodeSatisfiesSpec(candidateNode, peerSpec, fromNode, graph)
+      
+      // Parse spec with registry options from main importer
+      const spec = parseSpec('react', '^18.0.0', fromNode, graph)
+      
+      // Full peer compatibility check (3 phases)
+      const result = checkPeerEdgesCompatible(existingNode, fromNode, peerContext, graph)
+      if (!result.compatible && result.forkEntry) {
+        // Need to fork context with this entry
+        const forked = forkPeerContext(graph, peerContext, [result.forkEntry])
+      }
+    output: "Peer compatibility checked using helper functions and context forked if needed"
+
+  - input: |
+      // Peer context fork caching in action
+      // In forkPeerContext():
+      const cacheKey = getForkKey(base, entries)  // e.g., "0::react:^18.0.0:npm:react@18.3.1"
+      const cached = graph.peerContextForkCache.get(cacheKey)
+      if (cached) return cached  // Reuse existing forked context
+      
+      // Create new context and cache it
+      const forked = new Map(base) as PeerContext
+      forked.index = graph.nextPeerContextIndex()
+      graph.peerContextForkCache.set(cacheKey, forked)
+    output: "Fork caching prevents duplicate peer contexts in multi-workspace scenarios"
+
 metadata:
   priority: high
-  version: 1.1
+  version: 1.2
   tags:
     - graph
     - peer-dependencies
