@@ -32,6 +32,7 @@ import {
   postPlacementPeerCheck,
   startPeerPlacement,
 } from './peers.ts'
+import { compareByHasPeerDeps } from './sorting.ts'
 import type {
   PeerContext,
   AppendNodeEntry,
@@ -121,6 +122,75 @@ type NodePlacementTask = {
 }
 
 /**
+ * Try to find a compatible resolution for a dependency, checking peer context.
+ * If the first resolution candidate is incompatible with the peer context,
+ * try other candidates.
+ */
+const findCompatibleResolution = (
+  spec: Spec,
+  fromNode: Node,
+  graph: Graph,
+  peerContext: PeerContext,
+  queryModifier?: string,
+  _peer?: boolean,
+) => {
+  const candidates = graph.nodesByName.get(spec.final.name)
+  let existingNode = graph.findResolution(
+    spec,
+    fromNode,
+    queryModifier,
+  )
+
+  let peerCompatResult =
+    existingNode ?
+      checkPeerEdgesCompatible(
+        existingNode,
+        fromNode,
+        peerContext,
+        graph,
+      )
+    : { compatible: true }
+
+  // CANDIDATE FALLBACK: If first candidate is peer-incompatible, try others
+  if (
+    existingNode &&
+    !peerCompatResult.compatible &&
+    candidates &&
+    candidates.size > 1
+  ) {
+    for (const candidate of candidates) {
+      if (candidate === existingNode) continue
+      if (candidate.detached) continue
+      if (
+        !satisfies(
+          candidate.id,
+          spec.final,
+          fromNode.location,
+          graph.projectRoot,
+          graph.monorepo,
+        )
+      ) {
+        continue
+      }
+
+      const compat = checkPeerEdgesCompatible(
+        candidate,
+        fromNode,
+        peerContext,
+        graph,
+      )
+      if (compat.compatible) {
+        existingNode = candidate
+        peerCompatResult = compat
+        break
+      }
+    }
+  }
+
+  return { existingNode, peerCompatResult }
+}
+
+/**
  * Fetch manifests for dependencies and create placement tasks.
  *
  * This is Phase 1 of the breadth-first graph building process. For each
@@ -173,67 +243,15 @@ const fetchManifestsForDeps = async (
     const peer = type === 'peer' || type === 'peerOptional'
 
     // NODE REUSE LOGIC with peer compatibility
-    // `findResolution()` returns the first satisfying node by DepID order,
-    // but that node's peer edges might be incompatible with this parent's
-    // context. We need to check compatibility and potentially try alternatives.
-    const candidates = graph.nodesByName.get(spec.final.name)
-    let existingNode = graph.findResolution(
-      spec,
-      fromNode,
-      queryModifier,
-    )
-    let peerCompatResult: ReturnType<
-      typeof checkPeerEdgesCompatible
-    > =
-      existingNode ?
-        checkPeerEdgesCompatible(
-          existingNode,
-          fromNode,
-          peerContext,
-          graph,
-        )
-      : { compatible: true }
-
-    // CANDIDATE FALLBACK: If first candidate is peer-incompatible, try others
-    // This is crucial for multi-workspace scenarios where different workspaces
-    // may need different peer contexts for the same package.
-    if (
-      existingNode &&
-      !peerCompatResult.compatible &&
-      candidates &&
-      candidates.size > 1
-    ) {
-      for (const candidate of candidates) {
-        // Skip the one we already checked
-        if (candidate === existingNode) continue
-        // Skip detached nodes (stale from previous graph state)
-        if (candidate.detached) continue
-        // Skip if doesn't satisfy the spec
-        if (
-          !satisfies(
-            candidate.id,
-            spec.final,
-            fromNode.location,
-            graph.projectRoot,
-            graph.monorepo,
-          )
-        ) {
-          continue
-        }
-        // Check peer compatibility
-        const compat = checkPeerEdgesCompatible(
-          candidate,
-          fromNode,
-          peerContext,
-          graph,
-        )
-        if (compat.compatible) {
-          existingNode = candidate
-          peerCompatResult = compat
-          break
-        }
-      }
-    }
+    const { existingNode, peerCompatResult } =
+      findCompatibleResolution(
+        spec,
+        fromNode,
+        graph,
+        peerContext,
+        queryModifier,
+        peer,
+      )
 
     // Fork peer context if incompatible peer edges detected
     let effectivePeerContext = peerContext
@@ -322,34 +340,7 @@ const fetchManifestsForDeps = async (
   // so that peer dependencies can easily reuse already placed regular
   // dependencies as part of peer context set resolution also makes sure to
   // sort by the manifest name for deterministic order.
-  placementTasks.sort((a, b) => {
-    const aIsPeer =
-      (
-        a.manifest?.peerDependencies &&
-        Object.keys(a.manifest.peerDependencies).length > 0
-      ) ?
-        1
-      : 0
-    const bIsPeer =
-      (
-        b.manifest?.peerDependencies &&
-        Object.keys(b.manifest.peerDependencies).length > 0
-      ) ?
-        1
-      : 0
-
-    // regular dependencies first, peer dependencies last
-    if (aIsPeer !== bIsPeer) {
-      return aIsPeer - bIsPeer
-    }
-
-    // if both are in the same group,
-    // sort alphabetically by manifest name (fallback to spec.name)
-    const aName =
-      a.manifest?.name /* c8 ignore next */ || a.fetchTask.spec.name
-    const bName = b.manifest?.name || b.fetchTask.spec.name
-    return aName.localeCompare(bName, 'en')
-  })
+  placementTasks.sort(compareByHasPeerDeps)
 
   return placementTasks
 }

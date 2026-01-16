@@ -5,7 +5,7 @@ import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
 import { getDependencies, shorten } from '../dependencies.ts'
-import { getOrderedDependencies } from './get-ordered-dependencies.ts'
+import { compareByType, getOrderedDependencies } from './sorting.ts'
 import type {
   ProcessPlacementResultEntry,
   PeerContext,
@@ -15,7 +15,11 @@ import type {
 } from './types.ts'
 import type { SpecOptions } from '@vltpkg/spec'
 import { longDependencyTypes } from '@vltpkg/types'
-import type { DependencySaveType, Manifest } from '@vltpkg/types'
+import type {
+  DependencySaveType,
+  DependencyTypeLong,
+  Manifest,
+} from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
@@ -250,47 +254,52 @@ export const checkPeerEdgesCompatible = (
 
     // CHECK 3: Does parent's manifest declare this peer, with a different
     // satisfying node already in the graph?
-    const parentManifest = fromNode.manifest
-    if (parentManifest) {
-      for (const depType of longDependencyTypes) {
-        const declared = parentManifest[depType]?.[peerName]
-        if (!declared) continue
+    const manifest = fromNode.manifest
+    let declared: string | undefined
+    let declaredType: DependencyTypeLong | undefined
 
-        const parentSpec = parseSpec(
-          peerName,
-          declared,
-          fromNode,
-          graph,
-        )
-        // Search graph for a node that:
-        // - Has the right name
-        // - Differs from existing edge target
-        // - Satisfies both parent's spec AND peer spec
-        for (const candidateNode of graph.nodes.values()) {
-          if (
-            candidateNode.name === peerName &&
-            candidateNode.id !== existingEdge.to.id &&
-            nodeSatisfiesSpec(
-              candidateNode,
-              parentSpec,
-              fromNode,
-              graph,
-            ) &&
-            nodeSatisfiesSpec(
-              candidateNode,
-              peerSpec,
-              fromNode,
-              graph,
-            )
-          ) {
-            return {
-              compatible: false,
-              forkEntry: {
-                spec: peerSpec,
-                target: candidateNode,
-                type: shorten(depType),
-              },
-            }
+    if (manifest) {
+      for (const depType of longDependencyTypes) {
+        const deps = manifest[depType]
+        if (
+          deps &&
+          typeof deps === 'object' &&
+          !Array.isArray(deps) &&
+          peerName in deps
+        ) {
+          declared = (deps)[peerName]
+          declaredType = depType
+          break
+        }
+      }
+    }
+
+    if (declared && declaredType) {
+      const parentSpec = parseSpec(
+        peerName,
+        declared,
+        fromNode,
+        graph,
+      )
+      for (const candidateNode of graph.nodes.values()) {
+        if (
+          candidateNode.name === peerName &&
+          candidateNode.id !== existingEdge.to.id &&
+          nodeSatisfiesSpec(
+            candidateNode,
+            parentSpec,
+            fromNode,
+            graph,
+          ) &&
+          nodeSatisfiesSpec(candidateNode, peerSpec, fromNode, graph)
+        ) {
+          return {
+            compatible: false,
+            forkEntry: {
+              spec: peerSpec,
+              target: candidateNode,
+              type: shorten(declaredType),
+            },
           }
         }
       }
@@ -356,17 +365,7 @@ export const incompatibleSpecs = (
  */
 export const getOrderedPeerContextEntries = (
   entries: PeerContextEntryInput[],
-): PeerContextEntryInput[] =>
-  [...entries].sort((a, b) => {
-    const aIsPeer =
-      a.type === 'peer' || a.type === 'peerOptional' ? 1 : 0
-    const bIsPeer =
-      b.type === 'peer' || b.type === 'peerOptional' ? 1 : 0
-    if (aIsPeer !== bIsPeer) return aIsPeer - bIsPeer
-    const aName = a.target?.name ?? a.spec.name
-    const bName = b.target?.name ?? b.spec.name
-    return aName.localeCompare(bName, 'en')
-  })
+): PeerContextEntryInput[] => [...entries].sort(compareByType)
 
 /*
  * Checks if there are any conflicting versions for a given dependency
