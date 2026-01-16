@@ -97,6 +97,43 @@ e -->|"#64;isaacs/peer-dep-cycle-a#64;1"| g
 e -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.1.0"| h
 `
 
+exports[`test/ideal/peers.ts > TAP > integration tests > multi-workspace peer context isolation with 4 workspaces > should build graph with 4 workspaces having isolated peer contexts 1`] = `
+flowchart TD
+a("root:test-10")
+a -->|"react#64;^19.0.0"| b("npm:react#64;19.2.0")
+a -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0"| c("npm:#64;isaacs/peer-dep-cycle-a#64;2.0.0")
+c -->|"#64;isaacs/peer-dep-cycle-b#64;^2.0.0 (peer)"| l("npm:#64;isaacs/peer-dep-cycle-b#64;2.0.0")
+l -->|"#64;isaacs/peer-dep-cycle-c#64;^2.0.0 (peer)"| p("npm:#64;isaacs/peer-dep-cycle-c#64;2.0.0")
+p -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0 (peer)"| c
+a -->|"a#64;workspace:*"| d("workspace:a")
+d -->|"react#64;^18"| e("npm:react#64;18.3.1")
+e -->|"loose-envify#64;^1.1.0"| m("npm:loose-envify#64;1.4.0")
+m -->|"js-tokens#64;^3.0.0 || ^4.0.0"| q("npm:js-tokens#64;4.0.0")
+d -->|"#64;isaacs/peer-dep-cycle-a#64;^1.0.0"| f("npm:#64;isaacs/peer-dep-cycle-a#64;1.0.0")
+f -->|"#64;isaacs/peer-dep-cycle-b#64;^1.0.0 (peer)"| n("npm:#64;isaacs/peer-dep-cycle-b#64;1.0.0")
+n -->|"#64;isaacs/peer-dep-cycle-c#64;^1.0.0 (peer)"| o("npm:#64;isaacs/peer-dep-cycle-c#64;1.0.0")
+o -->|"#64;isaacs/peer-dep-cycle-a#64;^1.0.0 (peer)"| f
+d -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.0.0"| g("npm:#64;ruyadorno/package-with-flexible-peer-deps#64;1.1.0")
+g -->|"#64;isaacs/peer-dep-cycle-a#64;1 || 2 (peer)"| f
+g -->|"react#64;18 || 19 (peer)"| e
+g -->|"#64;isaacs/peer-dep-cycle-c#64;1 || 2 (peer)"| o
+a -->|"b#64;workspace:*"| h("workspace:b")
+h -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0"| c
+h -->|"react#64;^19"| b
+h -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.0.0"| i("npm:#64;ruyadorno/package-with-flexible-peer-deps#64;1.1.0")
+i -->|"#64;isaacs/peer-dep-cycle-a#64;1 || 2 (peer)"| c
+i -->|"#64;isaacs/peer-dep-cycle-c#64;1 || 2 (peer)"| p
+i -->|"react#64;18 || 19 (peer)"| b
+a -->|"c#64;workspace:*"| j("workspace:c")
+j -->|"#64;isaacs/peer-dep-cycle-a#64;^1.0.0"| f
+j -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.0.0"| g
+j -->|"react#64;^18"| e
+a -->|"d#64;workspace:*"| k("workspace:d")
+k -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0"| c
+k -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.0.0"| i
+k -->|"react#64;^19"| b
+`
+
 exports[`test/ideal/peers.ts > TAP > integration tests > outlier peer - workspace sibling with different peer context > should build graph with outlier peer context handling 1`] = `
 flowchart TD
 a("root:outlier-peer")

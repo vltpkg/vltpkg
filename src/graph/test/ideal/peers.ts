@@ -1303,6 +1303,94 @@ t.test('forkPeerContext', async t => {
       )
     },
   )
+
+  t.test(
+    'reuses cached forked context for identical fork operations',
+    async t => {
+      const spec1 = Spec.parse('foo', '^1.0.0', configData)
+      const spec2 = Spec.parse('bar', '^2.0.0', configData)
+
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      const originalContext = graph.peerContexts[0]!
+
+      // Add entry to original context
+      addEntriesToPeerContext(
+        originalContext,
+        [{ spec: spec1, type: 'peer' }],
+        graph.mainImporter,
+      )
+
+      const target = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec2,
+        { name: 'bar', version: '2.0.0' },
+      )!
+
+      // Fork with same entries twice
+      const forkEntries: PeerContextEntryInput[] = [
+        { spec: spec2, type: 'peer', target },
+      ]
+
+      const forked1 = forkPeerContext(
+        graph,
+        originalContext,
+        forkEntries,
+      )
+      const forked2 = forkPeerContext(
+        graph,
+        originalContext,
+        forkEntries,
+      )
+
+      // Should return the same cached context
+      t.equal(forked1, forked2, 'should return same cached context')
+      t.equal(forked1.index, forked2.index, 'should have same index')
+
+      // Cache should have one entry for this fork
+      t.equal(
+        graph.peerContextForkCache.size,
+        1,
+        'cache should have one entry',
+      )
+
+      // Fork with different entries should create new context
+      const spec3 = Spec.parse('baz', '^3.0.0', configData)
+      const differentForkEntries: PeerContextEntryInput[] = [
+        { spec: spec3, type: 'prod' },
+      ]
+
+      const forked3 = forkPeerContext(
+        graph,
+        originalContext,
+        differentForkEntries,
+      )
+
+      t.not(
+        forked3,
+        forked1,
+        'different entries should create different context',
+      )
+      t.not(
+        forked3.index,
+        forked1.index,
+        'should have different indices',
+      )
+      t.equal(
+        graph.peerContextForkCache.size,
+        2,
+        'cache should have two entries now',
+      )
+    },
+  )
 })
 
 t.test('startPeerPlacement', async t => {
@@ -2759,6 +2847,175 @@ t.test('integration tests', async t => {
           nodes: [...graph.nodes.values()],
         }),
         'should build a valid graph with complex peer interdependencies',
+      )
+    },
+  )
+
+  await t.test(
+    'multi-workspace peer context isolation with 4 workspaces',
+    async t => {
+      // This tests the scenario from the vlt-lock.json fixture where:
+      // - Root has @isaacs/peer-dep-cycle-a@^2.0.0 and react@^19.0.0
+      // - Workspaces a,c have @isaacs/peer-dep-cycle-a@^1.0.0, react@^18, flexible-peer-deps
+      // - Workspaces b,d have @isaacs/peer-dep-cycle-a@^2.0.0, react@^19, flexible-peer-deps
+      // Each workspace should get its own peer context, and similar workspaces
+      // should share contexts via fork caching
+      const mainManifest = {
+        name: 'test-10',
+        version: '1.0.0',
+        dependencies: {
+          '@isaacs/peer-dep-cycle-a': '^2.0.0',
+          react: '^19.0.0',
+        },
+      }
+      const aManifest = {
+        name: 'a',
+        version: '1.0.0',
+        dependencies: {
+          '@isaacs/peer-dep-cycle-a': '^1.0.0',
+          '@ruyadorno/package-with-flexible-peer-deps': '^1.0.0',
+          react: '^18',
+        },
+      }
+      const bManifest = {
+        name: 'b',
+        version: '1.0.0',
+        dependencies: {
+          '@isaacs/peer-dep-cycle-a': '^2.0.0',
+          '@ruyadorno/package-with-flexible-peer-deps': '^1.0.0',
+          react: '^19',
+        },
+      }
+      const cManifest = {
+        name: 'c',
+        version: '1.0.0',
+        dependencies: {
+          '@isaacs/peer-dep-cycle-a': '^1.0.0',
+          '@ruyadorno/package-with-flexible-peer-deps': '^1.0.0',
+          react: '^18',
+        },
+      }
+      const dManifest = {
+        name: 'd',
+        version: '1.0.0',
+        dependencies: {
+          '@isaacs/peer-dep-cycle-a': '^2.0.0',
+          '@ruyadorno/package-with-flexible-peer-deps': '^1.0.0',
+          react: '^19',
+        },
+      }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(mainManifest),
+        a: { 'package.json': JSON.stringify(aManifest) },
+        b: { 'package.json': JSON.stringify(bManifest) },
+        c: { 'package.json': JSON.stringify(cManifest) },
+        d: { 'package.json': JSON.stringify(dManifest) },
+        'vlt.json': JSON.stringify({
+          workspaces: { packages: ['a', 'b', 'c', 'd'] },
+        }),
+      })
+
+      const scurry = new PathScurry(dir)
+      const projectRoot = dir
+      const packageJson = new PackageJson()
+      const packageInfo = createMockPackageInfo()
+      const monorepo = new Monorepo(dir, {
+        config: { packages: ['a', 'b', 'c', 'd'] },
+        scurry,
+        packageJson,
+        load: { paths: ['a', 'b', 'c', 'd'] },
+      })
+      const options = {
+        projectRoot,
+        scurry,
+        mainManifest,
+        loadManifests: true,
+        packageJson,
+        monorepo,
+      }
+
+      const actual = actualLoad({
+        ...options,
+      })
+
+      const graph = await build({
+        ...options,
+        actual,
+        packageInfo,
+        remover: new RollbackRemove(),
+      })
+
+      t.matchSnapshot(
+        mermaidOutput({
+          edges: [...graph.edges],
+          importers: graph.importers,
+          nodes: [...graph.nodes.values()],
+        }),
+        'should build graph with 4 workspaces having isolated peer contexts',
+      )
+
+      // Verify workspaces a and c share context (both have react@18)
+      const wsA = [...graph.importers].find(
+        i => i.manifest?.name === 'a',
+      )
+      const wsC = [...graph.importers].find(
+        i => i.manifest?.name === 'c',
+      )
+      t.ok(wsA, 'workspace a should exist')
+      t.ok(wsC, 'workspace c should exist')
+
+      // Both should point to react@18.3.1
+      const reactEdgeA = wsA?.edgesOut.get('react')
+      const reactEdgeC = wsC?.edgesOut.get('react')
+      t.equal(
+        reactEdgeA?.to?.version,
+        '18.3.1',
+        'workspace a should have react@18.3.1',
+      )
+      t.equal(
+        reactEdgeC?.to?.version,
+        '18.3.1',
+        'workspace c should have react@18.3.1',
+      )
+
+      // Verify workspaces b and d share context (both have react@19)
+      const wsB = [...graph.importers].find(
+        i => i.manifest?.name === 'b',
+      )
+      const wsD = [...graph.importers].find(
+        i => i.manifest?.name === 'd',
+      )
+      t.ok(wsB, 'workspace b should exist')
+      t.ok(wsD, 'workspace d should exist')
+
+      const reactEdgeB = wsB?.edgesOut.get('react')
+      const reactEdgeD = wsD?.edgesOut.get('react')
+      t.equal(
+        reactEdgeB?.to?.version,
+        '19.2.0',
+        'workspace b should have react@19',
+      )
+      t.equal(
+        reactEdgeD?.to?.version,
+        '19.2.0',
+        'workspace d should have react@19',
+      )
+
+      // Verify flexible peer deps exists with different contexts
+      const flexibleNodes = graph.nodesByName.get(
+        '@ruyadorno/package-with-flexible-peer-deps',
+      )
+      t.ok(flexibleNodes, 'flexible peer deps nodes should exist')
+      // Should have at least 2 instances (one for react@18 context, one for react@19)
+      t.ok(
+        flexibleNodes!.size >= 2,
+        'should have multiple flexible peer deps instances for different contexts',
+      )
+
+      // Verify fork cache was used (same fork entries should reuse context)
+      t.ok(
+        graph.peerContextForkCache.size > 0,
+        'peer context fork cache should be populated',
       )
     },
   )
