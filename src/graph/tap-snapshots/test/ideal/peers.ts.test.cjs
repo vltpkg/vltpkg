@@ -103,17 +103,20 @@ a("root:outlier-peer")
 a -->|"#64;ruyadorno/package-peer-parent-2#64;^1.0.0"| b("npm:#64;ruyadorno/package-peer-parent-2#64;1.0.0")
 b -->|"react#64;^19.1.0"| f("npm:react#64;19.2.0")
 b -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0"| g("npm:#64;isaacs/peer-dep-cycle-a#64;2.0.0")
-g -->|"#64;isaacs/peer-dep-cycle-b#64;^2.0.0 (peer)"| j("npm:#64;isaacs/peer-dep-cycle-b#64;2.0.0")
-j -->|"#64;isaacs/peer-dep-cycle-c#64;^2.0.0 (peer)"| i("npm:#64;isaacs/peer-dep-cycle-c#64;2.0.0")
-i -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0 (peer)"| g
-b -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.1.0"| e("npm:#64;ruyadorno/package-with-flexible-peer-deps#64;1.1.0")
-e -->|"react#64;18 || 19 (peer)"| c("npm:react#64;18.3.1")
-c -->|"loose-envify#64;^1.1.0"| h("npm:loose-envify#64;1.4.0")
-h -->|"js-tokens#64;^3.0.0 || ^4.0.0"| k("npm:js-tokens#64;4.0.0")
-e -->|"#64;isaacs/peer-dep-cycle-a#64;1 || 2 (peer)"| g
-e -->|"#64;isaacs/peer-dep-cycle-c#64;1 || 2 (peer)"| i
-a -->|"react#64;18"| c
+g -->|"#64;isaacs/peer-dep-cycle-b#64;^2.0.0 (peer)"| k("npm:#64;isaacs/peer-dep-cycle-b#64;2.0.0")
+k -->|"#64;isaacs/peer-dep-cycle-c#64;^2.0.0 (peer)"| j("npm:#64;isaacs/peer-dep-cycle-c#64;2.0.0")
+j -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0 (peer)"| g
+b -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.1.0"| h("npm:#64;ruyadorno/package-with-flexible-peer-deps#64;1.1.0")
+h -->|"#64;isaacs/peer-dep-cycle-a#64;1 || 2 (peer)"| g
+h -->|"react#64;18 || 19 (peer)"| f
+h -->|"#64;isaacs/peer-dep-cycle-c#64;1 || 2 (peer)"| j
+a -->|"react#64;18"| c("npm:react#64;18.3.1")
+c -->|"loose-envify#64;^1.1.0"| i("npm:loose-envify#64;1.4.0")
+i -->|"js-tokens#64;^3.0.0 || ^4.0.0"| l("npm:js-tokens#64;4.0.0")
 a -->|"a#64;workspace:*"| d("workspace:a")
 d -->|"react#64;18"| c
-d -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.0.0"| e
+d -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.0.0"| e("npm:#64;ruyadorno/package-with-flexible-peer-deps#64;1.1.0")
+e -->|"react#64;18 || 19 (peer)"| c
+e -->|"#64;isaacs/peer-dep-cycle-a#64;1 || 2 (peer)"| g
+e -->|"#64;isaacs/peer-dep-cycle-c#64;1 || 2 (peer)"| j
 `
