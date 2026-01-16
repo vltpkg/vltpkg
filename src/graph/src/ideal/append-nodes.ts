@@ -4,6 +4,7 @@ import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { satisfies } from '@vltpkg/satisfies'
 import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
 import type {
   DependencyTypeLong,
@@ -162,14 +163,18 @@ const fetchManifestsForDeps = async (
 
     // skip reusing nodes for peer deps since their reusability
     // is handled ahead-of-time during its parent's placement
-    const existingNode = graph.findResolution(
+    // IMPORTANT: `findResolution()` returns the first satisfying node by id,
+    // but for peer-dependent packages we must prefer a candidate whose peer
+    // edges are compatible with the current parent's context/siblings.
+    const candidates = graph.nodesByName.get(spec.final.name)
+    let existingNode = graph.findResolution(
       spec,
       fromNode,
       queryModifier,
     )
-
-    // Check if existing node's peer edges are compatible with new parent
-    const peerCompatResult =
+    let peerCompatResult: ReturnType<
+      typeof checkPeerEdgesCompatible
+    > =
       existingNode ?
         checkPeerEdgesCompatible(
           existingNode,
@@ -178,6 +183,42 @@ const fetchManifestsForDeps = async (
           graph,
         )
       : { compatible: true }
+
+    // If the first satisfying candidate isn't compatible, try other candidates
+    // deterministically until we find one that is compatible.
+    if (
+      existingNode &&
+      !peerCompatResult.compatible &&
+      candidates &&
+      candidates.size > 1
+    ) {
+      for (const candidate of candidates) {
+        if (candidate === existingNode) continue
+        if (candidate.detached) continue
+        if (
+          !satisfies(
+            candidate.id,
+            spec.final,
+            fromNode.location,
+            graph.projectRoot,
+            graph.monorepo,
+          )
+        ) {
+          continue
+        }
+        const compat = checkPeerEdgesCompatible(
+          candidate,
+          fromNode,
+          peerContext,
+          graph,
+        )
+        if (compat.compatible) {
+          existingNode = candidate
+          peerCompatResult = compat
+          break
+        }
+      }
+    }
 
     // Fork peer context if incompatible peer edges detected
     let effectivePeerContext = peerContext
@@ -582,13 +623,20 @@ export const appendNodes = async (
   if (seen.has(fromNode.id)) return
   seen.add(fromNode.id)
 
-  // Get the initial peer context from the graph
-  const [initialPeerContext] = graph.peerContexts
+  // Choose initial peer context for this traversal.
+  // IMPORTANT: do not reuse the main (index 0) context for non-main importers,
+  // otherwise peer context targets from the root importer leak into workspaces.
+  let initialPeerContext = graph.peerContexts[0]
   /* c8 ignore start - impossible */
-  if (!initialPeerContext) {
+  if (!initialPeerContext)
     throw error('no initial peer context found in graph')
-  }
   /* c8 ignore stop */
+  if (fromNode.importer && fromNode !== graph.mainImporter) {
+    const nextPeerContext: PeerContext = new Map()
+    nextPeerContext.index = graph.nextPeerContextIndex()
+    graph.peerContexts[nextPeerContext.index] = nextPeerContext
+    initialPeerContext = nextPeerContext
+  }
 
   // Use a queue for breadth-first processing
   let currentLevelDeps: AppendNodeEntry[] = [

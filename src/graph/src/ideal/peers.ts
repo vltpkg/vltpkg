@@ -556,7 +556,10 @@ export const endPeerPlacement = (
       })),
     ]
 
-    const conflictPrev = checkEntriesToPeerContext(peerContext, prevEntries)
+    const conflictPrev = checkEntriesToPeerContext(
+      peerContext,
+      prevEntries,
+    )
     const conflictNext =
       nextEntries.length > 0 &&
       checkEntriesToPeerContext(peerContext, nextEntries)
@@ -624,7 +627,10 @@ export const endPeerPlacement = (
         }
         if (cur.depth >= 3) continue
         for (const e of cur.n.edgesOut.values()) {
-          if ((e.type === 'peer' || e.type === 'peerOptional') && e.to) {
+          if (
+            (e.type === 'peer' || e.type === 'peerOptional') &&
+            e.to
+          ) {
             q.push({ n: e.to, depth: cur.depth + 1 })
           }
         }
@@ -686,7 +692,10 @@ export const endPeerPlacement = (
 
         // NEXT: try to resolve this peer from the peer-edge closure of
         // known sibling targets (eg. peer dependency cycles).
-        const localPeer = findFromQueuedPeerClosure(spec.final.name, spec)
+        const localPeer = findFromQueuedPeerClosure(
+          spec.final.name,
+          spec,
+        )
         if (localPeer && !node.edgesOut.has(spec.final.name)) {
           graph.addEdge(type, spec, node, localPeer)
           continue
@@ -751,11 +760,7 @@ export const postPlacementPeerCheck = (
 
     const needsForking = new Map<
       ProcessPlacementResultEntry,
-      {
-        dependent: Node
-        spec: Spec
-        type: DependencySaveType
-      }[]
+      PeerContextEntryInput[]
     >()
     // first iterate on all child deps, adding entries to the current
     // context and collect the information on which ones need forking
@@ -789,6 +794,7 @@ export const postPlacementPeerCheck = (
         childDep.peerContext = prevContext
         continue
       }
+
       childDep.peerContext = forkPeerContext(
         graph,
         childDep.peerContext,
