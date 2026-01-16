@@ -1,5 +1,8 @@
 import { appendNodes } from './append-nodes.ts'
-import { compareByHasPeerDeps, getNodeOrderedDependencies } from './sorting.ts'
+import {
+  compareByHasPeerDeps,
+  getNodeOrderedDependencies,
+} from './sorting.ts'
 import type { PathScurry } from 'path-scurry'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'

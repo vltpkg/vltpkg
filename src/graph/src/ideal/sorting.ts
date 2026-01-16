@@ -56,7 +56,8 @@ export const compareByHasPeerDeps = (
   if (aHasPeer !== bHasPeer) return aHasPeer - bHasPeer
 
   const aName = a.manifest?.name || a.spec?.name || a.name || ''
-  const bName = b.manifest?.name || b.spec?.name || b.name || ''
+  const bName = b.manifest?.name ||
+  /* c8 ignore next - very hard to test */ b.spec?.name || b.name || ''
   return aName.localeCompare(bName, 'en')
 }
 

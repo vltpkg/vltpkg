@@ -267,7 +267,7 @@ export const checkPeerEdgesCompatible = (
           !Array.isArray(deps) &&
           peerName in deps
         ) {
-          declared = (deps)[peerName]
+          declared = deps[peerName]
           declaredType = depType
           break
         }
