@@ -609,7 +609,8 @@ export const endPeerPlacement = (
         depth: 0,
       }))
       while (q.length) {
-        const cur = q.shift()!
+        const cur = q.shift()
+        if (!cur) break
         if (seen.has(cur.n.id)) continue
         seen.add(cur.n.id)
         const edge = cur.n.edgesOut.get(name)
@@ -656,12 +657,14 @@ export const endPeerPlacement = (
             (e.target?.name ?? e.spec.final.name) === spec.final.name,
         )
 
+        const siblingTarget =
+          siblingEntry?.target ??
+          fromNode.edgesOut.get(spec.final.name)?.to
+
         if (
-          (siblingEntry?.target ||
-            fromNode.edgesOut.get(spec.final.name)?.to) &&
+          siblingTarget &&
           satisfies(
-            (siblingEntry?.target ||
-              fromNode.edgesOut.get(spec.final.name)?.to)!.id,
+            siblingTarget.id,
             spec,
             fromNode.location,
             fromNode.projectRoot,
@@ -671,14 +674,11 @@ export const endPeerPlacement = (
           // The sibling's resolved target satisfies the peer spec,
           // use it directly - this prioritizes the workspace's own
           // direct dependency over versions from other workspaces
-          const siblingTarget =
-            siblingEntry?.target ||
-            fromNode.edgesOut.get(spec.final.name)?.to
 
           // If this peer edge already exists but points somewhere else, override
           // to the sibling target (workspace direct deps must win).
           const existingPeerEdge = node.edgesOut.get(spec.final.name)
-          if (existingPeerEdge?.to && siblingTarget) {
+          if (existingPeerEdge?.to) {
             if (existingPeerEdge.to !== siblingTarget) {
               existingPeerEdge.to.edgesIn.delete(existingPeerEdge)
               existingPeerEdge.to = siblingTarget
