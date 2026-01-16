@@ -444,6 +444,76 @@ t.test('checkPeerEdgesCompatible', async t => {
       t.same(result, { compatible: true })
     },
   )
+
+  t.test(
+    'ignores peerContext mismatch when parent declares incompatible direct dep',
+    async t => {
+      // Cover the "ignoreContextMismatch" branch: if the parent declares
+      // a direct dep on the peer name, and the peerContext target does NOT
+      // satisfy the parent's declared spec, then the mismatch should be ignored.
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+        // parent declares react@^19, so a peerContext target react@18 is not applicable
+        dependencies: { react: '^19.0.0' },
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react19 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        { name: 'react', version: '19.2.0' },
+      )!
+
+      // existing node has a peer edge pointing to react19
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('react', '^18.0.0', configData),
+        node,
+        react19,
+      )
+
+      // peerContext says react18, which mismatches react19 but also does NOT satisfy parent react@^19,
+      // so mismatch should be ignored and treated as compatible.
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+        target: react18,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        graph.mainImporter,
+        peerContext,
+        graph,
+      )
+      t.same(result, { compatible: true })
+    },
+  )
 })
 
 t.test('retrievePeerContextHash', async t => {
@@ -1965,6 +2035,594 @@ t.test('endPeerPlacement', async t => {
       )
     },
   )
+
+  t.test(
+    'putEntries returns fork entries when conflicts detected',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Seed context with foo@^1
+      addEntriesToPeerContext(
+        peerContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.0', configData),
+            type: 'peer',
+          },
+        ],
+        graph.mainImporter,
+      )
+
+      // Now try to putEntries with conflicting foo@^2
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map()
+      nextPeerDeps.set('foo', {
+        spec: Spec.parse('foo', '^2.0.0', configData),
+        type: 'peer' as const,
+      })
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps as any,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+
+      const forkEntries = end.putEntries()
+      t.ok(forkEntries, 'should return fork entries')
+      t.ok(
+        forkEntries?.some(e => e.spec.final.name === 'foo'),
+        'fork entries should include conflicting peer dep',
+      )
+    },
+  )
+
+  t.test(
+    'resolves peer from queued peer closure when no sibling target/context target',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const peerTarget = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('peer-pkg', '^1.0.0', configData),
+        { name: 'peer-pkg', version: '1.0.0' },
+      )!
+      const provider = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('provider', '^1.0.0', configData),
+        { name: 'provider', version: '1.0.0' },
+      )!
+      // provider exposes peer-pkg via a peer edge; closure should discover it
+      graph.addEdge(
+        'peer',
+        Spec.parse('peer-pkg', '^1.0.0', configData),
+        provider,
+        peerTarget,
+      )
+
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        [
+          'peer-pkg',
+          {
+            spec: Spec.parse('peer-pkg', '^1.0.0', configData),
+            type: 'peer' as const,
+          },
+        ],
+      ])
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+        {
+          spec: Spec.parse('provider', '^1.0.0', configData),
+          target: provider,
+          type: 'prod',
+        },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps as any,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.resolvePeerDeps()
+
+      t.equal(
+        nextDeps.length,
+        0,
+        'peer should be resolved via closure',
+      )
+      const edge = node.edgesOut.get('peer-pkg')
+      t.ok(edge?.to, 'edge should have target')
+      t.equal(
+        edge?.to?.id,
+        peerTarget.id,
+        'should link to closure-found target',
+      )
+    },
+  )
+
+  t.test(
+    'peer closure explores peer edges and returns undefined when no satisfying provider',
+    async t => {
+      // Cover branch outcomes inside findFromQueuedPeerClosure:
+      // - edge exists but does NOT satisfy spec
+      // - node has no edge for name (edge?.to falsy)
+      // - enqueue via peer edges (q.push path)
+      const peerContext: PeerContext = new Map()
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const peerV1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('peer-pkg', '^1.0.0', configData),
+        { name: 'peer-pkg', version: '1.0.0' },
+      )!
+
+      const provider2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('provider-2', '^1.0.0', configData),
+        { name: 'provider-2', version: '1.0.0' },
+      )!
+
+      const provider1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('provider-1', '^1.0.0', configData),
+        { name: 'provider-1', version: '1.0.0' },
+      )!
+
+      // provider1 has an edge to peer-pkg, but it won't satisfy ^2.0.0
+      graph.addEdge(
+        'peer',
+        Spec.parse('peer-pkg', '^1.0.0', configData),
+        provider1,
+        peerV1,
+      )
+      // provider1 also has a peer edge to provider2, so closure will enqueue and explore further
+      graph.addEdge(
+        'peer',
+        Spec.parse('provider-2', '^1.0.0', configData),
+        provider1,
+        provider2,
+      )
+
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        [
+          'peer-pkg',
+          {
+            // Require v2, but only v1 exists. Closure should explore and then fail.
+            spec: Spec.parse('peer-pkg', '^2.0.0', configData),
+            type: 'peer' as const,
+          },
+        ],
+      ])
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+        {
+          spec: Spec.parse('provider-1', '^1.0.0', configData),
+          target: provider1,
+          type: 'prod',
+        },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps as any,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.resolvePeerDeps()
+
+      t.equal(
+        nextDeps.length,
+        1,
+        'unsatisfied peer should fall back to nextDeps',
+      )
+      t.equal(nextDeps[0].spec.final.name, 'peer-pkg')
+    },
+  )
+
+  t.test(
+    'peer closure skips already-seen nodes in queue',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const provider = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('provider', '^1.0.0', configData),
+        { name: 'provider', version: '1.0.0' },
+      )!
+
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        [
+          'missing',
+          {
+            spec: Spec.parse('missing', '^1.0.0', configData),
+            type: 'peer' as const,
+          },
+        ],
+      ])
+
+      // Duplicate provider target so closure queue will contain same node twice.
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+        {
+          spec: Spec.parse('provider', '^1.0.0', configData),
+          target: provider,
+          type: 'prod',
+        },
+        {
+          spec: Spec.parse('provider', '^1.0.0', configData),
+          target: provider,
+          type: 'prod',
+        },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps as any,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.resolvePeerDeps()
+
+      t.equal(
+        nextDeps.length,
+        1,
+        'unsatisfied peer should fall back to nextDeps',
+      )
+      t.equal(nextDeps[0].spec.final.name, 'missing')
+    },
+  )
+
+  t.test('peer closure respects depth limit (>=3)', async t => {
+    const peerContext: PeerContext = new Map()
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const p0 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('p0', '^1.0.0', configData),
+      { name: 'p0', version: '1.0.0' },
+    )!
+    const p1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('p1', '^1.0.0', configData),
+      { name: 'p1', version: '1.0.0' },
+    )!
+    const p2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('p2', '^1.0.0', configData),
+      { name: 'p2', version: '1.0.0' },
+    )!
+    const p3 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('p3', '^1.0.0', configData),
+      { name: 'p3', version: '1.0.0' },
+    )!
+    const p4 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('p4', '^1.0.0', configData),
+      { name: 'p4', version: '1.0.0' },
+    )!
+
+    // chain peer edges to reach depth=3 (p3), which should be skipped for further traversal
+    graph.addEdge(
+      'peer',
+      Spec.parse('p1', '^1.0.0', configData),
+      p0,
+      p1,
+    )
+    graph.addEdge(
+      'peer',
+      Spec.parse('p2', '^1.0.0', configData),
+      p1,
+      p2,
+    )
+    graph.addEdge(
+      'peer',
+      Spec.parse('p3', '^1.0.0', configData),
+      p2,
+      p3,
+    )
+    graph.addEdge(
+      'peer',
+      Spec.parse('p4', '^1.0.0', configData),
+      p3,
+      p4,
+    )
+
+    const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      nodeSpec,
+      { name: 'my-pkg', version: '1.0.0' },
+    )!
+
+    const nextDeps: any[] = []
+    const nextPeerDeps = new Map([
+      [
+        'missing',
+        {
+          spec: Spec.parse('missing', '^1.0.0', configData),
+          type: 'peer' as const,
+        },
+      ],
+    ])
+
+    const queuedEntries: PeerContextEntryInput[] = [
+      { spec: nodeSpec, target: node, type: 'prod' },
+      {
+        spec: Spec.parse('p0', '^1.0.0', configData),
+        target: p0,
+        type: 'prod',
+      },
+    ]
+
+    const end = endPeerPlacement(
+      peerContext,
+      nextDeps,
+      nextPeerDeps as any,
+      graph,
+      nodeSpec,
+      graph.mainImporter,
+      node,
+      'prod',
+      queuedEntries,
+    )
+    end.resolvePeerDeps()
+
+    t.equal(nextDeps.length, 1)
+    t.equal(nextDeps[0].spec.final.name, 'missing')
+  })
+
+  t.test(
+    'peer closure handles unexpected undefined shift defensively',
+    async t => {
+      // Force the defensive `if (!cur) break` branch by patching Array.prototype.shift
+      const orig = Array.prototype.shift
+      let once = true
+      ;(Array.prototype as any).shift = function () {
+        if (once) {
+          once = false
+          return undefined
+        }
+        return orig.call(this)
+      }
+
+      try {
+        const peerContext: PeerContext = new Map()
+        const mainManifest = { name: 'my-project', version: '1.0.0' }
+        const graph = new Graph({
+          projectRoot: t.testdirName,
+          ...configData,
+          mainManifest,
+        })
+
+        const provider = graph.placePackage(
+          graph.mainImporter,
+          'prod',
+          Spec.parse('provider', '^1.0.0', configData),
+          { name: 'provider', version: '1.0.0' },
+        )!
+
+        const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+        const node = graph.placePackage(
+          graph.mainImporter,
+          'prod',
+          nodeSpec,
+          { name: 'my-pkg', version: '1.0.0' },
+        )!
+
+        const nextDeps: any[] = []
+        const nextPeerDeps = new Map([
+          [
+            'peer-pkg',
+            {
+              spec: Spec.parse('peer-pkg', '^1.0.0', configData),
+              type: 'peer' as const,
+            },
+          ],
+        ])
+        const queuedEntries: PeerContextEntryInput[] = [
+          { spec: nodeSpec, target: node, type: 'prod' },
+          {
+            spec: Spec.parse('provider', '^1.0.0', configData),
+            target: provider,
+            type: 'prod',
+          },
+        ]
+
+        const end = endPeerPlacement(
+          peerContext,
+          nextDeps,
+          nextPeerDeps as any,
+          graph,
+          nodeSpec,
+          graph.mainImporter,
+          node,
+          'prod',
+          queuedEntries,
+        )
+        end.resolvePeerDeps()
+
+        t.equal(nextDeps.length, 1)
+        t.equal(nextDeps[0].spec.final.name, 'peer-pkg')
+      } finally {
+        Array.prototype.shift = orig
+      }
+    },
+  )
+
+  t.test('rewires existing peer edge to sibling target', async t => {
+    const peerContext: PeerContext = new Map()
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const wrong = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('peer-pkg', '^1.0.0', configData),
+      { name: 'peer-pkg', version: '1.0.0' },
+    )!
+    const right = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('peer-pkg', '^1.0.0', configData),
+      { name: 'peer-pkg', version: '1.0.1' },
+    )!
+
+    const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      nodeSpec,
+      { name: 'my-pkg', version: '1.0.0' },
+    )!
+
+    // Existing peer edge points to wrong target
+    graph.addEdge(
+      'peer',
+      Spec.parse('peer-pkg', '^1.0.0', configData),
+      node,
+      wrong,
+    )
+
+    const nextDeps: any[] = []
+    const nextPeerDeps = new Map([
+      [
+        'peer-pkg',
+        {
+          spec: Spec.parse('peer-pkg', '^1.0.0', configData),
+          type: 'peer' as const,
+        },
+      ],
+    ])
+    const queuedEntries: PeerContextEntryInput[] = [
+      { spec: nodeSpec, target: node, type: 'prod' },
+      {
+        spec: Spec.parse('peer-pkg', '^1.0.0', configData),
+        target: right,
+        type: 'prod',
+      },
+    ]
+
+    const end = endPeerPlacement(
+      peerContext,
+      nextDeps,
+      nextPeerDeps as any,
+      graph,
+      nodeSpec,
+      graph.mainImporter,
+      node,
+      'prod',
+      queuedEntries,
+    )
+    end.resolvePeerDeps()
+
+    t.equal(nextDeps.length, 0)
+    const edge = node.edgesOut.get('peer-pkg')
+    t.equal(edge?.to?.id, right.id, 'should rewire to sibling target')
+  })
 })
 
 t.test('nextPeerContextIndex', async t => {
