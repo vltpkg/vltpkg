@@ -14,13 +14,13 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '·npm·bar@1.0.0': [
+    '~npm~bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '·npm·foo@1.0.0': [
+    '~npm~foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -28,14 +28,14 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
       <2 empty items>,
       { foo: './bin.js' }
     ],
-    'file·a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ],
-    'git·github%3Afoo§bar·': [ 0, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ]
+    'file~a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ],
+    'git~github%3Afoo+bar~': [ 0, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ]
   },
   edges: {
-    'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0',
-    'file·. a': 'prod file:./a file·a',
-    'file·. bar': 'prod github:foo/bar git·github%3Afoo§bar·'
+    'file~. missing': 'prod ^1.0.0 MISSING',
+    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
+    'file~. a': 'prod file:./a file~a',
+    'file~. bar': 'prod github:foo/bar git~github%3Afoo+bar~'
   }
 }
 `
@@ -45,13 +45,13 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '·npm·bar@1.0.0': [
+    '~npm~bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '·npm·foo@1.0.0': [
+    '~npm~foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -59,13 +59,13 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
       <2 empty items>,
       { foo: './bin.js' }
     ],
-    'file·a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ]
+    'file~a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ]
   },
   edges: {
-    'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. bar': 'prod ^1.0.0 ·npm·bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0',
-    'file·. a': 'prod file:./a file·a'
+    'file~. missing': 'prod ^1.0.0 MISSING',
+    'file~. bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
+    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
+    'file~. a': 'prod file:./a file~a'
   }
 }
 `
@@ -75,13 +75,13 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '·npm·bar@1.0.0': [
+    '~npm~bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '·npm·foo@1.0.0': [
+    '~npm~foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -91,9 +91,9 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
     ]
   },
   edges: {
-    'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. bar': 'prod ^1.0.0 ·npm·bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0'
+    'file~. missing': 'prod ^1.0.0 MISSING',
+    'file~. bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
+    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0'
   }
 }
 `
@@ -103,19 +103,19 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '·npm·bar@1.0.0': [
+    '~npm~bar@1.0.0': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.0.0', dependencies: [Object] }
     ],
-    '·npm·baz@1.0.0': [
+    '~npm~baz@1.0.0': [
       0,
       'baz',
       <3 empty items>,
       { name: 'baz', version: '1.0.0', dist: [Object] }
     ],
-    '·npm·foo@1.0.0': [
+    '~npm~foo@1.0.0': [
       0,
       'foo',
       <3 empty items>,
@@ -125,11 +125,11 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
     ]
   },
   edges: {
-    'file·. missing': 'prod ^1.0.0 MISSING',
-    'file·. bar': 'prod ^1.0.0 ·npm·bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ·npm·foo@1.0.0',
-    '·npm·bar@1.0.0 baz': 'prod ^1.0.0 ·npm·baz@1.0.0',
-    '·npm·baz@1.0.0 foo': 'prod ^1.0.0 ·npm·foo@1.0.0'
+    'file~. missing': 'prod ^1.0.0 MISSING',
+    'file~. bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
+    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
+    '~npm~bar@1.0.0 baz': 'prod ^1.0.0 ~npm~baz@1.0.0',
+    '~npm~baz@1.0.0 foo': 'prod ^1.0.0 ~npm~foo@1.0.0'
   }
 }
 `
@@ -146,7 +146,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
-    "id": "file·.",
+    "id": "file~.",
     "importer": true,
     "integrity": undefined,
     "mainImporter": true,
@@ -207,7 +207,7 @@ Set {
                 "groups": Array [
                   "packages",
                 ],
-                "id": "workspace·packages§b",
+                "id": "workspace~packages+b",
                 "manifest": Object {
                   "name": "b",
                   [Symbol.for(indent)]: "",
@@ -222,7 +222,7 @@ Set {
                 "groups": Array [
                   "packages",
                 ],
-                "id": "workspace·packages§a",
+                "id": "workspace~packages+a",
                 "manifest": Object {
                   "name": "a",
                   [Symbol.for(indent)]: "",
@@ -265,7 +265,7 @@ Set {
           "edgesOut": Map {},
           "extracted": false,
           "graph": "Graph {}",
-          "id": "workspace·packages§b",
+          "id": "workspace~packages+b",
           "importer": true,
           "integrity": undefined,
           "mainImporter": false,
@@ -331,7 +331,7 @@ Set {
                 "groups": Array [
                   "packages",
                 ],
-                "id": "workspace·packages§b",
+                "id": "workspace~packages+b",
                 "manifest": Object {
                   "name": "b",
                   [Symbol.for(indent)]: "",
@@ -346,7 +346,7 @@ Set {
                 "groups": Array [
                   "packages",
                 ],
-                "id": "workspace·packages§a",
+                "id": "workspace~packages+a",
                 "manifest": Object {
                   "name": "a",
                   [Symbol.for(indent)]: "",
@@ -389,7 +389,7 @@ Set {
           "edgesOut": Map {},
           "extracted": false,
           "graph": "Graph {}",
-          "id": "workspace·packages§a",
+          "id": "workspace~packages+a",
           "importer": true,
           "integrity": undefined,
           "mainImporter": false,
@@ -422,7 +422,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
-    "id": "workspace·packages§b",
+    "id": "workspace~packages+b",
     "importer": true,
     "integrity": undefined,
     "mainImporter": false,
@@ -451,7 +451,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
-    "id": "workspace·packages§a",
+    "id": "workspace~packages+a",
     "importer": true,
     "integrity": undefined,
     "mainImporter": false,

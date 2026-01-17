@@ -7,31 +7,31 @@ import {
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { Manifest } from '@vltpkg/types'
 
-export const delimiter: Delimiter = '·'
-export type Delimiter = '·'
-const EXTRA_PEER_SET_DELIMITER = 'ṗ:'
+export const delimiter: Delimiter = '~'
+export type Delimiter = '~'
+const EXTRA_PEER_SET_DELIMITER = 'peer.'
 
 /**
  * Dependency IDs are a URI-encoded set of strings, separated
- * by the {@link Delimiter} character (`'·'`).
+ * by the {@link Delimiter} character (`'~'`).
  *
  * The first entry is always the specifier type. The rest depend on the
  * type. `git`, `registry`, and `workspace` entries have 3 fields, the rest
  * have 2.
  *
- * - `registry`: `'registry·<registry>·name@specifier'`
+ * - `registry`: `'registry~<registry>~name@specifier'`
  *   The `<registry>` portion can be a known named registry name, or a
  *   url to a registry. If empty, it is the default registry. Examples:
- *   - `··some-package@2.0.1`
- *   - `·npm·whatever@1.2.3`
- *   - `·http%3A%2F%2Fvlt.sh%2F·x@1.2.3`
- * - `git`: `'git·<git remote>·<git selector>'`. For example:
- *   - `git·github:user/project·branchname`
- *   - `git·git%2Bssh%3A%2F%2Fuser%40host%3Aproject.git·semver:1.x`
- * - `workspace`: `'workspace·<path>'`. For example:
- *   - `workspace·src/mything`
- * - `remote`: `'remote·<url>'`
- * - `file`: `'file·<path>'`
+ *   - `~~some-package@2.0.1`
+ *   - `~npm~whatever@1.2.3`
+ *   - `~http%3A%2F%2Fvlt.sh%2F~x@1.2.3`
+ * - `git`: `'git~<git remote>~<git selector>'`. For example:
+ *   - `git~github:user/project~branchname`
+ *   - `git~git%2Bssh%3A%2F%2Fuser%40host%3Aproject.git~semver:1.x`
+ * - `workspace`: `'workspace~<path>'`. For example:
+ *   - `workspace~src/mything`
+ * - `remote`: `'remote~<url>'`
+ * - `file`: `'file~<path>'`
  *
  * Lastly, the final portion can contain arbitrary string data, and is
  * used to store peer dep resolutions to maintain the peerDep contract.
@@ -105,14 +105,14 @@ const encode = (s?: string) =>
   s ?
     encodeURIComponent(s)
       .replaceAll('%40', '@')
-      .replaceAll('%2f', '§')
-      .replaceAll('%2F', '§')
+      .replaceAll('%2f', '+')
+      .replaceAll('%2F', '+')
   : s
 
 const decode = (s?: string) =>
   s ?
     decodeURIComponent(
-      s.replaceAll('@', '%40').replaceAll('§', '%2F'),
+      s.replaceAll('@', '%40').replaceAll('+', '%2F'),
     )
   : s
 
@@ -127,7 +127,7 @@ export const splitDepID = (id: string): DepIDTuple => {
 
   let res: DepIDTuple
   const [type, first = '', second, extra] = id
-    .replaceAll('§', '/')
+    .replaceAll('+', '/')
     .split(delimiter, 4)
   const f = decodeURIComponent(first)
   switch (type) {

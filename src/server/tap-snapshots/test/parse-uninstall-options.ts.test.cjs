@@ -7,11 +7,11 @@
 'use strict'
 exports[`test/parse-uninstall-options.ts > TAP > must match snapshot 1`] = `
 RemoveImportersDependenciesMapImpl {
-  "file·." => Set {
+  "file~." => Set {
     "a",
     "b",
   },
-  "file·.§src§foo" => Set {
+  "file~.+src+foo" => Set {
     "x",
     "y",
   },

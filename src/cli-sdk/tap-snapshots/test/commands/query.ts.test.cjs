@@ -69,7 +69,7 @@ exports[`test/commands/query.ts > TAP > query > --target option > should work wi
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -257,7 +257,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -284,14 +284,14 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "foo",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·foo@1.0.0",
+      "id": "~npm~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -310,14 +310,14 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "bar",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·bar@1.0.0",
+      "id": "~npm~bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -339,14 +339,14 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "baz",
-    "fromID": "·npm·bar@1.0.0",
+    "fromID": "~npm~bar@1.0.0",
     "spec": "baz@custom:baz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·custom·baz@1.0.0",
+      "id": "~custom~baz@1.0.0",
       "name": "baz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "location": "./node_modules/.vlt/~custom~baz@1.0.0/node_modules/baz",
       "importer": false,
       "manifest": {
         "name": "baz",
@@ -368,21 +368,21 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "missing",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "missing@^1.0.0",
     "type": "prod",
     "overridden": false
   },
   {
     "name": "foo",
-    "fromID": "·custom·baz@1.0.0",
+    "fromID": "~custom~baz@1.0.0",
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·foo@1.0.0",
+      "id": "~npm~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -406,11 +406,11 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
 [
   {
     "name": "b",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§b",
+      "id": "workspace~packages+b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -432,11 +432,11 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§a",
+      "id": "workspace~packages+a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",
@@ -481,7 +481,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -503,11 +503,11 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   },
   {
     "name": "b",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§b",
+      "id": "workspace~packages+b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -529,11 +529,11 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§a",
+      "id": "workspace~packages+a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",

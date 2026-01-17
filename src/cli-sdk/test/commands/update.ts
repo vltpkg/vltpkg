@@ -88,7 +88,7 @@ t.test('views.human uses InstallReporter', t => {
 // Test JSON view with buildQueue
 t.strictSame(
   Command.views.json({
-    buildQueue: ['··foo@1.0.0' as any, '··bar@2.0.0' as any],
+    buildQueue: ['~~foo@1.0.0' as any, '~~bar@2.0.0' as any],
     graph: {
       toJSON: () => ({
         lockfileVersion: 0,
@@ -99,7 +99,7 @@ t.strictSame(
     } as any,
   }),
   {
-    buildQueue: ['··foo@1.0.0', '··bar@2.0.0'],
+    buildQueue: ['~~foo@1.0.0', '~~bar@2.0.0'],
     message:
       '2 packages that will need to be built, run "vlt build" to complete the update.',
     graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },

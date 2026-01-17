@@ -189,8 +189,8 @@ t.test('graph data for depless vlt project', async t => {
     hasDashboard: true,
     importers: [
       {
-        id: 'file·.',
-        name: 'file·.',
+        id: 'file~.',
+        name: 'file~.',
         location: '.',
         importer: true,
         manifest: {},

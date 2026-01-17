@@ -116,7 +116,7 @@ actions:
          - `checkPeerEdgesCompatible()` — Validates node reuse compatibility
          - `forkPeerContext()` — Creates isolated peer contexts when conflicts arise
          - `addEntriesToPeerContext()` — Tracks dependencies in context sets
-         - Generates `peerSetHash` for affected nodes (format: `ṗ:N`)
+         - Generates `peerSetHash` for affected nodes (format: `peer.N`)
 
       📋 **See `@graph/ideal-append-nodes.mdc`** for detailed append-nodes architecture
       📋 **See `@graph/peers.mdc`** for peer dependency context isolation details

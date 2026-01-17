@@ -63,7 +63,7 @@ exports[`test/commands/list.ts > TAP > list > --target option > should work with
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -239,14 +239,14 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
 [
   {
     "name": "@foo/bazz",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "@foo/bazz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·@foo§bazz@1.0.0",
+      "id": "~npm~@foo+bazz@1.0.0",
       "name": "@foo/bazz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·@foo§bazz@1.0.0/node_modules/@foo/bazz",
+      "location": "./node_modules/.vlt/~npm~@foo+bazz@1.0.0/node_modules/@foo/bazz",
       "importer": false,
       "manifest": {
         "name": "@foo/bazz",
@@ -265,14 +265,14 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
   },
   {
     "name": "bar",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·bar@1.0.0",
+      "id": "~npm~bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -299,14 +299,14 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
 [
   {
     "name": "@foo/bazz",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "@foo/bazz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·@foo§bazz@1.0.0",
+      "id": "~npm~@foo+bazz@1.0.0",
       "name": "@foo/bazz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·@foo§bazz@1.0.0/node_modules/@foo/bazz",
+      "location": "./node_modules/.vlt/~npm~@foo+bazz@1.0.0/node_modules/@foo/bazz",
       "importer": false,
       "manifest": {
         "name": "@foo/bazz",
@@ -325,14 +325,14 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
   },
   {
     "name": "bar",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·bar@1.0.0",
+      "id": "~npm~bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -368,11 +368,11 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
 [
   {
     "name": "b",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§b",
+      "id": "workspace~packages+b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -394,11 +394,11 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§a",
+      "id": "workspace~packages+a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",
@@ -442,11 +442,11 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
 [
   {
     "name": "b",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§b",
+      "id": "workspace~packages+b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -468,11 +468,11 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§a",
+      "id": "workspace~packages+a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",

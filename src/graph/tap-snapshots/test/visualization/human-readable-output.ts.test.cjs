@@ -98,7 +98,7 @@ my-project
 `
 
 exports[`test/visualization/human-readable-output.ts > TAP > nameless package > should fallback to printing package id if name is missing 1`] = `
-file·.
+file~.
 
 `
 

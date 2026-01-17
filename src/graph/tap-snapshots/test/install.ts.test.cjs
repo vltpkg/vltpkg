@@ -8,13 +8,13 @@
 exports[`test/install.ts > TAP > install > should call build adding new dependency 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~.',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(abbrev@latest) -dev-> to: Node {
-        id: '·npm·abbrev@2.0.0',
-        location: './node_modules/.vlt/·npm·abbrev@2.0.0/node_modules/abbrev',
+        id: '~npm~abbrev@2.0.0',
+        location: './node_modules/.vlt/~npm~abbrev@2.0.0/node_modules/abbrev',
         dev: true,
         resolved: 'https://registry.npmjs.org/abbrev/-/abbrev-2.0.0.tgz'
       }
@@ -24,19 +24,19 @@ exports[`test/install.ts > TAP > install > should call build adding new dependen
 `
 
 exports[`test/install.ts > TAP > install > should return a graph 1`] = `
-[ Node { id: 'file·.', location: '.', importer: true } ]
+[ Node { id: 'file~.', location: '.', importer: true } ]
 `
 
 exports[`test/install.ts > TAP > install with no package.json file in cwd > should create a graph with the new dependency 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~.',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(abbrev@2.0.0) -prod-> to: Node {
-        id: '·npm·abbrev@2.0.0',
-        location: './node_modules/.vlt/·npm·abbrev@2.0.0/node_modules/abbrev',
+        id: '~npm~abbrev@2.0.0',
+        location: './node_modules/.vlt/~npm~abbrev@2.0.0/node_modules/abbrev',
         resolved: 'https://registry.npmjs.org/abbrev/-/abbrev-2.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       }

@@ -290,7 +290,7 @@ test('ExplorerGrid renders workspace with edges in', async () => {
       options: {},
       nodes: {},
       edges: {
-        'workspace·a b': 'prod workspace:* workspace·b',
+        'workspace~a b': 'prod workspace:* workspace~b',
       },
     },
     importers: [

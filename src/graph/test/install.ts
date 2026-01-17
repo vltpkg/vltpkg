@@ -1512,7 +1512,7 @@ t.test(
       '../src/ideal/build.ts': {
         build: async ({ remove }: any) => {
           // Simulate idealBuild populating the remove map
-          remove.set('file·.', new Set(['old-dep']))
+          remove.set('file~.', new Set(['old-dep']))
           Object.assign(remove, { modifiedDependencies: true })
           return {
             nodes: new Map(),
@@ -1619,7 +1619,7 @@ t.test(
 t.test('remote dependency integrity in lockfile', async t => {
   const remoteIntegrity = 'sha512-remote-computed-integrity'
   const remoteDepId =
-    'remote··https://example.com/remote-pkg-1.0.0.tgz'
+    'remote~~https://example.com/remote-pkg-1.0.0.tgz'
 
   // Create mock packageInfo that returns integrity for remote deps
   const mockPackageInfoWithIntegrity = createMockPackageInfo({
@@ -1720,7 +1720,7 @@ t.test('remote dependency integrity in lockfile', async t => {
             [remoteDepId]: [0, 'remote-pkg', remoteIntegrity],
           },
           edges: {
-            'file·.': { 'remote-pkg prod': remoteDepId },
+            'file~.': { 'remote-pkg prod': remoteDepId },
           },
         }),
       })

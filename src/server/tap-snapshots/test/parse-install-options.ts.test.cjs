@@ -9,7 +9,7 @@ exports[`test/parse-install-options.ts > TAP > multiple item added to root and w
 Array [
   Object {},
   AddImportersDependenciesMapImpl {
-    "file·." => Map {
+    "file~." => Map {
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "latest",
@@ -68,7 +68,7 @@ Array [
         "type": "dev",
       },
     },
-    "workspace·packages§a" => Map {
+    "workspace~packages+a" => Map {
       "english-days" => Object {
         "spec": Spec {
           "bareSpec": "latest",
@@ -192,7 +192,7 @@ exports[`test/parse-install-options.ts > TAP > no item added to root 1`] = `
 Array [
   Object {},
   AddImportersDependenciesMapImpl {
-    "file·." => Map {},
+    "file~." => Map {},
   },
 ]
 `
@@ -201,7 +201,7 @@ exports[`test/parse-install-options.ts > TAP > single item added to root 1`] = `
 Array [
   Object {},
   AddImportersDependenciesMapImpl {
-    "file·." => Map {
+    "file~." => Map {
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "latest",
@@ -268,7 +268,7 @@ exports[`test/parse-install-options.ts > TAP > single item added to workspace 1`
 Array [
   Object {},
   AddImportersDependenciesMapImpl {
-    "workspace·packages§a" => Map {
+    "workspace~packages+a" => Map {
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "latest",

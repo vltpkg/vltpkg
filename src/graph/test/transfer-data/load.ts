@@ -37,7 +37,7 @@ const transferData: TransferData = {
       },
     },
     nodes: {
-      '··bar@1.0.0': [
+      '~~bar@1.0.0': [
         3,
         'bar',
         null,
@@ -48,7 +48,7 @@ const transferData: TransferData = {
           version: '1.0.0',
         },
       ],
-      '··foo@1.0.0': [
+      '~~foo@1.0.0': [
         2,
         'foo',
         'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
@@ -63,7 +63,7 @@ const transferData: TransferData = {
           },
         },
       ],
-      '·custom·baz@1.0.0': [
+      '~custom~baz@1.0.0': [
         1,
         'baz',
         null,
@@ -79,9 +79,9 @@ const transferData: TransferData = {
       ],
     },
     edges: {
-      'file·. foo': 'prod ^1.0.0 || 1.2.3 || 2 ··foo@1.0.0',
-      'file·. baz': 'prod custom:baz@^1.0.0 ·custom·baz@1.0.0',
-      '··foo@1.0.0 bar': 'prod ^1.0.0 ··bar@1.0.0',
+      'file~. foo': 'prod ^1.0.0 || 1.2.3 || 2 ~~foo@1.0.0',
+      'file~. baz': 'prod custom:baz@^1.0.0 ~custom~baz@1.0.0',
+      '~~foo@1.0.0 bar': 'prod ^1.0.0 ~~bar@1.0.0',
     },
   },
   projectInfo: {
@@ -114,7 +114,7 @@ t.test('load graph with confused manifest', async () => {
       ...transferData.lockfile,
       nodes: {
         ...transferData.lockfile.nodes,
-        '··confused@1.0.0': [
+        '~~confused@1.0.0': [
           0,
           'confused',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
@@ -132,12 +132,12 @@ t.test('load graph with confused manifest', async () => {
       },
       edges: {
         ...transferData.lockfile.edges,
-        'file·. confused': 'prod ^1.0.0 ··confused@1.0.0',
+        'file~. confused': 'prod ^1.0.0 ~~confused@1.0.0',
       },
     },
   }
   const result = load(transferDataWithConfused)
-  const confusedNode = result.graph.nodes.get('··confused@1.0.0')
+  const confusedNode = result.graph.nodes.get('~~confused@1.0.0')
   t.ok(confusedNode)
   t.ok(confusedNode?.confused)
   t.strictSame(confusedNode?.manifest?.name, 'confused')
@@ -303,14 +303,14 @@ t.test('load graph without projectRoot', async () => {
 
 t.test('node serialization methods', async () => {
   const result = load(transferData)
-  const fooNode = result.graph.nodes.get('··foo@1.0.0')
+  const fooNode = result.graph.nodes.get('~~foo@1.0.0')
   t.ok(fooNode)
 
   if (fooNode) {
     // Test toJSON method
     const json = fooNode.toJSON()
     t.ok(json)
-    t.strictSame(json.id, '··foo@1.0.0')
+    t.strictSame(json.id, '~~foo@1.0.0')
     t.strictSame(json.name, 'foo')
     t.strictSame(json.version, '1.0.0')
 
@@ -342,7 +342,7 @@ t.test('confused node serialization', async () => {
       ...transferData.lockfile,
       nodes: {
         ...transferData.lockfile.nodes,
-        '··confused@1.0.0': [
+        '~~confused@1.0.0': [
           0,
           'confused',
           null,
@@ -362,7 +362,7 @@ t.test('confused node serialization', async () => {
   }
 
   const result = load(transferDataWithConfused)
-  const confusedNode = result.graph.nodes.get('··confused@1.0.0')
+  const confusedNode = result.graph.nodes.get('~~confused@1.0.0')
   t.ok(confusedNode)
 
   if (confusedNode) {
@@ -379,8 +379,8 @@ t.test('confused node serialization', async () => {
 t.test('edge replacement logic', async () => {
   const result = load(transferData)
   const graph = result.graph
-  const fooNode = graph.nodes.get('··foo@1.0.0')
-  const barNode = graph.nodes.get('··bar@1.0.0')
+  const fooNode = graph.nodes.get('~~foo@1.0.0')
+  const barNode = graph.nodes.get('~~bar@1.0.0')
   const importer = [...graph.importers][0]
 
   t.ok(fooNode)
@@ -436,7 +436,7 @@ t.test('node without name handling', async () => {
       ...transferData.lockfile,
       nodes: {
         ...transferData.lockfile.nodes,
-        '··nameless@1.0.0': [
+        '~~nameless@1.0.0': [
           0,
           null, // No name
           null,
@@ -451,7 +451,7 @@ t.test('node without name handling', async () => {
   }
 
   const result = load(dataWithNamelessNode)
-  const namelessNode = result.graph.nodes.get('··nameless@1.0.0')
+  const namelessNode = result.graph.nodes.get('~~nameless@1.0.0')
   t.ok(namelessNode)
 
   // Should handle nameless nodes gracefully
@@ -460,7 +460,7 @@ t.test('node without name handling', async () => {
 
 t.test('maybeSetConfusedManifest method', async () => {
   const result = load(transferData)
-  const fooNode = result.graph.nodes.get('··foo@1.0.0')
+  const fooNode = result.graph.nodes.get('~~foo@1.0.0')
   t.ok(fooNode)
 
   if (fooNode) {
@@ -475,7 +475,7 @@ t.test('maybeSetConfusedManifest method', async () => {
 
 t.test('setResolved method', async () => {
   const result = load(transferData)
-  const fooNode = result.graph.nodes.get('··foo@1.0.0')
+  const fooNode = result.graph.nodes.get('~~foo@1.0.0')
   t.ok(fooNode)
 
   if (fooNode) {

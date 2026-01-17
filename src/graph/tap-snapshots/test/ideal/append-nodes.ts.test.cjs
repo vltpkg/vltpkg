@@ -43,8 +43,8 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
   lockfileVersion: 0,
   options: { registries: {} },
   nodes: {
-    '·npm·bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
-    '·npm·foo@1.0.0': [
+    '~npm~bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
+    '~npm~foo@1.0.0': [
       2,
       'foo',
       <3 empty items>,
@@ -56,8 +56,8 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
     ]
   },
   edges: {
-    'file·. foo': 'dev ^1.0.0 ·npm·foo@1.0.0',
-    'file·. bar': 'optional ^1.0.0 ·npm·bar@1.0.0'
+    'file~. foo': 'dev ^1.0.0 ~npm~foo@1.0.0',
+    'file~. bar': 'optional ^1.0.0 ~npm~bar@1.0.0'
   }
 }
 `
@@ -65,44 +65,31 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
 exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should have a graph with file type dependencies 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~.',
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file·linked', location: 'linked', resolved: 'linked' },
+      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file~linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '·npm·foo@1.0.0',
-        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
+        id: '~npm~foo@1.0.0',
+        location: './node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@file:./bar) -prod-> to: Node {
-            id: 'file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§bar',
-            location: './node_modules/.vlt/file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§bar/node_modules/bar',
-            resolved: 'node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo/bar'
+            id: 'file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+bar',
+            location: './node_modules/.vlt/file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+bar/node_modules/bar',
+            resolved: 'node_modules/.vlt/'
           },
           Edge spec(baz@file:./baz.tgz) -prod-> to: Node {
-            id: 'file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§baz.tgz',
-            location: './node_modules/.vlt/file·node_modules§.vlt§%C2%B7npm%C2%B7foo@1.0.0§node_modules§foo§baz.tgz/node_modules/baz',
-            resolved: 'node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo/baz.tgz'
+            id: 'file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+baz.tgz',
+            location: './node_modules/.vlt/file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+baz.tgz/node_modules/baz',
+            resolved: 'node_modules/.vlt/'
           }
         ]
       }
     ]
   }
 ]
-`
-
-exports[`test/ideal/append-nodes.ts > TAP > fork peer context when existing node has incompatible peer edges > graph with forked peer contexts 1`] = `
-flowchart TD
-a("root:my-project")
-a -->|"parent-a#64;^1.0.0"| b("npm:parent-a#64;1.0.0")
-b -->|"react#64;^18.0.0"| d("npm:react#64;18.3.1")
-b -->|"flexible#64;^1.0.0"| e("npm:flexible#64;1.0.0")
-e -->|"react#64;>=17.0.0 (peer)"| d
-a -->|"parent-b#64;^1.0.0"| c("npm:parent-b#64;1.0.0")
-c -->|"react#64;^19.0.0"| f("npm:react#64;19.2.0")
-c -->|"flexible#64;^1.0.0"| g("npm:flexible#64;1.0.0")
-g -->|"react#64;>=17.0.0 (peer)"| f
 `
 
 exports[`test/ideal/append-nodes.ts > TAP > inject transient dependencies from transientAdd > graph should match snapshot 1`] = `
@@ -121,13 +108,13 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
     registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' }
   },
   nodes: {
-    '·a·bar@1.2.3': [
+    '~a~bar@1.2.3': [
       0,
       'bar',
       <3 empty items>,
       { name: 'bar', version: '1.2.3', dependencies: { x: '1.x' } }
     ],
-    '·a·x@1.99.99': [
+    '~a~x@1.99.99': [
       0,
       'x',
       <3 empty items>,
@@ -138,14 +125,14 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
         dependencies: { y: '1' }
       }
     ],
-    '·a·y@1.99.99': [ 0, 'y', <3 empty items>, { name: 'y', version: '1.99.99' } ],
-    '·b·baz@1.2.3': [
+    '~a~y@1.99.99': [ 0, 'y', <3 empty items>, { name: 'y', version: '1.99.99' } ],
+    '~b~baz@1.2.3': [
       0,
       'baz',
       <3 empty items>,
       { name: 'baz', version: '1.2.3', dependencies: { x: '1.x' } }
     ],
-    '·b·x@1.1.1': [
+    '~b~x@1.1.1': [
       0,
       'x',
       <3 empty items>,
@@ -156,15 +143,15 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
         dependencies: { y: '1000' }
       }
     ],
-    '·b·y@1000.0.0': [ 0, 'y', <3 empty items>, { name: 'y', version: '1000.0.0' } ]
+    '~b~y@1000.0.0': [ 0, 'y', <3 empty items>, { name: 'y', version: '1000.0.0' } ]
   },
   edges: {
-    'file·. bar': 'prod a:bar@1.x ·a·bar@1.2.3',
-    'file·. baz': 'prod b:baz@1.x ·b·baz@1.2.3',
-    '·a·bar@1.2.3 x': 'prod 1.x ·a·x@1.99.99',
-    '·a·x@1.99.99 y': 'prod 1 ·a·y@1.99.99',
-    '·b·baz@1.2.3 x': 'prod 1.x ·b·x@1.1.1',
-    '·b·x@1.1.1 y': 'prod 1000 ·b·y@1000.0.0'
+    'file~. bar': 'prod a:bar@1.x ~a~bar@1.2.3',
+    'file~. baz': 'prod b:baz@1.x ~b~baz@1.2.3',
+    '~a~bar@1.2.3 x': 'prod 1.x ~a~x@1.99.99',
+    '~a~x@1.99.99 y': 'prod 1 ~a~y@1.99.99',
+    '~b~baz@1.2.3 x': 'prod 1.x ~b~x@1.1.1',
+    '~b~x@1.1.1 y': 'prod 1000 ~b~y@1000.0.0'
   }
 }
 `

@@ -192,7 +192,7 @@ export const retrievePeerContextHash = (
   // skips creating the initial peer context ref
   if (!peerContext?.index) return undefined
 
-  return `ṗ:${peerContext.index}`
+  return `peer.${peerContext.index}`
 }
 
 /**

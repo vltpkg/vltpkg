@@ -9,14 +9,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > selected packa
 [
   {
     "name": "baz",
-    "fromID": "·npm·bar@1.0.0",
+    "fromID": "~npm~bar@1.0.0",
     "spec": "baz@custom:baz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·custom·baz@1.0.0",
+      "id": "~custom~baz@1.0.0",
       "name": "baz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "location": "./node_modules/.vlt/~custom~baz@1.0.0/node_modules/baz",
       "importer": false,
       "manifest": {
         "name": "baz",
@@ -38,7 +38,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -74,11 +74,11 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-b",
-    "fromID": "workspace·packages§workspace-a",
+    "fromID": "workspace~packages+workspace-a",
     "spec": "workspace-b@workspace:*",
     "type": "dev",
     "to": {
-      "id": "workspace·packages§workspace-b",
+      "id": "workspace~packages+workspace-b",
       "name": "workspace-b",
       "version": "1.0.0",
       "location": "./packages/workspace-b",
@@ -97,11 +97,11 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-b",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "workspace-b@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§workspace-b",
+      "id": "workspace~packages+workspace-b",
       "name": "workspace-b",
       "version": "1.0.0",
       "location": "./packages/workspace-b",
@@ -120,11 +120,11 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "workspace-a@workspace:*",
     "type": "prod",
     "to": {
-      "id": "workspace·packages§workspace-a",
+      "id": "workspace~packages+workspace-a",
       "name": "workspace-a",
       "version": "1.0.0",
       "location": "./packages/workspace-a",
@@ -148,11 +148,11 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "link",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "link@file:./linked",
     "type": "prod",
     "to": {
-      "id": "file·linked",
+      "id": "file~linked",
       "name": "linked",
       "version": "1.0.0",
       "location": "./linked",
@@ -171,14 +171,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "foo",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·foo@1.0.0",
+      "id": "~npm~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -194,14 +194,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "extraneous",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "extraneous@*",
     "type": "prod",
     "to": {
-      "id": "·npm·extraneous@1.0.0",
+      "id": "~npm~extraneous@1.0.0",
       "name": "extraneous",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·extraneous@1.0.0/node_modules/extraneous",
+      "location": "./node_modules/.vlt/~npm~extraneous@1.0.0/node_modules/extraneous",
       "importer": false,
       "manifest": {
         "name": "extraneous",
@@ -217,14 +217,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "bar",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "bar@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "·npm·bar@1.0.0",
+      "id": "~npm~bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -244,14 +244,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "aliased",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "aliased@custom:foo@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "·custom·foo@1.0.0",
+      "id": "~custom~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~custom~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -267,14 +267,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/b",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "@scoped/b@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·@scoped§b@1.0.0",
+      "id": "~npm~@scoped+b@1.0.0",
       "name": "@scoped/b",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·@scoped§b@1.0.0/node_modules/@scoped/b",
+      "location": "./node_modules/.vlt/~npm~@scoped+b@1.0.0/node_modules/@scoped/b",
       "importer": false,
       "manifest": {
         "name": "@scoped/b",
@@ -300,14 +300,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "@scoped/a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·@scoped§a@1.0.0",
+      "id": "~npm~@scoped+a@1.0.0",
       "name": "@scoped/a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·@scoped§a@1.0.0/node_modules/@scoped/a",
+      "location": "./node_modules/.vlt/~npm~@scoped+a@1.0.0/node_modules/@scoped/a",
       "importer": false,
       "manifest": {
         "name": "@scoped/a",
@@ -329,21 +329,21 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "missing",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "missing@^1.0.0",
     "type": "prod",
     "overridden": false
   },
   {
     "name": "ipsum",
-    "fromID": "workspace·packages§workspace-a",
+    "fromID": "workspace~packages+workspace-a",
     "spec": "ipsum@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "·npm·ipsum@1.0.0",
+      "id": "~npm~ipsum@1.0.0",
       "name": "ipsum",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·ipsum@1.0.0/node_modules/ipsum",
+      "location": "./node_modules/.vlt/~npm~ipsum@1.0.0/node_modules/ipsum",
       "importer": false,
       "manifest": {
         "name": "ipsum",
@@ -359,14 +359,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "foo",
-    "fromID": "workspace·packages§workspace-a",
+    "fromID": "workspace~packages+workspace-a",
     "spec": "foo@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "·npm·foo@1.0.0",
+      "id": "~npm~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -382,14 +382,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "blooo",
-    "fromID": "·npm·bar@1.0.0",
+    "fromID": "~npm~bar@1.0.0",
     "spec": "blooo@1",
     "type": "prod",
     "to": {
-      "id": "·npm·blooo@1.0.0",
+      "id": "~npm~blooo@1.0.0",
       "name": "blooo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·blooo@1.0.0/node_modules/blooo",
+      "location": "./node_modules/.vlt/~npm~blooo@1.0.0/node_modules/blooo",
       "importer": false,
       "manifest": {
         "name": "blooo",
@@ -405,14 +405,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "baz",
-    "fromID": "·npm·bar@1.0.0",
+    "fromID": "~npm~bar@1.0.0",
     "spec": "baz@custom:baz@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·custom·baz@1.0.0",
+      "id": "~custom~baz@1.0.0",
       "name": "baz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "location": "./node_modules/.vlt/~custom~baz@1.0.0/node_modules/baz",
       "importer": false,
       "manifest": {
         "name": "baz",
@@ -428,14 +428,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/c",
-    "fromID": "·npm·@scoped§b@1.0.0",
+    "fromID": "~npm~@scoped+b@1.0.0",
     "spec": "@scoped/c@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·@scoped§c@1.0.0",
+      "id": "~npm~@scoped+c@1.0.0",
       "name": "@scoped/c",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·@scoped§c@1.0.0/node_modules/@scoped/c",
+      "location": "./node_modules/.vlt/~npm~@scoped+c@1.0.0/node_modules/@scoped/c",
       "importer": false,
       "manifest": {
         "name": "@scoped/c",
@@ -457,7 +457,7 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -479,14 +479,14 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@npm:@myscope/foo@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "·npm·@myscope§foo@1.0.0",
+      "id": "~npm~@myscope+foo@1.0.0",
       "name": "@myscope/foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·@myscope§foo@1.0.0/node_modules/@myscope/foo",
+      "location": "./node_modules/.vlt/~npm~@myscope+foo@1.0.0/node_modules/@myscope/foo",
       "importer": false,
       "manifest": {
         "name": "@myscope/foo",
@@ -508,7 +508,7 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -530,14 +530,14 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·a@1.0.0",
+      "id": "~npm~a@1.0.0",
       "name": "a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·a@1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/~npm~a@1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a",
@@ -553,14 +553,14 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   },
   {
     "name": "b",
-    "fromID": "·npm·a@1.0.0",
+    "fromID": "~npm~a@1.0.0",
     "spec": "b@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·b@1.0.0",
+      "id": "~npm~b@1.0.0",
       "name": "b",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·b@1.0.0/node_modules/b",
+      "location": "./node_modules/.vlt/~npm~b@1.0.0/node_modules/b",
       "importer": false,
       "manifest": {
         "name": "b",
@@ -579,14 +579,14 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   },
   {
     "name": "a",
-    "fromID": "·npm·b@1.0.0",
+    "fromID": "~npm~b@1.0.0",
     "spec": "a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·a@1.0.0",
+      "id": "~npm~a@1.0.0",
       "name": "a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·a@1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/~npm~a@1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a",
@@ -608,7 +608,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -632,14 +632,14 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "foo",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "foo@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "·npm·foo@1.0.0",
+      "id": "~npm~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -655,14 +655,14 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "bar",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "bar@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "·npm·bar@1.0.0",
+      "id": "~npm~bar@1.0.0",
       "name": "bar",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar",
+      "location": "./node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar",
       "importer": false,
       "manifest": {
         "name": "bar",
@@ -681,14 +681,14 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "baz",
-    "fromID": "·npm·bar@1.0.0",
+    "fromID": "~npm~bar@1.0.0",
     "spec": "baz@custom:bar@^1.0.0",
     "type": "dev",
     "to": {
-      "id": "·custom·baz@1.0.0",
+      "id": "~custom~baz@1.0.0",
       "name": "baz",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "location": "./node_modules/.vlt/~custom~baz@1.0.0/node_modules/baz",
       "importer": false,
       "manifest": {
         "name": "baz",
@@ -710,21 +710,21 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "missing",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "missing@^1.0.0",
     "type": "prod",
     "overridden": false
   },
   {
     "name": "foo",
-    "fromID": "·custom·baz@1.0.0",
+    "fromID": "~custom~baz@1.0.0",
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·foo@1.0.0",
+      "id": "~npm~foo@1.0.0",
       "name": "foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo",
+      "location": "./node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo",
       "importer": false,
       "manifest": {
         "name": "foo",
@@ -740,14 +740,14 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "extraneous",
-    "fromID": "·npm·bar@1.0.0",
+    "fromID": "~npm~bar@1.0.0",
     "spec": "extraneous@extraneous@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "·npm·extraneous@1.0.0",
+      "id": "~npm~extraneous@1.0.0",
       "name": "extraneous",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/·npm·extraneous@1.0.0/node_modules/extraneous",
+      "location": "./node_modules/.vlt/~npm~extraneous@1.0.0/node_modules/extraneous",
       "importer": false,
       "manifest": {
         "name": "extraneous",
@@ -769,7 +769,7 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -791,7 +791,7 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@^1.0.0",
     "type": "optional",
     "overridden": false
@@ -802,10 +802,10 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
 exports[`test/visualization/json-output.ts > TAP > nameless package > should fallback to printing package id if name is missing 1`] = `
 [
   {
-    "name": "file·.",
+    "name": "file~.",
     "to": {
-      "id": "file·.",
-      "name": "file·.",
+      "id": "file~.",
+      "name": "file~.",
       "location": ".",
       "importer": true,
       "manifest": {},
@@ -825,7 +825,7 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -847,13 +847,13 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
   },
   {
     "name": "a",
-    "fromID": "file·.",
+    "fromID": "file~.",
     "spec": "a@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "·npm·a@%5E1.0.0",
+      "id": "~npm~a@%5E1.0.0",
       "name": "a",
-      "location": "./node_modules/.vlt/·npm·a@%5E1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/~npm~a@%5E1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a"
@@ -874,7 +874,7 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
   {
     "name": "my-project",
     "to": {
-      "id": "file·.",
+      "id": "file~.",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -894,7 +894,7 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
   {
     "name": "b",
     "to": {
-      "id": "workspace·packages§b",
+      "id": "workspace~packages+b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -914,7 +914,7 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
   {
     "name": "a",
     "to": {
-      "id": "workspace·packages§a",
+      "id": "workspace~packages+a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",

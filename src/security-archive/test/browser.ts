@@ -49,7 +49,7 @@ const json = {
     ],
     batchIndex: 0,
   },
-  '··@ruyadorno§foo@1.0.0': {
+  '~~@ruyadorno+foo@1.0.0': {
     id: '99923218962',
     author: ['ruyadorno'],
     size: 13003,

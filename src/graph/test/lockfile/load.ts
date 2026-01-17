@@ -813,7 +813,7 @@ t.test('load with peerSetHash in extra parameter', async t => {
         'registry',
         '',
         'with-peer@1.0.0',
-        'ṗ:hash123',
+        'peer.hash123',
       ])]: [
         0,
         'with-peer',
@@ -827,7 +827,7 @@ t.test('load with peerSetHash in extra parameter', async t => {
         'registry',
         '',
         'with-both@1.0.0',
-        ':root > #with-bothṗ:hash456',
+        ':root > #with-bothpeer.hash456',
       ])]: [
         0,
         'with-both',
@@ -850,9 +850,9 @@ t.test('load with peerSetHash in extra parameter', async t => {
       [`${joinDepIDTuple(['file', '.'])} with-modifier`]:
         `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-modifier@1.0.0', ':root > #with-modifier'])}` as LockfileEdgeValue,
       [`${joinDepIDTuple(['file', '.'])} with-peer`]:
-        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'ṗ:hash123'])}` as LockfileEdgeValue,
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'peer.hash123'])}` as LockfileEdgeValue,
       [`${joinDepIDTuple(['file', '.'])} with-both`]:
-        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-both@1.0.0', ':root > #with-bothṗ:hash456'])}` as LockfileEdgeValue,
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-both@1.0.0', ':root > #with-bothpeer.hash456'])}` as LockfileEdgeValue,
       [`${joinDepIDTuple(['file', '.'])} regular`]:
         `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'regular@1.0.0'])}` as LockfileEdgeValue,
     },
@@ -887,11 +887,16 @@ t.test('load with peerSetHash in extra parameter', async t => {
 
   // Verify peerSetHash-only node
   const withPeer = graph.nodes.get(
-    joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'ṗ:hash123']),
+    joinDepIDTuple([
+      'registry',
+      '',
+      'with-peer@1.0.0',
+      'peer.hash123',
+    ]),
   )
   t.ok(withPeer, 'with-peer node exists')
   t.notOk(withPeer?.modifier, 'no modifier')
-  t.equal(withPeer?.peerSetHash, 'ṗ:hash123', 'has peerSetHash')
+  t.equal(withPeer?.peerSetHash, 'peer.hash123', 'has peerSetHash')
 
   // Verify node with both
   const withBoth = graph.nodes.get(
@@ -899,12 +904,12 @@ t.test('load with peerSetHash in extra parameter', async t => {
       'registry',
       '',
       'with-both@1.0.0',
-      ':root > #with-bothṗ:hash456',
+      ':root > #with-bothpeer.hash456',
     ]),
   )
   t.ok(withBoth, 'with-both node exists')
   t.equal(withBoth?.modifier, ':root > #with-both', 'has modifier')
-  t.equal(withBoth?.peerSetHash, 'ṗ:hash456', 'has peerSetHash')
+  t.equal(withBoth?.peerSetHash, 'peer.hash456', 'has peerSetHash')
 
   // Verify regular node
   const regular = graph.nodes.get(

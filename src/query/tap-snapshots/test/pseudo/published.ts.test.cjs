@@ -8,19 +8,19 @@
 exports[`test/pseudo/published.ts > TAP > pseudo state form - :published without parameters > should match packages with published metadata (registry packages) 1`] = `
 Object {
   "edges": Array [
-    "file·.->·npm·a@1.0.0",
-    "file·.->·npm·b@1.0.0",
-    "file·.->·npm·e@1.0.0",
-    "·npm·b@1.0.0->·npm·c@1.0.0",
-    "·npm·d@1.0.0->·npm·e@1.0.0",
-    "·npm·d@1.0.0->·npm·f@1.0.0",
+    "file~.->~npm~a@1.0.0",
+    "file~.->~npm~b@1.0.0",
+    "file~.->~npm~e@1.0.0",
+    "~npm~b@1.0.0->~npm~c@1.0.0",
+    "~npm~d@1.0.0->~npm~e@1.0.0",
+    "~npm~d@1.0.0->~npm~f@1.0.0",
   ],
   "nodes": Array [
-    "·npm·a@1.0.0",
-    "·npm·b@1.0.0",
-    "·npm·c@1.0.0",
-    "·npm·e@1.0.0",
-    "·npm·f@1.0.0",
+    "~npm~a@1.0.0",
+    "~npm~b@1.0.0",
+    "~npm~c@1.0.0",
+    "~npm~e@1.0.0",
+    "~npm~f@1.0.0",
   ],
 }
 `
