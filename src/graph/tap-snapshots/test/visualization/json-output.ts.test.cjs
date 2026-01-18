@@ -38,7 +38,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -97,7 +97,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-b",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "workspace-b@workspace:*",
     "type": "prod",
     "to": {
@@ -120,7 +120,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "workspace-a@workspace:*",
     "type": "prod",
     "to": {
@@ -148,7 +148,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "link",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "link@file:./linked",
     "type": "prod",
     "to": {
@@ -171,7 +171,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "foo",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
@@ -194,7 +194,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "extraneous",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "extraneous@*",
     "type": "prod",
     "to": {
@@ -217,7 +217,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "bar",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "bar@^1.0.0",
     "type": "optional",
     "to": {
@@ -244,7 +244,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "aliased",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "aliased@custom:foo@^1.0.0",
     "type": "dev",
     "to": {
@@ -267,7 +267,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/b",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "@scoped/b@^1.0.0",
     "type": "prod",
     "to": {
@@ -300,7 +300,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "@scoped/a@^1.0.0",
     "type": "prod",
     "to": {
@@ -329,7 +329,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "missing",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "missing@^1.0.0",
     "type": "prod",
     "overridden": false
@@ -457,7 +457,7 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -479,7 +479,7 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@npm:@myscope/foo@^1.0.0",
     "type": "optional",
     "to": {
@@ -508,7 +508,7 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -530,7 +530,7 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@^1.0.0",
     "type": "prod",
     "to": {
@@ -608,7 +608,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -632,7 +632,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "foo",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "foo@^1.0.0",
     "type": "dev",
     "to": {
@@ -655,7 +655,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "bar",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "bar@^1.0.0",
     "type": "optional",
     "to": {
@@ -710,7 +710,7 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
   },
   {
     "name": "missing",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "missing@^1.0.0",
     "type": "prod",
     "overridden": false
@@ -769,7 +769,7 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -791,7 +791,7 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@^1.0.0",
     "type": "optional",
     "overridden": false
@@ -802,10 +802,10 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
 exports[`test/visualization/json-output.ts > TAP > nameless package > should fallback to printing package id if name is missing 1`] = `
 [
   {
-    "name": "file~.",
+    "name": "file~_d",
     "to": {
-      "id": "file~.",
-      "name": "file~.",
+      "id": "file~_d",
+      "name": "file~_d",
       "location": ".",
       "importer": true,
       "manifest": {},
@@ -825,7 +825,7 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -847,13 +847,13 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "~npm~a@%5E1.0.0",
+      "id": "~npm~a@^1.0.0",
       "name": "a",
-      "location": "./node_modules/.vlt/~npm~a@%5E1.0.0/node_modules/a",
+      "location": "./node_modules/.vlt/~npm~a@^1.0.0/node_modules/a",
       "importer": false,
       "manifest": {
         "name": "a"
@@ -874,7 +874,7 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",

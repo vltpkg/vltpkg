@@ -499,13 +499,13 @@ t.test('hydrate edge cases', t => {
 
 const validDepIDs: DepID[] = [
   `${delimiter}npm${delimiter}foo@1.0.0`,
-  `git${delimiter}github%3Aa+b${delimiter}branch`,
-  `remote${delimiter}https%3A++x.com+x.tgz`,
+  `git${delimiter}github_ca+b${delimiter}branch`,
+  `remote${delimiter}https_c++x.com+x.tgz`,
   `file${delimiter}.+x.tgz`,
   `workspace${delimiter}a`,
   `${delimiter}npm${delimiter}foo@1.0.0${delimiter}extra`,
-  `git${delimiter}github%3Aa+b${delimiter}branch${delimiter}extra`,
-  `remote${delimiter}https%3A++x.com+x.tgz${delimiter}extra`,
+  `git${delimiter}github_ca+b${delimiter}branch${delimiter}extra`,
+  `remote${delimiter}https_c++x.com+x.tgz${delimiter}extra`,
   `file${delimiter}.+x.tgz${delimiter}extra`,
   `workspace${delimiter}a${delimiter}extra`,
 ]

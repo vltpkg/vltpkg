@@ -1512,7 +1512,10 @@ t.test(
       '../src/ideal/build.ts': {
         build: async ({ remove }: any) => {
           // Simulate idealBuild populating the remove map
-          remove.set('file~.', new Set(['old-dep']))
+          remove.set(
+            joinDepIDTuple(['file', '.']),
+            new Set(['old-dep']),
+          )
           Object.assign(remove, { modifiedDependencies: true })
           return {
             nodes: new Map(),
@@ -1720,7 +1723,9 @@ t.test('remote dependency integrity in lockfile', async t => {
             [remoteDepId]: [0, 'remote-pkg', remoteIntegrity],
           },
           edges: {
-            'file~.': { 'remote-pkg prod': remoteDepId },
+            [joinDepIDTuple(['file', '.'])]: {
+              'remote-pkg prod': remoteDepId,
+            },
           },
         }),
       })

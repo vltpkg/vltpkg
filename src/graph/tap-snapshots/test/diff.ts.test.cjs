@@ -19,8 +19,8 @@ exports[`test/diff.ts > TAP > diff two graphs > diff no color 1`] = `
   + ~npm~foo@1.0.0
   - ~npm~foo@1.0.0
   + ~npm~ooo@1.0.1
-  - file~. prod a@^1.0.0 ~npm~a@1.0.0
-  + file~. prod b@^1.0.0 ~npm~b@1.0.0
+  - file~_d prod a@^1.0.0 ~npm~a@1.0.0
+  + file~_d prod b@^1.0.0 ~npm~b@1.0.0
 }
 `
 
@@ -38,7 +38,7 @@ exports[`test/diff.ts > TAP > diff two graphs > diff with color 1`] = `
   [32m+ ~npm~foo@1.0.0[m
   [31m- ~npm~foo@1.0.0[m
   [32m+ ~npm~ooo@1.0.1[m
-  [31m- file~. prod a@^1.0.0 ~npm~a@1.0.0[m
-  [32m+ file~. prod b@^1.0.0 ~npm~b@1.0.0[m
+  [31m- file~_d prod a@^1.0.0 ~npm~a@1.0.0[m
+  [32m+ file~_d prod b@^1.0.0 ~npm~b@1.0.0[m
 }
 `

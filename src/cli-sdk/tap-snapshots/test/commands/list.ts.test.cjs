@@ -63,7 +63,7 @@ exports[`test/commands/list.ts > TAP > list > --target option > should work with
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -239,7 +239,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
 [
   {
     "name": "@foo/bazz",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "@foo/bazz@^1.0.0",
     "type": "prod",
     "to": {
@@ -265,7 +265,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
   },
   {
     "name": "bar",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
@@ -299,7 +299,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
 [
   {
     "name": "@foo/bazz",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "@foo/bazz@^1.0.0",
     "type": "prod",
     "to": {
@@ -325,7 +325,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 2`
   },
   {
     "name": "bar",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
@@ -368,7 +368,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
 [
   {
     "name": "b",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
@@ -394,7 +394,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should add all scope 
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {
@@ -442,7 +442,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
 [
   {
     "name": "b",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
@@ -468,7 +468,7 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {

@@ -29,13 +29,13 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
       { foo: './bin.js' }
     ],
     'file~a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ],
-    'git~github%3Afoo+bar~': [ 0, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ]
+    'git~github_cfoo+bar~': [ 0, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ]
   },
   edges: {
-    'file~. missing': 'prod ^1.0.0 MISSING',
-    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
-    'file~. a': 'prod file:./a file~a',
-    'file~. bar': 'prod github:foo/bar git~github%3Afoo+bar~'
+    'file~_d missing': 'prod ^1.0.0 MISSING',
+    'file~_d foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
+    'file~_d a': 'prod file:./a file~a',
+    'file~_d bar': 'prod github:foo/bar git~github_cfoo+bar~'
   }
 }
 `
@@ -62,10 +62,10 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
     'file~a': [ 0, 'a', <3 empty items>, { name: 'a', version: '1.0.0' } ]
   },
   edges: {
-    'file~. missing': 'prod ^1.0.0 MISSING',
-    'file~. bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
-    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
-    'file~. a': 'prod file:./a file~a'
+    'file~_d missing': 'prod ^1.0.0 MISSING',
+    'file~_d bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
+    'file~_d foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
+    'file~_d a': 'prod file:./a file~a'
   }
 }
 `
@@ -91,9 +91,9 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
     ]
   },
   edges: {
-    'file~. missing': 'prod ^1.0.0 MISSING',
-    'file~. bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
-    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0'
+    'file~_d missing': 'prod ^1.0.0 MISSING',
+    'file~_d bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
+    'file~_d foo': 'prod ^1.0.0 ~npm~foo@1.0.0'
   }
 }
 `
@@ -125,9 +125,9 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
     ]
   },
   edges: {
-    'file~. missing': 'prod ^1.0.0 MISSING',
-    'file~. bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
-    'file~. foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
+    'file~_d missing': 'prod ^1.0.0 MISSING',
+    'file~_d bar': 'prod ^1.0.0 ~npm~bar@1.0.0',
+    'file~_d foo': 'prod ^1.0.0 ~npm~foo@1.0.0',
     '~npm~bar@1.0.0 baz': 'prod ^1.0.0 ~npm~baz@1.0.0',
     '~npm~baz@1.0.0 foo': 'prod ^1.0.0 ~npm~foo@1.0.0'
   }
@@ -146,7 +146,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
-    "id": "file~.",
+    "id": "file~_d",
     "importer": true,
     "integrity": undefined,
     "mainImporter": true,

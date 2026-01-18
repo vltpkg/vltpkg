@@ -8,7 +8,7 @@
 exports[`test/pseudo/squat.ts > TAP > pseudo state form - :squat without parameters > should match any packages with squat alerts 1`] = `
 Object {
   "edges": Array [
-    "file~.->~npm~e@1.0.0",
+    "file~_d->~npm~e@1.0.0",
     "~npm~d@1.0.0->~npm~e@1.0.0",
     "~npm~d@1.0.0->~npm~f@1.0.0",
   ],

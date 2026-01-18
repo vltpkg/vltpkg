@@ -8,7 +8,7 @@
 exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cycle containing missing deps info 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -31,7 +31,7 @@ exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cy
 exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cycle without any manifest info 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -54,18 +54,18 @@ exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cy
 exports[`test/actual/load.ts > TAP > extra parameter in DepID > should preserve extra parameters in DepIDs when loading the graph 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(d@file:./packages/d) -prod-> to: Node { id: 'file~packages+d', location: './packages/d' },
       Edge spec(c@^1.0.0) -prod-> to: Node {
-        id: '~npm~c@1.0.0~%3Aroot%20%3E%20%23c%20%3E%20%23d',
-        location: './node_modules/.vlt/~npm~c@1.0.0~%3Aroot%20%3E%20%23c%20%3E%20%23d/node_modules/c'
+        id: '~npm~c@1.0.0~_croot_s_g_s#c_s_g_s#d',
+        location: './node_modules/.vlt/~npm~c@1.0.0~_croot_s_g_s#c_s_g_s#d/node_modules/c'
       },
       Edge spec(b@^1.0.0) -prod-> to: Node {
-        id: '~npm~b@1.0.0~%3Aroot%20%3E%20%23b',
-        location: './node_modules/.vlt/~npm~b@1.0.0~%3Aroot%20%3E%20%23b/node_modules/b'
+        id: '~npm~b@1.0.0~_croot_s_g_s#b',
+        location: './node_modules/.vlt/~npm~b@1.0.0~_croot_s_g_s#b/node_modules/b'
       },
       Edge spec(a@^1.0.0) -prod-> to: Node {
         id: '~npm~a@1.0.0',
@@ -80,21 +80,21 @@ exports[`test/actual/load.ts > TAP > getPathBasedId > should get path based id f
 Array [
   "~npm~foo@1.0.0",
   "~npm~foo@1.0.0~deadbeef",
-  "git~github%3Aa+b~",
-  "git~github%3Aa+b~~deadbeef",
+  "git~github_ca+b~",
+  "git~github_ca+b~~deadbeef",
   "file~foo",
   "file~foo",
   "workspace~packages+a",
   "workspace~packages+a",
-  "remote~https%3A++example.com+x.tgz",
-  "remote~https%3A++example.com+x.tgz~deadbeef",
+  "remote~https_c++example.com+x.tgz",
+  "remote~https_c++example.com+x.tgz~deadbeef",
 ]
 `
 
 exports[`test/actual/load.ts > TAP > load actual > should load an actual graph containing missing deps info 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -171,7 +171,7 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
 exports[`test/actual/load.ts > TAP > load actual > should load an actual graph without any manifest info 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -243,7 +243,7 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
 exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an actual graph with missing deps with manifest info 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: [missing package]: <a@^1.0.0> ]
@@ -254,7 +254,7 @@ exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an a
 exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an actual graph with missing deps with no manifest info 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: [missing package]: <a@^1.0.0> ]
@@ -265,23 +265,23 @@ exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an a
 exports[`test/actual/load.ts > TAP > various DepID types with peerSetHash > should load graph with various DepID types and peerSetHash 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(e@workspace:*) -prod-> to: Node { id: 'workspace~packages+e', location: './packages/e' },
       Edge spec(d@file:./packages/d) -prod-> to: Node { id: 'file~packages+d', location: './packages/d' },
       Edge spec(c@https://example.com/pkg.tgz) -prod-> to: Node {
-        id: 'remote~https%3A++example.com+pkg.tgz~peer.1',
-        location: './node_modules/.vlt/remote~https%3A++example.com+pkg.tgz~peer.1/node_modules/c'
+        id: 'remote~https_c++example.com+pkg.tgz~peer.1',
+        location: './node_modules/.vlt/remote~https_c++example.com+pkg.tgz~peer.1/node_modules/c'
       },
       Edge spec(b@github:user/repo) -prod-> to: Node {
-        id: 'git~github%3Auser+repo~main~peer.1',
-        location: './node_modules/.vlt/git~github%3Auser+repo~main~peer.1/node_modules/b'
+        id: 'git~github_cuser+repo~main~peer.1',
+        location: './node_modules/.vlt/git~github_cuser+repo~main~peer.1/node_modules/b'
       },
       Edge spec(a@^1.0.0) -prod-> to: Node {
-        id: '~npm~a@1.0.0~%3Aroot%20%3E%20%23apeer.1',
-        location: './node_modules/.vlt/~npm~a@1.0.0~%3Aroot%20%3E%20%23apeer.1/node_modules/a'
+        id: '~npm~a@1.0.0~_croot_s_g_s#apeer.1',
+        location: './node_modules/.vlt/~npm~a@1.0.0~_croot_s_g_s#apeer.1/node_modules/a'
       }
     ]
   }

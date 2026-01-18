@@ -8,7 +8,7 @@
 exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -106,13 +106,13 @@ Spec {
 exports[`test/lockfile/load.ts > TAP > load with custom git hosts > should load custom git hosts graph 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@example:foo/bar) -prod-> to: Node {
-        id: 'git~example%3Afoo+bar~',
-        location: './node_modules/.vlt/git~example%3Afoo+bar~/node_modules/foo',
+        id: 'git~example_cfoo+bar~',
+        location: './node_modules/.vlt/git~example_cfoo+bar~/node_modules/foo',
         resolved: 'example:foo/bar'
       }
     ]
@@ -230,7 +230,7 @@ Spec {
 exports[`test/lockfile/load.ts > TAP > load with custom scope registry > should load custom scope registry graph 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -247,7 +247,7 @@ exports[`test/lockfile/load.ts > TAP > load with custom scope registry > should 
 exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -307,7 +307,7 @@ exports[`test/lockfile/load.ts > TAP > option-defined values should overwrite lo
 
 exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `
 [
-  Node { id: 'file~.', location: '.', importer: true },
+  Node { id: 'file~_d', location: '.', importer: true },
   Node {
     id: 'workspace~packages+b',
     location: './packages/b',

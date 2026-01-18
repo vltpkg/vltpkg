@@ -8,7 +8,7 @@
 exports[`test/ideal/build.ts > TAP > build from actual files > should build an ideal tree starting from a virtual graph 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -24,7 +24,7 @@ exports[`test/ideal/build.ts > TAP > build from actual files > should build an i
 exports[`test/ideal/build.ts > TAP > build from lockfile > should build an ideal tree starting from a virtual graph 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [

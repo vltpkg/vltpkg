@@ -69,7 +69,7 @@ exports[`test/commands/query.ts > TAP > query > --target option > should work wi
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -257,7 +257,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -284,7 +284,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "foo",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "foo@^1.0.0",
     "type": "prod",
     "to": {
@@ -310,7 +310,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "bar",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "bar@^1.0.0",
     "type": "prod",
     "to": {
@@ -368,7 +368,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   },
   {
     "name": "missing",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "missing@^1.0.0",
     "type": "prod",
     "overridden": false
@@ -406,7 +406,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
 [
   {
     "name": "b",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
@@ -432,7 +432,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should add all scop
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {
@@ -481,7 +481,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   {
     "name": "my-project",
     "to": {
-      "id": "file~.",
+      "id": "file~_d",
       "name": "my-project",
       "version": "1.0.0",
       "location": ".",
@@ -503,7 +503,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   },
   {
     "name": "b",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "b@workspace:*",
     "type": "prod",
     "to": {
@@ -529,7 +529,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   },
   {
     "name": "a",
-    "fromID": "file~.",
+    "fromID": "file~_d",
     "spec": "a@workspace:*",
     "type": "prod",
     "to": {

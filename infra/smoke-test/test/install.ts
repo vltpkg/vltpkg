@@ -17,7 +17,7 @@ t.test('install a package', async t => {
         readFileSync(join(dirs.project, 'vlt-lock.json'), 'utf-8'),
       )
       t.ok(
-        lock.edges['file~. eslint'],
+        lock.edges['file~_d eslint'],
         'eslint should be in the lockfile',
       )
     },

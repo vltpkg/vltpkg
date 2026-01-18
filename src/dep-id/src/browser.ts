@@ -100,21 +100,174 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
   }
 }
 
-// allow @, but otherwise, escape everything urls do
-const encode = (s?: string) =>
-  s ?
-    encodeURIComponent(s)
-      .replaceAll('%40', '@')
-      .replaceAll('%2f', '+')
-      .replaceAll('%2F', '+')
-  : s
+// Escape chars unsafe for filesystems or reserved for DepID syntax
+const ESCAPE: Record<string, string> = {
+  _: '__',
+  '+': '_p',
+  '\\': '_b',
+  ':': '_c',
+  '~': '_t',
+  '<': '_l',
+  '>': '_g',
+  '"': '_q',
+  '|': '_i',
+  '?': '_m',
+  '*': '_a',
+  ' ': '_s',
+}
 
-const decode = (s?: string) =>
-  s ?
-    decodeURIComponent(
-      s.replaceAll('@', '%40').replaceAll('+', '%2F'),
-    )
-  : s
+// Unescape map (includes trailing dot/space escapes)
+const UNESCAPE: Record<string, string> = {
+  __: '_',
+  _p: '+',
+  _b: '\\',
+  _c: ':',
+  _t: '~',
+  _l: '<',
+  _g: '>',
+  _q: '"',
+  _i: '|',
+  _m: '?',
+  _a: '*',
+  _d: '.',
+  _s: ' ',
+}
+
+/**
+ * Checks if a character code represents a control character (0x00-0x1F).
+ * Control characters are non-printable ASCII characters that need special encoding.
+ */
+const isControl = (code: number) => code >= 0x00 && code <= 0x1f
+
+/**
+ * Converts a character code to a 2-digit uppercase hexadecimal string.
+ * Used to encode control characters as _XX format (e.g., 0x0A becomes "0A").
+ */
+const toHex2Upper = (code: number) =>
+  code.toString(16).toUpperCase().padStart(2, '0')
+
+/**
+ * Checks if a character is a valid hexadecimal digit (0-9, A-F, a-f).
+ * Used during decoding to identify hex-encoded control characters (e.g., _0A, _1F).
+ */
+const isHexDigit = (c: string) =>
+  (c >= '0' && c <= '9') ||
+  (c >= 'A' && c <= 'F') ||
+  (c >= 'a' && c <= 'f')
+
+/**
+ * Encodes a string into a DepID format.
+ * Handles special characters, control characters, and trailing dots.
+ */
+const encode = (s?: string) => {
+  if (!s) return s
+
+  let out = ''
+  // Loop through each character in the string
+  for (const ch of s) {
+    /* c8 ignore next */
+    if (!ch) continue
+
+    // '/' becomes '+', and that '+' is NOT escaped
+    if (ch === '/') {
+      out += '+'
+      continue
+    }
+
+    // Escape special characters with predefined mappings
+    const mapped = ESCAPE[ch]
+    if (mapped) {
+      // Found a special character that needs escaping, append the escaped version
+      out += mapped
+      continue
+    }
+
+    // Check if the character is a control character and encode it as _XX
+    const code = ch.charCodeAt(0)
+    if (isControl(code)) {
+      // Found a control character, encode it as _XX
+      out += '_' + toHex2Upper(code) // _00, _0A, _1F, etc.
+      continue
+    }
+
+    // If no special characters or control characters were found, append the character as-is
+    out += ch
+  }
+
+  // Escape trailing dot (Windows strips these)
+  if (out.endsWith('.')) out = out.slice(0, -1) + '_d'
+
+  return out
+}
+
+/**
+ * Decodes a DepID string back into its original form.
+ * Handles special characters, control characters, and trailing dots.
+ */
+const decode = (s?: string) => {
+  if (!s) return s
+
+  let out = ''
+
+  // Loop through each character in the string
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    /* c8 ignore next */
+    if (!ch) continue
+
+    if (ch === '+') {
+      out += '/'
+      continue
+    }
+
+    if (ch !== '_') {
+      out += ch
+      continue
+    }
+
+    // Try to parse an escape sequence starting at '_'
+    const next = s[i + 1]
+    if (next === undefined) {
+      out += '_'
+      continue
+    }
+
+    // "__" -> "_"
+    if (next === '_') {
+      out += '_'
+      i += 1
+      continue
+    }
+
+    // "_X" single-letter escapes
+    const two = s.slice(i, i + 2) // "_p", "_d", etc.
+    const mapped = UNESCAPE[two]
+    if (mapped) {
+      out += mapped
+      i += 1
+      continue
+    }
+
+    // "_XX" hex escape for control chars, where first hex digit is 0 or 1
+    const h1 = s[i + 1]
+    const h2 = s[i + 2]
+    if (
+      (h1 === '0' || h1 === '1') &&
+      h2 !== undefined &&
+      isHexDigit(h2)
+    ) {
+      const hex = s.slice(i + 1, i + 3) // "0A", "1F", etc.
+      out += String.fromCharCode(parseInt(hex, 16))
+      i += 2
+      continue
+    }
+
+    // Not a recognized escape; leave '_' as-is
+    out += '_'
+  }
+
+  return out
+}
 
 const seenSplitDepIDs = new Map<string, DepIDTuple>()
 /**
@@ -126,20 +279,19 @@ export const splitDepID = (id: string): DepIDTuple => {
   if (seen) return seen
 
   let res: DepIDTuple
-  const [type, first = '', second, extra] = id
-    .replaceAll('+', '/')
-    .split(delimiter, 4)
-  const f = decodeURIComponent(first)
+  const [type, first = '', second, extra] = id.split(delimiter, 4)
+  const f = decode(first) || '' // decode handles + -> / internally
   switch (type) {
     case 'git':
     case '': {
       if (second === undefined) {
         throw error(`invalid ${type} id`, { found: id })
       }
+      const decodedSecond = decode(second) || ''
       res = [
         type || 'registry',
         f || defaultRegistryName,
-        decodeURIComponent(second),
+        decodedSecond,
         decode(extra),
       ]
       break

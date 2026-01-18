@@ -8,7 +8,7 @@
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph after adding a previously missing dependency bar 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -33,7 +33,7 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph aft
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph after adding foo when there is an already existing foo 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -57,7 +57,7 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph aft
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph with an added foo 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -81,7 +81,7 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph with missing package bar 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -104,13 +104,13 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
 `
 
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > initial graph 1`] = `
-[ Node { id: 'file~.', location: '.', importer: true } ]
+[ Node { id: 'file~_d', location: '.', importer: true } ]
 `
 
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with workspaces > graph with workspace changes 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [

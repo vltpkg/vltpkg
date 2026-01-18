@@ -9,7 +9,7 @@ exports[`test/reify/optional-fail.ts > TAP > register and optional node failure 
 Object {
   "edges": Object {
     "~npm~foo@1.2.3 bar": "prod * MISSING",
-    "file~. foo": "optional * ~npm~foo@1.2.3",
+    "file~_d foo": "optional * ~npm~foo@1.2.3",
   },
   "lockfileVersion": 0,
   "nodes": Object {

@@ -8,7 +8,7 @@
 exports[`test/pseudo/license.ts > TAP > pseudo state form - :license without parameters > should match packages with any license defined (not none) 1`] = `
 Object {
   "edges": Array [
-    "file~.->~npm~e@1.0.0",
+    "file~_d->~npm~e@1.0.0",
     "~npm~d@1.0.0->~npm~e@1.0.0",
   ],
   "nodes": Array [

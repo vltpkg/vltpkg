@@ -131,7 +131,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated wit
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > must match snapshot 1`] = `
 Array [
-  "git~github%3Aa+b~",
+  "git~github_ca+b~",
   Array [
     "git",
     "github:a/b",
@@ -234,7 +234,7 @@ Array [
     "x@1.2.3",
     undefined,
   ],
-  "~npm~x@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~x@1.2.3~_croot_s_g_s#extra",
   "~npm~x@1.2.3",
 ]
 `
@@ -264,7 +264,7 @@ Array [
     "x@1.2.3",
     undefined,
   ],
-  "~npm~x@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~x@1.2.3~_croot_s_g_s#extra",
   "~npm~x@1.2.3",
 ]
 `
@@ -294,7 +294,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~a~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~a~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~a~manifest-name@1.2.3",
 ]
 `
@@ -324,7 +324,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~b~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~b~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~b~manifest-name@1.2.3",
 ]
 `
@@ -347,15 +347,15 @@ y@git+ssh://host.com/x.git#
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git > must match snapshot 1`] = `
 Array [
-  "git~git%2Bssh%3A++host.com+x.git~",
+  "git~git_pssh_c++host.com+x.git~",
   Array [
     "git",
     "git+ssh://host.com/x.git",
     "",
     undefined,
   ],
-  "git~git%2Bssh%3A++host.com+x.git~~%3Aroot%20%3E%20%23extra",
-  "git~git%2Bssh%3A++host.com+x.git~",
+  "git~git_pssh_c++host.com+x.git~~_croot_s_g_s#extra",
+  "git~git_pssh_c++host.com+x.git~",
 ]
 `
 
@@ -377,15 +377,15 @@ y@git+ssh://host.com/x.git#branch
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git#branch > must match snapshot 1`] = `
 Array [
-  "git~git%2Bssh%3A++host.com+x.git~branch",
+  "git~git_pssh_c++host.com+x.git~branch",
   Array [
     "git",
     "git+ssh://host.com/x.git",
     "branch",
     undefined,
   ],
-  "git~git%2Bssh%3A++host.com+x.git~branch~%3Aroot%20%3E%20%23extra",
-  "git~git%2Bssh%3A++host.com+x.git~branch",
+  "git~git_pssh_c++host.com+x.git~branch~_croot_s_g_s#extra",
+  "git~git_pssh_c++host.com+x.git~branch",
 ]
 `
 
@@ -407,15 +407,15 @@ y@git+ssh://host.com/x.git#semver:1
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git#semver:1 > must match snapshot 1`] = `
 Array [
-  "git~git%2Bssh%3A++host.com+x.git~semver%3A1",
+  "git~git_pssh_c++host.com+x.git~semver_c1",
   Array [
     "git",
     "git+ssh://host.com/x.git",
     "semver:1",
     undefined,
   ],
-  "git~git%2Bssh%3A++host.com+x.git~semver%3A1~%3Aroot%20%3E%20%23extra",
-  "git~git%2Bssh%3A++host.com+x.git~semver%3A1",
+  "git~git_pssh_c++host.com+x.git~semver_c1~_croot_s_g_s#extra",
+  "git~git_pssh_c++host.com+x.git~semver_c1",
 ]
 `
 
@@ -437,15 +437,15 @@ y@github:a/b#
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b > must match snapshot 1`] = `
 Array [
-  "git~github%3Aa+b~",
+  "git~github_ca+b~",
   Array [
     "git",
     "github:a/b",
     "",
     undefined,
   ],
-  "git~github%3Aa+b~~%3Aroot%20%3E%20%23extra",
-  "git~github%3Aa+b~",
+  "git~github_ca+b~~_croot_s_g_s#extra",
+  "git~github_ca+b~",
 ]
 `
 
@@ -467,15 +467,15 @@ y@github:a/b#branch
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b#branch > must match snapshot 1`] = `
 Array [
-  "git~github%3Aa+b~branch",
+  "git~github_ca+b~branch",
   Array [
     "git",
     "github:a/b",
     "branch",
     undefined,
   ],
-  "git~github%3Aa+b~branch~%3Aroot%20%3E%20%23extra",
-  "git~github%3Aa+b~branch",
+  "git~github_ca+b~branch~_croot_s_g_s#extra",
+  "git~github_ca+b~branch",
 ]
 `
 
@@ -497,15 +497,15 @@ y@github:a/b#semver:1
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b#semver:1 > must match snapshot 1`] = `
 Array [
-  "git~github%3Aa+b~semver%3A1",
+  "git~github_ca+b~semver_c1",
   Array [
     "git",
     "github:a/b",
     "semver:1",
     undefined,
   ],
-  "git~github%3Aa+b~semver%3A1~%3Aroot%20%3E%20%23extra",
-  "git~github%3Aa+b~semver%3A1",
+  "git~github_ca+b~semver_c1~_croot_s_g_s#extra",
+  "git~github_ca+b~semver_c1",
 ]
 `
 
@@ -527,14 +527,14 @@ y@https://x.com/x.tgz
 
 exports[`test/index.ts > TAP > valid specs > x@https://x.com/x.tgz > must match snapshot 1`] = `
 Array [
-  "remote~https%3A++x.com+x.tgz",
+  "remote~https_c++x.com+x.tgz",
   Array [
     "remote",
     "https://x.com/x.tgz",
     undefined,
   ],
-  "remote~https%3A++x.com+x.tgz~%3Aroot%20%3E%20%23extra",
-  "remote~https%3A++x.com+x.tgz",
+  "remote~https_c++x.com+x.tgz~_croot_s_g_s#extra",
+  "remote~https_c++x.com+x.tgz",
 ]
 `
 
@@ -563,7 +563,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~a~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~a~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~a~manifest-name@1.2.3",
 ]
 `
@@ -593,7 +593,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~b~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~b~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~b~manifest-name@1.2.3",
 ]
 `
@@ -616,15 +616,15 @@ y@registry:https://c.example.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  "~https%3A++c.example.com+~manifest-name@1.2.3",
+  "~https_c++c.example.com+~manifest-name@1.2.3",
   Array [
     "registry",
     "https://c.example.com/",
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~https%3A++c.example.com+~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
-  "~https%3A++c.example.com+~manifest-name@1.2.3",
+  "~https_c++c.example.com+~manifest-name@1.2.3~_croot_s_g_s#extra",
+  "~https_c++c.example.com+~manifest-name@1.2.3",
 ]
 `
 
@@ -653,7 +653,7 @@ Array [
     "y@1.2.3",
     undefined,
   ],
-  "~npm~y@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~y@1.2.3~_croot_s_g_s#extra",
   "~npm~y@1.2.3",
 ]
 `
@@ -711,7 +711,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~npm~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~npm~manifest-name@1.2.3",
 ]
 `
@@ -741,7 +741,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~npm~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~npm~manifest-name@1.2.3",
 ]
 `
@@ -764,15 +764,15 @@ y@github:a/b#branch
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@github:a/b#branch > must match snapshot 1`] = `
 Array [
-  "git~github%3Aa+b~branch",
+  "git~github_ca+b~branch",
   Array [
     "git",
     "github:a/b",
     "branch",
     undefined,
   ],
-  "git~github%3Aa+b~branch~%3Aroot%20%3E%20%23extra",
-  "git~github%3Aa+b~branch",
+  "git~github_ca+b~branch~_croot_s_g_s#extra",
+  "git~github_ca+b~branch",
 ]
 `
 
@@ -801,7 +801,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~npm~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~npm~manifest-name@1.2.3",
 ]
 `
@@ -831,7 +831,7 @@ Array [
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~npm~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
+  "~npm~manifest-name@1.2.3~_croot_s_g_s#extra",
   "~npm~manifest-name@1.2.3",
 ]
 `
@@ -854,14 +854,14 @@ y@registry:https://x.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://x.com#x@1 > must match snapshot 1`] = `
 Array [
-  "~https%3A++x.com+~manifest-name@1.2.3",
+  "~https_c++x.com+~manifest-name@1.2.3",
   Array [
     "registry",
     "https://x.com/",
     "manifest-name@1.2.3",
     undefined,
   ],
-  "~https%3A++x.com+~manifest-name@1.2.3~%3Aroot%20%3E%20%23extra",
-  "~https%3A++x.com+~manifest-name@1.2.3",
+  "~https_c++x.com+~manifest-name@1.2.3~_croot_s_g_s#extra",
+  "~https_c++x.com+~manifest-name@1.2.3",
 ]
 `

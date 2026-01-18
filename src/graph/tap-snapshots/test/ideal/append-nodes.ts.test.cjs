@@ -56,8 +56,8 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
     ]
   },
   edges: {
-    'file~. foo': 'dev ^1.0.0 ~npm~foo@1.0.0',
-    'file~. bar': 'optional ^1.0.0 ~npm~bar@1.0.0'
+    'file~_d foo': 'dev ^1.0.0 ~npm~foo@1.0.0',
+    'file~_d bar': 'optional ^1.0.0 ~npm~bar@1.0.0'
   }
 }
 `
@@ -65,7 +65,7 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
 exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should have a graph with file type dependencies 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -76,14 +76,14 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@file:./bar) -prod-> to: Node {
-            id: 'file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+bar',
-            location: './node_modules/.vlt/file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+bar/node_modules/bar',
-            resolved: 'node_modules/.vlt/'
+            id: 'file~node__modules+.vlt+_tnpm_tfoo@1.0.0+node__modules+foo+bar',
+            location: './node_modules/.vlt/file~node__modules+.vlt+_tnpm_tfoo@1.0.0+node__modules+foo+bar/node_modules/bar',
+            resolved: 'node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/bar'
           },
           Edge spec(baz@file:./baz.tgz) -prod-> to: Node {
-            id: 'file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+baz.tgz',
-            location: './node_modules/.vlt/file~node_modules+.vlt+~npm~foo@1.0.0+node_modules+foo+baz.tgz/node_modules/baz',
-            resolved: 'node_modules/.vlt/'
+            id: 'file~node__modules+.vlt+_tnpm_tfoo@1.0.0+node__modules+foo+baz.tgz',
+            location: './node_modules/.vlt/file~node__modules+.vlt+_tnpm_tfoo@1.0.0+node__modules+foo+baz.tgz/node_modules/baz',
+            resolved: 'node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/baz.tgz'
           }
         ]
       }
@@ -146,8 +146,8 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
     '~b~y@1000.0.0': [ 0, 'y', <3 empty items>, { name: 'y', version: '1000.0.0' } ]
   },
   edges: {
-    'file~. bar': 'prod a:bar@1.x ~a~bar@1.2.3',
-    'file~. baz': 'prod b:baz@1.x ~b~baz@1.2.3',
+    'file~_d bar': 'prod a:bar@1.x ~a~bar@1.2.3',
+    'file~_d baz': 'prod b:baz@1.x ~b~baz@1.2.3',
     '~a~bar@1.2.3 x': 'prod 1.x ~a~x@1.99.99',
     '~a~x@1.99.99 y': 'prod 1 ~a~y@1.99.99',
     '~b~baz@1.2.3 x': 'prod 1.x ~b~x@1.1.1',

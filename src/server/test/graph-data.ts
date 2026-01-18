@@ -189,8 +189,8 @@ t.test('graph data for depless vlt project', async t => {
     hasDashboard: true,
     importers: [
       {
-        id: 'file~.',
-        name: 'file~.',
+        id: joinDepIDTuple(['file', '.']),
+        name: joinDepIDTuple(['file', '.']),
         location: '.',
         importer: true,
         manifest: {},

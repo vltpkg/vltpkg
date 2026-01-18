@@ -31,7 +31,7 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
     ]
   },
   "edges": {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
@@ -56,13 +56,13 @@ exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must matc
     }
   },
   "nodes": {
-    "git~example%3Afoo+bar~": [
+    "git~example_cfoo+bar~": [
       0,
       "foo"
     ]
   },
   "edges": {
-    "file~. foo": "prod example:foo/bar git~example%3Afoo+bar~"
+    "file~_d foo": "prod example:foo/bar git~example_cfoo+bar~"
   }
 }
 `
@@ -82,7 +82,7 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] 
     ]
   },
   "edges": {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
@@ -102,7 +102,7 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] 
     ]
   },
   "edges": {
-    "file~. @foo/bar": "prod intl:1 ~intl~@foo+bar@1.0.0"
+    "file~_d @foo/bar": "prod intl:1 ~intl~@foo+bar@1.0.0"
   }
 }
 `
@@ -146,8 +146,8 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
     "~npm~foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
   },
   "edges": {
-    "file~. baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
+    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
     "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
   }
 }
@@ -204,8 +204,8 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
     ]
   },
   "edges": {
-    "file~. baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
+    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
     "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
   }
 }
@@ -225,8 +225,8 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
     "~npm~foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
   },
   "edges": {
-    "file~. baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
+    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
     "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
   }
 }
@@ -285,10 +285,10 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
     ]
   },
   "edges": {
-    "file~. bar": "prod ^1.0.0 ~npm~bar@1.0.0",
-    "file~. baz": "prod ^1.0.0 ~npm~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
-    "file~. qux": "prod ^1.0.0 ~npm~qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
@@ -324,10 +324,10 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save without saveB
     ]
   },
   "edges": {
-    "file~. bar": "prod ^1.0.0 ~npm~bar@1.0.0",
-    "file~. baz": "prod ^1.0.0 ~npm~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
-    "file~. qux": "prod ^1.0.0 ~npm~qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
@@ -384,10 +384,10 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
     ]
   },
   "edges": {
-    "file~. bar": "prod ^1.0.0 ~npm~bar@1.0.0",
-    "file~. baz": "prod ^1.0.0 ~npm~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
-    "file~. qux": "prod ^1.0.0 ~npm~qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
@@ -471,10 +471,10 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
     ]
   },
   "edges": {
-    "file~. bar": "prod ^1.0.0 ~npm~bar@1.0.0",
-    "file~. baz": "prod ^1.0.0 ~npm~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
-    "file~. qux": "prod ^1.0.0 ~npm~qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
@@ -528,9 +528,9 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
     ]
   },
   "edges": {
-    "file~. bar": "optional ^1.0.0 ~npm~bar@1.0.0",
-    "file~. baz": "optional ^1.0.0 ~npm~baz@1.0.0",
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0"
+    "file~_d bar": "optional ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "optional ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
@@ -580,7 +580,7 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
     ]
   },
   "edges": {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
@@ -588,7 +588,7 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with empty modifiers config > should save lockfile without modifiers when config is empty 1`] = `
 Object {
   "edges": Object {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
   "lockfileVersion": 0,
   "nodes": Object {
@@ -609,7 +609,7 @@ Object {
 exports[`test/lockfile/save.ts > TAP > store modifiers > with invalid scope registries > should save lockfile without scope registries when invalid type 1`] = `
 Object {
   "edges": Object {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
   "lockfileVersion": 0,
   "nodes": Object {
@@ -630,7 +630,7 @@ Object {
 exports[`test/lockfile/save.ts > TAP > store modifiers > with missing modifiers > should save lockfile without modifiers when undefined 1`] = `
 Object {
   "edges": Object {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
   "lockfileVersion": 0,
   "nodes": Object {
@@ -651,7 +651,7 @@ Object {
 exports[`test/lockfile/save.ts > TAP > store modifiers > with undefined scope registries > should save lockfile without scope registries when undefined 1`] = `
 Object {
   "edges": Object {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
   "lockfileVersion": 0,
   "nodes": Object {
@@ -681,10 +681,10 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
     }
   },
   "nodes": {
-    "~npm~foo@2.0.0~%3Aroot%20%3E%20%23foo": [0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
+    "~npm~foo@2.0.0~_croot_s_g_s#foo": [0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "file~. foo": "prod ^1.0.0 ~npm~foo@2.0.0~%3Aroot%20%3E%20%23foo"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@2.0.0~_croot_s_g_s#foo"
   }
 }
 

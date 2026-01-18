@@ -4,6 +4,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec, kCustomInspect } from '@vltpkg/spec/browser'
 import { load } from '../../src/transfer-data/load.ts'
 import type { TransferData } from '../../src/transfer-data/load.ts'
+import type { LockfileEdges } from '../../src/lockfile/types.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -79,10 +80,12 @@ const transferData: TransferData = {
       ],
     },
     edges: {
-      'file~. foo': 'prod ^1.0.0 || 1.2.3 || 2 ~~foo@1.0.0',
-      'file~. baz': 'prod custom:baz@^1.0.0 ~custom~baz@1.0.0',
+      [`${joinDepIDTuple(['file', '.'])} foo`]:
+        'prod ^1.0.0 || 1.2.3 || 2 ~~foo@1.0.0',
+      [`${joinDepIDTuple(['file', '.'])} baz`]:
+        'prod custom:baz@^1.0.0 ~custom~baz@1.0.0',
       '~~foo@1.0.0 bar': 'prod ^1.0.0 ~~bar@1.0.0',
-    },
+    } as LockfileEdges,
   },
   projectInfo: {
     root: '/path/to/project',
@@ -132,8 +135,9 @@ t.test('load graph with confused manifest', async () => {
       },
       edges: {
         ...transferData.lockfile.edges,
-        'file~. confused': 'prod ^1.0.0 ~~confused@1.0.0',
-      },
+        [`${joinDepIDTuple(['file', '.'])} confused`]:
+          'prod ^1.0.0 ~~confused@1.0.0',
+      } as LockfileEdges,
     },
   }
   const result = load(transferDataWithConfused)

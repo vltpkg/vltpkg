@@ -8,7 +8,7 @@
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > add from manifest file only > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -25,7 +25,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > add from manifest
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virtual graph > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -41,8 +41,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
       Edge spec(ipsum@github:lorem/ipsum) -prod-> to: Node {
-        id: 'git~github%3Alorem+ipsum~',
-        location: './node_modules/.vlt/git~github%3Alorem+ipsum~/node_modules/ipsum',
+        id: 'git~github_clorem+ipsum~',
+        location: './node_modules/.vlt/git~github_clorem+ipsum~/node_modules/ipsum',
         resolved: 'github:lorem/ipsum'
       },
       Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file~linked', location: 'linked', resolved: 'linked' },
@@ -64,7 +64,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an actual graph > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -142,7 +142,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > optional subdeps binary distribution strategy > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -183,7 +183,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > optional subdeps 
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > remove from manifest file only > must match snapshot 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [

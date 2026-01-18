@@ -463,29 +463,32 @@ t.test('invalid config', async t => {
       },
     })
   })
-  t.test('invalid registries in command config (array format)', async t => {
-    const { Config } = await t.mockImport<
-      typeof import('../../src/config/index.ts')
-    >('../../src/config/index.ts')
-    const dir = t.testdir({
-      'vlt.json': JSON.stringify({
-        config: {
-          command: {
-            install: {
-              registries: ['foo~bar=https://registry.foo.bar'],
+  t.test(
+    'invalid registries in command config (array format)',
+    async t => {
+      const { Config } = await t.mockImport<
+        typeof import('../../src/config/index.ts')
+      >('../../src/config/index.ts')
+      const dir = t.testdir({
+        'vlt.json': JSON.stringify({
+          config: {
+            command: {
+              install: {
+                registries: ['foo~bar=https://registry.foo.bar'],
+              },
             },
           },
+        }),
+        '.git': '',
+      })
+      await t.rejects(Config.load(dir, undefined, true), {
+        message: 'Reserved character found in registries name',
+        cause: {
+          found: 'foo~bar',
         },
-      }),
-      '.git': '',
-    })
-    await t.rejects(Config.load(dir, undefined, true), {
-      message: 'Reserved character found in registries name',
-      cause: {
-        found: 'foo~bar',
-      },
-    })
-  })
+      })
+    },
+  )
   t.test('valid registries', async t => {
     const { Config } = await t.mockImport<
       typeof import('../../src/config/index.ts')

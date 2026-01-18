@@ -8,7 +8,7 @@
 exports[`test/install.ts > TAP > install > should call build adding new dependency 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
@@ -24,13 +24,13 @@ exports[`test/install.ts > TAP > install > should call build adding new dependen
 `
 
 exports[`test/install.ts > TAP > install > should return a graph 1`] = `
-[ Node { id: 'file~.', location: '.', importer: true } ]
+[ Node { id: 'file~_d', location: '.', importer: true } ]
 `
 
 exports[`test/install.ts > TAP > install with no package.json file in cwd > should create a graph with the new dependency 1`] = `
 [
   Node {
-    id: 'file~.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [

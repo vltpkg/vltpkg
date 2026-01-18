@@ -8,7 +8,7 @@
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define as prod if explicitly defined > should return dependency as type=prod 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'prod' } },
+    'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'prod' } },
     modifiedDependencies: true
   }
 }
@@ -17,7 +17,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define as prod if 
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define dev type dep > should return dependency as type=dev 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'dev' } },
+    'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'dev' } },
     modifiedDependencies: true
   }
 }
@@ -26,7 +26,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define dev type de
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define optional peer dep > should return dependency as type=peerOptional 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) {
+    'file~_d' => Map(1) {
       'foo' => { spec: Spec {foo@latest}, type: 'peerOptional' }
     },
     modifiedDependencies: true
@@ -37,7 +37,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define optional pe
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define optional type dep > should return dependency as type=optional 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'optional' } },
+    'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'optional' } },
     modifiedDependencies: true
   }
 }
@@ -46,7 +46,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define optional ty
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define peer dep > should return dependency as type=peer 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'peer' } },
+    'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'peer' } },
     modifiedDependencies: true
   }
 }
@@ -55,7 +55,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > define peer dep > 
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > multiple items > should return multiple dependency items 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(5) {
+    'file~_d' => Map(5) {
       'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
       'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
       'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
@@ -79,7 +79,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > nested folder with
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > no item > should return no dependency items 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(0) {},
+    'file~_d' => Map(0) {},
     modifiedDependencies: false
   }
 }
@@ -88,7 +88,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > no item > should r
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > single item > should return a single dependency item 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
+    'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
@@ -170,7 +170,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define root dep if no workspace config defined > should return dependency of root 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) {
-    'file~.' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
+    'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
@@ -209,7 +209,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > multiple items > should return multiple dependency item 1`] = `
 {
   remove: RemoveImportersDependenciesMapImpl(1) {
-    'file~.' => Set(3) { 'foo@^1', 'bar@latest', 'baz@1.0.0' },
+    'file~_d' => Set(3) { 'foo@^1', 'bar@latest', 'baz@1.0.0' },
     modifiedDependencies: true
   }
 }
@@ -218,7 +218,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > multiple items 
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > no items > should return no items 1`] = `
 {
   remove: RemoveImportersDependenciesMapImpl(1) {
-    'file~.' => Set(0) {},
+    'file~_d' => Set(0) {},
     modifiedDependencies: true
   }
 }
@@ -227,7 +227,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > no items > shou
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > single item > should return a single dependency item 1`] = `
 {
   remove: RemoveImportersDependenciesMapImpl(1) {
-    'file~.' => Set(1) { 'foo' },
+    'file~_d' => Set(1) { 'foo' },
     modifiedDependencies: true
   }
 }
@@ -266,7 +266,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > mu
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > remove dep from root if no workspace defined > should remove dep from root 1`] = `
 {
   remove: RemoveImportersDependenciesMapImpl(1) {
-    'file~.' => Set(1) { 'foo' },
+    'file~_d' => Set(1) { 'foo' },
     modifiedDependencies: true
   }
 }
