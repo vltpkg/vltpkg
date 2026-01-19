@@ -22,6 +22,7 @@ import {
   BuildStateNeeded,
   BuildStateBuilt,
   BuildStateFailed,
+  LOCKFILE_VERSION,
 } from '../../src/lockfile/types.ts'
 
 t.test('lockfile type checks', t => {
@@ -437,4 +438,8 @@ t.test('lockfile type constraints', t => {
   )
 
   t.end()
+})
+
+t.test('LOCKFILE_VERSION constant', async t => {
+  t.equal(typeof LOCKFILE_VERSION, 'number', 'is a number')
 })

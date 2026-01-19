@@ -63,6 +63,7 @@ export const update = async (options: UpdateOptions) => {
       loadManifests: true,
       modifiers,
       remover,
+      update: true,
     })
 
     return { buildQueue, graph, diff }

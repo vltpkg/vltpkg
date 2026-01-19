@@ -1202,6 +1202,69 @@ t.test('hidden lockfile', async t => {
       t.equal(graph.nodes.size, 1, 'should contain only root node')
     },
   )
+
+  await t.test(
+    'should regenerate on hidden lockfile version mismatch',
+    async t => {
+      const { LOCKFILE_VERSION } = await t.mockImport<
+        typeof import('../../src/lockfile/types.ts')
+      >('../../src/lockfile/types.ts')
+      const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            a: '^1.0.0',
+          },
+        }),
+        'vlt.json': '{}',
+        node_modules: {
+          '.vlt-lock.json': JSON.stringify({
+            lockfileVersion: LOCKFILE_VERSION + 1, // Newer version
+            options: configData,
+            nodes: {},
+            edges: {},
+          }),
+          '.vlt': {
+            [aDepID]: {
+              node_modules: {
+                a: {
+                  'package.json': JSON.stringify({
+                    name: 'a',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      })
+
+      // Should regenerate from filesystem despite version mismatch
+      const nodeA = graph.nodes.get(aDepID)
+      t.ok(nodeA, 'should load node from filesystem')
+      t.equal(nodeA?.name, 'a', 'node should have correct name')
+      t.equal(
+        nodeA?.version,
+        '1.0.0',
+        'node should have correct version',
+      )
+    },
+  )
 })
 
 t.test('various DepID types with peerSetHash', async t => {
