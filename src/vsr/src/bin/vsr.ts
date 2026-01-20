@@ -3,18 +3,24 @@ import type { Args } from '../../types.ts'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
-import { PathScurry } from 'path-scurry'
-import { PackageJson } from '@vltpkg/package-json'
-import { PackageInfoClient } from '@vltpkg/package-info'
-import { createServer } from '@vltpkg/server'
 import { existsSync, readFileSync } from 'node:fs'
-import type { VltServerOptions } from '@vltpkg/server'
-import { DAEMON_PORT } from '../../config.ts'
 import { minArgs } from 'minargs'
 import { load } from '@vltpkg/vlt-json'
 import { createRequire } from 'node:module'
-import { resolveConfig } from '../utils/resolve-config.ts'
 
+const defaults: Args = {
+  telemetry: true,
+  debug: false,
+  help: false,
+  port: 1337,
+  host: 'localhost',
+  config: undefined,
+  env: undefined,
+  'db-name': undefined,
+  'bucket-name': undefined,
+  'queue-name': undefined,
+  'dry-run': false,
+}
 const usage = `USAGE:
 
   $ vsr [<command>] [<options>]
@@ -26,9 +32,8 @@ COMMANDS:
   
 OPTIONS:                   DESCRIPTION:
 
---daemon=<boolean>         Run filesystem daemon (default: true)
 --telemetry=<boolean>      Run with telemetry reporting (default: true)
--p, --port=<number>        Run on a specific port (default: ${DAEMON_PORT})
+-p, --port=<number>        Run on a specific port (default: ${defaults.port}) 
 -H, --host=<string>        Bind address for dev server (default: localhost)
 -c, --config=<path>        Load configuration from vlt.json file
 -d, --debug                Run in debug mode
@@ -52,21 +57,6 @@ EXAMPLES:
   $ vsr --config=/path/to/vlt.json    # Use specific config file
 `
 
-const defaults: Args = {
-  daemon: true,
-  telemetry: true,
-  debug: false,
-  help: false,
-  port: 1337,
-  host: 'localhost',
-  config: undefined,
-  env: undefined,
-  'db-name': undefined,
-  'bucket-name': undefined,
-  'queue-name': undefined,
-  'dry-run': false,
-}
-
 const opts = {
   alias: {
     p: 'port',
@@ -75,7 +65,7 @@ const opts = {
     d: 'debug',
     h: 'help',
   },
-  boolean: ['debug', 'help', 'daemon', 'telemetry', 'dry-run'],
+  boolean: ['debug', 'help', 'telemetry', 'dry-run'],
   string: [
     'port',
     'host',
@@ -126,7 +116,6 @@ function getNumberValue(
 // Type definition for VSR config in vlt.json
 interface VsrConfig {
   registry?: {
-    daemon?: boolean
     telemetry?: boolean
     debug?: boolean
     port?: number
@@ -143,7 +132,6 @@ interface VsrConfig {
       }
     }
   }
-  daemon?: boolean
   telemetry?: boolean
   debug?: boolean
   port?: number
@@ -232,10 +220,6 @@ const TELEMETRY = getBooleanValue(
     vltConfig.telemetry ??
     defaults.telemetry,
 )
-const DAEMON = getBooleanValue(
-  args.daemon,
-  registryConfig.daemon ?? vltConfig.daemon ?? defaults.daemon,
-)
 const DEBUG = getBooleanValue(
   args.debug,
   registryConfig.debug ?? vltConfig.debug ?? defaults.debug,
@@ -297,8 +281,6 @@ async function deployToCloudflare(): Promise<void> {
     `ARG_DEBUG:${DEBUG}`,
     '--var',
     `ARG_TELEMETRY:${TELEMETRY}`,
-    '--var',
-    `ARG_DAEMON:${DAEMON}`,
   ]
 
   // Add D1 database binding
@@ -387,10 +369,8 @@ if (!['dev', 'deploy'].includes(command)) {
   process.exit(1)
 }
 
-// TODO: Remove the demo/dummy project once server doesn't need one
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const demo = path.resolve(__dirname, './demo')
 const require = createRequire(import.meta.url)
 
 // Resolve paths relative to this script's location
@@ -411,55 +391,11 @@ const wranglerBinPath = require.resolve(
 const wranglerBin =
   existsSync(wranglerBinPath) ? wranglerBinPath : 'wrangler'
 
-const serverOptions = {
-  scurry: new PathScurry(demo),
-  projectRoot: demo,
-  packageJson: new PackageJson(),
-  catalog: {},
-  catalogs: {},
-  registry: 'https://registry.npmjs.org/',
-  registries: {},
-  'scope-registries': {},
-  'git-hosts': {},
-  'git-host-archives': {},
-} as VltServerOptions
-
 void (async () => {
-  const { DAEMON_START_SERVER, DAEMON_PORT, DAEMON_URL } =
-    resolveConfig(process.env)
   try {
     if (command === 'deploy') {
       await deployToCloudflare()
       return
-    }
-
-    // Default 'dev' command
-    if (DAEMON && DAEMON_START_SERVER) {
-      // Save original process.argv to restore later
-      const originalArgv = process.argv.slice()
-
-      // Temporarily modify process.argv to remove VSR-specific flags that daemon doesn't understand
-      // Keep only the basic node command and script path
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      process.argv = [process.argv[0]!, process.argv[1]!]
-
-      try {
-        const server = createServer({
-          ...serverOptions,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          packageInfo: new PackageInfoClient() as any,
-        })
-
-        await server.start({
-          port: DAEMON_PORT,
-        })
-
-        // eslint-disable-next-line no-console
-        console.log(`Daemon: ${DAEMON_URL}`)
-      } finally {
-        // Restore original process.argv
-        process.argv = originalArgv
-      }
     }
 
     // eslint-disable-next-line no-console
@@ -482,7 +418,6 @@ void (async () => {
         `--var=ARG_PORT:${PORT}`,
         `--var=ARG_DEBUG:${DEBUG}`,
         `--var=ARG_TELEMETRY:${TELEMETRY}`,
-        `--var=ARG_DAEMON:${DAEMON}`,
       ],
       {
         cwd: registryRoot, // Set working directory to registry root

@@ -137,13 +137,12 @@ more control:
 
 ### CLI Options
 
-| Option     | Alias | Default | Description             |
-| ---------- | ----- | ------- | ----------------------- |
-| `--port`   | `-p`  | `1337`  | Server port             |
-| `--config` | `-c`  | -       | Config file path        |
-| `--debug`  | `-d`  | `false` | Debug mode              |
-| `--daemon` | -     | `true`  | Local filesystem daemon |
-| `--help`   | `-h`  | -       | Show help               |
+| Option     | Alias | Default | Description      |
+| ---------- | ----- | ------- | ---------------- |
+| `--port`   | `-p`  | `1337`  | Server port      |
+| `--config` | `-c`  | -       | Config file path |
+| `--debug`  | `-d`  | `false` | Debug mode       |
+| `--help`   | `-h`  | -       | Show help        |
 
 ### Deploy Options
 
@@ -249,7 +248,6 @@ Once running, access your registry:
 
 - **Registry API**: `http://localhost:1337`
 - **Interactive Docs**: `http://localhost:1337/-/docs`
-- **Filesystem Daemon**: `http://localhost:3000` (if enabled)
 
 The API includes complete npm compatibility plus enhanced features
 like URL-encoded semver ranges and optimized install responses.

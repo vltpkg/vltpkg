@@ -373,19 +373,6 @@ export async function handleDashboardData(
 ): Promise<Response> {
   const env = c.env as Environment
 
-  // If daemon is enabled, proxy to daemon service
-
-  if (env.DAEMON_ENABLED) {
-    try {
-      const data = await fetch(`${env.DAEMON_URL}/dashboard.json`)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const jsonData = (await data.json()) as Record<string, any>
-      return c.json(jsonData)
-    } catch (_error) {
-      // Fall through to standalone mode if daemon is unreachable
-    }
-  }
-
   // Standalone mode: provide dashboard data directly
   const dashboardData = {
     registry: {
@@ -403,21 +390,6 @@ export async function handleDashboardData(
 }
 
 export async function handleAppData(c: Context): Promise<Response> {
-  const env = c.env as Environment
-
-  // If daemon is enabled, proxy to daemon service
-
-  if (env.DAEMON_ENABLED) {
-    try {
-      const data = await fetch(`${env.DAEMON_URL}/app-data.json`)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const jsonData = (await data.json()) as Record<string, any>
-      return c.json(jsonData)
-    } catch (_error) {
-      // Fall through to standalone mode if daemon is unreachable
-    }
-  }
-
   // Standalone mode: provide app data directly from the registry database
   try {
     // For now, return empty data structure - in a full implementation,

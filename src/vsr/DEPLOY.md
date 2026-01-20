@@ -146,9 +146,7 @@ wrangler deploy dist/index.js \
   --compatibility-date 2024-09-23 \
   --var SENTRY_DSN:https://your-sentry-dsn@sentry.io/project-id \
   --var SENTRY_ENVIRONMENT:production \
-  --var ARG_DEBUG:false \
   --var ARG_TELEMETRY:true \
-  --var ARG_DAEMON:true \
   --d1 DB=vsr-prod-database \
   --r2 BUCKET=vsr-prod-bucket \
   --queue-producer CACHE_REFRESH_QUEUE=vsr-prod-cache-refresh-queue \
