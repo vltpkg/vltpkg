@@ -57,8 +57,6 @@ EXAMPLES:
   $ vsr --config=/path/to/vlt.json    # Use specific config file
 `
 
-
-
 const opts = {
   alias: {
     p: 'port',

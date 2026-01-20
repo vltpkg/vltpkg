@@ -137,12 +137,12 @@ more control:
 
 ### CLI Options
 
-| Option     | Alias | Default | Description             |
-| ---------- | ----- | ------- | ----------------------- |
-| `--port`   | `-p`  | `1337`  | Server port             |
-| `--config` | `-c`  | -       | Config file path        |
-| `--debug`  | `-d`  | `false` | Debug mode              |
-| `--help`   | `-h`  | -       | Show help               |
+| Option     | Alias | Default | Description      |
+| ---------- | ----- | ------- | ---------------- |
+| `--port`   | `-p`  | `1337`  | Server port      |
+| `--config` | `-c`  | -       | Config file path |
+| `--debug`  | `-d`  | `false` | Debug mode       |
+| `--help`   | `-h`  | -       | Show help        |
 
 ### Deploy Options
 

@@ -153,7 +153,6 @@ app.get('/', async c => {
   } else {
     c.text('vlt serverless registry is alive.\n')
   }
-
 })
 
 // ---------------------------------------------------------

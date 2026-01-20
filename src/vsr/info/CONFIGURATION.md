@@ -50,7 +50,7 @@ development and deployment settings:
   "registry": {
     "port": 4000,
     "debug": true,
-    "telemetry": false,
+    "telemetry": false
   }
 }
 ```

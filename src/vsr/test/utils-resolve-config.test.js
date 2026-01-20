@@ -3,7 +3,6 @@ import { resolveConfig } from '../src/utils/resolve-config.ts'
 
 describe('Configuration Middleware', () => {
   describe('resolveConfig', () => {
-
     it('should handle multiple environment overrides', () => {
       const config = resolveConfig({
         ARG_TELEMETRY: 'false',
