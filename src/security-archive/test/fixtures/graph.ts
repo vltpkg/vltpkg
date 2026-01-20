@@ -55,7 +55,7 @@ export const newNode =
       name,
       version,
       location:
-        'node_modules/.vlt/·${registry ?? defaultRegistryName}·${name}@${version}/node_modules/${name}',
+        'node_modules/.vlt/~${registry ?? defaultRegistryName}~${name}@${version}/node_modules/${name}',
       manifest: { name, version },
       rawManifest: undefined,
       integrity: 'sha512-deadbeef',

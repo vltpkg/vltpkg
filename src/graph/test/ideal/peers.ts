@@ -460,7 +460,7 @@ t.test('retrievePeerContextHash', async t => {
     peerContext.index = 5
     t.equal(
       retrievePeerContextHash(peerContext),
-      'ṗ:5',
+      'peer.5',
       'should return formatted reference',
     )
   })
@@ -1380,7 +1380,7 @@ t.test('startPeerPlacement', async t => {
     )
 
     t.equal(result.queuedEntries.length, 1, 'should have peer data')
-    t.equal(result.peerSetHash, 'ṗ:1', 'should have peer set hash')
+    t.equal(result.peerSetHash, 'peer.1', 'should have peer set hash')
     t.ok(result.queuedEntries.length > 0, 'should have entries')
   })
 })

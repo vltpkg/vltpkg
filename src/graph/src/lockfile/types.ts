@@ -38,7 +38,7 @@ export type LockfileData = {
  * Only lockfiles with matching version are considered valid.
  * Bump when making breaking format changes.
  */
-export const LOCKFILE_VERSION = 0
+export const LOCKFILE_VERSION = 1
 
 export const getFlagNumFromNode = (node: {
   optional?: boolean

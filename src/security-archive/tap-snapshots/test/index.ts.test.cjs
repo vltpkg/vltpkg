@@ -7,7 +7,7 @@
 'use strict'
 exports[`test/index.ts > TAP > SecurityArchive.refresh > should have persisted the API response into the database 1`] = `
 Object {
-  "·npm·@ruyadorno§foo@1.0.0": Object {
+  "~npm~@ruyadorno+foo@1.0.0": Object {
     "alerts": Array [],
     "author": Array [
       "ruyadorno",
@@ -30,7 +30,7 @@ Object {
     "type": "npm",
     "version": "1.0.0",
   },
-  "·npm·english-days@1.0.0": Object {
+  "~npm~english-days@1.0.0": Object {
     "alerts": Array [
       Object {
         "category": "maintenance",
@@ -82,7 +82,7 @@ Object {
 
 exports[`test/index.ts > TAP > SecurityArchive.refresh > should have removed the borked entry from the database 1`] = `
 Object {
-  "·npm·english-days@1.0.0": Object {
+  "~npm~english-days@1.0.0": Object {
     "alerts": Array [
       Object {
         "category": "maintenance",
@@ -134,7 +134,7 @@ Object {
 
 exports[`test/index.ts > TAP > SecurityArchive.refresh > should output a JSON representation of the current archive 1`] = `
 Object {
-  "·npm·@ruyadorno§foo@1.0.0": Object {
+  "~npm~@ruyadorno+foo@1.0.0": Object {
     "alerts": Array [],
     "author": Array [
       "ruyadorno",
@@ -157,7 +157,7 @@ Object {
     "type": "npm",
     "version": "1.0.0",
   },
-  "·npm·english-days@1.0.0": Object {
+  "~npm~english-days@1.0.0": Object {
     "alerts": Array [
       Object {
         "category": "maintenance",

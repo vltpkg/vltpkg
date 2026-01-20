@@ -693,7 +693,7 @@ t.test('transientAdd from file-type directory manifest', async t => {
           '/node_modules/nested',
       ),
       '.vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {
           [joinDepIDTuple(['file', 'nested'])]: [
@@ -816,7 +816,7 @@ t.test(
         ),
       },
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {
           [joinDepIDTuple(['file', 'nested'])]: [0, 'nested'],
@@ -1023,7 +1023,7 @@ t.test(
         },
         nested: t.fixture('symlink', '../nested'),
         '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {},
           nodes: {
             [joinDepIDTuple(['file', 'nested'])]: [

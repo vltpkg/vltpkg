@@ -66,7 +66,7 @@ t.test('load', async t => {
     [spaceKey]: spaceVal,
   }
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         custom: 'https://registry.example.com',
@@ -135,7 +135,7 @@ t.test('loadHidden', async t => {
     [spaceKey]: spaceVal,
   }
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         custom: 'https://registry.example.com',
@@ -224,7 +224,7 @@ t.test('loadHidden', async t => {
 
 t.test('workspaces', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         custom: 'http://example.com',
@@ -283,7 +283,7 @@ t.test('workspaces', async t => {
 
 t.test('unknown dep type', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -320,7 +320,7 @@ t.test('unknown dep type', async t => {
 
 t.test('invalid dep id in edge', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -358,7 +358,7 @@ t.test('invalid dep id in edge', async t => {
 
 t.test('missing edge `from`', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -395,7 +395,7 @@ t.test('missing edge `from`', async t => {
 
 t.test('load with custom git hosts', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       'git-hosts': {
         example: 'git+ssh://example.com/$1/$2.git',
@@ -438,7 +438,7 @@ t.test('load with custom git hosts', async t => {
 
 t.test('load with custom scope registry', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       'scope-registries': {
         '@myscope': 'http://example.com',
@@ -494,7 +494,7 @@ t.test(
       projectRoot,
     }
     const lockfileData: LockfileData = {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {
         registry: 'http://example.com',
         registries: {
@@ -525,7 +525,7 @@ t.test('missing options object', async t => {
     projectRoot,
   }
   const lockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {},
     edges: {},
@@ -581,7 +581,7 @@ t.test('load with optimization path for large graphs', async t => {
   }
 
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: { registry: 'https://registry.npmjs.org/' },
     nodes,
     edges,
@@ -684,7 +684,7 @@ t.test('load platform data for optional dependencies', async t => {
   const packageJson = new PackageJson()
 
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: configData,
     nodes: {
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -791,7 +791,7 @@ t.test('load with peerSetHash in extra parameter', async t => {
   const packageJson = new PackageJson()
 
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: configData,
     nodes: {
       // Node with modifier only
@@ -813,7 +813,7 @@ t.test('load with peerSetHash in extra parameter', async t => {
         'registry',
         '',
         'with-peer@1.0.0',
-        'ṗ:hash123',
+        'peer.hash123',
       ])]: [
         0,
         'with-peer',
@@ -827,7 +827,7 @@ t.test('load with peerSetHash in extra parameter', async t => {
         'registry',
         '',
         'with-both@1.0.0',
-        ':root > #with-bothṗ:hash456',
+        ':root > #with-bothpeer.hash456',
       ])]: [
         0,
         'with-both',
@@ -850,9 +850,9 @@ t.test('load with peerSetHash in extra parameter', async t => {
       [`${joinDepIDTuple(['file', '.'])} with-modifier`]:
         `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-modifier@1.0.0', ':root > #with-modifier'])}` as LockfileEdgeValue,
       [`${joinDepIDTuple(['file', '.'])} with-peer`]:
-        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'ṗ:hash123'])}` as LockfileEdgeValue,
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'peer.hash123'])}` as LockfileEdgeValue,
       [`${joinDepIDTuple(['file', '.'])} with-both`]:
-        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-both@1.0.0', ':root > #with-bothṗ:hash456'])}` as LockfileEdgeValue,
+        `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'with-both@1.0.0', ':root > #with-bothpeer.hash456'])}` as LockfileEdgeValue,
       [`${joinDepIDTuple(['file', '.'])} regular`]:
         `prod ^1.0.0 ${joinDepIDTuple(['registry', '', 'regular@1.0.0'])}` as LockfileEdgeValue,
     },
@@ -887,11 +887,16 @@ t.test('load with peerSetHash in extra parameter', async t => {
 
   // Verify peerSetHash-only node
   const withPeer = graph.nodes.get(
-    joinDepIDTuple(['registry', '', 'with-peer@1.0.0', 'ṗ:hash123']),
+    joinDepIDTuple([
+      'registry',
+      '',
+      'with-peer@1.0.0',
+      'peer.hash123',
+    ]),
   )
   t.ok(withPeer, 'with-peer node exists')
   t.notOk(withPeer?.modifier, 'no modifier')
-  t.equal(withPeer?.peerSetHash, 'ṗ:hash123', 'has peerSetHash')
+  t.equal(withPeer?.peerSetHash, 'peer.hash123', 'has peerSetHash')
 
   // Verify node with both
   const withBoth = graph.nodes.get(
@@ -899,12 +904,12 @@ t.test('load with peerSetHash in extra parameter', async t => {
       'registry',
       '',
       'with-both@1.0.0',
-      ':root > #with-bothṗ:hash456',
+      ':root > #with-bothpeer.hash456',
     ]),
   )
   t.ok(withBoth, 'with-both node exists')
   t.equal(withBoth?.modifier, ':root > #with-both', 'has modifier')
-  t.equal(withBoth?.peerSetHash, 'ṗ:hash456', 'has peerSetHash')
+  t.equal(withBoth?.peerSetHash, 'peer.hash456', 'has peerSetHash')
 
   // Verify regular node
   const regular = graph.nodes.get(

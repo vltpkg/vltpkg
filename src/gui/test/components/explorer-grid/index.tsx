@@ -286,11 +286,11 @@ test('ExplorerGrid with stack', async () => {
 test('ExplorerGrid renders workspace with edges in', async () => {
   const { graph } = transfer.load({
     lockfile: {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {},
       nodes: {},
       edges: {
-        'workspace·a b': 'prod workspace:* workspace·b',
+        'workspace~a b': 'prod workspace:* workspace~b',
       },
     },
     importers: [

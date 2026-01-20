@@ -213,7 +213,7 @@ t.test(
         'git',
         'https://github.com/user/repo.git',
         'main',
-        'ṗ:abc123',
+        'peer.abc123',
       ])]: [
         0,
         'git-pkg',
@@ -229,7 +229,7 @@ t.test(
       [joinDepIDTuple([
         'file',
         './local-pkg',
-        ':root > #file-pkgṗ:def456',
+        ':root > #file-pkgpeer.def456',
       ])]: [
         0,
         'file-pkg',
@@ -287,7 +287,7 @@ t.test(
         'git',
         'https://github.com/user/repo.git',
         'main',
-        'ṗ:abc123',
+        'peer.abc123',
       ]),
     )
     t.ok(gitPkgNode, 'should load git package node with peerSetHash')
@@ -298,7 +298,7 @@ t.test(
     )
     t.equal(
       gitPkgNode?.peerSetHash,
-      'ṗ:abc123',
+      'peer.abc123',
       'git node should have correct peerSetHash',
     )
 
@@ -307,7 +307,7 @@ t.test(
       joinDepIDTuple([
         'file',
         './local-pkg',
-        ':root > #file-pkgṗ:def456',
+        ':root > #file-pkgpeer.def456',
       ]),
     )
     t.ok(filePkgNode, 'should load file package node with both')
@@ -318,7 +318,7 @@ t.test(
     )
     t.equal(
       filePkgNode?.peerSetHash,
-      'ṗ:def456',
+      'peer.def456',
       'file node should have correct peerSetHash',
     )
 

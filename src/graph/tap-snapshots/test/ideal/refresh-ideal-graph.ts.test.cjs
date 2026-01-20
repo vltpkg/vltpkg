@@ -8,23 +8,23 @@
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph after adding a previously missing dependency bar 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '·npm·foo@1.0.0',
-        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
+        id: '~npm~foo@1.0.0',
+        location: './node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '·npm·bar@1.0.0',
-            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
+            id: '~npm~bar@1.0.0',
+            location: './node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
       },
-      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: '·npm·bar@1.0.0' }
+      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: '~npm~bar@1.0.0' }
     ]
   }
 ]
@@ -33,18 +33,18 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph aft
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph after adding foo when there is an already existing foo 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '·npm·foo@1.0.0',
-        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
+        id: '~npm~foo@1.0.0',
+        location: './node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '·npm·bar@1.0.0',
-            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
+            id: '~npm~bar@1.0.0',
+            location: './node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -57,18 +57,18 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph aft
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph with an added foo 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '·npm·foo@1.0.0',
-        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
+        id: '~npm~foo@1.0.0',
+        location: './node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '·npm·bar@1.0.0',
-            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
+            id: '~npm~bar@1.0.0',
+            location: './node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -81,18 +81,18 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph with missing package bar 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '·npm·foo@1.0.0',
-        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
+        id: '~npm~foo@1.0.0',
+        location: './node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: '·npm·bar@1.0.0',
-            location: './node_modules/.vlt/·npm·bar@1.0.0/node_modules/bar',
+            id: '~npm~bar@1.0.0',
+            location: './node_modules/.vlt/~npm~bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -104,65 +104,65 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > graph wit
 `
 
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph > initial graph 1`] = `
-[ Node { id: 'file·.', location: '.', importer: true } ]
+[ Node { id: 'file~_d', location: '.', importer: true } ]
 `
 
 exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with workspaces > graph with workspace changes 1`] = `
 [
   Node {
-    id: 'file·.',
+    id: 'file~_d',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: '·npm·baz@1.0.0',
-        location: './node_modules/.vlt/·npm·baz@1.0.0/node_modules/baz',
+        id: '~npm~baz@1.0.0',
+        location: './node_modules/.vlt/~npm~baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       }
     ]
   },
   Node {
-    id: 'workspace·packages§workspace-d',
+    id: 'workspace~packages+workspace-d',
     location: './packages/workspace-d',
     importer: true,
     edgesOut: [
       Edge spec(ipsum@^1.0.0) -peer-> to: Node {
-        id: '·npm·ipsum@1.0.0',
-        location: './node_modules/.vlt/·npm·ipsum@1.0.0/node_modules/ipsum',
+        id: '~npm~ipsum@1.0.0',
+        location: './node_modules/.vlt/~npm~ipsum@1.0.0/node_modules/ipsum',
         resolved: 'https://registry.npmjs.org/ipsum/-/ipsum-1.0.0.tgz'
       }
     ]
   },
   Node {
-    id: 'workspace·packages§workspace-c',
+    id: 'workspace~packages+workspace-c',
     location: './packages/workspace-c',
     importer: true,
     edgesOut: [
       Edge spec(lorem@^1.0.0) -peer-> to: Node {
-        id: '·npm·lorem@1.0.0',
-        location: './node_modules/.vlt/·npm·lorem@1.0.0/node_modules/lorem',
+        id: '~npm~lorem@1.0.0',
+        location: './node_modules/.vlt/~npm~lorem@1.0.0/node_modules/lorem',
         resolved: 'https://registry.npmjs.org/lorem/-/lorem-1.0.0.tgz'
       }
     ]
   },
   Node {
-    id: 'workspace·packages§workspace-b',
+    id: 'workspace~packages+workspace-b',
     location: './packages/workspace-b',
     importer: true
   },
   Node {
-    id: 'workspace·packages§workspace-a',
+    id: 'workspace~packages+workspace-a',
     location: './packages/workspace-a',
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: '·npm·foo@1.0.0',
-        location: './node_modules/.vlt/·npm·foo@1.0.0/node_modules/foo',
+        id: '~npm~foo@1.0.0',
+        location: './node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
       },
       Edge spec(qux@^1.0.0) -dev-> to: Node {
-        id: '·npm·qux@1.0.0',
-        location: './node_modules/.vlt/·npm·qux@1.0.0/node_modules/qux',
+        id: '~npm~qux@1.0.0',
+        location: './node_modules/.vlt/~npm~qux@1.0.0/node_modules/qux',
         dev: true,
         resolved: 'https://registry.npmjs.org/qux/-/qux-1.0.0.tgz'
       }

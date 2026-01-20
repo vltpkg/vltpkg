@@ -280,7 +280,7 @@ examples:
   - input: |
       # Working with lockfile data format (including new fields)
       const lockfileData = {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: { registry: 'https://registry.npmjs.org/' },
         nodes: {
           'registry:foo@1.0.0': [

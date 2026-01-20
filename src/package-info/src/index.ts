@@ -42,7 +42,7 @@ import { create as tarC } from 'tar'
 import { rename } from './rename.ts'
 
 const xdg = new XDG('vlt')
-export const delimiter = '·'
+export const delimiter = '~'
 
 export type Resolution = {
   resolved: string

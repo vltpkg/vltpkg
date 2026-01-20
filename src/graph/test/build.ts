@@ -20,7 +20,7 @@ t.test('build function', async t => {
       'vlt.json': JSON.stringify({}),
       node_modules: {
         '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registries: {
               npm: 'https://registry.npmjs.org/',
@@ -106,7 +106,7 @@ t.test('build function', async t => {
         'vlt-lock.json': 'invalid json content',
         node_modules: {
           '.vlt-lock.json': JSON.stringify({
-            lockfileVersion: 0,
+            lockfileVersion: 1,
             options: {
               registry: 'https://registry.npmjs.org/',
             },
@@ -151,7 +151,7 @@ t.test('build function', async t => {
           }),
         },
         '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registries: {
               npm: 'https://registry.npmjs.org/',
@@ -243,7 +243,7 @@ t.test('build with target option', async t => {
           }),
         },
         '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registry: 'https://registry.npmjs.org/',
           },
@@ -329,7 +329,7 @@ t.test('build with optional dependencies that fail', async t => {
           },
         }),
         'vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registry: 'https://registry.npmjs.org/',
           },
@@ -356,7 +356,7 @@ t.test('build with optional dependencies that fail', async t => {
             }),
           },
           '.vlt-lock.json': JSON.stringify({
-            lockfileVersion: 0,
+            lockfileVersion: 1,
             options: {
               registry: 'https://registry.npmjs.org/',
             },

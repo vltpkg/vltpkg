@@ -580,10 +580,15 @@ t.test('node with peerSetHash', async t => {
   }
   const nodeWithPeer = new Node(
     opts,
-    joinDepIDTuple(['registry', '', 'test-peer@2.0.0', 'ṗ:abc123']),
+    joinDepIDTuple([
+      'registry',
+      '',
+      'test-peer@2.0.0',
+      'peer.abc123',
+    ]),
     mani,
   )
-  nodeWithPeer.peerSetHash = 'ṗ:abc123'
+  nodeWithPeer.peerSetHash = 'peer.abc123'
   t.matchSnapshot(
     nodeWithPeer.toJSON(),
     'should serialize node with peerSetHash',

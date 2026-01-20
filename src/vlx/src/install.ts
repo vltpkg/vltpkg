@@ -41,7 +41,7 @@ export const vlxInstall = async (
     .digest('hex')
     .substring(0, 8)
   const xdg = new XDG('vlt/vlx')
-  const dir = xdg.data(pkgSpec.name.replace('/', '§') + '-' + hash)
+  const dir = xdg.data(pkgSpec.name.replace('/', '+') + '-' + hash)
   if (await dirExists(dir)) {
     try {
       return vlxInfo(dir, options)

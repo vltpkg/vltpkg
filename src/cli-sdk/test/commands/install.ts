@@ -57,7 +57,7 @@ t.strictSame(
   Command.views.json({
     graph: {
       toJSON: () => ({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -65,7 +65,7 @@ t.strictSame(
     } as any,
   }),
   {
-    graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },
+    graph: { lockfileVersion: 1, options: {}, nodes: {}, edges: {} },
   },
   'json view without buildQueue should only include graph',
 )
@@ -73,10 +73,10 @@ t.strictSame(
 // Test JSON view with buildQueue
 t.strictSame(
   Command.views.json({
-    buildQueue: ['··foo@1.0.0' as any, '··bar@2.0.0' as any],
+    buildQueue: ['~~foo@1.0.0' as any, '~~bar@2.0.0' as any],
     graph: {
       toJSON: () => ({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -84,10 +84,10 @@ t.strictSame(
     } as any,
   }),
   {
-    buildQueue: ['··foo@1.0.0', '··bar@2.0.0'],
+    buildQueue: ['~~foo@1.0.0', '~~bar@2.0.0'],
     message:
       '2 packages that will need to be built, run "vlt build" to complete the install.',
-    graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },
+    graph: { lockfileVersion: 1, options: {}, nodes: {}, edges: {} },
   },
   'json view with buildQueue should include buildQueue, message, and graph',
 )
@@ -98,7 +98,7 @@ t.strictSame(
     buildQueue: [],
     graph: {
       toJSON: () => ({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -106,7 +106,7 @@ t.strictSame(
     } as any,
   }),
   {
-    graph: { lockfileVersion: 0, options: {}, nodes: {}, edges: {} },
+    graph: { lockfileVersion: 1, options: {}, nodes: {}, edges: {} },
   },
   'json view with empty buildQueue should only include graph',
 )
@@ -118,7 +118,7 @@ t.test('frozen-lockfile flag', async t => {
       version: '1.0.0',
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {},
       nodes: {},
       edges: {},

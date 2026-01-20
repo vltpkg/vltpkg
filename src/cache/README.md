@@ -5,7 +5,7 @@
 The filesystem cache for `@vltpkg/registry-client`, but also, a
 general-purpose filesystem-backed [LRUCache](http://npm.im/lru-cache)
 
-**[Usage](#usage)** · **[Note](#note)**
+**[Usage](#usage)** ~ **[Note](#note)**
 
 ## Overview
 
