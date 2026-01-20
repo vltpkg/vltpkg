@@ -331,7 +331,7 @@ actions:
         !existingNode.detached &&
         // Regular deps can always reuse.
         // Peer deps can reuse as well if their peer edges are compatible.
-        // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0·ṗ:*.)
+        // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0 with peer context, e.g: peer.*.)
         (!peer || peerCompatResult.compatible) &&
         // Check peer edge compatibility
         peerCompatResult.compatible
