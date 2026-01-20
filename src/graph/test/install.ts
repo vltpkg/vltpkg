@@ -1761,3 +1761,58 @@ t.test('remote dependency integrity in lockfile', async t => {
     },
   )
 })
+
+t.test(
+  'install with frozenLockfile and lockfile version mismatch',
+  async t => {
+    const { LOCKFILE_VERSION } = await t.mockImport<
+      typeof import('../src/lockfile/types.ts')
+    >('../src/lockfile/types.ts')
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+        },
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: LOCKFILE_VERSION + 1, // Newer version
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      frozenLockfile: true,
+      allowScripts: ':not(*)',
+    } as unknown as InstallOptions
+
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/reify/index.ts': {
+        reify: async () => ({ diff: { hasChanges: () => false } }),
+      },
+    })
+
+    await t.rejects(
+      install(options, new Map() as AddImportersDependenciesMap),
+      {
+        message: 'Unsupported lockfile version',
+        cause: {
+          code: 'ELOCKFILEVERSION',
+          found: LOCKFILE_VERSION + 1,
+          wanted: LOCKFILE_VERSION,
+        },
+      },
+      'should throw when lockfile version is newer',
+    )
+  },
+)

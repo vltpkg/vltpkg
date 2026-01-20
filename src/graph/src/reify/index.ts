@@ -95,6 +95,7 @@ export type ReifyOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   modifiers?: GraphModifier
   remover: RollbackRemove
+  update?: boolean
 }
 
 export type ReifyResult = {
@@ -131,8 +132,9 @@ export const reify = async (
     !options.add?.modifiedDependencies &&
     !options.remove?.modifiedDependencies
   const skipOptionalOnly = noModifiedDependencies && diff.optionalOnly
+  const skippable = skipOptionalOnly && !options.update
   const res: ReifyResult = { diff }
-  if (!diff.hasChanges() || skipOptionalOnly) {
+  if (!diff.hasChanges() || skippable) {
     // nothing to do, so just return the diff
     done()
     return res
