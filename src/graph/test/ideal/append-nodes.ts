@@ -1870,3 +1870,410 @@ t.test('skip peerOptional dependencies', async t => {
     )
   })
 })
+
+t.test(
+  'tries multiple candidates for peer-compatible node reuse',
+  async t => {
+    // This tests the branch in src/ideal/append-nodes.ts where:
+    // - graph.findResolution() returns a satisfying node whose peer edges
+    //   are incompatible with the current peerContext
+    // - append-nodes tries other candidates (deterministically) until it finds
+    //   a compatible one.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Two react targets for the peer edge
+    const react182 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.2.0' },
+    )!
+    const react183 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.1' },
+    )!
+
+    // Create multiple candidates for foo. The dependency we're trying to add is foo@^1.
+    // - foo@0.9.0: does NOT satisfy ^1 (covers the !satisfies(candidate) continue)
+    // - foo@1.0.0: first satisfying node, but incompatible peer edge (react182)
+    // - foo@1.0.1: satisfies but detached (covers detached continue)
+    // - foo@1.0.2: satisfies and compatible peer edge (react183) -> should be selected
+    const fooManifest09 = {
+      name: 'foo',
+      version: '0.9.0',
+      peerDependencies: { react: '^18.0.0' },
+    }
+    const fooManifest10 = {
+      name: 'foo',
+      version: '1.0.0',
+      peerDependencies: { react: '^18.0.0' },
+    }
+    const fooManifest101 = {
+      name: 'foo',
+      version: '1.0.1',
+      peerDependencies: { react: '^18.0.0' },
+    }
+    const fooManifest102 = {
+      name: 'foo',
+      version: '1.0.2',
+      peerDependencies: { react: '^18.0.0' },
+    }
+
+    const peerReactSpec = Spec.parse('react', '^18.0.0', configData)
+
+    const foo09 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^0.9.0', configData),
+      fooManifest09,
+    )!
+    graph.addEdge('peer', peerReactSpec, foo09, react182)
+
+    const foo10 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest10,
+    )!
+    graph.addEdge('peer', peerReactSpec, foo10, react182)
+
+    const foo101 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest101,
+    )!
+    foo101.detached = true
+    graph.addEdge('peer', peerReactSpec, foo101, react183)
+
+    const foo102 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest102,
+    )!
+    graph.addEdge('peer', peerReactSpec, foo102, react183)
+
+    // Ensure findResolution() does NOT just return the last cached resolution
+    // (which would hide the fallback loop). Force it to scan candidates.
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    const packageInfo = {
+      // Should not be called because appendNodes should reuse an existing foo node.
+      async manifest(spec: Spec) {
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+
+    // peerContext expects react183, making foo10 incompatible (it peers to react182)
+    const peerContext = graph.peerContexts[0]!
+    peerContext.set('react', {
+      active: true,
+      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      target: react183,
+      type: 'prod',
+      contextDependents: new Set(),
+    })
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    const edge = graph.mainImporter.edgesOut.get('foo')
+    t.ok(edge, 'should have foo edge')
+    t.equal(
+      edge?.to?.id,
+      foo102.id,
+      'should reuse compatible candidate (foo@1.0.2), skipping incompatible/detached/non-satisfying candidates',
+    )
+  },
+)
+
+t.test(
+  'does not enter candidate fallback when existing node is already peer-compatible',
+  async t => {
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Seed graph with an existing foo node (no peer deps => always compatible)
+    const existingFoo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    )!
+
+    const packageInfo = {
+      async manifest() {
+        throw new Error('unexpected manifest fetch')
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    const edge = graph.mainImporter.edgesOut.get('foo')
+    t.equal(
+      edge?.to?.id,
+      existingFoo.id,
+      'should reuse existing foo node',
+    )
+  },
+)
+
+t.test(
+  'does not enter candidate fallback when only one candidate exists (size=1)',
+  async t => {
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const react182 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.2.0' },
+    )!
+    const react183 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.1' },
+    )!
+
+    // Single foo candidate, but its peer edge is incompatible with peerContext
+    const foo10 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18.0.0' },
+      },
+    )!
+    graph.addEdge(
+      'peer',
+      Spec.parse('react', '^18.0.0', configData),
+      foo10,
+      react182,
+    )
+
+    // peerContext expects react183, but there is no alternative foo candidate
+    const peerContext = graph.peerContexts[0]!
+    peerContext.set('react', {
+      active: true,
+      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      target: react183,
+      type: 'prod',
+      contextDependents: new Set(),
+    })
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.final.name === 'foo') {
+          // Return a different patch version so placePackage creates a new node id.
+          return {
+            name: 'foo',
+            version: '1.0.1',
+            peerDependencies: { react: '^18.0.0' },
+          } as any
+        }
+        return null
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    const edge = graph.mainImporter.edgesOut.get('foo')
+    t.not(
+      edge?.to?.id,
+      foo10.id,
+      'should not reuse incompatible foo@1.0.0',
+    )
+    t.equal(
+      edge?.to?.version,
+      '1.0.1',
+      'should place a new foo@1.0.1',
+    )
+  },
+)
+
+t.test(
+  'creates fresh peer context for non-main workspace importers',
+  async t => {
+    // This tests that each workspace importer gets its own peer context
+    // to prevent cross-workspace peer context leakage
+    const mainManifest = {
+      name: 'workspace-project',
+      version: '1.0.0',
+      dependencies: {
+        react: '^18.0.0',
+      },
+    }
+    const aManifest = {
+      name: 'a',
+      version: '1.0.0',
+      dependencies: {
+        react: '^19.0.0',
+      },
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      a: { 'package.json': JSON.stringify(aManifest) },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['a'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['a'] },
+      scurry,
+      packageJson,
+      load: { paths: ['a'] },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'react') {
+          if (spec.bareSpec.includes('18')) {
+            return { name: 'react', version: '18.3.1' }
+          }
+          return { name: 'react', version: '19.2.0' }
+        }
+        return null
+      },
+    } as PackageInfoClient
+
+    // Add workspace importers to the graph
+    const wsImporter = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('a', 'workspace:*', configData),
+      aManifest,
+      joinDepIDTuple(['workspace', 'a']),
+    )!
+    wsImporter.importer = true
+    graph.importers.add(wsImporter)
+
+    // First, populate main importer's react
+    const mainReactDep = asDependency({
+      spec: Spec.parse('react', '^18.0.0'),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [mainReactDep],
+      scurry,
+      configData,
+      new Set<DepID>(),
+      new Map([['react', mainReactDep]]),
+    )
+
+    // Now append deps for the workspace importer
+    const wsReactDep = asDependency({
+      spec: Spec.parse('react', '^19.0.0'),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      wsImporter,
+      [wsReactDep],
+      scurry,
+      configData,
+      new Set<DepID>(),
+      new Map([['react', wsReactDep]]),
+    )
+
+    // Verify each importer has correct react version
+    const mainReactEdge = graph.mainImporter.edgesOut.get('react')
+    const wsReactEdge = wsImporter.edgesOut.get('react')
+
+    t.equal(
+      mainReactEdge?.to?.version,
+      '18.3.1',
+      'main importer should have react@18',
+    )
+    t.equal(
+      wsReactEdge?.to?.version,
+      '19.2.0',
+      'workspace importer should have react@19',
+    )
+
+    // Verify peer contexts are separate (more than one context exists)
+    t.ok(
+      graph.peerContexts.length > 1,
+      'should have multiple peer contexts for isolation',
+    )
+  },
+)

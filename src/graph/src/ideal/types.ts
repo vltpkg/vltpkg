@@ -77,13 +77,7 @@ export type AppendNodeEntry = {
   depth: number
   peerContext: PeerContext
   updateContext: {
-    putEntries: () =>
-      | {
-          dependent: Node
-          spec: Spec
-          type: DependencySaveType
-        }[]
-      | undefined
+    putEntries: () => PeerContextEntryInput[] | undefined
     resolvePeerDeps: () => void
   }
 }

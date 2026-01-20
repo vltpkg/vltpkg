@@ -147,6 +147,14 @@ export class Graph implements GraphLike {
   peerContexts: PeerContext[]
 
   /**
+   * Cache of forked peer contexts so identical fork operations can reuse
+   * previously created contexts instead of duplicating them.
+   *
+   * Key format is internal and constructed in `ideal/peers.ts`.
+   */
+  peerContextForkCache = new Map<string, PeerContext>()
+
+  /**
    * Tracks the current peer context index.
    */
   currentPeerContextIndex = 0
