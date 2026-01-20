@@ -914,3 +914,127 @@ t.test('load with peerSetHash in extra parameter', async t => {
   t.notOk(regular?.modifier, 'no modifier')
   t.notOk(regular?.peerSetHash, 'no peerSetHash')
 })
+
+t.test('lockfile version validation', async t => {
+  const projectRoot = t.testdir()
+  const packageJson = new PackageJson()
+  const { LOCKFILE_VERSION } = await t.mockImport<
+    typeof import('../../src/lockfile/types.ts')
+  >('../../src/lockfile/types.ts')
+
+  t.test('load with matching version succeeds', async t => {
+    const lockfileData: LockfileData = {
+      lockfileVersion: LOCKFILE_VERSION,
+      options: {},
+      nodes: {},
+      edges: {},
+    }
+    const graph = loadObject(
+      {
+        ...configData,
+        mainManifest,
+        projectRoot,
+        packageJson,
+      },
+      lockfileData,
+    )
+    t.ok(graph, 'graph loaded successfully')
+  })
+
+  t.test('load with missing version throws error', async t => {
+    const lockfileData: Omit<LockfileData, 'lockfileVersion'> & {
+      lockfileVersion?: number
+    } = {
+      options: {},
+      nodes: {},
+      edges: {},
+    }
+    t.throws(
+      () =>
+        loadObject(
+          {
+            ...configData,
+            mainManifest,
+            projectRoot,
+            packageJson,
+          },
+          lockfileData,
+        ),
+      {
+        message: 'Missing lockfile version',
+        cause: {
+          code: 'ELOCKFILEVERSION',
+          found: undefined,
+          wanted: LOCKFILE_VERSION,
+        },
+      },
+      'throws with missing version',
+    )
+  })
+
+  t.test(
+    'load with older version throws ELOCKFILEVERSION',
+    async t => {
+      const lockfileData: LockfileData = {
+        lockfileVersion: LOCKFILE_VERSION - 1,
+        options: {},
+        nodes: {},
+        edges: {},
+      }
+      t.throws(
+        () =>
+          loadObject(
+            {
+              ...configData,
+              mainManifest,
+              projectRoot,
+              packageJson,
+            },
+            lockfileData,
+          ),
+        {
+          message: 'Unsupported lockfile version',
+          cause: {
+            code: 'ELOCKFILEVERSION',
+            found: LOCKFILE_VERSION - 1,
+            wanted: LOCKFILE_VERSION,
+          },
+        },
+        'throws with older version',
+      )
+    },
+  )
+
+  t.test(
+    'load with newer version throws ELOCKFILEVERSION',
+    async t => {
+      const lockfileData: LockfileData = {
+        lockfileVersion: LOCKFILE_VERSION + 1,
+        options: {},
+        nodes: {},
+        edges: {},
+      }
+      t.throws(
+        () =>
+          loadObject(
+            {
+              ...configData,
+              mainManifest,
+              projectRoot,
+              packageJson,
+            },
+            lockfileData,
+          ),
+        {
+          message: 'Unsupported lockfile version',
+          cause: {
+            code: 'ELOCKFILEVERSION',
+            found: LOCKFILE_VERSION + 1,
+            wanted: LOCKFILE_VERSION,
+          },
+        },
+        'throws with newer version',
+      )
+    },
+  )
+})

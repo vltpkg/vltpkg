@@ -33,6 +33,13 @@ export type LockfileData = {
   edges: LockfileEdges
 }
 
+/**
+ * Current lockfile format version.
+ * Only lockfiles with matching version are considered valid.
+ * Bump when making breaking format changes.
+ */
+export const LOCKFILE_VERSION = 0
+
 export const getFlagNumFromNode = (node: {
   optional?: boolean
   dev?: boolean

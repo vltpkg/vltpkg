@@ -477,8 +477,9 @@ export const load = (options: LoadOptions): Graph => {
       done()
       return graph
     } catch {
-      // if validation fails or any other error occurs,
-      // fall back to filesystem traversal
+      // Hidden lockfile is cache-only, safe to regenerate on any error
+      // as it will fall back to filesystem traversal
+      // TODO: Warn version mismatch to @vltpkg/output for debugging
     }
   }
 

@@ -12,7 +12,11 @@ import {
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { getFlagNumFromNode, getBuildStateFromNode } from './types.ts'
+import {
+  getFlagNumFromNode,
+  getBuildStateFromNode,
+  LOCKFILE_VERSION,
+} from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { Edge } from '../edge.ts'
@@ -208,7 +212,7 @@ export const lockfileData = ({
   const hasItems = (clean: Record<string, unknown> | undefined) =>
     clean && Object.keys(clean).length
   return {
-    lockfileVersion: 0,
+    lockfileVersion: LOCKFILE_VERSION,
     options: {
       ...(hasItems(cleanModifiers) ?
         { modifiers: cleanModifiers }

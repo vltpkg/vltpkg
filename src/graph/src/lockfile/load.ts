@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
@@ -5,6 +6,7 @@ import { resolve } from 'node:path'
 import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
 import { Graph } from '../graph.ts'
+import { LOCKFILE_VERSION } from './types.ts'
 import type { PathScurry } from 'path-scurry'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -76,6 +78,29 @@ export const loadObject = (
   lockfileData: Omit<LockfileData, 'options' | 'lockfileVersion'> &
     Partial<Pick<LockfileData, 'options' | 'lockfileVersion'>>,
 ) => {
+  const version = lockfileData.lockfileVersion
+  // Lockfile version is required, likely a corrupted lockfile if missing
+  if (version == null) {
+    throw error('Missing lockfile version', {
+      code: 'ELOCKFILEVERSION',
+      found: version,
+      wanted: LOCKFILE_VERSION,
+    })
+  }
+  // Lockfile version must match current version
+  if (version !== LOCKFILE_VERSION) {
+    throw error(
+      `Unsupported lockfile version.
+
+  Run: \`vlt update\` to start a new, supported lockfile.`,
+      {
+        code: 'ELOCKFILEVERSION',
+        found: version,
+        wanted: LOCKFILE_VERSION,
+      },
+    )
+  }
+
   const { mainManifest, scurry } = options
   const packageJson = options.packageJson ?? new PackageJson()
   const monorepo =

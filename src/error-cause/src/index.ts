@@ -207,6 +207,7 @@ export type Codes =
   | 'EUSAGE'
   | 'EREQUEST'
   | 'ECONFIG'
+  | 'ELOCKFILEVERSION'
 
 // `captureStackTrace` is non-standard so explicitly type it as possibly
 // undefined since it might be in browsers.

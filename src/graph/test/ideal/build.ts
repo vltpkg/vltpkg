@@ -278,3 +278,98 @@ t.test(
     )
   },
 )
+
+t.test('lockfile version handling', async t => {
+  const { LOCKFILE_VERSION } = await t.mockImport<
+    typeof import('../../src/lockfile/types.ts')
+  >('../../src/lockfile/types.ts')
+
+  t.test('newer lockfile version throws error', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+        },
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: LOCKFILE_VERSION + 1,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+    })
+
+    await t.rejects(
+      build({
+        ...specOptions,
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        projectRoot,
+        remover: new RollbackRemove(),
+      }),
+      {
+        message: 'Unsupported lockfile version',
+        cause: {
+          code: 'ELOCKFILEVERSION',
+          found: LOCKFILE_VERSION + 1,
+          wanted: LOCKFILE_VERSION,
+        },
+      },
+      'newer lockfile version should throw',
+    )
+  })
+
+  t.test('older lockfile version throws', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+        },
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: LOCKFILE_VERSION - 1,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+      node_modules: {
+        foo: {
+          'package.json': JSON.stringify({
+            name: 'foo',
+            version: '1.0.0',
+          }),
+        },
+        '.vlt': {
+          'vlt.json': JSON.stringify({}),
+        },
+      },
+    })
+
+    await t.rejects(
+      build({
+        ...specOptions,
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        projectRoot,
+        remover: new RollbackRemove(),
+      }),
+      {
+        message: 'Unsupported lockfile version',
+        cause: {
+          code: 'ELOCKFILEVERSION',
+          found: LOCKFILE_VERSION - 1,
+          wanted: LOCKFILE_VERSION,
+        },
+      },
+      'newer lockfile version should throw',
+    )
+  })
+})

@@ -87,7 +87,23 @@ export const build = async (
       mainManifest,
       monorepo,
     })
-  } catch {
+  } catch (err) {
+    // Check if this is a lockfile version mismatch
+    const cause = (
+      err as Error & {
+        cause?: { code?: string; found?: number; wanted?: number }
+      }
+    ).cause
+    if (cause?.code === 'ELOCKFILEVERSION') {
+      // If lockfile is from a different vlt version, hard fail
+      if (
+        typeof cause.found === 'number' &&
+        typeof cause.wanted === 'number'
+      ) {
+        throw err
+      }
+      // TODO: add warning to CLI layer via @vltpkg/output when available
+    }
     graph = loadActual({
       ...options,
       mainManifest,
