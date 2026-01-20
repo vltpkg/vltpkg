@@ -122,7 +122,6 @@ t.test('hydrate only', t => {
     `file${delimiter}x.tgz`,
     `file${delimiter}./x.tgz`,
     `file${delimiter}///x.tgz`,
-    `file${delimiter}~/x.tgz`,
     `workspace${delimiter}./a`,
     `workspace${delimiter}a`,
   ]
@@ -500,14 +499,14 @@ t.test('hydrate edge cases', t => {
 
 const validDepIDs: DepID[] = [
   `${delimiter}npm${delimiter}foo@1.0.0`,
-  `git${delimiter}github%3Aa§b${delimiter}branch`,
-  `remote${delimiter}https%3A§§x.com§x.tgz`,
-  `file${delimiter}.§x.tgz`,
+  `git${delimiter}github_ca+b${delimiter}branch`,
+  `remote${delimiter}https_c++x.com+x.tgz`,
+  `file${delimiter}.+x.tgz`,
   `workspace${delimiter}a`,
   `${delimiter}npm${delimiter}foo@1.0.0${delimiter}extra`,
-  `git${delimiter}github%3Aa§b${delimiter}branch${delimiter}extra`,
-  `remote${delimiter}https%3A§§x.com§x.tgz${delimiter}extra`,
-  `file${delimiter}.§x.tgz${delimiter}extra`,
+  `git${delimiter}github_ca+b${delimiter}branch${delimiter}extra`,
+  `remote${delimiter}https_c++x.com+x.tgz${delimiter}extra`,
+  `file${delimiter}.+x.tgz${delimiter}extra`,
   `workspace${delimiter}a${delimiter}extra`,
 ]
 const invalidDepIDs = ['', 'git', 'abobrinha', 'https://example.com']
@@ -691,7 +690,7 @@ t.test('resetCaches', t => {
 
 t.test('joinExtra', t => {
   const peerSetHash =
-    'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067'
+    'peer.151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067'
   const modifier = '/* mini */:root > #eslint > #minimatch'
 
   t.test('both modifier and peerSetHash', t => {
@@ -746,7 +745,7 @@ t.test('joinExtra', t => {
 
 t.test('splitExtra', t => {
   const peerSetHash =
-    'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067'
+    'peer.151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067'
   const modifier = '#@types/react-dom > #@types/react'
 
   t.test('only peerSetHash (starts with delimiter)', t => {
@@ -784,9 +783,9 @@ t.test('splitExtra', t => {
 
   t.test('various peerSetHash formats', t => {
     const hashes = [
-      'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
-      'ṗ:af175b2a75b7612b979fa268e54ab4e553f506c79c46ead5075b606ea61a5dbb',
-      'ṗ:3c1154d8e6f8e8dbac3311715107ec117ab29c2b9b74dc2cfe297fec9c44133a',
+      'peer.151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
+      'peer.af175b2a75b7612b979fa268e54ab4e553f506c79c46ead5075b606ea61a5dbb',
+      'peer.3c1154d8e6f8e8dbac3311715107ec117ab29c2b9b74dc2cfe297fec9c44133a',
     ]
     for (const hash of hashes) {
       t.strictSame(
@@ -821,22 +820,22 @@ t.test('joinExtra and splitExtra round-trip', t => {
   const testCases = [
     {
       peerSetHash:
-        'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
+        'peer.151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
       modifier: '/* mini */:root > #eslint > #minimatch',
     },
     {
       peerSetHash:
-        'ṗ:af175b2a75b7612b979fa268e54ab4e553f506c79c46ead5075b606ea61a5dbb',
+        'peer.af175b2a75b7612b979fa268e54ab4e553f506c79c46ead5075b606ea61a5dbb',
       modifier: '#@types/react-dom > #@types/react',
     },
     {
       peerSetHash:
-        'ṗ:3c1154d8e6f8e8dbac3311715107ec117ab29c2b9b74dc2cfe297fec9c44133a',
+        'peer.3c1154d8e6f8e8dbac3311715107ec117ab29c2b9b74dc2cfe297fec9c44133a',
       modifier: '#underscore',
     },
     {
       peerSetHash:
-        'ṗ:151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
+        'peer.151156689c700feee6aa5a3cb30051bd9289356b2212cbfdc0a172d14cc6a067',
       modifier: undefined,
     },
     {

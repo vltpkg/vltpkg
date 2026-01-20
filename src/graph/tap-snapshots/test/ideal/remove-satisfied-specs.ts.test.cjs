@@ -11,7 +11,7 @@ Map {}
 
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > add a new spec item > should return the new item 1`] = `
 Map(1) {
-  'file·.' => Map(1) { 'bar' => { spec: Spec {bar@^1.0.0}, type: 'prod' } }
+  'file~_d' => Map(1) { 'bar' => { spec: Spec {bar@^1.0.0}, type: 'prod' } }
 }
 `
 
@@ -25,6 +25,6 @@ Map(0) {}
 
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > update existing spec > should return the update item 1`] = `
 Map(1) {
-  'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } }
+  'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } }
 }
 `

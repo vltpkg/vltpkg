@@ -105,7 +105,7 @@ classDiagram
 ```mermaid
 flowchart LR
     subgraph "Node Identity"
-        DepID["DepID<br/>registry··pkg@1.0.0"]
+        DepID["DepID<br/>registry~~pkg@1.0.0"]
         Spec["Spec<br/>pkg@^1.0.0"]
         Manifest["Manifest<br/>{name, version, ...}"]
     end
@@ -378,7 +378,7 @@ flowchart TB
 
     subgraph "Nodes"
         N1["react-dom@18<br/>peerSetHash: undefined"]
-        N2["react-dom@19<br/>peerSetHash: ṗ:1"]
+        N2["react-dom@19<br/>peerSetHash: peer.1"]
     end
 
     C0_react --> N1
@@ -469,10 +469,10 @@ flowchart TB
 
 Unique identifier for a package instance:
 
-- `registry··pkg@1.0.0` - Registry package
-- `file·./local/path` - Local file/folder
-- `git·github.com/user/repo#commit` - Git dependency
-- `workspace·packages/foo` - Workspace package
+- `registry~~pkg@1.0.0` - Registry package
+- `file~./local/path` - Local file/folder
+- `git~github.com/user/repo#commit` - Git dependency
+- `workspace~packages/foo` - Workspace package
 
 ### Resolution Cache
 

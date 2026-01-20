@@ -54,7 +54,7 @@ actions:
       5. **Track with peerSetHash**: Append unique identifiers to DepIDs to distinguish peer contexts
 
       Implementation details:
-      - Peer contexts are deterministically identified using `peerSetHash` strings (format: `ṗ:N` where N is a numeric identifier)
+      - Peer contexts are deterministically identified using `peerSetHash` strings (format: `peer.N` where N is a numeric identifier)
       - The `peerSetHash` is appended to the node's DepID as part of the `extra` parameter
       - Multiple versions of the same package can exist in the graph, differentiated by their `peerSetHash`
 
@@ -64,7 +64,7 @@ actions:
 
       The `extra` parameter in DepIDs now serves dual purposes:
       1. **Modifier**: Query-based graph modifications (e.g., `:root > #package`)
-      2. **peerSetHash**: Peer context identifier (e.g., `ṗ:1`, `ṗ:2`)
+      2. **peerSetHash**: Peer context identifier (e.g., `peer.1`, `peer.2`)
 
       ### Utilities
 
@@ -74,17 +74,17 @@ actions:
       - Concatenates without separator when both present: `${modifier}${peerSetHash}`
       - Examples:
         - `joinExtra({ modifier: ':root > #pkg' })` → `':root > #pkg'`
-        - `joinExtra({ peerSetHash: 'ṗ:1' })` → `'ṗ:1'`
-        - `joinExtra({ modifier: ':root > #pkg', peerSetHash: 'ṗ:1' })` → `':root > #pkgṗ:1'`
+        - `joinExtra({ peerSetHash: 'peer.1' })` → `'peer.1'`
+        - `joinExtra({ modifier: ':root > #pkg', peerSetHash: 'peer.1' })` → `':root > #pkgpeer.1'`
 
       **`splitExtra(extra: string)`**
       - Parses an extra string into its components
-      - Detects peerSetHash by looking for `ṗ:` delimiter
+      - Detects peerSetHash by looking for `peer.` delimiter
       - Returns `{ modifier?, peerSetHash? }`
       - Examples:
-        - `splitExtra('ṗ:1')` → `{ peerSetHash: 'ṗ:1' }`
+        - `splitExtra('peer.1')` → `{ peerSetHash: 'peer.1' }`
         - `splitExtra(':root > #pkg')` → `{ modifier: ':root > #pkg' }`
-        - `splitExtra(':root > #pkgṗ:2')` → `{ modifier: ':root > #pkg', peerSetHash: 'ṗ:2' }`
+        - `splitExtra(':root > #pkgpeer.2')` → `{ modifier: ':root > #pkg', peerSetHash: 'peer.2' }`
 
   - type: architecture_guide
     message: |
@@ -141,13 +141,13 @@ actions:
 
       **Nodes**: DepID includes peerSetHash in the extra parameter
       ```
-      "··package@1.0.0·ṗ:1": [...]
-      "··package@1.0.0·ṗ:2": [...]
+      "~~package@1.0.0~peer.1": [...]
+      "~~package@1.0.0~peer.2": [...]
       ```
 
       **Edges**: References include the full DepID with peerSetHash
       ```
-      "file·. package": "prod ^1.0.0 ··package@1.0.0·ṗ:1"
+      "file~. package": "prod ^1.0.0 ~~package@1.0.0~peer.1"
       ```
 
       **Loading**: `loadNodes()` in `src/graph/src/lockfile/load-nodes.ts` uses `splitExtra()` to parse both modifier and peerSetHash from the DepID
@@ -190,7 +190,7 @@ examples:
       // Correctly combining modifier and peerSetHash
       const extra = joinExtra({ 
         modifier: ':root > #react-dom', 
-        peerSetHash: 'ṗ:1' 
+        peerSetHash: 'peer.1' 
       })
       const node = graph.placePackage(from, 'prod', spec, manifest, id, extra)
     output: "Node placed with both modifier and peer context tracking"
@@ -204,7 +204,7 @@ examples:
 
   - input: |
       // Finding resolution with peer context
-      const extra = joinExtra({ peerSetHash: 'ṗ:2' })
+      const extra = joinExtra({ peerSetHash: 'peer.2' })
       const resolved = graph.findResolution(spec, fromNode, extra)
     output: "Resolution respects peer context isolation"
 

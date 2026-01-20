@@ -1661,14 +1661,14 @@ t.test('splitExtra and joinExtra integration', async t => {
         version: '1.0.0',
       },
       undefined,
-      'ṗ:abc123',
+      'peer.abc123',
     )
 
     t.ok(nodeB, 'node b created')
     t.equal(nodeB?.modifier, undefined, 'modifier not set')
     t.equal(
       nodeB?.peerSetHash,
-      'ṗ:abc123',
+      'peer.abc123',
       'peerSetHash set correctly',
     )
   })
@@ -1685,14 +1685,14 @@ t.test('splitExtra and joinExtra integration', async t => {
           version: '1.0.0',
         },
         undefined,
-        ':root > #cṗ:xyz789',
+        ':root > #cpeer.xyz789',
       )
 
       t.ok(nodeC, 'node c created')
       t.equal(nodeC?.modifier, ':root > #c', 'modifier set correctly')
       t.equal(
         nodeC?.peerSetHash,
-        'ṗ:xyz789',
+        'peer.xyz789',
         'peerSetHash set correctly',
       )
     },
@@ -2105,13 +2105,13 @@ t.test('resetEdges method', async t => {
         version: '1.0.0',
       },
       undefined,
-      'ṗ:peer123',
+      'peer.peer123',
     )
 
     // Verify peerSetHash before reset
     t.equal(
       zetaNode?.peerSetHash,
-      'ṗ:peer123',
+      'peer.peer123',
       'node has peerSetHash',
     )
 
@@ -2122,7 +2122,7 @@ t.test('resetEdges method', async t => {
     t.ok(graph.nodes.has(zetaNode!.id), 'node preserved')
     t.equal(
       zetaNode?.peerSetHash,
-      'ṗ:peer123',
+      'peer.peer123',
       'peerSetHash preserved',
     )
 
@@ -2130,7 +2130,7 @@ t.test('resetEdges method', async t => {
     const found = graph.findResolution(
       Spec.parse('zeta@^1.0.0'),
       graph.mainImporter,
-      'ṗ:peer123',
+      'peer.peer123',
     )
     t.equal(found, zetaNode, 'resolution with peerSetHash works')
   })

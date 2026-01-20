@@ -7,14 +7,14 @@
 'use strict'
 exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile with confused manifest 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       null,
@@ -31,14 +31,14 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
     ]
   },
   "edges": {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "catalog": {
       "x": "1.2.3"
@@ -56,60 +56,60 @@ exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must matc
     }
   },
   "nodes": {
-    "git·example%3Afoo§bar·": [
+    "git~example_cfoo+bar~": [
       0,
       "foo"
     ]
   },
   "edges": {
-    "file·. foo": "prod example:foo/bar git·example%3Afoo§bar·"
+    "file~_d foo": "prod example:foo/bar git~example_cfoo+bar~"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "scope-registries": {
       "@myscope": "https://example.com/"
     }
   },
   "nodes": {
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo"
     ]
   },
   "edges": {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "jsr-registries": {
       "intl": "https://jsr.example.com/"
     }
   },
   "nodes": {
-    "·intl·@foo§bar@1.0.0": [
+    "~intl~@foo+bar@1.0.0": [
       0,
       "@foo/bar"
     ]
   },
   "edges": {
-    "file·. @foo/bar": "prod intl:1 ·intl·@foo§bar@1.0.0"
+    "file~_d @foo/bar": "prod intl:1 ~intl~@foo+bar@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registry": "http://example.com"
   },
@@ -120,7 +120,7 @@ exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 
 
 exports[`test/lockfile/save.ts > TAP > overrides default registries > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registry": "http://example.com",
     "registries": {
@@ -134,21 +134,21 @@ exports[`test/lockfile/save.ts > TAP > overrides default registries > must match
 
 exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·custom·baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"],
-    "·npm·bar@1.0.0": [3,"bar"],
-    "·npm·foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
+    "~custom~baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"],
+    "~npm~bar@1.0.0": [3,"bar"],
+    "~npm~foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
   },
   "edges": {
-    "file·. baz": "prod custom:baz@^1.0.0 ·custom·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 || 1.2.3 || 2 ·npm·foo@1.0.0",
-    "·npm·foo@1.0.0 bar": "prod ^1.0.0 ·npm·bar@1.0.0"
+    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
+    "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
   }
 }
 
@@ -156,14 +156,14 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 
 exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·custom·baz@1.0.0": [
+    "~custom~baz@1.0.0": [
       1,
       "baz",
       null,
@@ -177,7 +177,7 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
         }
       }
     ],
-    "·npm·bar@1.0.0": [
+    "~npm~bar@1.0.0": [
       3,
       "bar",
       null,
@@ -188,7 +188,7 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
         "version": "1.0.0"
       }
     ],
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       2,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -204,30 +204,30 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
     ]
   },
   "edges": {
-    "file·. baz": "prod custom:baz@^1.0.0 ·custom·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 || 1.2.3 || 2 ·npm·foo@1.0.0",
-    "·npm·foo@1.0.0 bar": "prod ^1.0.0 ·npm·bar@1.0.0"
+    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
+    "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·custom·baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"],
-    "·npm·bar@1.0.0": [3,"bar"],
-    "·npm·foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
+    "~custom~baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"],
+    "~npm~bar@1.0.0": [3,"bar"],
+    "~npm~foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
   },
   "edges": {
-    "file·. baz": "prod custom:baz@^1.0.0 ·custom·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 || 1.2.3 || 2 ·npm·foo@1.0.0",
-    "·npm·foo@1.0.0 bar": "prod ^1.0.0 ·npm·bar@1.0.0"
+    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
+    "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
   }
 }
 
@@ -235,14 +235,14 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuildData: true > lockfile with buildState data 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·bar@1.0.0": [
+    "~npm~bar@1.0.0": [
       0,
       "bar",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -254,7 +254,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
       null,
       2
     ],
-    "·npm·baz@1.0.0": [
+    "~npm~baz@1.0.0": [
       0,
       "baz",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -266,7 +266,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
       null,
       3
     ],
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -278,70 +278,70 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
       null,
       1
     ],
-    "·npm·qux@1.0.0": [
+    "~npm~qux@1.0.0": [
       0,
       "qux",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ]
   },
   "edges": {
-    "file·. bar": "prod ^1.0.0 ·npm·bar@1.0.0",
-    "file·. baz": "prod ^1.0.0 ·npm·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
-    "file·. qux": "prod ^1.0.0 ·npm·qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > save buildState data > save without saveBuildData (default) > lockfile without buildState data 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·bar@1.0.0": [
+    "~npm~bar@1.0.0": [
       0,
       "bar",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ],
-    "·npm·baz@1.0.0": [
+    "~npm~baz@1.0.0": [
       0,
       "baz",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ],
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ],
-    "·npm·qux@1.0.0": [
+    "~npm~qux@1.0.0": [
       0,
       "qux",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ]
   },
   "edges": {
-    "file·. bar": "prod ^1.0.0 ·npm·bar@1.0.0",
-    "file·. baz": "prod ^1.0.0 ·npm·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
-    "file·. qux": "prod ^1.0.0 ·npm·qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHidden() with buildState > save() output with buildState 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·bar@1.0.0": [
+    "~npm~bar@1.0.0": [
       0,
       "bar",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -353,7 +353,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       2
     ],
-    "·npm·baz@1.0.0": [
+    "~npm~baz@1.0.0": [
       0,
       "baz",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -365,7 +365,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       3
     ],
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -377,31 +377,31 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       1
     ],
-    "·npm·qux@1.0.0": [
+    "~npm~qux@1.0.0": [
       0,
       "qux",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ]
   },
   "edges": {
-    "file·. bar": "prod ^1.0.0 ·npm·bar@1.0.0",
-    "file·. baz": "prod ^1.0.0 ·npm·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
-    "file·. qux": "prod ^1.0.0 ·npm·qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHidden() with buildState > saveHidden() output with buildState 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·bar@1.0.0": [
+    "~npm~bar@1.0.0": [
       0,
       "bar",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -419,7 +419,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       2
     ],
-    "·npm·baz@1.0.0": [
+    "~npm~baz@1.0.0": [
       0,
       "baz",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -437,7 +437,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       3
     ],
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -455,7 +455,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
       null,
       1
     ],
-    "·npm·qux@1.0.0": [
+    "~npm~qux@1.0.0": [
       0,
       "qux",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -471,24 +471,24 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
     ]
   },
   "edges": {
-    "file·. bar": "prod ^1.0.0 ·npm·bar@1.0.0",
-    "file·. baz": "prod ^1.0.0 ·npm·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
-    "file·. qux": "prod ^1.0.0 ·npm·qux@1.0.0"
+    "file~_d bar": "prod ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "prod ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
+    "file~_d qux": "prod ^1.0.0 ~npm~qux@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > save platform data for optional dependencies > lockfile with platform data for optional dependencies 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·bar@1.0.0": [
+    "~npm~bar@1.0.0": [
       1,
       "bar",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -508,12 +508,12 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
         ]
       }
     ],
-    "·npm·baz@1.0.0": [
+    "~npm~baz@1.0.0": [
       1,
       "baz",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
     ],
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -528,23 +528,23 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
     ]
   },
   "edges": {
-    "file·. bar": "optional ^1.0.0 ·npm·bar@1.0.0",
-    "file·. baz": "optional ^1.0.0 ·npm·baz@1.0.0",
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0"
+    "file~_d bar": "optional ^1.0.0 ~npm~bar@1.0.0",
+    "file~_d baz": "optional ^1.0.0 ~npm~baz@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
 
 exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and contributors > should save hidden lockfile with normalized manifest containing author and contributors 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·foo@1.0.0": [
+    "~npm~foo@1.0.0": [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -580,7 +580,7 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
     ]
   },
   "edges": {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
   }
 }
 `
@@ -588,11 +588,11 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with empty modifiers config > should save lockfile without modifiers when config is empty 1`] = `
 Object {
   "edges": Object {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "nodes": Object {
-    "·npm·foo@1.0.0": Array [
+    "~npm~foo@1.0.0": Array [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -609,11 +609,11 @@ Object {
 exports[`test/lockfile/save.ts > TAP > store modifiers > with invalid scope registries > should save lockfile without scope registries when invalid type 1`] = `
 Object {
   "edges": Object {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "nodes": Object {
-    "·npm·foo@1.0.0": Array [
+    "~npm~foo@1.0.0": Array [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -630,11 +630,11 @@ Object {
 exports[`test/lockfile/save.ts > TAP > store modifiers > with missing modifiers > should save lockfile without modifiers when undefined 1`] = `
 Object {
   "edges": Object {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "nodes": Object {
-    "·npm·foo@1.0.0": Array [
+    "~npm~foo@1.0.0": Array [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -651,11 +651,11 @@ Object {
 exports[`test/lockfile/save.ts > TAP > store modifiers > with undefined scope registries > should save lockfile without scope registries when undefined 1`] = `
 Object {
   "edges": Object {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@1.0.0",
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0",
   },
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "nodes": Object {
-    "·npm·foo@1.0.0": Array [
+    "~npm~foo@1.0.0": Array [
       0,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
@@ -671,7 +671,7 @@ Object {
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > should save lockfile with modifiers 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "modifiers": {
       ":root > #foo": "2"
@@ -681,10 +681,10 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
     }
   },
   "nodes": {
-    "·npm·foo@2.0.0·%3Aroot%20%3E%20%23foo": [0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
+    "~npm~foo@2.0.0~_croot_s_g_s#foo": [0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "file·. foo": "prod ^1.0.0 ·npm·foo@2.0.0·%3Aroot%20%3E%20%23foo"
+    "file~_d foo": "prod ^1.0.0 ~npm~foo@2.0.0~_croot_s_g_s#foo"
   }
 }
 
@@ -692,17 +692,17 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
 
 exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match snapshot 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
+    "~npm~c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "workspace·packages§b c": "prod * ·npm·c@1.0.0"
+    "workspace~packages+b c": "prod * ~npm~c@1.0.0"
   }
 }
 
@@ -710,17 +710,17 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
 
 exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with workspaces nodes 1`] = `
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
   "options": {
     "registries": {
       "custom": "http://example.com"
     }
   },
   "nodes": {
-    "·npm·c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
+    "~npm~c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "workspace·packages§b c": "prod * ·npm·c@1.0.0"
+    "workspace~packages+b c": "prod * ~npm~c@1.0.0"
   }
 }
 

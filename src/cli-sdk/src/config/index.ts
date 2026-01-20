@@ -470,10 +470,48 @@ export class Config {
     }
 
     const { command, ...values } = recordsToPairs(c as RecordPairs)
+
+    // Validate registries keys don't contain reserved ~ character
+    const registries = (c as RecordPairs).registries
+    if (registries && typeof registries === 'object') {
+      const registriesObj =
+        Array.isArray(registries) ?
+          reducePairs(registries)
+        : registries
+      for (const key of Object.keys(registriesObj)) {
+        if (key === '' || key.includes('~')) {
+          throw error('Reserved character found in registries name', {
+            path: file,
+            found: key,
+          })
+        }
+      }
+    }
+
     if (command) {
       for (const [c, opts] of Object.entries(command)) {
         const cmd = getCommand(c)
-        if (cmd) {
+        if (cmd && opts && typeof opts === 'object') {
+          // Validate registries in command-specific config
+          const cmdRegistries = (opts as RecordPairs).registries
+          if (cmdRegistries && typeof cmdRegistries === 'object') {
+            const cmdRegistriesObj =
+              Array.isArray(cmdRegistries) ?
+                reducePairs(cmdRegistries)
+              : cmdRegistries
+            for (const key of Object.keys(cmdRegistriesObj)) {
+              if (key === '' || key.includes('~')) {
+                throw error(
+                  'Reserved character found in registries name',
+                  {
+                    path: file,
+                    found: key,
+                  },
+                )
+              }
+            }
+          }
+
           this.commandValues[cmd] = merge<ConfigData>(
             this.commandValues[cmd] ?? ({} as ConfigData),
             opts as ConfigData,

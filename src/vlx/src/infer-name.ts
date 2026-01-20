@@ -22,7 +22,7 @@ export const inferName = (
           .replace(/[^a-zA-Z0-9/]/g, ' ')
           .trim()
           .replace(/ /g, '-')
-          .replace('/', '§'),
+          .replace('/', '+'),
         spec.bareSpec,
         spec.options,
       )

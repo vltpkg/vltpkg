@@ -47,7 +47,7 @@ describe('createHostContextsMap', () => {
         } as unknown as RawNode,
       ],
       lockfile: {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             custom: 'https://registry.example.com',
@@ -103,7 +103,7 @@ describe('createHostContextsMap', () => {
         } as RawNode,
       ],
       lockfile: {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             custom: 'https://registry.example.com',

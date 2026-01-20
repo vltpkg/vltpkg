@@ -1112,7 +1112,7 @@ t.test('hidden lockfile', async t => {
       'vlt.json': '{}',
       node_modules: {
         '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: configData,
           nodes: {
             [aDepID]: [
@@ -1268,7 +1268,7 @@ t.test('hidden lockfile', async t => {
 })
 
 t.test('various DepID types with peerSetHash', async t => {
-  const peerSetHash = 'ṗ:1'
+  const peerSetHash = 'peer.1'
   const modifier = ':root > #a'
 
   // Build extra metadata combining modifier and peerSetHash
@@ -1424,7 +1424,7 @@ t.test('various DepID types with peerSetHash', async t => {
 
 t.test('invalid DepID handling', async t => {
   // Create a malformed DepID that will fail parsing
-  const invalidDepID = '····id··with··too··many··separators'
+  const invalidDepID = '~~~~id~~with~~too~~many~~separators'
 
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({

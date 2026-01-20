@@ -100,7 +100,7 @@ actions:
       - `bins?: Record<string, string>` — binary names to their paths in the package
 
       Peer dependency context:
-      - `peerSetHash?: string` — deterministic unique string identifying nodes affected by peer context modifications; appended to DepID as `extra` suffix (format: `ṗ:N`)
+      - `peerSetHash?: string` — deterministic unique string identifying nodes affected by peer context modifications; appended to DepID as `extra` suffix (format: `peer.N`)
 
       Workspaces:
       - `workspaces: Map<string, Edge> | undefined` — only on `mainImporter`; maps workspace names to virtual edges connecting to workspace importer nodes
@@ -186,7 +186,7 @@ examples:
   - input: |
       // Place a package with peer context hash
       import { joinExtra } from '@vltpkg/dep-id'
-      const extra = joinExtra({ peerSetHash: 'ṗ:1', modifier: undefined })
+      const extra = joinExtra({ peerSetHash: 'peer.1', modifier: undefined })
       const node = graph.placePackage(fromNode, 'prod', spec, manifest, id, extra)
     output: "Node placed with peer context tracking"
 

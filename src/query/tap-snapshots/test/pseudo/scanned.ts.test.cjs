@@ -8,11 +8,11 @@
 exports[`test/pseudo/scanned.ts > TAP > scanned selector > should return only nodes with security archive data available 1`] = `
 Object {
   "edges": Array [
-    "file·.->·npm·e@1.0.0",
-    "·npm·d@1.0.0->·npm·e@1.0.0",
+    "file~_d->~npm~e@1.0.0",
+    "~npm~d@1.0.0->~npm~e@1.0.0",
   ],
   "nodes": Array [
-    "·npm·e@1.0.0",
+    "~npm~e@1.0.0",
   ],
 }
 `
