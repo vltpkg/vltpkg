@@ -61,9 +61,13 @@ actions:
       ## Node Appending and Reuse (`append-nodes.ts`, `refresh-ideal-graph.ts`)
 
       - Resolves dependency specs to nodes by first attempting `graph.findResolution()` to reuse existing nodes that satisfy the spec.
+      - **Peer Compatibility Check**: Before reusing a node, checks if its peer edges are compatible with the current peer context via `checkPeerEdgesCompatible()`.
+      - **Candidate Fallback**: If the first satisfying node is peer-incompatible, tries other candidates deterministically until a compatible one is found.
       - When a satisfying node is not found, fetches manifests/artifacts via `@vltpkg/package-info`, selects appropriate versions (respecting platform/engine constraints), and places new nodes with correct flags.
       - Recursively descends into each newly placed node's dependencies, applying `@vltpkg/spec` parsing and honoring modifiers if present.
       - Ensures added nodes have consistent `registry`, `resolved`, and `integrity` fields as available.
+
+      📋 **See `@graph/ideal-append-nodes.mdc`** for detailed BFS algorithm and peer context lifecycle
 
   - type: architecture_guide
     message: |
@@ -74,6 +78,29 @@ actions:
       - Extraction happens in parallel with graph construction, improving overall install performance.
       - The `node.extracted` property tracks whether a node has been extracted to avoid duplicate extractions.
       - This optimization is particularly beneficial when no cached information is available.
+
+  - type: architecture_guide
+    message: |
+      ## Workspace Peer Context Isolation
+
+      In monorepos with multiple workspace importers, each workspace gets its **own peer context**:
+
+      - **Problem**: Without isolation, peer targets from the root importer could incorrectly influence workspace dependencies
+        - Example: Root has `react@^18`, workspace A needs `react@^19` for a peer-dependent package
+        - Without isolation, the peer dep might incorrectly resolve to react@18
+
+      - **Solution**: `appendNodes()` creates fresh peer contexts for non-main importers:
+        ```typescript
+        if (fromNode.importer && fromNode !== graph.mainImporter) {
+          const nextPeerContext: PeerContext = new Map()
+          nextPeerContext.index = graph.nextPeerContextIndex()
+          initialPeerContext = nextPeerContext
+        }
+        ```
+
+      - **Fork Caching**: `graph.peerContextForkCache` prevents duplicate contexts for identical fork operations
+      
+      📋 **See `@graph/peers.mdc`** for detailed peer context isolation and fork caching mechanisms
 
   - type: integration_guide
     message: |
@@ -126,9 +153,20 @@ examples:
       })
     output: "Ideal graph built with early tarball extraction for improved performance"
 
+  - input: |
+      // Multi-workspace monorepo with peer context isolation
+      // Root: react@^18, workspace-a: react@^19 with peer-dependent packages
+      const idealGraph = await ideal.build({ projectRoot, packageInfo, packageJson, scurry, monorepo })
+      
+      // Each workspace gets isolated peer contexts
+      t.ok(idealGraph.peerContexts.length > 1, 'should have multiple peer contexts')
+      t.equal(rootReact.version, '18.3.1', 'root has react@18')
+      t.equal(wsReact.version, '19.2.0', 'workspace has react@19')
+    output: "Ideal graph built with isolated peer contexts per workspace importer"
+
 metadata:
   priority: high
-  version: 1.1
+  version: 1.2
   tags:
     - graph
     - ideal

@@ -4,6 +4,7 @@ import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { satisfies } from '@vltpkg/satisfies'
 import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
 import type {
   DependencyTypeLong,
@@ -31,6 +32,7 @@ import {
   postPlacementPeerCheck,
   startPeerPlacement,
 } from './peers.ts'
+import { compareByHasPeerDeps } from './sorting.ts'
 import type {
   PeerContext,
   AppendNodeEntry,
@@ -120,7 +122,86 @@ type NodePlacementTask = {
 }
 
 /**
+ * Try to find a compatible resolution for a dependency, checking peer context.
+ * If the first resolution candidate is incompatible with the peer context,
+ * try other candidates.
+ */
+const findCompatibleResolution = (
+  spec: Spec,
+  fromNode: Node,
+  graph: Graph,
+  peerContext: PeerContext,
+  queryModifier?: string,
+  _peer?: boolean,
+) => {
+  const candidates = graph.nodesByName.get(spec.final.name)
+  let existingNode = graph.findResolution(
+    spec,
+    fromNode,
+    queryModifier,
+  )
+
+  let peerCompatResult =
+    existingNode ?
+      checkPeerEdgesCompatible(
+        existingNode,
+        fromNode,
+        peerContext,
+        graph,
+      )
+    : { compatible: true }
+
+  // CANDIDATE FALLBACK: If first candidate is peer-incompatible, try others
+  if (
+    existingNode &&
+    !peerCompatResult.compatible &&
+    candidates &&
+    candidates.size > 1
+  ) {
+    for (const candidate of candidates) {
+      if (candidate === existingNode) continue
+      if (candidate.detached) continue
+      if (
+        !satisfies(
+          candidate.id,
+          spec.final,
+          fromNode.location,
+          graph.projectRoot,
+          graph.monorepo,
+        )
+      ) {
+        continue
+      }
+
+      const compat = checkPeerEdgesCompatible(
+        candidate,
+        fromNode,
+        peerContext,
+        graph,
+      )
+      if (compat.compatible) {
+        existingNode = candidate
+        peerCompatResult = compat
+        break
+      }
+    }
+  }
+
+  return { existingNode, peerCompatResult }
+}
+
+/**
  * Fetch manifests for dependencies and create placement tasks.
+ *
+ * This is Phase 1 of the breadth-first graph building process. For each
+ * dependency at the current level:
+ * 1. Apply any active modifiers (spec swapping)
+ * 2. Try to find an existing node to reuse (with peer compatibility check)
+ * 3. If no reusable node, start a manifest fetch (in parallel)
+ * 4. Create placement tasks for Phase 2
+ *
+ * The result is sorted to process non-peer-dependent packages first,
+ * ensuring peer dependencies can resolve to already-placed siblings.
  */
 const fetchManifestsForDeps = async (
   packageInfo: PackageInfoClient,
@@ -132,7 +213,6 @@ const fetchManifestsForDeps = async (
   modifierRefs?: Map<string, ModifierActiveEntry>,
   depth = 0,
 ): Promise<NodePlacementTask[]> => {
-  // Create fetch tasks for all dependencies at this level
   const fetchTasks: ManifestFetchTask[] = []
   const placementTasks: NodePlacementTask[] = []
 
@@ -141,7 +221,8 @@ const fetchManifestsForDeps = async (
     const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
     const activeModifier = modifierRefs?.get(spec.name)
 
-    // here is the place we swap specs if a edge modifier was defined
+    // MODIFIER HANDLING: Swap spec if an edge modifier is fully matched
+    // Example: `vlt install --override "react:^19"` changes react's spec
     const queryModifier = activeModifier?.modifier.query
     const completeModifier =
       activeModifier &&
@@ -153,6 +234,7 @@ const fetchManifestsForDeps = async (
       'spec' in activeModifier.modifier
     ) {
       spec = activeModifier.modifier.spec
+      // bareSpec of '-' means "remove this dependency"
       if (spec.bareSpec === '-') {
         continue
       }
@@ -160,24 +242,16 @@ const fetchManifestsForDeps = async (
 
     const peer = type === 'peer' || type === 'peerOptional'
 
-    // skip reusing nodes for peer deps since their reusability
-    // is handled ahead-of-time during its parent's placement
-    const existingNode = graph.findResolution(
-      spec,
-      fromNode,
-      queryModifier,
-    )
-
-    // Check if existing node's peer edges are compatible with new parent
-    const peerCompatResult =
-      existingNode ?
-        checkPeerEdgesCompatible(
-          existingNode,
-          fromNode,
-          peerContext,
-          graph,
-        )
-      : { compatible: true }
+    // NODE REUSE LOGIC with peer compatibility
+    const { existingNode, peerCompatResult } =
+      findCompatibleResolution(
+        spec,
+        fromNode,
+        graph,
+        peerContext,
+        queryModifier,
+        peer,
+      )
 
     // Fork peer context if incompatible peer edges detected
     let effectivePeerContext = peerContext
@@ -193,11 +267,11 @@ const fetchManifestsForDeps = async (
     const validExistingNode =
       existingNode &&
       !existingNode.detached &&
-      // Regular deps can always reuse
+      // Regular deps can always reuse.
+      // Peer deps can reuse as well if their peer edges are compatible.
+      // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0·ṗ:*.)
       /* c8 ignore start */
-      (!peer ||
-        // otherwise reusing peer deps only in case of a peerSetHash match
-        existingNode.peerSetHash === fromNode.peerSetHash) &&
+      (!peer || peerCompatResult.compatible) &&
       // Check if existing node's peer edges are compatible with new parent
       peerCompatResult.compatible
     /* c8 ignore stop */
@@ -266,42 +340,26 @@ const fetchManifestsForDeps = async (
   // so that peer dependencies can easily reuse already placed regular
   // dependencies as part of peer context set resolution also makes sure to
   // sort by the manifest name for deterministic order.
-  placementTasks.sort((a, b) => {
-    const aIsPeer =
-      (
-        a.manifest?.peerDependencies &&
-        Object.keys(a.manifest.peerDependencies).length > 0
-      ) ?
-        1
-      : 0
-    const bIsPeer =
-      (
-        b.manifest?.peerDependencies &&
-        Object.keys(b.manifest.peerDependencies).length > 0
-      ) ?
-        1
-      : 0
-
-    // regular dependencies first, peer dependencies last
-    if (aIsPeer !== bIsPeer) {
-      return aIsPeer - bIsPeer
-    }
-
-    // if both are in the same group,
-    // sort alphabetically by manifest name (fallback to spec.name)
-    const aName =
-      a.manifest?.name /* c8 ignore next */ || a.fetchTask.spec.name
-    const bName = b.manifest?.name || b.fetchTask.spec.name
-    return aName.localeCompare(bName, 'en')
-  })
+  placementTasks.sort(compareByHasPeerDeps)
 
   return placementTasks
 }
 
 /**
- * Process placement tasks and collect child dependencies, this is the
- * second step of the appendNodes operation after manifest fetching in
- * which the final graph data structure is actually built.
+ * Process placement tasks and collect child dependencies.
+ *
+ * This is Phase 2 of the breadth-first graph building process. For each
+ * resolved manifest:
+ * 1. Handle missing manifests (optional vs required deps)
+ * 2. Start peer placement process (collect sibling context)
+ * 3. Place the node in the graph with appropriate flags
+ * 4. Trigger early extraction if eligible (performance optimization)
+ * 5. Collect child dependencies for the next BFS level
+ * 6. End peer placement (setup context update functions)
+ *
+ * Early extraction: When `actual` graph is provided, nodes destined for the
+ * vlt store are extracted immediately (in parallel) instead of waiting for
+ * the full ideal graph to be built. This significantly improves install time.
  */
 const processPlacementTasks = async (
   graph: Graph,
@@ -557,8 +615,20 @@ const processPlacementTasks = async (
  * Append new nodes in the given `graph` for dependencies specified at `add`
  * and missing dependencies from the `deps` parameter.
  *
- * It also applies any modifiers that applies to a given node as it processes
- * and builds the graph.
+ * Uses **breadth-first traversal** (BFS) with **deterministic ordering** to
+ * ensure reproducible builds. The algorithm:
+ *
+ * 1. Process all deps at the current level in parallel
+ * 2. After each level, run `postPlacementPeerCheck` to handle peer contexts
+ * 3. Collect child deps for the next level
+ * 4. Repeat until no more deps to process
+ *
+ * **Peer Context Isolation**: Each workspace importer gets its own peer context
+ * to prevent cross-workspace leakage. Without this, `react@^18` from workspace A
+ * could incorrectly satisfy `react@^19` peer deps in workspace B.
+ *
+ * **Early Extraction**: When `actual` graph is provided, nodes are extracted
+ * to the vlt store during graph construction (not after), improving performance.
  */
 export const appendNodes = async (
   packageInfo: PackageInfoClient,
@@ -578,19 +648,28 @@ export const appendNodes = async (
   transientAdd?: TransientAddMap,
   transientRemove?: TransientRemoveMap,
 ) => {
+  // Cycle detection: skip if already processed
   /* c8 ignore next */
   if (seen.has(fromNode.id)) return
   seen.add(fromNode.id)
 
-  // Get the initial peer context from the graph
-  const [initialPeerContext] = graph.peerContexts
+  // PEER CONTEXT ISOLATION: Each workspace importer needs its own context
+  // to prevent peer targets from one workspace affecting another.
+  // The main importer (index 0) uses the initial context; others get fresh ones.
+  let initialPeerContext = graph.peerContexts[0]
   /* c8 ignore start - impossible */
-  if (!initialPeerContext) {
+  if (!initialPeerContext)
     throw error('no initial peer context found in graph')
-  }
   /* c8 ignore stop */
+  if (fromNode.importer && fromNode !== graph.mainImporter) {
+    // Create isolated peer context for this workspace importer
+    const nextPeerContext: PeerContext = new Map()
+    nextPeerContext.index = graph.nextPeerContextIndex()
+    graph.peerContexts[nextPeerContext.index] = nextPeerContext
+    initialPeerContext = nextPeerContext
+  }
 
-  // Use a queue for breadth-first processing
+  // BFS queue: process deps level by level for deterministic builds
   let currentLevelDeps: AppendNodeEntry[] = [
     {
       node: fromNode,
@@ -607,10 +686,13 @@ export const appendNodes = async (
     },
   ]
 
+  // BFS MAIN LOOP: Process level by level until no more deps
   while (currentLevelDeps.length > 0) {
     const nextLevelDeps: AppendNodeEntry[] = []
 
-    // Process all nodes at the current level in parallel
+    // STEP 1: Process all nodes at current level in parallel
+    // This parallel processing is what makes vlt fast - all manifests at a
+    // level are fetched concurrently, and all placements happen together.
     const levelResults = await Promise.all(
       currentLevelDeps.map(
         async ({
@@ -620,15 +702,15 @@ export const appendNodes = async (
           peerContext,
           depth,
         }: AppendNodeEntry) => {
-          // Mark node as seen when we start processing its dependencies
+          // Cycle prevention: mark as seen when starting to process
           seen.add(node.id)
 
-          // Fetch manifests for this node's dependencies
+          // Phase 1: Fetch manifests in parallel
           const placementTasks = await fetchManifestsForDeps(
             packageInfo,
             graph,
             node,
-            // Sort dependencies by spec.name for deterministic ordering
+            // Sort by name for deterministic ordering (reproducible builds)
             nodeDeps.sort((a, b) =>
               a.spec.name.localeCompare(b.spec.name, 'en'),
             ),
@@ -638,7 +720,7 @@ export const appendNodes = async (
             depth,
           )
 
-          // Process the placement tasks and get child dependencies
+          // Phase 2: Place nodes and collect child deps
           return await processPlacementTasks(
             graph,
             options,
@@ -658,15 +740,16 @@ export const appendNodes = async (
       ),
     )
 
-    // Traverse the queued up children dependencies, adding and tracking
-    // dependencies on the peer context set, forking the context as needed
-    // and resolving any peer dependency that is able to be resolved using
-    // the current peer context set
+    // STEP 2: Post-placement peer check
+    // After all nodes at this level are placed, update peer contexts,
+    // fork as needed, and resolve peer deps that can be satisfied.
+    // This must happen AFTER placement so sibling nodes are available.
     postPlacementPeerCheck(graph, levelResults)
 
-    // Collect all child dependencies for the next level
+    // STEP 3: Collect child deps for next level
     for (const childDepsToProcess of levelResults) {
       for (const childDep of childDepsToProcess) {
+        // Skip already-seen nodes (cycle prevention)
         if (!seen.has(childDep.node.id)) {
           /* c8 ignore next */
           const currentDepth = currentLevelDeps[0]?.depth ?? 0
@@ -678,7 +761,7 @@ export const appendNodes = async (
       }
     }
 
-    // Move to the next level
+    // Advance to next BFS level
     currentLevelDeps = nextLevelDeps
   }
 }

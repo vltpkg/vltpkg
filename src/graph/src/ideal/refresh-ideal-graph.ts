@@ -1,5 +1,8 @@
 import { appendNodes } from './append-nodes.ts'
-import { getNodeOrderedDependencies } from './get-ordered-dependencies.ts'
+import {
+  compareByHasPeerDeps,
+  getNodeOrderedDependencies,
+} from './sorting.ts'
 import type { PathScurry } from 'path-scurry'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
@@ -69,29 +72,10 @@ const getOrderedImporters = (graph: Graph): Node[] => {
     if (a === graph.mainImporter) return -1
     if (b === graph.mainImporter) return 1
 
-    // sorts importers first by usage of peer deps
-    const aIsPeer =
-      (
-        a.manifest?.peerDependencies &&
-        Object.keys(a.manifest.peerDependencies).length > 0
-      ) ?
-        1
-      : 0
-    const bIsPeer =
-      (
-        b.manifest?.peerDependencies &&
-        Object.keys(b.manifest.peerDependencies).length > 0
-      ) ?
-        1
-      : 0
-
-    // importers with regular deps only first, with peer deps last
-    if (aIsPeer !== bIsPeer) {
-      return aIsPeer - bIsPeer
-    }
-
-    // if both are in the same group, sort alphabetically by manifest name
-    return a.name.localeCompare(b.name, 'en')
+    return compareByHasPeerDeps(
+      { manifest: a.manifest },
+      { manifest: b.manifest },
+    )
   })
   return orderedImporters
 }
