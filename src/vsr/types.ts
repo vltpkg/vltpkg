@@ -538,7 +538,6 @@ export interface Environment {
   WORKOS_COOKIE_PASSWORD?: string
 
   // Configuration flags (enriched by configMiddleware)
-  DAEMON_ENABLED?: boolean
   TELEMETRY_ENABLED?: boolean
   API_DOCS_ENABLED?: boolean
   DEBUG_ENABLED?: boolean
@@ -562,8 +561,6 @@ export interface Environment {
   }
 
   // Other config values
-  DAEMON_PORT?: number
-  DAEMON_URL?: string
   PORT?: number
   VERSION?: string
   URL?: string
@@ -572,7 +569,6 @@ export interface Environment {
 }
 
 export interface Args {
-  daemon: boolean
   telemetry: boolean
   debug: boolean
   help: boolean

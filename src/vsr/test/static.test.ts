@@ -35,7 +35,6 @@ const mockEnv = {
     fetch: () =>
       Promise.resolve(new Response('mock asset', { status: 200 })),
   },
-  DAEMON_ENABLED: false,
   API_DOCS_ENABLED: false,
 }
 

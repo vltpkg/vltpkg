@@ -1,6 +1,5 @@
 {
   "registry": {
-    "daemon": true,
     "telemetry": true,
     "debug": false,
     "port": 1337,

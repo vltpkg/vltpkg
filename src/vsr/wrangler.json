@@ -50,7 +50,6 @@
     "mode": "smart"
   },
   "vars": {
-    "DAEMON_ENABLED": false,
     "TELEMETRY_ENABLED": true,
     "API_DOCS_ENABLED": true,
     "DEBUG_ENABLED": true,

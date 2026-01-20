@@ -9,7 +9,6 @@ import { secureHeaders } from 'hono/secure-headers'
 import { trimTrailingSlash } from 'hono/trailing-slash'
 import { telemetryMiddleware } from './middleware/telemetry.ts'
 import { configMiddleware } from './middleware/config.ts'
-import { getApp } from './utils/spa.ts'
 import { verifyToken } from './utils/auth.ts'
 import { mountDatabase } from './utils/database.ts'
 import { jsonResponseHandler } from './utils/response.ts'
@@ -149,22 +148,10 @@ app.use('*', sessionMonitor)
 // ---------------------------------------------------------
 
 app.get('/', async c => {
-  // If daemon is disabled and API docs are enabled, redirect to docs
-  // This provides a better user experience when the daemon isn't available
-  if (!c.env.DAEMON_ENABLED && c.env.API_DOCS_ENABLED) {
-    return c.redirect('/-/docs', 302)
-  }
-
-  // If daemon is enabled, show the GUI (projects will be available)
-  if (c.env.DAEMON_ENABLED) {
-    return c.html(await getApp(c.env.ASSETS))
-  }
-
-  // Fallback: show docs if available, otherwise show GUI
   if (c.env.API_DOCS_ENABLED) {
     return c.redirect('/-/docs', 302)
   } else {
-    return c.html(await getApp(c.env.ASSETS))
+    c.text('vlt serverless registry is alive.\n')
   }
 })
 
@@ -206,10 +193,6 @@ app.use('*', async (c, next) => {
 app.openapi(whoamiRoute, getUsername)
 // Pattern: /-/user
 app.openapi(userProfileRoute, getUserProfile)
-
-// ---------------------------------------------------------
-// Daemon Project Routes - only local use
-// ---------------------------------------------------------
 
 // Pattern: /dashboard.json
 app.openapi(dashboardDataRoute, handleDashboardData as any)

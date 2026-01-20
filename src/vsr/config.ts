@@ -20,14 +20,6 @@ export const DEBUG_ENABLED = false as boolean
 
 export const API_DOCS_ENABLED = true as boolean
 
-export const DAEMON_ENABLED = true as boolean
-
-export const DAEMON_START_SERVER = true as boolean
-
-export const DAEMON_PORT = 3000 as number
-
-export const DAEMON_URL = `http://localhost:${DAEMON_PORT}`
-
 export const VERSION: string = packageJson.version
 
 // Reserved route prefixes that cannot be used as upstream names
