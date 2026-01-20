@@ -66,7 +66,7 @@ t.test('load', async t => {
     [spaceKey]: spaceVal,
   }
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         custom: 'https://registry.example.com',
@@ -135,7 +135,7 @@ t.test('loadHidden', async t => {
     [spaceKey]: spaceVal,
   }
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         custom: 'https://registry.example.com',
@@ -224,7 +224,7 @@ t.test('loadHidden', async t => {
 
 t.test('workspaces', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         custom: 'http://example.com',
@@ -283,7 +283,7 @@ t.test('workspaces', async t => {
 
 t.test('unknown dep type', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -320,7 +320,7 @@ t.test('unknown dep type', async t => {
 
 t.test('invalid dep id in edge', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -358,7 +358,7 @@ t.test('invalid dep id in edge', async t => {
 
 t.test('missing edge `from`', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -395,7 +395,7 @@ t.test('missing edge `from`', async t => {
 
 t.test('load with custom git hosts', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       'git-hosts': {
         example: 'git+ssh://example.com/$1/$2.git',
@@ -438,7 +438,7 @@ t.test('load with custom git hosts', async t => {
 
 t.test('load with custom scope registry', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       'scope-registries': {
         '@myscope': 'http://example.com',
@@ -494,7 +494,7 @@ t.test(
       projectRoot,
     }
     const lockfileData: LockfileData = {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {
         registry: 'http://example.com',
         registries: {
@@ -525,7 +525,7 @@ t.test('missing options object', async t => {
     projectRoot,
   }
   const lockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {},
     edges: {},
@@ -581,7 +581,7 @@ t.test('load with optimization path for large graphs', async t => {
   }
 
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: { registry: 'https://registry.npmjs.org/' },
     nodes,
     edges,
@@ -684,7 +684,7 @@ t.test('load platform data for optional dependencies', async t => {
   const packageJson = new PackageJson()
 
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: configData,
     nodes: {
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -791,7 +791,7 @@ t.test('load with peerSetHash in extra parameter', async t => {
   const packageJson = new PackageJson()
 
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: configData,
     nodes: {
       // Node with modifier only

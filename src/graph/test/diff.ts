@@ -64,7 +64,7 @@ t.test('diff two graphs', async t => {
       },
     },
     {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {
         registries: {
           npm: 'https://registry.npmjs.org/',
@@ -124,7 +124,7 @@ t.test('diff two graphs', async t => {
       },
     },
     {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {
         registries: {
           npm: 'https://registry.npmjs.org/',
@@ -207,7 +207,7 @@ t.test('hasChanges method', async t => {
   // Test 1: No changes - identical graphs should return false
   t.test('returns false when graphs are identical', t => {
     const graphData = {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {
         registries: {
           npm: 'https://registry.npmjs.org/',
@@ -270,7 +270,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -292,7 +292,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -342,7 +342,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -369,7 +369,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -419,7 +419,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -439,7 +439,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -495,7 +495,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -519,7 +519,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -558,7 +558,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -589,7 +589,7 @@ t.test('hasChanges method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -645,7 +645,7 @@ t.test('optionalOnly method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -672,7 +672,7 @@ t.test('optionalOnly method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -705,7 +705,7 @@ t.test('optionalOnly method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -727,7 +727,7 @@ t.test('optionalOnly method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -781,7 +781,7 @@ t.test('optionalOnly method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -803,7 +803,7 @@ t.test('optionalOnly method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -845,7 +845,7 @@ t.test('optionalOnly method', async t => {
           },
         },
         {
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registries: {
               npm: 'https://registry.npmjs.org/',
@@ -867,7 +867,7 @@ t.test('optionalOnly method', async t => {
           },
         },
         {
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registries: {
               npm: 'https://registry.npmjs.org/',
@@ -914,7 +914,7 @@ t.test('optionalOnly method', async t => {
           },
         },
         {
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registries: {
               npm: 'https://registry.npmjs.org/',
@@ -941,7 +941,7 @@ t.test('optionalOnly method', async t => {
           },
         },
         {
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {
             registries: {
               npm: 'https://registry.npmjs.org/',
@@ -986,7 +986,7 @@ t.test('toJSON method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -1025,7 +1025,7 @@ t.test('toJSON method', async t => {
         },
       },
       {
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -1135,7 +1135,7 @@ t.test('toJSON method', async t => {
 
   t.test('serializes empty diff correctly', t => {
     const graphData = {
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {
         registries: {
           npm: 'https://registry.npmjs.org/',

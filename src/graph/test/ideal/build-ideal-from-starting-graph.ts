@@ -136,7 +136,7 @@ const packageInfo = {
 
 t.test('build from a virtual graph', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         npm: 'https://registry.npmjs.org/',
@@ -265,7 +265,7 @@ t.test('build from a virtual graph', async t => {
 
 t.test('add from manifest file only', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         npm: 'https://registry.npmjs.org/',
@@ -313,7 +313,7 @@ t.test('add from manifest file only', async t => {
 
 t.test('remove from manifest file only', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: {
         npm: 'https://registry.npmjs.org/',
@@ -689,7 +689,7 @@ t.test('build from an actual graph', async t => {
 
 t.test('optional subdeps binary distribution strategy', async t => {
   const lockfileData: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {} as Record<DepID, LockfileNode>,
     edges: {} as LockfileEdges,

@@ -6,12 +6,12 @@
  */
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
-@vltpkg/graph.Graph { lockfileVersion: 0, options: [Object], nodes: {}, edges: {} }
+@vltpkg/graph.Graph { lockfileVersion: 1, options: [Object], nodes: {}, edges: {} }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > should add a type=git package 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 0,
+  lockfileVersion: 1,
   options: { registries: {} },
   nodes: {
     '~npm~bar@1.0.0': [
@@ -42,7 +42,7 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
 
 exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 0,
+  lockfileVersion: 1,
   options: { registries: {} },
   nodes: {
     '~npm~bar@1.0.0': [
@@ -72,7 +72,7 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 0,
+  lockfileVersion: 1,
   options: { registries: {} },
   nodes: {
     '~npm~bar@1.0.0': [
@@ -100,7 +100,7 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
 
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 0,
+  lockfileVersion: 1,
   options: { registries: {} },
   nodes: {
     '~npm~bar@1.0.0': [

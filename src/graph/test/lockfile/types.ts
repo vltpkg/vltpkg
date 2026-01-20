@@ -47,7 +47,7 @@ t.test('lockfile type checks', t => {
 
   // Valid LockfileData
   ld = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {},
     nodes: {},
     edges: {},
@@ -64,7 +64,7 @@ t.test('lockfile type checks', t => {
     `prod ^1.0.0 ${otherDepId}` as LockfileEdgeValue
 
   ld = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: { npm: 'https://registry.npmjs.org/' },
       modifiers: { ':root > #foo': '2.0.0' },
@@ -400,7 +400,7 @@ t.test('lockfile type constraints', t => {
 
   // Test that LockfileData options can include modifiers
   const lockfileWithModifiers: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: { npm: 'https://registry.npmjs.org/' },
       modifiers: {
@@ -423,7 +423,7 @@ t.test('lockfile type constraints', t => {
 
   // Test that LockfileData options modifiers can be undefined
   const lockfileWithoutModifiers: LockfileData = {
-    lockfileVersion: 0,
+    lockfileVersion: 1,
     options: {
       registries: { npm2: 'https://registry.npmjs.org/' },
       modifiers: undefined,

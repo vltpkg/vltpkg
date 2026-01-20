@@ -40,7 +40,7 @@ Array [
 
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 0,
+  lockfileVersion: 1,
   options: { registries: {} },
   nodes: {
     '~npm~bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
@@ -103,7 +103,7 @@ b -->|"lorem#64;^3.0.0 (peer)"| e("npm:lorem#64;3.0.0")
 
 exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registries > must match snapshot 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 0,
+  lockfileVersion: 1,
   options: {
     registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' }
   },

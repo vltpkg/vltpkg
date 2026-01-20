@@ -1112,7 +1112,7 @@ t.test('hidden lockfile', async t => {
       'vlt.json': '{}',
       node_modules: {
         '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: configData,
           nodes: {
             [aDepID]: [

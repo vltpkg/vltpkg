@@ -54,7 +54,7 @@ t.test('install', async t => {
       version: '1.0.0',
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {},
       nodes: {},
       edges: {},
@@ -195,7 +195,7 @@ t.test(
         version: '1.0.0',
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -259,7 +259,7 @@ t.test('install with cleanInstall option (ci command)', async t => {
       version: '1.0.0',
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {},
       nodes: {},
       edges: {},
@@ -366,7 +366,7 @@ t.test(
         },
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -474,7 +474,7 @@ t.test(
         },
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -550,7 +550,7 @@ t.test(
         version: '1.0.0',
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -621,7 +621,7 @@ t.test('install with frozenLockfile and spec changes', async t => {
       },
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {},
       nodes: {},
       edges: {},
@@ -723,7 +723,7 @@ t.test(
         version: '1.0.0',
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -775,7 +775,7 @@ t.test(
         },
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -859,7 +859,7 @@ t.test(
         },
       },
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -931,7 +931,7 @@ t.test(
   async t => {
     const dir = t.testdir({
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -1020,7 +1020,7 @@ t.test(
   async t => {
     const dir = t.testdir({
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -1074,7 +1074,7 @@ t.test(
         },
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -1158,7 +1158,7 @@ t.test('install with expectLockfile but no node_modules', async t => {
       version: '1.0.0',
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 0,
+      lockfileVersion: 1,
       options: {},
       nodes: {},
       edges: {},
@@ -1218,7 +1218,7 @@ t.test(
         version: '1.0.0',
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -1575,7 +1575,7 @@ t.test(
         version: '1.0.0',
       }),
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 0,
+        lockfileVersion: 1,
         options: {},
         nodes: {},
         edges: {},
@@ -1645,7 +1645,7 @@ t.test('remote dependency integrity in lockfile', async t => {
           version: '1.0.0',
         }),
         'vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {},
           nodes: {},
           edges: {},
@@ -1717,7 +1717,7 @@ t.test('remote dependency integrity in lockfile', async t => {
         }),
         // Lockfile with remote dep that has integrity
         'vlt-lock.json': JSON.stringify({
-          lockfileVersion: 0,
+          lockfileVersion: 1,
           options: {},
           nodes: {
             [remoteDepId]: [0, 'remote-pkg', remoteIntegrity],
