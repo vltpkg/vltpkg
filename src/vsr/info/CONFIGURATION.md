@@ -1,3 +1,4 @@
+# Configuration
 
 You can use `vsr` as a private local registry, a proxy registry, or
 both. If you want to publish into or consume from the local registry
