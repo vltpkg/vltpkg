@@ -19,7 +19,7 @@ on:
 jobs:
   pre-check:
     name: Pre-Check
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     outputs:
       dry-run: ${{ steps.dry-run.outputs.value }}
       action: ${{ steps.action.outputs.value }}
@@ -46,7 +46,7 @@ jobs:
 
   pr:
     name: Release PR
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: pre-check
     if: needs.pre-check.outputs.action == 'pr'
     outputs:
@@ -204,7 +204,7 @@ jobs:
 
   publish:
     name: Publish
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: pre-check
     if: needs.pre-check.outputs.action == 'publish'
     outputs:
@@ -288,7 +288,7 @@ jobs:
 
   on-pr:
     name: Notify PR
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: ${{ always() && needs.pr.result == 'failure' }}
     needs: pr
     steps:
@@ -308,7 +308,7 @@ jobs:
 
   on-publish:
     name: Notify Publish
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: ${{ always() && needs.publish.result != 'skipped' && needs.pre-check.outputs.dry-run != 'true' }}
     needs:
       - pre-check

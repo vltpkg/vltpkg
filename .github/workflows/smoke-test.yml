@@ -18,7 +18,7 @@ concurrency:
 jobs:
   pre-check:
     name: Pre-Check
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     outputs:
       release-pr: ${{ steps.release-pr.outputs.value }}
       full-matrix: ${{ steps.full-matrix.outputs.value }}
@@ -74,7 +74,7 @@ jobs:
             os: macos-latest
             shell: bash
           - name: Windows
-            os: windows-latest
+            os: blacksmith-4vcpu-windows-2025
             shell: bash
         exclude:
           - node-version: '24.x'
@@ -118,7 +118,7 @@ jobs:
 
   on-failure:
     name: Notify on Failure
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: ${{ always() && needs.pre-check.outputs.release-pr == 'true' && needs.test.result == 'failure' }}
     needs:
       - pre-check
