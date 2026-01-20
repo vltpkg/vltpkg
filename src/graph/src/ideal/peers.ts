@@ -524,7 +524,7 @@ export const forkPeerContext = (
 }
 
 /**
- * Find a peer from queued entries' peer edge closure using BFS (depth limit: 3).
+ * Find a peer from queued entries' peer edge closure using BFS.
  *
  * This handles peer dependency cycles like `@isaacs/peer-dep-cycle-a/b/c` where:
  * - A depends on B (peer)
@@ -536,7 +536,6 @@ export const forkPeerContext = (
  * 2. For each node, check if it has an edge to `name` that satisfies `peerSpec`
  * 3. If not found, follow peer edges to explore their peer edges (up to depth 3)
  *
- * Depth limit of 3 prevents infinite loops while covering most practical cycles.
  * Prefers "local" providers (found via sibling's peer edges) over global context.
  */
 const findFromPeerClosure = (
@@ -570,16 +569,10 @@ const findFromPeerClosure = (
       return edge.to
     }
 
-    // Don't go deeper than 3 levels to avoid infinite loops
-    if (cur.depth < 3) {
-      // Follow peer edges only (not regular deps) to stay in peer closure
-      for (const e of cur.n.edgesOut.values()) {
-        if (
-          (e.type === 'peer' || e.type === 'peerOptional') &&
-          e.to
-        ) {
-          q.push({ n: e.to, depth: cur.depth + 1 })
-        }
+    // Follow peer edges only (not regular deps) to stay in peer closure
+    for (const e of cur.n.edgesOut.values()) {
+      if ((e.type === 'peer' || e.type === 'peerOptional') && e.to) {
+        q.push({ n: e.to, depth: cur.depth + 1 })
       }
     }
   }
