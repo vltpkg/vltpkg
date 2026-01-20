@@ -243,8 +243,7 @@ bin/
 ### Command Line Interface
 
 - **`vsr.ts`** - Development server orchestration:
-  - Spawns both the vlt daemon (port 3000) and wrangler dev
-    (port 1337)
+  - Spawns wrangler dev (port 1337)
   - Manages local development environment
   - Debug mode for verbose logging
   - Automatic path resolution for monorepo structure

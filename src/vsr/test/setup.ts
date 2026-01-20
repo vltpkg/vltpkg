@@ -6,7 +6,6 @@ beforeEach(async () => {
   // Set environment variables that the app expects
   process.env.ARG_DEBUG = 'false'
   process.env.ARG_TELEMETRY = 'false'
-  process.env.ARG_DAEMON = 'false'
 
   // With @cloudflare/vitest-pool-workers, real bindings are automatically provided
   // and isolated per test. We can set up test data here if needed.

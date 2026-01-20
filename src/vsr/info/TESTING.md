@@ -154,19 +154,6 @@ collaborator management.
 - Security considerations (directory traversal prevention)
 - Performance optimization (range requests, conditional requests)
 
-#### `dashboard.test.ts`
-
-**Dashboard endpoint tests** for daemon-mode web interface data.
-
-**Covers:**
-
-- Dashboard configuration (`/dashboard.json`)
-- Application data (`/app-data.json`)
-- Daemon enable/disable behavior
-- Data structure validation
-- Feature flag integration
-- Performance and concurrent request handling
-
 ## Testing Approach
 
 ### Hybrid Testing Strategy
