@@ -14,7 +14,6 @@ import {
   retrievePeerContextHash,
   startPeerPlacement,
 } from '../../src/ideal/peers.ts'
-import { nextPeerContextIndex } from '../../src/ideal/refresh-ideal-graph.ts'
 import type {
   PeerContext,
   PeerContextEntryInput,
@@ -2627,9 +2626,19 @@ t.test('endPeerPlacement', async t => {
 
 t.test('nextPeerContextIndex', async t => {
   t.test('returns incrementing indices', async t => {
-    const idx1 = nextPeerContextIndex()
-    const idx2 = nextPeerContextIndex()
-    const idx3 = nextPeerContextIndex()
+    const mainManifest = {
+      name: 'test-project',
+      version: '1.0.0',
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    const graph = new Graph({
+      ...configData,
+      mainManifest,
+      projectRoot,
+    })
+    const idx1 = graph.nextPeerContextIndex()
+    const idx2 = graph.nextPeerContextIndex()
+    const idx3 = graph.nextPeerContextIndex()
 
     t.ok(idx2 > idx1, 'second index should be greater')
     t.ok(idx3 > idx2, 'third index should be greater')

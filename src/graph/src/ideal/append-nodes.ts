@@ -35,6 +35,7 @@ import {
 import { compareByHasPeerDeps } from './sorting.ts'
 import type {
   PeerContext,
+  PeerContextEntryInput,
   AppendNodeEntry,
   ProcessPlacementResult,
   TransientAddMap,
@@ -45,6 +46,25 @@ type FileTypeInfo = {
   id: DepID
   path: string
   isDirectory: boolean
+}
+
+/**
+ * Task for reusing an existing node (deferred edge creation).
+ */
+type ReuseTask = {
+  type: DependencySaveType
+  spec: Spec
+  fromNode: Node
+  toNode: Node
+}
+
+/**
+ * Result of fetching manifests for dependencies.
+ */
+type FetchResult = {
+  placementTasks: NodePlacementTask[]
+  reuseTasks: ReuseTask[]
+  forkRequests: PeerContextEntryInput[]
 }
 
 /**
@@ -202,6 +222,9 @@ const findCompatibleResolution = (
  *
  * The result is sorted to process non-peer-dependent packages first,
  * ensuring peer dependencies can resolve to already-placed siblings.
+ *
+ * **Read-only**: This function no longer mutates the graph. It returns
+ * tasks that will be applied serially in the BFS loop for deterministic ordering.
  */
 const fetchManifestsForDeps = async (
   packageInfo: PackageInfoClient,
@@ -212,9 +235,11 @@ const fetchManifestsForDeps = async (
   peerContext: PeerContext,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   depth = 0,
-): Promise<NodePlacementTask[]> => {
+): Promise<FetchResult> => {
   const fetchTasks: ManifestFetchTask[] = []
   const placementTasks: NodePlacementTask[] = []
+  const reuseTasks: ReuseTask[] = []
+  const forkRequests: PeerContextEntryInput[] = []
 
   for (const { spec: originalSpec, type } of deps) {
     let spec = originalSpec
@@ -253,13 +278,12 @@ const fetchManifestsForDeps = async (
         peer,
       )
 
-    // Fork peer context if incompatible peer edges detected
-    let effectivePeerContext = peerContext
+    // Accumulate fork request if incompatible peer edges detected (defer actual fork)
+    const effectivePeerContext = peerContext
     /* c8 ignore start */
     if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
-      effectivePeerContext = forkPeerContext(graph, peerContext, [
-        peerCompatResult.forkEntry,
-      ])
+      forkRequests.push(peerCompatResult.forkEntry)
+      // All fork entries from this fromNode will be applied together in Phase B
     }
     /* c8 ignore stop */
 
@@ -269,7 +293,6 @@ const fetchManifestsForDeps = async (
       !existingNode.detached &&
       // Regular deps can always reuse.
       // Peer deps can reuse as well if their peer edges are compatible.
-      // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0·ṗ:*.)
       /* c8 ignore start */
       (!peer || peerCompatResult.compatible) &&
       // Check if existing node's peer edges are compatible with new parent
@@ -282,7 +305,10 @@ const fetchManifestsForDeps = async (
       // so we should just skip whenever we find one
       existingNode?.importer
     ) {
-      graph.addEdge(type, spec, fromNode, existingNode)
+      // Defer edge creation to Phase B for deterministic ordering.
+      // Previously added immediately, but this caused race conditions when
+      // parallel fetches completed in different orders.
+      reuseTasks.push({ type, spec, fromNode, toNode: existingNode })
       continue
     }
 
@@ -342,7 +368,7 @@ const fetchManifestsForDeps = async (
   // sort by the manifest name for deterministic order.
   placementTasks.sort(compareByHasPeerDeps)
 
-  return placementTasks
+  return { placementTasks, reuseTasks, forkRequests }
 }
 
 /**
@@ -377,6 +403,10 @@ const processPlacementTasks = async (
   transientRemove?: TransientRemoveMap,
 ): Promise<ProcessPlacementResult> => {
   const childDepsToProcess: ProcessPlacementResult = []
+
+  // Note: placementTasks are already sorted by fetchManifestsForDeps
+  // using compareByHasPeerDeps to ensure non-peer deps are processed first.
+  // We don't sort again here to preserve that ordering.
 
   for (const placementTask of placementTasks) {
     const { fetchTask, manifest } = placementTask
@@ -690,10 +720,12 @@ export const appendNodes = async (
   while (currentLevelDeps.length > 0) {
     const nextLevelDeps: AppendNodeEntry[] = []
 
-    // STEP 1: Process all nodes at current level in parallel
-    // This parallel processing is what makes vlt fast - all manifests at a
-    // level are fetched concurrently, and all placements happen together.
-    const levelResults = await Promise.all(
+    // ============================================================
+    // PHASE A: PARALLEL FETCH (READ-ONLY)
+    // ============================================================
+    // Fetch all manifests at this level in parallel without mutating the graph.
+    // This phase is read-only to avoid race conditions from network timing.
+    const fetchResults = await Promise.all(
       currentLevelDeps.map(
         async ({
           node,
@@ -705,8 +737,8 @@ export const appendNodes = async (
           // Cycle prevention: mark as seen when starting to process
           seen.add(node.id)
 
-          // Phase 1: Fetch manifests in parallel
-          const placementTasks = await fetchManifestsForDeps(
+          // Fetch manifests and collect tasks (no graph mutations)
+          const result = await fetchManifestsForDeps(
             packageInfo,
             graph,
             node,
@@ -720,33 +752,94 @@ export const appendNodes = async (
             depth,
           )
 
-          // Phase 2: Place nodes and collect child deps
-          return await processPlacementTasks(
-            graph,
-            options,
-            placementTasks,
-            add,
-            modifiers,
-            scurry,
-            packageInfo,
-            extractPromises,
-            actual,
-            seenExtracted,
-            remover,
-            transientAdd,
-            transientRemove,
-          )
+          return {
+            entry: {
+              node,
+              deps: nodeDeps,
+              modifierRefs: nodeModifierRefs,
+              peerContext,
+              depth,
+            },
+            result,
+          }
         },
       ),
     )
 
-    // STEP 2: Post-placement peer check
+    // ============================================================
+    // PHASE B: SERIAL MUTATIONS (DETERMINISTIC ORDER)
+    // ============================================================
+    // Sort results by stable identifiers to ensure deterministic ordering
+    // regardless of which manifest fetch completed first
+    const sortedResults = fetchResults.sort((a, b) => {
+      // Sort by node ID (DepID-based, stable) and depth
+      const keyA = `${a.entry.node.id}::${a.entry.depth}`
+      const keyB = `${b.entry.node.id}::${b.entry.depth}`
+      return keyA.localeCompare(keyB, 'en')
+    })
+
+    // Apply all mutations serially in deterministic order
+    const levelResults: ProcessPlacementResult[] = []
+    for (const { entry, result } of sortedResults) {
+      // Apply accumulated fork requests if any (from Phase A deferred forks)
+      if (result.forkRequests.length > 0) {
+        const forkedContext = forkPeerContext(
+          graph,
+          entry.peerContext,
+          result.forkRequests,
+        )
+        entry.peerContext = forkedContext
+        // Update peer context in all placement tasks to use forked context
+        for (const task of result.placementTasks) {
+          task.fetchTask.peerContext = forkedContext
+        }
+      }
+
+      // Apply reuse edges in deterministic order (before placement)
+      // Sort reuse tasks by spec name for stability
+      const sortedReuseTasks = result.reuseTasks.sort((a, b) =>
+        a.spec.name.localeCompare(b.spec.name, 'en'),
+      )
+      for (const {
+        type,
+        spec,
+        fromNode,
+        toNode,
+      } of sortedReuseTasks) {
+        graph.addEdge(type, spec, fromNode, toNode)
+      }
+
+      // Place nodes and collect child deps
+      const placed = await processPlacementTasks(
+        graph,
+        options,
+        result.placementTasks,
+        add,
+        modifiers,
+        scurry,
+        packageInfo,
+        extractPromises,
+        actual,
+        seenExtracted,
+        remover,
+        transientAdd,
+        transientRemove,
+      )
+
+      levelResults.push(placed)
+    }
+
+    // ============================================================
+    // PHASE C: POST-PLACEMENT PEER CHECK
+    // ============================================================
     // After all nodes at this level are placed, update peer contexts,
     // fork as needed, and resolve peer deps that can be satisfied.
     // This must happen AFTER placement so sibling nodes are available.
     postPlacementPeerCheck(graph, levelResults)
 
-    // STEP 3: Collect child deps for next level
+    // ============================================================
+    // STEP 3: COLLECT CHILD DEPS FOR NEXT LEVEL
+    // ============================================================
     for (const childDepsToProcess of levelResults) {
       for (const childDep of childDepsToProcess) {
         // Skip already-seen nodes (cycle prevention)

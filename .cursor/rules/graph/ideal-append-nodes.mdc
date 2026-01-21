@@ -47,52 +47,64 @@ actions:
     message: |
       ## Core Architecture
 
-      The module uses a **3-phase approach** for breadth-first processing with integrated peer context management:
+      The module uses a **3-phase BFS loop** for deterministic graph building:
 
-      ### Phase 1: Manifest Fetching (`fetchManifestsForDeps`)
+      ### PHASE A: PARALLEL FETCH (READ-ONLY)
       ```typescript
-      // Fetches manifests for all dependencies at a level in parallel
-      const placementTasks = await fetchManifestsForDeps(
-        packageInfo, graph, fromNode, sortedDeps, scurry, peerContext, modifierRefs, depth
+      // Fetches manifests without mutating the graph
+      const fetchResults = await Promise.all(
+        currentLevelDeps.map(async ({ node, deps, peerContext, ... }) => {
+          const result = await fetchManifestsForDeps(
+            packageInfo, graph, node, sortedDeps, scurry, peerContext, modifierRefs, depth
+          )
+          return { entry, result }  // result: { placementTasks, reuseTasks, forkRequests }
+        })
       )
       ```
-      - Processes existing node resolution via `graph.findResolution()`
-      - **Checks peer edge compatibility** via `checkPeerEdgesCompatible()` before reusing nodes
-      - **Candidate Fallback Loop**: If first satisfying node is peer-incompatible, tries other candidates deterministically
-      - **Forks peer context** if existing node's peer edges are incompatible with new parent
-      - Handles modifier spec swapping for edge modifiers
-      - Fetches manifests in parallel using `Promise.all()`
-      - Creates `ManifestFetchTask` and `NodePlacementTask` structures with peer context
+      - **Read-only**: No graph mutations during parallel fetch
+      - Returns `FetchResult` with deferred tasks instead of immediately applying changes
+      - `reuseTasks`: Deferred edge creation for existing node reuse
+      - `forkRequests`: Accumulated peer context fork entries
+      - Prevents race conditions from network timing variations
 
-      ### Phase 2: Node Placement (`processPlacementTasks`)
+      ### PHASE B: SERIAL MUTATIONS (DETERMINISTIC ORDER)
       ```typescript
-      // Places nodes in the graph and collects child dependencies
-      const childDepsToProcess = await processPlacementTasks(
-        graph, options, placementTasks, add, modifiers, ...
-      )
-      ```
-      - **Starts peer placement** via `startPeerPlacement()` to get `peerSetHash` and queued entries
-      - Places nodes using `graph.placePackage()` with `joinExtra({ peerSetHash, modifier })`
-      - Collects peer dependencies separately from regular dependencies (`nextPeerDeps`)
-      - **Ends peer placement** via `endPeerPlacement()` returning context update functions
-      - Handles optional dependency failures with `removeOptionalSubgraph()`
+      // Sort by stable identifiers for deterministic ordering
+      const sortedResults = fetchResults.sort((a, b) => {
+        const keyA = `${a.entry.node.id}::${a.entry.depth}`
+        const keyB = `${b.entry.node.id}::${b.entry.depth}`
+        return keyA.localeCompare(keyB, 'en')
+      })
 
-      ### Phase 3: Level Coordination (`appendNodes`)
-      ```typescript
-      // Orchestrates breadth-first processing across levels with peer context
-      const [initialPeerContext] = graph.peerContexts
-      let currentLevelDeps: AppendNodeEntry[] = [{ node, deps, peerContext: initialPeerContext, ... }]
-      while (currentLevelDeps.length > 0) {
-        const levelResults = await Promise.all(currentLevelDeps.map(...))
-        // Post-placement peer check: fork contexts, resolve peer deps
-        postPlacementPeerCheck(graph, levelResults)
-        currentLevelDeps = nextLevelDeps
+      // Apply mutations serially
+      for (const { entry, result } of sortedResults) {
+        // 1. Apply accumulated fork requests
+        if (result.forkRequests.length > 0) {
+          entry.peerContext = forkPeerContext(graph, entry.peerContext, result.forkRequests)
+        }
+        // 2. Apply reuse edges in sorted order
+        for (const { type, spec, fromNode, toNode } of sortedReuseTasks) {
+          graph.addEdge(type, spec, fromNode, toNode)
+        }
+        // 3. Place nodes and collect child deps
+        const placed = await processPlacementTasks(graph, options, result.placementTasks, ...)
+        levelResults.push(placed)
       }
       ```
-      - Manages level-by-level processing queue with peer context propagation
-      - **Performs post-placement peer check** via `postPlacementPeerCheck()` after each level
-      - Ensures `seen` set consistency to prevent cycles
-      - Maintains deterministic ordering with `spec.name.localeCompare()`
+      - Sorts results by DepID-based keys for stability
+      - Applies all mutations in deterministic order regardless of fetch completion order
+
+      ### PHASE C: POST-PLACEMENT PEER CHECK
+      ```typescript
+      postPlacementPeerCheck(graph, levelResults)
+      ```
+      - Calls `putEntries()` on all children to update peer contexts
+      - Forks contexts when conflicts detected, reuses sibling contexts when compatible
+      - Calls `resolvePeerDeps()` to resolve peer deps from context
+
+      ### Helper Functions
+      - `fetchManifestsForDeps()`: **Read-only** manifest fetching, returns `FetchResult`
+      - `processPlacementTasks()`: Serial node placement with peer lifecycle
 
   - type: peer_integration_guide
     message: |
@@ -107,13 +119,15 @@ actions:
         checkPeerEdgesCompatible(existingNode, fromNode, peerContext, graph)
         : { compatible: true }
 
-      // Fork peer context if incompatible peer edges detected
+      // Accumulate fork request (deferred - applied in Phase B)
       if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
-        effectivePeerContext = forkPeerContext(graph, peerContext, [peerCompatResult.forkEntry])
+        forkRequests.push(peerCompatResult.forkEntry)
+        // Fork will be applied together with other fork requests from this fromNode
       }
       ```
       - Validates that reusing an existing node won't cause peer version conflicts
       - Returns `forkEntry` containing the conflicting spec and target when incompatible
+      - **Deferred**: Fork requests are accumulated, not applied immediately (read-only phase)
       - Prevents incorrect node reuse that would break peer dependency contracts
 
       ### Step 2: Peer Placement Lifecycle (`processPlacementTasks`)
@@ -152,6 +166,28 @@ actions:
   - type: data_structures_guide
     message: |
       ## Key Data Structures
+
+      ### `FetchResult` (returned by `fetchManifestsForDeps`)
+      ```typescript
+      type FetchResult = {
+        placementTasks: NodePlacementTask[]  // Nodes to place
+        reuseTasks: ReuseTask[]              // Deferred edge creation for existing nodes
+        forkRequests: PeerContextEntryInput[] // Accumulated peer context fork entries
+      }
+      ```
+      This structure enables read-only parallel fetching with deferred mutations.
+
+      ### `ReuseTask` (deferred edge creation)
+      ```typescript
+      type ReuseTask = {
+        type: DependencySaveType  // Edge type (prod, dev, etc.)
+        spec: Spec                // Dependency spec
+        fromNode: Node            // Parent node
+        toNode: Node              // Existing node to reuse
+      }
+      ```
+      Previously `graph.addEdge()` was called immediately during parallel fetch, causing
+      non-determinism. Now edges are collected and applied serially in Phase B.
 
       ### `AppendNodeEntry` (defined in `types.ts`)
       ```typescript
@@ -238,54 +274,74 @@ actions:
       }]
       ```
 
-      ### 3. Level Processing Loop with Peer Context
+      ### 3. Level Processing Loop (3-Phase per Level)
       ```typescript
       while (currentLevelDeps.length > 0) {
-        // Step 3a: Process all nodes at current level in parallel
-        const levelResults = await Promise.all(currentLevelDeps.map(async ({ node, deps, peerContext, ... }) => {
+        // ========== PHASE A: PARALLEL FETCH (READ-ONLY) ==========
+        const fetchResults = await Promise.all(currentLevelDeps.map(async ({ node, deps, peerContext, ... }) => {
           seen.add(node.id)
-
-          // Step 3b: Fetch manifests with peer compatibility checks
-          const placementTasks = await fetchManifestsForDeps(
-            packageInfo, graph, node, sortedDeps, scurry, peerContext, ...
-          )
-
-          // Step 3c: Place nodes with peer context, collect updateContext functions
-          return await processPlacementTasks(graph, options, placementTasks, ...)
+          // Fetch manifests without mutating graph - returns FetchResult
+          const result = await fetchManifestsForDeps(packageInfo, graph, node, sortedDeps, ...)
+          return { entry: { node, deps, peerContext, ... }, result }
         }))
 
-        // Step 3d: Post-placement peer check - fork contexts, resolve peer deps
+        // ========== PHASE B: SERIAL MUTATIONS (DETERMINISTIC) ==========
+        // Sort by stable identifiers (DepID::depth)
+        const sortedResults = fetchResults.sort((a, b) => 
+          `${a.entry.node.id}::${a.entry.depth}`.localeCompare(`${b.entry.node.id}::${b.entry.depth}`, 'en')
+        )
+
+        const levelResults = []
+        for (const { entry, result } of sortedResults) {
+          // Apply fork requests, reuse edges, and place nodes serially
+          if (result.forkRequests.length > 0) {
+            entry.peerContext = forkPeerContext(graph, entry.peerContext, result.forkRequests)
+          }
+          for (const reuseTask of sortedReuseTasks) graph.addEdge(...)
+          levelResults.push(await processPlacementTasks(...))
+        }
+
+        // ========== PHASE C: POST-PLACEMENT PEER CHECK ==========
         postPlacementPeerCheck(graph, levelResults)
 
-        // Step 3e: Collect child dependencies with updated peer contexts
+        // Collect child dependencies for next level
         currentLevelDeps = collectChildDependencies(levelResults)
       }
       ```
 
-      ### 4. Peer Context Flow Diagram
+      ### 4. Peer Context Flow Diagram (3-Phase Architecture)
       ```
       Initial Context (index: 0)
              │
              ▼
       ┌─────────────────────────────────────────┐
-      │ Level N Processing                      │
-      │  - fetchManifestsForDeps()              │
-      │    └─ checkPeerEdgesCompatible()        │
-      │  - processPlacementTasks()              │
-      │    ├─ startPeerPlacement() → peerSetHash│
-      │    └─ endPeerPlacement() → updateContext│
+      │ PHASE A: PARALLEL FETCH (READ-ONLY)     │
+      │  - fetchManifestsForDeps() in parallel  │
+      │    ├─ checkPeerEdgesCompatible()        │
+      │    ├─ Accumulate forkRequests (deferred)│
+      │    └─ Accumulate reuseTasks (deferred)  │
+      │  - Returns FetchResult per entry        │
       └─────────────────────────────────────────┘
              │
              ▼
       ┌─────────────────────────────────────────┐
-      │ postPlacementPeerCheck()                │
+      │ PHASE B: SERIAL MUTATIONS (DETERMINISTIC)│
+      │  - Sort results by DepID::depth         │
+      │  - For each (in order):                 │
+      │    ├─ Apply forkRequests → forkPeerContext│
+      │    ├─ Apply reuseTasks → graph.addEdge  │
+      │    └─ processPlacementTasks()           │
+      │        ├─ startPeerPlacement() → hash   │
+      │        └─ endPeerPlacement() → context  │
+      └─────────────────────────────────────────┘
+             │
+             ▼
+      ┌─────────────────────────────────────────┐
+      │ PHASE C: POST-PLACEMENT PEER CHECK      │
       │  - putEntries() for each child          │
       │  - forkPeerContext() if conflicts       │
       │  - resolvePeerDeps() from context       │
       └─────────────────────────────────────────┘
-             │
-             ▼
-      Child nodes with updated peer contexts
              │
              ▼
       Level N+1 Processing (repeat)
@@ -331,11 +387,12 @@ actions:
         !existingNode.detached &&
         // Regular deps can always reuse.
         // Peer deps can reuse as well if their peer edges are compatible.
-        // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0 with peer context, e.g: peer.*.)
         (!peer || peerCompatResult.compatible) &&
         // Check peer edge compatibility
         peerCompatResult.compatible
       ```
+      **Note**: Reuse is deferred - `reuseTasks` are collected during Phase A and
+      applied serially in Phase B for deterministic ordering.
 
       ### Candidate Fallback for Peer-Incompatible Nodes
       ```typescript
@@ -423,7 +480,9 @@ actions:
 
       ### Deterministic Ordering
       - **Reproducible Builds**: Same input always produces same graph structure
-      - **Consistent Output**: Sorting by `spec.name` ensures predictable order
+      - **Read-Only Fetch Phase**: No mutations during parallel network operations prevents timing-based non-determinism
+      - **Stable Sorting Keys**: Results sorted by `DepID::depth` before applying mutations
+      - **Deferred Edge Creation**: Reuse edges collected and applied in sorted order
       - **Sorted Peer Context Processing**: `postPlacementPeerCheck` sorts by `node.id` for determinism
       - **Debug Friendly**: Deterministic processing aids in debugging
 
@@ -437,7 +496,7 @@ actions:
       ## Integration with Graph System
 
       ### Used By
-      - `src/graph/src/ideal/refresh-ideal-graph.ts` - High-level dependency resolution, exports `nextPeerContextIndex()`
+      - `src/graph/src/ideal/refresh-ideal-graph.ts` - High-level dependency resolution
       - `src/graph/src/ideal/build-ideal-from-starting-graph.ts` - Ideal graph construction
 
       ### Dependencies from `peers.ts`
@@ -464,22 +523,34 @@ actions:
       refresh-ideal-graph.ts
              │
              ▼
-      appendNodes() ──┬──► fetchManifestsForDeps()
-                      │         │
-                      │         ├─► checkPeerEdgesCompatible()
-                      │         └─► forkPeerContext() (if needed)
-                      │
-                      ├──► processPlacementTasks()
-                      │         │
-                      │         ├─► startPeerPlacement()
-                      │         ├─► graph.placePackage()
-                      │         └─► endPeerPlacement()
-                      │
-                      └──► postPlacementPeerCheck()
-                                │
-                                ├─► putEntries()
-                                ├─► forkPeerContext() (if needed)
-                                └─► resolvePeerDeps()
+      appendNodes()
+             │
+      ┌──────┴──────────────────────────────────────┐
+      │ PHASE A: PARALLEL FETCH (READ-ONLY)         │
+      │  fetchManifestsForDeps() → FetchResult      │
+      │    ├─► checkPeerEdgesCompatible()           │
+      │    ├─► Accumulate forkRequests              │
+      │    └─► Accumulate reuseTasks                │
+      └──────┬──────────────────────────────────────┘
+             │
+      ┌──────┴──────────────────────────────────────┐
+      │ PHASE B: SERIAL MUTATIONS                   │
+      │  Sort results by DepID::depth               │
+      │    ├─► forkPeerContext() (apply forkRequests)│
+      │    ├─► graph.addEdge() (apply reuseTasks)   │
+      │    └─► processPlacementTasks()              │
+      │          ├─► startPeerPlacement()           │
+      │          ├─► graph.placePackage()           │
+      │          └─► endPeerPlacement()             │
+      └──────┬──────────────────────────────────────┘
+             │
+      ┌──────┴──────────────────────────────────────┐
+      │ PHASE C: POST-PLACEMENT                     │
+      │  postPlacementPeerCheck()                   │
+      │    ├─► putEntries()                         │
+      │    ├─► forkPeerContext() (if conflicts)     │
+      │    └─► resolvePeerDeps()                    │
+      └─────────────────────────────────────────────┘
       ```
 
   - type: testing_considerations
@@ -543,21 +614,33 @@ examples:
     output: "Breadth-first processing with peer context management and early extraction"
 
   - input: |
-      // Example: Processing with peer context lifecycle
-      // In fetchManifestsForDeps:
+      // Example: Processing with peer context lifecycle (3-phase architecture)
+      // PHASE A - In fetchManifestsForDeps (read-only):
       const peerCompatResult = checkPeerEdgesCompatible(existingNode, fromNode, peerContext, graph)
       if (!peerCompatResult.compatible) {
-        effectivePeerContext = forkPeerContext(graph, peerContext, [peerCompatResult.forkEntry])
+        forkRequests.push(peerCompatResult.forkEntry)  // Deferred, not applied yet
+      }
+      if (validExistingNode) {
+        reuseTasks.push({ type, spec, fromNode, toNode: existingNode })  // Deferred edge
+      }
+      return { placementTasks, reuseTasks, forkRequests }
+
+      // PHASE B - Serial mutations (deterministic order):
+      if (result.forkRequests.length > 0) {
+        entry.peerContext = forkPeerContext(graph, entry.peerContext, result.forkRequests)
+      }
+      for (const { type, spec, fromNode, toNode } of sortedReuseTasks) {
+        graph.addEdge(type, spec, fromNode, toNode)
       }
 
       // In processPlacementTasks:
       const { peerSetHash, queuedEntries } = startPeerPlacement(peerContext, manifest, fromNode, options)
       const node = graph.placePackage(fromNode, type, spec, manifest, id, joinExtra({ peerSetHash, modifier }))
-      const updateContext = endPeerPlacement(peerContext, nextDeps, nextPeerDeps, graph, spec, fromNode, node, type, queuedEntries)
+      const updateContext = endPeerPlacement(...)
 
-      // In appendNodes main loop:
+      // PHASE C - Post-placement:
       postPlacementPeerCheck(graph, levelResults)
-    output: "Complete peer context lifecycle from compatibility check through resolution"
+    output: "Complete peer context lifecycle with read-only fetch and serial mutations"
 
   - input: |
       // Example: Post-placement peer check with context forking
@@ -612,7 +695,7 @@ examples:
 
 metadata:
   priority: high
-  version: 2.1
+  version: 2.2
   tags:
     - graph
     - ideal
