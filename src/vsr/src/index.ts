@@ -125,6 +125,8 @@ const app = new OpenAPIHono<{
   Bindings: Environment
   Variables: {
     db: ReturnType<typeof createDatabaseOperations>
+    noUpstreamRedirect?: boolean
+    upstream?: string
   }
 }>({ strict: false })
 
@@ -344,6 +346,40 @@ app.get('/:upstream/-/search', searchPackages)
 
 // Pattern: /{upstream}/-/npm/audit (upstream registry audit)
 app.post('/:upstream/-/npm/audit', handleSecurityAudit)
+
+// ---------------------------------------------------------
+// Local Private Package Namespace Routes (/local/*)
+// (packages in /local namespace are always stored locally, never proxied)
+// (must come before upstream routes to take precedence)
+// ---------------------------------------------------------
+
+// Middleware to disable upstream redirects for /local namespace
+app.use('/local/*', async (c, next) => {
+  c.set('noUpstreamRedirect', true)
+  await next()
+})
+
+// Pattern: /local/-/whoami (local namespace whoami)
+app.get('/local/-/whoami', getUsername)
+// Pattern: /local/-/user (local namespace user profile)
+app.get('/local/-/user', getUserProfile)
+// Pattern: /local/-/ping (local namespace ping)
+app.get('/local/-/ping', handlePing)
+
+// Pattern: /local/@{scope}/{pkg}/-/{tarball} (scoped package tarball - requires scoped package handler)
+app.get('/local/:scope/:pkg/-/:tarball', handlePackageTarball as any)
+// Pattern: /local/@{scope}/{pkg}/{version} (scoped package version)
+app.get('/local/:scope/:pkg/:version', handlePackageVersion as any)
+// Pattern: /local/@{scope}/{pkg} (scoped package manifest)
+app.get('/local/:scope/:pkg', handleRootPackageRoute as any)
+// Pattern: /local/{pkg}/-/{tarball} (package tarball)
+app.get('/local/:pkg/-/:tarball', handlePackageTarball as any)
+// Pattern: /local/{pkg}/{version} (package version)
+app.get('/local/:pkg/:version', handlePackageVersion as any)
+// Pattern: /local/{pkg} (package publishing via PUT - uses same handler as regular publishing)
+app.put('/local/:pkg', handlePackagePublish as any)
+// Pattern: /local/{pkg} (package manifest)
+app.get('/local/:pkg', handleRootPackageRoute as any)
 
 // ---------------------------------------------------------
 // Upstream Package Routes

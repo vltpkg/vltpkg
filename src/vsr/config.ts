@@ -35,6 +35,7 @@ export const RESERVED_ROUTES: string[] = [
   'v1',
   'api',
   'admin',
+  'local', // Reserved for local private packages
   '*', // Reserved for hash-based routes
 ]
 

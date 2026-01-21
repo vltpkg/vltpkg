@@ -1661,6 +1661,7 @@ export async function getPackagePackument(c: HonoContext) {
 /**
  * Handle root package route - checks for local package existence and redirects to upstream if not found
  * This is used for the `/:pkg` route to handle package discovery
+ * Also used for `/local/:pkg` routes (with noUpstreamRedirect flag set)
  */
 export async function handleRootPackageRoute(c: HonoContext) {
   const pkg = decodeURIComponent(c.req.param('pkg'))
@@ -1685,7 +1686,13 @@ export async function handleRootPackageRoute(c: HonoContext) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error checking local package:', error)
-    // Continue to upstream redirect on database error
+    // Continue to upstream redirect on database error (unless noUpstreamRedirect is set)
+  }
+
+  // Check if upstream redirect is disabled (for /local namespace)
+  const noUpstreamRedirect = c.get('noUpstreamRedirect')
+  if (noUpstreamRedirect) {
+    return c.json({ error: 'Package not found' }, 404)
   }
 
   // Package doesn't exist locally, redirect to default upstream
@@ -1750,6 +1757,7 @@ export async function handlePackagePublish(c: HonoContext) {
 /**
  * Handle package version route - checks for local package existence and redirects to upstream if not found
  * This is used for the `/:pkg/:version` route to handle package version requests
+ * Also used for `/local/:pkg/:version` routes (with noUpstreamRedirect flag set)
  */
 export async function handlePackageVersion(c: HonoContext) {
   const pkg = decodeURIComponent(c.req.param('pkg'))
@@ -1774,7 +1782,13 @@ export async function handlePackageVersion(c: HonoContext) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error checking local package version:', error)
-    // Continue to upstream redirect on database error
+    // Continue to upstream redirect on database error (unless noUpstreamRedirect is set)
+  }
+
+  // Check if upstream redirect is disabled (for /local namespace)
+  const noUpstreamRedirect = c.get('noUpstreamRedirect')
+  if (noUpstreamRedirect) {
+    return c.json({ error: 'Version not found' }, 404)
   }
 
   // Package doesn't exist locally, redirect to default upstream
@@ -1786,6 +1800,7 @@ export async function handlePackageVersion(c: HonoContext) {
 /**
  * Handle package tarball route - checks for local package existence and redirects to upstream if not found
  * This is used for the `/:pkg/-/:tarball` route to handle package tarball requests
+ * Also used for `/local/:pkg/-/:tarball` routes (with noUpstreamRedirect flag set)
  */
 export async function handlePackageTarball(c: HonoContext) {
   const pkg = decodeURIComponent(c.req.param('pkg'))
@@ -1809,7 +1824,13 @@ export async function handlePackageTarball(c: HonoContext) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error checking local package tarball:', error)
-    // Continue to upstream redirect on database error
+    // Continue to upstream redirect on database error (unless noUpstreamRedirect is set)
+  }
+
+  // Check if upstream redirect is disabled (for /local namespace)
+  const noUpstreamRedirect = c.get('noUpstreamRedirect')
+  if (noUpstreamRedirect) {
+    return c.json({ error: 'Tarball not found' }, 404)
   }
 
   // Package doesn't exist locally, redirect to default upstream

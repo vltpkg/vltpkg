@@ -11,7 +11,7 @@ registry/
 ├── config.ts                   # Global application configuration
 ├── package.json                # NPM package definition & scripts
 ├── wrangler.json               # Cloudflare Workers deployment config
-├── drizzle.config.js           # Database ORM configuration
+├── drizzle.config.mjs          # Database ORM configuration
 ├── tsconfig.worker.json        # TypeScript config for Workers environment
 ├── types.ts                    # Shared TypeScript type definitions
 ├── README.md                   # Project documentation & setup guide

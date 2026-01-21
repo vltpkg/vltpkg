@@ -336,6 +336,7 @@ export type HonoContext = Context<{
   Variables: {
     db: DatabaseOperations
     upstream?: string
+    noUpstreamRedirect?: boolean
   }
 }> & {
   waitUntil?: (promise: Promise<any>) => void

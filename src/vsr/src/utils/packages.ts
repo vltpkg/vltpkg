@@ -33,13 +33,16 @@ export function packageSpec(c: HonoContext): PackageSpec {
   const { scope, pkg } = c.req.param()
 
   if (scope && pkg) {
-    // Scoped package
+    // Scoped package: /:scope/:pkg
     const name =
       scope.startsWith('@') ? `${scope}/${pkg}` : `@${scope}/${pkg}`
     return { name, scope, pkg }
   } else if (scope) {
-    // Unscoped package (scope is actually the package name)
+    // Unscoped package with 'scope' param: /:scope (legacy naming)
     return { name: scope, pkg: scope }
+  } else if (pkg) {
+    // Unscoped package with 'pkg' param: /{pkg}
+    return { name: pkg, pkg }
   }
 
   return {}
