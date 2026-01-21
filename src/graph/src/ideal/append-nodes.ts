@@ -49,14 +49,22 @@ type FileTypeInfo = {
 }
 
 /**
+ * Task for reusing an existing node (deferred edge creation).
+ */
+type ReuseTask = {
+  type: DependencySaveType
+  spec: Spec
+  fromNode: Node
+  toNode: Node
+}
+
+/**
  * Result of fetching manifests for dependencies.
  */
 type FetchResult = {
   placementTasks: NodePlacementTask[]
-  forkRequest?: {
-    peerContext: PeerContext
-    entries: PeerContextEntryInput[]
-  }
+  reuseTasks: ReuseTask[]
+  forkRequests: PeerContextEntryInput[]
 }
 
 /**
@@ -230,9 +238,8 @@ const fetchManifestsForDeps = async (
 ): Promise<FetchResult> => {
   const fetchTasks: ManifestFetchTask[] = []
   const placementTasks: NodePlacementTask[] = []
-  let forkRequest:
-    | { peerContext: PeerContext; entries: PeerContextEntryInput[] }
-    | undefined
+  const reuseTasks: ReuseTask[] = []
+  const forkRequests: PeerContextEntryInput[] = []
 
   for (const { spec: originalSpec, type } of deps) {
     let spec = originalSpec
@@ -271,17 +278,12 @@ const fetchManifestsForDeps = async (
         peer,
       )
 
-    // Store fork request if incompatible peer edges detected (defer actual fork)
+    // Accumulate fork request if incompatible peer edges detected (defer actual fork)
     const effectivePeerContext = peerContext
     /* c8 ignore start */
     if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
-      forkRequest = {
-        peerContext,
-        entries: [peerCompatResult.forkEntry],
-      }
-      // Note: We don't fork here anymore - the BFS loop will handle it
-      // For now, continue with the original context for manifest fetching
-      // The fork will be applied before placement in Phase B
+      forkRequests.push(peerCompatResult.forkEntry)
+      // All fork entries from this fromNode will be applied together in Phase B
     }
     /* c8 ignore stop */
 
@@ -291,7 +293,6 @@ const fetchManifestsForDeps = async (
       !existingNode.detached &&
       // Regular deps can always reuse.
       // Peer deps can reuse as well if their peer edges are compatible.
-      // (Avoids needless cloning like @isaacs/peer-dep-cycle-a@1.0.0·ṗ:*.)
       /* c8 ignore start */
       (!peer || peerCompatResult.compatible) &&
       // Check if existing node's peer edges are compatible with new parent
@@ -304,11 +305,10 @@ const fetchManifestsForDeps = async (
       // so we should just skip whenever we find one
       existingNode?.importer
     ) {
-      // Add reuse edge IMMEDIATELY (not deferred) - this is safe because:
-      // 1. The target node already exists, so no race condition on creation
-      // 2. Subsequent checkPeerEdgesCompatible calls need to see these edges
-      //    to make correct reuse decisions for other nodes
-      graph.addEdge(type, spec, fromNode, existingNode)
+      // Defer edge creation to Phase B for deterministic ordering.
+      // Previously added immediately, but this caused race conditions when
+      // parallel fetches completed in different orders.
+      reuseTasks.push({ type, spec, fromNode, toNode: existingNode })
       continue
     }
 
@@ -368,7 +368,7 @@ const fetchManifestsForDeps = async (
   // sort by the manifest name for deterministic order.
   placementTasks.sort(compareByHasPeerDeps)
 
-  return { placementTasks, forkRequest }
+  return { placementTasks, reuseTasks, forkRequests }
 }
 
 /**
@@ -781,20 +781,32 @@ export const appendNodes = async (
     // Apply all mutations serially in deterministic order
     const levelResults: ProcessPlacementResult[] = []
     for (const { entry, result } of sortedResults) {
-      // Apply fork if needed (from Phase A deferred fork request)
-      if (result.forkRequest) {
-        const { peerContext: contextToFork, entries } =
-          result.forkRequest
+      // Apply accumulated fork requests if any (from Phase A deferred forks)
+      if (result.forkRequests.length > 0) {
         const forkedContext = forkPeerContext(
           graph,
-          contextToFork,
-          entries,
+          entry.peerContext,
+          result.forkRequests,
         )
         entry.peerContext = forkedContext
         // Update peer context in all placement tasks to use forked context
         for (const task of result.placementTasks) {
           task.fetchTask.peerContext = forkedContext
         }
+      }
+
+      // Apply reuse edges in deterministic order (before placement)
+      // Sort reuse tasks by spec name for stability
+      const sortedReuseTasks = result.reuseTasks.sort((a, b) =>
+        a.spec.name.localeCompare(b.spec.name, 'en'),
+      )
+      for (const {
+        type,
+        spec,
+        fromNode,
+        toNode,
+      } of sortedReuseTasks) {
+        graph.addEdge(type, spec, fromNode, toNode)
       }
 
       // Place nodes and collect child deps

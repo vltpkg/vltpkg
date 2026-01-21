@@ -208,12 +208,11 @@ export const checkPeerEdgesCompatible = (
   for (const [peerName, peerBareSpec] of Object.entries(peerDeps)) {
     const existingEdge = existingNode.edgesOut.get(peerName)
 
-    // CHECK 0: If the peer edge doesn't exist at all (node hasn't been processed yet),
-    // we cannot reuse because we can't verify the edge will be compatible.
-    // The node's peer edges will be resolved using its original placement context,
-    // which may differ from the current parent's context.
-    // Note: This is different from a "dangling edge" (edge exists but has no target),
-    // which means the peer was intentionally left unresolved (e.g., peerOptional).
+    // CHECK 0: Reject reuse if peer edge doesn't exist yet (node unprocessed).
+    // Cannot verify compatibility since peer resolution depends on original
+    // placement context, which may differ from current parent's context.
+    // Note: Dangling edges (edge exists, no target) are handled separately below.
+    // This conservative check prevents incorrect reuse when placement order varies.
     if (existingEdge === undefined) {
       return { compatible: false }
     }
