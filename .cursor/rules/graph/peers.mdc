@@ -139,8 +139,14 @@ actions:
     message: |
       ## Key Algorithms
 
-      ### `checkPeerEdgesCompatible()` - 3-Phase Compatibility Check
+      ### `checkPeerEdgesCompatible()` - 4-Phase Compatibility Check
       Determines if a node can be reused given the current peer context:
+
+      0. **CHECK 0 - Unprocessed Node**: If peer edge doesn't exist yet on the existing node
+         - Returns incompatible (cannot verify compatibility)
+         - Peer resolution depends on original placement context, which may differ
+         - Conservative check prevents incorrect reuse when placement order varies
+         - Note: Dangling edges (edge exists but no target) are handled separately
 
       1. **CHECK 1 - Context Mismatch**: If peer context has a different target for this peer name
          - Returns incompatible with fork entry pointing to context's preferred target
@@ -320,7 +326,7 @@ examples:
 
 metadata:
   priority: high
-  version: 1.2
+  version: 1.3
   tags:
     - graph
     - peer-dependencies
