@@ -67,6 +67,14 @@ actions:
       - Recursively descends into each newly placed node's dependencies, applying `@vltpkg/spec` parsing and honoring modifiers if present.
       - Ensures added nodes have consistent `registry`, `resolved`, and `integrity` fields as available.
 
+      ### Deterministic Ordering Architecture
+      The BFS loop uses a 3-phase approach per level to ensure deterministic graph builds:
+      - **Phase A (Parallel Fetch)**: Fetches manifests without mutating the graph - read-only
+      - **Phase B (Serial Mutations)**: Sorts results by stable DepID keys, applies all mutations in deterministic order
+      - **Phase C (Post-Placement)**: Peer context updates and resolution
+
+      This architecture prevents non-determinism from network timing variations.
+
       📋 **See `@graph/ideal-append-nodes.mdc`** for detailed BFS algorithm and peer context lifecycle
 
   - type: architecture_guide
@@ -166,7 +174,7 @@ examples:
 
 metadata:
   priority: high
-  version: 1.2
+  version: 1.3
   tags:
     - graph
     - ideal

@@ -14,10 +14,7 @@ import type {
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import type { GraphModifier } from '../../src/modifiers.ts'
-import {
-  refreshIdealGraph,
-  nextPeerContextIndex,
-} from '../../src/ideal/refresh-ideal-graph.ts'
+import { refreshIdealGraph } from '../../src/ideal/refresh-ideal-graph.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { load } from '../../src/actual/load.ts'
@@ -357,9 +354,19 @@ t.test(
 
 t.test('nextPeerContextIndex', async t => {
   t.test('returns incrementing indices', async t => {
-    const idx1 = nextPeerContextIndex()
-    const idx2 = nextPeerContextIndex()
-    const idx3 = nextPeerContextIndex()
+    const mainManifest = {
+      name: 'test-project',
+      version: '1.0.0',
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    const graph = new Graph({
+      ...configData,
+      mainManifest,
+      projectRoot,
+    })
+    const idx1 = graph.nextPeerContextIndex()
+    const idx2 = graph.nextPeerContextIndex()
+    const idx3 = graph.nextPeerContextIndex()
 
     t.ok(idx2 > idx1, 'second index should be greater')
     t.ok(idx3 > idx2, 'third index should be greater')
