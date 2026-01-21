@@ -162,12 +162,3 @@ export const refreshIdealGraph = async ({
     await Promise.all(extractPromises)
   }
 }
-
-/**
- * Global index to assign unique ids used to track peer context sets.
- */
-let peerContextIndex = 0
-/**
- * Retrieve the next unique index for a peer context set.
- */
-export const nextPeerContextIndex = () => peerContextIndex++
