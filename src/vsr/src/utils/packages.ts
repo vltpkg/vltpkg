@@ -40,6 +40,9 @@ export function packageSpec(c: HonoContext): PackageSpec {
   } else if (scope) {
     // Unscoped package (scope is actually the package name)
     return { name: scope, pkg: scope }
+  } else if (pkg) {
+    // Also unscoped packages. Some routes set 'pkg', not 'scope'
+    return { name: pkg, pkg: pkg }
   }
 
   return {}
