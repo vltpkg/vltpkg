@@ -41,8 +41,8 @@ export function packageSpec(c: HonoContext): PackageSpec {
     // Unscoped package with 'scope' param: /:scope (legacy naming)
     return { name: scope, pkg: scope }
   } else if (pkg) {
-    // Unscoped package with 'pkg' param: /{pkg}
-    return { name: pkg, pkg }
+    // Also unscoped packages. Some routes set 'pkg', not 'scope'
+    return { name: pkg, pkg: pkg }
   }
 
   return {}
