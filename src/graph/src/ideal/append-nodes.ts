@@ -49,21 +49,10 @@ type FileTypeInfo = {
 }
 
 /**
- * Task to reuse an existing node by adding an edge to it.
- */
-type ReuseTask = {
-  type: DependencySaveType
-  spec: Spec
-  fromNode: Node
-  toNode: Node
-}
-
-/**
  * Result of fetching manifests for dependencies.
  */
 type FetchResult = {
   placementTasks: NodePlacementTask[]
-  reuseTasks: ReuseTask[]
   forkRequest?: {
     peerContext: PeerContext
     entries: PeerContextEntryInput[]
@@ -241,7 +230,6 @@ const fetchManifestsForDeps = async (
 ): Promise<FetchResult> => {
   const fetchTasks: ManifestFetchTask[] = []
   const placementTasks: NodePlacementTask[] = []
-  const reuseTasks: ReuseTask[] = []
   let forkRequest:
     | { peerContext: PeerContext; entries: PeerContextEntryInput[] }
     | undefined
@@ -316,8 +304,11 @@ const fetchManifestsForDeps = async (
       // so we should just skip whenever we find one
       existingNode?.importer
     ) {
-      // Collect reuse task instead of mutating graph immediately
-      reuseTasks.push({ type, spec, fromNode, toNode: existingNode })
+      // Add reuse edge IMMEDIATELY (not deferred) - this is safe because:
+      // 1. The target node already exists, so no race condition on creation
+      // 2. Subsequent checkPeerEdgesCompatible calls need to see these edges
+      //    to make correct reuse decisions for other nodes
+      graph.addEdge(type, spec, fromNode, existingNode)
       continue
     }
 
@@ -377,7 +368,7 @@ const fetchManifestsForDeps = async (
   // sort by the manifest name for deterministic order.
   placementTasks.sort(compareByHasPeerDeps)
 
-  return { placementTasks, reuseTasks, forkRequest }
+  return { placementTasks, forkRequest }
 }
 
 /**
@@ -790,16 +781,6 @@ export const appendNodes = async (
     // Apply all mutations serially in deterministic order
     const levelResults: ProcessPlacementResult[] = []
     for (const { entry, result } of sortedResults) {
-      // Apply reuse edges (from Phase A deferred mutations)
-      for (const reuse of result.reuseTasks) {
-        graph.addEdge(
-          reuse.type,
-          reuse.spec,
-          reuse.fromNode,
-          reuse.toNode,
-        )
-      }
-
       // Apply fork if needed (from Phase A deferred fork request)
       if (result.forkRequest) {
         const { peerContext: contextToFork, entries } =
