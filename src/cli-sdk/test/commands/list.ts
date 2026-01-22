@@ -149,7 +149,11 @@ const runCommand = async (
   const output =
     values.view === 'silent' ?
       undefined
-    : cmd.views[values.view](res, { colors: values.color }, config)
+    : values.view === 'human' ?
+      cmd.views.human(res, { colors: values.color })
+    : values.view === 'mermaid' ?
+      cmd.views.mermaid(res)
+    : cmd.views.json(res)
   return values.view === 'json' ?
       JSON.stringify(output, null, 2)
     : output
@@ -458,42 +462,6 @@ t.test('list', async t => {
         Command,
       ),
       'should read project from host context',
-    )
-  })
-
-  t.test('view=gui', async t => {
-    sharedOptions.packageJson.read = () =>
-      graph.mainImporter.manifest!
-    const options = {
-      ...sharedOptions,
-      projectRoot: t.testdirName,
-    }
-
-    let vltServerOptions: LoadedConfig | undefined = undefined
-    const C = await mockList(t, {
-      '../../src/start-gui.ts': {
-        startGUI: async (conf: LoadedConfig) => {
-          vltServerOptions = conf
-        },
-      },
-    })
-
-    await runCommand(
-      {
-        positionals: [],
-        values: {
-          workspace: [],
-          view: 'gui',
-        },
-        options,
-      },
-      C,
-    )
-
-    t.matchStrict(
-      vltServerOptions,
-      { options: { projectRoot: t.testdirName } },
-      'should call startGUI with expected options',
     )
   })
 

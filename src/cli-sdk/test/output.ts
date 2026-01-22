@@ -57,12 +57,16 @@ t.test('getView', async t => {
   const xx = id(x, options, confHuman)
   t.equal(xx, x, 'identity function returned')
 
-  const confGui = {
-    values: { view: 'gui' },
+  const confUnknown = {
+    values: { view: 'unknown' as any },
   } as LoadedConfig
-  process.env.VLT_VIEW = 'gui'
-  const gui = getView(confGui, { json, human })
-  t.equal(gui, json, 'json view was returned for unknown view name')
+  process.env.VLT_VIEW = 'unknown'
+  const unknown = getView(confUnknown, { json, human })
+  t.equal(
+    unknown,
+    json,
+    'json view was returned for unknown view name',
+  )
   t.equal(process.env.VLT_VIEW, 'json', 'set view config to default')
   const viewFn = (() => {}) as ViewFn<true>
   t.equal(getView(confHuman, viewFn), viewFn)
