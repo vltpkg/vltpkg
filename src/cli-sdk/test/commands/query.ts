@@ -147,12 +147,10 @@ const runCommand = async (
   } as LoadedConfig
   const res = await cmd.command(config)
   const output =
-    values.view === 'silent' ?
-      undefined
+    values.view === 'silent' ? undefined
     : values.view === 'human' ?
       cmd.views.human(res, { colors: values.color })
-    : values.view === 'mermaid' ?
-      cmd.views.mermaid(res)
+    : values.view === 'mermaid' ? cmd.views.mermaid(res)
     : cmd.views.json(res)
   return values.view === 'json' ?
       JSON.stringify(output, null, 2)
