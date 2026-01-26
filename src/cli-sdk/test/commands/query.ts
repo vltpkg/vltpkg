@@ -147,9 +147,11 @@ const runCommand = async (
   } as LoadedConfig
   const res = await cmd.command(config)
   const output =
-    values.view === 'silent' ?
-      undefined
-    : cmd.views[values.view](res, { colors: values.color }, config)
+    values.view === 'silent' ? undefined
+    : values.view === 'human' ?
+      cmd.views.human(res, { colors: values.color })
+    : values.view === 'mermaid' ? cmd.views.mermaid(res)
+    : cmd.views.json(res)
   return values.view === 'json' ?
       JSON.stringify(output, null, 2)
     : output
@@ -497,41 +499,6 @@ t.test('query', async t => {
         Command,
       ),
       'should read project from host context',
-    )
-  })
-
-  t.test('view=gui', async t => {
-    sharedOptions.packageJson.read = () =>
-      graph.mainImporter.manifest!
-    const options = {
-      ...sharedOptions,
-      projectRoot: t.testdirName,
-    }
-
-    let guiConfig: LoadedConfig | undefined
-    const { command, views } = await mockQuery(t, {
-      '../../src/start-gui.ts': {
-        startGUI: async (conf: LoadedConfig) => {
-          guiConfig = conf
-        },
-      },
-    })
-
-    const conf = {
-      positionals: [],
-      values: {
-        workspace: [],
-        view: 'gui',
-      },
-      options,
-      get: () => undefined,
-    } as unknown as LoadedConfig
-    await views.gui(await command(conf), {}, conf)
-
-    t.matchStrict(
-      guiConfig,
-      { options: { projectRoot: t.testdirName } },
-      'should call startGUI with expected options',
     )
   })
 

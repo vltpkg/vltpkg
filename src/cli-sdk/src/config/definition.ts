@@ -40,7 +40,6 @@ const canonicalCommands = {
   query: 'query',
   'run-exec': 'run-exec',
   run: 'run',
-  serve: 'serve',
   token: 'token',
   uninstall: 'uninstall',
   update: 'update',
@@ -61,7 +60,6 @@ const aliases = {
   r: 'run',
   'run-script': 'run',
   rx: 'run-exec',
-  s: 'serve',
   x: 'exec',
   xl: 'exec-local',
   h: 'help',
@@ -567,9 +565,6 @@ export const definition = j
                       consumption.
                     - json: Parseable JSON output for machines.
                     - inspect: Output results with \`util.inspect\`.
-                    - gui: Start a local web server and opens a browser to
-                      explore the results. (Only relevant for certain
-                      commands.)
                     - mermaid: Output mermaid diagramming syntax. (Only
                       relevant for certain commands.)
                     - silent: Suppress all output to stdout.
@@ -582,7 +577,6 @@ export const definition = j
         'human',
         'json',
         'mermaid',
-        'gui',
         'inspect',
         'silent',
       ] as const,
@@ -682,14 +676,6 @@ export const definition = j
       hint: 'path',
       description: `Directory to use for pack and publish operations instead of the current directory.
                     The directory must exist and nothing will be copied to it.`,
-    },
-    port: {
-      hint: 'number',
-      description: `Port for the browser-based UI server when using vlt serve command (default: 8000).`,
-    },
-    'registry-port': {
-      hint: 'number',
-      description: `Port for the VSR registry when using vlt serve command (default: 1337).`,
     },
   })
 

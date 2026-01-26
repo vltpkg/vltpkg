@@ -147,9 +147,9 @@ workspace-a
 exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
-  vlt query <query> --view=<human | json | mermaid | gui>
+  vlt query <query> --view=<human | json | mermaid>
   vlt query <query> --expect-results=<comparison string>
-  vlt query --target=<query> --view=<human | json | mermaid | gui>
+  vlt query --target=<query> --view=<human | json | mermaid>
 
 List installed dependencies matching the provided query.
 
@@ -228,7 +228,7 @@ Defaults to listing all dependencies of the project root and workspaces.
     view
       Output format. Defaults to human-readable or json if no tty.
 
-      ​--view=[human | json | mermaid | gui]
+      ​--view=[human | json | mermaid]
 
 `
 

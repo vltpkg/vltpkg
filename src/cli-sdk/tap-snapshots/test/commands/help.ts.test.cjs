@@ -44,8 +44,6 @@ q,       query       <selector>      Query for packages in the project
 r,       run         <script>        Run a script defined in package.json
 rx,      run-exec    <script>        Run a script &/or fallback to executing a binary
 
-s,       serve                       Start a local package registry server
-
          token       [add|rm]        Manage authentication tokens
 
 rm,      uninstall   [<package>...]  Remove dependencies
@@ -93,7 +91,6 @@ COMMON COMMANDS
   x,   exec      <executable>    Execute a package bin
   p,   pkg       <command>       Manage package metadata
   pub, publish                   Publish package to registry
-  s,   serve                     Start a local package registry server
  
 COMPANION BINS
 
