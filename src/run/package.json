@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/run",
   "description": "Run package.json scripts and execute commands",
-  "version": "1.0.0-rc.14",
+  "version": "1.0.0-rc.15",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
