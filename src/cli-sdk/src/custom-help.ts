@@ -212,14 +212,6 @@ const allCommands = [
     showByDefault: false,
   },
   {
-    name: 'serve',
-    aliases: ['s'],
-    args: '',
-    desc: 'Start a local package registry server',
-    showByDefault: true,
-    defaultOrder: 9,
-  },
-  {
     name: 'token',
     aliases: [],
     args: '[add|rm]',

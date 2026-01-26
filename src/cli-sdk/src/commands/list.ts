@@ -6,12 +6,10 @@ import {
   mermaidOutput,
   GraphModifier,
 } from '@vltpkg/graph'
-import LZString from 'lz-string'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
-import { startGUI } from '../start-gui.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import type {
   HumanReadableOutputGraph,
@@ -30,8 +28,8 @@ export const usage: CommandUsage = () =>
     command: 'ls',
     usage: [
       '',
-      '[package-names...] [--view=human | json | mermaid | gui]',
-      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid | gui]',
+      '[package-names...] [--view=human | json | mermaid]',
+      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid]',
     ],
     description: `List installed dependencies matching given package names or query selectors.
 
@@ -77,7 +75,7 @@ export const usage: CommandUsage = () =>
           'Query selector to filter packages using the DSS query language syntax.',
       },
       view: {
-        value: '[human | json | mermaid | gui]',
+        value: '[human | json | mermaid]',
         description:
           'Output format. Defaults to human-readable or json if no tty.',
       },
@@ -92,12 +90,6 @@ export const views = {
   json: jsonOutput,
   mermaid: mermaidOutput,
   human: humanReadableOutput,
-  gui: async ({ queryString }, _, conf) => {
-    await startGUI(
-      conf,
-      `/explore/${LZString.compressToEncodedURIComponent(queryString)}/overview`,
-    )
-  },
 } as const satisfies Views<ListResult>
 
 export const command: CommandFn<ListResult> = async conf => {
