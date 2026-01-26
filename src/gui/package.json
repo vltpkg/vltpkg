@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/gui",
   "description": "Look under the hood of a vlt install in HD",
-  "version": "1.0.0-rc.14",
+  "version": "1.0.0-rc.15",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
