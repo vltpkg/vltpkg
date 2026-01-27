@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cli-win32-x64",
   "description": "The vlt CLI (win32-x64)",
-  "version": "1.0.0-rc.15",
+  "version": "1.0.0-rc.16",
   "private": true,
   "repository": {
     "type": "git",

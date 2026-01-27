@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cmd-shim",
   "description": "Executable script shims for Windows",
-  "version": "1.0.0-rc.15",
+  "version": "1.0.0-rc.16",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
