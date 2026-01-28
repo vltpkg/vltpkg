@@ -45,7 +45,7 @@ actions:
       - Node extraction and edge deletions:
         - `addNodes(diff, scurry, remover, options, packageInfo)` → returns async actions to fetch/extract nodes into the `.vlt` store (registry/git/tarball installs). Optional deps use `optionalFail()` to remove subgraphs instead of failing the whole reify.
         - `deleteEdges(diff, scurry, remover)` → returns async actions removing outdated links and their bins.
-        - Actions run via `callLimit(actions, { limit })` where `limit = (availableParallelism() - 1) * 8`.
+        - Actions run via `callLimit(actions, { limit })` where `limit = (availableParallelism() - 1) ** 2`.
 
       - Link creation:
         - `addEdges(diff, packageJson, scurry, remover)` → creates symlinks in importer `node_modules` and links package bins into `.bin`. On Windows, uses `@vltpkg/cmd-shim` for executables.

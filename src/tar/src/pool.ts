@@ -21,7 +21,7 @@ export class Pool {
    * CPUs, or 1.
    */
   /* c8 ignore next */
-  jobs: number = 8 * (Math.max(os.availableParallelism(), 2) - 1)
+  jobs: number = (Math.max(os.availableParallelism(), 2) - 1) ** 2
   /**
    * Set of currently active worker threads
    */

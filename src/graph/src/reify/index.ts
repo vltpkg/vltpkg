@@ -33,7 +33,7 @@ import { SecurityArchive } from '@vltpkg/security-archive'
 import type { NodeLike } from '@vltpkg/types'
 import { binChmodAll } from './bin-chmod.ts'
 
-const limit = Math.max(availableParallelism() - 1, 1) * 8
+const limit = Math.max(availableParallelism() - 1, 1) ** 2
 
 /**
  * Filter nodes using a DSS query string

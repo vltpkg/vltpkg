@@ -8,7 +8,7 @@ import { resolve } from 'node:path'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
-t.equal(p.jobs, 8 * (Math.max(availableParallelism(), 2) - 1))
+t.equal(p.jobs, (Math.max(availableParallelism(), 2) - 1) ** 2)
 
 // make it smaller so we can cover the contention cases
 p.jobs = 2

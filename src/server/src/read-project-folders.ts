@@ -4,7 +4,7 @@ import type { PathBase, PathScurry } from 'path-scurry'
 import { callLimit } from 'promise-call-limit'
 import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.ts'
 
-const limit = Math.max(availableParallelism() - 1, 1) * 8
+const limit = Math.max(availableParallelism() - 1, 1) ** 2
 let home: string
 try {
   home = homedir()
