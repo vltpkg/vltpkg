@@ -1140,6 +1140,11 @@ export const asManifest = (
   return m
 }
 
+const normalizeManifestCache = new WeakMap<
+  Manifest | ManifestRegistry,
+  SomeNormalizedManifest<Manifest | ManifestRegistry>
+>()
+
 /**
  * Given a {@link Manifest} returns a {@link NormalizedManifest} that
  * contains normalized author, bugs, funding, contributors, keywords and
@@ -1150,6 +1155,12 @@ export const normalizeManifest = <
 >(
   manifest: T,
 ): SomeNormalizedManifest<T> => {
+  // Check cache first using manifest object reference
+  const cached = normalizeManifestCache.get(manifest)
+  if (cached) {
+    return cached as SomeNormalizedManifest<T>
+  }
+
   manifest = fixManifestVersion(manifest)
 
   const normalizedAuthor = parsePerson(manifest.author)
@@ -1237,9 +1248,10 @@ export const normalizeManifest = <
     normalizedManifest.maintainers
   ) {
     delete normalizedManifest.maintainers
-    return normalizedManifest
   }
 
+  // Cache the result using the manifest object reference
+  normalizeManifestCache.set(manifest, normalizedManifest)
   return normalizedManifest
 }
 
