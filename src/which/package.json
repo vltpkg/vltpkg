@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/which",
   "description": "Find the first executable in the path (TS port of 'which')",
-  "version": "1.0.0-rc.15",
+  "version": "1.0.0-rc.16",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
