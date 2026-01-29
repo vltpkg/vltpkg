@@ -1417,6 +1417,103 @@ t.test('normalizeManifest', t => {
     t.end()
   })
 
+  t.test(
+    'memoization caches normalized manifest by object reference',
+    t => {
+      const manifest = {
+        name: 'test-memoization',
+        version: '1.0.0',
+        funding: 'https://github.com/sponsors/user',
+        keywords: 'react, typescript',
+      }
+
+      // First normalization
+      const normalized1 = normalizeManifest(manifest)
+
+      // Second normalization of same object reference should return cached result
+      const normalized2 = normalizeManifest(manifest)
+
+      // Should be the exact same object reference (cached)
+      t.equal(
+        normalized1,
+        normalized2,
+        'should return cached result for same object reference',
+      )
+      t.equal(
+        normalized1,
+        manifest,
+        'should return same object reference (in-place modification)',
+      )
+
+      t.end()
+    },
+  )
+
+  t.test(
+    'memoization does not cache across different manifest objects',
+    t => {
+      const manifest1 = {
+        name: 'test-1',
+        version: '1.0.0',
+        funding: 'https://github.com/sponsors/user1',
+      }
+
+      const manifest2 = {
+        name: 'test-2',
+        version: '1.0.0',
+        funding: 'https://github.com/sponsors/user2',
+      }
+
+      const normalized1 = normalizeManifest(manifest1)
+      const normalized2 = normalizeManifest(manifest2)
+
+      // Different objects should have different normalized results
+      t.not(
+        normalized1,
+        normalized2,
+        'different manifest objects should have different results',
+      )
+      t.equal(normalized1.name, 'test-1')
+      t.equal(normalized2.name, 'test-2')
+
+      t.end()
+    },
+  )
+
+  t.test(
+    'memoization works with identical content but different references',
+    t => {
+      const manifest1 = {
+        name: 'identical',
+        version: '1.0.0',
+        funding: 'https://github.com/sponsors/user',
+      }
+
+      // Create an identical manifest with different object reference
+      const manifest2 = {
+        name: 'identical',
+        version: '1.0.0',
+        funding: 'https://github.com/sponsors/user',
+      }
+
+      const normalized1 = normalizeManifest(manifest1)
+      const normalized2 = normalizeManifest(manifest2)
+
+      // Even though content is identical, different object references should not share cache
+      t.not(
+        normalized1,
+        normalized2,
+        'different object references should not share cache',
+      )
+
+      // But they should have same structure
+      t.same(normalized1.name, normalized2.name)
+      t.same(normalized1.funding, normalized2.funding)
+
+      t.end()
+    },
+  )
+
   t.end()
 })
 
