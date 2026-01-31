@@ -155,11 +155,27 @@ const findCompatibleResolution = (
   _peer?: boolean,
 ) => {
   const candidates = graph.nodesByName.get(spec.final.name)
-  let existingNode = graph.findResolution(
-    spec,
-    fromNode,
-    queryModifier,
-  )
+
+  // FIX: Prefer existing edge target if it satisfies the spec.
+  // This ensures lockfile resolutions are preserved when still valid,
+  // rather than potentially picking a different satisfying version.
+  const existingEdge = fromNode.edgesOut.get(spec.name)
+  let existingNode: Node | undefined
+  if (
+    existingEdge?.to &&
+    !existingEdge.to.detached &&
+    satisfies(
+      existingEdge.to.id,
+      spec.final,
+      fromNode.location,
+      graph.projectRoot,
+      graph.monorepo,
+    )
+  ) {
+    existingNode = existingEdge.to
+  } else {
+    existingNode = graph.findResolution(spec, fromNode, queryModifier)
+  }
 
   let peerCompatResult =
     existingNode ?
