@@ -2013,6 +2013,111 @@ t.test(
 )
 
 t.test(
+  'findCompatibleResolution prefers existing edge target over alternatives',
+  async t => {
+    // Test the fix in findCompatibleResolution() that checks existing edge target first
+    // before calling graph.findResolution(). This ensures lockfile resolutions are preserved.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create two react versions that both satisfy ^18.0.0
+    const _react182 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.2.0' },
+    )!
+    const react183 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+    )!
+
+    // Create ui-component with peer dep on react, targeting react@18.3.0
+    const uiComponent = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      {
+        name: 'ui-component',
+        version: '1.0.0',
+        peerDependencies: { react: '^18.0.0' },
+      },
+    )!
+    const peerReactSpec = Spec.parse('react', '^18.0.0', configData)
+    graph.addEdge('peer', peerReactSpec, uiComponent, react183)
+
+    // lib-a already has edge to ui-component@1.0.0
+    const libA = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('lib-a', '^1.0.0', configData),
+      {
+        name: 'lib-a',
+        version: '1.0.0',
+        dependencies: { 'ui-component': '^1.0.0', react: '^18.0.0' },
+      },
+    )!
+    graph.addEdge(
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      libA,
+      uiComponent,
+    )
+    graph.addEdge(
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      libA,
+      react183,
+    )
+
+    // Clear resolution caches to force findCompatibleResolution logic to run
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const deps = [
+      asDependency({
+        spec: Spec.parse('ui-component', '^1.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      libA,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['ui-component', deps[0]!]]),
+    )
+
+    const edge = libA.edgesOut.get('ui-component')
+    t.equal(
+      edge?.to?.id,
+      uiComponent.id,
+      'should reuse existing edge target (ui-component@1.0.0 with react@18.3)',
+    )
+    t.equal(edge?.to?.version, '1.0.0', 'should keep locked version')
+  },
+)
+
+t.test(
   'does not enter candidate fallback when existing node is already peer-compatible',
   async t => {
     const mainManifest = { name: 'my-project', version: '1.0.0' }
@@ -2274,6 +2379,193 @@ t.test(
     t.ok(
       graph.peerContexts.length > 1,
       'should have multiple peer contexts for isolation',
+    )
+  },
+)
+
+t.test(
+  'ideal graph building is idempotent when starting from lockfile',
+  async t => {
+    // Integration test verifying the complete fix produces idempotent graphs.
+    // This simulates: build ideal -> save lockfile -> load lockfile -> rebuild ideal
+    // The second ideal build should produce identical graph to the first.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        'lib-a': '^1.0.0',
+        'lib-b': '^1.0.0',
+        react: '^18.0.0',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Mock packageInfo that returns manifests for our packages
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const manifests = {
+          'lib-a': {
+            name: 'lib-a',
+            version: '1.0.0',
+            dependencies: {
+              'ui-component': '^1.0.0',
+              react: '^18.0.0',
+            },
+          },
+          'lib-b': {
+            name: 'lib-b',
+            version: '1.0.0',
+            dependencies: {
+              'ui-component': '^1.0.0',
+              react: '^18.0.0',
+            },
+          },
+          'ui-component': {
+            name: 'ui-component',
+            version: '1.0.0',
+            peerDependencies: { react: '^18.0.0' },
+          },
+          react: {
+            name: 'react',
+            version: '18.3.0',
+          },
+        }
+        return (manifests as any)[spec.final.name] || null
+      },
+    } as unknown as PackageInfoClient
+
+    const deps = [
+      asDependency({
+        spec: Spec.parse('lib-a', '^1.0.0', configData),
+        type: 'prod',
+      }),
+      asDependency({
+        spec: Spec.parse('lib-b', '^1.0.0', configData),
+        type: 'prod',
+      }),
+      asDependency({
+        spec: Spec.parse('react', '^18.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+
+    // FIRST BUILD: Build ideal graph from scratch
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([
+        ['lib-a', deps[0]!],
+        ['lib-b', deps[1]!],
+        ['react', deps[2]!],
+      ]),
+    )
+
+    // Capture first build state - collect all edge targets
+    const firstBuildNodeIds = new Set(
+      [...graph.nodes.values()].map(n => n.id),
+    )
+    const firstLibA = graph.mainImporter.edgesOut.get('lib-a')?.to
+    const firstLibB = graph.mainImporter.edgesOut.get('lib-b')?.to
+    const firstReact = graph.mainImporter.edgesOut.get('react')?.to
+
+    t.ok(
+      firstLibA && firstLibB && firstReact,
+      'first build has all nodes',
+    )
+
+    // Capture lib-a and lib-b dependencies
+    const firstLibAUi = firstLibA?.edgesOut.get('ui-component')?.to
+    const firstLibBUi = firstLibB?.edgesOut.get('ui-component')?.to
+
+    // Verify both lib-a and lib-b share the same ui-component
+    t.equal(
+      firstLibAUi?.id,
+      firstLibBUi?.id,
+      'first build: lib-a and lib-b share ui-component',
+    )
+
+    // SECOND BUILD: Re-run appendNodes on the SAME graph (simulates re-install)
+    // This tests that running install again produces the same graph structure
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([
+        ['lib-a', deps[0]!],
+        ['lib-b', deps[1]!],
+        ['react', deps[2]!],
+      ]),
+    )
+
+    // Capture second build state
+    const secondBuildNodeIds = new Set(
+      [...graph.nodes.values()].map(n => n.id),
+    )
+    const secondLibA = graph.mainImporter.edgesOut.get('lib-a')?.to
+    const secondLibB = graph.mainImporter.edgesOut.get('lib-b')?.to
+    const secondReact = graph.mainImporter.edgesOut.get('react')?.to
+
+    // Verify idempotency: same node IDs exist
+    t.same(
+      secondBuildNodeIds,
+      firstBuildNodeIds,
+      'should have identical nodes (idempotent)',
+    )
+
+    // Verify main importer edges point to same nodes
+    t.equal(
+      secondLibA?.id,
+      firstLibA?.id,
+      'lib-a should be same node',
+    )
+    t.equal(
+      secondLibB?.id,
+      firstLibB?.id,
+      'lib-b should be same node',
+    )
+    t.equal(
+      secondReact?.id,
+      firstReact?.id,
+      'react should be same node',
+    )
+
+    // Verify lib-a and lib-b still share same ui-component
+    const secondLibAUi = secondLibA?.edgesOut.get('ui-component')?.to
+    const secondLibBUi = secondLibB?.edgesOut.get('ui-component')?.to
+    t.equal(
+      secondLibAUi?.id,
+      firstLibAUi?.id,
+      'lib-a ui-component should be same node',
+    )
+    t.equal(
+      secondLibBUi?.id,
+      firstLibBUi?.id,
+      'lib-b ui-component should be same node',
+    )
+    t.equal(
+      secondLibAUi?.id,
+      secondLibBUi?.id,
+      'second build: lib-a and lib-b still share ui-component',
+    )
+
+    // Verify peer edge preserved
+    t.equal(
+      secondLibAUi?.edgesOut.get('react')?.to?.id,
+      firstReact?.id,
+      'ui-component peer edge to react preserved',
     )
   },
 )

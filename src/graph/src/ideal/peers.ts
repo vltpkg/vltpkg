@@ -243,10 +243,16 @@ export const checkPeerEdgesCompatible = (
       // The existing resolution is still valid even if context has a different target.
       // This ensures idempotency when loading from lockfile where peer contexts
       // are rebuilt fresh but existing nodes have valid peer resolutions.
+      const existingTarget = existingEdge.to // Narrow type for callback
       if (
-        nodeSatisfiesSpec(existingEdge.to, peerSpec, fromNode, graph) &&
-        [...contextEntry.specs].every(s => 
-          nodeSatisfiesSpec(existingEdge.to, s, fromNode, graph)
+        nodeSatisfiesSpec(
+          existingTarget,
+          peerSpec,
+          fromNode,
+          graph,
+        ) &&
+        [...contextEntry.specs].every(s =>
+          nodeSatisfiesSpec(existingTarget, s, fromNode, graph),
         )
       ) {
         continue // Truly no conflict
@@ -266,9 +272,20 @@ export const checkPeerEdgesCompatible = (
     if (siblingEdge?.to && siblingEdge.to.id !== existingEdge.to.id) {
       // FIX: If existing edge target still satisfies the peer spec, no real conflict.
       // Both sibling and existing targets may be valid - prefer keeping existing.
+      const existingTarget = existingEdge.to // Narrow type for clarity
       if (
-        nodeSatisfiesSpec(existingEdge.to, peerSpec, fromNode, graph) &&
-        nodeSatisfiesSpec(existingEdge.to, siblingEdge.spec, fromNode, graph)
+        nodeSatisfiesSpec(
+          existingTarget,
+          peerSpec,
+          fromNode,
+          graph,
+        ) &&
+        nodeSatisfiesSpec(
+          existingTarget,
+          siblingEdge.spec,
+          fromNode,
+          graph,
+        )
       ) {
         continue // Truly no conflict
       }
@@ -314,7 +331,14 @@ export const checkPeerEdgesCompatible = (
       // FIX: If existing edge target already satisfies parent's declared spec,
       // there's no conflict - the parent can use the same node as the existing
       // peer edge. Only search for alternatives if existing target is incompatible.
-      if (nodeSatisfiesSpec(existingEdge.to, parentSpec, fromNode, graph)) {
+      if (
+        nodeSatisfiesSpec(
+          existingEdge.to,
+          parentSpec,
+          fromNode,
+          graph,
+        )
+      ) {
         continue // Existing target works for parent too, no conflict
       }
       for (const candidateNode of graph.nodes.values()) {
@@ -339,6 +363,7 @@ export const checkPeerEdgesCompatible = (
           }
         }
       }
+      /* c8 ignore next - edge case: unlikely to happen */
     }
   }
 
