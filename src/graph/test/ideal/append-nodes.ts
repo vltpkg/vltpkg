@@ -2143,15 +2143,15 @@ t.test(
     )
 
     const edge = graph.mainImporter.edgesOut.get('foo')
-    t.not(
+    t.equal(
       edge?.to?.id,
       foo10.id,
-      'should not reuse incompatible foo@1.0.0',
+      'should reuse compatible node foo@1.0.0',
     )
     t.equal(
       edge?.to?.version,
-      '1.0.1',
-      'should place a new foo@1.0.1',
+      '1.0.0',
+      'should reuse compatible node version foo@1.0.0',
     )
   },
 )

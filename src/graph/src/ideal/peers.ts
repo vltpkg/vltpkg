@@ -243,8 +243,13 @@ export const checkPeerEdgesCompatible = (
       // The existing resolution is still valid even if context has a different target.
       // This ensures idempotency when loading from lockfile where peer contexts
       // are rebuilt fresh but existing nodes have valid peer resolutions.
-      if (nodeSatisfiesSpec(existingEdge.to, peerSpec, fromNode, graph)) {
-        continue // Existing target still valid, no conflict
+      if (
+        nodeSatisfiesSpec(existingEdge.to, peerSpec, fromNode, graph) &&
+        [...contextEntry.specs].every(s => 
+          nodeSatisfiesSpec(existingEdge.to, s, fromNode, graph)
+        )
+      ) {
+        continue // Truly no conflict
       }
       const result = buildIncompatibleResult(
         contextEntry.target,
@@ -261,8 +266,11 @@ export const checkPeerEdgesCompatible = (
     if (siblingEdge?.to && siblingEdge.to.id !== existingEdge.to.id) {
       // FIX: If existing edge target still satisfies the peer spec, no real conflict.
       // Both sibling and existing targets may be valid - prefer keeping existing.
-      if (nodeSatisfiesSpec(existingEdge.to, peerSpec, fromNode, graph)) {
-        continue // Existing target still valid, no conflict
+      if (
+        nodeSatisfiesSpec(existingEdge.to, peerSpec, fromNode, graph) &&
+        nodeSatisfiesSpec(existingEdge.to, siblingEdge.spec, fromNode, graph)
+      ) {
+        continue // Truly no conflict
       }
       const result = buildIncompatibleResult(
         siblingEdge.to,
