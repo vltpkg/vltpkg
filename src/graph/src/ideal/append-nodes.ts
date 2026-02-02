@@ -154,7 +154,13 @@ const findCompatibleResolution = (
   queryModifier?: string,
   _peer?: boolean,
 ) => {
-  const candidates = graph.nodesByName.get(spec.final.name)
+  // Hoist invariants once
+  const fromLoc = fromNode.location
+  const projectRoot = graph.projectRoot
+  const monorepo = graph.monorepo
+  const final = spec.final
+  const satisfiesFinal = (n: Node) =>
+    satisfies(n.id, final, fromLoc, projectRoot, monorepo)
 
   // Prefer existing edge target if it satisfies the spec.
   // This ensures lockfile resolutions are preserved when still valid,
@@ -164,13 +170,7 @@ const findCompatibleResolution = (
   if (
     existingEdge?.to &&
     !existingEdge.to.detached &&
-    satisfies(
-      existingEdge.to.id,
-      spec.final,
-      fromNode.location,
-      graph.projectRoot,
-      graph.monorepo,
-    )
+    satisfiesFinal(existingEdge.to)
   ) {
     existingNode = existingEdge.to
   } else {
@@ -188,37 +188,26 @@ const findCompatibleResolution = (
     : { compatible: true }
 
   // CANDIDATE FALLBACK: If first candidate is peer-incompatible, try others
-  if (
-    existingNode &&
-    !peerCompatResult.compatible &&
-    candidates &&
-    candidates.size > 1
-  ) {
-    for (const candidate of candidates) {
-      if (candidate === existingNode) continue
-      if (candidate.detached) continue
-      if (
-        !satisfies(
-          candidate.id,
-          spec.final,
-          fromNode.location,
-          graph.projectRoot,
-          graph.monorepo,
-        )
-      ) {
-        continue
-      }
+  // Lazy-load candidates only when fallback needed
+  if (existingNode && !peerCompatResult.compatible) {
+    const candidates = graph.nodesByName.get(final.name)
+    if (candidates && candidates.size > 1) {
+      for (const candidate of candidates) {
+        if (candidate === existingNode) continue
+        if (candidate.detached) continue
+        if (!satisfiesFinal(candidate)) continue
 
-      const compat = checkPeerEdgesCompatible(
-        candidate,
-        fromNode,
-        peerContext,
-        graph,
-      )
-      if (compat.compatible) {
-        existingNode = candidate
-        peerCompatResult = compat
-        break
+        const compat = checkPeerEdgesCompatible(
+          candidate,
+          fromNode,
+          peerContext,
+          graph,
+        )
+        if (compat.compatible) {
+          existingNode = candidate
+          peerCompatResult = compat
+          break
+        }
       }
     }
   }
