@@ -159,8 +159,25 @@ const findCompatibleResolution = (
   const projectRoot = graph.projectRoot
   const monorepo = graph.monorepo
   const final = spec.final
-  const satisfiesFinal = (n: Node) =>
-    satisfies(n.id, final, fromLoc, projectRoot, monorepo)
+  // Memoize satisfies() results per-node within this resolution attempt
+  const satisfiesCache = new Map<string, boolean>()
+  const satisfiesFinal = (n: Node) => {
+    const key = n.id
+    const cached = satisfiesCache.get(key)
+    /* c8 ignore next 3 - optimization: cache hit when same node checked multiple times */
+    if (cached !== undefined) {
+      return cached
+    }
+    const result = satisfies(
+      key,
+      final,
+      fromLoc,
+      projectRoot,
+      monorepo,
+    )
+    satisfiesCache.set(key, result)
+    return result
+  }
 
   // Prefer existing edge target if it satisfies the spec.
   // This ensures lockfile resolutions are preserved when still valid,
