@@ -2422,7 +2422,7 @@ t.test(
 t.test(
   'candidate fallback selects peer-compatible node when first candidate is incompatible',
   async t => {
-    // Test that candidate fallback loop (L197-224) is triggered when first candidate
+    // Test that candidate fallback loop is triggered when first candidate
     // has genuinely incompatible peer edges that don't satisfy the required spec.
     // Setup: react@17 vs react@18, foo@1.0.0 with react@17 peer (incompatible),
     // foo@1.0.1 with react@18 peer (compatible). Should skip foo@1.0.0, pick foo@1.0.1.
