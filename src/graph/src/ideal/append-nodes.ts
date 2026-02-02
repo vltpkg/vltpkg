@@ -156,7 +156,7 @@ const findCompatibleResolution = (
 ) => {
   const candidates = graph.nodesByName.get(spec.final.name)
 
-  // FIX: Prefer existing edge target if it satisfies the spec.
+  // Prefer existing edge target if it satisfies the spec.
   // This ensures lockfile resolutions are preserved when still valid,
   // rather than potentially picking a different satisfying version.
   const existingEdge = fromNode.edgesOut.get(spec.name)

@@ -270,7 +270,7 @@ export const checkPeerEdgesCompatible = (
     // CHECK 2: Does parent already have an edge to a different version?
     const siblingEdge = fromNode.edgesOut.get(peerName)
     if (siblingEdge?.to && siblingEdge.to.id !== existingEdge.to.id) {
-      // FIX: If existing edge target still satisfies the peer spec, no real conflict.
+      // If existing edge target still satisfies the peer spec, no real conflict.
       // Both sibling and existing targets may be valid - prefer keeping existing.
       const existingTarget = existingEdge.to // Narrow type for clarity
       if (
@@ -328,7 +328,7 @@ export const checkPeerEdgesCompatible = (
         fromNode,
         graph,
       )
-      // FIX: If existing edge target already satisfies parent's declared spec,
+      // If existing edge target already satisfies parent's declared spec,
       // there's no conflict - the parent can use the same node as the existing
       // peer edge. Only search for alternatives if existing target is incompatible.
       if (
