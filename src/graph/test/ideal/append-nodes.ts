@@ -2167,7 +2167,7 @@ t.test(
 )
 
 t.test(
-  'does not enter candidate fallback when only one candidate exists (size=1)',
+  'skips candidate fallback when existing node peer edges satisfy spec despite context mismatch',
   async t => {
     const mainManifest = { name: 'my-project', version: '1.0.0' }
     const graph = new Graph({
@@ -2257,6 +2257,169 @@ t.test(
       edge?.to?.version,
       '1.0.0',
       'should reuse compatible node version foo@1.0.0',
+    )
+  },
+)
+
+t.test(
+  'candidate fallback selects peer-compatible node when first candidate is incompatible',
+  async t => {
+    // Test that candidate fallback loop (L197-224) is triggered when first candidate
+    // has genuinely incompatible peer edges that don't satisfy the required spec.
+    // Setup: react@17 vs react@18, foo@1.0.0 with react@17 peer (incompatible),
+    // foo@1.0.1 with react@18 peer (compatible). Should skip foo@1.0.0, pick foo@1.0.1.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { react: '^18.0.0', foo: '^1.0.0' },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create react@17.0.0 (doesn't satisfy ^18.0.0) and react@18.3.0 (satisfies)
+    // Create intermediate node to anchor react@17 and foo@1.0.0
+    const libOld = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('lib-old', '^1.0.0', configData),
+      { name: 'lib-old', version: '1.0.0' },
+    )!
+
+    const react17 = graph.placePackage(
+      libOld, // ← Now nested under lib-old
+      'prod',
+      Spec.parse('react', '^17.0.0', configData),
+      { name: 'react', version: '17.0.0' },
+    )!
+
+    const react18 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+    )!
+
+    // Create foo@1.0.0 with peer edge to react@17 (INCOMPATIBLE with ^18.0.0)
+    const foo10 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '>=17.0.0' },
+      },
+    )!
+
+    // Place react@17 as a peer dependency of foo@1.0.0
+    graph.placePackage(
+      foo10,
+      'peer',
+      Spec.parse('react', '^17.0.0', configData),
+      { name: 'react', version: '17.0.0' },
+      react17.id,
+    )
+
+    // Create foo@1.0.1 with peer edge to react@18 (COMPATIBLE)
+    const foo101 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.1',
+        peerDependencies: { react: '>=17.0.0' },
+      },
+    )!
+    graph.placePackage(
+      foo101,
+      'peer',
+      Spec.parse('react', '>=17.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+      react18.id,
+    )
+
+    // CRITICAL: Create existing edge from mainImporter to foo@1.0.0 AFTER both nodes exist
+    // This ensures findCompatibleResolution finds foo@1.0.0 as the existingNode
+    // Must be done after foo@1.0.1 is created, otherwise the edge might get updated
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '>=17.0.0' },
+      },
+      foo10.id,
+    )
+
+    // Setup peer context with react@18 requirement
+    const peerContext = graph.peerContexts[0]!
+    peerContext.set('react', {
+      active: true,
+      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      target: react18,
+      type: 'prod',
+      contextDependents: new Set(),
+    })
+
+    // Clear resolutions cache to force findCompatibleResolution logic to run
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+    // Verify setup before appendNodes
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      foo10.id,
+      'setup: main importer initially points to foo@1.0.0',
+    )
+    t.equal(
+      foo10.edgesOut.get('react')?.to?.id,
+      react17.id,
+      'setup: foo@1.0.0 peer edge points to react@17',
+    )
+    t.equal(
+      foo101.edgesOut.get('react')?.to?.id,
+      react18.id,
+      'setup: foo@1.0.1 peer edge points to react@18',
+    )
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    const edge = graph.mainImporter.edgesOut.get('foo')
+    t.equal(
+      edge?.to?.id,
+      foo101.id,
+      'should skip incompatible foo@1.0.0, pick compatible foo@1.0.1',
+    )
+    t.equal(
+      edge?.to?.version,
+      '1.0.1',
+      'should select foo@1.0.1 (peer-compatible candidate)',
     )
   },
 )
