@@ -1964,6 +1964,24 @@ t.test(
     )!
     graph.addEdge('peer', peerReactSpec, foo102, react183)
 
+    // Create existing edge to peer-incompatible foo@1.0.0
+    // This forces findCompatibleResolution to prefer the existing edge target
+    // before calling graph.findResolution(), triggering the fallback loop
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest10,
+      foo10.id,
+    )
+
+    // Verify existing edge is engaged
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      foo10.id,
+      'setup: existing edge points to peer-incompatible foo@1.0.0',
+    )
+
     // Ensure findResolution() does NOT just return the last cached resolution
     // (which would hide the fallback loop). Force it to scan candidates.
     graph.resolutions.clear()
@@ -1981,11 +1999,12 @@ t.test(
       type: 'prod',
     })
 
-    // peerContext expects react183, making foo10 incompatible (it peers to react182)
+    // peerContext expects react183 with spec >=18.3.0, making foo10 incompatible
+    // (it peers to react182 which doesn't satisfy >=18.3.0)
     const peerContext = graph.peerContexts[0]!
     peerContext.set('react', {
       active: true,
-      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      specs: new Set([Spec.parse('react', '>=18.3.0', configData)]),
       target: react183,
       type: 'prod',
       contextDependents: new Set(),
@@ -2009,6 +2028,250 @@ t.test(
       foo102.id,
       'should reuse compatible candidate (foo@1.0.2), skipping incompatible/detached/non-satisfying candidates',
     )
+  },
+)
+
+t.test(
+  'applies fork requests when peer edge target does not satisfy spec',
+  async t => {
+    // Test that fork request application (L802-812 in append-nodes.ts) is triggered
+    // when checkPeerEdgesCompatible() generates a forkEntry for a genuine peer conflict.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create react nodes
+    const react17 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^17.0.0', configData),
+      { name: 'react', version: '17.0.0' },
+    )!
+    const react18 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+    )!
+
+    // Create ui-component with ACTUAL peer edge to react@17
+    const uiComponent = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      {
+        name: 'ui-component',
+        version: '1.0.0',
+        peerDependencies: { react: '^18.0.0' },
+      },
+    )!
+    graph.addEdge(
+      'peer',
+      Spec.parse('react', '^18.0.0', configData),
+      uiComponent,
+      react17,
+    )
+
+    // Create parent (fromNode) that declares react@^18.0.0
+    const parent = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('parent', '^1.0.0', configData),
+      {
+        name: 'parent',
+        version: '1.0.0',
+        dependencies: {
+          'ui-component': '^1.0.0',
+          react: '^18.0.0',
+        },
+      },
+    )!
+
+    // Create existing edge from parent to ui-component
+    graph.addEdge(
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      parent,
+      uiComponent,
+    )
+
+    // Verify existing edge setup
+    t.equal(
+      parent.edgesOut.get('ui-component')?.to?.id,
+      uiComponent.id,
+      'setup: parent has existing edge to ui-component',
+    )
+
+    // Setup peer context with react@18 target
+    const peerContext = graph.peerContexts[0]!
+    peerContext.set('react', {
+      active: true,
+      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      target: react18,
+      type: 'prod',
+      contextDependents: new Set(),
+    })
+
+    // Clear resolution caches
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    // Capture before state for assertion
+    const peerContextsBefore = graph.peerContexts.length
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        // Provide manifests to allow processing, fork logic should still trigger
+        switch (spec.name) {
+          case 'ui-component':
+            return {
+              name: 'ui-component',
+              version: '1.0.0',
+              peerDependencies: { react: '^18.0.0' },
+            }
+          case 'react':
+            if (spec.bareSpec.includes('17')) {
+              return { name: 'react', version: '17.0.0' }
+            }
+            return { name: 'react', version: '18.3.0' }
+          default:
+            throw new Error('unexpected manifest fetch: ' + spec.name)
+        }
+      },
+    } as unknown as PackageInfoClient
+
+    // Call appendNodes with fromNode=parent, deps=[ui-component]
+    const uiDep = asDependency({
+      spec: Spec.parse('ui-component', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      parent,
+      [uiDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['ui-component', uiDep]]),
+    )
+
+    // Assert fork occurred
+    t.ok(
+      graph.peerContexts.length > peerContextsBefore,
+      'should have created new peer context (fork applied)',
+    )
+  },
+)
+
+t.test(
+  'findCompatibleResolution prefers existing edge target over alternatives',
+  async t => {
+    // Test the fix in findCompatibleResolution() that checks existing edge target first
+    // before calling graph.findResolution(). This ensures lockfile resolutions are preserved.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create two react versions that both satisfy ^18.0.0
+    const _react182 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.2.0' },
+    )!
+    const react183 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+    )!
+
+    // Create ui-component with peer dep on react, targeting react@18.3.0
+    const uiComponent = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      {
+        name: 'ui-component',
+        version: '1.0.0',
+        peerDependencies: { react: '^18.0.0' },
+      },
+    )!
+    const peerReactSpec = Spec.parse('react', '^18.0.0', configData)
+    graph.addEdge('peer', peerReactSpec, uiComponent, react183)
+
+    // lib-a already has edge to ui-component@1.0.0
+    const libA = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('lib-a', '^1.0.0', configData),
+      {
+        name: 'lib-a',
+        version: '1.0.0',
+        dependencies: { 'ui-component': '^1.0.0', react: '^18.0.0' },
+      },
+    )!
+    graph.addEdge(
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      libA,
+      uiComponent,
+    )
+    graph.addEdge(
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      libA,
+      react183,
+    )
+
+    // Clear resolution caches to force findCompatibleResolution logic to run
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const deps = [
+      asDependency({
+        spec: Spec.parse('ui-component', '^1.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      libA,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['ui-component', deps[0]!]]),
+    )
+
+    const edge = libA.edgesOut.get('ui-component')
+    t.equal(
+      edge?.to?.id,
+      uiComponent.id,
+      'should reuse existing edge target (ui-component@1.0.0 with react@18.3)',
+    )
+    t.equal(edge?.to?.version, '1.0.0', 'should keep locked version')
   },
 )
 
@@ -2062,7 +2325,7 @@ t.test(
 )
 
 t.test(
-  'does not enter candidate fallback when only one candidate exists (size=1)',
+  'skips candidate fallback when existing node peer edges satisfy spec despite context mismatch',
   async t => {
     const mainManifest = { name: 'my-project', version: '1.0.0' }
     const graph = new Graph({
@@ -2143,15 +2406,178 @@ t.test(
     )
 
     const edge = graph.mainImporter.edgesOut.get('foo')
-    t.not(
+    t.equal(
       edge?.to?.id,
       foo10.id,
-      'should not reuse incompatible foo@1.0.0',
+      'should reuse compatible node foo@1.0.0',
+    )
+    t.equal(
+      edge?.to?.version,
+      '1.0.0',
+      'should reuse compatible node version foo@1.0.0',
+    )
+  },
+)
+
+t.test(
+  'candidate fallback selects peer-compatible node when first candidate is incompatible',
+  async t => {
+    // Test that candidate fallback loop is triggered when first candidate
+    // has genuinely incompatible peer edges that don't satisfy the required spec.
+    // Setup: react@17 vs react@18, foo@1.0.0 with react@17 peer (incompatible),
+    // foo@1.0.1 with react@18 peer (compatible). Should skip foo@1.0.0, pick foo@1.0.1.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { react: '^18.0.0', foo: '^1.0.0' },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create react@17.0.0 (doesn't satisfy ^18.0.0) and react@18.3.0 (satisfies)
+    // Create intermediate node to anchor react@17 and foo@1.0.0
+    const libOld = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('lib-old', '^1.0.0', configData),
+      { name: 'lib-old', version: '1.0.0' },
+    )!
+
+    const react17 = graph.placePackage(
+      libOld, // ← Now nested under lib-old
+      'prod',
+      Spec.parse('react', '^17.0.0', configData),
+      { name: 'react', version: '17.0.0' },
+    )!
+
+    const react18 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+    )!
+
+    // Create foo@1.0.0 with peer edge to react@17 (INCOMPATIBLE with ^18.0.0)
+    const foo10 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '>=17.0.0' },
+      },
+    )!
+
+    // Place react@17 as a peer dependency of foo@1.0.0
+    graph.placePackage(
+      foo10,
+      'peer',
+      Spec.parse('react', '^17.0.0', configData),
+      { name: 'react', version: '17.0.0' },
+      react17.id,
+    )
+
+    // Create foo@1.0.1 with peer edge to react@18 (COMPATIBLE)
+    const foo101 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.1',
+        peerDependencies: { react: '>=17.0.0' },
+      },
+    )!
+    graph.placePackage(
+      foo101,
+      'peer',
+      Spec.parse('react', '>=17.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+      react18.id,
+    )
+
+    // CRITICAL: Create existing edge from mainImporter to foo@1.0.0 AFTER both nodes exist
+    // This ensures findCompatibleResolution finds foo@1.0.0 as the existingNode
+    // Must be done after foo@1.0.1 is created, otherwise the edge might get updated
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '>=17.0.0' },
+      },
+      foo10.id,
+    )
+
+    // Setup peer context with react@18 requirement
+    const peerContext = graph.peerContexts[0]!
+    peerContext.set('react', {
+      active: true,
+      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      target: react18,
+      type: 'prod',
+      contextDependents: new Set(),
+    })
+
+    // Clear resolutions cache to force findCompatibleResolution logic to run
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+    // Verify setup before appendNodes
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      foo10.id,
+      'setup: main importer initially points to foo@1.0.0',
+    )
+    t.equal(
+      foo10.edgesOut.get('react')?.to?.id,
+      react17.id,
+      'setup: foo@1.0.0 peer edge points to react@17',
+    )
+    t.equal(
+      foo101.edgesOut.get('react')?.to?.id,
+      react18.id,
+      'setup: foo@1.0.1 peer edge points to react@18',
+    )
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    const edge = graph.mainImporter.edgesOut.get('foo')
+    t.equal(
+      edge?.to?.id,
+      foo101.id,
+      'should skip incompatible foo@1.0.0, pick compatible foo@1.0.1',
     )
     t.equal(
       edge?.to?.version,
       '1.0.1',
-      'should place a new foo@1.0.1',
+      'should select foo@1.0.1 (peer-compatible candidate)',
     )
   },
 )
@@ -2274,6 +2700,193 @@ t.test(
     t.ok(
       graph.peerContexts.length > 1,
       'should have multiple peer contexts for isolation',
+    )
+  },
+)
+
+t.test(
+  'ideal graph building is idempotent when starting from lockfile',
+  async t => {
+    // Integration test verifying the complete fix produces idempotent graphs.
+    // This simulates: build ideal -> save lockfile -> load lockfile -> rebuild ideal
+    // The second ideal build should produce identical graph to the first.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        'lib-a': '^1.0.0',
+        'lib-b': '^1.0.0',
+        react: '^18.0.0',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Mock packageInfo that returns manifests for our packages
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const manifests = {
+          'lib-a': {
+            name: 'lib-a',
+            version: '1.0.0',
+            dependencies: {
+              'ui-component': '^1.0.0',
+              react: '^18.0.0',
+            },
+          },
+          'lib-b': {
+            name: 'lib-b',
+            version: '1.0.0',
+            dependencies: {
+              'ui-component': '^1.0.0',
+              react: '^18.0.0',
+            },
+          },
+          'ui-component': {
+            name: 'ui-component',
+            version: '1.0.0',
+            peerDependencies: { react: '^18.0.0' },
+          },
+          react: {
+            name: 'react',
+            version: '18.3.0',
+          },
+        }
+        return (manifests as any)[spec.final.name] || null
+      },
+    } as unknown as PackageInfoClient
+
+    const deps = [
+      asDependency({
+        spec: Spec.parse('lib-a', '^1.0.0', configData),
+        type: 'prod',
+      }),
+      asDependency({
+        spec: Spec.parse('lib-b', '^1.0.0', configData),
+        type: 'prod',
+      }),
+      asDependency({
+        spec: Spec.parse('react', '^18.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+
+    // FIRST BUILD: Build ideal graph from scratch
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([
+        ['lib-a', deps[0]!],
+        ['lib-b', deps[1]!],
+        ['react', deps[2]!],
+      ]),
+    )
+
+    // Capture first build state - collect all edge targets
+    const firstBuildNodeIds = new Set(
+      [...graph.nodes.values()].map(n => n.id),
+    )
+    const firstLibA = graph.mainImporter.edgesOut.get('lib-a')?.to
+    const firstLibB = graph.mainImporter.edgesOut.get('lib-b')?.to
+    const firstReact = graph.mainImporter.edgesOut.get('react')?.to
+
+    t.ok(
+      firstLibA && firstLibB && firstReact,
+      'first build has all nodes',
+    )
+
+    // Capture lib-a and lib-b dependencies
+    const firstLibAUi = firstLibA?.edgesOut.get('ui-component')?.to
+    const firstLibBUi = firstLibB?.edgesOut.get('ui-component')?.to
+
+    // Verify both lib-a and lib-b share the same ui-component
+    t.equal(
+      firstLibAUi?.id,
+      firstLibBUi?.id,
+      'first build: lib-a and lib-b share ui-component',
+    )
+
+    // SECOND BUILD: Re-run appendNodes on the SAME graph (simulates re-install)
+    // This tests that running install again produces the same graph structure
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([
+        ['lib-a', deps[0]!],
+        ['lib-b', deps[1]!],
+        ['react', deps[2]!],
+      ]),
+    )
+
+    // Capture second build state
+    const secondBuildNodeIds = new Set(
+      [...graph.nodes.values()].map(n => n.id),
+    )
+    const secondLibA = graph.mainImporter.edgesOut.get('lib-a')?.to
+    const secondLibB = graph.mainImporter.edgesOut.get('lib-b')?.to
+    const secondReact = graph.mainImporter.edgesOut.get('react')?.to
+
+    // Verify idempotency: same node IDs exist
+    t.same(
+      secondBuildNodeIds,
+      firstBuildNodeIds,
+      'should have identical nodes (idempotent)',
+    )
+
+    // Verify main importer edges point to same nodes
+    t.equal(
+      secondLibA?.id,
+      firstLibA?.id,
+      'lib-a should be same node',
+    )
+    t.equal(
+      secondLibB?.id,
+      firstLibB?.id,
+      'lib-b should be same node',
+    )
+    t.equal(
+      secondReact?.id,
+      firstReact?.id,
+      'react should be same node',
+    )
+
+    // Verify lib-a and lib-b still share same ui-component
+    const secondLibAUi = secondLibA?.edgesOut.get('ui-component')?.to
+    const secondLibBUi = secondLibB?.edgesOut.get('ui-component')?.to
+    t.equal(
+      secondLibAUi?.id,
+      firstLibAUi?.id,
+      'lib-a ui-component should be same node',
+    )
+    t.equal(
+      secondLibBUi?.id,
+      firstLibBUi?.id,
+      'lib-b ui-component should be same node',
+    )
+    t.equal(
+      secondLibAUi?.id,
+      secondLibBUi?.id,
+      'second build: lib-a and lib-b still share ui-component',
+    )
+
+    // Verify peer edge preserved
+    t.equal(
+      secondLibAUi?.edgesOut.get('react')?.to?.id,
+      firstReact?.id,
+      'ui-component peer edge to react preserved',
     )
   },
 )

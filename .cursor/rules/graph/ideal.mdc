@@ -60,9 +60,11 @@ actions:
     message: |
       ## Node Appending and Reuse (`append-nodes.ts`, `refresh-ideal-graph.ts`)
 
-      - Resolves dependency specs to nodes by first attempting `graph.findResolution()` to reuse existing nodes that satisfy the spec.
+      - **Existing Edge Preference**: First checks if the existing edge target (from lockfile) satisfies the spec — preserves lockfile resolutions for idempotency.
+      - Resolves dependency specs to nodes by attempting `graph.findResolution()` to reuse existing nodes that satisfy the spec.
       - **Peer Compatibility Check**: Before reusing a node, checks if its peer edges are compatible with the current peer context via `checkPeerEdgesCompatible()`.
-      - **Candidate Fallback**: If the first satisfying node is peer-incompatible, tries other candidates deterministically until a compatible one is found.
+      - **Idempotency in Peer Checks**: `checkPeerEdgesCompatible()` now checks if existing edge targets satisfy specs despite context/sibling mismatches — avoids unnecessary forking when existing resolutions are valid.
+      - **Candidate Fallback**: If the first satisfying node is peer-incompatible, lazy-loads candidates and tries others deterministically until a compatible one is found.
       - When a satisfying node is not found, fetches manifests/artifacts via `@vltpkg/package-info`, selects appropriate versions (respecting platform/engine constraints), and places new nodes with correct flags.
       - Recursively descends into each newly placed node's dependencies, applying `@vltpkg/spec` parsing and honoring modifiers if present.
       - Ensures added nodes have consistent `registry`, `resolved`, and `integrity` fields as available.
@@ -122,7 +124,8 @@ actions:
       - Modifiers integration — If `modifiers` are provided, selectors can adjust specs during resolution; Ideal builder will then record modifier info on nodes for downstream awareness.
 
       ### Behavior and Guarantees
-      - Reuses nodes whenever they satisfy requested specs.
+      - **Idempotency**: Re-running ideal build on an existing lockfile produces identical graph structure.
+      - Reuses nodes whenever they satisfy requested specs, preferring existing edge targets.
       - Expands transitive dependencies recursively using resolved manifests.
       - Produces a graph ready for hoisting and reification, with stable, default locations set where applicable.
 
@@ -174,7 +177,7 @@ examples:
 
 metadata:
   priority: high
-  version: 1.3
+  version: 1.4
   tags:
     - graph
     - ideal
@@ -182,6 +185,7 @@ metadata:
     - manifests
     - modifiers
     - performance
+    - idempotency
   related_rules:
     - graph_workspace_architecture
     - graph_data_structure

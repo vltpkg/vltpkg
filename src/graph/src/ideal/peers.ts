@@ -205,7 +205,44 @@ export const checkPeerEdgesCompatible = (
     return { compatible: true }
   }
 
-  for (const [peerName, peerBareSpec] of Object.entries(peerDeps)) {
+  // Per-call memoization: avoid repeated satisfies() calls with identical args
+  const parseOpts = {
+    ...graph.mainImporter.options,
+    registry: fromNode.registry,
+  }
+  const fromLocation = fromNode.location
+  const projectRoot = fromNode.projectRoot
+  const monorepo = graph.monorepo
+  const satisfiesMemo = new Map<string, boolean>()
+  const satisfiesNodeSpec = (node: Node, spec: Spec): boolean => {
+    const key = `${node.id}\0${spec.type}\0${spec.bareSpec}\0${String(spec.final)}`
+    let result = satisfiesMemo.get(key)
+    if (result === undefined) {
+      result = satisfies(
+        node.id,
+        spec,
+        fromLocation,
+        projectRoot,
+        monorepo,
+      )
+      satisfiesMemo.set(key, result)
+    }
+    return result
+  }
+  const nodeSatisfiesAll = (
+    node: Node,
+    specs: Iterable<Spec>,
+  ): boolean => {
+    for (const s of specs) {
+      if (!satisfiesNodeSpec(node, s)) return false
+    }
+    return true
+  }
+
+  for (const peerName in peerDeps) {
+    const peerBareSpec = peerDeps[peerName]
+    /* c8 ignore next - peerDeps[peerName] is always defined when iterating */
+    if (!peerBareSpec) continue
     const existingEdge = existingNode.edgesOut.get(peerName)
 
     // CHECK 0: Reject reuse if peer edge doesn't exist yet (node unprocessed).
@@ -220,12 +257,7 @@ export const checkPeerEdgesCompatible = (
     // Dangling peer edge (edge exists but unresolved) - skip, nothing to conflict with
     if (!existingEdge.to) continue
 
-    const peerSpec = parseSpec(
-      peerName,
-      peerBareSpec,
-      fromNode,
-      graph,
-    )
+    const peerSpec = Spec.parse(peerName, peerBareSpec, parseOpts)
 
     // CHECK 1: Does peer context have a different target for this peer?
     const contextEntry = peerContext.get(peerName)
@@ -239,6 +271,21 @@ export const checkPeerEdgesCompatible = (
         graph,
       )
     ) {
+      // If existing edge target still satisfies the peer spec, no real conflict.
+      // The existing resolution is still valid even if context has a different target.
+      // This ensures idempotency when loading from lockfile where peer contexts
+      // are rebuilt fresh but existing nodes have valid peer resolutions.
+      const existingTarget = existingEdge.to
+      const existingTargetSatisfiesPeer = satisfiesNodeSpec(
+        existingTarget,
+        peerSpec,
+      )
+      if (
+        existingTargetSatisfiesPeer &&
+        nodeSatisfiesAll(existingTarget, contextEntry.specs)
+      ) {
+        continue // Truly no conflict
+      }
       const result = buildIncompatibleResult(
         contextEntry.target,
         peerSpec,
@@ -252,6 +299,19 @@ export const checkPeerEdgesCompatible = (
     // CHECK 2: Does parent already have an edge to a different version?
     const siblingEdge = fromNode.edgesOut.get(peerName)
     if (siblingEdge?.to && siblingEdge.to.id !== existingEdge.to.id) {
+      // If existing edge target still satisfies the peer spec, no real conflict.
+      // Both sibling and existing targets may be valid - prefer keeping existing.
+      const existingTarget = existingEdge.to
+      const existingTargetSatisfiesPeer = satisfiesNodeSpec(
+        existingTarget,
+        peerSpec,
+      )
+      if (
+        existingTargetSatisfiesPeer &&
+        satisfiesNodeSpec(existingTarget, siblingEdge.spec)
+      ) {
+        continue // Truly no conflict
+      }
       const result = buildIncompatibleResult(
         siblingEdge.to,
         peerSpec,
@@ -285,33 +345,33 @@ export const checkPeerEdgesCompatible = (
     }
 
     if (declared && declaredType) {
-      const parentSpec = parseSpec(
-        peerName,
-        declared,
-        fromNode,
-        graph,
-      )
-      for (const candidateNode of graph.nodes.values()) {
-        if (
-          candidateNode.name === peerName &&
-          candidateNode.id !== existingEdge.to.id &&
-          nodeSatisfiesSpec(
-            candidateNode,
-            parentSpec,
-            fromNode,
-            graph,
-          ) &&
-          nodeSatisfiesSpec(candidateNode, peerSpec, fromNode, graph)
-        ) {
-          return {
-            compatible: false,
-            forkEntry: {
-              spec: peerSpec,
-              target: candidateNode,
-              type: shorten(declaredType),
-            },
+      const parentSpec = Spec.parse(peerName, declared, parseOpts)
+      // If existing edge target already satisfies parent's declared spec,
+      // there's no conflict - the parent can use the same node as the existing
+      // peer edge. Only search for alternatives if existing target is incompatible.
+      if (satisfiesNodeSpec(existingEdge.to, parentSpec)) {
+        continue // Existing target works for parent too, no conflict
+      }
+      // Use nodesByName (deterministic DepID order) instead of full graph scan
+      const candidates = graph.nodesByName.get(peerName)
+      if (candidates) {
+        for (const candidateNode of candidates) {
+          if (
+            candidateNode.id !== existingEdge.to.id &&
+            satisfiesNodeSpec(candidateNode, parentSpec) &&
+            satisfiesNodeSpec(candidateNode, peerSpec)
+          ) {
+            return {
+              compatible: false,
+              forkEntry: {
+                spec: peerSpec,
+                target: candidateNode,
+                type: shorten(declaredType),
+              },
+            }
           }
         }
+        /* c8 ignore next */
       }
     }
   }
