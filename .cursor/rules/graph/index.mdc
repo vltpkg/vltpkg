@@ -84,9 +84,11 @@ actions:
       - **Ideal Graphs** (Desired end state)
         - Entry point: `@graph/src/ideal/build.ts`
         - Starts from either a Virtual Graph (preferred) or falls back to an Actual Graph.
+        - **Idempotent**: Re-running on same lockfile produces identical graph structure.
         - Merges explicit `add`/`remove` requests with importer manifests via `get-importer-specs.ts`.
         - Resolves new nodes by fetching manifests/artifacts using `@vltpkg/package-info`, recursively expanding the graph.
         - Uses breadth-first processing with deterministic ordering in `append-nodes.ts` for reproducible builds.
+        - Prefers existing edge targets (lockfile resolutions) over alternatives when both satisfy specs.
         - Reuses existing nodes that satisfy specs to avoid unnecessary network calls.
         - Manages peer dependency contexts to handle version conflicts via `peers.ts`.
         - Supports early extraction of tarballs during graph construction for improved performance.
@@ -108,12 +110,15 @@ actions:
          - Sets default node locations
          - Waits for early extraction promises
       4. **`append-nodes.ts`** — Breadth-first dependency processing:
+         - `findCompatibleResolution()` — Prefers existing edge targets for idempotency, with memoized satisfies checks
          - `fetchManifestsForDeps()` — Parallel manifest fetching with peer compatibility checks
          - `processPlacementTasks()` — Places nodes, handles modifiers, triggers early extraction
          - Manages peer context lifecycle via `startPeerPlacement()`/`endPeerPlacement()`
          - Calls `postPlacementPeerCheck()` after each level for context forking and peer resolution
       5. **`peers.ts`** — Peer dependency context management:
-         - `checkPeerEdgesCompatible()` — Validates node reuse compatibility
+         - `checkPeerEdgesCompatible()` — Validates node reuse compatibility with idempotency checks
+         - Per-call memoization for `satisfies()` calls to improve performance
+         - Uses `nodesByName` for efficient candidate lookup (not full graph scan)
          - `forkPeerContext()` — Creates isolated peer contexts when conflicts arise
          - `addEntriesToPeerContext()` — Tracks dependencies in context sets
          - Generates `peerSetHash` for affected nodes (format: `peer.N`)
@@ -207,7 +212,7 @@ examples:
 
 metadata:
   priority: high
-  version: 2.0
+  version: 2.1
   tags:
     - graph
     - architecture
@@ -216,6 +221,7 @@ metadata:
     - workspaces
     - peer-dependencies
     - visualization
+    - idempotency
   related_rules:
     - graph_ideal
     - graph_ideal_append_nodes

@@ -394,20 +394,37 @@ actions:
       **Note**: Reuse is deferred - `reuseTasks` are collected during Phase A and
       applied serially in Phase B for deterministic ordering.
 
+      ### Existing Edge Preference (Lockfile Idempotency)
+      ```typescript
+      // Prefer existing edge target if it satisfies the spec
+      // This ensures lockfile resolutions are preserved when still valid
+      const existingEdge = fromNode.edgesOut.get(spec.name)
+      let existingNode: Node | undefined
+      if (existingEdge?.to && !existingEdge.to.detached && satisfiesFinal(existingEdge.to)) {
+        existingNode = existingEdge.to  // Use locked resolution
+      } else {
+        existingNode = graph.findResolution(spec, fromNode, queryModifier)
+      }
+      ```
+      This ensures idempotency: re-running ideal graph building on a lockfile produces identical results.
+
       ### Candidate Fallback for Peer-Incompatible Nodes
       ```typescript
-      // If first candidate is peer-incompatible, try other candidates deterministically
-      if (existingNode && !peerCompatResult.compatible && candidates && candidates.size > 1) {
-        for (const candidate of candidates) {
-          if (candidate === existingNode) continue  // Skip already checked
-          if (candidate.detached) continue          // Skip stale nodes
-          if (!satisfies(candidate.id, spec.final, ...)) continue  // Skip non-satisfying
-          
-          const compat = checkPeerEdgesCompatible(candidate, fromNode, peerContext, graph)
-          if (compat.compatible) {
-            existingNode = candidate
-            peerCompatResult = compat
-            break
+      // Lazy-load candidates only when fallback needed (performance optimization)
+      if (existingNode && !peerCompatResult.compatible) {
+        const candidates = graph.nodesByName.get(final.name)
+        if (candidates && candidates.size > 1) {
+          for (const candidate of candidates) {
+            if (candidate === existingNode) continue  // Skip already checked
+            if (candidate.detached) continue          // Skip stale nodes
+            if (!satisfiesFinal(candidate)) continue  // Skip non-satisfying (memoized)
+            
+            const compat = checkPeerEdgesCompatible(candidate, fromNode, peerContext, graph)
+            if (compat.compatible) {
+              existingNode = candidate
+              peerCompatResult = compat
+              break
+            }
           }
         }
       }
@@ -572,6 +589,8 @@ actions:
       6. **Candidate Fallback**: Test that peer-incompatible first candidates trigger fallback loop
       7. **Workspace Isolation**: Verify non-main importers get fresh peer contexts
       8. **Fork Cache**: Test that `graph.peerContextForkCache` prevents duplicate contexts
+      9. **Lockfile Idempotency**: Test that existing edge targets are preferred when valid
+      10. **Context Mismatch Tolerance**: Verify compatible despite context/sibling having different targets
 
       ### Common Issues
       1. **Cycle Detection**: Ensure `seen` set is managed correctly
@@ -579,6 +598,7 @@ actions:
       3. **Manifest Errors**: Test both network and parsing failures
       4. **Modifier State**: Ensure modifiers are updated correctly
       5. **Peer Context Leaks**: Verify forked contexts don't affect parent contexts
+      6. **Idempotency**: Re-running ideal build on same lockfile should produce identical graph
 
       ### Debugging Tips
       - Check `seen` set state for cycle issues
@@ -695,7 +715,7 @@ examples:
 
 metadata:
   priority: high
-  version: 2.2
+  version: 2.3
   tags:
     - graph
     - ideal
@@ -707,6 +727,7 @@ metadata:
     - parallel
     - peer-dependencies
     - peer-context
+    - idempotency
   related_rules:
     - graph_data_structure
     - graph_ideal
