@@ -201,7 +201,7 @@ export const checkPeerEdgesCompatible = (
 ): PeerEdgeCompatResult => {
   const peerDeps = existingNode.manifest?.peerDependencies
   // No peer deps = always compatible
-  if (!peerDeps) {
+  if (!peerDeps || Object.keys(peerDeps).length === 0) {
     return { compatible: true }
   }
 
