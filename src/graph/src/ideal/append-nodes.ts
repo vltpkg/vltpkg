@@ -154,12 +154,45 @@ const findCompatibleResolution = (
   queryModifier?: string,
   _peer?: boolean,
 ) => {
-  const candidates = graph.nodesByName.get(spec.final.name)
-  let existingNode = graph.findResolution(
-    spec,
-    fromNode,
-    queryModifier,
-  )
+  // Hoist invariants once
+  const fromLoc = fromNode.location
+  const projectRoot = graph.projectRoot
+  const monorepo = graph.monorepo
+  const final = spec.final
+  // Memoize satisfies() results per-node within this resolution attempt
+  const satisfiesCache = new Map<string, boolean>()
+  const satisfiesFinal = (n: Node) => {
+    const key = n.id
+    const cached = satisfiesCache.get(key)
+    /* c8 ignore next 3 - optimization: cache hit when same node checked multiple times */
+    if (cached !== undefined) {
+      return cached
+    }
+    const result = satisfies(
+      key,
+      final,
+      fromLoc,
+      projectRoot,
+      monorepo,
+    )
+    satisfiesCache.set(key, result)
+    return result
+  }
+
+  // Prefer existing edge target if it satisfies the spec.
+  // This ensures lockfile resolutions are preserved when still valid,
+  // rather than potentially picking a different satisfying version.
+  const existingEdge = fromNode.edgesOut.get(spec.name)
+  let existingNode: Node | undefined
+  if (
+    existingEdge?.to &&
+    !existingEdge.to.detached &&
+    satisfiesFinal(existingEdge.to)
+  ) {
+    existingNode = existingEdge.to
+  } else {
+    existingNode = graph.findResolution(spec, fromNode, queryModifier)
+  }
 
   let peerCompatResult =
     existingNode ?
@@ -172,37 +205,26 @@ const findCompatibleResolution = (
     : { compatible: true }
 
   // CANDIDATE FALLBACK: If first candidate is peer-incompatible, try others
-  if (
-    existingNode &&
-    !peerCompatResult.compatible &&
-    candidates &&
-    candidates.size > 1
-  ) {
-    for (const candidate of candidates) {
-      if (candidate === existingNode) continue
-      if (candidate.detached) continue
-      if (
-        !satisfies(
-          candidate.id,
-          spec.final,
-          fromNode.location,
-          graph.projectRoot,
-          graph.monorepo,
-        )
-      ) {
-        continue
-      }
+  // Lazy-load candidates only when fallback needed
+  if (existingNode && !peerCompatResult.compatible) {
+    const candidates = graph.nodesByName.get(final.name)
+    if (candidates && candidates.size > 1) {
+      for (const candidate of candidates) {
+        if (candidate === existingNode) continue
+        if (candidate.detached) continue
+        if (!satisfiesFinal(candidate)) continue
 
-      const compat = checkPeerEdgesCompatible(
-        candidate,
-        fromNode,
-        peerContext,
-        graph,
-      )
-      if (compat.compatible) {
-        existingNode = candidate
-        peerCompatResult = compat
-        break
+        const compat = checkPeerEdgesCompatible(
+          candidate,
+          fromNode,
+          peerContext,
+          graph,
+        )
+        if (compat.compatible) {
+          existingNode = candidate
+          peerCompatResult = compat
+          break
+        }
       }
     }
   }

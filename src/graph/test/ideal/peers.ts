@@ -181,6 +181,75 @@ t.test('checkPeerEdgesCompatible', async t => {
   )
 
   t.test(
+    'CHECK1: returns compatible when existing edge satisfies spec despite context mismatch',
+    async t => {
+      // Test the fix in checkPeerEdgesCompatible() CHECK 1:
+      // When peer context has different target, but existing edge target
+      // still satisfies the peer spec, should return compatible
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two react versions that both satisfy ^18.0.0
+      const react182 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.2.0' },
+      )!
+      const react183 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.0' },
+      )!
+
+      // ui-component with peer dep pointing to react@18.2.0
+      const uiComponent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('ui-component', '^1.0.0', configData),
+        {
+          name: 'ui-component',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+      graph.addEdge('peer', peerSpec, uiComponent, react182)
+
+      // Peer context points to react@18.3.0 (different target)
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: new Set([peerSpec]),
+        target: react183,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        uiComponent,
+        graph.mainImporter,
+        peerContext,
+        graph,
+      )
+
+      t.same(
+        result,
+        { compatible: true },
+        'should be compatible - existing edge target satisfies spec',
+      )
+    },
+  )
+
+  t.test(
     'returns incompatible when sibling edge has different target',
     async t => {
       const mainManifest = {
@@ -253,6 +322,81 @@ t.test('checkPeerEdgesCompatible', async t => {
   )
 
   t.test(
+    'CHECK2: returns compatible when existing edge satisfies spec despite sibling mismatch',
+    async t => {
+      // Test the fix in checkPeerEdgesCompatible() CHECK 2:
+      // When sibling edge has different target, but existing edge target
+      // still satisfies both peer spec and sibling spec, should return compatible
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two react versions that both satisfy ^18.0.0
+      const react182 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.2.0' },
+      )!
+      const react183 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.0' },
+      )!
+
+      // ui-component with peer dep pointing to react@18.2.0
+      const uiComponent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('ui-component', '^1.0.0', configData),
+        {
+          name: 'ui-component',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+      graph.addEdge('peer', peerSpec, uiComponent, react182)
+
+      // Create parent with sibling edge to react@18.3.0 (different target)
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('parent', '^1.0.0', configData),
+        { name: 'parent', version: '1.0.0' },
+      )!
+      graph.addEdge(
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        parent,
+        react183,
+      )
+
+      const peerContext: PeerContext = new Map()
+
+      const result = checkPeerEdgesCompatible(
+        uiComponent,
+        parent,
+        peerContext,
+        graph,
+      )
+
+      t.same(
+        result,
+        { compatible: true },
+        'should be compatible - existing edge target satisfies both specs',
+      )
+    },
+  )
+
+  t.test(
     'returns incompatible when parent manifest declares peer with different candidate',
     async t => {
       const mainManifest = {
@@ -319,6 +463,81 @@ t.test('checkPeerEdgesCompatible', async t => {
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
       t.equal(result.forkEntry?.target.id, react19.id)
+    },
+  )
+
+  t.test(
+    'CHECK3: returns compatible when existing edge satisfies parent declared spec',
+    async t => {
+      // Test the fix in checkPeerEdgesCompatible() CHECK 3:
+      // When parent manifest declares a peer with alternative candidate,
+      // but existing edge target still satisfies parent's declared spec,
+      // should return compatible (don't search for alternatives)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // Create two react versions that both satisfy ^18.0.0
+      const react182 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.2.0' },
+      )!
+      const _react183 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.0' },
+      )!
+
+      // ui-component with peer dep pointing to react@18.2.0
+      const uiComponent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('ui-component', '^1.0.0', configData),
+        {
+          name: 'ui-component',
+          version: '1.0.0',
+          peerDependencies: { react: '^18.0.0' },
+        },
+      )!
+      const peerSpec = Spec.parse('react', '^18.0.0', configData)
+      graph.addEdge('peer', peerSpec, uiComponent, react182)
+
+      // Create parent with manifest declaring react@^18.0.0
+      // Both react@18.2.0 and react@18.3.0 are candidates
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('parent', '^1.0.0', configData),
+        {
+          name: 'parent',
+          version: '1.0.0',
+          dependencies: { react: '^18.0.0' },
+        },
+      )!
+
+      const peerContext: PeerContext = new Map()
+
+      const result = checkPeerEdgesCompatible(
+        uiComponent,
+        parent,
+        peerContext,
+        graph,
+      )
+
+      t.same(
+        result,
+        { compatible: true },
+        'should be compatible - existing edge target satisfies parent spec',
+      )
     },
   )
 
