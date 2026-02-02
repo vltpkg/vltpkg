@@ -1964,6 +1964,24 @@ t.test(
     )!
     graph.addEdge('peer', peerReactSpec, foo102, react183)
 
+    // Create existing edge to peer-incompatible foo@1.0.0
+    // This forces findCompatibleResolution to prefer the existing edge target
+    // before calling graph.findResolution(), triggering the fallback loop
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest10,
+      foo10.id,
+    )
+
+    // Verify existing edge is engaged
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      foo10.id,
+      'setup: existing edge points to peer-incompatible foo@1.0.0',
+    )
+
     // Ensure findResolution() does NOT just return the last cached resolution
     // (which would hide the fallback loop). Force it to scan candidates.
     graph.resolutions.clear()
@@ -1981,11 +1999,12 @@ t.test(
       type: 'prod',
     })
 
-    // peerContext expects react183, making foo10 incompatible (it peers to react182)
+    // peerContext expects react183 with spec >=18.3.0, making foo10 incompatible
+    // (it peers to react182 which doesn't satisfy >=18.3.0)
     const peerContext = graph.peerContexts[0]!
     peerContext.set('react', {
       active: true,
-      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      specs: new Set([Spec.parse('react', '>=18.3.0', configData)]),
       target: react183,
       type: 'prod',
       contextDependents: new Set(),
@@ -2008,6 +2027,145 @@ t.test(
       edge?.to?.id,
       foo102.id,
       'should reuse compatible candidate (foo@1.0.2), skipping incompatible/detached/non-satisfying candidates',
+    )
+  },
+)
+
+t.test(
+  'applies fork requests when peer edge target does not satisfy spec',
+  async t => {
+    // Test that fork request application (L802-812 in append-nodes.ts) is triggered
+    // when checkPeerEdgesCompatible() generates a forkEntry for a genuine peer conflict.
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // Create react nodes
+    const react17 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^17.0.0', configData),
+      { name: 'react', version: '17.0.0' },
+    )!
+    const react18 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('react', '^18.0.0', configData),
+      { name: 'react', version: '18.3.0' },
+    )!
+
+    // Create ui-component with ACTUAL peer edge to react@17
+    const uiComponent = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      {
+        name: 'ui-component',
+        version: '1.0.0',
+        peerDependencies: { react: '^18.0.0' },
+      },
+    )!
+    graph.addEdge(
+      'peer',
+      Spec.parse('react', '^18.0.0', configData),
+      uiComponent,
+      react17,
+    )
+
+    // Create parent (fromNode) that declares react@^18.0.0
+    const parent = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('parent', '^1.0.0', configData),
+      {
+        name: 'parent',
+        version: '1.0.0',
+        dependencies: {
+          'ui-component': '^1.0.0',
+          react: '^18.0.0',
+        },
+      },
+    )!
+
+    // Create existing edge from parent to ui-component
+    graph.addEdge(
+      'prod',
+      Spec.parse('ui-component', '^1.0.0', configData),
+      parent,
+      uiComponent,
+    )
+
+    // Verify existing edge setup
+    t.equal(
+      parent.edgesOut.get('ui-component')?.to?.id,
+      uiComponent.id,
+      'setup: parent has existing edge to ui-component',
+    )
+
+    // Setup peer context with react@18 target
+    const peerContext = graph.peerContexts[0]!
+    peerContext.set('react', {
+      active: true,
+      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      target: react18,
+      type: 'prod',
+      contextDependents: new Set(),
+    })
+
+    // Clear resolution caches
+    graph.resolutions.clear()
+    graph.resolutionsReverse.clear()
+
+    // Capture before state for assertion
+    const peerContextsBefore = graph.peerContexts.length
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        // Provide manifests to allow processing, fork logic should still trigger
+        switch (spec.name) {
+          case 'ui-component':
+            return {
+              name: 'ui-component',
+              version: '1.0.0',
+              peerDependencies: { react: '^18.0.0' },
+            }
+          case 'react':
+            if (spec.bareSpec.includes('17')) {
+              return { name: 'react', version: '17.0.0' }
+            }
+            return { name: 'react', version: '18.3.0' }
+          default:
+            throw new Error('unexpected manifest fetch: ' + spec.name)
+        }
+      },
+    } as unknown as PackageInfoClient
+
+    // Call appendNodes with fromNode=parent, deps=[ui-component]
+    const uiDep = asDependency({
+      spec: Spec.parse('ui-component', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      parent,
+      [uiDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['ui-component', uiDep]]),
+    )
+
+    // Assert fork occurred
+    t.ok(
+      graph.peerContexts.length > peerContextsBefore,
+      'should have created new peer context (fork applied)',
     )
   },
 )
