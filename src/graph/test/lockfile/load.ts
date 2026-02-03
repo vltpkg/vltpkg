@@ -58,7 +58,7 @@ t.test('load', async t => {
       joinDepIDTuple(['registry', '', 'foo@1.0.0']),
     [edgeKey(['file', '.'], 'bar')]:
       'prod ^1.0.0 ' + joinDepIDTuple(['registry', '', 'bar@1.0.0']),
-    [edgeKey(['file', '.'], 'missing')]: 'prod ^1.0.0 MISSING',
+    [edgeKey(['file', '.'], 'missing')]: 'prod ^1.0.0 MISSING   ',
     [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
       'prod ^1.0.0 ' + joinDepIDTuple(['registry', '', 'baz@1.0.0']),
     //@ts-expect-error
@@ -127,7 +127,7 @@ t.test('loadHidden', async t => {
       joinDepIDTuple(['registry', '', 'foo@1.0.0']),
     [edgeKey(['file', '.'], 'bar')]:
       'prod ^1.0.0 ' + joinDepIDTuple(['registry', '', 'bar@1.0.0']),
-    [edgeKey(['file', '.'], 'missing')]: 'prod ^1.0.0 MISSING',
+    [edgeKey(['file', '.'], 'missing')]: 'prod ^1.0.0 MISSING   ',
     [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
       'prod ^1.0.0 ' + joinDepIDTuple(['registry', '', 'baz@1.0.0']),
     //@ts-expect-error

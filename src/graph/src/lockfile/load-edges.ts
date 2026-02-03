@@ -69,11 +69,18 @@ export const loadEdges = (
   for (const [key, value] of entries) {
     const [fromId, specName] = fastSplit(key, ' ', 2)
     const [depType, valRest] = fastSplit(value, ' ', 2)
-    const vrSplit = valRest?.lastIndexOf(' ') ?? -1
+    const trimmedRest = valRest?.trim()
+    const vrSplit = trimmedRest?.lastIndexOf(' ') ?? -1
 
     // not a valid edge record
     /* c8 ignore start */
-    if (!valRest || !depType || !fromId || !specName || vrSplit < 1) {
+    if (
+      !trimmedRest ||
+      !depType ||
+      !fromId ||
+      !specName ||
+      vrSplit < 1
+    ) {
       continue
     }
     /* c8 ignore stop */
@@ -104,7 +111,7 @@ export const loadEdges = (
       fromNode = retrieveNodeFromGraph(key, value, graph, fromId)
     }
 
-    const toId = valRest.substring(vrSplit + 1)
+    const toId = trimmedRest.substring(vrSplit + 1)
     let toNode: NodeLike | undefined = undefined
 
     if (toId !== 'MISSING') {
@@ -124,7 +131,8 @@ export const loadEdges = (
     }
 
     // Parse spec once we know the nodes are valid
-    const spec = Spec.parse(specName, valRest.substring(0, vrSplit), {
+    const bareSpec = trimmedRest.substring(0, vrSplit).trimEnd()
+    const spec = Spec.parse(specName, bareSpec, {
       ...options,
       registry: fromNode.registry,
     })
