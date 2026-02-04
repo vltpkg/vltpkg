@@ -42,7 +42,6 @@
   },
   "packageManager": "pnpm@10.11.0",
   "scripts": {
-    "benchmark": "./scripts/benchmark",
     "build:bundle": "vlt-build --outdir=.build-bundle bundle",
     "build:compile": "vlt-build --outdir=.build-compile --quiet compile",
     "deps:check": "./scripts/check-deps.ts",
