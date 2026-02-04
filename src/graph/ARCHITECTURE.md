@@ -1,3 +1,7 @@
+---
+title: '@vltpkg/graph Architecture'
+---
+
 # @vltpkg/graph Architecture
 
 This document provides an architectural overview of the
@@ -526,7 +530,7 @@ results.
 
 ## Further Reading
 
-- [Cursor Rules](.cursor/rules/graph/) - Detailed implementation
-  guides
+- [Cursor Rules](https://github.com/vltpkg/vltpkg/tree/main/.cursor/rules/graph) -
+  Detailed implementation guides
 - [npm package.json docs](https://docs.npmjs.com/cli/configuring-npm/package-json)
 - [Semantic Versioning](https://semver.org)

@@ -1,3 +1,7 @@
+---
+title: '@vltpkg/graph.reify'
+---
+
 # @vltpkg/graph.reify
 
 Apply graph changes to `node_modules`, transforming the actual state

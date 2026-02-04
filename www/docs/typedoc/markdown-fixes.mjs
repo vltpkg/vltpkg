@@ -58,6 +58,26 @@ const fixHeadings =
         textNode => void (textNode.value = 'Entry Points'),
       )
     }
+
+    // Strip leading "abstract" from headings so anchor slugs
+    // match the links typedoc emits (which omit "abstract").
+    if (toString(node).startsWith('abstract ')) {
+      const [firstChild, secondChild] = node.children
+      if (
+        firstChild?.type === 'inlineCode' &&
+        firstChild.value === 'abstract'
+      ) {
+        node.children.shift()
+        if (secondChild?.type === 'text') {
+          secondChild.value = secondChild.value.replace(/^\s+/, '')
+        }
+      } else if (firstChild?.type === 'text') {
+        firstChild.value = firstChild.value.replace(
+          /^abstract\s+/,
+          '',
+        )
+      }
+    }
   }
 
 /** @param {string} page */
@@ -78,6 +98,7 @@ const fixLinks =
         .replace(/\/index\.md$/, '')
         .replace(/\.md$/, '')
         .replace(/\/$/, '')
+        .toLowerCase()
 
     const [path, anchor] = node.url.split('#')
     const normalizedPage = normalize(page)

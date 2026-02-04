@@ -1,3 +1,7 @@
+---
+title: '@vltpkg/graph'
+---
+
 ![graph](https://github.com/user-attachments/assets/dfbed9e0-8ef0-4a43-993d-d3e5d1e5ae1d)
 
 # @vltpkg/graph

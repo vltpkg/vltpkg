@@ -1,3 +1,7 @@
+---
+title: '@vltpkg/graph.ideal'
+---
+
 # @vltpkg/graph.ideal
 
 Build the ideal dependency graph representing the desired

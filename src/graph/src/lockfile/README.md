@@ -1,3 +1,7 @@
+---
+title: '@vltpkg/graph.lockfile'
+---
+
 # @vltpkg/graph.lockfile
 
 Serialize and deserialize `@vltpkg/graph.Graph` to/from lockfiles.
