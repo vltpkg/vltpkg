@@ -545,7 +545,13 @@ const processPlacementTasks = async (
     if (fileTypeInfo?.path && fileTypeInfo.isDirectory) {
       node.location = fileTypeInfo.path
     }
-    node.setResolved()
+    // Do not clobber lockfile-provided resolved values.
+    // `setResolved()` cannot infer a tarball without a manifest,
+    // which can cause `resolved` to become undefined and the
+    // main lockfile to mutate across installs.
+    if (!node.resolved) {
+      node.setResolved()
+    }
 
     // collect child dependencies for processing in the next level
     const nextPeerDeps = new Map<string, Dependency>()

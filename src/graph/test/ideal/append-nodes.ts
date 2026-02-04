@@ -1869,6 +1869,115 @@ t.test('skip peerOptional dependencies', async t => {
       'edge should be re-added',
     )
   })
+
+  t.test(
+    'lockfile-provided custom resolved value preserved during placement',
+    async t => {
+      // Regression test for custom resolved nodes (such as JSR)
+      // losing their resolved tarball URL. `setResolved()` would
+      // set resolved to undefined, causing lockfile mutations.
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      // JSR config extending base configData
+      const jsrConfig: SpecOptions = {
+        ...configData,
+        'jsr-registries': {
+          jsr: 'https://npm.jsr.io/',
+        },
+      }
+
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...jsrConfig,
+        mainManifest,
+      })
+
+      // Simulate a lockfile-provided JSR node
+      const jsrId = joinDepIDTuple([
+        'registry',
+        'jsr',
+        '@jsr/std__semver@1.0.8',
+      ])
+      const expectedTarballURL =
+        'https://npm.jsr.io/~/11/@jsr/std__semver/1.0.8.tgz'
+
+      // Manifest without dist.tarball, this is the case when reading from the node_modules dir
+      const jsrManifest = asNormalizedManifest({
+        name: '@jsr/std__semver',
+        version: '1.0.8',
+        // No dist.tarball - this is what causes setResolved() to fail
+      })
+
+      // Place the node as if loaded from lockfile
+      const jsrNode = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+        jsrManifest,
+        jsrId,
+      )!
+
+      // Simulate lockfile state
+      jsrNode.detached = true
+      jsrNode.resolved = expectedTarballURL
+
+      // Remove the edge so we can re-add it via appendNodes
+      const jsrEdge = graph.mainImporter.edgesOut.get(
+        '@jsr/std__semver',
+      )
+      if (jsrEdge) {
+        graph.mainImporter.edgesOut.delete('@jsr/std__semver')
+        jsrNode.edgesIn.delete(jsrEdge)
+      }
+
+      // packageInfo that throws if manifest is called
+      // (detached path should short-circuit manifest fetching)
+      const packageInfo = {
+        async manifest() {
+          throw new Error(
+            'manifest() should not be called for detached node',
+          )
+        },
+      } as unknown as PackageInfoClient
+
+      // Re-add the dependency via appendNodes
+      const jsrDep = asDependency({
+        spec: Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+        type: 'prod',
+      })
+
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [jsrDep],
+        new PathScurry(t.testdirName),
+        jsrConfig,
+        new Set<DepID>(),
+        new Map([['@jsr/std__semver', jsrDep]]),
+      )
+
+      // Assert resolved URL is preserved
+      t.equal(
+        jsrNode.resolved,
+        expectedTarballURL,
+        'lockfile-provided resolved URL should be preserved',
+      )
+
+      // Assert edge exists and has correct spec
+      const edge = graph.mainImporter.edgesOut.get('@jsr/std__semver')
+      t.ok(edge, 'edge should be re-added')
+      t.equal(edge?.to?.id, jsrId, 'edge should target the JSR node')
+      t.equal(
+        edge?.spec.bareSpec,
+        'jsr:^1.0.8',
+        'edge spec should remain jsr:^1.0.8',
+      )
+    },
+  )
 })
 
 t.test(
