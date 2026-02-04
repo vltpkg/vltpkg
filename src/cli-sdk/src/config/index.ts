@@ -26,6 +26,7 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { resetCaches } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
+import { getOptions } from '@vltpkg/spec'
 import {
   assertRecordStringString,
   assertRecordStringT,
@@ -266,6 +267,16 @@ export class Config {
     const options: Omit<ConfigOptions, 'packageInfo'> = Object.assign(
       asRecords,
       extras,
+    )
+
+    // Ensure spec-related options (registries, jsr-registries, git hosts, etc.)
+    // are always filled with defaults. Some downstream libraries (eg. @vltpkg/dep-id)
+    // expect these defaults to be present even when the user didn't configure them.
+    Object.assign(
+      options,
+      getOptions(
+        options as unknown as SpecOptions,
+      ) as unknown as SpecOptions,
     )
 
     this.#options = Object.assign(options, {
