@@ -53,22 +53,18 @@ jobs:
 
       - name: Linting
         id: lint
-        continue-on-error: true
         run: vlr lint:check
 
       - name: Dependencies
         id: deps
-        continue-on-error: true
         run: vlr deps:check
 
       - name: Docs
         id: docs
-        continue-on-error: true
         run: vlr --workspace ./www/docs typedoc:check
 
       - name: Consistent Workspaces
         id: workspaces
-        continue-on-error: true
         run: |
           vlr fix:pkg
           if [ -n "$(git status --porcelain)" ]; then
@@ -144,12 +140,10 @@ jobs:
 
       - name: Run Typecheck
         id: typecheck
-        continue-on-error: true
         run: vlr --recursive typecheck
 
       - name: Run Tests
         id: test
-        continue-on-error: true
         run: vlr --recursive test
 
       - name: Check Results
