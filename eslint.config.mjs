@@ -5,8 +5,6 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
-// TODO(dogfood): remove this plugin
-import { configs as pnpmConfigs } from 'eslint-plugin-pnpm'
 import reactHooks from 'eslint-plugin-react-hooks'
 import enforceMockImportTypes from './scripts/eslint-enforce-mock-import-types.js'
 
@@ -377,5 +375,4 @@ export default [
       ...eslint.configs.recommended.rules,
     },
   },
-  ...pnpmConfigs.yaml,
 ]

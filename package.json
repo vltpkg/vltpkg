@@ -21,7 +21,6 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^61.5.0",
-    "eslint-plugin-pnpm": "^1.4.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
     "knip": "^5.73.0",
