@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/url-open",
   "description": "Open URLs using the system's default web browser",
-  "version": "1.0.0-rc.17",
+  "version": "1.0.0-rc.18",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
