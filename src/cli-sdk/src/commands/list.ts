@@ -28,8 +28,8 @@ export const usage: CommandUsage = () =>
     command: 'ls',
     usage: [
       '',
-      '[package-names...] [--view=human | json | mermaid]',
-      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid]',
+      '[package-names...] [--view=human | json | mermaid | count]',
+      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid | count]',
     ],
     description: `List installed dependencies matching given package names or query selectors.
 
@@ -75,9 +75,9 @@ export const usage: CommandUsage = () =>
           'Query selector to filter packages using the DSS query language syntax.',
       },
       view: {
-        value: '[human | json | mermaid]',
+        value: '[human | json | mermaid | count]',
         description:
-          'Output format. Defaults to human-readable or json if no tty.',
+          'Output format. Defaults to human-readable or json if no tty. Count outputs the number of dependency relationships in the result.',
       },
     },
   })
@@ -90,6 +90,7 @@ export const views = {
   json: jsonOutput,
   mermaid: mermaidOutput,
   human: humanReadableOutput,
+  count: (result: ListResult) => result.edges.length,
 } as const satisfies Views<ListResult>
 
 export const command: CommandFn<ListResult> = async conf => {

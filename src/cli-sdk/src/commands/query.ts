@@ -29,9 +29,9 @@ export const usage: CommandUsage = () =>
     command: 'query',
     usage: [
       '',
-      '<query> --view=<human | json | mermaid>',
+      '<query> --view=<human | json | mermaid | count>',
       '<query> --expect-results=<comparison string>',
-      '--target=<query> --view=<human | json | mermaid>',
+      '--target=<query> --view=<human | json | mermaid | count>',
     ],
     description: `List installed dependencies matching the provided query.
 
@@ -95,9 +95,9 @@ export const usage: CommandUsage = () =>
           'Query selector to filter packages using DSS syntax.',
       },
       view: {
-        value: '[human | json | mermaid]',
+        value: '[human | json | mermaid | count]',
         description:
-          'Output format. Defaults to human-readable or json if no tty.',
+          'Output format. Defaults to human-readable or json if no tty. Count outputs the number of dependency relationships in the result.',
       },
     },
   })
@@ -129,6 +129,7 @@ export const views = {
   json: jsonOutput,
   mermaid: mermaidOutput,
   human: humanReadableOutput,
+  count: (result: QueryResult) => result.edges.length,
 } as const satisfies Views<QueryResult>
 
 export const command: CommandFn<QueryResult> = async conf => {
