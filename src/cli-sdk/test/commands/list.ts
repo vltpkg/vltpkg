@@ -151,6 +151,7 @@ const runCommand = async (
     : values.view === 'human' ?
       cmd.views.human(res, { colors: values.color })
     : values.view === 'mermaid' ? cmd.views.mermaid(res)
+    : values.view === 'count' ? cmd.views.count(res)
     : cmd.views.json(res)
   return values.view === 'json' ?
       JSON.stringify(output, null, 2)
@@ -212,6 +213,15 @@ t.test('list', async t => {
       options,
     }),
     'should list pkgs in mermaid format',
+  )
+
+  t.equal(
+    await runCommand({
+      values: { view: 'count' },
+      options,
+    }),
+    2,
+    'should list pkgs count',
   )
 
   await t.rejects(
