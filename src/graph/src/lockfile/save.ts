@@ -228,7 +228,7 @@ export const lockfileData = ({
       ...(registry !== undefined && registry !== defaultRegistry ?
         { registry }
       : undefined),
-      ...(hasItems(registries) ?
+      ...(hasItems(cleanRegistries) ?
         { registries: cleanRegistries }
       : undefined),
       ...(hasItems(cleanGitHosts) ?
