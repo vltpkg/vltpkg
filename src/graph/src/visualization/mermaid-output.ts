@@ -107,7 +107,7 @@ const nodeRef = (
       options.highlightSelection &&
       isSelected(options, undefined, node)
     ) ?
-      ':::selected'
+      ':::a'
     : ''
   if (labeledNodes.has(node.id)) {
     return shortId + selectedClass
@@ -214,12 +214,7 @@ export function mermaidOutput(options: MermaidOutputGraph) {
     seen.add(item.self)
 
     if (item.self instanceof Edge) {
-      // Workspace edges are stored in mainImporter.workspaces and not in graph.edges,
-      // so we need to check for workspace spec type to always include them
-      if (
-        edges.includes(item.self) ||
-        item.self.spec.type === 'workspace'
-      ) {
+      if (edges.includes(item.self)) {
         includedItems.set(item.self, true)
       }
       if (item.self.to) {
@@ -274,9 +269,7 @@ export function mermaidOutput(options: MermaidOutputGraph) {
     .join('\n')
 
   const styleDefinition =
-    highlightSelection ?
-      '\nclassDef selected fill:gold,color:#242424'
-    : ''
+    highlightSelection ? '\nclassDef a fill:gold,color:#242424' : ''
 
   return 'flowchart TD\n' + graphOutput + styleDefinition
 }
