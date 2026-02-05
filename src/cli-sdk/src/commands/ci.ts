@@ -18,6 +18,17 @@ export const usage: CommandUsage = () =>
     examples: {
       '': { description: 'Clean install from lockfile' },
     },
+    options: {
+      'allow-scripts': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+      'lockfile-only': {
+        description:
+          'Only update lockfile and package.json files; skip node_modules operations.',
+      },
+    },
   })
 
 export const views = {

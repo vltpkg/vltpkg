@@ -14,4 +14,22 @@ vlt whoami
 
 Look up the username for the currently active token, when logged into a registry.
 
+## Options
+
+### registry
+
+Registry URL to query for authenticated user info.
+
+\`\`\`
+--registry=<url>
+\`\`\`
+
+### identity
+
+Identity namespace used to look up auth tokens.
+
+\`\`\`
+--identity=<name>
+\`\`\`
+
 `

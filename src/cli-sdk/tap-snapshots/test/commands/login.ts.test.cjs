@@ -14,4 +14,22 @@ vlt login
 
 Authenticate against a registry, and store the token in the appropriate config file for later use.
 
+## Options
+
+### registry
+
+Registry URL to authenticate against.
+
+\`\`\`
+--registry=<url>
+\`\`\`
+
+### identity
+
+Identity namespace used to store auth tokens.
+
+\`\`\`
+--identity=<name>
+\`\`\`
+
 `

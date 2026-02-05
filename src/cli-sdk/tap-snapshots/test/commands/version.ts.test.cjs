@@ -20,4 +20,26 @@ type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
 If run in a git repository, it will also create a version commit and tag.
 
+  Options
+
+    scope
+      Filter version bump targets using a DSS query.
+
+      ​--scope=<query>
+
+    workspace
+      Limit version bump targets to matching workspaces.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit version bump targets to workspace groups.
+
+      ​--workspace-group=<name>
+
+    recursive
+      Run version bump across all workspaces in the monorepo.
+
+      ​--recursive
+
 `

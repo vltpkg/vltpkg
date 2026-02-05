@@ -62,6 +62,41 @@ export const usage: CommandUsage = () =>
           'Run the default bin provided by eslint version 9.24',
       },
     },
+    options: {
+      package: {
+        value: '<specifier>',
+        description: 'Explicitly set the package to search for bins.',
+      },
+      'allow-scripts': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+      scope: {
+        value: '<query>',
+        description: 'Filter execution targets using a DSS query.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit execution to matching workspace paths or globs.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description: 'Limit execution to named workspace groups.',
+      },
+      recursive: {
+        description: 'Run across all selected workspaces.',
+      },
+      'if-present': {
+        description:
+          'When running across multiple packages, only include packages with matching scripts.',
+      },
+      bail: {
+        description:
+          'When running across multiple workspaces, stop on first failure.',
+      },
+    },
   })
 
 const HOME = homedir()

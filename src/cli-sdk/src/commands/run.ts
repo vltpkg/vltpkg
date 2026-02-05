@@ -19,6 +19,37 @@ export const usage: CommandUsage = () =>
                   arguments. Note that vlt config values must be specified *before*
                   the script name, because everything after that is handed off to
                   the script process.`,
+    options: {
+      scope: {
+        value: '<query>',
+        description: 'Filter execution targets using a DSS query.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit execution to matching workspace paths or globs.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description: 'Limit execution to named workspace groups.',
+      },
+      recursive: {
+        description: 'Run across all selected workspaces.',
+      },
+      'if-present': {
+        description:
+          'When running across multiple packages, only include packages with matching scripts.',
+      },
+      bail: {
+        description:
+          'When running across multiple workspaces, stop on first failure.',
+      },
+      'script-shell': {
+        value: '<program>',
+        description:
+          'Shell to use when executing package.json scripts.',
+      },
+    },
   })
 
 class RunCommand extends ExecCommand<typeof run, typeof runFG> {

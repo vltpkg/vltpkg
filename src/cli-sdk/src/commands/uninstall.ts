@@ -19,6 +19,22 @@ export const usage: CommandUsage = () =>
     usage: '[package ...]',
     description: `The opposite of \`vlt install\`. Removes deps and updates
                   vlt-lock.json and package.json appropriately.`,
+    options: {
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit uninstall targets to matching workspaces.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description: 'Limit uninstall targets to workspace groups.',
+      },
+      'allow-scripts': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+    },
   })
 
 export const views = {

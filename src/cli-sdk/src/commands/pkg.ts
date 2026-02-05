@@ -71,6 +71,26 @@ export const usage: CommandUsage = () =>
         description: 'Append a value to an array',
       },
     },
+    options: {
+      scope: {
+        value: '<query>',
+        description: 'Filter package.json targets using a DSS query.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit package.json targets to matching workspaces.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description:
+          'Limit package.json targets to workspace groups.',
+      },
+      recursive: {
+        description:
+          'Operate across all workspaces in the current monorepo.',
+      },
+    },
   })
 
 export const command: CommandFn = async conf => {

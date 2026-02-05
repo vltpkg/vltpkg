@@ -19,6 +19,11 @@ export const usage: CommandUsage = () =>
       install: { description: 'Show help for the install command' },
       run: { description: 'Show help for the run command' },
     },
+    options: {
+      all: {
+        description: 'Show all commands, bins, and flags.',
+      },
+    },
   })
 
 export const command: CommandFn<string> = async conf => {
