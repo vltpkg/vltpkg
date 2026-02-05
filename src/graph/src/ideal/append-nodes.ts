@@ -343,7 +343,7 @@ const fetchManifestsForDeps = async (
       // the "detached" node state means that it has already been load as
       // part of a graph (either lockfile or actual) and it has valid manifest
       // data so we shortcut the package info manifest fetch here
-      existingNode?.detached ?
+      existingNode?.detached && existingNode.manifest ?
         Promise.resolve(existingNode.manifest as Manifest | undefined)
         // this is the entry point to fetch calls to retrieve manifests
         // from the build ideal graph point of view
