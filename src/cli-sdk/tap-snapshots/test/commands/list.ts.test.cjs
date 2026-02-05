@@ -143,8 +143,9 @@ workspace-a
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
 Usage:
   vlt ls
-  vlt ls [package-names...] [--view=human | json | mermaid]
-  vlt ls [--scope=<query>] [--target=<query>] [--view=human | json | mermaid]
+  vlt ls [package-names...] [--view=human | json | mermaid | count]
+  vlt ls [--scope=<query>] [--target=<query>] [--view=human | json | mermaid |
+  count]
 
 List installed dependencies matching given package names or query selectors.
 
@@ -196,9 +197,10 @@ workspace.
       ​--target=<query>
 
     view
-      Output format. Defaults to human-readable or json if no tty.
+      Output format. Defaults to human-readable or json if no tty. Count outputs
+      the number of dependency relationships in the result.
 
-      ​--view=[human | json | mermaid]
+      ​--view=[human | json | mermaid | count]
 
 `
 

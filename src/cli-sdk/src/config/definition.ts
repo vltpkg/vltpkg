@@ -567,6 +567,8 @@ export const definition = j
                     - inspect: Output results with \`util.inspect\`.
                     - mermaid: Output mermaid diagramming syntax. (Only
                       relevant for certain commands.)
+                    - count: Output the number of dependency relationships in
+                      the result set.
                     - silent: Suppress all output to stdout.
 
                     If the requested view format is not supported for the
@@ -577,6 +579,7 @@ export const definition = j
         'human',
         'json',
         'mermaid',
+        'count',
         'inspect',
         'silent',
       ] as const,
