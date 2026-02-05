@@ -9,11 +9,8 @@ exports[`test/visualization/mermaid-output.ts > TAP > actual graph > highlight s
 flowchart TD
 a("root:my-project")
 a -->|"bar#64;^1.0.0 (optional)"| g("npm:bar#64;1.0.0")
-g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0"):::selected
-a -->|"workspace-b#64;workspace:*"| b("workspace:workspace-b")
-a -->|"workspace-a#64;workspace:*"| c("workspace:workspace-a")
-c -->|"workspace-b#64;workspace:* (dev)"| b
-classDef selected fill:gold,color:#242424
+g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0"):::a
+classDef a fill:gold,color:#242424
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > actual graph > selected packages > should print selected packages 1`] = `
@@ -21,9 +18,6 @@ flowchart TD
 a("root:my-project")
 a -->|"bar#64;^1.0.0 (optional)"| g("npm:bar#64;1.0.0")
 g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0")
-a -->|"workspace-b#64;workspace:*"| b("workspace:workspace-b")
-a -->|"workspace-a#64;workspace:*"| c("workspace:workspace-a")
-c -->|"workspace-b#64;workspace:* (dev)"| b
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > actual graph > should print from an actual loaded graph 1`] = `
@@ -70,6 +64,12 @@ flowchart TD
 a("root:my-project")
 a -->|"b#64;workspace:*"| b("workspace:b")
 a -->|"a#64;workspace:*"| c("workspace:a")
+`
+
+exports[`test/visualization/mermaid-output.ts > TAP > workspaces with dependencies > select only which package > should exclude workspace b when only which is selected 1`] = `
+flowchart TD
+c("workspace:a")
+c -->|"which#64;^6.0.0"| d("npm:which#64;6.0.0")
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > workspaces with dependencies > should print workspaces with dependencies 1`] = `

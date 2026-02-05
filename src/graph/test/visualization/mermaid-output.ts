@@ -244,6 +244,23 @@ t.test('workspaces with dependencies', async t => {
     }),
     'should print workspaces with dependencies',
   )
+
+  await t.test('select only which package', async t => {
+    const edges = [...graph.edges].filter(e => e.name === 'which')
+    const nodes = [
+      graph.nodes.get(
+        joinDepIDTuple(['registry', '', 'which@6.0.0']),
+      )!,
+    ]
+    t.matchSnapshot(
+      mermaidOutput({
+        edges,
+        importers: graph.importers,
+        nodes,
+      }),
+      'should exclude workspace b when only which is selected',
+    )
+  })
 })
 
 t.test('cycle', async t => {
