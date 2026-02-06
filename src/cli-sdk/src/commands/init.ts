@@ -14,6 +14,13 @@ export const usage: CommandUsage = () =>
     command: 'init',
     usage: '',
     description: `Create a new package.json file in the current directory.`,
+    options: {
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Create package.json files in matching workspaces.',
+      },
+    },
   })
 
 // TODO: colorize the JSON if config.options.color

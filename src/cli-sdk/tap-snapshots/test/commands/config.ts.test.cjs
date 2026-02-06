@@ -59,4 +59,11 @@ Get or manipulate vlt configuration values
 
       ​vlt config location [--config=<user | project>]
 
+  Options
+
+    config
+      Specify which configuration to show or operate on.
+
+      ​--config=<all | user | project>
+
 `

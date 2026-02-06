@@ -8,6 +8,16 @@ export const usage: CommandUsage = () =>
     usage: [''],
     description: `Authenticate against a registry, and store the token in
                   the appropriate config file for later use.`,
+    options: {
+      registry: {
+        value: '<url>',
+        description: 'Registry URL to authenticate against.',
+      },
+      identity: {
+        value: '<name>',
+        description: 'Identity namespace used to store auth tokens.',
+      },
+    },
   })
 
 export const command: CommandFn<void> = async conf => {

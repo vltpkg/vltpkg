@@ -133,4 +133,11 @@ Print the full help output for the CLI, or help for a specific command
 
     ​vlt help run
 
+  Options
+
+    all
+      Show all commands, bins, and flags.
+
+      ​--all
+
 `

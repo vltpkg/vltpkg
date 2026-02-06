@@ -20,7 +20,7 @@ export const usage: CommandUsage = () =>
                   If the package specifier is provided explicitly via the
                   \`--package\` config, then that is what will be used. If
                   a satisfying instance of the named package exists in the
-                  local \`node_mnodules\` folder, then that will be used.
+                  local \`node_modules\` folder, then that will be used.
 
                   If \`--package\` is not set, then vlt will attempt to infer
                   the package to be installed if necessary, in the following
@@ -60,6 +60,41 @@ export const usage: CommandUsage = () =>
       'eslint@9.24 src/file.js': {
         description:
           'Run the default bin provided by eslint version 9.24',
+      },
+    },
+    options: {
+      package: {
+        value: '<specifier>',
+        description: 'Explicitly set the package to search for bins.',
+      },
+      'allow-scripts': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+      scope: {
+        value: '<query>',
+        description: 'Filter execution targets using a DSS query.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit execution to matching workspace paths or globs.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description: 'Limit execution to named workspace groups.',
+      },
+      recursive: {
+        description: 'Run across all selected workspaces.',
+      },
+      'if-present': {
+        description:
+          'When running across multiple packages, only include packages with matching scripts.',
+      },
+      bail: {
+        description:
+          'When running across multiple workspaces, stop on first failure.',
       },
     },
   })
