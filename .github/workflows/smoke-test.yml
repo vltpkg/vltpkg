@@ -1,10 +1,11 @@
 name: Smoke Test
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  # TODO: re-enable this to have a separate smoke test workflow once vlt has filtering
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
   workflow_dispatch:
     inputs:
       full-matrix:
