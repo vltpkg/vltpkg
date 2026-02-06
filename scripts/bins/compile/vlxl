@@ -2,6 +2,6 @@
 set -eo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
 if [ ! -f "$ROOT_DIR/.build-compile/vlxl" ]; then
-  (cd $ROOT_DIR && pnpm vlt-build --bins=vlxl --outdir=".build-compile" compile > /dev/null 2>&1)
+  (cd $ROOT_DIR && vlx vlt-build --bins=vlxl --outdir=".build-compile" compile > /dev/null 2>&1)
 fi
 "$ROOT_DIR/.build-compile/vlxl" "$@"
