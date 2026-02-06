@@ -24,7 +24,6 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
     "knip": "^5.73.0",
-    "pnpm-workspace-yaml": "^1.4.2",
     "prettier": "catalog:",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
