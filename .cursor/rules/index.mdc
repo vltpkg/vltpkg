@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # vltpkg Monorepo
 
-pnpm monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Published as `@vltpkg/*`.
+pnpm monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as `@vltpkg/*`, the built vlt CLI itself is published as `vlt`.
 
 ## Development
 
