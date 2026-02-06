@@ -3,232 +3,55 @@ description: Graph workspace architecture and dependency graph concepts
 globs: src/graph/**
 alwaysApply: false
 ---
-# Graph
+# @vltpkg/graph Overview
 
-Understanding and working with graphs in the vlt package manager.
+Dependency graph modeling installs. Foundation for the vlt installer.
 
-<rule>
-name: graph_workspace_architecture
-description: High-level architecture, concepts, and workflows of the @vltpkg/graph workspace
-filters:
-  # Trigger when working inside the graph workspace
-  - type: path
-    pattern: "^src/graph/"
-  # Trigger when editing core graph API entry points
-  - type: file_name
-    pattern: "^(index|graph|node|edge|diff)\.ts$"
-  # Trigger when working with lockfile or reify subsystems
-  - type: path
-    pattern: "^src/graph/src/(lockfile|reify|ideal|actual)/"
-  # Trigger when working with visualization outputs
-  - type: path
-    pattern: "^src/graph/src/visualization/"
-  # Trigger when referencing monorepo-wide deps used by graph
-  - type: path
-    pattern: "^src/(dep-id|spec|semver|package-info|package-json|workspaces)/"
-  # Trigger when editing README/docs for the graph workspace
-  - type: file_name
-    pattern: "README\.md$"
+## Core Classes
 
-actions:
-  - type: guide
-    message: |
-      ## @vltpkg/graph Overview
+- **`Graph`** (`graph.ts`) — Container of nodes/edges, importer roots, resolution caches, peer contexts
+- **`Node`** (`node.ts`) — Unique package instance (identity via `@vltpkg/dep-id`). Tracks build state, platform, peerSetHash
+- **`Edge`** (`edge.ts`) — Dependency relationship (prod/dev/peer/optional) with parsed `Spec`
+- **`Diff`** (`diff.ts`) — Minimal change set: Actual → Ideal
 
-      The `@vltpkg/graph` workspace implements a dependency graph that models a JavaScript/TypeScript project's installed and desired package state. It is the foundation used by the installer to compute and apply filesystem changes under `node_modules`.
+## Graph Variants
 
-      - **`@graph/package.json`**: The workspace manifest defining the library name and its dependencies.
-      - **`@graph/src/index.ts`**: The public entry point re-exporting internal types, helpers, and submodules.
+- **Virtual** (lockfile): `lockfile.load()` from `vlt-lock.json`; `lockfile.loadHidden()` from `node_modules/.vlt-lock.json`
+- **Actual** (filesystem): `actual.load()` traverses `node_modules`; shortcut via hidden lockfile
+- **Ideal** (desired state): `ideal.build()` from Virtual or Actual → fetches manifests → expands graph. Idempotent; re-running on same lockfile = identical result
 
-      ### Core Data Structures
-      - **`Graph` (`@graph/src/graph.ts`)**: Represents the package relationship graph for a project. It is the authoritative source used to determine how `node_modules` should be structured. Manages peer context sets for peer dependency resolution.
-      - **`Node` (`@graph/src/node.ts`)**: Represents a unique package instance. Uniqueness is defined by `@vltpkg/dep-id` which encodes package identity into a single string identifier. Tracks build state, platform requirements, and peer context hashes.
-      - **`Edge` (`@graph/src/edge.ts`)**: Represents a dependency relationship (eg. entries from `dependencies`, `devDependencies`, `peerDependencies`, etc.) between two nodes.
-      - **`Diff` (`@graph/src/diff.ts`)**: Computes and stores the minimal set of changes to transform one graph (Actual) into another (Ideal).
+After Ideal + Actual, compute `Diff` → apply via `reify()`.
 
-      See the npm documentation for `package.json` format and semantics: [npm package.json docs](https://raw.githubusercontent.com/npm/cli/refs/heads/latest/docs/lib/content/configuring-npm/package-json.md).
+## Ideal Build Pipeline (`src/graph/src/ideal/`)
 
-  - type: architecture_guide
-    message: |
-      ## Architectural Dependencies (Workspaces)
+1. `build.ts` — loads Virtual or Actual as starting point
+2. `build-ideal-from-starting-graph.ts` — merges `add`/`remove` with importer specs
+3. `refresh-ideal-graph.ts` — orders importers, calls `appendNodes()` per importer
+4. `append-nodes.ts` — BFS: parallel fetch → serial mutations → peer check (see `@graph/ideal-append-nodes.mdc`)
+5. `peers.ts` — peer context management (see `@graph/peers.mdc`)
 
-      The graph workspace integrates tightly with other internal workspaces:
-      - **`@vltpkg/dep-id`**: Generates unique IDs for packages, enabling `Node` identity and efficient graph operations. Provides `joinExtra`/`splitExtra` for combining modifier and peerSetHash.
-      - **`@vltpkg/spec`**: Parses and normalizes dependency specs (eg. ranges, tags, git, file, workspace). Provides registry and scope semantics.
-      - **`@vltpkg/semver`**: Semantic Versioning operations underpinning spec satisfaction. Learn more at [semver.org](https://raw.githubusercontent.com/semver/semver.org/refs/heads/gh-pages/index.md).
-      - **`@vltpkg/package-info`**: Fetches remote manifests and artifacts for registry, git, and tarball sources.
-      - **`@vltpkg/package-json`**: Reads and caches local `package.json` files with normalization helpers.
-      - **`@vltpkg/workspaces`**: Discovers and manages monorepo workspaces. Importers in the graph include the main project and all configured workspaces.
-      - **`@vltpkg/rollback-remove`**: Handles safe file removal with rollback capability during extraction and reification.
-      - **`@vltpkg/satisfies`**: Checks if a DepID satisfies a Spec, used throughout resolution.
+## Dependencies
 
-      In the graph, root-level nodes are called **importers**. The `mainImporter` corresponds to the project root (its `package.json`), and other importers come from `@vltpkg/workspaces` discovery. These serve as starting points when loading/constructing graphs.
+- `@vltpkg/dep-id` — node IDs, `joinExtra`/`splitExtra`
+- `@vltpkg/spec` — spec parsing
+- `@vltpkg/semver` — version satisfaction
+- `@vltpkg/package-info` — remote manifests/artifacts
+- `@vltpkg/package-json` — local manifest reading
+- `@vltpkg/workspaces` — monorepo workspace discovery
+- `@vltpkg/satisfies` — DepID↔Spec checks
+- `@vltpkg/rollback-remove` — safe file removal
 
-  - type: architecture_guide
-    message: |
-      ## Graph Construction Modes
+**Importers** = root nodes. `mainImporter` = project root. Others from workspace discovery.
 
-      The graph system builds three primary graph variants, which are then used to produce npm-compatible installs:
+## Public API (`src/graph/src/index.ts`)
 
-      - **Virtual Graphs** (Lockfile-based)
-        - Loaded from lockfiles; entry points in `@graph/src/lockfile/`:
-          - Load: `load.ts` (`load()`), Hidden: `loadHidden()`
-          - Save: `save.ts` (`save()` for `vlt-lock.json`, `saveHidden()` for `node_modules/.vlt-lock.json`)
-        - See the lockfile rule for format and integration details.
+- `actual.load(options)`, `ideal.build(options)`, `lockfile.load/save`, `reify(options)`
+- `install(options, add?)` — high-level: validates options, loads actual, builds ideal, reifies
+- Visualization: `mermaidOutput()`, `humanReadableOutput()`, `jsonOutput()`, `objectLikeOutput()`
 
-      - **Actual Graphs** (Filesystem-based)
-        - Loaded from `node_modules` by recursively traversing symlinks and directories: `@graph/src/actual/load.ts`.
-        - May be shortcut by the Hidden Lockfile (`node_modules/.vlt-lock.json`) for performance.
-        - Applied to disk via the `reify/` subsystem, which encodes the minimal filesystem operations required by Node.js module resolution.
+## Tips
 
-      - **Ideal Graphs** (Desired end state)
-        - Entry point: `@graph/src/ideal/build.ts`
-        - Starts from either a Virtual Graph (preferred) or falls back to an Actual Graph.
-        - **Idempotent**: Re-running on same lockfile produces identical graph structure.
-        - Merges explicit `add`/`remove` requests with importer manifests via `get-importer-specs.ts`.
-        - Resolves new nodes by fetching manifests/artifacts using `@vltpkg/package-info`, recursively expanding the graph.
-        - Uses breadth-first processing with deterministic ordering in `append-nodes.ts` for reproducible builds.
-        - Prefers existing edge targets (lockfile resolutions) over alternatives when both satisfy specs.
-        - Reuses existing nodes that satisfy specs to avoid unnecessary network calls.
-        - Manages peer dependency contexts to handle version conflicts via `peers.ts`.
-        - Supports early extraction of tarballs during graph construction for improved performance.
-
-      After building the Ideal and loading the Actual, the installer computes a `Diff` and applies it using the `reify/` subsystem to minimize work.
-
-  - type: architecture_guide
-    message: |
-      ## Ideal Graph Building Pipeline
-
-      The ideal graph build pipeline (`src/graph/src/ideal/`):
-
-      1. **`build.ts`** — Entry point; loads Virtual or Actual graph as starting point
-      2. **`build-ideal-from-starting-graph.ts`** — Merges `add`/`remove` with importer specs from `get-importer-specs.ts`
-      3. **`refresh-ideal-graph.ts`** — Orchestrates graph refresh:
-         - Orders importers (non-peer deps first, then peer deps, alphabetically)
-         - Calls `graph.resetEdges()` when dependencies are modified
-         - Iterates importers calling `appendNodes()` for each
-         - Sets default node locations
-         - Waits for early extraction promises
-      4. **`append-nodes.ts`** — Breadth-first dependency processing:
-         - `findCompatibleResolution()` — Prefers existing edge targets for idempotency, with memoized satisfies checks
-         - `fetchManifestsForDeps()` — Parallel manifest fetching with peer compatibility checks
-         - `processPlacementTasks()` — Places nodes, handles modifiers, triggers early extraction
-         - Manages peer context lifecycle via `startPeerPlacement()`/`endPeerPlacement()`
-         - Calls `postPlacementPeerCheck()` after each level for context forking and peer resolution
-      5. **`peers.ts`** — Peer dependency context management:
-         - `checkPeerEdgesCompatible()` — Validates node reuse compatibility with idempotency checks
-         - Per-call memoization for `satisfies()` calls to improve performance
-         - Uses `nodesByName` for efficient candidate lookup (not full graph scan)
-         - `forkPeerContext()` — Creates isolated peer contexts when conflicts arise
-         - `addEntriesToPeerContext()` — Tracks dependencies in context sets
-         - Generates `peerSetHash` for affected nodes (format: `peer.N`)
-
-      📋 **See `@graph/ideal-append-nodes.mdc`** for detailed append-nodes architecture
-      📋 **See `@graph/peers.mdc`** for peer dependency context isolation details
-
-  - type: architecture_guide
-    message: |
-      ## Visualization Outputs (`src/graph/src/visualization/`)
-
-      The visualization module provides multiple output formats for graph data:
-
-      - **`mermaidOutput()`** (`mermaid-output.ts`) — Generates Mermaid flowchart syntax for docs/dashboards
-      - **`humanReadableOutput()`** (`human-readable-output.ts`) — ASCII tree with colors (like `npm ls`)
-      - **`jsonOutput()`** (`json-output.ts`) — Array of `{name, fromID, spec, type, to, overridden}` items
-      - **`objectLikeOutput()`** (`object-like-output.ts`) — Node.js `inspect()` output for debugging
-
-      All outputs accept filtered `{edges, nodes, importers}` from query results, enabling visualization of subsets.
-
-  - type: integration_guide
-    message: |
-      ## Key Entry Points and Public API (`@graph/src/index.ts`)
-
-      The main entry point re-exports the public API:
-      - `actual.load(options)` — Load from `node_modules` (or from Hidden Lockfile when available).
-      - `ideal.build(options)` — Build an Ideal Graph starting from a Virtual or Actual starting point.
-      - `lockfile.load/save` — Read and write lockfiles.
-      - `reify(options)` — Compute a `Diff` between Actual and Ideal and apply filesystem changes.
-      - `install(options, add?)` — High-level install orchestration (`src/graph/src/install.ts`):
-        - Validates options (frozen-lockfile, clean-install, lockfile-only)
-        - Handles `vlt init` if no package.json exists
-        - Loads actual graph, builds ideal, reifies changes
-        - Supports `--lockfile-only` mode for lockfile-only updates
-      - Types and utilities: `Graph`, `Node`, `Edge`, `Diff`, dependency helpers, visualization outputs, etc.
-
-  - type: development_workflow
-    message: |
-      ## Development Workflow Tips
-
-      - Share instances of `monorepo`, `packageJson`, and `scurry` across loader/build steps for performance.
-      - Prefer Hidden Lockfile (`node_modules/.vlt-lock.json`) when available for faster Actual loads.
-      - When modifiers or installer options change, you'll often rebuild the Ideal Graph with `skipLoadingNodesOnModifiersChange` to avoid loading stale dependency nodes.
-      - Determinism: Node and Edge ordering is intentionally stable to produce reproducible lockfiles.
-      - Use `graph.resetEdges()` when refreshing dependencies; it preserves nodes marked as `detached` for reuse.
-      - Pass `actual` graph to `ideal.build()` to enable early extraction optimization.
-      - Use `RollbackRemove` for safe extraction with rollback capability.
-
-      ### Useful References
-      - Monorepo concepts and related workspaces: see the monorepo structure rule and `www/docs`.
-      - `package.json` behavior: [npm package.json docs](https://raw.githubusercontent.com/npm/cli/refs/heads/latest/docs/lib/content/configuring-npm/package-json.md)
-      - Semantic Versioning: [semver.org](https://raw.githubusercontent.com/semver/semver.org/refs/heads/gh-pages/index.md)
-
-examples:
-  - input: |
-      // Build an Ideal Graph and reify changes
-      import { ideal, reify } from '@vltpkg/graph'
-      
-      const graph = await ideal.build({ projectRoot, packageInfo, packageJson, scurry })
-      await reify({ graph, packageInfo, packageJson, scurry })
-    output: "Ideal graph built and applied to disk via reify"
-
-  - input: |
-      // Build ideal with early extraction optimization
-      import { ideal, actual } from '@vltpkg/graph'
-      const actualGraph = actual.load({ projectRoot, packageJson, scurry })
-      const idealGraph = await ideal.build({ 
-        projectRoot, 
-        packageInfo, 
-        packageJson, 
-        scurry,
-        actual: actualGraph,
-        remover: new RollbackRemove()
-      })
-    output: "Ideal graph built with early tarball extraction for improved performance"
-
-  - input: |
-      // Generate visualization outputs
-      import { mermaidOutput, humanReadableOutput, jsonOutput } from '@vltpkg/graph'
-      
-      const graphData = {
-        edges: [...graph.edges],
-        nodes: [...graph.nodes.values()],
-        importers: graph.importers,
-      }
-      
-      const mermaid = mermaidOutput(graphData)
-      const tree = humanReadableOutput(graphData, { colors: true })
-      const json = jsonOutput(graphData)
-    output: "Graph visualized in multiple formats"
-
-metadata:
-  priority: high
-  version: 2.1
-  tags:
-    - graph
-    - architecture
-    - lockfiles
-    - install
-    - workspaces
-    - peer-dependencies
-    - visualization
-    - idempotency
-  related_rules:
-    - graph_ideal
-    - graph_ideal_append_nodes
-    - graph_data_structure
-    - graph_load_actual
-    - graph_lockfiles
-    - graph_modifiers
-    - graph_reify
-    - graph_peers
-</rule>
+- Share `monorepo`, `packageJson`, `scurry` instances across phases
+- Use hidden lockfile for faster Actual loads
+- `graph.resetEdges()` preserves detached nodes for reuse
+- Pass `actual` to `ideal.build()` for early extraction optimization

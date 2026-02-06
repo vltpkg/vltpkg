@@ -5,195 +5,52 @@ alwaysApply: false
 ---
 # Building Ideal Graphs
 
-Guidance for working with the Ideal Graph builder in `@vltpkg/graph`, which produces the desired end-state graph used for installs.
+Entry: `src/graph/src/ideal/build.ts` → `ideal.build(options)`
 
-<rule>
-name: graph_ideal
-description: How Ideal graphs are constructed, merged with add/remove, and expanded via remote manifests
-filters:
-  # Ideal builder implementation and helpers
-  - type: path
-    pattern: "^src/graph/src/ideal/"
-  - type: file_name
-    pattern: "^(build|build-ideal-from-starting-graph|append-nodes|get-importer-specs|remove-satisfied-specs|refresh-ideal-graph|remove-nodes|types)\\.ts$"
-  # High-level orchestration reference
-  - type: content
-    pattern: "ideal\\.build\(|buildIdealFromStartingGraph\("
+## Overview
 
-actions:
-  - type: guide
-    message: |
-      ## Overview
+1. Select starting graph: prefer Virtual (lockfile), fallback to Actual
+2. Merge `add`/`remove` with importer manifest deltas
+3. Expand via manifest fetching, recursively placing packages
+4. Reuse existing satisfying nodes to minimize network
+5. Optionally extract tarballs during construction (early extraction)
 
-      The Ideal Graph represents the desired post-install state. It is constructed by:
-      1. Selecting a starting graph: prefer Virtual (lockfile) and fall back to Actual (`node_modules`) when needed.
-      2. Merging user-provided `add`/`remove` requests with importer manifest deltas.
-      3. Expanding dependencies by fetching manifests/artifacts and recursively placing packages.
-      4. Reusing existing nodes that satisfy specs to minimize network and duplication.
-      5. Optionally extracting tarballs during graph construction for improved performance (early extraction).
+## Starting Graph (`build.ts`)
 
-      Entry point: `src/graph/src/ideal/build.ts` → `ideal.build(options)`
+Loads Virtual from `vlt-lock.json` (`lockfile.load()`), falls back to Actual (`actual.load()`). Delegates to `buildIdealFromStartingGraph()`.
 
-  - type: architecture_guide
-    message: |
-      ## Starting Graph Selection (`build.ts`)
+## Merge & Expansion (`build-ideal-from-starting-graph.ts`)
 
-      - Attempts to load a Virtual Graph from lockfile first with `skipLoadingNodesOnModifiersChange: true`.
-      - On failure, loads the Actual Graph with the same skip flag.
-      - Uses shared instances of `packageJson`, `scurry`, and `monorepo` for efficiency.
-      - Delegates to `buildIdealFromStartingGraph()` for merging and expansion.
+- Computes importer deltas via `get-importer-specs.ts` (compares manifests to graph)
+- Prunes satisfied deps via `remove-satisfied-specs.ts`
+- User `add`/`remove` overrides computed deltas
+- `refresh-ideal-graph.ts` orders importers, calls `appendNodes()` per importer
+- After expansion: `setDefaultLocation()`, `remove-nodes.ts`, `graph.gc()`
 
-  - type: architecture_guide
-    message: |
-      ## Merge and Expansion (`build-ideal-from-starting-graph.ts`)
+## Node Appending (`append-nodes.ts`)
 
-      - Computes importer deltas via `get-importer-specs.ts`:
-        - Builds `AddImportersDependenciesMap` and `RemoveImportersDependenciesMap` by comparing importer manifests to the starting graph.
-        - Prunes already-satisfied dependencies using `remove-satisfied-specs.ts`.
-        - Flags whether dependencies were modified (`modifiedDependencies`).
-      - Merges user-provided `add`/`remove` over computed deltas; user input wins.
-      - Invokes `refresh-ideal-graph.ts` to fetch and incorporate remote manifests and expand the graph.
-      - After expansion, calls `setDefaultLocation()` on nodes to normalize store layout hints.
-      - Finally, removes dependencies listed in `remove` via `remove-nodes.ts` and garbage-collects unreachable nodes (`graph.gc()`).
+- **Existing edge preference**: lockfile target preferred if it satisfies spec (idempotency)
+- **Peer compatibility**: `checkPeerEdgesCompatible()` before reuse, with idempotency checks
+- **Candidate fallback**: if first node is peer-incompatible, tries others deterministically
+- **New nodes**: fetch manifest → pick version → place node → recurse children
+- **3-phase BFS per level**: A) parallel fetch (read-only) → B) serial mutations (sorted by DepID) → C) peer check
 
-  - type: architecture_guide
-    message: |
-      ## Node Appending and Reuse (`append-nodes.ts`, `refresh-ideal-graph.ts`)
+See `@graph/ideal-append-nodes.mdc` for full BFS architecture, `@graph/peers.mdc` for peer contexts.
 
-      - **Existing Edge Preference**: First checks if the existing edge target (from lockfile) satisfies the spec — preserves lockfile resolutions for idempotency.
-      - Resolves dependency specs to nodes by attempting `graph.findResolution()` to reuse existing nodes that satisfy the spec.
-      - **Peer Compatibility Check**: Before reusing a node, checks if its peer edges are compatible with the current peer context via `checkPeerEdgesCompatible()`.
-      - **Idempotency in Peer Checks**: `checkPeerEdgesCompatible()` now checks if existing edge targets satisfy specs despite context/sibling mismatches — avoids unnecessary forking when existing resolutions are valid.
-      - **Candidate Fallback**: If the first satisfying node is peer-incompatible, lazy-loads candidates and tries others deterministically until a compatible one is found.
-      - When a satisfying node is not found, fetches manifests/artifacts via `@vltpkg/package-info`, selects appropriate versions (respecting platform/engine constraints), and places new nodes with correct flags.
-      - Recursively descends into each newly placed node's dependencies, applying `@vltpkg/spec` parsing and honoring modifiers if present.
-      - Ensures added nodes have consistent `registry`, `resolved`, and `integrity` fields as available.
+## Early Extraction
 
-      ### Deterministic Ordering Architecture
-      The BFS loop uses a 3-phase approach per level to ensure deterministic graph builds:
-      - **Phase A (Parallel Fetch)**: Fetches manifests without mutating the graph - read-only
-      - **Phase B (Serial Mutations)**: Sorts results by stable DepID keys, applies all mutations in deterministic order
-      - **Phase C (Post-Placement)**: Peer context updates and resolution
+When `actual` graph provided, new nodes destined for vlt store are extracted in parallel during construction. Tracked via `node.extracted`.
 
-      This architecture prevents non-determinism from network timing variations.
+## Workspace Peer Isolation
 
-      📋 **See `@graph/ideal-append-nodes.mdc`** for detailed BFS algorithm and peer context lifecycle
+Non-main importers get fresh peer contexts in `appendNodes()` to prevent cross-workspace peer leakage. Fork cache prevents duplicate contexts.
 
-  - type: architecture_guide
-    message: |
-      ## Early Extraction Feature (`append-nodes.ts`)
+## Options
 
-      - When an `actual` graph is provided to the build process, the Ideal builder can perform early extraction of tarballs.
-      - As nodes are placed into the graph, if they don't exist in the actual graph and are destined for the vlt store, extraction begins immediately.
-      - Extraction happens in parallel with graph construction, improving overall install performance.
-      - The `node.extracted` property tracks whether a node has been extracted to avoid duplicate extractions.
-      - This optimization is particularly beneficial when no cached information is available.
+`projectRoot`, `packageJson`, `scurry`, `monorepo` (shared instances), `packageInfo` (required), `add?`, `remove?`, `actual?` (for early extraction), `modifiers?`
 
-  - type: architecture_guide
-    message: |
-      ## Workspace Peer Context Isolation
+## Guarantees
 
-      In monorepos with multiple workspace importers, each workspace gets its **own peer context**:
-
-      - **Problem**: Without isolation, peer targets from the root importer could incorrectly influence workspace dependencies
-        - Example: Root has `react@^18`, workspace A needs `react@^19` for a peer-dependent package
-        - Without isolation, the peer dep might incorrectly resolve to react@18
-
-      - **Solution**: `appendNodes()` creates fresh peer contexts for non-main importers:
-        ```typescript
-        if (fromNode.importer && fromNode !== graph.mainImporter) {
-          const nextPeerContext: PeerContext = new Map()
-          nextPeerContext.index = graph.nextPeerContextIndex()
-          initialPeerContext = nextPeerContext
-        }
-        ```
-
-      - **Fork Caching**: `graph.peerContextForkCache` prevents duplicate contexts for identical fork operations
-      
-      📋 **See `@graph/peers.mdc`** for detailed peer context isolation and fork caching mechanisms
-
-  - type: integration_guide
-    message: |
-      ## Options and Inputs
-
-      - `projectRoot`, `packageJson`, `scurry`, `monorepo` — Required/shared instances for deterministic traversal and manifest access.
-      - `packageInfo: PackageInfoClient` — Required for remote manifest and artifact retrieval.
-      - `add?: AddImportersDependenciesMap` — Explicit dependencies to add per importer.
-      - `remove?: RemoveImportersDependenciesMap` — Explicit dependency names to remove per importer.
-      - `actual?: Graph` — Optional actual graph to enable early extraction optimization during ideal graph construction.
-      - Modifiers integration — If `modifiers` are provided, selectors can adjust specs during resolution; Ideal builder will then record modifier info on nodes for downstream awareness.
-
-      ### Behavior and Guarantees
-      - **Idempotency**: Re-running ideal build on an existing lockfile produces identical graph structure.
-      - Reuses nodes whenever they satisfy requested specs, preferring existing edge targets.
-      - Expands transitive dependencies recursively using resolved manifests.
-      - Produces a graph ready for hoisting and reification, with stable, default locations set where applicable.
-
-  - type: development_workflow
-    message: |
-      ## Practical Tips
-
-      - Always prefer the lockfile as the starting point for reproducibility.
-      - Keep `add`/`remove` mappings minimal; rely on `get-importer-specs.ts` to detect manifest drift.
-      - Pass shared `packageJson` and `scurry` instances across phases (Actual/Virtual load → Ideal build → Reify).
-      - Use `graph.findResolution()` aggressively in new features to avoid duplicate nodes and redundant network calls.
-
-examples:
-  - input: |
-      import { ideal } from '@vltpkg/graph'
-      const graph = await ideal.build({ projectRoot, packageInfo, packageJson, scurry })
-    output: "Ideal graph built from lockfile or actual as starting point"
-
-  - input: |
-      // Add and remove across importers
-      const add = new Map()
-      const remove = new Map()
-      const g = await ideal.build({ projectRoot, packageInfo, packageJson, scurry, add, remove })
-    output: "Importer deltas merged with user-provided add/remove and expanded"
-
-  - input: |
-      // Build ideal with early extraction optimization
-      import { ideal, actual } from '@vltpkg/graph'
-      const actualGraph = actual.load({ projectRoot, packageJson, scurry })
-      const idealGraph = await ideal.build({ 
-        projectRoot, 
-        packageInfo, 
-        packageJson, 
-        scurry,
-        actual: actualGraph 
-      })
-    output: "Ideal graph built with early tarball extraction for improved performance"
-
-  - input: |
-      // Multi-workspace monorepo with peer context isolation
-      // Root: react@^18, workspace-a: react@^19 with peer-dependent packages
-      const idealGraph = await ideal.build({ projectRoot, packageInfo, packageJson, scurry, monorepo })
-      
-      // Each workspace gets isolated peer contexts
-      t.ok(idealGraph.peerContexts.length > 1, 'should have multiple peer contexts')
-      t.equal(rootReact.version, '18.3.1', 'root has react@18')
-      t.equal(wsReact.version, '19.2.0', 'workspace has react@19')
-    output: "Ideal graph built with isolated peer contexts per workspace importer"
-
-metadata:
-  priority: high
-  version: 1.4
-  tags:
-    - graph
-    - ideal
-    - build
-    - manifests
-    - modifiers
-    - performance
-    - idempotency
-  related_rules:
-    - graph_workspace_architecture
-    - graph_data_structure
-    - graph_lockfiles
-    - graph_load_actual
-    - graph_modifiers
-    - graph_peers
-    - graph_reify
-    - monorepo-structure
-</rule>
-
+- **Idempotent**: same lockfile → identical graph
+- Reuses nodes satisfying specs, preferring existing edge targets
+- Stable locations set where applicable

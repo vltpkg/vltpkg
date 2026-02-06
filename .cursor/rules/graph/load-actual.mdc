@@ -3,166 +3,51 @@ description: Loading Actual Graphs from node_modules
 globs: src/graph/src/actual/*,src/graph/test/actual/*
 alwaysApply: false
 ---
-# Loading Actual Graphs (node_modules)
+# Loading Actual Graphs
 
-Understanding how `@vltpkg/graph` loads an Actual Graph by traversing a project's `node_modules` and how to use the returned structure.
+Entry: `src/graph/src/actual/load.ts` → `actual.load(options)`
 
-<rule>
-name: graph_load_actual
-description: Detailed guidance for loading Actual Graphs from node_modules and using the resulting structure
-filters:
-  # Core implementation file and directory
-  - type: path
-    pattern: "^src/graph/src/actual/load\\.ts$"
-  - type: path
-    pattern: "^src/graph/src/actual/"
-  # Hidden lockfile shortcut integration
-  - type: content
-    pattern: "loadHidden\(\)"
-  # Option flags commonly used with actual.load
-  - type: content
-    pattern: "skipHiddenLockfile|loadManifests|skipLoadingNodesOnModifiersChange"
+Represents what's currently installed on disk.
 
-actions:
-  - type: guide
-    message: |
-      ## What is an Actual Graph?
+## Flow
 
-      An Actual Graph is a representation of what's currently installed on disk in a project, derived by traversing `node_modules`. Its purpose is to reflect the real state of the install so that it can be compared to an Ideal Graph for minimal-change reification.
+1. Resolve `mainManifest` (from options or `packageJson.read()`)
+2. **Fast path**: if `!skipHiddenLockfile`, try `lockfile.loadHidden()` from `node_modules/.vlt-lock.json`
+3. Construct `Graph` with importers (project + workspaces)
+4. Compare stored modifiers (`node_modules/.vlt/vlt.json`) to current; if changed and `skipLoadingNodesOnModifiersChange`, load importers only
+5. BFS traversal from each importer's `node_modules`:
+   - Read entries, descend into `@scope` folders, follow symlinks
+   - Place nodes/edges, read manifests when `loadManifests=true`
+6. Mark extraneous deps (on disk but not declared), add dangling edges for missing deps
+7. `modifiers.rollbackActiveEntries()` to clean up
+8. Cache loaded graph to hidden lockfile
 
-      Entry point: `src/graph/src/actual/load.ts` → `actual.load(options)`
+**Helpers**: `readDir()` (scans `node_modules`), `parseDir()` (places packages, applies modifiers, queues BFS)
 
-  - type: architecture_guide
-    message: |
-      ## High-level Flow
+## Identity/Path Handling
 
-      1. Resolve `mainManifest` (from `options.mainManifest` or `packageJson.read(projectRoot)`).
-      2. If `skipHiddenLockfile` is not set, attempt fast-path by loading the Hidden Lockfile via `lockfile.loadHidden()` (file: `node_modules/.vlt-lock.json`). If successful, return that Graph.
-      3. Otherwise, construct a new `Graph` seeded with importers (the project and discovered workspaces).
-      4. Optionally compare stored modifiers (`node_modules/.vlt/vlt.json`) to `options.modifiers.config`. If `skipLoadingNodesOnModifiersChange` is true and modifiers changed, only importers are loaded (skip dependency traversal).
-      5. For each importer, call `modifiers.tryImporter(importer)` to initialize modifier tracking.
-      6. Perform a breadth-first traversal starting from each importer's `node_modules` folder:
-         - Read entries (skipping hidden items), descend into `@scope` folders, and consider only symbolic links as potential dependency links.
-         - Resolve real paths, derive alias (symlink name) and normalized package name (handling scopes) for each entry.
-         - Place nodes and edges in the graph, reading manifests when required.
-      7. Mark extraneous dependencies (present on disk but not listed in importer manifests) when manifests are loaded.
-      8. Add dangling edges for missing dependencies (declared but not found on disk).
-      9. Call `modifiers.rollbackActiveEntries()` to clean up partially applied modifier entries.
-      10. Cache the loaded graph to hidden lockfile (`node_modules/.vlt-lock.json`) if `node_modules` exists.
+- Path-based specs → `getPathBasedId()`
+- Store-based → `findDepID()` walks parents to `.vlt/` layout
+- `node.location` = relative path like `./node_modules/...`
 
-      The traversal is implemented by helper functions within `load.ts`:
-      - `readDir(scurry, currDir, fromNodeName?)` — Scans `node_modules`, recursing into `@scope` directories, returning alias/name/realpath for symlink entries.
-      - `parseDir(options, scurry, packageJson, depsFound, graph, fromNode, currDir)` — Places packages, applies modifiers, records extraneous/missing, and queues nested `node_modules` for BFS.
+## Modifier Application
 
-  - type: architecture_guide
-    message: |
-      ## Identity and Path Handling
+`maybeApplyModifierToSpec()`: calls `modifiers.tryDependencies()` before placing, swaps spec if complete breadcrumb match (marks as `overridden`).
 
-      - Path-based specs (`file`, `workspace`) get IDs directly from their path via `getPathBasedId()`.
-      - For store-based installs, `findDepID()` walks parent paths until it reaches `.vlt/` store layout (`.vlt/<DepID>/node_modules/<name>`), extracting the `DepID`.
-      - `findNodeModules()` finds the nearest `node_modules` directory for a placed node.
-      - `findName()` normalizes names, including scoped package folders.
+## Options
 
-      Placed nodes set `node.location` to a relative path like `./node_modules/...` or `./<realpath>`. Nodes outside the store are treated accordingly by `node.nodeModules(scurry)`.
+- `projectRoot`, `packageJson`, `scurry` (required), `monorepo?`, `mainManifest?`
+- `modifiers?` — active modifiers for spec resolution
+- `loadManifests?: boolean` — true: accurate dep types, extraneous/missing detection; false: infer prod edges, no missing/extraneous
+- `skipHiddenLockfile?` — skip fast path
+- `skipLoadingNodesOnModifiersChange?` — importers only if modifiers changed
+- `expectLockfile?` — fail if lockfile missing/stale (CI)
+- `frozenLockfile?` — stricter: fail if out of sync with package.json
+- `lockfileOnly?` — only update lockfile, skip node_modules operations
 
-  - type: architecture_guide
-    message: |
-      ## Modifiers Application
+## Tips
 
-      The loader uses `maybeApplyModifierToSpec()` helper to apply modifiers:
-      - Before placing packages, calls `modifiers.tryDependencies(fromNode, deps)` to find active selectors.
-      - For each dependency, checks if a modifier is complete (breadcrumb fully matched).
-      - If complete and modifier has a spec, replaces the original spec with the modifier's spec (marked as `overridden`).
-      - Records `queryModifier` with the node for later phases to reason about modified resolutions.
-      - After placing a package, calls `modifiers.updateActiveEntry(node, activeModifier)` to track progress.
-      - After traversal, `modifiers.rollbackActiveEntries()` clears any partially applied entries.
-
-      Modifiers are also applied to missing dependencies (declared but not found on disk).
-
-  - type: integration_guide
-    message: |
-      ## Options and Behavior
-
-      - `projectRoot: string` — Required. Project directory to scan.
-      - `packageJson` (required), `scurry` (required), `monorepo` (optional) — Shared instances; reuse them for performance.
-      - `mainManifest?: NormalizedManifest` — Optionally provide the root manifest; otherwise read from disk.
-      - `modifiers?: GraphModifier` — Active modifiers affecting spec resolution and node placement.
-      - `loadManifests?: boolean` —
-        - `true`: Read package manifests for accurate dependency types/specs, and to detect extraneous dependencies.
-        - `false`: Do not read manifests; infer default `prod` edges and hydrate specs from `DepID` when possible. No missing/extraneous detection.
-      - `skipHiddenLockfile?: boolean` — If `false` (default), attempt Hidden Lockfile fast-path.
-      - `skipLoadingNodesOnModifiersChange?: boolean` — Load only importers if modifiers differ from `node_modules/.vlt/vlt.json` saved config.
-      - `expectLockfile?: boolean` — Fail if lockfile is missing or out of date (used by `ci` command).
-      - `frozenLockfile?: boolean` — Fail if lockfile is missing or out of sync with package.json. Stricter than `expectLockfile`.
-      - `lockfileOnly?: boolean` — Only update the lockfile without node_modules operations. Skips package extraction, filesystem operations, and hidden lockfile saves.
-
-  - type: development_workflow
-    message: |
-      ## Using the Returned Actual Graph
-
-      - Nodes may lack manifests when `loadManifests=false`. Avoid relying on dependency type info or declared specs in that mode.
-      - Missing dependencies are represented by edges with no `to` node (dangling edges) when manifests are processed; extraneous dependencies are recorded in `graph.extraneousDependencies`.
-      - Each node has a `location` and can compute its `nodeModules(scurry)` directory for linking operations.
-      - The Actual Graph is commonly diffed against an Ideal Graph using `new Diff(actual, ideal)`, then applied by `reify`.
-      - Prefer the Hidden Lockfile fast-path when available to skip filesystem traversal.
-
-      ### Store Config Object
-      The loader reads/validates `node_modules/.vlt/vlt.json` via `isStoreConfigObject()` and `asStoreConfigObject()`:
-      - Contains `modifiers` record used to detect modifier changes between installs.
-      - If modifiers changed and `skipLoadingNodesOnModifiersChange` is set, only importers are loaded.
-
-      ### Performance Tips
-      - Reuse `packageJson`, `scurry`, and `monorepo` instances across phases.
-      - Use `skipLoadingNodesOnModifiersChange` strategically when rebuilding after modifier changes.
-      - Hidden lockfile is automatically saved after traversal to speed up subsequent loads.
-
-examples:
-  - input: |
-      // Load Actual with manifests for accurate extraneous/missing detection
-      import { actual } from '@vltpkg/graph'
-      const from = actual.load({
-        projectRoot,
-        packageJson: sharedPackageJson,
-        scurry: sharedScurry,
-        monorepo: sharedMonorepo,
-        loadManifests: true,
-      })
-    output: "Actual graph loaded from node_modules with manifests"
-
-  - input: |
-      // Fast-path from Hidden Lockfile (if present and not skipped)
-      import { actual } from '@vltpkg/graph'
-      const from = actual.load({
-        projectRoot,
-        packageJson,
-        scurry,
-        // skipHiddenLockfile: false (default)
-      })
-    output: "Actual graph loaded from node_modules/.vlt-lock.json when available"
-
-  - input: |
-      // No-manifest mode (faster, limited details, defaults to prod edges)
-      const from = actual.load({ projectRoot, packageJson, scurry, loadManifests: false })
-    output: "Actual graph loaded without reading manifests; no extraneous/missing computed"
-
-  - input: |
-      // Lockfile-only mode (skip node_modules operations)
-      const from = actual.load({ projectRoot, packageJson, scurry, lockfileOnly: true })
-    output: "Actual graph loaded for lockfile-only updates"
-
-metadata:
-  priority: high
-  version: 1.1
-  tags:
-    - graph
-    - actual
-    - node_modules
-    - filesystem
-    - performance
-    - modifiers
-  related_rules:
-    - graph_workspace_architecture
-    - graph_data_structure
-    - graph_lockfiles
-    - graph_modifiers
-</rule>
+- Missing deps = dangling edges (`to=undefined`); extraneous in `graph.extraneousDependencies`
+- Common usage: diff Actual vs Ideal → reify
+- Prefer hidden lockfile fast path when available
+- Reuse shared instances across phases
