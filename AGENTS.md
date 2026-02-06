@@ -9,10 +9,11 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 - **Graph (core install engine):** `src/graph` — See
   `.cursor/rules/graph/index.mdc` and sub-rules: `data-structure`,
   `ideal`, `ideal-append-nodes`, `load-actual`, `modifiers`,
-  `lockfiles`, `reify`, `peers`
-- **Core:** `src/cache`, `src/cache-unzip`, `src/types`, `src/dep-id`
-  (node IDs), `src/spec` (specifier parsing), `src/satisfies`
-  (DepID↔Spec)
+  `lockfiles`, `reify`, `peers`, `src/graph-run` (parallel graph
+  operations)
+- **Core:** `src/cache`, `src/cache-unzip`, `src/config`,
+  `src/types`, `src/dep-id` (node IDs), `src/spec` (specifier
+  parsing), `src/satisfies` (DepID↔Spec)
 - **DSS Query:** `src/dss-parser`, `src/dss-breadcrumb`, `src/query` —
   See `.cursor/rules/query-pseudo-selector-creation.mdc`
 - **Package Mgmt:** `src/package-info`, `src/package-json`,
@@ -21,10 +22,11 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `.cursor/rules/cli-sdk-workspace.mdc`), `src/init`, `src/vlx`,
   `src/run`
 - **Utilities:** `src/keychain`, `src/security-archive`, `src/semver`,
-  `src/git`, `src/error-cause`, `src/output`, `src/xdg`,
-  `src/url-open`, `src/promise-spawn`, `src/cmd-shim`,
+  `src/git`, `src/git-scp-url`, `src/error-cause`, `src/output`,
+  `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`,
   `src/rollback-remove`, `src/dot-prop`, `src/fast-split`,
   `src/pick-manifest`, `src/vlt-json`, `src/which`
+- **Backend:** `src/vsr` (vlt Storage Registry service)
 - **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`,
   `infra/cli-{platform}`, `infra/smoke-test`
 - **Docs:** `www/docs` → https://docs.vlt.sh
