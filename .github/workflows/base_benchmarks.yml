@@ -2,7 +2,8 @@ name: Baseline Benchmarks
 
 on:
   push:
-    branches: main
+    branches:
+      - main
 
 jobs:
   benchmark_base_branch:
@@ -24,28 +25,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Install Node
+      - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: pnpm
           check-latest: true
 
-      - name: Install Dependencies
-        run: pnpm --filter="!smoke-test" install --ignore-scripts
+      - name: Install Dependencies with known good version of vlt
+        run: npx vlt@latest install
+
+      - name: Build source version of vlt
+        run: node --run build:bundle
+
+      - name: Add source version of vlt to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+
+      - name: Install Dependencies with source of vlt
+        run: |
+          # avoid changes from the bootstrap step
+          ./scripts/rm-node-nodules.ts
+          # re-install dependencies
+          vlt install --view=human
 
       - name: Prepare
-        run: pnpm --filter="!smoke-test" prepare
-
-      - name: Build
-        run: pnpm run build:bundle
-
-      - name: Setup vlt binaries
-        run: echo "$(pwd)/scripts/bins/bundle" >> $GITHUB_PATH
+        run: vlr --recursive prepare
 
       - name: Install & Setup Tools
         run: |
