@@ -18,8 +18,6 @@ import type {
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
 const NODE_ENGINES = '>=22.9.0'
-// TODO(dogfood): remove usage of this since we will always use the latest version of vlt
-const PNPM_VERSION = '10.11.0'
 
 type Workspace = WorkspaceBase & {
   isRoot: boolean
@@ -391,10 +389,6 @@ const fixEngines = async (ws: Workspace) => {
 
 const fixPackage = async (ws: Workspace, config: WorkspaceConfig) => {
   ws.pj.engines ??= {}
-  if (ws.isRoot) {
-    ws.pj.engines.pnpm = PNPM_VERSION.split('.')[0] ?? ''
-    ws.pj.packageManager = `pnpm@${PNPM_VERSION}`
-  }
 
   const relDirToWorkspace = relative(ROOT, ws.dir)
   ws.pj.repository = {

@@ -7,8 +7,6 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      filter:
-        description: 'An optional filter to run a subset of workspaces. This will be passed directly to pnpm --filter.'
       full-matrix:
         description: 'Whether to run the full matrix of environments for testing.'
         type: boolean
@@ -23,10 +21,6 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     outputs:
       release-pr: ${{ steps.release-pr.outputs.value }}
-      changed: ${{ steps.filters.outputs.changed }}
-      dependent: ${{ steps.filters.outputs.dependent }}
-      related: ${{ steps.filters.outputs.related }}
-      base-ref: ${{ steps.filters.outputs.base-ref }}
       full-matrix: ${{ steps.full-matrix.outputs.value }}
     steps:
       - name: Release PR
@@ -37,40 +31,6 @@ jobs:
           else
             echo "value=false" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Recursive
-        id: recursive
-        run: |
-          if [[
-            "${{ steps.release-pr.outputs.value }}" == "true" ||
-            "${{ github.event_name }}" == "push" ||
-            ("${{ github.event_name }}" == "workflow_dispatch" && -z "${{ inputs.filter }}")
-          ]]; then
-            echo "value=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Filters
-        id: filters
-        run: |
-          if [[ "${{ steps.recursive.outputs.value }}" == "true" ]]; then
-            echo "changed=--recursive" >> "$GITHUB_OUTPUT"
-            echo "dependent=--recursive" >> "$GITHUB_OUTPUT"
-            echo "related=--recursive" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [[ -n "${{ inputs.filter}}" ]]; then
-            filter="${{ inputs.filter }}"
-          else
-            filter="[origin/${{ github.base_ref }}]"
-            echo "base-ref=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
-          fi
-
-          echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
-          echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
-          echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
 
       - name: Matrix
         id: full-matrix
@@ -105,45 +65,53 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version: '^22.14.0'
-          cache: pnpm
           check-latest: true
 
-      - name: Install Dependencies
-        run: pnpm install
+      - name: Install Dependencies with known good version of vlt
+        run: npx vlt@latest install
+
+      - name: Build source version of vlt
+        run: node --run build:bundle
+
+      - name: Add source version of vlt to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+
+      - name: Install Dependencies with source of vlt
+        run: |
+          # avoid changes from the bootstrap step
+          ./scripts/rm-node-nodules.ts
+          # re-install dependencies
+          vlt install --view=human
 
       - name: Formatting
         id: format
         continue-on-error: true
-        run: pnpm run format:check
+        run: vlr format:check
 
       - name: Linting
         id: lint
         continue-on-error: true
-        run: pnpm run lint:check
+        run: vlr lint:check
 
       - name: Dependencies
         id: deps
         continue-on-error: true
-        run: pnpm run deps:check
+        run: vlr deps:check
 
       - name: Docs
         id: docs
         continue-on-error: true
-        run: pnpm --filter docs typedoc:check
+        run: vlr --workspace ./www/docs typedoc:check
 
       - name: Consistent Workspaces
         id: workspaces
         continue-on-error: true
         run: |
-          pnpm run fix:pkg
+          vlr fix:pkg
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1
@@ -197,29 +165,33 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Use Nodejs ${{ matrix.node-version }}
+      - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: pnpm
+          node-version: '^22.14.0'
           check-latest: true
 
-      - name: Fetch Git Ref to Compare
-        if: needs.pre-check.outputs.base-ref
-        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ needs.pre-check.outputs.base-ref }}:refs/remotes/origin/${{ needs.pre-check.outputs.base-ref }}
+      - name: Install Dependencies with known good version of vlt
+        run: npx vlt@latest install
 
-      - name: Install Dependencies
-        run: pnpm ${{ needs.pre-check.outputs.related }} --filter="!smoke-test" install --ignore-scripts
+      - name: Build source version of vlt
+        run: node --run build:bundle
+
+      - name: Add source version of vlt to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+
+      - name: Install Dependencies with source of vlt
+        run: |
+          # avoid changes from the bootstrap step
+          ./scripts/rm-node-nodules.ts
+          # re-install dependencies
+          vlt install --view=human
 
       - name: Prepare
-        run: pnpm ${{ needs.pre-check.outputs.related }} --filter="!smoke-test" prepare
+        run: vlr --recursive prepare
 
       - name: Run Tests
-        run: pnpm ${{ needs.pre-check.outputs.dependent }} --filter="!smoke-test" --no-bail --aggregate-output test
+        run: vlr --recursive test
 
   on-failure:
     name: Notify on Failure

@@ -10,7 +10,7 @@ import {
 } from '@vltpkg/infra-build'
 import { ROOT } from './utils.ts'
 
-const LANGUAGES = ['sh', 'pwsh'] as const
+const LANGUAGES = ['sh', 'pwsh', 'cmd'] as const
 
 const getLevelToRoot = (dir: string) =>
   relative(dir, ROOT)
@@ -127,6 +127,43 @@ const pwsh: SyntaxFn = opts => {
   ]
 }
 
+const cmd: SyntaxFn = opts => {
+  const rootName = 'ROOT_DIR'
+  const replaceDir = (v: string) =>
+    opts.replaceDir(v, `%${rootName}%`)
+
+  const getRoot = `%~dp0${Array(getLevelToRoot(opts.dir)).fill('..').join('\\')}`
+
+  const file = replaceDir(opts.file)
+
+  const cmdLine = [
+    ...opts.cmd
+      .map(v => replaceDir(v))
+      .map(v => (v.startsWith(`%${rootName}%`) ? q(v) : v)),
+    '%*',
+  ].join(' ')
+
+  const prepare =
+    opts.prepare ?
+      [
+        `IF NOT EXIST ${q(file)} (`,
+        i(`pushd ${q(`%${rootName}%`)}`),
+        i(`${opts.prepare} > NUL 2>&1`),
+        i('popd'),
+        ')',
+      ]
+    : []
+
+  return [
+    '@ECHO off',
+    'SETLOCAL',
+    `SET ${q(`${rootName}=${getRoot}`)}`,
+    ...prepare,
+    ...opts.env.map(([k, v]) => `SET ${q(`${k}=${v}`)}`),
+    cmdLine,
+  ]
+}
+
 const createVariants = ({
   windows,
 }: {
@@ -160,6 +197,11 @@ const Langs = {
   pwsh: {
     syntax: pwsh,
     ext: '.ps1',
+    ...createVariants({ windows: true }),
+  },
+  cmd: {
+    syntax: cmd,
+    ext: '.cmd',
     ...createVariants({ windows: true }),
   },
 } as const

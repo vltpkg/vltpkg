@@ -20,17 +20,14 @@ mkdir -p ./results/
 
 # Log Package Manager Versions
 echo "Logging package manager versions..."
-PNPM_VERSION="$(pnpm -v)"
 VLT_VERSION="$(vlt --version)"
 
 # Output versions
 echo "vlt: $VLT_VERSION"
-echo "pnpm: $PNPM_VERSION"
 
 # Save versions to JSON file
 echo "{
-  \"vlt\": \"$VLT_VERSION\",
-  \"pnpm\": \"$PNPM_VERSION\"
+  \"vlt\": \"$VLT_VERSION\"
 }" > ./results/versions.json
 
 echo "Setup completed successfully!"
