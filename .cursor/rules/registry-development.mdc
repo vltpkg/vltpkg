@@ -1,149 +1,47 @@
 ---
-description: 
-globs: 
+description: Registry (vsr) development patterns and architecture
+globs: src/vsr/src/**/*,src/vsr/test/**/*
 alwaysApply: false
 ---
-# vltpkg Registry Development Rules
+# Registry Development (src/vsr/)
 
-## Registry Overview
-The vltpkg registry (`src/vsr/`) is a high-performance npm-compatible package registry built on Cloudflare Workers with:
-- **Multi-upstream support**: Routes packages to different registries (npm, jsr, local, custom)
-- **Intelligent caching**: Stale-while-revalidate strategy with racing cache for performance
-- **Proxy capabilities**: Can proxy packages from upstream registries while maintaining local packages
-- **Security integration**: Socket.dev security data integration
-- **Modern stack**: Hono framework, D1 database, R2 storage, TypeScript
+npm-compatible registry on Cloudflare Workers (Hono, D1, R2). Multi-upstream, stale-while-revalidate caching. Security audit endpoints are placeholders today (Socket.dev planned for v1.x).
 
-## Core Architecture Patterns
+## Architecture
 
-### Never Stub
+- **Routing order matters**: upstream routes (`/:upstream/...`) validate + `c.set('upstream', upstream)` before local package routes (`/:pkg...`). Final `/*` is static assets fallback.
+- **Upstream config**: `env.ORIGIN_CONFIG` (worker env) resolved via `getUpstreamConfig(upstream, c)` (`src/utils/upstream.ts`)
+- **Proxy mode**: `PROXY=true` → prefer local DB/R2, then fallback upstream (default via `getDefaultUpstream()`)
 
-Never stub out an endpoint in the source code (tests are fine). Either you fully realize the functionality or you bail & document why you are not creating an endpoint because of some limitation. Leaving a feature/endpoint half-implemented is the worst state.
+## Not Implemented Endpoints
 
-### Route Handling
-- **Catch-all routing**: Main router uses catch-all pattern `/*` to handle all package routes
-- **Upstream detection**: Routes like `/npm/package` set upstream context via `c.set('upstream', 'npm')`
-- **Parameter extraction**: For upstream routes, extract package names from path since route params aren't available
-- **Reserved routes**: Check against RESERVED_ROUTES before treating as package names
+Avoid silent stubs. If an endpoint isn’t implemented yet, return an explicit 501 + docstring (see `src/routes/misc.ts` `auditRoute`).
 
-### Package Name Extraction
-```typescript
-// Always handle both route parameters AND path extraction for upstream routes
-const upstream = c.get('upstream') as string
-if (!scope && !pkg && upstream) {
-  // Extract from path: /npm/lodash -> lodash, /npm/@scope/pkg -> @scope/pkg
-  const pathSegments = path.split('/').filter(Boolean)
-  const packageSegments = pathSegments.slice(1) // Remove upstream prefix
-  // Handle scoped vs unscoped packages
-}
-```
+## Package Name Extraction
 
-### Upstream Configuration
-- **Config-driven**: Upstreams defined in `config.ts` ORIGIN_CONFIG
-- **URL resolution**: Use `getUpstreamConfig(upstream)` to get upstream-specific URLs
-- **Proxy logic**: When PROXY=true, check local first, then upstream for missing packages
+For upstream routes, extract from path since route params aren't available. Handle both scoped (`@scope/pkg`) and unscoped. Check against RESERVED_ROUTES.
 
-### Error Handling
-- **Consistent errors**: Use standard error format `{ error: 'message' }` with appropriate HTTP status
-- **Upstream errors**: 502 for upstream failures, 404 for not found, 400 for invalid requests
-- **Graceful fallbacks**: Always provide fallback behavior for upstream failures
+## DB Patterns
 
-## Database Patterns
+- Packages: name, tags (dist-tags), lastUpdated. Versions: `package@version` format
+- Proxy packages: `source='proxy'` prevents local operations
+- Cache: `getCachedPackageWithRefresh` (short TTL), `getCachedVersionWithRefresh` (longer TTL)
+- Background refresh via `c.executionCtx.waitUntil()`
 
-### Package Storage
-- **Consistent structure**: All packages have name, tags (dist-tags), lastUpdated
-- **Version specs**: Store as "package@version" format for versions table
-- **Proxy marking**: Mark proxied packages with source='proxy' to prevent local operations
+## Key Patterns
 
-### Cache Strategy
-- **Racing cache**: Use `getCachedPackageWithRefresh` for packuments (short TTL)
-- **Longer TTL**: Use `getCachedVersionWithRefresh` for manifests (longer TTL)
-- **Background refresh**: Queue refresh tasks via `c.executionCtx.waitUntil()`
-- **Key consistency**: Use 'dist-tags' not 'tags' in cache functions
+- **Slim manifests**: `slimManifest(manifest, context, c)` in `src/utils/packages.ts`
+- **Tarball URLs**: local uses `${c.env.URL}/${createFile({ pkg, version })}`; upstream rewrites to `/${upstream}/${pkg}/-/<file>.tgz`
+- **Cache headers**: manifests `public, max-age=300`; tarballs `public, max-age=31536000`
 
-## Testing Best Practices
+## Dev Commands
 
-### Mock Setup
-- **Complete mocks**: Always mock all required methods (getPackage, getVersion, getCachedPackage, upsertCachedPackage)
-- **Context mocking**: Include `get` method for upstream context and `executionCtx.waitUntil` for background tasks
-- **Parameter structure**: For dist-tags, unscoped packages use scope parameter, scoped use scope='@scope' + pkg
-
-### Route Testing
-- **Upstream routes**: Test both direct routes (`/package`) and upstream routes (`/npm/package`)
-- **Parameter extraction**: Verify package name extraction works for both parameter-based and path-based routes
-- **Error scenarios**: Test 404s, 400s, 502s with appropriate error messages
-
-## Code Quality
-
-### TypeScript
-- **Strict typing**: Use proper types, avoid `any` except for upstream response parsing
-- **Error handling**: Always wrap external calls in try-catch with appropriate error responses
-- **Interface consistency**: Use existing interfaces (HonoContext, PackageManifest, etc.)
-
-### Performance
-- **Minimize database calls**: Batch operations where possible
-- **Stream large responses**: Use streaming for tarballs >10MB
-- **Cache headers**: Set appropriate Cache-Control headers for different content types
-- **Background tasks**: Use waitUntil for non-critical operations (storage, cache updates)
-
-### Security
-- **Input validation**: Always validate package names, versions, and user input
-- **URL encoding**: Properly decode URL-encoded package names and versions
-- **Integrity checks**: Validate tarball integrity when headers provided
-- **Access control**: Check permissions for dist-tag operations and publishing
-
-## Common Patterns
-
-### Manifest Handling
-```typescript
-// Always slim manifests for responses
-const slimmedManifest = slimManifest(versionData.manifest)
-// Rewrite tarball URLs to point to our registry
-if (manifest.dist?.tarball) {
-  manifest.dist.tarball = `${DOMAIN}/${createFile({ pkg, version })}`
-}
-```
-
-### Upstream Proxying
-```typescript
-// Check local first, then upstream if PROXY enabled
-const localData = await c.db.getPackage(name)
-if (!localData && upstream && PROXY) {
-  const upstreamConfig = getUpstreamConfig(upstream)
-  const response = await fetch(`${upstreamConfig.url}/${name}`)
-  // Handle response, cache if needed
-}
-```
-
-### Response Headers
-```typescript
-// Set appropriate headers for different content types
-c.header('Content-Type', 'application/json')
-c.header('Cache-Control', 'public, max-age=300') // 5 min for manifests
-c.header('Cache-Control', 'public, max-age=31536000') // 1 year for tarballs
-```
-
-## Development Workflow
-
-### Testing
-- **Run full suite**: `pnpm test` runs all tests including e2e
-- **Individual tests**: `pnpm test:unit` for unit tests only
-- **Database setup**: `pnpm test:setup` to initialize test database
-- **Cleanup**: `pnpm test:cleanup` to kill wrangler processes
-
-### Local Development
-- **Dev server**: `pnpm serve:dev` starts wrangler dev with hot reload
-- **Database**: `pnpm db:setup` initializes local D1 database
-- **Assets**: `pnpm build:assets` copies GUI assets to serve folder
-
-### Debugging
-- **Wrangler logs**: Check wrangler dev output for request/response logs
-- **Database studio**: `pnpm db:studio` opens Drizzle Studio on port 4985
-- **Test isolation**: Each test cleans up its own state to avoid interference
+- `pnpm serve:build` — build + run `dist/bin/vsr.js --debug`
+- `pnpm serve:watch` — chokidar watch: rebuild + restart
+- `pnpm deploy` — build + `wrangler deploy`
+- `pnpm db:setup` / `pnpm db:studio` (port 4985)
+- `pnpm test`, `pnpm snap`, `pnpm typecheck`
 
 ## Key Files
-- `src/index.ts`: Main router and catch-all handler
-- `src/routes/packages.ts`: Core package route handlers
-- `src/utils/cache.ts`: Caching strategy implementation
-- `src/utils/upstream.ts`: Upstream configuration and URL building
-- `config.ts`: Registry configuration and upstream definitions
-- `test/`: Comprehensive test suite with e2e, unit, and integration tests
+
+`src/index.ts` (router), `src/routes/packages.ts`, `src/routes/misc.ts`, `src/utils/cache.ts`, `src/utils/upstream.ts`, `src/utils/packages.ts`, `config.ts`

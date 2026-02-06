@@ -3,218 +3,70 @@ description: Graph core data structures (Graph, Node, Edge, Types)
 globs: src/graph/src/graph.ts,src/graph/src/node.ts,src/graph/src/edge.ts,src/graph/src/types.ts,src/graph/test/graph.ts,src/graph/test/node.ts,src/graph/test/edge.ts
 alwaysApply: false
 ---
-# Graph Core Data Structures
+# Graph Data Structures
 
-Detailed reference for the data model used by `@vltpkg/graph`, covering `Graph`, `Node`, `Edge`, and public type shapes. Use this to inform future implementation work across the graph system.
+## Graph (`graph.ts`)
 
-<rule>
-name: graph_data_structure
-description: In-depth documentation of Graph, Node, Edge, and their invariants and behaviors
-filters:
-  # Core data structure files
-  - type: path
-    pattern: "^src/graph/src/(graph|node|edge|types)\\.ts$"
-  # Files that consume these types frequently
-  - type: path
-    pattern: "^src/graph/src/(ideal|actual|lockfile|reify)/"
-  # Mentions of Graph/Node/Edge in content
-  - type: content
-    pattern: "class Graph|class Node|class Edge|GraphLike|NodeLike|EdgeLike"
+**Construction**: Seeds `mainImporter` from project root (`file:.` DepID), discovers workspaces, initializes peer contexts.
 
-actions:
-  - type: guide
-    message: |
-      ## Overview
+**Fields:**
+- `importers: Set<Node>` — roots (main + workspaces)
+- `mainImporter: Node`
+- `nodes: Map<DepID, Node>`, `nodesByName: Map<string, Set<Node>>` (sorted by DepID)
+- `edges: Set<Edge>`, `manifests: Map<DepID, NormalizedManifest>`
+- `resolutions: Map<string, Node>` / `resolutionsReverse`
+- `extraneousDependencies: Set<Edge>`
+- `peerContexts: PeerContext[]`, `currentPeerContextIndex: number`
 
-      The graph library models a project's installable dependency universe using:
-      - `Graph` — global container of nodes and edges, with importer roots, caches, peer contexts, and helpers
-      - `Node` — unique package instance; identity provided by `@vltpkg/dep-id`
-      - `Edge` — directed dependency relationship from `from` to `to` with a parsed `Spec`
+**Key methods:**
+- `addNode()` — creates node, populates indices, keeps `nodesByName` sorted
+- `addEdge(type, spec, from, to?)` — creates/updates edge, de-duplicates
+- `placePackage(fromNode, depType, spec, manifest?, id?, extra?)` — high-level: creates node + edge, splits `extra` into `modifier`/`peerSetHash`
+- `findResolution(spec, fromNode, extra?)` — searches `nodesByName` for satisfying node, cached by spec+location+extra
+- `removeNode(node, replacement?, keepEdges?)`, `gc()` — prune unreachable
+- `resetEdges()` — clears edges, marks manifested nodes as `detached` for reuse
+- `nextPeerContextIndex()` — unique peer context ID generation
+- `toJSON()` → `lockfileData()` for deterministic serialization
 
-      Public type shapes (`GraphLike`, `NodeLike`, `EdgeLike`) are defined in `src/graph/src/types.ts` for loose coupling with higher-level modules.
+**Resolution cache key**: `getResolutionCacheKey(spec.final, from.location, extra)` — includes modifier+peerSetHash.
 
-  - type: architecture_guide
-    message: |
-      ## Graph (`src/graph/src/graph.ts`)
+## Node (`node.ts`)
 
-      Construction:
-      - Initializes `mainImporter` from the project root manifest using a `file:.` DepID
-      - Discovers additional importer nodes from `@vltpkg/workspaces`, adding each as a root
-      - Initializes peer context tracking with an initial empty `PeerContext`
+**Identity**: `id: DepID`, `manifest?`, `name`, `version`, `integrity`, `resolved`, `registry`, `modifier`
 
-      Core fields:
-      - `importers: Set<Node>` — roots of traversal (main project + workspaces)
-      - `mainImporter: Node` — the primary project importer
-      - `nodes: Map<DepID, Node>` — all nodes keyed by unique `DepID`
-      - `nodesByName: Map<string, Set<Node>>` — lookup by package name (deterministically sorted by DepID)
-      - `edges: Set<Edge>` — all edges across the graph
-      - `manifests: Map<DepID, NormalizedManifest>` — manifest inventory
-      - `resolutions: Map<string, Node>` / `resolutionsReverse: Map<Node, Set<string>>` — resolution caches
-      - `extraneousDependencies: Set<Edge>` — edges present on disk but not declared when loading Actual graphs
-      - `peerContexts: PeerContext[]` — array of peer context sets used for peer dependency resolution
-      - `currentPeerContextIndex: number` — tracks the current peer context index for unique hash generation
+**Location**: `location` (default: `./node_modules/.vlt/<DepID>/node_modules/<name>`), `inVltStore()` (memoized), `nodeModules(scurry)`, `setDefaultLocation()`
 
-      Important methods:
-      - `addNode(id?, manifest?, spec?, name?, version?)` — creates a node; populates indices and resolution cache; keeps `nodesByName` sorted by DepID
-      - `addEdge(type, spec, from, to?)` — creates/updates an edge; ensures spec naming; de-duplicates similar edges
-      - `placePackage(fromNode, depType, spec, manifest?, id?, extra?)` — high-level placement that either creates a missing edge (if no `manifest`/`id`) or ensures a node exists and connects the edge, setting dev/optional flags; splits `extra` into `modifier` and `peerSetHash`
-      - `findResolution(spec, fromNode, extra?)` — searches `nodesByName` for a satisfying node (via `@vltpkg/satisfies`), keyed by spec + from location + extra for caching
-      - `removeNode(node, replacement?, keepEdges?)` — deletes node and rewires or removes affected edges
-      - `removeEdgeResolution(edge, extra?)` — clears a specific cached resolution and potentially prunes the referenced node if orphaned
-      - `gc()` — trims unreachable nodes/edges not reachable from importers; used after optional failures
-      - `resetEdges()` — clears all edges while preserving nodes and resolution caches; marks nodes with manifests as `detached`; used when refreshing the ideal graph
-      - `nextPeerContextIndex()` — returns and increments `currentPeerContextIndex` for unique peer context identification
-      - `toJSON()` — serializes using `lockfileData()` to produce a stable, deterministic representation
+**Flags**: `dev`, `optional` (cascade-clear to children), `detached`, `extracted`, `buildState: 'none'|'needed'|'built'|'failed'`
 
-      Resolution cache key:
-      - `getResolutionCacheKey(spec.final, from.location, extra)`; file-based specs include `from.location` to avoid cross-importer leakage; `extra` combines modifier and peerSetHash
+**Platform/bins**: `platform?: { engines?, os?, cpu? }`, `bins?: Record<string, string>`
 
-  - type: architecture_guide
-    message: |
-      ## Node (`src/graph/src/node.ts`)
+**Peer**: `peerSetHash?: string` (format: `peer.N`, appended to DepID as `extra`)
 
-      Identity and metadata:
-      - `id: DepID` — unique identity; from `getId(spec, manifest)` or explicit `id`
-      - `manifest?: NormalizedManifest` — may be undefined when not read (eg. Actual load without manifests)
-      - `name`, `version`, `integrity`, `resolved`, `registry`, `modifier`
+**Workspace**: `workspaces: Map<string, Edge>` (only on `mainImporter`)
 
-      Location and store model:
-      - `location: string` — defaults to `./node_modules/.vlt/<DepID>/node_modules/<name>` if not set
-      - `inVltStore()` — memoized check whether node is located in the store layout
-      - `nodeModules(scurry)` — directory where this node's dependencies are linked (store parent vs direct `node_modules`)
-      - `setImporterLocation(location)` — marks importer nodes and sets location
-      - `setDefaultLocation()` — relocates nodes into default store path when appropriate
+**Confused**: `confused = false` — true if manifest name ≠ spec name; preserves `rawManifest`
 
-      Dependency flags and propagation:
-      - `dev` and `optional` flags indicate reachability via dev or optional/peerOptional edges
-      - Clearing `dev` or `optional` cascades to non-dev/non-optional children (ensures consistency)
+## Edge (`edge.ts`)
 
-      State tracking:
-      - `detached = false` — marks nodes loaded from lockfile/actual that can be reused without manifest fetch; set by `graph.resetEdges()` for nodes with manifests
-      - `extracted = false` — tracks whether this node has been extracted to the file system
-      - `built = false` — legacy flag for build tracking
-      - `buildState: 'none' | 'needed' | 'built' | 'failed'` — granular build state tracking
+- `from: Node`, `to?: Node` (undefined = missing dep)
+- `type: DependencyTypeShort` — `prod | dev | peer | peerOptional | optional`
+- `spec: Spec` (name enforced at creation)
+- `valid()` — checks `to.id` satisfies `spec`
 
-      Platform and binary info:
-      - `platform?: { engines?, os?, cpu? }` — platform requirements extracted from manifest; stored separately for optional deps to enable platform checks when manifest is not loaded
-      - `bins?: Record<string, string>` — binary names to their paths in the package
+## Public Types (`types.ts`)
 
-      Peer dependency context:
-      - `peerSetHash?: string` — deterministic unique string identifying nodes affected by peer context modifications; appended to DepID as `extra` suffix (format: `peer.N`)
+`GraphLike`, `NodeLike`, `EdgeLike` — minimal interfaces for loose coupling with consumers.
 
-      Workspaces:
-      - `workspaces: Map<string, Edge> | undefined` — only on `mainImporter`; maps workspace names to virtual edges connecting to workspace importer nodes
+## Lockfile Types (`lockfile/types.ts`)
 
-      Confused manifests:
-      - `confused = false` — true if manifest name differs from requested spec name
-      - `maybeSetConfusedManifest(spec, manifest?)` sets `confused=true` when manifest name differs; preserves `rawManifest`
+- `LockfileNode` tuple: `[flags, name?, integrity?, resolved?, location?, manifest?, rawManifest?, platform?, bins?, buildState?]`
+- `LockfileEdges`: `{ "${from.id} ${spec.name}": "${type} ${spec.bareSpec} ${to.id | 'MISSING'}" }`
+- Flags: 0=prod, 1=optional, 2=dev, 3=devOptional
+- Helpers: `getFlagNumFromNode()`, `getBooleanFlagsFromNum()`, `getBuildStateFromNode()`
 
-  - type: architecture_guide
-    message: |
-      ## Edge (`src/graph/src/edge.ts`)
+## Invariants
 
-      - `from: Node`, `to?: Node` — directed relation; `to` may be missing to model missing dependencies
-      - `type: DependencyTypeShort` — one of `prod | dev | peer | peerOptional | optional`
-      - `spec: Spec` — parsed from `@vltpkg/spec`; `spec.name` is enforced during creation for correctness
-      - Convenience flags: `dev`, `optional`, `peer`, `peerOptional`
-      - `valid()` checks satisfaction of `to.id` against `spec` using `@vltpkg/satisfies` with `from.location` and `projectRoot`
-
-  - type: data_format_guide
-    message: |
-      ## Public Type Shapes (`src/graph/src/types.ts`)
-
-      - `GraphLike` — minimal interface exposing graph fields and methods used by clients that should not depend on full implementation details
-      - `NodeLike` — minimal node shape with key fields (`id`, `edgesIn`, `edgesOut`, `manifest`, `location`, `name`, `platform`, `bins`, etc.) and behaviors (eg. `setResolved`, `maybeSetConfusedManifest`)
-      - `EdgeLike` — minimal edge shape including `from`, `spec`, `to?`, and flags
-
-      These types enable testing, visualization, and interop with modules like `ideal`, `actual`, `lockfile`, and `reify` without tightly coupling to class implementations.
-
-  - type: data_format_guide
-    message: |
-      ## Lockfile Types (`src/graph/src/lockfile/types.ts`)
-
-      Node representation:
-      - `LockfileNode` — tuple format: `[flags, name?, integrity?, resolved?, location?, manifest?, rawManifest?, platform?, bins?, buildState?]`
-      - `LockfileNodeFlags` — bit flags (0-3) for dev/optional combinations
-      - `LockfilePlatform` — `{ engines?, os?, cpu? }` for platform requirements
-      - `LockfileBuildState` — `undefined | 1 | 2 | 3` for none/needed/built/failed
-
-      Edge representation:
-      - `LockfileEdges` — record with key `${from.id} ${spec.name}` and value `${type} ${spec.bareSpec} ${to.id | 'MISSING'}`
-
-      Helper functions:
-      - `getFlagNumFromNode(node)` / `getBooleanFlagsFromNum(flags)` — convert between node flags and lockfile format
-      - `getBuildStateFromNode(node)` / `getBuildStateFromNum(state)` — convert between build state formats
-
-  - type: architecture_guide
-    message: |
-      ## Invariants and Modeling Notes
-
-      - Node identity (`DepID`) is unique across the graph; `nodes` map keys must not collide
-      - `nodesByName` collects multiple versions/locations of the same package name for resolution; kept sorted by DepID for deterministic resolution
-      - `edgesOut` is keyed by `spec.name`; Graph ensures spec name correctness, disallowing missing names for missing edges
-      - Missing dependencies are represented as edges with `to=undefined`
-      - Extraneous dependencies are tracked in `graph.extraneousDependencies` when loading Actual with manifests
-      - Resolution caching is extra-aware (includes both modifier and peerSetHash) to reflect modified specs
-      - Deterministic ordering is maintained in serialization to ensure stable lockfiles
-      - Peer contexts are tracked globally in `graph.peerContexts` array; each context has a unique `index` property
-
-  - type: development_workflow
-    message: |
-      ## Practical Usage Tips
-
-      - Prefer `placePackage()` for top-down placement (it handles node creation, flags, edges, and peer context)
-      - Use `findResolution()` before creating new nodes to reuse satisfying ones (crucial for Ideal builds)
-      - When removing nodes, consider `replacement` or `keepEdges` to preserve structure where valid
-      - After structural changes that may orphan nodes, use `gc()` to prune unreachable subgraphs
-      - Use `resetEdges()` when refreshing an ideal graph from modified dependencies; it preserves nodes for reuse
-      - When serializing, rely on `graph.toJSON()` which delegates to lockfile formatting for consistency
-      - Access peer contexts via `graph.peerContexts[index]`; use `graph.nextPeerContextIndex()` to generate unique indices
-
-examples:
-  - input: |
-      // Find a reusable node satisfying a spec before creating a new one
-      const reuse = graph.findResolution(spec, fromNode)
-      if (reuse) graph.addEdge('prod', spec, fromNode, reuse)
-    output: "Resolution cache leveraged; avoided unnecessary node creation"
-
-  - input: |
-      // Model a missing dependency
-      graph.addEdge('prod', spec, importer)
-    output: "Creates a dangling edge (to=undefined) representing a missing dep"
-
-  - input: |
-      // Place a package with peer context hash
-      import { joinExtra } from '@vltpkg/dep-id'
-      const extra = joinExtra({ peerSetHash: 'peer.1', modifier: undefined })
-      const node = graph.placePackage(fromNode, 'prod', spec, manifest, id, extra)
-    output: "Node placed with peer context tracking"
-
-  - input: |
-      // Refresh graph edges for ideal rebuild
-      if (add.modifiedDependencies || remove.modifiedDependencies) {
-        graph.resetEdges()
-      }
-    output: "Edges cleared; nodes with manifests marked detached for reuse"
-
-metadata:
-  priority: high
-  version: 2.0
-  tags:
-    - graph
-    - data-structures
-    - types
-    - nodes
-    - edges
-    - invariants
-    - peer-context
-    - lockfile
-  related_rules:
-    - graph_workspace_architecture
-    - graph_lockfiles
-    - graph_modifiers
-    - graph_load_actual
-    - graph_reify
-    - graph_peers
-    - monorepo-structure
-</rule>
+- DepID uniqueness in `nodes` map
+- `edgesOut` keyed by `spec.name`; missing deps = `to=undefined`
+- Resolution cache is extra-aware (modifier+peerSetHash)
+- Deterministic ordering → stable lockfiles

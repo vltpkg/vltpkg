@@ -5,330 +5,70 @@ alwaysApply: false
 ---
 # Graph Modifiers
 
-Understanding and working with Graph Modifiers in the vlt package manager.
+Overrides/resolutions and package extensions via DSS selectors in `vlt.json`.
 
-<rule>
-name: graph_modifiers
-description: Guide for configuring and integrating Graph Modifiers (overrides/resolutions and package extensions)
-filters:
-  # Modifier core and Ideal integration points
-  - type: path
-    pattern: "^src/graph/src/modifiers\\.ts$"
-  - type: path
-    pattern: "^src/graph/src/ideal/"
-  # DSS parsing/building utilities used by modifiers
-  - type: path
-    pattern: "^src/dss-(parser|breadcrumb)/"
-  # Detect vlt.json modifier usage
-  - type: content
-    pattern: "\"modifiers\"\s*:"
+## Concepts
 
-actions:
-  - type: guide
-    message: |
-      ## What are Graph Modifiers?
+- **Edge modifiers** (overrides): Replace dependency specs. Value = string spec (e.g., `"^1.0.0"`, `"-"` to remove)
+- **Node modifiers** (package extensions): Augment manifests. Value = object with deps/peerDeps/etc.
+- Uses DSS (Dependency Selector Syntax) for matching. Most specific selector wins (CSS specificity).
 
-      Graph Modifiers are a common API enabling advanced customization of dependency resolution and graph construction:
-      - **Overrides / Resolutions**: Replace or pin dependency specs throughout the graph (direct or transitive).
-      - **Package Extensions**: Augment package manifests with extra dependency metadata (eg. add missing peerDeps or mark peer deps optional).
+## User Config (`vlt.json`)
 
-      ### Motivation
-      Power users frequently need to patch dependency trees quickly—eg. to address security issues, unify versions, or work around abandoned packages. By using the Dependency Selector Syntax (DSS) as the user-facing language, vlt provides expressive, precise, and composable control over graph shape and versions.
+```json
+{
+  "modifiers": {
+    ":root > #a > #b": "^1.0.0",
+    "#react": "^19",
+    "#unwanted": "-",
+    "#some-pkg": { "peerDependencies": { "react": "^18 || ^19" } }
+  }
+}
+```
 
-  - type: architecture_guide
-    message: |
-      ## Key Modules
-      - `src/graph/src/modifiers.ts` — `GraphModifier` class that tracks graph traversal and applies active modifiers to nodes/edges.
-      - `src/graph/src/ideal/*` — Builds the Ideal graph and integrates modifier application during dependency expansion.
-      - `src/dss-parser/` — Parses DSS queries into AST.
-      - `src/dss-breadcrumb/` — Interactive representation that allows walking a query in lockstep with graph traversal; provides `parseBreadcrumb()` and `specificitySort()`.
-      - `src/vlt-json/` — Loads `vlt.json` configuration including `modifiers` key.
+Importer selectors: `:root` (main), `:workspace` (any workspace), `:project` (any importer)
 
-  - type: architecture_guide
-    message: |
-      ## Type Definitions
+## Key Modules
 
-      ### Entry Types
-      ```typescript
-      // Base modifier info
-      type BaseModifierEntry = {
-        type: 'edge' | 'node'
-        query: string                    // Original DSS query string
-        breadcrumb: ModifierBreadcrumb   // Parsed breadcrumb for traversal
-        value: string | NormalizedManifest
-        refs: Set<{ name: string; from: Node }>  // Tracking references
-      }
+- `src/graph/src/modifiers.ts` — `GraphModifier` class
+- `src/dss-parser/` — DSS query AST
+- `src/dss-breadcrumb/` — Interactive breadcrumb walking (provides `parseBreadcrumb()`, `specificitySort()`)
+- `src/vlt-json/` — loads config
 
-      // Edge modifier - replaces dependency specs
-      type EdgeModifierEntry = BaseModifierEntry & {
-        type: 'edge'
-        spec: Spec       // Parsed replacement spec
-        value: string    // Original spec string
-      }
+## Type Definitions
 
-      // Node modifier - augments manifests (package extensions)
-      type NodeModifierEntry = BaseModifierEntry & {
-        type: 'node'
-        manifest: NormalizedManifest  // Manifest additions
-      }
+```typescript
+type EdgeModifierEntry = { type: 'edge', query: string, breadcrumb: ModifierBreadcrumb, spec: Spec, value: string, refs: Set<{name, from}> }
+type NodeModifierEntry = { type: 'node', query: string, breadcrumb: ModifierBreadcrumb, manifest: NormalizedManifest, refs: Set<{name, from}> }
+type ModifierActiveEntry = { modifier: ModifierEntry, interactiveBreadcrumb, originalFrom: Node, originalEdge?, modifiedEdge? }
+```
 
-      type ModifierEntry = EdgeModifierEntry | NodeModifierEntry
-      ```
+## GraphModifier Class
 
-      ### Active Entry Tracking
-      ```typescript
-      // Tracks a modifier during graph traversal
-      type ModifierActiveEntry = {
-        modifier: ModifierEntry
-        interactiveBreadcrumb: ModifierInteractiveBreadcrumb  // Current parse state
-        originalFrom: Node              // First matched node
-        originalEdge?: Edge             // Original edge (for rollback)
-        modifiedEdge?: Edge             // Replacement edge
-      }
-      ```
+**Static**: `maybeLoad(options)` (returns instance or undefined), `load(options)` (throws if no vlt.json)
 
-  - type: architecture_guide
-    message: |
-      ## GraphModifier Class
+**Methods:**
+- `tryImporter(importer)` — match against `:root`/`:workspace`/`:project`
+- `tryNewDependency(from, spec)` — returns highest-specificity match
+- `tryDependencies(from, deps)` → `Map<string, ModifierActiveEntry>`
+- `updateActiveEntry(from, active)` — advance breadcrumb
+- `rollbackActiveEntries()` — restore original edges for incomplete matches
 
-      ### Private Fields
-      - `#config` — Cached `GraphModifierConfigObject` from vlt.json
-      - `#modifiers` — Set of all loaded `ModifierEntry` instances
-      - `#edgeModifiers` — Set of edge modifiers only
-      - `#nodeModifiers` — Set of node modifiers only
-      - `#initialEntries` — Map from first breadcrumb name → Set of modifiers (for non-importer starting queries like `#a > #b`)
-      - `#activeEntries` — Multi-level map: `ModifierEntry → name → Node → ModifierActiveEntry`
+## Integration with Ideal Build
 
-      ### Public Fields
-      - `activeModifiers: Set<ModifierActiveEntry>` — Currently active (in-progress) modifiers
-      - `modifierNames: Set<string>` — All modifier query strings from config
+```typescript
+const modifiers = GraphModifier.maybeLoad(options)
+for (const importer of importers) {
+  modifiers?.tryImporter(importer)
+  const refs = modifiers?.tryDependencies(importer, deps)
+  await appendNodes(..., modifiers, refs, ...)
+}
+// In append-nodes: check activeModifier, swap spec if complete, update after placement
+// queryModifier included in DepID extra via joinExtra()
+```
 
-      ### Static Methods
-      - `GraphModifier.maybeLoad(options)` — Returns instance if vlt.json has modifiers, else `undefined`
-      - `GraphModifier.load(options)` — Returns instance, throws if no vlt.json
+## Tips
 
-      ### Instance Methods
-      - `load(options)` — Parses vlt.json modifiers into entries
-      - `tryImporter(importer)` — Match importer against top-level selectors (`:root`, `:workspace`, `:project`)
-      - `tryNewDependency(from, spec)` — Match spec against active modifiers; returns highest-specificity match
-      - `tryDependencies(from, deps)` — Helper returning `Map<string, ModifierActiveEntry>` for all deps
-      - `updateActiveEntry(from, active)` — Advance breadcrumb state; register in `#activeEntries`
-      - `newModifier(from, modifier)` — Create new `ModifierActiveEntry`
-      - `deregisterModifier(modifier)` — Remove modifier from active tracking
-      - `rollbackActiveEntries()` — Restore original edges for incomplete modifiers after traversal
-
-  - type: integration_guide
-    message: |
-      ## Integration with Ideal Graph Building
-
-      ### In `refresh-ideal-graph.ts`
-      ```typescript
-      // Load modifiers once before processing importers
-      const modifiers = GraphModifier.maybeLoad(options)
-
-      for (const importer of orderedImporters) {
-        // Register importer-level selectors
-        modifiers?.tryImporter(importer)
-
-        // Get modifier refs for this importer's dependencies
-        const modifierRefs = modifiers?.tryDependencies(importer, deps)
-
-        await appendNodes(..., modifiers, modifierRefs, ...)
-      }
-      ```
-
-      ### In `append-nodes.ts`
-      ```typescript
-      // Check if modifier applies to this dependency
-      const activeModifier = modifierRefs?.get(spec.name)
-      const queryModifier = activeModifier?.modifier.query
-
-      // Swap spec if edge modifier is complete
-      if (queryModifier && completeModifier && 'spec' in activeModifier.modifier) {
-        spec = activeModifier.modifier.spec
-        if (spec.bareSpec === '-') continue  // Skip dependency entirely
-      }
-
-      // After placing node, update modifier state
-      if (activeModifier) {
-        modifiers?.updateActiveEntry(node, activeModifier)
-      }
-
-      // Get modifier refs for child dependencies
-      childModifierRefs = modifiers?.tryDependencies(node, nextDeps)
-      ```
-
-      ### Query Modifier in DepID
-      The `queryModifier` string is included in the node's DepID `extra` parameter (combined with `peerSetHash`), ensuring modified nodes are uniquely identified in resolution caches.
-
-  - type: integration_guide
-    message: |
-      ## User-facing Syntax and UX
-
-      All configuration lives in the project's `vlt.json` under the top-level `"modifiers"` key.
-
-      ### The `modifiers` key
-      ```json
-      {
-        "workspaces": "packages/*",
-        "modifiers": {
-          
-        }
-      }
-      ```
-
-      ### Edge Modifiers (Overrides / Resolutions)
-      Provide a string spec to replace the matched dependency's version/spec:
-      ```json
-      {
-        "modifiers": {
-          ":root > #a > #b": "^1.0.0"
-        }
-      }
-      ```
-
-      When multiple selectors match, the most specific selector wins (CSS specificity). Example (result is `1`):
-      ```json
-      {
-        "dependencies": {
-          "a": "^1.0.0"
-        },
-        "modifiers": {
-          ":root > #a > #b": "1",
-          "#a > #b": "2"
-        }
-      }
-      ```
-
-      Set a unique version for a given dependency across the graph:
-      ```json
-      {
-        "modifiers": {
-          "#react": "^19"
-        }
-      }
-      ```
-
-      Remove a dependency entirely with `-`:
-      ```json
-      {
-        "modifiers": {
-          "#unwanted-dep": "-"
-        }
-      }
-      ```
-
-      ### Package Extensions (Node Modifiers)
-      Add or adjust dependency declarations for specific packages. Provide an object instead of a string:
-      ```json
-      {
-        "modifiers": {
-          "#some-package": {
-            "peerDependencies": {
-              "react": "^18 || ^19"
-            },
-            "peerDependenciesMeta": {
-              "react": { "optional": true }
-            }
-          }
-        }
-      }
-      ```
-
-      ### Importer Selectors
-      - `:root` — Matches only the main project importer
-      - `:workspace` — Matches any workspace importer
-      - `:project` — Matches any importer (root or workspace)
-
-      ### References
-      - npm Overrides: <https://docs.npmjs.com/cli/v11/configuring-npm/package-json#overrides>
-      - pnpm Overrides: <https://pnpm.io/settings#overrides>
-      - Yarn Resolutions: <https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/>
-      - Yarn Extensions DB: <https://github.com/yarnpkg/berry/blob/master/packages/yarnpkg-extensions/sources/index.ts>
-      - pnpm Package Extensions: <https://pnpm.io/settings#packageextensions>
-
-  - type: development_workflow
-    message: |
-      ## Development Workflow and Considerations
-
-      ### Loading Modifiers
-      - Use `GraphModifier.maybeLoad(options)` when modifiers are optional
-      - Use `GraphModifier.load(options)` when modifiers are required
-      - Modifiers are loaded from `vlt.json` via `@vltpkg/vlt-json`
-
-      ### Graph Building Integration
-      - Call `tryImporter()` for each importer before processing its dependencies
-      - Call `tryDependencies()` to get modifier refs for a node's dependencies
-      - Call `updateActiveEntry()` after placing a node to advance breadcrumb state
-      - The `queryModifier` string is passed through to `placePackage()` via `joinExtra()`
-
-      ### Rollback Mechanism
-      - `rollbackActiveEntries()` restores original edges for any modifiers that didn't complete their breadcrumb
-      - Called after graph traversal to clean up partial matches
-
-      ### Performance Considerations
-      - Prefer sharing `monorepo`, `packageJson`, and `scurry` instances across loaders/builders
-      - Use `skipLoadingNodesOnModifiersChange` when reusing a starting graph but modifiers changed since last build
-      - Hidden Lockfile (`node_modules/.vlt-lock.json`) accelerates Actual graph loads. If modifiers changed, rebuild Ideal.
-      - Deterministic ordering ensures reproducible lockfiles after modifier changes
-
-      ### Testing
-      - Validate selector specificity precedence (use `specificitySort()` from `@vltpkg/dss-breadcrumb`)
-      - Test overrides across direct and transitive dependencies
-      - Verify package extensions effect on peer/optional semantics
-      - Test rollback behavior for incomplete modifier matches
-      - Confirm Ideal graph reuses satisfying nodes to avoid unnecessary network fetches
-
-examples:
-  - input: |
-      # Override a transitive dependency
-      {
-        "modifiers": {
-          ":root > #webpack > #browserslist": "^4.23.0"
-        }
-      }
-    output: "Transitive browserslist spec overridden via DSS selector"
-
-  - input: |
-      # Pin a single version across the graph
-      {
-        "modifiers": {
-          "#react": "^19"
-        }
-      }
-    output: "All matching react specs unified to ^19"
-
-  - input: |
-      # Using modifiers in code
-      const modifiers = GraphModifier.maybeLoad(options)
-      modifiers?.tryImporter(graph.mainImporter)
-      const refs = modifiers?.tryDependencies(node, deps)
-      const active = refs?.get('react')
-      if (active) modifiers?.updateActiveEntry(placedNode, active)
-    output: "Modifier tracking during graph traversal"
-
-  - input: |
-      # Remove an unwanted dependency
-      {
-        "modifiers": {
-          "#deprecated-package": "-"
-        }
-      }
-    output: "Dependency skipped entirely when bareSpec is '-'"
-
-metadata:
-  priority: high
-  version: 2.0
-  tags:
-    - modifiers
-    - graph
-    - overrides
-    - extensions
-    - dss
-    - breadcrumb
-  related_rules:
-    - graph_workspace_architecture
-    - graph_data_structure
-    - graph_lockfiles
-    - graph_ideal_append_nodes
-</rule>
+- `rollbackActiveEntries()` called after traversal to clean partial matches
+- Use `skipLoadingNodesOnModifiersChange` when reusing graph but modifiers changed
+- Deterministic ordering ensures reproducible lockfiles after changes

@@ -5,316 +5,51 @@ alwaysApply: false
 ---
 # Graph Lockfiles
 
-Understanding and working with lockfiles in the vlt package manager.
+Auto-generated on install. Ensures reproducible installs, readable diffs, performance optimization.
 
-<rule>
-name: graph_lockfiles
-description: Guide for understanding and working with lockfiles in the vlt package manager
-filters:
-  # Match lockfile-related files
-  - type: path
-    pattern: "^src/graph/src/lockfile/"
-  - type: path  
-    pattern: "^src/graph/test/lockfile/"
-  # Match files that interact with lockfiles
-  - type: path
-    pattern: "^src/graph/src/(ideal/build|actual/load|reify/index)\\.ts$"
-  # Match lockfile files in projects
-  - type: file_name
-    pattern: "vlt-lock\\.json$"
-  - type: file_name
-    pattern: "\\.vlt-lock\\.json$"
-  # Match CLI commands that use lockfiles
-  - type: content
-    pattern: "lockfile\\.(load|save|loadHidden|saveHidden)"
+## Files
 
-actions:
-  - type: guide
-    message: |
-      ## Lockfiles in vlt Package Manager
+- `vlt-lock.json` — main lockfile (committed to source control)
+- `node_modules/.vlt-lock.json` — hidden lockfile with manifests+build data (perf optimization)
 
-      A **lockfile** is automatically generated for any operations where vlt modifies either the `node_modules` graph or `package.json`. It describes the exact graph that was generated, such that subsequent installs are able to generate identical graphs, regardless of intermediate dependency updates.
+## Module Architecture (`src/graph/src/lockfile/`)
 
-      ### Purpose and Benefits
+**Entry points:**
+- `load.ts`: `load()` (from `vlt-lock.json`), `loadHidden()` (from hidden, sets `throwOnMissingManifest`), `loadObject()` (in-memory, merges lockfile options)
+- `save.ts`: `save()` (minimal), `saveHidden()` (with manifests+build data), `lockfileData()` (Graph→data)
 
-      **Primary Goals:**
-      - **Reproducible Installs**: Teammates, deployments, and CI get exactly the same dependencies
-      - **Time Travel**: Return to previous states of `node_modules` without committing the directory
-      - **Visibility**: Readable source control diffs show dependency graph changes
-      - **Performance**: Skip repeated metadata resolutions for previously-installed packages
-      - **Complete Picture**: Enough information to understand the package graph without reading all `package.json` files
+**Support:** `types.ts` (formats, flag helpers), `load-nodes.ts`, `load-edges.ts`
 
-      **File Locations:**
-      - `vlt-lock.json` - Main lockfile (committed to source control)
-      - `node_modules/.vlt-lock.json` - Hidden lockfile with full manifest data (performance optimization)
+## Data Format
 
-  - type: architecture_guide
-    message: |
-      ## Lockfile Module Architecture
+```typescript
+type LockfileData = {
+  lockfileVersion: number
+  options: SpecOptions & { modifiers?: Record<string, string> }
+  nodes: Record<DepID, LockfileNode>  // tuple: [flags, name?, integrity?, resolved?, location?, manifest?, rawManifest?, platform?, bins?, buildState?]
+  edges: LockfileEdges  // { "${fromId} ${name}": "${type} ${bareSpec} ${toId|MISSING}" }
+}
+```
 
-      ### Core Implementation (`src/graph/src/lockfile/`)
+Flags: 0=prod, 1=optional, 2=dev, 3=devOptional
 
-      **Main Entry Points:**
-      - `load.ts` - Loading lockfiles into Graph objects
-        - `load()` - Load from `vlt-lock.json`
-        - `loadHidden()` - Load from `node_modules/.vlt-lock.json` (sets `throwOnMissingManifest=true`)
-        - `loadObject()` - Load from in-memory lockfile data; merges options from lockfile (catalog, registries, git-hosts, etc.)
-      - `save.ts` - Saving Graph objects to lockfiles
-        - `save()` - Save to `vlt-lock.json` (minimal format, no manifests)
-        - `saveHidden()` - Save to `node_modules/.vlt-lock.json` (with manifests and build data)
-        - `lockfileData()` - Convert Graph to lockfile data structure
+Options stored: `modifiers`, `catalog`, `catalogs`, `scope-registries`, `jsr-registries`, `registry`, `registries`, `git-hosts`, `git-host-archives`
 
-      **Supporting Modules:**
-      - `types.ts` - TypeScript definitions and utilities
-        - `LockfileData` - Main lockfile structure
-        - `LockfileNode` - Node representation with flags
-        - `LockfileEdges` - Edge representation as key-value pairs
-        - `getFlagNumFromNode()` / `getBooleanFlagsFromNum()` - Flag conversion helpers
-        - `getBuildStateFromNode()` / `getBuildStateFromNum()` - Build state conversion
-      - `load-nodes.ts` - Implementation for loading nodes from lockfile
-      - `load-edges.ts` - Implementation for loading edges from lockfile
+## Integration
 
-      **Testing:**
-      - `test/lockfile/` - Comprehensive unit tests for all lockfile operations
-      - Tests cover loading, saving, edge cases, and format validation
+- `ideal/build.ts`: loads lockfile first (prefer Virtual), falls back to Actual
+- `actual/load.ts`: uses hidden lockfile for fast path
+- After loading: hydrates missing node registry data from first incoming edge
 
-  - type: integration_guide
-    message: |
-      ## Lockfile Integration Points
+## Performance (>50 nodes)
 
-      ### Build Process (`src/graph/src/ideal/build.ts`)
-      ```typescript
-      // Always attempts to load lockfile first when building ideal graph
-      try {
-        graph = loadVirtual({
-          ...options,
-          skipLoadingNodesOnModifiersChange: true,
-        })
-      } catch {
-        // Falls back to actual graph if lockfile load fails
-        graph = loadActual({...options})
-      }
-      ```
+- `load-nodes.ts`: `registryVersionCache` avoids repeated string splitting
+- `load-edges.ts`: `seenNodes` Map caches node lookups, `edgeProcessingQueue` batches mutations, uses `fastSplit()`
+- Hidden lockfile skips filesystem traversal entirely
 
-      ### Actual Loading (`src/graph/src/actual/load.ts`)
-      ```typescript
-      // Uses hidden lockfile for performance when available
-      if (!skipHiddenLockfile) {
-        try {
-          const graph = loadHidden({
-            projectRoot,
-            mainManifest,
-            packageJson,
-            monorepo,
-            scurry,
-          })
-          return graph // Skip filesystem traversal
-        } catch {}
-      }
-      ```
+## Tips
 
-      ### Post-Load Registry Hydration
-      After loading nodes and edges, `loadObject()` hydrates missing node-level registry data:
-      ```typescript
-      for (const node of graph.nodes.values()) {
-        const [firstEdge] = node.edgesIn
-        if (firstEdge?.spec.registry) {
-          node.registry = firstEdge.spec.registry
-        }
-      }
-      ```
-
-  - type: data_format_guide
-    message: |
-      ## Lockfile Data Format
-
-      ### Structure Overview
-      ```typescript
-      type LockfileData = {
-        lockfileVersion: number
-        options: SpecOptions & { modifiers?: Record<string, string> }
-        nodes: Record<DepID, LockfileNode>
-        edges: LockfileEdges
-      }
-      ```
-
-      ### Node Format (Tuple Array)
-      ```typescript
-      type LockfileNode = [
-        flags: LockfileNodeFlags,               // [0] 0-3: dev/optional flags
-        name?: string | null,                   // [1] Package name
-        integrity?: Integrity | null,           // [2] SHA integrity hash
-        resolved?: string | null,               // [3] Custom registry URL (skip for remote type)
-        location?: string | null,               // [4] Non-standard install location
-        manifest?: NormalizedManifest | null,   // [5] Full manifest (hidden only)
-        rawManifest?: NormalizedManifest | null,// [6] Original manifest if confused
-        platform?: LockfilePlatform | null,     // [7] Platform requirements (optional deps)
-        bins?: Record<string, string> | null,   // [8] Binary executables
-        buildState?: number | null,             // [9] Build state data (hidden only)
-      ]
-      ```
-
-      ### Edge Format
-      ```typescript
-      type LockfileEdges = {
-        [key: `${DepID} ${string}`]: `${DependencyTypeShort} ${Spec['bareSpec']} ${DepID | 'MISSING'}`
-      }
-      // Example: "registry:foo@1.0.0 bar": "prod ^2.0.0 registry:bar@2.1.0"
-      ```
-
-      ### Flags System
-      ```typescript
-      const LockfileNodeFlagNone = 0        // Production dependency
-      const LockfileNodeFlagOptional = 1    // Optional dependency
-      const LockfileNodeFlagDev = 2         // Development dependency  
-      const LockfileNodeFlagDevOptional = 3 // Both dev and optional
-      ```
-
-      ### Options Stored in Lockfile
-      - `modifiers` - Query modifiers config
-      - `catalog` / `catalogs` - Dependency catalogs
-      - `scope-registries` - Scoped package registries
-      - `jsr-registries` - JSR registries
-      - `registry` / `registries` - Custom registries
-      - `git-hosts` / `git-host-archives` - Git hosting config
-
-  - type: performance_guide
-    message: |
-      ## Performance Optimizations
-
-      ### Large Graph Optimizations (>50 nodes/edges)
-      The lockfile loader applies performance optimizations for non-trivial graphs:
-
-      **`load-nodes.ts`:**
-      - Uses `registryVersionCache` Map to cache parsed version strings for registry specs
-      - Avoids repeated string splitting for the same spec patterns
-
-      **`load-edges.ts`:**
-      - Uses `seenNodes` Map to cache node lookups, avoiding repeated `graph.nodes.get()` calls
-      - Batches edge processing into `edgeProcessingQueue` array before final graph mutation
-      - Uses `fastSplit()` from `@vltpkg/fast-split` for optimized string parsing
-
-      ### Hidden Lockfile Benefits
-      - Contains full manifests (`saveManifests: true`)
-      - Contains build state data (`saveBuildData: true`)
-      - Throws on missing manifests (`throwOnMissingManifest: true`)
-      - Allows skipping filesystem traversal entirely on subsequent loads
-
-  - type: development_workflow
-    message: |
-      ## Development Workflow
-
-      ### Working with Lockfiles
-
-      **Key Principles:**
-      1. **Shared Instances**: Always use shared `monorepo`, `packageJson`, and `scurry` instances
-      2. **Error Handling**: Lockfile loading should gracefully fall back to alternative methods
-      3. **Performance**: Hidden lockfiles include full manifest data to avoid filesystem reads
-      4. **Deterministic**: Node and edge ordering is deterministic for reproducible diffs
-
-      **Save Options:**
-      ```typescript
-      type SaveOptions = SpecOptions & {
-        graph: Graph
-        modifiers?: GraphModifier
-        saveManifests?: boolean        // Include full manifests
-        saveBuildData?: boolean        // Include build state
-        throwOnMissingManifest?: boolean // Error if manifest missing
-      }
-      ```
-
-      **Load Options:**
-      ```typescript
-      type LoadOptions = SpecOptions & {
-        projectRoot: string
-        mainManifest: NormalizedManifest
-        modifiers?: GraphModifier
-        monorepo?: Monorepo
-        packageJson?: PackageJson
-        scurry?: PathScurry
-        actual?: Graph                 // Reference graph for hydrating missing data
-        throwOnMissingManifest?: boolean
-      }
-      ```
-
-      **Testing Considerations:**
-      - Test both regular and hidden lockfile formats
-      - Verify deterministic output (same input = same lockfile)
-      - Test modifier change detection logic
-      - Validate edge cases (missing nodes, malformed data)
-      - Test performance with large dependency graphs (>50 nodes)
-      - Test platform and bins data persistence
-
-      **Debugging Tips:**
-      - Check `lockfileVersion` compatibility
-      - Verify modifier configurations match between load/save
-      - Examine node flags for dependency type issues
-      - Validate edge key/value format consistency
-      - Check `throwOnMissingManifest` behavior for hidden lockfiles
-
-examples:
-  - input: |
-      # Loading a lockfile with proper error handling
-      import { load, loadHidden } from '@vltpkg/graph/lockfile'
-      
-      const graph = load({
-        projectRoot: '/path/to/project',
-        mainManifest,
-        packageJson: sharedPackageJson,
-        monorepo: sharedMonorepo,
-        scurry: sharedScurry,
-      })
-    output: "Properly loaded lockfile with shared instances"
-
-  - input: |
-      # Saving lockfiles after install
-      import { save, saveHidden } from '@vltpkg/graph/lockfile'
-      
-      // Save main lockfile (committed)
-      save({ graph, ...options })
-      
-      // Save hidden lockfile (with manifests and build data)
-      saveHidden({ graph, ...options })
-    output: "Correctly saved both lockfile formats"
-
-  - input: |
-      # Working with lockfile data format (including new fields)
-      const lockfileData = {
-        lockfileVersion: 1,
-        options: { registry: 'https://registry.npmjs.org/' },
-        nodes: {
-          'registry:foo@1.0.0': [
-            0,              // flags
-            'foo',          // name
-            'sha512-...',   // integrity
-            null,           // resolved
-            null,           // location
-            null,           // manifest (hidden only)
-            null,           // rawManifest
-            { os: ['linux'] }, // platform (optional deps)
-            { foo: 'bin/foo.js' }, // bins
-            1               // buildState (hidden only)
-          ]
-        },
-        edges: {
-          'file:. foo': 'prod ^1.0.0 registry:foo@1.0.0'
-        }
-      }
-    output: "Properly structured lockfile data with all fields"
-
-metadata:
-  priority: high
-  version: 1.1
-  tags:
-    - lockfiles
-    - graph
-    - performance
-    - install
-    - dependencies
-  related_rules:
-    - graph_workspace_architecture
-    - graph_data_structure
-    - graph_load_actual
-    - graph_modifiers
-    - cli-sdk-workspace
-</rule>
+- Share `monorepo`, `packageJson`, `scurry` instances
+- Lockfile loading should gracefully fallback
+- Deterministic node/edge ordering for reproducible diffs
+- Test both regular and hidden formats, modifier change detection, large graphs

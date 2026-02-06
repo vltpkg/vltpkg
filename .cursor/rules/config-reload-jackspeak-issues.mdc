@@ -1,223 +1,48 @@
-# Config Reload and JackSpeak Caching Issues
+---
+description: Config reload and JackSpeak caching issues
+globs: src/server/src/config-data.ts,src/cli-sdk/src/config/*,src/vlt-json/src/*
+alwaysApply: false
+---
+# Config Reload & JackSpeak Caching
 
-A comprehensive guide to the challenges and solutions for implementing config reloading in the vlt GUI server, including deep insights into JackSpeak caching behavior.
+## Problem
 
-<rule>
-name: config_reload_jackspeak_issues
-description: Understanding config reloading challenges and JackSpeak caching limitations
-filters:
-  # Match config-related work
-  - type: path
-    pattern: "src/server/src/config-data\\.ts"
-  - type: path
-    pattern: "src/cli-sdk/src/config/"
-  # Match config reload implementations
-  - type: content
-    pattern: "config.*reload|reload.*config"
-  # Match JackSpeak usage
-  - type: content
-    pattern: "jackspeak|jack\\."
+GUI server config endpoints return stale values after updates due to multi-layer caching:
+1. JackSpeak parser retains internal state across instances — `setConfigValues()` can't override cached defaults
+2. `Config.#options` memoization persists
+3. `vlt-json` module has fs caches (`datas`, `mtimes`, `paths`, `lstatCache`)
+4. `Config.#loaded` static cache
 
-actions:
-  - type: context
-    message: |
-      ## Problem Statement
+`Config.load(root, argv, true)` is NOT sufficient — JackSpeak parser retains state.
 
-      The vlt GUI server's config endpoints (`POST /config`, `POST /config/set`) were returning stale configuration values even after successful config updates. The issue stemmed from multiple layers of caching in the config system.
+## Solution: Hybrid Config Reading
 
-      ## Root Cause Analysis
+```typescript
+// 1. Clear vlt-json caches
+const { unload, load: vltLoad } = await import('@vltpkg/vlt-json')
+unload('user'); unload('project')
 
-      ### JackSpeak Caching Limitations
+// 2. Read fresh from vlt-json, fallback to Config system
+configSection = vltLoad('config', validator, 'project')
+if (configSection && key in configSection) return configSection[key]
+return await getConfigValue(this.config)
+```
 
-      **Primary Issue**: JackSpeak's `setConfigValues()` method does not provide a way to clear or override previously set "default" values from config files.
+**For writes**: Create fresh Config instances per write. Use `addConfigToFile()`/`deleteConfigKeys()` directly.
 
-      **Behavior**: When JackSpeak parses config files and sets defaults, subsequent calls to `setConfigValues()` cannot override these cached defaults, leading to persistent stale values.
+**Type safety**: Dynamic imports need type assertions:
+```typescript
+type VltJsonModule = {
+  unload: (which?: 'user' | 'project') => void
+  load: <T>(
+    field: string,
+    validator: (x: unknown, file: string) => asserts x is T,
+    which?: 'user' | 'project',
+  ) => T | undefined
+}
+const { unload, load } = await import('@vltpkg/vlt-json') as VltJsonModule
+```
 
-      **Impact**: Even creating "fresh" Config instances with `reload=true` still carried forward cached state from the JackSpeak parser.
+## Key Files
 
-      ### Multi-Layer Caching Problems
-
-      1. **JackSpeak Parser Cache**: Internal caching of parsed config values
-      2. **Config.#options Cache**: Memoized options getter in Config class
-      3. **vlt-json Module Cache**: File system cache in vlt-json (`datas`, `mtimes`, `paths`, `lstatCache`)
-      4. **Config.#loaded Static Cache**: Static cache for loaded config instances
-
-      ## Solution Architecture
-
-      ### Hybrid Config Reading Approach
-
-      We implemented a hybrid solution that bypasses JackSpeak's caching limitations:
-
-      ```typescript
-      // 1. Clear vlt-json caches
-      const { unload, load: vltLoad } = await import('@vltpkg/vlt-json')
-      unload('user')
-      unload('project')
-      
-      // 2. Read fresh config directly from vlt-json
-      configSection = vltLoad('config', validator, 'project')
-      
-      // 3. Prioritize fresh values over Config system
-      if (configSection && key in configSection) {
-        return configSection[key]  // Fresh value
-      }
-      
-      // 4. Fallback to Config system
-      return await getConfigValue(this.config)
-      ```
-
-      ### Key Implementation Details
-
-      **For Individual Config Keys**:
-      - Read directly from `vlt-json` when available
-      - Fallback to Config system for missing keys
-      - Clear `vlt-json` caches on every request
-
-      **For Full Config Lists**:
-      - Get base config from Config system
-      - Overlay fresh `vlt-json` config values using `Object.assign()`
-      - Ensure fresh values take precedence
-
-      **For Config Writing**:
-      - Create completely fresh Config instances for each write operation
-      - Use direct file manipulation via `addConfigToFile()` and `deleteConfigKeys()`
-      - Bypass stale `setConfigValue`/`delConfigValue` functions
-
-      ## Technical Insights
-
-      ### Why Config.load(reload=true) Wasn't Sufficient
-
-      ```typescript
-      // This approach failed because:
-      const freshConfig = await Config.load(projectRoot, process.argv, true)
-      
-      // 1. JackSpeak parser retains internal state
-      // 2. Config.#options cache persists across instances
-      // 3. vlt-json caches weren't cleared
-      // 4. Static Config.#loaded cache interference
-      ```
-
-      ### Critical Discovery: File Path Resolution
-
-      **Issue**: `this.config.get('project-config')` returned `undefined`
-      **Cause**: Config system couldn't resolve project config file paths properly
-      **Solution**: Use `vlt-json.find()` directly to locate config files
-
-      ### Type Safety Challenges
-
-      **Problem**: Dynamic imports of `@vltpkg/vlt-json` caused TypeScript `error` type issues
-      **Solution**: Create typed interface and use type assertions:
-
-      ```typescript
-      type VltJsonModule = {
-        unload: (which?: 'user' | 'project') => void
-        load: <T>(field: string, validator: (x: unknown) => x is T, which?: 'user' | 'project') => T | undefined
-      }
-      
-      const { unload, load } = await import('@vltpkg/vlt-json') as VltJsonModule
-      ```
-
-      ## Performance Considerations
-
-      ### Dynamic Imports vs Static Imports
-
-      **Static imports caused**: "Unsafe call of `error` type" TypeScript errors
-      **Dynamic imports required**: Type assertions and try-catch blocks
-      **Trade-off**: Slight performance cost for type safety and error handling
-
-      ### Cache Clearing Strategy
-
-      **Aggressive Approach**: Clear all caches on every request
-      **Rationale**: Ensures absolute freshness at minimal performance cost
-      **Implementation**: Try-catch blocks prevent cache clearing failures from breaking functionality
-
-      ## Testing Challenges
-
-      ### Mock Complexity
-
-      **Issue**: Tests needed to account for new dynamic import patterns
-      **Solution**: Mock the dynamic imports and focus on integration testing
-
-      ### Coverage for Error Paths
-
-      **Challenge**: Ensuring error handling paths are tested
-      **Approach**: Add specific tests for error handling scenarios with `/* c8 ignore */` for unreachable paths
-
-      ## Lessons Learned
-
-      ### 1. JackSpeak Limitations
-
-      - JackSpeak is not designed for dynamic config reloading
-      - Multiple Config instances share internal parser state
-      - `setConfigValues()` cannot override previously cached defaults
-
-      ### 2. Layered Caching Complexity
-
-      - Multiple caching layers require coordinated clearing
-      - Static caches persist across instance creation
-      - File system caches need explicit management
-
-      ### 3. Hybrid Approaches Work
-
-      - Combining direct file reading with fallback systems provides robustness
-      - Prioritizing fresh data sources ensures consistency
-      - Graceful degradation maintains functionality
-
-      ### 4. Type Safety with Dynamic Imports
-
-      - Dynamic imports require careful type management
-      - Type assertions provide safety without sacrificing functionality
-      - Try-catch blocks are essential for error handling
-
-      ## Future Considerations
-
-      ### Potential Improvements
-
-      1. **JackSpeak Enhancement**: Contribute cache clearing methods to JackSpeak
-      2. **Config System Redesign**: Consider architecture that supports dynamic reloading
-      3. **Performance Optimization**: Cache fresh values with TTL-based invalidation
-
-      ### Monitoring
-
-      - Watch for performance impact of dynamic imports
-      - Monitor cache clearing effectiveness
-      - Track config consistency across server lifecycle
-
-examples:
-  - input: |
-      # Problem: Config not reloading after set
-      const config = await Config.load()
-      await setConfigValue(config, 'registry', 'new-value')
-      const value = config.get('registry') // Returns old value
-    output: "Use hybrid vlt-json + Config system approach"
-
-  - input: |
-      # Problem: TypeScript errors with vlt-json imports
-      import { unload } from '@vltpkg/vlt-json'
-      unload('project') // Error: Unsafe call of error type
-    output: "Use dynamic imports with type assertions"
-
-  - input: |
-      # Problem: Fresh Config instances still return stale values
-      const fresh = await Config.load(root, argv, true)
-      fresh.get('registry') // Still returns cached value
-    output: "JackSpeak parser retains internal state across instances"
-
-metadata:
-  priority: high
-  version: 1.0
-  tags:
-    - config
-    - jackspeak
-    - caching
-    - reload
-    - vlt-json
-    - gui-server
-  related_files:
-    - src/server/src/config-data.ts
-    - src/cli-sdk/src/config/index.ts
-    - src/vlt-json/src/index.ts
-  contributors:
-    - assistant: "Implemented hybrid config reload solution"
-    - user: "Identified GUI server config reload requirements"
-</rule>
+`src/server/src/config-data.ts`, `src/cli-sdk/src/config/index.ts`, `src/vlt-json/src/index.ts`
