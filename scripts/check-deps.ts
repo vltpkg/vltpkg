@@ -54,7 +54,9 @@ const getAllProdDeps = async (): Promise<{
 
   // Get src/** importers
   const srcImporters = new Set(
-    [...graph.importers].filter(imp => imp.location?.startsWith('./src/')),
+    [...graph.importers].filter(imp =>
+      imp.location?.startsWith('./src/'),
+    ),
   )
 
   // Build depsWithImporter by finding which src/** importers each node belongs to
