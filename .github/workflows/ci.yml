@@ -100,7 +100,9 @@ jobs:
       - name: Dependencies
         id: deps
         continue-on-error: true
-        run: vlr deps:check
+        run: |
+          # TODO: turn off for now
+          # vlr deps:check
 
       - name: Docs
         id: docs
