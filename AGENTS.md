@@ -11,9 +11,9 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `ideal`, `ideal-append-nodes`, `load-actual`, `modifiers`,
   `lockfiles`, `reify`, `peers`, `src/graph-run` (parallel graph
   operations)
-- **Core:** `src/cache`, `src/cache-unzip`, `src/config`,
-  `src/types`, `src/dep-id` (node IDs), `src/spec` (specifier
-  parsing), `src/satisfies` (DepID↔Spec)
+- **Core:** `src/cache`, `src/cache-unzip`, `src/config`, `src/types`,
+  `src/dep-id` (node IDs), `src/spec` (specifier parsing),
+  `src/satisfies` (DepID↔Spec)
 - **DSS Query:** `src/dss-parser`, `src/dss-breadcrumb`, `src/query` —
   See `.cursor/rules/query-pseudo-selector-creation.mdc`
 - **Package Mgmt:** `src/package-info`, `src/package-json`,
