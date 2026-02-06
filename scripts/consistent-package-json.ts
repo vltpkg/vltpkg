@@ -358,7 +358,10 @@ const fixCliVariants = async (ws: Workspace) => {
   }
 
   ws.pj.description = `The vlt CLI${descriptionExtra}`
-  const readmeContent = readFileSync(resolve(ws.dir, 'README.md'), 'utf8')
+  const readmeContent = readFileSync(
+    resolve(ws.dir, 'README.md'),
+    'utf8',
+  )
   // Split by code blocks to avoid replacing bash comments
   const parts = readmeContent.split(/(```[\s\S]*?```)/g)
   const processedContent = parts
@@ -366,7 +369,10 @@ const fixCliVariants = async (ws: Workspace) => {
       // Only process non-code-block parts (even indices)
       if (i % 2 === 0) {
         return part
-          .replaceAll(/`vlt`( \(.*\))?/g, `\`vlt\`${descriptionExtra}`)
+          .replaceAll(
+            /`vlt`( \(.*\))?/g,
+            `\`vlt\`${descriptionExtra}`,
+          )
           .replaceAll(/^# .*$/gm, `# ${ws.pj.name}`)
       }
       return part
