@@ -1,7 +1,6 @@
 import assert from 'node:assert'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 
 export const ROOT = resolve(import.meta.dirname, '..')
 
@@ -18,8 +17,8 @@ export type Workspace = {
   pj: PackageJson
 }
 
-export type PnpmWorkspaceConfig = {
-  packages: string[]
+export type WorkspaceConfig = {
+  workspaces: string[]
   catalog: Record<string, string>
 }
 
@@ -107,14 +106,13 @@ export const ignoreCatalog = {
     ),
 }
 
-// TODO(dogfood): read from vlt.json instead
-export const getPnpmWorkspaceConfig = (): PnpmWorkspaceConfig => {
-  const { catalog, packages } = parsePnpmWorkspaceYaml(
-    readFileSync(resolve(ROOT, 'pnpm-workspace.yaml'), 'utf8'),
-  ).toJSON()
+export const getWorkspaceConfig = (): WorkspaceConfig => {
+  const { catalog, workspaces } = JSON.parse(
+    readFileSync(resolve(ROOT, 'vlt.json'), 'utf8'),
+  ) as { catalog: Record<string, string>; workspaces: string[] }
   assert(catalog, 'catalog is required')
-  assert(packages, 'packages is required')
-  return { catalog, packages }
+  assert(workspaces, 'workspaces is required')
+  return { catalog, workspaces }
 }
 
 export const readPkgJson = (path: string) =>
@@ -131,7 +129,7 @@ export const getWorkspace = (dir: string) => ({
 export const getWorkspaces = (): Workspace[] =>
   [
     ROOT,
-    ...getPnpmWorkspaceConfig().packages.flatMap(p =>
+    ...getWorkspaceConfig().workspaces.flatMap(p =>
       readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
         withFileTypes: true,
       })

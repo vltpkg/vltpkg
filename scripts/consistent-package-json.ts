@@ -7,12 +7,12 @@ import { resolveConfig, format } from 'prettier'
 import {
   ROOT,
   getWorkspaces,
-  getPnpmWorkspaceConfig,
+  getWorkspaceConfig,
   ignoreCatalog,
   CatalogDepTypes,
 } from './utils.ts'
 import type {
-  PnpmWorkspaceConfig,
+  WorkspaceConfig,
   Workspace as WorkspaceBase,
 } from './utils.ts'
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
@@ -110,7 +110,7 @@ const sortObject = (
 
 const fixCatalogs = async (
   ws: Workspace,
-  config: PnpmWorkspaceConfig,
+  config: WorkspaceConfig,
 ) => {
   for (const type of CatalogDepTypes) {
     if (ignoreCatalog.workspaces({ name: ws.pj.name, type })) {
@@ -389,10 +389,7 @@ const fixEngines = async (ws: Workspace) => {
   }
 }
 
-const fixPackage = async (
-  ws: Workspace,
-  config: PnpmWorkspaceConfig,
-) => {
+const fixPackage = async (ws: Workspace, config: WorkspaceConfig) => {
   ws.pj.engines ??= {}
   if (ws.isRoot) {
     ws.pj.engines.pnpm = PNPM_VERSION.split('.')[0] ?? ''
@@ -449,7 +446,7 @@ const fixPackage = async (
 }
 
 const main = async () => {
-  const config = getPnpmWorkspaceConfig()
+  const config = getWorkspaceConfig()
   const workspaces = getWorkspaces().map(({ dir, pkgPath, pj }) => ({
     dir,
     dirName: dir == ROOT ? '.' : relative(ROOT, dir),
