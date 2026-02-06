@@ -1,308 +1,36 @@
 ---
-description: 
-globs: 
+description: Fixing common linting errors (unused vars, imports, type guards)
+globs: src/*/src/**/*.ts,src/*/test/**/*.ts
 alwaysApply: false
 ---
-# Linting Error Handler
+# Linting Error Fixes
 
-Rule for efficiently identifying and fixing common linting errors, particularly unused variables and imports.
+## Unused Variables (`@typescript-eslint/no-unused-vars`)
 
-<rule>
-name: linting_error_handler
-description: Systematic approach to fixing common linting errors with clear patterns and solutions
-filters:
-  # Match TypeScript and JavaScript files
-  - type: file_extension
-    pattern: "\\.(js|jsx|ts|tsx)$"
-  # Match linting-related events
-  - type: event
-    pattern: "lint_error"
+Preference order:
+1. **Remove** the declaration (call expression without assignment if side-effects needed)
+2. **Use** the variable if it should be used
+3. **Prefix with `_`** (last resort)
 
-actions:
-  - type: suggest
-    message: |
-      When encountering linting errors, follow these systematic steps:
+## Unused Imports
 
-      ## 1. Identify Error Patterns
+1. Remove unused imports from the import statement
+2. Remove entire import line if all imports unused
+3. Separate `import type {}` from value imports when needed
 
-      ### Common Error Types and Solutions:
+## Type Guards for Array Filtering
 
-      #### A. Unused Variables (`@typescript-eslint/no-unused-vars`)
-      **Pattern**: `'variableName' is assigned a value but never used. Allowed unused vars must match /^_/u`
-      
-      **Solutions** (in order of preference):
-      1. **Remove the variable declaration**:
-         ```typescript
-         // ❌ Before
-         const foo = doesSomethingAndReturnsFoo()
-         
-         // ✅ After
-         doesSomethingAndReturnsFoo()
-         ```
+Use type predicates instead of non-null assertions (`!`):
+```typescript
+// BAD: n.location! causes @typescript-eslint/no-non-null-assertion
+const paths = nodes.filter(n => n.location !== undefined).map(n => n.location!)
 
-      2. **Remove the variable entirely** (if truly unused):
-         ```typescript
-         // ❌ Before
-         const isWorkspaceOrProject = isPseudoNode(item) && (item.value === ':workspace' || item.value === ':project')
-         const allowedPseudoNodes = isPseudoNode(item) && (item.value === ':root' || item.value === ':workspace')
-         
-         // ✅ After
-         const allowedPseudoNodes = isPseudoNode(item) && (item.value === ':root' || item.value === ':workspace')
-         ```
+// GOOD: type predicate narrows correctly
+const paths = nodes
+  .filter((n): n is { location: string } => typeof n.location === 'string')
+  .map(n => n.location)
+```
 
-      3. **Use the variable** (if it should be used):
-         ```typescript
-         // ❌ Before
-         const result = calculateValue()
-         return defaultValue
-         
-         // ✅ After
-         const result = calculateValue()
-         return result
-         ```
+## Workflow
 
-      4. **Prefix with underscore** (keep declaration for reference, last resort only):
-         ```typescript
-         // ❌ Before
-         const isWorkspaceOrProject = isPseudoNode(item) && (item.value === ':workspace' || item.value === ':project')
-         
-         // ✅ After
-         const _isWorkspaceOrProject = isPseudoNode(item) && (item.value === ':workspace' || item.value === ':project')
-         ```
-
-      #### B. Unused Imports (`@typescript-eslint/no-unused-vars`)
-      **Pattern**: `'ImportName' is defined but never used. Allowed unused vars must match /^_/u`
-      
-      **Solutions**:
-      1. **Remove from import statement**:
-         ```typescript
-         // ❌ Before
-         import { usedFunction, UnusedType, anotherUsedFunction } from 'module'
-         
-         // ✅ After
-         import { usedFunction, anotherUsedFunction } from 'module'
-         ```
-
-      2. **Remove entire import line** (if all imports unused):
-         ```typescript
-         // ❌ Before
-         import type { PostcssNode } from '@vltpkg/dss-parser'
-         import { error } from '@vltpkg/error-cause'
-         
-         // ✅ After
-         import { error } from '@vltpkg/error-cause'
-         ```
-
-      3. **Separate type and value imports**:
-         ```typescript
-         // ❌ Before
-         import { function1, Type1, function2 } from 'module'
-         
-         // ✅ After  
-         import { function1, function2 } from 'module'
-         import type { Type1 } from 'module'
-         ```
-
-      #### C. Type Guard Functions for Array Filtering (`@typescript-eslint/prefer-nullish-coalescing`, non-null assertions)
-      **Pattern**: Filtering arrays with optional properties and needing proper type narrowing without non-null assertions
-      
-      **Problem**: When filtering arrays to remove undefined/null values, TypeScript doesn't automatically narrow the type, leading to:
-      - Using non-null assertions (`!`) which will cause a @typescript-eslint/no-non-null-assertion error
-      - Type errors when chaining array methods
-      
-      **Solution**: Use type guard functions (type predicates) for proper type narrowing:
-      
-      1. **Create reusable type guard functions**:
-         ```typescript
-         // ✅ Generic type guard for filtering undefined values
-         const isNotUndefined = <T>(value: T | undefined): value is T => value !== undefined
-         
-         // ✅ Generic type guard for filtering both null and undefined
-         const isDefined = <T>(value?: T): value is T => 
-           value !== null && value !== undefined
-         ```
-
-      2. **Apply in array filtering chains**:
-         ```typescript
-         // ❌ Before (using non-null assertions - unsafe and causes linting errors)
-         const scopePaths = nodes
-           .filter(n => n.location !== undefined)
-           .map(n => n.location!) // Non-null assertion warning!
-         
-         // ✅ After (using type guard - safe and type-correct)
-         const scopePaths = nodes
-           .filter((n): n is NodeWithLocation => n.location !== undefined)
-           .map(n => n.location) // TypeScript knows n.location is string, not string | undefined
-         ```
-
-      3. **Advanced patterns with custom type guards**:
-         ```typescript
-         // ✅ Custom type guard for specific conditions
-         type NodeWithLocation = {
-           location: string
-         } & Node
-         
-         const hasLocation = (node: Node): node is NodeWithLocation => 
-           node.location !== undefined
-         
-         // Usage
-         const locatedNodes = allNodes
-           .filter(hasLocation)
-           .map(node => node.location) // TypeScript knows location is defined
-         ```
-
-      4. **Inline type predicates for simple cases**:
-         ```typescript
-         // ✅ Inline type predicate
-         const validIds = items
-           .filter((item): item is ItemWithId => item.id !== undefined)
-           .map(item => item.id)
-         
-         // ✅ For property existence checks
-         const activeItems = items
-           .filter((item): item is ActiveItem => item.active === true)
-           .forEach(item => item.doSomething())
-         ```
-
-      **Why Type Guards Are Better Than Non-Null Assertions:**
-      - **Type Safety**: Compiler verifies the type narrowing logic
-      - **Linting Compliance**: No warnings about non-null assertions
-      - **Readability**: Explicit about what condition is being checked
-      - **Reusability**: Type guard functions can be reused across the codebase
-      - **Runtime Safety**: Actually checks the condition, doesn't just silence TypeScript
-
-      **Common Patterns:**
-      ```typescript
-      // ✅ Filter and map with location property
-      const paths = nodes
-        .filter((n): n is { location: string } => typeof n.location === 'string')
-        .map(n => n.location)
-      
-      // ✅ Filter and process with multiple properties
-      const workspaceNodes = nodes
-        .filter((n): n is WorkspaceNode => n.importer && n.location !== undefined)
-        .forEach(n => processWorkspace(n.location, n.importer))
-      ```
-
-      ## 2. Quick Fix Workflow
-
-      ### Step-by-Step Process:
-      1. **Run linter to get error details**:
-         ```bash
-         pnpm lint
-         ```
-
-      2. **Identify the exact line numbers and error types**:
-         - Note the file path
-         - Note the line numbers
-         - Note the specific variable/import names
-         - Note the error type (`no-unused-vars`, etc.)
-
-      3. **Apply fixes systematically**:
-         - Start with unused imports (usually easier)
-         - Then handle unused variables
-         - Use search-replace for precision
-
-      4. **Verify fixes**:
-         ```bash
-         pnpm lint
-         ```
-
-      ## 3. Search-Replace Patterns
-
-      ### For Unused Imports:
-      ```bash
-      # Pattern: Remove single import from list
-      OLD: import { keepThis, REMOVE_THIS, keepThat } from 'module'
-      NEW: import { keepThis, keepThat } from 'module'
-
-      # Pattern: Remove entire import line
-      OLD: import type { UnusedType } from '@vltpkg/module'
-      NEW: (delete entire line)
-      ```
-
-      ### For Unused Variables:
-      ```bash
-      # Pattern: Remove variable declaration
-      OLD: const unusedVar = someExpression()
-          const usedVar = anotherExpression()
-      NEW: someExpression()
-          const usedVar = anotherExpression()
-
-      # Pattern: Prefix with underscore
-      OLD: const myVar = getValue()
-      NEW: const _myVar = getValue()
-      ```
-
-      ## 4. Advanced Patterns
-
-      ### Multiple Unused Items:
-      ```typescript
-      // ❌ Before
-      import { 
-        usedFunc, 
-        UnusedType1, 
-        UnusedType2, 
-        anotherUsedFunc,
-        UnusedFunc 
-      } from 'module'
-
-      // ✅ After
-      import { usedFunc, anotherUsedFunc } from 'module'
-      ```
-
-      ### Conditional Usage:
-      ```typescript
-      // If variable is used conditionally, consider refactoring
-      // ❌ Before
-      const expensiveCalculation = heavyOperation()
-      if (someCondition) {
-        // expensiveCalculation never used here
-      }
-
-      // ✅ After
-      if (someCondition) {
-        const expensiveCalculation = heavyOperation()
-        // use expensiveCalculation
-      }
-      ```
-
-      ## 5. Prevention Tips
-
-      ### During Development:
-      - Remove imports immediately when removing usage
-      - Use IDE features to detect unused items early  
-      - Run `pnpm lint` frequently during development
-      - Avoid using `_` prefix for unused variables, use it as a last resort only
-
-      ### Code Review:
-      - Check for unused imports in new code
-      - Verify that all declared variables are used
-      - Remove dead code promptly
-
-examples:
-  - input: |
-      # Error: 'PostcssNode' is defined but never used
-      import type { PostcssNode } from '@vltpkg/dss-parser'
-      import type { ModifierBreadcrumb } from './types.ts'
-
-      # Error: 'isWorkspaceOrProject' is never used  
-      const isWorkspaceOrProject = isPseudoNode(item) && (item.value === ':workspace')
-      const allowedPseudoNodes = isPseudoNode(item) && (item.value === ':root')
-    output: |
-      # Fixed: Remove unused import
-      import type { ModifierBreadcrumb } from './types.ts'
-
-      # Fixed: Remove unused variable
-      const allowedPseudoNodes = isPseudoNode(item) && (item.value === ':root')
-
-metadata:
-  priority: high
-  version: 1.0
-  tags:
-    - linting
-    - error-handling
-    - unused-variables
-    - unused-imports
-    - code-quality
-</rule>
+`pnpm lint` → fix issues → `pnpm lint` again to verify.

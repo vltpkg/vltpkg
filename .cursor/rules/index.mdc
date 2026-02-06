@@ -1,0 +1,35 @@
+---
+description: Monorepo structure, workspace map, and development workflow
+globs: **/*
+alwaysApply: true
+---
+# vltpkg Monorepo
+
+pnpm monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Published as `@vltpkg/*`.
+
+## Development
+
+- `cd` into workspace dir before running commands (e.g., `cd src/semver`)
+- Each workspace has own `package.json`, `test/` folder
+- 100% test coverage required. Use pnpm. Strict TypeScript.
+- See `@code-validation-workflow.mdc` for format/lint/test/coverage/typecheck steps
+
+## Workspaces
+
+**Graph (core install engine):** `src/graph` — See `@graph/index.mdc` and sub-rules: `data-structure`, `ideal`, `ideal-append-nodes`, `load-actual`, `modifiers`, `lockfiles`, `reify`, `peers`
+
+**Core:** `src/cache`, `src/cache-unzip`, `src/types`, `src/dep-id` (node IDs), `src/spec` (specifier parsing), `src/satisfies` (DepID↔Spec)
+
+**DSS Query:** `src/dss-parser`, `src/dss-breadcrumb`, `src/query` — See `@query-pseudo-selector-creation.mdc`
+
+**Package Mgmt:** `src/package-info`, `src/package-json`, `src/registry-client`, `src/tar`, `src/workspaces`
+
+**CLI:** `src/cli-sdk` (framework — see `@cli-sdk-workspace.mdc`), `src/init`, `src/vlx`, `src/run`
+
+**Utilities:** `src/keychain`, `src/security-archive`, `src/semver`, `src/git`, `src/error-cause`, `src/output`, `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`, `src/rollback-remove`, `src/dot-prop`, `src/fast-split`, `src/pick-manifest`, `src/vlt-json`, `src/which`
+
+**Frontend:** `src/gui` (React/Zustand — see `@gui-validation-workflow.mdc`), `src/server`
+
+**Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`, `infra/cli-{platform}`, `infra/smoke-test`
+
+**Docs:** `www/docs` → https://docs.vlt.sh

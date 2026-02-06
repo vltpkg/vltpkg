@@ -1,165 +1,26 @@
 ---
-description: 
-globs: src/gui/*
+description: GUI workspace validation (Vitest, no coverage)
+globs: src/gui/src/**/*,src/gui/test/**/*
 alwaysApply: false
 ---
-# GUI Workspace Validation Workflow
+# GUI Workspace Validation
 
-Rule for validating code quality, formatting, and tests specifically for the `src/gui` workspace.
+Differs from `@code-validation-workflow.mdc`: uses **Vitest** (not tap), **no code coverage**.
 
-<rule>
-name: gui_validation_workflow
-description: Standards and workflow for validating code quality, formatting, and tests in the src/gui workspace
-filters:
-  # Match files specifically within the src/gui workspace
-  - type: path
-    pattern: "^src/gui/"
-  # Match any file that might need validation within gui workspace
-  - type: file_extension
-    pattern: "\\.(js|jsx|ts|tsx|json|md|css|scss)$"
-  # Match file modification events in gui workspace
-  - type: event
-    pattern: "file_modify"
+## Steps (from `src/gui` dir)
 
-actions:
-  - type: suggest
-    message: |
-      **GUI Workspace Validation Steps**
-      
-      When working in the `src/gui` workspace, use these modified validation steps:
+1. `pnpm format`
+2. `pnpm lint`
+3. `pnpm test --reporter=tap` (single file: `pnpm test --reporter=tap test/components/Foo.test.tsx`)
+4. **Skip coverage** — not measured in GUI workspace
+5. `pnpm posttest` (type check)
 
-      1. Format code:
-         ```bash
-         pnpm format
-         ```
-         This ensures consistent code formatting across the codebase.
-         If formatting issues are found, fix them before proceeding.
+## Snapshots
 
-      2. Lint code:
-         ```bash
-         pnpm lint
-         ```
-         This checks for style guide violations and potential issues.
-         If linting errors are found:
-         - **For common linting issues (unused variables/imports)**: Refer to `@linting-error-handler.mdc` for systematic solutions
-         - Review each error message
-         - Fix the issues in the affected files
-         - Run `pnpm lint` again to verify fixes
-         
-         💡 **Pro tip**: Most linting errors fall into common patterns. Use the linting error handler rule for quick, systematic fixes.
+`pnpm snap --reporter=tap` — review changes carefully before updating.
 
-      3. Run tests:
-         ```bash
-         pnpm test --reporter=tap
-         ```
-         📋 **Testing Framework**: The GUI workspace uses **Vitest** as its testing framework (NOT tap).
-         Test files should use Vitest syntax with `describe()`, `it()`, and `expect()` functions.
-         Import pattern: `import { describe, it, expect } from 'vitest'`
-         
-         This runs all tests in the GUI workspace with TAP reporter.
-         If tests fail:
-         - Review the test output for failures
-         - Fix any failing tests
-         - Run tests again to verify fixes
+## Test Syntax
 
-         3.1. Running tests for a specific file:
-             ```bash
-             pnpm test --reporter=tap <path-to-test-file.ts>
-             ```
-             Use this command when working on a specific module to iterate faster.
-             Example:
-             ```bash
-             pnpm test --reporter=tap test/components/Button.test.tsx
-             ```
+Uses Vitest: `import { describe, it, expect } from 'vitest'` with `describe()`/`it()`/`expect()`.
 
-         3.2. Updating snapshots:
-             ```bash
-             pnpm snap --reporter=tap
-             ```
-             ⚠️ IMPORTANT: Snapshots are asserting expected results, they should only be updated if all breaking changes to tests are intentional.
-             Before updating snapshots:
-             - Review all snapshot changes carefully
-             - Ensure the changes are expected and intentional
-             - Document any breaking changes in your work
-             - Consider discussing major snapshot updates with the team
-
-      4. ⚠️ **Code Coverage**: 
-         **Code coverage is NOT measured or validated in the `src/gui` workspace.**
-         Skip any coverage-related validation steps when working in this workspace.
-
-      5. Run type checking:
-         ```bash
-         pnpm posttest
-         ```
-         This runs the TypeScript type checker for the GUI workspace.
-         Make sure you're in the `src/gui` folder when running this command.
-         
-         If type checking errors are found:
-         - Review each type error message carefully
-         - Fix type issues in the affected files
-         - Run `pnpm posttest` again to verify fixes
-         - Ensure all type definitions are correct and complete
-
-      **Important Notes for GUI Workspace:**
-      - Always run these commands from within the `src/gui` directory
-      - **Testing Framework**: GUI workspace uses **Vitest** (not tap) - use `describe()`, `it()`, `expect()` syntax
-      - The GUI workspace uses different test reporter flags than other workspaces
-      - Code coverage validation is intentionally skipped for this workspace
-      - Do not proceed to the next step if the current step fails
-      - Complete your work only after all applicable validation steps pass
-
-examples:
-  - input: |
-      # Bad: Using wrong test commands, frameworks, or attempting coverage validation
-      pnpm test -Rtap --disable-coverage  # Wrong command for GUI
-      pnpm test -Rsilent --coverage-report=text-lcov  # Coverage not used in GUI
-      # Bad: Using tap syntax in test files
-      import { test } from 'tap'  # GUI uses Vitest, not tap
-
-      # Good: GUI workspace validation workflow
-      cd src/gui
-      pnpm format
-      pnpm lint
-      pnpm test --reporter=tap
-      # Skip coverage step - not applicable to GUI workspace
-      pnpm posttest
-
-      # Good: Test file syntax for GUI workspace (uses Vitest)
-      import { describe, it, expect } from 'vitest'
-      describe('Component', () => {
-        it('should work correctly', () => {
-          expect(result).toBe(expected)
-        })
-      })
-
-      # Good: Iterative development workflow for GUI
-      cd src/gui
-      pnpm test --reporter=tap test/components/Button.test.tsx
-      # Make changes to the code
-      pnpm format
-      pnpm lint
-      pnpm test --reporter=tap test/components/Button.test.tsx
-      # Review snapshot changes carefully
-      pnpm snap --reporter=tap
-      # Type check
-      pnpm posttest
-    output: "Properly validated GUI workspace changes with correct Vitest syntax"
-
-metadata:
-  priority: high
-  version: 1.0
-  tags:
-    - gui
-    - validation
-    - workflow
-    - testing
-    - vitest
-    - frontend
-    - react
-    - formatting
-    - linting
-  related_rules:
-    - code-validation-workflow  # General validation workflow for other workspaces
-    - linting-error-handler     # For systematic handling of common linting errors
-    - monorepo-structure       # For understanding workspace organization
-</rule>
+**Do NOT use tap syntax** (`import { test } from 'tap'`) in this workspace.

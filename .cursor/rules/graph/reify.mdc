@@ -3,146 +3,40 @@ description: Reify process (applying Diff to node_modules)
 globs: src/graph/src/reify/*,src/graph/test/reify/*
 alwaysApply: false
 ---
-# Reify (Apply Graph Changes to node_modules)
+# Reify (Apply Graph Changes)
 
-Guidance for working with the Reify step in `@vltpkg/graph`, which transforms an Actual Graph on disk to match an Ideal Graph by applying the minimal set of filesystem operations.
+Entry: `src/graph/src/reify/index.ts` → `reify(options)`
 
-<rule>
-name: graph_reify
-description: How reify computes and applies minimal filesystem changes, with module responsibilities and integration tips
-filters:
-  # Reify implementation and helpers
-  - type: path
-    pattern: "^src/graph/src/reify/"
-  - type: file_name
-    pattern: "^(index|refresh-ideal-graph|add-edges|add-edge|delete-nodes|delete-edges|delete-edge|internal-hoist|build|rollback|optional-fail|bin-paths|calculate-save-value|update-importers-package-json)\\.ts$"
-  # Diff usage is central to reify
-  - type: content
-    pattern: "new Diff\(actual, graph\)|diff\\.nodes|diff\\.edges"
+Makes on-disk install (Actual) match desired state (Ideal) via minimal filesystem ops.
 
-actions:
-  - type: guide
-    message: |
-      ## Overview
+## Flow
 
-      The `reify(options)` function makes the on-disk install (Actual Graph) match the desired state (Ideal Graph). It:
-      1. Loads the Actual Graph (if not provided) with `loadManifests: true`.
-      2. Computes a `Diff(actual, ideal)` and returns early if there are no changes.
-      3. Applies a minimal sequence of filesystem operations to add/extract nodes, create or remove dependency links, hoist internal links, run lifecycle scripts, and write lockfiles.
+1. Load Actual (if not provided) with `loadManifests: true`
+2. Compute `Diff(actual, ideal)` — return early if no changes
+3. Prepare `RollbackRemove` for reversibility
+4. **Extract nodes**: `addNodes()` → fetch/extract into `.vlt` store. Optional deps use `optionalFail()` to prune subgraphs instead of failing
+5. **Delete edges**: `deleteEdges()` → remove outdated links + bins
+6. Run extraction+deletion via `callLimit(actions, { limit })` where `limit = Math.max(availableParallelism()-1, 1) * 8`
+7. **Add edges**: `addEdges()` → create symlinks + bin links (Windows: `@vltpkg/cmd-shim`)
+8. **Hoist**: `internalHoist()` → `node_modules/.vlt/node_modules/<name>` symlinks. Preference: importer deps > registry > highest version > lexicographic DepID
+9. **Build**: `build()` → lifecycle scripts (preinstall/install/postinstall/prepare), chmod bins
+10. **Lockfiles**: save main `vlt-lock.json` (`saveData()`), hidden `node_modules/.vlt-lock.json` (`saveHidden()`)
+11. **Cleanup**: gc if optional failures, delete removed nodes, update importer `package.json` if `add/remove` changed deps, confirm rollback
 
-      Entry point: `src/graph/src/reify/index.ts` → `reify(options)`
+## Module Responsibilities
 
-  - type: architecture_guide
-    message: |
-      ## Execution Flow
+- `index.ts` — orchestrator
+- `add-nodes.ts`/`extract-node.ts` — extract into store via `packageInfo.extract()`, platform gating, optional fail
+- `add-edge.ts`/`add-edges.ts` — symlinks + bin links
+- `delete-edge.ts`/`delete-edges.ts` — remove links + `.bin` entries
+- `internal-hoist.ts` — preferred candidate selection + symlinks
+- `build.ts` — lifecycle scripts, chmod bins
+- `optional-fail.ts` — `removeOptionalSubgraph`, flags `diff.hadOptionalFailures`
+- `rollback.ts` — best-effort revert
+- `update-importers-package-json.ts`/`calculate-save-value.ts` — save deps to importers
 
-      - Build `Diff`:
-        - `const diff = new Diff(actual, graph)`; if `!diff.hasChanges()`, return early.
+## Usage
 
-      - Prepare rollback:
-        - Use `RollbackRemove` to ensure all steps are reversible until confirmed.
+Provide `graph` (Ideal). Optionally pass `actual` to skip reload. Required shared instances: `packageInfo`, `packageJson`, `scurry`.
 
-      - Node extraction and edge deletions:
-        - `addNodes(diff, scurry, remover, options, packageInfo)` → returns async actions to fetch/extract nodes into the `.vlt` store (registry/git/tarball installs). Optional deps use `optionalFail()` to remove subgraphs instead of failing the whole reify.
-        - `deleteEdges(diff, scurry, remover)` → returns async actions removing outdated links and their bins.
-        - Actions run via `callLimit(actions, { limit })` where `limit = (availableParallelism() - 1) * 8`.
-
-      - Link creation:
-        - `addEdges(diff, packageJson, scurry, remover)` → creates symlinks in importer `node_modules` and links package bins into `.bin`. On Windows, uses `@vltpkg/cmd-shim` for executables.
-
-      - Hoisting:
-        - `internalHoist(diff.to, options, remover)` → sets up `node_modules/.vlt/node_modules/<name>` symlinks to preferred candidates per package name. Preference:
-          - Prefer dependencies that are direct deps of an importer.
-          - Prefer registry deps over non-registry.
-          - For registry deps, prefer highest version (via `@vltpkg/semver`).
-          - Otherwise, pick lexicographically highest `DepID`.
-
-      - Build phase:
-        - `build(diff, packageJson, scurry)` walks from importers, reading manifests as needed, then:
-          - Runs `install` lifecycle (preinstall/install/postinstall) where present.
-          - Runs `prepare` for importers, git deps, or non-store deps.
-          - Ensures package bin files are executable (chmod adds `0o111`).
-
-      - Lockfiles and state persistence:
-        - Save minimal main lockfile with `lockfile.save(options)`.
-        - Save hidden lockfile with manifests using `saveHidden(options)`.
-        - Persist resolved ideal data with `saveData(lockfileData(options), scurry.resolve('vlt-lock.json'), false)`.
-        - If `vlt.json` exists, copy to `node_modules/.vlt/vlt.json` to commit modifier config in the store.
-
-      - Cleanup:
-        - If optional failures occurred, call `graph.gc()` and adjust `diff` sets accordingly.
-        - Remove deleted nodes from the store via `deleteNodes(diff, remover, scurry)`.
-        - If `add/remove` modified importer dependencies, write updated `package.json` files via `updatePackageJson()`.
-        - Confirm rollback on success; otherwise `rollback()` cleans partial changes.
-
-  - type: architecture_guide
-    message: |
-      ## Module Responsibilities
-
-      - `index.ts` — Orchestrates the entire reify process; loads Actual, computes Diff, coordinates steps, writes lockfiles.
-      - `refresh-ideal-graph.ts` — Extracts new nodes into the store using `@vltpkg/package-info.extract()`; handles platform gating and deprecated/optional cases with `optionalFail()`.
-      - `add-edge.ts` / `add-edges.ts` — Creates symlinks and bin links; on Windows, uses cmd shims via `@vltpkg/cmd-shim`.
-      - `delete-edge.ts` / `delete-edges.ts` — Removes outdated links and related `.bin` entries (including `*.cmd`/`*.ps1` on Windows).
-      - `internal-hoist.ts` — Determines and symlinks preferred candidates into `node_modules/.vlt/node_modules`.
-      - `build.ts` — Runs lifecycle scripts and ensures bins are executable; traverses dependency graph using `graph-run`.
-      - `optional-fail.ts` — On failures of optional nodes, removes their reachable optional subgraphs from the target graph via `removeOptionalSubgraph` and flags `diff.hadOptionalFailures`.
-      - `rollback.ts` — Best-effort revert of partially applied changes using a fresh `RollbackRemove` and the accumulated remover.
-      - `update-importers-package-json.ts` / `calculate-save-value.ts` — Writes updated dependency specs to importers based on `add/remove`, preserving expected save semantics (eg. `^` ranges for registry deps).
-
-  - type: integration_guide
-    message: |
-      ## Using reify()
-
-      - Provide: `graph` (Ideal), and either let reify load Actual or pass `actual` explicitly.
-      - Required shared instances: `packageInfo`, `packageJson`, `scurry`. Reuse these across phases.
-      - Side effects:
-        - Filesystem changes under `node_modules` and `.vlt` store
-        - `vlt-lock.json` and `node_modules/.vlt-lock.json` writes
-        - Optional `package.json` updates for importers (when `add/remove` change manifests)
-      - Platform considerations:
-        - Symlinks differ across platforms; Windows uses cmd shims for bins and EEXIST is tolerated when multiple paths could write the same link.
-      - Performance:
-        - Parallelize extraction and deletions with `callLimit`; link and remove steps often batch with `Promise.all`.
-
-  - type: development_workflow
-    message: |
-      ## Practical Tips
-
-      - If you already have `actual` loaded (eg. for inspection), pass it to avoid re-reading.
-      - For dry runs, compute `new Diff(actual, ideal)` yourself and inspect `hasChanges()` and the sets, but note `reify()` always applies changes when invoked.
-      - Ensure modifiers and options used to build the Ideal graph are reflected in lockfile saves to maintain reproducibility.
-      - Handle optional dependency failures gracefully; reify already prunes optional subgraphs instead of failing the install.
-
-examples:
-  - input: |
-      import { actual, ideal, reify } from '@vltpkg/graph'
-      
-      const from = actual.load({ projectRoot, packageJson, scurry, loadManifests: true })
-      const to = await ideal.build({ projectRoot, packageInfo, packageJson, scurry })
-      const diff = await reify({ graph: to, actual: from, packageInfo, packageJson, scurry })
-    output: "Applied minimal changes to align Actual with Ideal; diff returned"
-
-  - input: |
-      // Update importer manifests when add/remove modified dependencies
-      await reify({ graph, packageInfo, packageJson, scurry, add, remove })
-    output: "Importer package.json files updated; lockfiles saved; store hoisted"
-
-metadata:
-  priority: high
-  version: 1.0
-  tags:
-    - graph
-    - reify
-    - diff
-    - lifecycle
-    - lockfiles
-    - hoist
-  related_rules:
-    - graph_workspace_architecture
-    - graph_data_structure
-    - graph_lockfiles
-    - graph_modifiers
-    - graph_load_actual
-    - monorepo-structure
-</rule>
-
+Side effects: filesystem changes under `node_modules`/`.vlt`, lockfile writes, optional `package.json` updates.

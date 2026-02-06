@@ -3,383 +3,92 @@ description: Peer dependency context isolation and resolution in vlt graphs
 globs: src/graph/src/ideal/peers.ts,src/graph/test/ideal/peers.ts,src/graph/src/graph.ts,src/dep-id/src/browser.ts
 alwaysApply: false
 ---
-# Peer Dependencies in Graph
+# Peer Dependencies
 
-Comprehensive guide to peer dependency handling in `@vltpkg/graph`, covering context isolation, package duplication, and the `peerSetHash` mechanism.
+How vlt isolates peer contexts and duplicates packages when peer requirements differ.
 
-<rule>
-name: graph_peers
-description: How vlt isolates peer dependency contexts and duplicates packages when peer requirements differ
-filters:
-  # Peer dependency implementation files
-  - type: path
-    pattern: "^src/graph/src/ideal/peers\\.ts$"
-  - type: path
-    pattern: "^src/graph/test/ideal/peers\\.ts$"
-  # DepID utilities for extra parameter handling
-  - type: path
-    pattern: "^src/dep-id/src/(browser|index)\\.ts$"
-  # Graph core that handles peerSetHash
-  - type: path
-    pattern: "^src/graph/src/graph\\.ts$"
-  # Node class with peerSetHash property
-  - type: path
-    pattern: "^src/graph/src/node\\.ts$"
-  # Mentions of peer dependencies in content
-  - type: content
-    pattern: "peerSetHash|peerDependencies|splitExtra|joinExtra|peer context"
+## Behavior
 
-actions:
-  - type: guide
-    message: |
-      ## Overview
+1. **Attempt reuse first**: try single version satisfying all peer contexts
+2. **Fork when needed**: subdivide graph into peer context groups on conflict
+3. **Duplicate packages**: clone nodes needing different peer versions
+4. **Track via `peerSetHash`**: `peer.N` identifier in DepID extra
 
-      vlt handles peer dependencies by **isolating peer contexts**, allowing multiple versions of the same package to coexist when different dependency trees require incompatible peer versions.
+## Core Algorithm (`src/graph/src/ideal/peers.ts`)
 
-      Key behaviors:
-      - **Attempts reuse first**: vlt tries to resolve to a single unique version that satisfies all peer contexts
-      - **Forks contexts when needed**: when a single version cannot satisfy all requirements, vlt subdivides the dependency graph into peer context groups
-      - **Duplicates packages**: packages requiring different peer versions are duplicated in the vlt store
-      - **Tracks contexts**: uses `peerSetHash` internally to identify and duplicate nodes affected by peer context modifications
+### `checkPeerEdgesCompatible()` — 4-Phase Check
 
-  - type: architecture_guide
-    message: |
-      ## Peer Context Isolation (`src/graph/src/ideal/peers.ts`)
+0. **Unprocessed Node**: peer edge doesn't exist yet → incompatible (conservative)
+1. **Context Mismatch**: context has different target → idempotency check first (existing target satisfies all specs?) → compatible or fork
+2. **Sibling Mismatch**: sibling edge differs → idempotency check → compatible or fork
+3. **Parent Declared Peer**: parent has alternative candidates → check via `graph.nodesByName.get(peerName)` → fork if alternative satisfies both
 
-      Core algorithm:
-      1. **Analyze current peer context**: Check if existing resolved nodes can satisfy new peer dependencies
-      2. **Attempt reuse**: Try to use a single version across all occurrences of the peer dependency
-      3. **Fork when necessary**: Create new peer contexts when version conflicts arise
-      4. **Duplicate nodes**: Clone package nodes that need different peer versions
-      5. **Track with peerSetHash**: Append unique identifiers to DepIDs to distinguish peer contexts
+Uses per-call memoization (`satisfiesMemo` Map) for `satisfies()` calls.
 
-      Implementation details:
-      - Peer contexts are deterministically identified using `peerSetHash` strings (format: `peer.N` where N is a numeric identifier)
-      - The `peerSetHash` is appended to the node's DepID as part of the `extra` parameter
-      - Multiple versions of the same package can exist in the graph, differentiated by their `peerSetHash`
+### `resolvePeerDeps()` — 4-Priority Resolution
 
-      ### Helper Functions
-      The module uses several internal helper functions to reduce duplication:
-      - **`nodeSatisfiesSpec(node, spec, fromNode, graph)`**: Wraps common `satisfies()` call pattern
-      - **`parseSpec(name, bareSpec, fromNode, graph)`**: Wraps `Spec.parse` with registry options
-      - **`getForkKey(peerContext, entries)`**: Generates cache key for fork operations (format: `{baseIndex}::{signatures}`)
-      - **`shouldIgnoreContextMismatch()`**: Prevents cross-importer peer context leakage
-      - **`buildIncompatibleResult()`**: Creates fork entry when target satisfies peer spec
-      - **`findFromPeerClosure()`**: BFS search through peer edges (depth limit: 3) for cycle resolution
+1. Direct sibling (same-level dep)
+2. Peer closure: BFS through peer edges of sibling targets (depth limit: 3)
+3. Peer context lookup
+4. Defer to next level
 
-      ### Per-Call Memoization in `checkPeerEdgesCompatible()`
-      The function uses per-call memoization to avoid redundant `satisfies()` calls:
-      ```typescript
-      const satisfiesMemo = new Map<string, boolean>()
-      const satisfiesNodeSpec = (node: Node, spec: Spec): boolean => {
-        const key = `${node.id}\0${spec.type}\0${spec.bareSpec}\0${String(spec.final)}`
-        let result = satisfiesMemo.get(key)
-        if (result === undefined) {
-          result = satisfies(node.id, spec, fromLocation, projectRoot, monorepo)
-          satisfiesMemo.set(key, result)
-        }
-        return result
-      }
-      ```
-      This improves performance when the same node/spec pairs are checked multiple times.
+### `postPlacementPeerCheck()` — 3-Phase Post-Level
 
-  - type: architecture_guide
-    message: |
-      ## DepID Extra Parameter (`src/dep-id/src/browser.ts`)
+1. `putEntries()` on all children → collect which need forking
+2. Fork or reuse sibling contexts
+3. `resolvePeerDeps()` on all children
 
-      The `extra` parameter in DepIDs now serves dual purposes:
-      1. **Modifier**: Query-based graph modifications (e.g., `:root > #package`)
-      2. **peerSetHash**: Peer context identifier (e.g., `peer.1`, `peer.2`)
+### Helper Functions
 
-      ### Utilities
+- `nodeSatisfiesSpec(node, spec, fromNode, graph)` — wraps `satisfies()`
+- `parseSpec(name, bareSpec, fromNode, graph)` — wraps `Spec.parse` with registry options
+- `getForkKey(peerContext, entries)` — cache key: `{baseIndex}::{signatures}`
+- `shouldIgnoreContextMismatch()` — prevents cross-importer peer leakage
+- `findFromPeerClosure()` — BFS through peer edges (depth limit: 3)
 
-      **`joinExtra({ modifier?, peerSetHash? })`**
-      - Combines modifier and peerSetHash into a single string
-      - Returns `undefined` if both are empty
-      - Concatenates without separator when both present: `${modifier}${peerSetHash}`
-      - Examples:
-        - `joinExtra({ modifier: ':root > #pkg' })` → `':root > #pkg'`
-        - `joinExtra({ peerSetHash: 'peer.1' })` → `'peer.1'`
-        - `joinExtra({ modifier: ':root > #pkg', peerSetHash: 'peer.1' })` → `':root > #pkgpeer.1'`
+## DepID Extra Parameter (`src/dep-id/src/browser.ts`)
 
-      **`splitExtra(extra: string)`**
-      - Parses an extra string into its components
-      - Detects peerSetHash by looking for `peer.` delimiter
-      - Returns `{ modifier?, peerSetHash? }`
-      - Examples:
-        - `splitExtra('peer.1')` → `{ peerSetHash: 'peer.1' }`
-        - `splitExtra(':root > #pkg')` → `{ modifier: ':root > #pkg' }`
-        - `splitExtra(':root > #pkgpeer.2')` → `{ modifier: ':root > #pkg', peerSetHash: 'peer.2' }`
+`extra` serves dual purpose: modifier + peerSetHash.
 
-  - type: architecture_guide
-    message: |
-      ## Node peerSetHash Property (`src/graph/src/node.ts`)
+- `joinExtra({ modifier?, peerSetHash? })` → combined string or undefined
+- `splitExtra(extra)` → `{ modifier?, peerSetHash? }` (detects `peer.` delimiter)
 
-      Nodes now have an optional `peerSetHash?: string` property:
-      - Set during ideal graph construction when peer context forking occurs
-      - Included in node serialization (lockfile, JSON output)
-      - Preserved during graph operations (reset, gc, etc.)
-      - Used to identify nodes that are duplicates for peer context isolation
+## Node `peerSetHash` (`node.ts`)
 
-      The property is:
-      - Parsed from DepID's extra parameter during lockfile load
-      - Set by peer resolution logic during ideal graph building
-      - Combined with modifier when constructing resolution cache keys
+Optional `peerSetHash?: string`. Set during ideal build on context forking. Preserved in serialization, parsed from DepID extra on lockfile load.
 
-  - type: architecture_guide
-    message: |
-      ## Graph Integration (`src/graph/src/graph.ts`)
+## Graph Integration (`graph.ts`)
 
-      ### Resolution Cache
-      - Cache keys now include the full `extra` string (both modifier and peerSetHash)
-      - `getResolutionCacheKey(spec, location, extra)` incorporates both components
-      - Ensures nodes with different peer contexts don't incorrectly share resolution cache entries
+- Resolution cache keys include full `extra` (modifier+peerSetHash)
+- `placePackage()` splits `extra` → assigns `node.modifier` and `node.peerSetHash`
+- `nodesByName` sorted by DepID for deterministic resolution
+- `peerContextForkCache: Map<string, PeerContext>` — prevents duplicate contexts. Key: `{baseIndex}::{sortedEntrySignatures}`
 
-      ### Node Placement
-      - `placePackage()` accepts `extra` parameter containing combined modifier + peerSetHash
-      - Automatically splits `extra` and assigns to `node.modifier` and `node.peerSetHash`
-      - `findResolution()` accepts `extra` for cache key construction
+## Workspace Isolation
 
-      ### nodesByName Ordering
-      - The `nodesByName` set is now sorted deterministically by DepID
-      - Ensures consistent graph resolution when reusing nodes across peer contexts
-      - Sorting happens in `addNode()` after adding new nodes to the set
+Each non-main importer gets fresh peer context:
+```typescript
+if (fromNode.importer && fromNode !== graph.mainImporter) {
+  const nextPeerContext: PeerContext = new Map()
+  nextPeerContext.index = graph.nextPeerContextIndex()
+  initialPeerContext = nextPeerContext
+}
+```
 
-      ### Peer Context Fork Cache
-      - `graph.peerContextForkCache: Map<string, PeerContext>` caches forked contexts
-      - Prevents creating duplicate contexts for identical fork operations
-      - Key format: `{baseIndex}::{sortedEntrySignatures}` (constructed by `getForkKey()`)
-      - Significantly reduces memory usage in multi-workspace scenarios
+## DSS Selectors
 
-  - type: architecture_guide
-    message: |
-      ## Key Algorithms
+`:peer`, `:peer:optional`, `:has(:peer)`, `:peerOptional`
 
-      ### `checkPeerEdgesCompatible()` - 4-Phase Compatibility Check
-      Determines if a node can be reused given the current peer context:
+## Lockfile Format
 
-      0. **CHECK 0 - Unprocessed Node**: If peer edge doesn't exist yet on the existing node
-         - Returns incompatible (cannot verify compatibility)
-         - Peer resolution depends on original placement context, which may differ
-         - Conservative check prevents incorrect reuse when placement order varies
-         - Note: Dangling edges (edge exists but no target) are handled separately
+```
+"~~package@1.0.0~peer.1": [...]     // node with peerSetHash
+"file~. package": "prod ^1.0.0 ~~package@1.0.0~peer.1"  // edge to peer context
+```
 
-      1. **CHECK 1 - Context Mismatch**: If peer context has a different target for this peer name
-         - **Idempotency Check**: First checks if existing edge target satisfies the peer spec
-         - If existing target satisfies spec AND all context specs → returns compatible (no conflict)
-         - Otherwise returns incompatible with fork entry pointing to context's preferred target
-         - Exception: Ignores mismatch if parent's direct dep satisfies a different spec
+## Tips
 
-      2. **CHECK 2 - Sibling Mismatch**: If sibling edge has different target than existing peer edge
-         - **Idempotency Check**: First checks if existing edge target satisfies both peer spec and sibling spec
-         - If existing target satisfies both → returns compatible (prefer keeping existing)
-         - Otherwise returns incompatible with fork entry
-
-      3. **CHECK 3 - Parent Declared Peer**: If parent manifest declares a peer with potential alternatives
-         - **Early Continue**: If existing edge target satisfies parent's declared spec → compatible
-         - Uses `graph.nodesByName.get(peerName)` for efficient candidate lookup (not full graph scan)
-         - Only searches for alternatives if existing target is incompatible with parent spec
-         - Returns incompatible if an alternative candidate satisfies both parent and peer specs
-
-      ### `resolvePeerDeps()` - 4-Priority Resolution
-      Resolves peer dependencies after node placement:
-
-      1. **PRIORITY 1 - Direct Sibling**: Sibling of the same parent (same-level dep)
-      2. **PRIORITY 2 - Peer Closure**: BFS through peer edges of sibling targets (depth limit: 3)
-         - Handles cycles like A→B(peer)→C(peer)→A(peer)
-      3. **PRIORITY 3 - Peer Context**: Look up target in peer context entries
-      4. **PRIORITY 4 - Defer**: Add to next level deps for later resolution
-
-      ### `postPlacementPeerCheck()` - 3-Phase Post-Level Processing
-      Called after all nodes at a level are placed:
-
-      1. **PHASE 1 - Collect**: Call `putEntries()` on all children, collect which need forking
-      2. **PHASE 2 - Fork/Reuse**: Create new contexts or reuse sibling contexts when compatible
-      3. **PHASE 3 - Resolve**: Call `resolvePeerDeps()` on all children
-
-  - type: integration_guide
-    message: |
-      ## Query Selectors for Peer Dependencies
-
-      Users can inspect peer dependencies using DSS selectors:
-
-      - `:peer` — Returns all peer dependencies in the project
-      - `:peer:optional` — Returns optional peer dependencies (potentially missing)
-      - `:has(:peer)` — Returns packages that have direct peer dependencies
-      - `:peerOptional` — Returns peer dependencies marked as both peer and optional
-
-      These selectors are documented in the user-facing docs at `www/docs/src/content/docs/cli/peer-dependencies.mdx`
-
-  - type: data_format_guide
-    message: |
-      ## Lockfile Representation
-
-      Peer context information is preserved in lockfiles:
-
-      **Nodes**: DepID includes peerSetHash in the extra parameter
-      ```
-      "~~package@1.0.0~peer.1": [...]
-      "~~package@1.0.0~peer.2": [...]
-      ```
-
-      **Edges**: References include the full DepID with peerSetHash
-      ```
-      "file~. package": "prod ^1.0.0 ~~package@1.0.0~peer.1"
-      ```
-
-      **Loading**: `loadNodes()` in `src/graph/src/lockfile/load-nodes.ts` uses `splitExtra()` to parse both modifier and peerSetHash from the DepID
-
-  - type: architecture_guide
-    message: |
-      ## Workspace Peer Context Isolation
-
-      Each workspace importer gets its **own peer context** to prevent cross-workspace peer leakage.
-
-      ### The Problem
-      Without isolation, peer targets from the root importer could incorrectly influence workspace dependencies:
-      - Root: `react@^18` → resolves to `react@18.3.1`
-      - Workspace A: `react@^19` with peer-dependent package
-      - Without isolation: peer dep might incorrectly resolve to 18.3.1
-
-      ### The Solution
-      In `appendNodes()`, non-main importers get fresh peer contexts:
-      ```typescript
-      if (fromNode.importer && fromNode !== graph.mainImporter) {
-        const nextPeerContext: PeerContext = new Map()
-        nextPeerContext.index = graph.nextPeerContextIndex()
-        graph.peerContexts[nextPeerContext.index] = nextPeerContext
-        initialPeerContext = nextPeerContext
-      }
-      ```
-
-      ### Test Coverage
-      - `test/ideal/peers.ts`: "multi-workspace peer context isolation with 4 workspaces"
-      - `test/ideal/append-nodes.ts`: "creates fresh peer context for non-main workspace importers"
-
-  - type: development_workflow
-    message: |
-      ## Testing Peer Dependencies
-
-      Test files: `src/graph/test/ideal/peers.ts`
-
-      Key test scenarios:
-      - Multiple major versions of the same peer (React 18 vs 19)
-      - Peer dependency cycles (e.g., `@isaacs/peer-dep-cycle-a/b/c`)
-      - Optional peer dependencies
-      - Flexible peer ranges that can be satisfied by multiple versions
-      - Mixed contexts where some dependencies share peers and others don't
-      - **Multi-workspace peer context isolation** (4+ workspaces with different peer requirements)
-      - **Outlier peer contexts** (workspace sibling with different peer targets)
-      - **Idempotency from lockfile**: Re-running ideal build produces identical graph
-      - **Context mismatch tolerance**: Existing edge satisfies spec despite different context target
-      - **Sibling mismatch tolerance**: Existing edge satisfies both specs despite different sibling target
-
-      Testing patterns:
-      - Build ideal graphs with packages declaring peer dependencies
-      - Verify correct number of duplicate nodes created
-      - Check that peerSetHash values are assigned and unique
-      - Validate lockfile serialization includes peerSetHash
-      - Confirm query selectors return expected peer dependency sets
-      - Test mermaid diagram generation showing peer context isolation
-      - **Verify `graph.peerContexts.length > 1` for multi-workspace isolation**
-
-  - type: development_workflow
-    message: |
-      ## Practical Tips
-
-      When working with peer dependencies:
-      - **Always use joinExtra()**: When constructing extra parameters, use `joinExtra({ modifier, peerSetHash })` rather than string concatenation
-      - **Always use splitExtra()**: When parsing extra parameters, use `splitExtra(extra)` to correctly handle both components
-      - **Preserve peerSetHash**: When copying or transforming nodes, ensure peerSetHash is maintained
-      - **Cache key awareness**: Resolution cache keys must include the full extra string to avoid incorrect cache hits
-      - **Test with real packages**: Use actual npm packages with peer dependencies (like React ecosystem) for integration tests
-      - **Check lockfile round-trips**: Verify that peerSetHash survives serialization and deserialization
-
-examples:
-  - input: |
-      // Correctly combining modifier and peerSetHash
-      const extra = joinExtra({ 
-        modifier: ':root > #react-dom', 
-        peerSetHash: 'peer.1' 
-      })
-      const node = graph.placePackage(from, 'prod', spec, manifest, id, extra)
-    output: "Node placed with both modifier and peer context tracking"
-
-  - input: |
-      // Parsing extra from DepID during lockfile load
-      const { modifier, peerSetHash } = splitExtra(extra)
-      if (modifier) node.modifier = modifier
-      if (peerSetHash) node.peerSetHash = peerSetHash
-    output: "Extra parameter correctly split into components"
-
-  - input: |
-      // Finding resolution with peer context
-      const extra = joinExtra({ peerSetHash: 'peer.2' })
-      const resolved = graph.findResolution(spec, fromNode, extra)
-    output: "Resolution respects peer context isolation"
-
-  - input: |
-      // Using helper functions to check peer compatibility
-      import { nodeSatisfiesSpec, parseSpec, checkPeerEdgesCompatible } from './peers.ts'
-      
-      // Check if node satisfies spec with proper context
-      const satisfies = nodeSatisfiesSpec(candidateNode, peerSpec, fromNode, graph)
-      
-      // Parse spec with registry options from main importer
-      const spec = parseSpec('react', '^18.0.0', fromNode, graph)
-      
-      // Full peer compatibility check (3 phases)
-      const result = checkPeerEdgesCompatible(existingNode, fromNode, peerContext, graph)
-      if (!result.compatible && result.forkEntry) {
-        // Need to fork context with this entry
-        const forked = forkPeerContext(graph, peerContext, [result.forkEntry])
-      }
-    output: "Peer compatibility checked using helper functions and context forked if needed"
-
-  - input: |
-      // Peer context fork caching in action
-      // In forkPeerContext():
-      const cacheKey = getForkKey(base, entries)  // e.g., "0::react:^18.0.0:npm:react@18.3.1"
-      const cached = graph.peerContextForkCache.get(cacheKey)
-      if (cached) return cached  // Reuse existing forked context
-      
-      // Create new context and cache it
-      const forked = new Map(base) as PeerContext
-      forked.index = graph.nextPeerContextIndex()
-      graph.peerContextForkCache.set(cacheKey, forked)
-    output: "Fork caching prevents duplicate peer contexts in multi-workspace scenarios"
-
-  - input: |
-      // Idempotency test: rebuild from lockfile produces identical graph
-      // First build
-      await appendNodes(packageInfo, graph, mainImporter, deps, ...)
-      const firstNodeIds = new Set([...graph.nodes.values()].map(n => n.id))
-      const firstLibAUi = libA.edgesOut.get('ui-component')?.to
-      
-      // Second build on same graph (simulates re-install from lockfile)
-      await appendNodes(packageInfo, graph, mainImporter, deps, ...)
-      const secondNodeIds = new Set([...graph.nodes.values()].map(n => n.id))
-      const secondLibAUi = libA.edgesOut.get('ui-component')?.to
-      
-      t.same(secondNodeIds, firstNodeIds, 'should have identical nodes (idempotent)')
-      t.equal(secondLibAUi?.id, firstLibAUi?.id, 'should reuse same ui-component node')
-    output: "Idempotency verified: existing valid resolutions are preserved"
-
-metadata:
-  priority: high
-  version: 1.4
-  tags:
-    - graph
-    - peer-dependencies
-    - context-isolation
-    - node-duplication
-    - dep-id
-    - lockfile
-    - idempotency
-  related_rules:
-    - graph_data_structure
-    - graph_ideal
-    - graph_ideal_append_nodes
-    - graph_lockfiles
-    - monorepo-structure
-</rule>
+- Always use `joinExtra()`/`splitExtra()` — never string concatenation
+- Preserve `peerSetHash` when copying/transforming nodes
+- Resolution cache must include full `extra` to avoid incorrect hits
+- Test idempotency: rebuild from lockfile → identical graph
