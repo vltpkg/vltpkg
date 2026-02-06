@@ -20,7 +20,7 @@ export const usage: CommandUsage = () =>
                   If the package specifier is provided explicitly via the
                   \`--package\` config, then that is what will be used. If
                   a satisfying instance of the named package exists in the
-                  local \`node_mnodules\` folder, then that will be used.
+                  local \`node_modules\` folder, then that will be used.
 
                   If \`--package\` is not set, then vlt will attempt to infer
                   the package to be installed if necessary, in the following
