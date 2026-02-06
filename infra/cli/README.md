@@ -21,14 +21,14 @@ Full documentation, startup guides & API references can be found at
 #### Development
 
 ```bash
-# vlt
+# clone the repo
 git clone git@github.com:vltpkg/vltpkg.git
 cd vltpkg
 
-# vlt
+# install deps
 pnpm install
 
-# vlt
+# run the locally built cli
 pnpm vlt # OR ./node_modules/.bin/vlt
 ```
 
