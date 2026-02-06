@@ -28,6 +28,13 @@ export const usage: CommandUsage = () =>
     command: 'config',
     usage: '[<command>] [<args>]',
     description: 'Get or manipulate vlt configuration values',
+    options: {
+      config: {
+        value: '<all | user | project>',
+        description:
+          'Specify which configuration to show or operate on.',
+      },
+    },
 
     subcommands: {
       get: {

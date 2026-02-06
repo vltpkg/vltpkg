@@ -10,6 +10,18 @@ export const usage: CommandUsage = () =>
     usage: [''],
     description: `Look up the username for the currently active token,
                   when logged into a registry.`,
+    options: {
+      registry: {
+        value: '<url>',
+        description:
+          'Registry URL to query for authenticated user info.',
+      },
+      identity: {
+        value: '<name>',
+        description:
+          'Identity namespace used to look up auth tokens.',
+      },
+    },
   })
 
 type CommandResult = {

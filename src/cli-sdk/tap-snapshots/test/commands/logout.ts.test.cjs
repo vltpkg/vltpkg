@@ -14,4 +14,22 @@ vlt logout
 
 Log out of the default registry, deleting the token from the local keychain, as well as destroying it on the server.
 
+## Options
+
+### registry
+
+Registry URL to log out from.
+
+\`\`\`
+--registry=<url>
+\`\`\`
+
+### identity
+
+Identity namespace used to look up auth tokens.
+
+\`\`\`
+--identity=<name>
+\`\`\`
+
 `

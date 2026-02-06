@@ -27,6 +27,50 @@ export const usage: CommandUsage = () =>
     usage: '[packages ...]',
     description: `Install the specified packages, updating package.json and
                   vlt-lock.json appropriately.`,
+    options: {
+      'save-dev': {
+        description:
+          'Save installed packages to package.json as devDependencies.',
+      },
+      'save-optional': {
+        description:
+          'Save installed packages to package.json as optionalDependencies.',
+      },
+      'save-peer': {
+        description:
+          'Save installed packages to package.json as peerDependencies.',
+      },
+      'save-prod': {
+        description:
+          'Save installed packages to package.json as dependencies.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit installation targets to matching workspaces.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description:
+          'Limit installation targets to workspace groups.',
+      },
+      'expect-lockfile': {
+        description: 'Fail if lockfile is missing or out of date.',
+      },
+      'frozen-lockfile': {
+        description:
+          'Fail if lockfile is missing or out of sync with package.json.',
+      },
+      'lockfile-only': {
+        description:
+          'Only update lockfile and package.json files; skip node_modules operations.',
+      },
+      'allow-scripts': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+    },
   })
 
 export const views = {

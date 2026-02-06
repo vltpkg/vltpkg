@@ -20,6 +20,32 @@ export const usage: CommandUsage = () =>
                   Note that any vlt configs must be specified *before* the
                   command, as the remainder of the command line options are
                   provided to the exec process.`,
+    options: {
+      scope: {
+        value: '<query>',
+        description: 'Filter execution targets using a DSS query.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit execution to matching workspace paths or globs.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description: 'Limit execution to named workspace groups.',
+      },
+      recursive: {
+        description: 'Run across all selected workspaces.',
+      },
+      'if-present': {
+        description:
+          'When running across multiple packages, only include packages with matching scripts.',
+      },
+      bail: {
+        description:
+          'When running across multiple workspaces, stop on first failure.',
+      },
+    },
   })
 
 export const command: CommandFn<ExecResult> = async conf => {

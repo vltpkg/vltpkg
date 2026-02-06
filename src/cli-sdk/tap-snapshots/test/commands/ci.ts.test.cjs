@@ -24,4 +24,17 @@ exactly as specified in vlt-lock.json. This is similar to running 'vlt install
 
     ​vlt ci
 
+  Options
+
+    allow-scripts
+      Filter which packages are allowed to run lifecycle scripts using DSS query
+      syntax.
+
+      ​--allow-scripts=<query>
+
+    lockfile-only
+      Only update lockfile and package.json files; skip node_modules operations.
+
+      ​--lockfile-only
+
 `

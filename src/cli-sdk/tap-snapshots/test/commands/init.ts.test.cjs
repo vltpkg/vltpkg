@@ -26,6 +26,16 @@ vlt init
 
 Create a new package.json file in the current directory.
 
+## Options
+
+### workspace
+
+Create package.json files in matching workspaces.
+
+\`\`\`
+--workspace=<path|glob>
+\`\`\`
+
 `
 
 exports[`test/commands/init.ts > TAP > test command with workspace > should add workspace to vlt.json 1`] = `

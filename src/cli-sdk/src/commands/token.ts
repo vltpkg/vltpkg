@@ -9,6 +9,16 @@ export const usage: CommandUsage = () =>
     command: 'token',
     usage: ['add', 'rm'],
     description: `Explicitly add or remove tokens in the vlt keychain`,
+    options: {
+      registry: {
+        value: '<url>',
+        description: 'Registry URL to manage tokens for.',
+      },
+      identity: {
+        value: '<name>',
+        description: 'Identity namespace used to store auth tokens.',
+      },
+    },
   })
 
 export const command: CommandFn<void> = async conf => {

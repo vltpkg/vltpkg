@@ -8,6 +8,17 @@ export const usage: CommandUsage = () =>
     usage: [''],
     description: `Log out of the default registry, deleting the token from
                   the local keychain, as well as destroying it on the server.`,
+    options: {
+      registry: {
+        value: '<url>',
+        description: 'Registry URL to log out from.',
+      },
+      identity: {
+        value: '<name>',
+        description:
+          'Identity namespace used to look up auth tokens.',
+      },
+    },
   })
 
 export const command: CommandFn<void> = async conf => {

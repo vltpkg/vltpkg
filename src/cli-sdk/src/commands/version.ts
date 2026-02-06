@@ -238,6 +238,26 @@ export const usage: CommandUsage = () => {
     The \`<newversion>\` argument should be a valid semver string or a valid increment type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
     If run in a git repository, it will also create a version commit and tag.`,
+    options: {
+      scope: {
+        value: '<query>',
+        description: 'Filter version bump targets using a DSS query.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit version bump targets to matching workspaces.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description:
+          'Limit version bump targets to workspace groups.',
+      },
+      recursive: {
+        description:
+          'Run version bump across all workspaces in the monorepo.',
+      },
+    },
   })
 }
 

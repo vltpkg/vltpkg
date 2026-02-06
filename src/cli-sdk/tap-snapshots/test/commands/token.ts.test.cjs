@@ -15,4 +15,22 @@ vlt token rm
 
 Explicitly add or remove tokens in the vlt keychain
 
+## Options
+
+### registry
+
+Registry URL to manage tokens for.
+
+\`\`\`
+--registry=<url>
+\`\`\`
+
+### identity
+
+Identity namespace used to store auth tokens.
+
+\`\`\`
+--identity=<name>
+\`\`\`
+
 `

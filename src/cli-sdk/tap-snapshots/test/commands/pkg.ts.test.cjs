@@ -78,4 +78,26 @@ Get or manipulate package.json values
 
     ​vlt pkg set "array[]=value"
 
+  Options
+
+    scope
+      Filter package.json targets using a DSS query.
+
+      ​--scope=<query>
+
+    workspace
+      Limit package.json targets to matching workspaces.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit package.json targets to workspace groups.
+
+      ​--workspace-group=<name>
+
+    recursive
+      Operate across all workspaces in the current monorepo.
+
+      ​--recursive
+
 `

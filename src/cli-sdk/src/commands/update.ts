@@ -12,6 +12,13 @@ export const usage: CommandUsage = () =>
     usage: '',
     description: `Update dependencies to their latest in-range versions.
                   Discards the lockfile and resolves dependencies from scratch.`,
+    options: {
+      'allow-scripts': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+    },
   })
 
 export const views = {

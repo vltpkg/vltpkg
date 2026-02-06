@@ -21,4 +21,12 @@ resolves dependencies from scratch.
 
     ​u
 
+  Options
+
+    allow-scripts
+      Filter which packages are allowed to run lifecycle scripts using DSS query
+      syntax.
+
+      ​--allow-scripts=<query>
+
 `

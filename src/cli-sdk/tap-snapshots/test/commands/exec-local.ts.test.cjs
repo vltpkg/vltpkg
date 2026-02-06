@@ -22,4 +22,37 @@ remainder of the command line options are provided to the exec process.
 
     ​xl
 
+  Options
+
+    scope
+      Filter execution targets using a DSS query.
+
+      ​--scope=<query>
+
+    workspace
+      Limit execution to matching workspace paths or globs.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit execution to named workspace groups.
+
+      ​--workspace-group=<name>
+
+    recursive
+      Run across all selected workspaces.
+
+      ​--recursive
+
+    if-present
+      When running across multiple packages, only include packages with matching
+      scripts.
+
+      ​--if-present
+
+    bail
+      When running across multiple workspaces, stop on first failure.
+
+      ​--bail
+
 `

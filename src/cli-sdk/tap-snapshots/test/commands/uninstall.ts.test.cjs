@@ -22,4 +22,22 @@ package.json appropriately.
 
     ​rm
 
+  Options
+
+    workspace
+      Limit uninstall targets to matching workspaces.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit uninstall targets to workspace groups.
+
+      ​--workspace-group=<name>
+
+    allow-scripts
+      Filter which packages are allowed to run lifecycle scripts using DSS query
+      syntax.
+
+      ​--allow-scripts=<query>
+
 `
