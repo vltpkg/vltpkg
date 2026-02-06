@@ -1,6 +1,6 @@
 # Agent Guide to the vltpkg Monorepo
 
-pnpm monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces
+vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces
 published as `@vltpkg/*`, the built vlt CLI itself is published as
 `vlt`.
 
@@ -36,23 +36,23 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 - `cd` into workspace dir before running commands (e.g.,
   `cd src/semver`)
 - Each workspace has own `package.json`, `test/` folder
-- 100% test coverage required. Use pnpm. Strict TypeScript.
+- 100% test coverage required. Use vlt. Strict TypeScript.
 
 ## Steps (run in order, stop on failure)
 
-1. **Format:** `pnpm format`
-2. **Lint:** `pnpm lint` — see
+1. **Format:** `vlr format`
+2. **Lint:** `vlr lint` — see
    `.cursor/rules/linting-error-handler.mdc` for common fixes
-3. **Test:** `pnpm test -Rtap --disable-coverage` (single file: append
+3. **Test:** `vlr test -Rtap --disable-coverage` (single file: append
    `test/foo.ts`)
-4. **Coverage:** `pnpm test -Rsilent --coverage-report=text-lcov`
+4. **Coverage:** `vlr test -Rsilent --coverage-report=text-lcov`
    (single file: append `test/foo.ts`)
-5. **Types:** `pnpm posttest`
+5. **Types:** `vlr posttest`
 
 ## Snapshots
 
 Update only when changes are intentional:
-`pnpm snap -Rtap --disable-coverage test/foo.ts`
+`vlr snap -Rtap --disable-coverage test/foo.ts`
 
 ## Test Quality
 

@@ -5,13 +5,13 @@ alwaysApply: true
 ---
 # vltpkg Monorepo
 
-pnpm monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as `@vltpkg/*`, the built vlt CLI itself is published as `vlt`.
+vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as `@vltpkg/*`, the built vlt CLI itself is published as `vlt`.
 
 ## Development
 
 - `cd` into workspace dir before running commands (e.g., `cd src/semver`)
 - Each workspace has own `package.json`, `test/` folder
-- 100% test coverage required. Use pnpm. Strict TypeScript.
+- 100% test coverage required. Use vlt. Strict TypeScript.
 - See `@code-validation-workflow.mdc` for format/lint/test/coverage/typecheck steps
 
 ## Workspaces

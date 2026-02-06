@@ -83,8 +83,9 @@ the API usage.
 
 #### Package manager
 
-The package manager currently managing this repository is `pnpm` and
+The package manager currently managing this repository is `vlt` and
 as you can see below it's being used to run common reusable scripts.
+The `vlr` command is an alias for `vlt run`.
 
 #### Running tests
 
@@ -94,7 +95,7 @@ example to work on the `@vltpkg/semver` workspace navigate to the
 `src/semver` folder and then run the command:
 
 ```bash
-pnpm test -Rtap
+vlr test -Rtap
 ```
 
 By using the `-Rtap` option you'll get TAP output which is a very
@@ -117,7 +118,7 @@ example to work on the `@vltpkg/semver` workspace navigate to the
 `src/semver` folder and then run the command:
 
 ```bash
-pnpm snap
+vlr snap
 ```
 
 #### Formatting code
@@ -129,7 +130,7 @@ code on the `@vltpkg/semver` workspace navigate to the `src/semver`
 folder and then run the command:
 
 ```bash
-pnpm format
+vlr format
 ```
 
 #### Linting code
@@ -141,7 +142,7 @@ lint code on the `@vltpkg/semver` workspace navigate to the
 `src/semver` folder and then run the command:
 
 ```bash
-pnpm lint
+vlr lint
 ```
 
 #### Code coverage
@@ -161,7 +162,7 @@ coverage on the `@vltpkg/semver` workspace navigate to the
 `src/semver` folder and then run the command:
 
 ```bash
-pnpm test --coverage-report=text-lcov
+vlr test --coverage-report=text-lcov
 ```
 
 That will provide lcov-compatible output for what lines of code,
@@ -176,7 +177,7 @@ example to check types on the `@vltpkg/semver` workspace navigate to
 the `src/semver` folder and then run the command:
 
 ```bash
-pnpm posttest
+vlr posttest
 ```
 
 That will run the `tsc` type checker in the current workspace and
