@@ -39,10 +39,8 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22.9.0",
-    "pnpm": "10"
+    "node": ">=22.9.0"
   },
-  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "build:bundle": "vlt-build --outdir=.build-bundle bundle",
     "build:compile": "vlt-build --outdir=.build-compile --quiet compile",
