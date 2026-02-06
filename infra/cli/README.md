@@ -1,6 +1,6 @@
 ![vlt](https://github.com/user-attachments/assets/aec7c817-b83f-4d71-b34a-4e480b97e82c)
 
-# vlt /vōlt/
+# vlt
 
 ![vlt Version](https://img.shields.io/npm/v/vlt?logo=npm&label=Version)
 ![Package Downloads](https://img.shields.io/npm/dm/vlt?logo=npm&label=Downloads)
@@ -21,14 +21,14 @@ Full documentation, startup guides & API references can be found at
 #### Development
 
 ```bash
-# Clone the repo
+# vlt
 git clone git@github.com:vltpkg/vltpkg.git
 cd vltpkg
 
-# Install deps (and run prepare scripts)
+# vlt
 pnpm install
 
-# Run the locally built CLI
+# vlt
 pnpm vlt # OR ./node_modules/.bin/vlt
 ```
 
