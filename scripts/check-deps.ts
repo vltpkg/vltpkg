@@ -55,7 +55,7 @@ const getAllProdDeps = async (): Promise<{
   // Get src/** importers
   const srcImporters = new Set(
     [...graph.importers].filter(imp =>
-      imp.location?.startsWith('./src/'),
+      imp.location.startsWith('./src/'),
     ),
   )
 
@@ -72,8 +72,10 @@ const getAllProdDeps = async (): Promise<{
       const visited = new Set<string>()
       const queue = [...srcImporter.edgesOut.values()]
       let found = false
+      /* eslint-disable @typescript-eslint/no-unnecessary-condition */
       while (queue.length > 0 && !found) {
-        const edge = queue.shift()!
+        const edge = queue.shift()
+        if (!edge) break
         if (!edge.to || edge.optional || edge.dev) continue
         if (visited.has(edge.to.id)) continue
         visited.add(edge.to.id)
