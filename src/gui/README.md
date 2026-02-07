@@ -22,7 +22,7 @@ __VLT_INTERNAL_LIVE_RELOAD=1
 To start the esbuild dev server, run the gui watch script:
 
 ```bash
-$ pnpm -F gui watch
+$ vlr watch  # from src/gui directory
 ```
 
 In a separate terminal, run the app:

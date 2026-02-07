@@ -9,15 +9,15 @@ Differs from `@code-validation-workflow.mdc`: uses **Vitest** (not tap), **no co
 
 ## Steps (from `src/gui` dir)
 
-1. `pnpm format`
-2. `pnpm lint`
-3. `pnpm test --reporter=tap` (single file: `pnpm test --reporter=tap test/components/Foo.test.tsx`)
+1. `vlr format`
+2. `vlr lint`
+3. `vlr test --reporter=tap` (single file: `vlr test --reporter=tap test/components/Foo.test.tsx`)
 4. **Skip coverage** — not measured in GUI workspace
-5. `pnpm posttest` (type check)
+5. `vlr posttest` (type check)
 
 ## Snapshots
 
-`pnpm snap --reporter=tap` — review changes carefully before updating.
+`vlr snap --reporter=tap` — review changes carefully before updating.
 
 ## Test Syntax
 

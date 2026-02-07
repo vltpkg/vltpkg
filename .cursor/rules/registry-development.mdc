@@ -36,11 +36,11 @@ For upstream routes, extract from path since route params aren't available. Hand
 
 ## Dev Commands
 
-- `pnpm serve:build` — build + run `dist/bin/vsr.js --debug`
-- `pnpm serve:watch` — chokidar watch: rebuild + restart
-- `pnpm deploy` — build + `wrangler deploy`
-- `pnpm db:setup` / `pnpm db:studio` (port 4985)
-- `pnpm test`, `pnpm snap`, `pnpm typecheck`
+- `vlr serve:build` — build + run `dist/bin/vsr.js --debug`
+- `vlr serve:watch` — chokidar watch: rebuild + restart
+- `vlr deploy` — build + `wrangler deploy`
+- `vlr db:setup` / `vlr db:studio` (port 4985)
+- `vlr test`, `vlr snap`, `vlr typecheck`
 
 ## Key Files
 

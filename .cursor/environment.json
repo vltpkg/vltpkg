@@ -1,4 +1,4 @@
 {
   "agentCanUpdateSnapshot": true,
-  "install": "pnpm install"
+  "install": "vlt install"
 }
