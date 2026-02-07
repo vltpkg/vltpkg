@@ -33,7 +33,7 @@ These are websites that get deployed. Currently only
 
 ## Linting / Formatting
 
-Run `pnpm -w fix` to report any formatting or linting issues with your
+Run `vlr fix` to report any formatting or linting issues with your
 code, and to attempt to fix them.
 
 ## Running TypeScript Directly
@@ -91,16 +91,13 @@ You can find this configuration in `.github/workflows/*.yml`.
 ## Root Level Scripts
 
 This root of this repo has scripts for each named bin that can be run
-via `pnpm` for testing locally.
+via `vlt` for testing locally.
 
 These scripts set the correct `NODE_OPTIONS` to run the TypeScript
 source directly.
 
-In order to silence all the output from `pnpm` and only see the `vlt`
-output, it is helpful to pass the `-s` flag to `pnpm`.
-
 ```bash
-$ pnpm -s vlt --version
+$ node --run vlt -- --version
 0.0.0-0
 ```
 
@@ -128,7 +125,7 @@ following:
 
 ## Publishing
 
-All workspace directories are designed so `pnpm publish` can be run
+All workspace directories are designed so `vlt publish` can be run
 from that directory.
 
 On all pushes to `main` a GitHub Actions workflow will run to create a
@@ -260,20 +257,20 @@ builds for testing locally.
 
 ```bash
 # creates a directory with all the bundled JS
-pnpm build:bundle
+vlr build:bundle
 # creates a directory with the compiled binaries
 # for the current os and cpu
-pnpm build:compile
+vlr build:compile
 ```
 
 To generate compiled builds for other platforms use the `--platform`
 and `--arch` flags.
 
 ```bash
-pnpm build:compile --platform=win32 --arch=x64
+vlr build:compile -- --platform=win32 --arch=x64
 ```
 
-You can also run `pnpm pack` in any of the `./infra/cli-*` directories
+You can also run `vlt pack` in any of the `./infra/cli-*` directories
 to generate a tarball of the build.
 
 ## Finding Unused Code and Deps with Knip
@@ -282,7 +279,7 @@ to generate a tarball of the build.
 be run with:
 
 ```sh
-pnpm knip
+vlr knip
 ```
 
 It is not currently turned on in CI but can be helpful to run locally

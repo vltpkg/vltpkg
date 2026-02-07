@@ -194,21 +194,21 @@ const mockEnv = {
 
 ```bash
 # Run all tests
-pnpm test
+vlr test
 
 # Run specific test files
-pnpm test test/manifest.test.ts
-pnpm test test/tokens.test.ts
-pnpm test test/search.test.ts
+vlr test test/manifest.test.ts
+vlr test test/tokens.test.ts
+vlr test test/search.test.ts
 
 # Run tests in watch mode
-pnpm test --watch
+vlr test --watch
 
 # Run tests with coverage
-pnpm test --coverage
+vlr test --coverage
 
 # Run linting
-pnpm lint
+vlr lint
 ```
 
 ## Test Results

@@ -26,10 +26,10 @@ git clone git@github.com:vltpkg/vltpkg.git
 cd vltpkg
 
 # Install deps (and run prepare scripts)
-pnpm install
+vlt install
 
 # Run the locally built CLI
-pnpm vlt # OR ./node_modules/.bin/vlt
+vlr vlt # OR ./node_modules/.bin/vlt
 ```
 
 See the [contributing guide](./CONTRIBUTING.md) for more information

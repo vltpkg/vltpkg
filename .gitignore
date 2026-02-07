@@ -7,7 +7,6 @@
 /.turbo
 /docs
 /node_modules
-/pnpm-exec-summary.json
 /scripts/fixtures/
 /results/
 

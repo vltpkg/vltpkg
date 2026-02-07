@@ -33,4 +33,4 @@ const paths = nodes
 
 ## Workflow
 
-`pnpm lint` → fix issues → `pnpm lint` again to verify.
+`vlr lint` → fix issues → `vlr lint` again to verify.
