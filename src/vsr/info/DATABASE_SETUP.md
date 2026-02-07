@@ -8,7 +8,7 @@ serverless registry.
 For a fresh installation, run:
 
 ```bash
-pnpm run db:setup
+vlr db:setup
 ```
 
 This command will:
@@ -24,10 +24,10 @@ If you need to set up the database manually:
 
 ```bash
 # Create initial tables
-pnpm exec wrangler d1 execute vsr-local-database --file=src/db/migrations/0000_initial.sql --local --persist-to=local-store --no-remote
+vlx wrangler d1 execute vsr-local-database --file=src/db/migrations/0000_initial.sql --local --persist-to=local-store --no-remote
 
 # Apply schema updates (adds columns: last_updated, origin, upstream, cached_at)
-pnpm exec wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote
+vlx wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote
 ```
 
 ## Database Schema
@@ -68,7 +68,7 @@ The database includes three main tables:
 This error means the database hasn't been initialized. Run:
 
 ```bash
-pnpm run db:setup
+vlr db:setup
 ```
 
 ### "table packages has no column named last_updated"
@@ -77,7 +77,7 @@ This means the initial migration ran but the schema update didn't.
 Run:
 
 ```bash
-pnpm exec wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote
+vlx wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_wealthy_magdalene.sql --local --persist-to=local-store --no-remote
 ```
 
 ### Reset Database
@@ -85,8 +85,8 @@ pnpm exec wrangler d1 execute vsr-local-database --file=src/db/migrations/0001_w
 To completely reset the database:
 
 ```bash
-pnpm run db:drop
-pnpm run db:setup
+vlr db:drop
+vlr db:setup
 ```
 
 ## Database Location

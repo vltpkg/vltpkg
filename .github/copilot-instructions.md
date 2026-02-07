@@ -83,9 +83,9 @@ the API usage.
 
 #### Package manager
 
-The package manager currently managing this repository is `vlt` and
-as you can see below it's being used to run common reusable scripts.
-The `vlr` command is an alias for `vlt run`.
+The package manager currently managing this repository is `vlt` and as
+you can see below it's being used to run common reusable scripts. The
+`vlr` command is an alias for `vlt run`.
 
 #### Running tests
 

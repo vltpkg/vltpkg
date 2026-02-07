@@ -97,7 +97,7 @@ These scripts set the correct `NODE_OPTIONS` to run the TypeScript
 source directly.
 
 ```bash
-$ vlr vlt -- --version
+$ node --run vlt -- --version
 0.0.0-0
 ```
 
