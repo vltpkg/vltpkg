@@ -2,7 +2,6 @@
 /docs
 /example
 /node_modules
-/pnpm-lock.yaml
 /vlt-lock.json
 /scripts/fixtures
 /tap-snapshots
