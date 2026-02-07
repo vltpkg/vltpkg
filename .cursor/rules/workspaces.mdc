@@ -1,0 +1,76 @@
+---
+description: Workspace configuration, filtering, and monorepo operations
+globs: src/workspaces/src/index.ts,src/cli-sdk/src/index.ts,src/cli-sdk/src/exec-command.ts,www/docs/src/content/docs/cli/workspaces.mdx
+alwaysApply: false
+---
+# Workspaces (`@vltpkg/workspaces`)
+
+## vlt.json `workspaces` Config Shapes
+
+All canonicalized to `WorkspaceConfigObject = Record<string, string[]>` via `asWSConfig()`:
+
+```typescript
+// String → { packages: ["src/*"] }
+"workspaces": "src/*"
+
+// Array → { packages: ["src/*", "www/*"] }
+"workspaces": ["src/*", "www/*"]
+
+// Object (named groups) → kept as-is, values normalized to arrays
+"workspaces": {
+  "apps": "apps/*",           // → ["apps/*"]
+  "utils": ["utils/*", "www/utils"]  // kept
+}
+```
+
+A workspace can belong to multiple groups. Glob patterns matched via `globSync`.
+
+## CLI Flags
+
+- `-w<path> --workspace=<path>` — filter by path/glob (can repeat). Implies `--recursive`
+- `--workspace-group=<name>` — filter by group name (can repeat). Implies `--recursive`
+- `-r --recursive` — run across all workspaces. No effect in non-monorepo projects
+- `-b --bail` / `-B --no-bail` — stop/continue on failure during recursive operations
+
+## Workspace Inference
+
+`cd` into a workspace dir → vlt auto-targets that workspace for install/run/etc. For linked folders (`file:` protocol), the folder must already be in the dependency chain for `vlt install`/`vlt uninstall` to work.
+
+## Monorepo Class
+
+```typescript
+Monorepo.maybeLoad(projectRoot, options?)  // undefined if no workspaces config
+Monorepo.load(projectRoot, options?)       // throws if not monorepo
+
+monorepo.load(query?)        // load workspaces, optionally filtered by paths/groups
+monorepo.get(nameOrPath)     // lookup by name, relative path, or fullpath
+monorepo.filter({ workspace, 'workspace-group' })  // yields matching Workspaces in topo order
+monorepo.run(operation)      // async operation over workspaces in dependency order
+monorepo.runSync(operation)  // sync variant
+monorepo.group(name)         // Set<Workspace> for a group
+monorepo.getDeps(ws)         // workspace: deps found in loaded set
+```
+
+Iteration yields workspaces in **topological dependency order** via `graphRun`.
+
+## Workspace Class
+
+```typescript
+class Workspace {
+  id: DepID             // joinDepIDTuple(['workspace', path])
+  path: string          // relative path (e.g., 'src/semver')
+  fullpath: string      // absolute path
+  name: string          // manifest.name ?? path
+  manifest: NormalizedManifest
+  groups: string[]      // group names this workspace belongs to
+  keys: string[]        // [name, path, fullpath] for matching
+}
+```
+
+## Filter Behavior (`monorepo.filter()`)
+
+Checks in order: group name match → direct name/path match → glob pattern match against `ws.keys`. Yields in topological order.
+
+## `vlt init -w <path>`
+
+Creates workspace folder + `package.json`, adds to `vlt.json` workspaces config.
