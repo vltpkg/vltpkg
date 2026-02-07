@@ -17,16 +17,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version: '^22.14.0'
-          cache: pnpm
           check-latest: true
 
       - name: Install Dependencies
-        run: pnpm install
+        run: npx vlt@latest install
