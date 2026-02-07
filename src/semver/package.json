@@ -31,7 +31,6 @@
     "node": ">=22.9.0"
   },
   "scripts": {
-    "prebenchmark": "pnpm -F '@vltpkg/semver...' exec pnpm pack",
     "benchmark": "./test/fixtures/vs-node-semver.ts",
     "benchmark:bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
     "benchmark:node": "hyperfine --warmup 3 'node ./benchmarks/deno.js' 'node ./benchmarks/npm.js' 'node ./benchmarks/this.js'",
