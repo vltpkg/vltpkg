@@ -55,3 +55,14 @@ After Ideal + Actual, compute `Diff` → apply via `reify()`.
 - Use hidden lockfile for faster Actual loads
 - `graph.resetEdges()` preserves detached nodes for reuse
 - Pass `actual` to `ideal.build()` for early extraction optimization
+
+## Sub-rules
+
+- `@graph/data-structure.mdc` — Graph/Node/Edge classes, fields, methods
+- `@graph/ideal.mdc` — building ideal graphs from manifests
+- `@graph/ideal-append-nodes.mdc` — BFS loop, 3-phase architecture, determinism
+- `@graph/load-actual.mdc` — reading installed node_modules
+- `@graph/lockfiles.mdc` — vlt-lock.json format, load/save
+- `@graph/modifiers.mdc` — overrides/resolutions via DSS selectors
+- `@graph/peers.mdc` — peer context isolation, forking, peerSetHash
+- `@graph/reify.mdc` — applying Diff to filesystem

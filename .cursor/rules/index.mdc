@@ -33,3 +33,15 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`, `infra/cli-{platform}`, `infra/smoke-test`
 
 **Docs:** `www/docs` → https://docs.vlt.sh
+
+## Related Rules
+
+- `@code-validation-workflow.mdc` — format/lint/test/coverage/typecheck steps
+- `@linting-error-handler.mdc` — fixing unused vars, imports, type guards
+- `@gui-validation-workflow.mdc` — GUI-specific: Vitest, no coverage
+- `@cli-sdk-workspace.mdc` — CLI commands, options, config system
+- `@graph/index.mdc` — dependency graph architecture (has sub-rules)
+- `@query-pseudo-selector-creation.mdc` — adding DSS pseudo-selectors
+- `@registry-development.mdc` — vsr registry patterns (Hono/D1/R2)
+- `@config-reload-jackspeak-issues.mdc` — config caching bugs
+- `@cursor-rules-location.mdc` — where to put new `.mdc` files
