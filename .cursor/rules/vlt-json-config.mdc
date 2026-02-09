@@ -1,0 +1,50 @@
+---
+description: vlt.json configuration file schema and precedence
+globs: src/vlt-json/src/*,src/vlt-json/test/*,vlt.json
+alwaysApply: false
+---
+# vlt.json Configuration
+
+Central project config file. Also used for workspaces, modifiers, catalogs, registries.
+
+## Config Precedence
+
+CLI args → project `vlt.json` → user `vlt.json` (XDG config dir) → defaults. Object values merge; set `null` to remove. Command-specific overrides via `command.{name}` nesting.
+
+## Top-Level Fields
+
+```json
+{
+  "workspaces": "packages/*",
+  "config": { "registry": "...", "tag": "latest" },
+  "modifiers": { "#react": "^19" },
+  "catalog": { "typescript": "^5.0.0" },
+  "catalogs": { "testing": { "vitest": "^1.0.0" } },
+  "registries": { "custom": "https://..." },
+  "scope-registries": { "@myco": "https://..." },
+  "jsr-registries": { "jsr": "https://npm.jsr.io/" },
+  "git-hosts": { "github": "git+ssh://..." },
+  "git-host-archives": { "github": "https://..." },
+  "identity": "corp",
+  "command": { "build": { "target": ":scripts:not(:malware)" } }
+}
+```
+
+## Module: `@vltpkg/vlt-json` (`src/vlt-json/src/index.ts`)
+
+**Types**: `WhichConfig = 'user' | 'project'`, `Validator<T> = (x: unknown, file: string) => asserts x is T`
+
+**Functions:**
+- `find(which?, cwd?)` — walks up from cwd looking for `vlt.json`; user config from XDG
+- `load<T>(field, validator, which?)` — reads field, validates, caches
+- `save(field, value, which?)` — writes field, checks mtime for concurrent modifications
+- `unload(which?)` — clears all caches (`datas`, `mtimes`, `paths`, `lstatCache`)
+- `reload(field, which?)` — unload + load
+
+**Caching**: module-level caches for parsed data, mtimes, paths, lstat results. Must `unload()` to get fresh reads. See `@config-reload-jackspeak-issues.mdc`.
+
+**JSON formatting**: preserves indentation/newlines from original file via `polite-json` symbols (`kIndent`, `kNewline`).
+
+## User Config Location
+
+`new XDG('vlt').config('vlt.json')` — platform-specific XDG config dir.

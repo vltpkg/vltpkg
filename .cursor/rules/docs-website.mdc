@@ -1,0 +1,60 @@
+---
+description: Documentation website development (Astro/Starlight)
+globs: www/docs/src/**/*
+alwaysApply: false
+---
+# Documentation Website (`www/docs/`)
+
+Astro/Starlight site → https://docs.vlt.sh
+
+## Content Structure
+
+```
+www/docs/src/content/docs/
+├── cli/
+│   ├── index.mdx           # CLI overview
+│   ├── configuring.mdx     # All CLI options/flags
+│   ├── selectors.mdx       # DSS selector reference
+│   ├── workspaces.mdx      # Workspace usage guide
+│   ├── catalogs.mdx        # Catalog protocol guide
+│   ├── registries.mdx      # Multi-registry guide
+│   ├── auth.mdx            # Authentication guide
+│   ├── security.mdx        # Security scanning guide
+│   ├── peer-dependencies.mdx
+│   ├── graph-modifiers.mdx
+│   └── commands/            # Per-command docs
+│       ├── install.mdx, build.mdx, query.mdx, ...
+├── registry/                # VSR (serverless registry) docs
+│   ├── api.mdx, configuring.mdx, deployment.mdx, ...
+└── index.mdx
+```
+
+## Format
+
+MDX files with Astro/Starlight components. Frontmatter:
+```mdx
+---
+title: Page Title
+sidebar:
+  label: Short Label
+  order: 1
+---
+import { Code } from '@astrojs/starlight/components'
+```
+
+Use `<Code code="..." title="Terminal" lang="bash" />` for command examples.
+
+## When to Update Docs
+
+- Adding/changing CLI options → update `cli/configuring.mdx`
+- Adding/changing commands → update/create `cli/commands/<cmd>.mdx`
+- Adding DSS selectors → update `cli/selectors.mdx`
+- Changing install/build behavior → update relevant command + concept docs
+
+## Dev
+
+```bash
+cd www/docs
+pnpm dev    # local dev server
+pnpm build  # production build
+```
