@@ -1,0 +1,80 @@
+---
+description: End-to-end smoke tests for compiled CLI binary
+globs: infra/smoke-test/test/*,infra/smoke-test/test/fixtures/*
+alwaysApply: false
+---
+# Smoke Tests (`infra/smoke-test/`)
+
+Integration tests running the actual CLI binary against real scenarios.
+
+## Running
+
+```bash
+cd infra/smoke-test
+pnpm test -Rtap --disable-coverage          # all tests
+pnpm test -Rtap --disable-coverage test/install.ts  # single test
+```
+
+Filter variants via env: `SMOKE_TEST_VARIANTS=Source,Bundle`
+
+## Variants
+
+Tests run against multiple CLI build variants: `Source` (dev), `Bundle` (bundled), `Compile` (compiled). Results are compared across variants for consistency.
+
+## Test Pattern
+
+```typescript
+import { runMultiple, defaultVariants } from './fixtures/run.ts'
+
+t.test('my test', async t => {
+  const result = await runMultiple(t, ['install'], {
+    packageJson: { name: 'test', dependencies: { foo: '^1' } },
+    project: { 'node_modules': {} },  // fixture files
+    test: async ({ t, stdout, status, run }) => {
+      t.equal(status, 0)
+      // run followup commands in same testdir:
+      const r2 = await run(['query', ':root > *'])
+      t.matchSnapshot(r2.stdout)
+    },
+  })
+})
+```
+
+## Key APIs (`test/fixtures/run.ts`)
+
+- `runMultiple(t, args?, options?)` — run across all variants, compare results
+- `runVariant(variant, t, args?, options?)` — run single variant
+- `source(t, args?, options?)`, `bundle(...)`, `compile(...)` — individual variant shortcuts
+
+### CommandOptions
+
+```typescript
+type CommandOptions = {
+  packageJson?: boolean | Record<string, unknown>  // auto-creates package.json
+  project?: FixtureDir     // files in project dir
+  config?: FixtureDir      // XDG config dir
+  cache?: FixtureDir       // XDG cache dir
+  env?: NodeJS.ProcessEnv  // extra env vars
+  tty?: boolean            // use node-pty for TTY simulation
+  timeout?: number
+  cleanOutput?: (output: string) => string
+}
+```
+
+### CommandResult
+
+```typescript
+type CommandResult = {
+  status: number | null, signal: string | null,
+  stdout: string, stderr: string, output: string,
+  dirs: Record<CommandFixtureDirectory, string>  // testdir paths
+}
+```
+
+## Isolation
+
+Each test gets isolated `testdir` with separate `root/project/config/cache/data/state/runtime` dirs. `HOME`/`XDG_*` env vars locked to testdir to prevent config leakage.
+
+## Existing Tests
+
+`test/install.ts`, `test/pkg.ts`, `test/version.ts`, `test/cache-unzip.ts`, `test/postinstall.ts`, `test/rollback-remove.ts`

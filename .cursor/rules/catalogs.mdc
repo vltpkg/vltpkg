@@ -1,0 +1,60 @@
+---
+description: Catalog protocol for centralized dependency version management
+globs: src/spec/src/*,src/graph/src/ideal/*,src/vlt-json/src/*
+alwaysApply: false
+---
+# Catalogs
+
+Centralized dependency specs in `vlt.json`, referenced via `catalog:` protocol in `package.json`.
+
+## Config (`vlt.json`)
+
+```json
+{
+  "catalog": { "typescript": "^5.0.0", "prettier": "^3.0.0" },
+  "catalogs": {
+    "testing": { "vitest": "^1.0.0" },
+    "build": { "esbuild": "^0.19.0" }
+  }
+}
+```
+
+## Usage in `package.json`
+
+```json
+{
+  "dependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:testing"
+  }
+}
+```
+
+## CLI
+
+```bash
+vlt install typescript@catalog:
+vlt install vitest@catalog:testing
+```
+
+## How It Works
+
+1. `@vltpkg/spec` detects `catalog:` or `catalog:<name>` protocol during parsing
+2. Looks up the package name in `specOptions.catalog` (default) or `specOptions.catalogs[name]`
+3. Resolves to the actual spec string (e.g., `^5.0.0`)
+4. Stored in lockfile `options` field for reproducibility
+5. The resolved spec flows through graph building normally
+
+## Spec Properties
+
+- `spec.catalog` — the resolved catalog spec string
+- `spec.catalogName` — the named catalog (undefined for default catalog)
+
+## Errors
+
+- `"Named catalog not found"` — catalog name doesn't exist in `catalogs`
+- `"Name not found in catalog"` — package name not in the specified catalog
+
+## Tip
+
+This project itself uses catalogs — see root `vlt.json` for a real-world example with `tap`, `typescript`, `eslint`, `prettier`, etc.

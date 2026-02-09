@@ -1,0 +1,68 @@
+---
+description: Phased install/build model and install command options
+globs: src/graph/src/install.ts,src/graph/src/reify/*,src/cli-sdk/src/commands/install.ts,src/cli-sdk/src/commands/build.ts
+alwaysApply: false
+---
+# Phased Install & Build
+
+vlt separates installation into two phases for security.
+
+## Phase 1: `vlt install`
+
+Downloads and extracts packages into `node_modules` **without running lifecycle scripts**.
+
+Entry: `src/graph/src/install.ts` → `install(options, add?)`
+
+Flow:
+1. Validates options (frozen-lockfile vs clean-install conflicts)
+2. Reads/creates `package.json` (runs `vlt init` if missing)
+3. Loads unfiltered monorepo for full workspace coverage
+4. Loads actual graph → builds ideal graph → reifies changes
+5. Supports `--lockfile-only` mode (skip node_modules)
+
+### Key Options
+
+| Flag | Description |
+|------|-------------|
+| `--frozen-lockfile` | Fail if lockfile missing or out of sync with package.json |
+| `--expect-lockfile` | Fail if lockfile missing or outdated (used by `vlt ci`) |
+| `--lockfile-only` | Update only lockfile + package.json, skip node_modules |
+| `--allow-scripts=<selector>` | Allow scripts during install (DSS query) |
+| `-D` `--save-dev` | Save as devDependency |
+| `-O` `--save-optional` | Save as optionalDependency |
+| `--save-peer` | Save as peerDependency |
+
+## Phase 2: `vlt build`
+
+Runs lifecycle scripts selectively using DSS queries.
+
+**Default target**: `:scripts:not(:built):not(:malware)` — excludes already-built and malware-flagged packages.
+
+```bash
+vlt build                          # default target
+vlt build --target="#esbuild"      # specific package
+vlt build ":root > *"              # positional arg = target
+```
+
+### Build State
+
+Tracked per node: `'none' | 'needed' | 'built' | 'failed'`. Query with `:built`, `:scripts`, `:scripts:not(:built)`.
+
+Persist target: `vlt config set "command.build.target=<query>"`
+
+## `InstallOptions` Type
+
+```typescript
+type InstallOptions = LoadOptions & {
+  packageInfo: PackageInfoClient
+  cleanInstall?: boolean   // ci command
+  allowScripts: string     // DSS query for script permissions
+}
+```
+
+## Security Model
+
+- Install = download + extract only (safe)
+- Build = explicit opt-in to script execution
+- Default build excludes `:malware` packages
+- Use `--allow-scripts="*"` only if you need legacy npm behavior (not recommended)

@@ -1,0 +1,61 @@
+---
+description: Multi-registry support and authentication system
+globs: src/registry-client/src/*,src/keychain/src/*,src/cli-sdk/src/commands/login.ts,src/cli-sdk/src/commands/logout.ts,src/cli-sdk/src/commands/token.ts
+alwaysApply: false
+---
+# Registries & Authentication
+
+## Registry Types
+
+1. **Default**: `--registry=<url>` (default: `https://registry.npmjs.org/`)
+2. **Named aliases**: `--registries=<name>=<url>` → use as `name:pkg@ver` in dependencies
+3. **Scope registries**: `--scope-registries=@scope=<url>` → `@scope/*` auto-routes
+4. **Built-in aliases**: `npm:` (public npm), `jsr:` (jsr.io), `gh:` (GitHub packages)
+
+## Registry Consistency
+
+Child deps inherit parent's registry by default. If `foo` comes from registry X, its dep `bar@1.x` also resolves from X — prevents accidental cross-registry resolution.
+
+## Config (`vlt.json`)
+
+```json
+{
+  "registry": "https://registry.npmjs.org/",
+  "registries": { "internal": "https://npm.internal.co/" },
+  "scope-registries": { "@myco": "https://npm.myco.com/" },
+  "jsr-registries": { "jsr": "https://npm.jsr.io/" }
+}
+```
+
+## Authentication
+
+### Interactive
+
+```bash
+vlt login                                    # default registry (npm web login)
+vlt login --registry=https://custom.reg/     # custom registry
+vlt logout                                   # remove + destroy token
+vlt token add                                # paste bearer token
+vlt token rm                                 # remove from local keychain only
+```
+
+### CI / Headless
+
+Env vars only (never in config files for security):
+- `VLT_TOKEN` — token for default registry
+- `VLT_TOKEN_https_my_registry_com` — replace non-alphanumeric chars with `_`
+- `VLT_OTP` — one-time password for MFA
+
+### Identities
+
+Separate credential sets. Switch via `vlt config set identity=corp` or in `vlt.json`:
+```json
+{ "identity": "corp" }
+```
+
+Tokens stored in XDG data dir: `vlt/auth/${identity}/keychain.json`
+
+### Key Modules
+
+- `src/registry-client/` — HTTP client for registry API
+- `src/keychain/` — secure token storage (`@vltpkg/keychain`)

@@ -1,0 +1,70 @@
+---
+description: Package specifier parsing types and protocols
+globs: src/spec/src/*,src/spec/test/*
+alwaysApply: false
+---
+# Package Specifier Parsing (`@vltpkg/spec`)
+
+Parses dependency specifiers into typed `Spec` objects. Used throughout the graph system.
+
+## Spec Types (`SpecType`)
+
+- `registry` — `express@^1.0.0`, `npm:react@18`, `jsr:@am/foo@1`, `registry:URL#name@ver`
+- `git` — `github:user/repo#semver:^1`, `git+ssh://...#branch`
+- `file` — `file:./local-pkg`, `./my-lib`
+- `remote` — `https://example.com/pkg.tgz`
+- `workspace` — `workspace:*`, `workspace:../path`
+
+## Key Properties
+
+- `name` — package name
+- `bareSpec` — raw specifier string (e.g., `^1.0.0`)
+- `type` — one of the SpecTypes above
+- `final` — resolved Spec after alias/subspec unwrapping
+- `registry` — registry URL (for registry type)
+- `namedRegistry` — alias name (e.g., `npm`, `jsr`, `gh`)
+- `scopeRegistry` — URL from scope-registries config
+- `subspec` — inner Spec for aliases (`alias@npm:pkg@ver` → subspec is the npm spec)
+- `overridden` — true if spec was swapped by a graph modifier
+- `range` — parsed semver Range (if applicable)
+- `gitRemote`, `gitSelector`, `namedGitHost`, `namedGitHostPath` — git fields
+- `remoteURL` — for remote type
+- `catalog`, `catalogName` — catalog protocol fields
+
+## Usage
+
+```typescript
+import { Spec } from '@vltpkg/spec'
+const s = Spec.parse('react', '^18.0.0', specOptions)
+// s.type === 'registry', s.name === 'react', s.bareSpec === '^18.0.0'
+```
+
+## SpecOptions
+
+```typescript
+type SpecOptions = {
+  registry?: string              // default: 'https://registry.npmjs.org/'
+  registries?: Record<string, string>  // named registries (npm, gh, custom)
+  'jsr-registries'?: Record<string, string>
+  'scope-registries'?: Record<string, string>
+  'git-hosts'?: Record<string, string>  // template: $1/$2/$committish
+  'git-host-archives'?: Record<string, string>
+  catalog?: Record<string, string>
+  catalogs?: Record<string, Record<string, string>>
+}
+```
+
+## Defaults
+
+```typescript
+defaultRegistry = 'https://registry.npmjs.org/'
+defaultRegistries = { npm: defaultRegistry, gh: 'https://npm.pkg.github.com/' }
+defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }
+defaultScopeRegistries = { '@jsr': 'https://npm.jsr.io/' }
+```
+
+## Architecture
+
+- `src/spec/src/browser.ts` — core `Spec` class (browser-compatible, no node APIs)
+- `src/spec/src/index.ts` — Node.js wrapper adding `inspect()` and path resolution
+- `src/spec/src/types.ts` — type definitions
