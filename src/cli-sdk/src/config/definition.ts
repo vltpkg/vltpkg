@@ -24,6 +24,7 @@ const canonicalCommands = {
   cache: 'cache',
   ci: 'ci',
   config: 'config',
+  'dist-tag': 'dist-tag',
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
