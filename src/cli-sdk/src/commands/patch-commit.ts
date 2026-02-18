@@ -64,7 +64,6 @@ export const command: CommandFn<CommandResult> = async conf => {
   // Load the actual graph to find the installed package
   const graph = actual.load({
     ...conf.options,
-    loadManifests: false,
   })
 
   // Find the package node in the graph
