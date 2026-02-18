@@ -1,0 +1,58 @@
+{
+  "name": "@vltpkg/patch",
+  "description": "Patch management for vlt package manager",
+  "version": "1.0.0-rc.18",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/patch"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/spec": "workspace:*",
+    "@vltpkg/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22.9.0"
+  },
+  "scripts": {
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
+    "snap": "tap",
+    "test": "tap",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.js",
+  "module": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "default": "./src/index.ts"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

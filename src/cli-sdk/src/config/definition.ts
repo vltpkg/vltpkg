@@ -35,6 +35,8 @@ const canonicalCommands = {
   list: 'list',
   ls: 'ls',
   pack: 'pack',
+  patch: 'patch',
+  'patch-commit': 'patch-commit',
   pkg: 'pkg',
   publish: 'publish',
   query: 'query',
