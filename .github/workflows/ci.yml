@@ -18,7 +18,7 @@ concurrency:
 jobs:
   pre-check:
     name: Pre-Check
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     outputs:
       release-pr: ${{ steps.release-pr.outputs.value }}
       full-matrix: ${{ steps.full-matrix.outputs.value }}
@@ -60,7 +60,7 @@ jobs:
     name: Lint
     # TODO: use filters to run a subset of lint/format
     needs: pre-check
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -154,7 +154,7 @@ jobs:
             os: macos-latest
             shell: bash
           - name: Windows
-            os: blacksmith-4vcpu-windows-2025
+            os: windows-latest
             shell: bash
         exclude:
           - node-version: '24.x'
@@ -195,7 +195,7 @@ jobs:
 
   on-failure:
     name: Notify on Failure
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     if: ${{ always() && needs.pre-check.outputs.release-pr == 'true' && (needs.lint.result == 'failure' || needs.test.result == 'failure') }}
     needs:
       - pre-check
