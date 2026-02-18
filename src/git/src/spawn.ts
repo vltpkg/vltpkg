@@ -31,10 +31,10 @@ export const spawn = async (
   /* c8 ignore stop */
 
   const retryOpts: WrapOptions = {
-    retries: opts['fetch-retries'] || 3,
-    factor: opts['fetch-retry-factor'] || 2,
-    maxTimeout: opts['fetch-retry-maxtimeout'] || 60000,
-    minTimeout: opts['fetch-retry-mintimeout'] || 1000,
+    retries: opts['fetch-retries'] ?? 3,
+    factor: opts['fetch-retry-factor'] ?? 2,
+    maxTimeout: opts['fetch-retry-maxtimeout'] ?? 60000,
+    minTimeout: opts['fetch-retry-mintimeout'] ?? 0,
   }
   return promiseRetry(async (retryFn, num) => {
     const result = await promiseSpawn(gitPath, args, makeOpts(opts))
