@@ -10,7 +10,7 @@ on:
       - .github/workflows/copilot-setup-steps.yml
 jobs:
   copilot-setup-steps:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
