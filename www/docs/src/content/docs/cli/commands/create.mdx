@@ -8,39 +8,65 @@ import { Code } from '@astrojs/starlight/components'
 
 ## Usage
 
-<Code code="$ vlt create <initializer> [args...]" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt create <initializer> [args...]"
+  title="Terminal"
+  lang="bash"
+/>
 
 Initialize a new project from a template package.
 
 ## Description
 
-The `vlt create` command works like `npm create` and `bun create`, automatically prepending "create-" to the package name and executing it.
+The `vlt create` command works like `npm create` and `bun create`,
+automatically prepending "create-" to the package name and executing
+it.
 
 For example, running:
 
-<Code code="$ vlt create react-app my-app" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt create react-app my-app"
+  title="Terminal"
+  lang="bash"
+/>
 
-Will fetch and execute the `create-react-app` package with the arguments `my-app`.
+Will fetch and execute the `create-react-app` package with the
+arguments `my-app`.
 
-If a satisfying instance of the create package exists in the local `node_modules` folder, then that will be used. Otherwise, vlt will install the package to its XDG data directory without modifying your local dependencies.
+If a satisfying instance of the create package exists in the local
+`node_modules` folder, then that will be used. Otherwise, vlt will
+install the package to its XDG data directory without modifying your
+local dependencies.
 
 ## Examples
 
 ### Create a React App
 
-<Code code="$ vlt create react-app my-app" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt create react-app my-app"
+  title="Terminal"
+  lang="bash"
+/>
 
 This executes `create-react-app my-app`
 
 ### Create a Vite Project
 
-<Code code="$ vlt create vite my-project" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt create vite my-project"
+  title="Terminal"
+  lang="bash"
+/>
 
 This executes `create-vite my-project`
 
 ### Use a Scoped Template
 
-<Code code="$ vlt create @scope/template my-app" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt create @scope/template my-app"
+  title="Terminal"
+  lang="bash"
+/>
 
 This executes `@scope/create-template my-app`
 
@@ -48,9 +74,14 @@ This executes `@scope/create-template my-app`
 
 ### `--allow-scripts <query>`
 
-Filter which packages are allowed to run lifecycle scripts using DSS query syntax.
+Filter which packages are allowed to run lifecycle scripts using DSS
+query syntax.
 
-<Code code="$ vlt create vite my-app --allow-scripts='create-*'" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt create vite my-app --allow-scripts='create-*'"
+  title="Terminal"
+  lang="bash"
+/>
 
 ## See Also
 
