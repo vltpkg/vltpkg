@@ -33,6 +33,7 @@ export const uninstall = async (
     // due to throwOnMissingManifest and leaving stale entries behind.
     const act = actualLoad({
       ...options,
+      modifiers: undefined,
       mainManifest,
       loadManifests: true,
     })
