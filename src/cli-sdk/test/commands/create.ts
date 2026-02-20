@@ -87,9 +87,10 @@ t.test('command', async t => {
           _promptFn?: PromptFn,
         ) => {
           calledResolve = true
-          t.strictSame(args, ['create-react-app', 'my-app'])
+          t.strictSame(args, ['my-app'])
           t.strictSame(options, {
             ...mockOptions,
+            package: 'create-react-app',
             query: undefined,
             allowScripts: ':not(*)',
           })
@@ -129,11 +130,12 @@ t.test('command', async t => {
       '@vltpkg/vlx': {
         resolve: async (
           args: string[],
-          _options: VlxOptions,
+          options: VlxOptions,
           _promptFn?: PromptFn,
         ) => {
           calledResolve = true
-          t.strictSame(args, ['@scope/create-template', 'my-project'])
+          t.strictSame(args, ['my-project'])
+          t.strictSame(options.package, '@scope/create-template')
           return 'arg0'
         },
       },
@@ -167,7 +169,10 @@ t.test('command', async t => {
   t.test('scoped package without name', async t => {
     let calledResolve = false
     const mockOptions = {}
-    const result = { status: 0, signal: null } as unknown as ExecResult
+    const result = {
+      status: 0,
+      signal: null,
+    } as unknown as ExecResult
     const { command } = await t.mockImport<
       typeof import('../../src/commands/create.ts')
     >('../../src/commands/create.ts', {
@@ -182,11 +187,12 @@ t.test('command', async t => {
       '@vltpkg/vlx': {
         resolve: async (
           args: string[],
-          _options: VlxOptions,
+          options: VlxOptions,
           _promptFn?: PromptFn,
         ) => {
           calledResolve = true
-          t.strictSame(args, ['@scope/create', 'my-project'])
+          t.strictSame(args, ['my-project'])
+          t.strictSame(options.package, '@scope/create')
           return 'arg0'
         },
       },
@@ -237,5 +243,42 @@ t.test('command', async t => {
         key === 'allow-scripts' ? 'create-*' : undefined,
     } as unknown as LoadedConfig
     await command(conf)
+  })
+
+  t.test('when vlx.resolve returns undefined', async t => {
+    const mockOptions = {}
+    const result = {
+      status: 0,
+      signal: null,
+    } as unknown as ExecResult
+    const { command } = await t.mockImport<
+      typeof import('../../src/commands/create.ts')
+    >('../../src/commands/create.ts', {
+      '../../src/exec-command.ts': {
+        views: {},
+        ExecCommand: class {
+          async run() {
+            return result
+          }
+        },
+      },
+      '@vltpkg/vlx': {
+        resolve: async (
+          _args: string[],
+          _options: VlxOptions,
+          _promptFn?: PromptFn,
+        ) => {
+          return undefined
+        },
+      },
+    })
+    unload()
+    const conf = {
+      positionals: ['vite', 'my-app'],
+      options: mockOptions,
+      get: (_key: string) => undefined,
+    } as unknown as LoadedConfig
+    t.strictSame(await command(conf), result)
+    t.strictSame(conf.positionals, ['my-app'])
   })
 })

@@ -111,11 +111,13 @@ export const command: CommandFn<ExecResult> = async conf => {
     : ':not(*)'
   /* c8 ignore stop */
 
-  // Use vlx to resolve the create-* package
+  // Use vlx to resolve the create-* package, using the same strategy as vlt exec
+  // Pass the package name via options.package, and remaining args as positionals
   const arg0 = await vlx.resolve(
-    [packageName, ...args],
+    args,
     {
       ...conf.options,
+      package: packageName,
       query: undefined,
       allowScripts,
     },
@@ -123,9 +125,11 @@ export const command: CommandFn<ExecResult> = async conf => {
   )
 
   // Set positionals to the resolved command and its args
-  if (arg0) conf.positionals[0] = arg0
-  conf.positionals.splice(1, 1)
-  conf.positionals.push(...args)
+  if (arg0) {
+    conf.positionals = [arg0, ...args]
+  } else {
+    conf.positionals = args
+  }
 
   // Execute the create package
   delete conf.options['script-shell']
