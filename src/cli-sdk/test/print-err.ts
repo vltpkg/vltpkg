@@ -22,9 +22,10 @@ const testErr = async (
 ) =>
   t.test(name, async t => {
     const dir = t.testdir()
+    const { CI: _CI, ...restEnv } = process.env
     t.intercept(process, 'env', {
       value: {
-        ...process.env,
+        ...restEnv,
         XDG_DATA_HOME: dir,
       },
     })
@@ -54,6 +55,9 @@ const testErr = async (
           throw new Error('')
         },
         writeFileSync: () => {
+          throw new Error('')
+        },
+        readFileSync: () => {
           throw new Error('')
         },
       },
@@ -343,4 +347,107 @@ t.test('snapshots', async t => {
       },
     }),
   )
+})
+
+t.test('prints full error log contents to stderr in CI', async t => {
+  const dir = t.testdir()
+  const { CI: _CI, ...restEnv } = process.env
+  t.intercept(process, 'env', {
+    value: {
+      ...restEnv,
+      CI: '1',
+      XDG_DATA_HOME: dir,
+    },
+  })
+  t.intercept(process, 'pid', {
+    value: 123,
+  })
+
+  const lines: string[] = []
+  const { printErr } = await t.mockImport<
+    typeof import('../src/print-err.ts')
+  >('../src/print-err.ts')
+  printErr(
+    { marker: 'ci-log-marker' },
+    (() => ({ usage: () => 'usage' })) as CommandUsage,
+    (...a: string[]) => void lines.push(...a.join(' ').split('\n')),
+    { colors: false },
+  )
+
+  const output = lines.join('\n')
+  t.match(output, /Full details written to:/)
+  t.match(output, /Full details:/)
+  t.match(output, /ci-log-marker/)
+})
+
+t.test(
+  'does not print full error log contents outside CI',
+  async t => {
+    const dir = t.testdir()
+    const { CI: _CI, ...restEnv } = process.env
+    t.intercept(process, 'env', {
+      value: {
+        ...restEnv,
+        XDG_DATA_HOME: dir,
+      },
+    })
+    t.intercept(process, 'pid', {
+      value: 123,
+    })
+
+    const lines: string[] = []
+    const { printErr } = await t.mockImport<
+      typeof import('../src/print-err.ts')
+    >('../src/print-err.ts')
+    printErr(
+      { marker: 'non-ci-log-marker' },
+      (() => ({ usage: () => 'usage' })) as CommandUsage,
+      (...a: string[]) => void lines.push(...a.join(' ').split('\n')),
+      { colors: false },
+    )
+
+    const output = lines.join('\n')
+    t.match(output, /Full details written to:/)
+    t.notMatch(output, /Full details:/)
+    t.notMatch(output, /non-ci-log-marker/)
+  },
+)
+
+t.test('continues when reading CI error log fails', async t => {
+  const dir = t.testdir()
+  const { CI: _CI, ...restEnv } = process.env
+  t.intercept(process, 'env', {
+    value: {
+      ...restEnv,
+      CI: '1',
+      XDG_DATA_HOME: dir,
+    },
+  })
+  t.intercept(process, 'pid', {
+    value: 123,
+  })
+
+  const lines: string[] = []
+  const { printErr } = await t.mockImport<
+    typeof import('../src/print-err.ts')
+  >('../src/print-err.ts', {
+    'node:fs': {
+      mkdirSync: () => {},
+      writeFileSync: () => {},
+      readFileSync: () => {
+        throw new Error('')
+      },
+    },
+  })
+  printErr(
+    { marker: 'ci-log-failed-read-marker' },
+    (() => ({ usage: () => 'usage' })) as CommandUsage,
+    (...a: string[]) => void lines.push(...a.join(' ').split('\n')),
+    { colors: false },
+  )
+
+  const output = lines.join('\n')
+  t.match(output, /Full details written to:/)
+  t.notMatch(output, /Full details:/)
+  t.notMatch(output, /ci-log-failed-read-marker/)
 })
