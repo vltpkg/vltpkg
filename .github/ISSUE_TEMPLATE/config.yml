@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📖 Documentation
-    url: https://github.com/vltpkg/statusboard/blob/main/README.md
+    url: https://docs.vlt.sh
     about: Check our documentation for guidance and information
