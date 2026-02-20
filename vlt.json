@@ -1,5 +1,5 @@
 {
-  "workspaces": ["src/*", "infra/*", "www/*"],
+  "workspaces": ["src/*", "infra/*", "docs"],
   "catalog": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^22.19.2",

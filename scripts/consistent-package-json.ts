@@ -230,7 +230,7 @@ const fixTools = async (ws: Workspace) => {
     await writeFormatted(
       resolve(ws.dir, 'typedoc.mjs'),
       [
-        `import config from '${ws.relDir}www/docs/typedoc.workspace.mjs'`,
+        `import config from '${ws.relDir}docs/typedoc.workspace.mjs'`,
         `export default config(import.meta.dirname)`,
       ].join('\n'),
     )

@@ -52,4 +52,4 @@ Limited subset for modifiers: `:root`, `:project`, `:workspace`, `#name` (id), `
 - `src/query/` — full query engine with all pseudo-selectors (see `@query-pseudo-selector-creation.mdc`)
 - `src/graph/src/modifiers.ts` — modifier matching via breadcrumbs
 - `src/cli-sdk/` — `--scope`, `--allow-scripts`, `vlt build --target`
-- User-facing docs: `www/docs/src/content/docs/cli/selectors.mdx`
+- User-facing docs: `docs/src/content/docs/cli/selectors.mdx`

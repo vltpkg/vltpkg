@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # vltpkg Monorepo
 
-vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as `@vltpkg/*`, the built vlt CLI itself is published as `vlt`.
+vlt monorepo. Workspaces in `src/*`, `infra/*`, `docs`. Workspaces published as `@vltpkg/*`, the built vlt CLI itself is published as `vlt`.
 
 ## Development
 
@@ -32,7 +32,7 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 
 **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`, `infra/cli-{platform}`, `infra/smoke-test`
 
-**Docs:** `www/docs` → https://docs.vlt.sh
+**Docs:** `docs` → https://docs.vlt.sh
 
 ## Related Rules
 

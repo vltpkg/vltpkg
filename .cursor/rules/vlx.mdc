@@ -1,6 +1,6 @@
 ---
 description: vlt exec / exec-local / exec-cache commands and @vltpkg/vlx
-globs: src/cli-sdk/src/commands/exec.ts,src/cli-sdk/src/commands/exec-local.ts,src/cli-sdk/src/commands/exec-cache.ts,src/vlx/src/*.ts,www/docs/src/content/docs/cli/commands/exec*.mdx
+globs: src/cli-sdk/src/commands/exec.ts,src/cli-sdk/src/commands/exec-local.ts,src/cli-sdk/src/commands/exec-cache.ts,src/vlx/src/*.ts,docs/src/content/docs/cli/commands/exec*.mdx
 alwaysApply: false
 ---
 # Exec Commands & vlx

@@ -45,4 +45,4 @@ Use `getSimpleGraph()` from `test/fixtures/graph.ts`. Build `ParserState` with `
 
 ## Docs
 
-Update `www/docs/src/content/docs/cli/selectors.mdx` after implementation.
+Update `docs/src/content/docs/cli/selectors.mdx` after implementation.

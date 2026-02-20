@@ -29,7 +29,7 @@ const workspaces = {
     entry: [...entry, 'src/bin/**/*.ts'],
     ignoreDependencies: ['@vltpkg/gui', 'esbuild'],
   },
-  'www/docs': {
+  'docs': {
     entry: [
       ...entry,
       // Referenced via <script> tag

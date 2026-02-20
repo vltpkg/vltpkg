@@ -91,7 +91,7 @@ export default [
               [
                 'src/*/tsconfig.json',
                 'infra/*/tsconfig.json',
-                'www/*/tsconfig.json',
+                'docs/tsconfig.json',
               ]
             : ['tsconfig.json'],
         },
@@ -275,7 +275,7 @@ export default [
   },
   {
     name: `${NAME}/shadcn-ui`,
-    files: [`{src/gui,www/docs}/src/components/ui/*${extGlobs.ts}`],
+    files: [`{src/gui,docs}/src/components/ui/*${extGlobs.ts}`],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
     },
@@ -321,7 +321,7 @@ export default [
   },
   {
     name: `${NAME}/docs`,
-    files: [`www/docs/**/*${extGlobs.ts}`],
+    files: [`docs/**/*${extGlobs.ts}`],
     rules: {
       'import/no-unresolved': [
         'error',

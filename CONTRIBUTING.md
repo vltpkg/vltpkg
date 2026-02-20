@@ -26,9 +26,9 @@ are not published to any registry.
 
 This directory also contains all the `cli-*` variants.
 
-### [`www`](./www/)
+### [`docs`](./docs/)
 
-These are websites that get deployed. Currently only
+This is the documentation website deployed to
 [docs.vlt.sh](https://docs.vlt.sh).
 
 ## Linting / Formatting

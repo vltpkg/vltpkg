@@ -60,4 +60,4 @@ vlt build --target=':scripts:not(:malware)'  # default build target
 
 ## Docs
 
-User-facing: `www/docs/src/content/docs/cli/security.mdx`, `cli/selectors.mdx` (Security section)
+User-facing: `docs/src/content/docs/cli/security.mdx`, `cli/selectors.mdx` (Security section)

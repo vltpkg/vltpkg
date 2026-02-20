@@ -108,8 +108,8 @@ this repository and its corresponding license:
 | [@vltpkg/cli-win32-x64](./infra/cli-win32-x64)       | [BSD-2-Clause-Patent](./infra/cli-win32-x64/LICENSE)    | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-win32-x64?logo=npm)    |
 | [@vltpkg/smoke-test](./infra/smoke-test)             | [BSD-2-Clause-Patent](./infra/smoke-test/LICENSE)       | N/A                                                                               |
 
-#### Documentation (`www/*`)
+#### Documentation (`docs`)
 
 | Workspace Name             | License                                   |
 | -------------------------- | ----------------------------------------- |
-| [@vltpkg/docs](./www/docs) | [BSD-2-Clause-Patent](./www/docs/LICENSE) |
+| [@vltpkg/docs](./docs) | [BSD-2-Clause-Patent](./docs/LICENSE) |

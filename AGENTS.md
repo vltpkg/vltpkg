@@ -1,6 +1,6 @@
 # Agent Guide to the vltpkg Monorepo
 
-vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces
+vlt monorepo. Workspaces in `src/*`, `infra/*`, `docs`. Workspaces
 published as `@vltpkg/*`, the built vlt CLI itself is published as
 `vlt`.
 
@@ -29,7 +29,7 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 - **Backend:** `src/vsr` (vlt Storage Registry service)
 - **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`,
   `infra/cli-{platform}`, `infra/smoke-test`
-- **Docs:** `www/docs` → https://docs.vlt.sh
+- **Docs:** `docs` → https://docs.vlt.sh
 
 ## Development
 

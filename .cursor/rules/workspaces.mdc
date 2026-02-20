@@ -1,6 +1,6 @@
 ---
 description: Workspace configuration, filtering, and monorepo operations
-globs: src/workspaces/src/index.ts,src/cli-sdk/src/index.ts,src/cli-sdk/src/exec-command.ts,www/docs/src/content/docs/cli/workspaces.mdx
+globs: src/workspaces/src/index.ts,src/cli-sdk/src/index.ts,src/cli-sdk/src/exec-command.ts,docs/src/content/docs/cli/workspaces.mdx
 alwaysApply: false
 ---
 # Workspaces (`@vltpkg/workspaces`)
@@ -13,13 +13,13 @@ All canonicalized to `WorkspaceConfigObject = Record<string, string[]>` via `asW
 // String → { packages: ["src/*"] }
 "workspaces": "src/*"
 
-// Array → { packages: ["src/*", "www/*"] }
-"workspaces": ["src/*", "www/*"]
+// Array → { packages: ["src/*", "docs"] }
+"workspaces": ["src/*", "docs"]
 
 // Object (named groups) → kept as-is, values normalized to arrays
 "workspaces": {
   "apps": "apps/*",           // → ["apps/*"]
-  "utils": ["utils/*", "www/utils"]  // kept
+  "utils": ["utils/*", "docs/utils"]  // kept
 }
 ```
 

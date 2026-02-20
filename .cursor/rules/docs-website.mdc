@@ -1,16 +1,16 @@
 ---
 description: Documentation website development (Astro/Starlight)
-globs: www/docs/src/**/*
+globs: docs/src/**/*
 alwaysApply: false
 ---
-# Documentation Website (`www/docs/`)
+# Documentation Website (`docs/`)
 
 Astro/Starlight site → https://docs.vlt.sh
 
 ## Content Structure
 
 ```
-www/docs/src/content/docs/
+docs/src/content/docs/
 ├── cli/
 │   ├── index.mdx           # CLI overview
 │   ├── configuring.mdx     # All CLI options/flags
@@ -54,7 +54,7 @@ Use `<Code code="..." title="Terminal" lang="bash" />` for command examples.
 ## Dev
 
 ```bash
-cd www/docs
+cd docs
 pnpm dev    # local dev server
 pnpm build  # production build
 ```

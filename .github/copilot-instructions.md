@@ -2,7 +2,7 @@
 
 The https://github.com/vltpkg/vltpkg repository is a monorepo, meaning
 that it's organized in such a way that subfolders located in `src/*`,
-`infra/*` and `www/*` are workspaces. Workspaces are individual
+`infra/*` and `docs` are workspaces. Workspaces are individual
 packages, sometimes these packages are published to a public registry
 to be reused on their own like in the case of our monorepo the
 workspaces located at `src/*` are published to the npm registry so
@@ -193,5 +193,5 @@ provide actionable output.
 
 ### Documentation Website (docs.vlt.sh)
 
-- www/docs - The source for documentation located at
+- docs - The source for documentation located at
   https://docs.vlt.sh

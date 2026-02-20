@@ -5,7 +5,6 @@
 *.tsbuildinfo
 
 /.turbo
-/docs
 /node_modules
 /scripts/fixtures/
 /results/
@@ -34,10 +33,10 @@
 
 /infra/benchmark/.artifacts
 
-/www/*/.tap
-/www/*/.astro
-/www/*/.vercel/
-/www/*/.turbo
-/www/*/dist
-/www/*/node_modules
-/www/*/scripts/fixtures/
+/docs/.tap
+/docs/.astro
+/docs/.vercel/
+/docs/.turbo
+/docs/dist
+/docs/node_modules
+/docs/scripts/fixtures/

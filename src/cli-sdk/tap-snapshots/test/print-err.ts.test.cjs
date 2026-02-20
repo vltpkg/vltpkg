@@ -277,7 +277,7 @@ Error: failed graph traversal
         args: [],
         stdout: '',
         stderr: '',
-        cwd: '/some/path/to/www/docs',
+        cwd: '/some/path/to/docs',
         status: null,
         signal: 'SIGINT'
       }
@@ -287,18 +287,18 @@ Error: failed graph traversal
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > output 1`] = `
-Graph traversal failure at: workspace www/docs 
+Graph traversal failure at: workspace docs 
 Command: astro sync
-Cwd: /some/path/to/www/docs
+Cwd: /some/path/to/docs
 Signal: SIGINT
 
 Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-run-error-no-stdio-output/vlt/error-logs/error-123.log
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > output no file 1`] = `
-Graph traversal failure at: workspace www/docs 
+Graph traversal failure at: workspace docs 
 Command: astro sync
-Cwd: /some/path/to/www/docs
+Cwd: /some/path/to/docs
 Signal: SIGINT
 `
 
@@ -316,7 +316,7 @@ Error: failed graph traversal
         args: [ 'x' ],
         stdout: '',
         stderr: 'error message',
-        cwd: '/some/path/to/www/docs',
+        cwd: '/some/path/to/docs',
         status: 1,
         signal: null
       }
@@ -326,11 +326,11 @@ Error: failed graph traversal
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output 1`] = `
-Graph traversal failure at: workspace www/docs 
+Graph traversal failure at: workspace docs 
   Path: ~npm~a@1.2.3
 Command: astro sync
 Args: "x"
-Cwd: /some/path/to/www/docs
+Cwd: /some/path/to/docs
 
 error message
 
@@ -340,11 +340,11 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output no file 1`] = `
-Graph traversal failure at: workspace www/docs 
+Graph traversal failure at: workspace docs 
   Path: ~npm~a@1.2.3
 Command: astro sync
 Args: "x"
-Cwd: /some/path/to/www/docs
+Cwd: /some/path/to/docs
 
 error message
 
@@ -365,7 +365,7 @@ Error: failed graph traversal
         args: [ 'x' ],
         stdout: 'output message',
         stderr: '',
-        cwd: '/some/path/to/www/docs',
+        cwd: '/some/path/to/docs',
         status: 1,
         signal: null
       }
@@ -375,11 +375,11 @@ Error: failed graph traversal
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output 1`] = `
-Graph traversal failure at: workspace www/docs 
+Graph traversal failure at: workspace docs 
   Path: ~npm~a@1.2.3
 Command: astro sync
 Args: "x"
-Cwd: /some/path/to/www/docs
+Cwd: /some/path/to/docs
 
 output message
 
@@ -389,11 +389,11 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output no file 1`] = `
-Graph traversal failure at: workspace www/docs 
+Graph traversal failure at: workspace docs 
   Path: ~npm~a@1.2.3
 Command: astro sync
 Args: "x"
-Cwd: /some/path/to/www/docs
+Cwd: /some/path/to/docs
 
 output message
 

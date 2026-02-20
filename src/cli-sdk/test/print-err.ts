@@ -262,7 +262,7 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: joinDepIDTuple(['workspace', 'www/docs']),
+          id: joinDepIDTuple(['workspace', 'docs']),
         },
         path: [{ id: joinDepIDTuple(['registry', '', 'a@1.2.3']) }],
         cause: new Error('command failed', {
@@ -271,7 +271,7 @@ t.test('snapshots', async t => {
             args: ['x'],
             stdout: '',
             stderr: 'error message',
-            cwd: '/some/path/to/www/docs',
+            cwd: '/some/path/to/docs',
             status: 1,
             signal: null,
           },
@@ -287,7 +287,7 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: joinDepIDTuple(['workspace', 'www/docs']),
+          id: joinDepIDTuple(['workspace', 'docs']),
         },
         path: [{ id: joinDepIDTuple(['registry', '', 'a@1.2.3']) }],
         cause: new Error('command failed', {
@@ -296,7 +296,7 @@ t.test('snapshots', async t => {
             args: ['x'],
             stdout: 'output message',
             stderr: '',
-            cwd: '/some/path/to/www/docs',
+            cwd: '/some/path/to/docs',
             status: 1,
             signal: null,
           },
@@ -312,7 +312,7 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: joinDepIDTuple(['workspace', 'www/docs']),
+          id: joinDepIDTuple(['workspace', 'docs']),
         },
         path: [],
         cause: new Error('command failed', {
@@ -321,7 +321,7 @@ t.test('snapshots', async t => {
             args: [],
             stdout: '',
             stderr: '',
-            cwd: '/some/path/to/www/docs',
+            cwd: '/some/path/to/docs',
             status: null,
             signal: 'SIGINT',
           },
@@ -337,7 +337,7 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: joinDepIDTuple(['workspace', 'www/docs']),
+          id: joinDepIDTuple(['workspace', 'docs']),
         },
         path: [],
       },

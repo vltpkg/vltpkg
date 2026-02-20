@@ -1,5 +1,4 @@
 /dist
-/docs
 /example
 /node_modules
 /vlt-lock.json
@@ -30,14 +29,14 @@
 /infra/*/test/fixtures/**/*.json
 /infra/cli-benchmarks/**
 
-/www/*/.*/
-/www/*/dist
-/www/*/docs
-/www/*/example
-/www/*/node_modules
-/www/*/scripts/fixtures
-/www/*/tap-snapshots
-/www/*/test/fixtures/**/*.json
+/docs/.*/
+/docs/dist
+/docs/docs
+/docs/example
+/docs/node_modules
+/docs/scripts/fixtures
+/docs/tap-snapshots
+/docs/test/fixtures/**/*.json
 
-/www/docs/src/content/docs/packages/
-/www/docs/tsconfig.typedoc-workspaces.json
+/docs/src/content/docs/packages/
+/docs/tsconfig.typedoc-workspaces.json

@@ -46,17 +46,17 @@ For example:
 ```json
 {
   "workspaces": {
-    "www": "www/*"
+    "docs": "docs/*"
     "utils": [
       "utils/*",
-      "www/utils"
+      "docs/utils"
     ],
   }
 }
 ```
 
 It's perfectly fine for a workspace to be found in multiple groups,
-like the `www/utils` workspace in the example above.
+like the `docs/utils` workspace in the example above.
 
 If that level of group detail isn't needed, then you can also just
 point the `workspaces` field at a string or array of string glob
@@ -64,7 +64,7 @@ patterns. For example:
 
 ```json
 {
-  "workspaces": ["www/*", "utils/*"]
+  "workspaces": ["docs/*", "utils/*"]
 }
 ```
 
@@ -109,11 +109,11 @@ For example, to run the tests on certain workspaces by path name, you
 can run this:
 
 ```bash
-$ vlt --workspace=src/* --workspace=www/components run test
+$ vlt --workspace=src/* --workspace=docs/components run test
 ```
 
 would run the `test` command on all the workspaces under `src/*`, as
-well as the `www/components` workspace.
+well as the `docs/components` workspace.
 
 Note that glob patterns may have to be quoted so that the shell does
 not expand them incorrectly.
@@ -129,10 +129,10 @@ For example, with the `vlt.json` defined above:
 ```json
 {
   "workspaces": {
-    "www": "www/*"
+    "docs": "docs/*"
     "utils": [
       "utils/*",
-      "www/utils"
+      "docs/utils"
     ],
   }
 }

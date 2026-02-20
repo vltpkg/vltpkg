@@ -105,7 +105,7 @@ jobs:
       - name: Docs
         id: docs
         continue-on-error: true
-        run: vlr --workspace ./www/docs typedoc:check
+        run: vlr --workspace ./docs typedoc:check
 
       - name: Consistent Workspaces
         id: workspaces
