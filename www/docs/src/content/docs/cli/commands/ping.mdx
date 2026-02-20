@@ -1,0 +1,27 @@
+---
+title: vlt ping
+sidebar:
+  label: ping
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt ping" title="Terminal" lang="bash" />
+
+Ping all configured registries to verify connectivity and check
+registry health. Registries that share the same URL as the default
+registry are deduplicated and only pinged once.
+
+## Ping a specific registry
+
+<Code
+  code="$ vlt ping [<registry-alias>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Ping a single registry by its alias. Registry aliases are configured
+via the `registries` field in `vlt.json` or with the `--registries`
+option.

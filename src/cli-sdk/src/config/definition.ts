@@ -36,6 +36,7 @@ const canonicalCommands = {
   list: 'list',
   ls: 'ls',
   pack: 'pack',
+  ping: 'ping',
   pkg: 'pkg',
   publish: 'publish',
   query: 'query',
