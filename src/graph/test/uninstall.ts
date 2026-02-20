@@ -40,18 +40,26 @@ t.test('uninstall', async t => {
     scurry: {},
   } as unknown as UninstallOptions
   let log = ''
+  let idealBuildReceivedActual = false
   const rootDepID = joinDepIDTuple(['file', '.'])
+  const actualGraph = { __actual: true }
 
   const { uninstall } = await t.mockImport<
     typeof import('../src/uninstall.ts')
   >('../src/uninstall.ts', {
     '../src/ideal/build.ts': {
-      build: async ({ remove }: BuildIdealRemoveOptions) =>
-        (log += `buildideal result removes ${remove.get(rootDepID)?.size || 0} new package(s)\n`),
+      build: async ({
+        remove,
+        actual,
+      }: BuildIdealRemoveOptions & { actual?: unknown }) => {
+        idealBuildReceivedActual = actual === actualGraph
+        log += `buildideal result removes ${remove.get(rootDepID)?.size || 0} new package(s)\n`
+      },
     },
     '../src/actual/load.ts': {
       load: () => {
         log += 'actual.load\n'
+        return actualGraph
       },
     },
     '../src/reify/index.ts': {
@@ -79,6 +87,10 @@ t.test('uninstall', async t => {
   )
 
   t.matchSnapshot(log, 'should call build removing a dependency')
+  t.ok(
+    idealBuildReceivedActual,
+    'should pass actual graph to idealBuild for manifest hydration',
+  )
 })
 
 t.test('uninstall with lockfileOnly option', async t => {

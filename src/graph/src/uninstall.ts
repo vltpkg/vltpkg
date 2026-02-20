@@ -25,17 +25,25 @@ export const uninstall = async (
   const remover = new RollbackRemove()
 
   try {
+    // Load the actual graph before building the ideal graph so that
+    // manifest data from installed packages can be used to hydrate
+    // nodes loaded from the lockfile. Without this, nodes loaded from
+    // vlt-lock.json (which does not store manifests) will be missing
+    // manifest data, causing the hidden lockfile save to silently fail
+    // due to throwOnMissingManifest and leaving stale entries behind.
+    const act = actualLoad({
+      ...options,
+      modifiers: undefined,
+      mainManifest,
+      loadManifests: true,
+    })
     const graph = await idealBuild({
       ...options,
+      actual: act,
       remove,
       mainManifest,
       loadManifests: true,
       remover,
-    })
-    const act = actualLoad({
-      ...options,
-      mainManifest,
-      loadManifests: true,
     })
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
