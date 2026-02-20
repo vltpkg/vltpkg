@@ -22,10 +22,10 @@ const testErr = async (
 ) =>
   t.test(name, async t => {
     const dir = t.testdir()
-    const { CI: _CI, ...restEnv } = process.env
+    const { CI: _CI, ...envWithoutCI } = process.env
     t.intercept(process, 'env', {
       value: {
-        ...restEnv,
+        ...envWithoutCI,
         XDG_DATA_HOME: dir,
       },
     })
@@ -351,10 +351,10 @@ t.test('snapshots', async t => {
 
 t.test('prints full error log contents to stderr in CI', async t => {
   const dir = t.testdir()
-  const { CI: _CI, ...restEnv } = process.env
+  const { CI: _CI, ...envWithoutCI } = process.env
   t.intercept(process, 'env', {
     value: {
-      ...restEnv,
+      ...envWithoutCI,
       CI: '1',
       XDG_DATA_HOME: dir,
     },
@@ -384,10 +384,10 @@ t.test(
   'does not print full error log contents outside CI',
   async t => {
     const dir = t.testdir()
-    const { CI: _CI, ...restEnv } = process.env
+    const { CI: _CI, ...envWithoutCI } = process.env
     t.intercept(process, 'env', {
       value: {
-        ...restEnv,
+        ...envWithoutCI,
         XDG_DATA_HOME: dir,
       },
     })
@@ -415,10 +415,10 @@ t.test(
 
 t.test('continues when reading CI error log fails', async t => {
   const dir = t.testdir()
-  const { CI: _CI, ...restEnv } = process.env
+  const { CI: _CI, ...envWithoutCI } = process.env
   t.intercept(process, 'env', {
     value: {
-      ...restEnv,
+      ...envWithoutCI,
       CI: '1',
       XDG_DATA_HOME: dir,
     },
