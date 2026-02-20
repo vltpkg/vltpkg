@@ -64,6 +64,13 @@ const makeStyler = (colors: boolean): StylerFn => {
 // Single source of truth for all commands with metadata
 const allCommands = [
   {
+    name: 'bugs',
+    aliases: [],
+    args: '[<spec>]',
+    desc: 'Open the bug tracker for a package',
+    showByDefault: false,
+  },
+  {
     name: 'build',
     aliases: ['b'],
     args: '<selector>',
@@ -170,6 +177,13 @@ const allCommands = [
     aliases: [],
     args: '',
     desc: 'Create a tarball from a package',
+    showByDefault: false,
+  },
+  {
+    name: 'ping',
+    aliases: [],
+    args: '[<registry-alias>]',
+    desc: 'Ping configured registries',
     showByDefault: false,
   },
   {
