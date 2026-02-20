@@ -257,6 +257,22 @@ t.test(
   },
 )
 
+t.test(
+  'failed ping with non-Error thrown on specific registry',
+  async t => {
+    mockError = 'string error' as unknown as Error
+
+    const result = await Command.command(makeConfig(['npm']))
+    t.notOk(Array.isArray(result), 'result should not be an array')
+    if (Array.isArray(result)) return
+
+    t.equal(result.status, 'error')
+    t.equal(result.registry, 'https://registry.npmjs.org/')
+    t.equal(result.error, 'string error')
+    mockError = null
+  },
+)
+
 t.test('views', async t => {
   const successResult = {
     registry: 'https://registry.npmjs.org/',
@@ -274,6 +290,14 @@ t.test('views', async t => {
     error: 'Connection failed',
   }
 
+  // Result without alias (covers the r.registry fallback branch)
+  const noAliasResult = {
+    registry: 'https://registry.npmjs.org/',
+    status: 'ok' as const,
+    time: 50,
+    statusCode: 200,
+  }
+
   const multipleResults = [successResult, errorResult]
 
   t.strictSame(Command.views.json(successResult), successResult)
@@ -286,6 +310,12 @@ t.test('views', async t => {
   t.equal(
     Command.views.human(errorResult),
     'Ping failed: custom (https://registry.npmjs.org/) - Connection failed',
+  )
+
+  // Test formatting without alias
+  t.equal(
+    Command.views.human(noAliasResult),
+    'Ping successful: https://registry.npmjs.org/ (50ms)',
   )
 
   t.strictSame(Command.views.json(multipleResults), multipleResults)
