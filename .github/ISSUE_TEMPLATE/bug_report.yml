@@ -11,15 +11,6 @@ body:
         Thanks for taking the time to report a bug! Please provide detailed information to help us reproduce and fix the issue.
 
   - type: textarea
-    id: description
-    attributes:
-      label: 📋 Bug Description
-      description: A clear and concise description of the bug.
-      placeholder: 'Describe what the bug is...'
-    validations:
-      required: true
-
-  - type: textarea
     id: expected_behavior
     attributes:
       label: ✅ Expected Behavior
@@ -47,8 +38,6 @@ body:
         2. Click on '...'
         3. Scroll down to '...'
         4. See error
-    validations:
-      required: true
 
   - type: textarea
     id: environment
@@ -66,41 +55,6 @@ body:
             '- Node: ' + process.version,
             '- vlt: ' + require('child_process').execSync('vlt -v').toString().trim()
           ].join('\n')"
-    validations:
-      required: true
-
-  - type: textarea
-    id: error_logs
-    attributes:
-      label: 📜 Error Logs/Console Output
-      description: Please paste any relevant error messages or console output
-      placeholder: 'Paste error logs here...'
-      render: shell
-    validations:
-      required: false
-
-  - type: textarea
-    id: minimal_reproduction
-    attributes:
-      label: 🔬 Minimal Reproduction Case
-      description: If possible, provide a minimal code example that reproduces the issue
-      placeholder: 'Minimal code example...'
-      render: javascript
-    validations:
-      required: false
-
-  - type: dropdown
-    id: severity
-    attributes:
-      label: 🚨 Severity Level
-      description: How severe is this bug?
-      options:
-        - Low - Minor issue, workaround available
-        - Medium - Affects functionality but not critical
-        - High - Significant impact on functionality
-        - Critical - Complete failure, no workaround
-    validations:
-      required: true
 
   - type: dropdown
     id: frequency
@@ -114,52 +68,3 @@ body:
         - Always - Happens every time
     validations:
       required: true
-
-  - type: checkboxes
-    id: regression
-    attributes:
-      label: 📈 Regression Check
-      description: Is this a regression from a previous version?
-      options:
-        - label: This is a regression (it worked in a previous version)
-        - label: This affects multiple versions
-        - label: This is a new issue
-
-  - type: checkboxes
-    id: definition_of_done
-    attributes:
-      label: ✅ Definition of Done
-      description: Check all criteria that should be met for this bug to be considered fixed
-      options:
-        - label: Bug reproduced and root cause identified
-        - label: Fix implemented and tested
-        - label: Regression tests added to prevent future occurrences
-        - label: Fix verified in affected environments
-        - label: Documentation updated if needed
-        - label: Code reviewed and approved
-        - label: Performance impact assessed
-        - label: Related bugs checked and addressed
-
-  - type: textarea
-    id: workaround
-    attributes:
-      label: 🛠️ Workaround
-      description: Have you found any workaround for this issue?
-      placeholder: 'Temporary workaround (if any)...'
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional_context
-    attributes:
-      label: 📎 Additional Context
-      description: Add any other context about the problem here (screenshots, related issues, etc.)
-      placeholder: 'Any additional information...'
-    validations:
-      required: false
-
-  - type: markdown
-    attributes:
-      value: |
-        ---
-        **For AI Agents (Copilot/Cursor):** This bug report contains structured information including reproduction steps, environment details, and expected vs actual behavior. Use the severity and frequency to prioritize the fix. The Definition of Done provides clear resolution criteria.
