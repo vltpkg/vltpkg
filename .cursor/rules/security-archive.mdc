@@ -1,0 +1,63 @@
+---
+description: Socket.dev security data integration and security selectors
+globs: src/security-archive/src/*,src/security-archive/test/*,src/query/src/pseudo/*
+alwaysApply: false
+---
+# Security Archive (`@vltpkg/security-archive`)
+
+Fetches, caches, and serves Socket.dev security data for the query system.
+
+## Architecture
+
+- `src/security-archive/src/index.ts` — `SecurityArchive` class (extends `LRUCache<DepID, PackageReportData>`)
+- Uses Socket API v0 (`https://api.socket.dev/v0/purl?alerts=true`) with public API token
+- Stores in SQLite DB (XDG data dir) with TTL-based expiration
+- Only supports `https://registry.npmjs.org/` packages (via `targetSecurityRegistry`)
+
+## Data Flow
+
+1. Query uses a security pseudo-selector (`:malware`, `:cve`, etc.)
+2. `SecurityArchive` is instantiated and passed to query engine via `ParserState.securityArchive`
+3. Archive fetches reports for queried DepIDs from Socket API (batched POST)
+4. Results cached in LRU + SQLite for future queries
+5. Pseudo-selector implementation checks `PackageReportData` for matches
+
+## PackageReportData
+
+```typescript
+type PackageReportData = {
+  score?: { overall, license, maintenance, quality, supplyChain, vulnerability }
+  alerts?: Array<{ type: string, severity: string, ... }>
+  license?: { text: string }
+  published?: string  // ISO date
+  deprecated?: boolean
+}
+```
+
+## Security Pseudo-Selectors (in `src/query/src/pseudo/`)
+
+**Malware/threats**: `:malware`, `:malware(critical|high|medium|low)`, `:obfuscated`, `:eval`, `:shell`, `:scripts`
+
+**Vulnerabilities**: `:cve(CVE-ID)`, `:cwe(CWE-ID)`, `:severity(level)`, `:deprecated`
+
+**Behavioral**: `:fs`, `:network`, `:env`, `:native`, `:dynamic`, `:debug`, `:entropic`, `:minified`
+
+**Trust**: `:abandoned`, `:confused`, `:unmaintained`, `:unstable`, `:unknown`, `:unpopular`, `:trivial`, `:squat(type)`
+
+**Scoring**: `:score(rate, kind?)`, `:license(type)`, `:published(date)`
+
+**Meta**: `:scanned` (has security data)
+
+## CLI Usage
+
+```bash
+vlt query ':malware'                    # medium+ severity
+vlt query ':malware' --expect-results=0 # CI gate
+vlt query ':cve(CVE-2023-1234)'
+vlt query ':score("<0.5")'
+vlt build --target=':scripts:not(:malware)'  # default build target
+```
+
+## Docs
+
+User-facing: `www/docs/src/content/docs/cli/security.mdx`, `cli/selectors.mdx` (Security section)

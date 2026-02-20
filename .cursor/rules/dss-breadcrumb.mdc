@@ -1,0 +1,55 @@
+---
+description: DSS parser and breadcrumb system for query/modifier traversal
+globs: src/dss-parser/src/*,src/dss-breadcrumb/src/*,src/dss-parser/test/*,src/dss-breadcrumb/test/*
+alwaysApply: false
+---
+# DSS Parser & Breadcrumb System
+
+Dependency Selector Syntax — CSS-like query language used by `vlt query`, `vlt build --target`, modifiers, `--scope`, `--allow-scripts`.
+
+## DSS Parser (`@vltpkg/dss-parser`)
+
+Parses DSS query strings into postcss-compatible AST nodes.
+
+**Node types** (check with helpers):
+- `isPseudoNode(node)` — `:pseudo` selectors (`:root`, `:dev`, `:malware`, etc.)
+- `isIdentifierNode(node)` — `#name` id selectors
+- `isCombinatorNode(node)` — `>` (child), ` ` (descendant), `~` (sibling)
+- `isTagNode(node)` — `*` universal selector
+- `isStringNode(node)` — quoted string values
+- `isCommentNode(node)` — comments
+- `isPostcssNodeWithChildren(node)` — has child nodes
+
+**Key exports**: `parse(query)` → AST, type guards above, `asStringNode()`, `asTagNode()`, `asPostcssNodeWithChildren()`
+
+## DSS Breadcrumb (`@vltpkg/dss-breadcrumb`)
+
+Interactive query walking for modifiers — walks a parsed query in lockstep with graph traversal.
+
+**Core concept**: A breadcrumb tracks position in a DSS query as the graph is traversed node-by-node. Used by `GraphModifier` to determine when a modifier's selector fully matches.
+
+### Key Types
+
+```typescript
+type ModifierBreadcrumb = { first: ModifierBreadcrumbItem, last: ModifierBreadcrumbItem }
+type ModifierBreadcrumbItem = { value: string, comparator: Function, next?: ModifierBreadcrumbItem }
+type ModifierInteractiveBreadcrumb = { current: ModifierBreadcrumbItem }
+type BreadcrumbSpecificity = { idCounter: number, commonCounter: number }
+```
+
+### Key Functions
+
+- `parseBreadcrumb(query)` → `ModifierBreadcrumb` — parses query into linked list of breadcrumb items
+- `specificitySort(entries)` — sorts modifier entries by CSS specificity (most specific first)
+- `removeQuotes(value)` — utility for processing string values
+
+### Supported Breadcrumb Selectors
+
+Limited subset for modifiers: `:root`, `:project`, `:workspace`, `#name` (id), `> #name` (child combinator). Pseudo selectors with semver params (`:semver(^1.0.0)`) supported via comparator functions.
+
+## Where DSS is Used
+
+- `src/query/` — full query engine with all pseudo-selectors (see `@query-pseudo-selector-creation.mdc`)
+- `src/graph/src/modifiers.ts` — modifier matching via breadcrumbs
+- `src/cli-sdk/` — `--scope`, `--allow-scripts`, `vlt build --target`
+- User-facing docs: `www/docs/src/content/docs/cli/selectors.mdx`
