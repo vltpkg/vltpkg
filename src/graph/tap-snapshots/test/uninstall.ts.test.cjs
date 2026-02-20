@@ -6,8 +6,8 @@
  */
 'use strict'
 exports[`test/uninstall.ts > TAP > uninstall > should call build removing a dependency 1`] = `
-buildideal result removes 1 new package(s)
 actual.load
+buildideal result removes 1 new package(s)
 reify
 
 `
