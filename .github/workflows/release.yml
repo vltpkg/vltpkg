@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Override action to take instead of reading from latest commit'
+        description: "Override action to take instead of reading from latest commit"
         type: choice
         options:
           - pr
           - publish
       dry-run:
-        description: 'Dry run the PR creation or release'
+        description: "Dry run the PR creation or release"
         type: boolean
 
 jobs:
@@ -55,37 +55,68 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
-          cache: pnpm
+          node-version: "^22.14.0"
           check-latest: true
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install Dependencies with known good version of vlt
+        run: npx vlt@latest install
+
+      - name: Build source version of vlt
+        run: node --run build:bundle
+
+      - name: Add source version of vlt to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+
+      - name: Install Dependencies with source of vlt
+        run: |
+          # avoid changes from the bootstrap step
+          ./scripts/rm-node-nodules.ts
+          # re-install dependencies
+          vlt install --view=human
 
       - name: Get Previous CLI Version Number
         id: previous-version
-        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
+        run: vlt pkg get version --workspace=./infra/cli
 
       - name: Version CLI Packages
-        run: pnpm --filter="./infra/cli*" exec npm version prerelease --no-git-tag-version
+        run: |
+          next_version=$(node --input-type=module -e "
+            import { inc } from '@vltpkg/semver'
+            import { readFileSync } from 'node:fs'
+            const current = JSON.parse(readFileSync('./infra/cli/package.json', 'utf8')).version
+            process.stdout.write(inc(current, 'prerelease').toString())
+          ")
+
+          for package_dir in ./infra/cli*; do
+            [[ -d "$package_dir" ]] || continue
+            [[ -f "$package_dir/package.json" ]] || continue
+            (
+              cd "$package_dir"
+              vlt pkg set "version=$next_version"
+            )
+          done
 
       - name: Get CLI Version Number
         id: version
-        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
+        run: vlt pkg get version --workspace=./infra/cli
 
       # TODO: use git history to determine other packages to bump
       - name: Version Workspaces
-        run: pnpm --filter "./src/*" exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
+        run: |
+          for package_dir in ./src/*; do
+            [[ -d "$package_dir" ]] || continue
+            [[ -f "$package_dir/package.json" ]] || continue
+            (
+              cd "$package_dir"
+              vlt pkg set "version=${{ steps.version.outputs.value }}"
+            )
+          done
 
       - name: Version Root
-        run: pnpm exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
+        run: vlt pkg set "version=${{ steps.version.outputs.value }}"
 
       - name: Commit Version Bumps
         run: |
@@ -95,7 +126,29 @@ jobs:
           git commit -m "Release v${{ steps.version.outputs.value }}"
 
       - name: Pack
-        run: pnpm --filter="[$(git rev-parse HEAD~1)]" --workspace-concurrency=1 exec pnpm pack
+        run: |
+          commit="$(git rev-parse HEAD~1)"
+
+          mapfile -t package_dirs < <(
+            git diff --name-only "$commit" -- 'package.json' 'src/*/package.json' 'infra/*/package.json' \
+              | while IFS= read -r package_json; do
+                  [[ -n "$package_json" ]] || continue
+                  dirname "$package_json"
+                done \
+              | sort -u
+          )
+
+          for package_dir in "${package_dirs[@]}"; do
+            if [[ "$package_dir" == "." ]]; then
+              abs_dir="$GITHUB_WORKSPACE"
+            else
+              abs_dir="$GITHUB_WORKSPACE/$package_dir"
+            fi
+            (
+              cd "$abs_dir"
+              vlt pack
+            )
+          done
 
       - name: Full integrity
         id: integrity
@@ -116,24 +169,34 @@ jobs:
           delimiter="$(openssl rand -hex 8)"
           commit="$(git rev-parse HEAD~1)"
 
+          changed_package_dirs() {
+            git diff --name-only "$commit" -- 'package.json' 'src/*/package.json' 'infra/*/package.json' \
+              | while IFS= read -r package_json; do
+                  [[ -n "$package_json" ]] || continue
+                  dirname "$package_json"
+                done \
+              | sort -u
+          }
+
           format() {
             local name="$1"
             local filter="$2"
 
             local packages
-            packages=$(pnpm --shell-mode --filter="{./$filter/}[$commit]" exec "pwd" | sort)
+            packages=$(changed_package_dirs | awk -v prefix="${filter}/" '$0 ~ "^" prefix { print $0 }')
 
             echo "$packages"
             {
               echo "${name}<<${delimiter}"
               while IFS= read -r package_dir; do
-                local package_json="$package_dir/package.json"
+                [[ -n "$package_dir" ]] || continue
+                local package_json="$GITHUB_WORKSPACE/$package_dir/package.json"
                 if [[ "$(jq -r .private "$package_json")" == "true" ]]; then
                   continue
                 fi
                 local package_name=$(jq -r '.name' "$package_json")
                 local package_version=$(jq -r '.version' "$package_json")
-                local integrity=$(./scripts/tgz-ssri.ts "$package_dir")
+                local integrity=$(./scripts/tgz-ssri.ts "$GITHUB_WORKSPACE/$package_dir")
                 echo "- \`$package_name@$package_version\` (\`${integrity:0:20}...\`)"
               done <<< "$packages"
               echo "${delimiter}"
@@ -154,13 +217,13 @@ jobs:
         if: needs.pre-check.outputs.dry-run != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          title: 'Release v${{ steps.version.outputs.value }}'
-          commit-message: 'Release v${{ steps.version.outputs.value }}'
+          title: "Release v${{ steps.version.outputs.value }}"
+          commit-message: "Release v${{ steps.version.outputs.value }}"
           branch: release
           base: main
           labels: release
-          author: 'vltops <vltops@users.noreply.github.com>'
-          committer: 'vltops <vltops@users.noreply.github.com>'
+          author: "vltops <vltops@users.noreply.github.com>"
+          committer: "vltops <vltops@users.noreply.github.com>"
           token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
           draft: always-true
           body: |
@@ -211,32 +274,52 @@ jobs:
       version: ${{ steps.versions.outputs.version }}
     permissions:
       contents: write
-      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
-          cache: pnpm
+          node-version: "^22.14.0"
           check-latest: true
 
-      - name: Setup npm
-        run: npm i npm@11 -g
+      - name: Install Dependencies with known good version of vlt
+        run: npx vlt@latest install
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Build source version of vlt
+        run: node --run build:bundle
+
+      - name: Add source version of vlt to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+
+      - name: Install Dependencies with source of vlt
+        run: |
+          # avoid changes from the bootstrap step
+          ./scripts/rm-node-nodules.ts
+          # re-install dependencies
+          vlt install --view=human
 
       - name: List Packages to Publish
-        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort
+        run: |
+          commit="$(git rev-parse HEAD~1)"
+          git diff --name-only "$commit" -- 'package.json' 'src/*/package.json' 'infra/*/package.json' \
+            | while IFS= read -r package_json; do
+                [[ -n "$package_json" ]] || continue
+                pkg_dir="$(dirname "$package_json")"
+                if [[ "$pkg_dir" == "." ]]; then
+                  abs_dir="$GITHUB_WORKSPACE"
+                else
+                  abs_dir="$GITHUB_WORKSPACE/$pkg_dir"
+                fi
+                if [[ "$(jq -r .private "$abs_dir/package.json")" == "true" ]]; then
+                  continue
+                fi
+                jq -r '"\(.name)@\(.version)"' "$abs_dir/package.json"
+              done \
+            | sort -u
 
       - name: Versions
         id: versions
@@ -254,14 +337,38 @@ jobs:
 
       - name: Publish
         run: |
-          pnpm publish \
-            --filter="[$(git rev-parse HEAD~1)]" \
-            --access=public \
-            --no-git-checks \
-            --publish-branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" \
-            ${{ needs.pre-check.outputs.dry-run == 'true' && '--dry-run' }}
+          commit="$(git rev-parse HEAD~1)"
+          if [[ "${{ needs.pre-check.outputs.dry-run }}" == "true" ]]; then
+            dry_run_arg=(--dry-run)
+          else
+            dry_run_arg=()
+          fi
+
+          mapfile -t package_dirs < <(
+            git diff --name-only "$commit" -- 'package.json' 'src/*/package.json' 'infra/*/package.json' \
+              | while IFS= read -r package_json; do
+                  [[ -n "$package_json" ]] || continue
+                  dirname "$package_json"
+                done \
+              | sort -u
+          )
+
+          for package_dir in "${package_dirs[@]}"; do
+            if [[ "$package_dir" == "." ]]; then
+              abs_dir="$GITHUB_WORKSPACE"
+            else
+              abs_dir="$GITHUB_WORKSPACE/$package_dir"
+            fi
+            if [[ "$(jq -r .private "$abs_dir/package.json")" == "true" ]]; then
+              continue
+            fi
+            (
+              cd "$abs_dir"
+              vlt publish --access=public "${dry_run_arg[@]}"
+            )
+          done
         env:
-          NPM_CONFIG_PROVENANCE: false
+          VLT_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Create Git Tag
         if: needs.pre-check.outputs.dry-run != 'true'
@@ -299,8 +406,8 @@ jobs:
           SLACK_USERNAME: vltops
           SLACK_CHANNEL: github-alerts
           SLACK_ICON: https://github.com/vltpkg.png
-          SLACK_COLOR: 'failure'
-          SLACK_FOOTER: ''
+          SLACK_COLOR: "failure"
+          SLACK_FOOTER: ""
           SLACKIFY_MARKDOWN: true
           SLACK_TITLE: Release ${{ needs.pr.outputs.version }} PR Failed
           SLACK_MESSAGE: |
@@ -340,7 +447,7 @@ jobs:
           SLACK_CHANNEL: github-alerts
           SLACK_ICON: https://github.com/vltpkg.png
           SLACK_COLOR: ${{ needs.publish.result == 'success' && 'success' || 'failure' }}
-          SLACK_FOOTER: ''
+          SLACK_FOOTER: ""
           SLACKIFY_MARKDOWN: true
           SLACK_TITLE: Release ${{ needs.publish.outputs.version }} Publish ${{ needs.publish.result == 'success' && 'Succeeded' || 'Failed' }}
           SLACK_MESSAGE: ${{ steps.message.outputs.value }}
