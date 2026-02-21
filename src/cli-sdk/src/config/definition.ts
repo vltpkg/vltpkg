@@ -24,6 +24,7 @@ const canonicalCommands = {
   cache: 'cache',
   ci: 'ci',
   config: 'config',
+  create: 'create',
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
@@ -120,6 +121,7 @@ export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
 const stopParsingCommands: Commands[keyof Commands][] = [
+  'create',
   'run',
   'run-exec',
   'exec-local',
