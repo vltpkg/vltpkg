@@ -27,13 +27,23 @@ const workspaces = {
   },
   'src/vsr': {
     entry: [...entry, 'src/bin/**/*.ts'],
-    ignoreDependencies: ['@vltpkg/gui', 'esbuild'],
+    ignoreDependencies: ['@vltpkg/gui', 'esbuild', 'cloudflare'],
+    ignoreBinaries: ['pkill', 'lsof'],
+  },
+  'src/gui': {
+    entry: [...entry, 'src/styles/main.css'],
+    ignoreDependencies: [
+      // Used in prepare script via spawn
+      '@tailwindcss/cli',
+    ],
   },
   'www/docs': {
     entry: [
       ...entry,
       // Referenced via <script> tag
       'src/components/sidebar/sidebar-states.ts',
+      // Read by Starlight
+      'src/styles/globals.css',
     ],
     // TODO: audit if these really need to be hoisted
     ignoreDependencies: ['@astrojs/mdx', 'sharp', 'vite'],
@@ -56,7 +66,7 @@ export default {
     '**/tap-snapshots/**/*.cjs',
     './infra/cli-benchmarks/fixtures/**',
   ],
-  ignoreBinaries: ['hyperfine', 'vlt', 'sleep'],
+  ignoreBinaries: ['hyperfine', 'vlr', 'sleep'],
   eslint: ['eslint.config.mjs'],
   workspaces: Object.fromEntries(
     getWorkspaces().map(ws => {

@@ -50,6 +50,5 @@
     "save-fixture": true
   },
   "prettier": "../../.prettierrc.js",
-  "module": "./src/index.ts",
   "type": "module"
 }
