@@ -99,7 +99,7 @@
   },
   "license": "FSL-1.1-MIT",
   "engines": {
-    "node": ">=22.9.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
