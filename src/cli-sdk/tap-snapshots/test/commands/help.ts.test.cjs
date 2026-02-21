@@ -43,6 +43,7 @@ pub,     publish                     Publish package to registry
 
 q,       query       <selector>      Query for packages in the project
 
+         repo        [<spec>]        Open the repository page for a package
 r,       run         <script>        Run a script defined in package.json
 rx,      run-exec    <script>        Run a script &/or fallback to executing a binary
 
