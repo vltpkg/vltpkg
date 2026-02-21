@@ -9,7 +9,6 @@ import pathModule, {
 import t from 'tap'
 import type { Test } from 'tap'
 import type { WhichOptions } from '../src/index.ts'
-
 import { posix as isexePosix, win32 as isexeWin } from 'isexe'
 
 const isWindows = process.platform === 'win32'
@@ -74,8 +73,10 @@ t.test('windows style', async t => {
   const { which, whichSync } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
-    isexe: isexeWin,
-    path: { ...pathModule, delimiter: pathModule.win32.delimiter },
+    'node:path': {
+      ...pathModule,
+      delimiter: pathModule.win32.delimiter,
+    },
   })
   t.match(await which('foo', { path, pathExt: '.CMD' }), /foo\.cmd$/i)
   t.match(await which('foo', { path, pathExt: '.SH' }), /foo\.sh$/i)
