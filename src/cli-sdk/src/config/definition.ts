@@ -556,6 +556,29 @@ export const definition = j
   })
 
   .opt({
+    call: {
+      hint: 'cmd',
+      description: `When running \`vlt exec\`, provide an arbitrary command
+                    string to execute after installing and adding any specified
+                    package bins to the PATH.
+
+                    If a package is specified (via positionals or
+                    \`--package\`), it will be installed and its executables
+                    added to the PATH before the \`--call\` command runs.
+
+                    The command string is executed via the configured
+                    \`script-shell\`, or the \`SHELL\` environment variable,
+                    falling back to \`/bin/sh\` on Unix or \`cmd.exe\` on
+                    Windows. On Unix, the shell is invoked with \`-c\`; on
+                    Windows with \`/c\`.
+
+                    Example:
+                    \`vlt exec create-react-app --call="echo $PWD"\`
+                    \`vlt exec --call="echo $PWD" --scope=":workspace"\``,
+    },
+  })
+
+  .opt({
     view: {
       hint: 'output',
       default: defaultView,

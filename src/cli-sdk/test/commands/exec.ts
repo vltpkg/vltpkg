@@ -61,6 +61,161 @@ t.test('usage', async t => {
   t.matchSnapshot(USAGE, 'usage')
 })
 
+t.test('command with --call (no package)', async t => {
+  const result = { status: 0, signal: null } as unknown as ExecResult
+  let resolveCallCount = 0
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/exec.ts')
+  >('../../src/commands/exec.ts', {
+    '../../src/exec-command.ts': {
+      views: {},
+      ExecCommand: class {
+        async run() {
+          return result
+        }
+      },
+    },
+    '@vltpkg/vlx': {
+      resolve: async () => {
+        resolveCallCount++
+        return undefined
+      },
+    },
+  })
+  unload()
+  const conf = {
+    positionals: [] as string[],
+    options: {},
+    get: (key: string) => (key === 'call' ? 'echo $PWD' : undefined),
+  } as unknown as LoadedConfig
+  t.equal(await command(conf), result)
+  t.equal(resolveCallCount, 0)
+  // positionals should be [shell, '-c', callOption] where shell comes from
+  // script-shell, SHELL env var, or platform default
+  t.equal(conf.positionals[1], '-c')
+  t.equal(conf.positionals[2], 'echo $PWD')
+})
+
+t.test('command with --call and package in positionals', async t => {
+  const result = { status: 0, signal: null } as unknown as ExecResult
+  let resolveArgs: string[] | undefined
+  let resolveOptions: (VlxOptions & { package?: string }) | undefined
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/exec.ts')
+  >('../../src/commands/exec.ts', {
+    '../../src/exec-command.ts': {
+      views: {},
+      ExecCommand: class {
+        async run() {
+          return result
+        }
+      },
+    },
+    '@vltpkg/vlx': {
+      resolve: async (
+        args: string[],
+        options: VlxOptions & { package?: string },
+        _promptFn?: PromptFn,
+      ) => {
+        resolveArgs = args
+        resolveOptions = options
+        return undefined
+      },
+    },
+  })
+  unload()
+  const conf = {
+    positionals: ['create-react-app'] as string[],
+    options: {},
+    get: (key: string) => {
+      if (key === 'call') return 'echo $PWD'
+      if (key === 'script-shell') return '/bin/sh'
+      return undefined
+    },
+  } as unknown as LoadedConfig
+  t.equal(await command(conf), result)
+  t.strictSame(resolveArgs, [])
+  t.equal(resolveOptions?.package, 'create-react-app')
+  t.strictSame(conf.positionals, ['/bin/sh', '-c', 'echo $PWD'])
+})
+
+t.test('command with --call and explicit --package', async t => {
+  const result = { status: 0, signal: null } as unknown as ExecResult
+  let resolveOptions: (VlxOptions & { package?: string }) | undefined
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/exec.ts')
+  >('../../src/commands/exec.ts', {
+    '../../src/exec-command.ts': {
+      views: {},
+      ExecCommand: class {
+        async run() {
+          return result
+        }
+      },
+    },
+    '@vltpkg/vlx': {
+      resolve: async (
+        _args: string[],
+        options: VlxOptions & { package?: string },
+        _promptFn?: PromptFn,
+      ) => {
+        resolveOptions = options
+        return undefined
+      },
+    },
+  })
+  unload()
+  const conf = {
+    positionals: [] as string[],
+    options: { package: 'cowsay' },
+    get: (key: string) => {
+      if (key === 'call') return 'cowsay hello'
+      if (key === 'script-shell') return '/bin/sh'
+      return undefined
+    },
+  } as unknown as LoadedConfig
+  t.equal(await command(conf), result)
+  t.equal(resolveOptions?.package, 'cowsay')
+  t.strictSame(conf.positionals, ['/bin/sh', '-c', 'cowsay hello'])
+})
+
+t.test(
+  'command with --call uses script-shell if configured',
+  async t => {
+    const result = {
+      status: 0,
+      signal: null,
+    } as unknown as ExecResult
+    const { command } = await t.mockImport<
+      typeof import('../../src/commands/exec.ts')
+    >('../../src/commands/exec.ts', {
+      '../../src/exec-command.ts': {
+        views: {},
+        ExecCommand: class {
+          async run() {
+            return result
+          }
+        },
+      },
+      '@vltpkg/vlx': {
+        resolve: async () => undefined,
+      },
+    })
+    unload()
+    const conf = {
+      positionals: [] as string[],
+      options: {},
+      get: (key: string) => {
+        if (key === 'call') return 'echo hello'
+        if (key === 'script-shell') return '/bin/zsh'
+        return undefined
+      },
+    } as unknown as LoadedConfig
+    t.equal(await command(conf), result)
+    t.strictSame(conf.positionals, ['/bin/zsh', '-c', 'echo hello'])
+  },
+)
+
 t.test('command', async t => {
   let calledResolve = false
   const mockOptions = { 'script-shell': 'this will be deleted' }
