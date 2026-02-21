@@ -1762,7 +1762,7 @@
     "~npm~radix3@1.1.2": [0,"radix3","sha512-b484I/7b8rDEdSDKckSSBA8knMpcdsXudlE/LNL639wFoHKwLbEkQFZHWEYwDC0wa0FKUcCY+GAF73Z7wxNVFA=="],
     "~npm~range-parser@1.2.0": [0,"range-parser","sha512-kA5WQoNVo4t9lNx2kQNFCxKeBl5IbbSNBl1M/tLkw9WCn+hxNBAW5Qh8gdhs63CJnhjJ2zQWFoqPJP2sK1AV5A=="],
     "~npm~react-devtools-core@4.28.5": [0,"react-devtools-core","sha512-cq/o30z9W2Wb4rzBefjv5fBalHU0rJGZCHAkf/RHSBWSSYwh8PlQTqqOJmgIIbBtpj27T6FIPXeomIjZtCNVqA=="],
-    "~npm~react-dom@18.3.1~peer.10": [2,"react-dom"],
+    "~npm~react-dom@18.3.1~peer.10": [2,"react-dom","sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw=="],
     "~npm~react-dom@19.2.4~peer.28": [0,"react-dom","sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ=="],
     "~npm~react-element-to-jsx-string@15.0.0~peer.10": [2,"react-element-to-jsx-string","sha512-UDg4lXB6BzlobN60P8fHWVPX3Kyw8ORrTeBtClmIlGdkOOE+GYQSFvmEU5iLLpwp/6v42DINwNcwOhOLfQ//FQ=="],
     "~npm~react-is@16.13.1": [0,"react-is","sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="],

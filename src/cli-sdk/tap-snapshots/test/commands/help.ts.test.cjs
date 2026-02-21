@@ -14,6 +14,7 @@ USAGE
 
 COMMANDS
 
+         bugs        [<spec>]        Open the bug tracker for a package
 b,       build       <selector>      Build packages with lifecycle scripts
 
          cache       [add|ls|info|...Manage the package cache
@@ -36,6 +37,7 @@ ls,      list                        List installed packages
          logout                      Log out from a registry
 
          pack                        Create a tarball from a package
+         ping        [<registry-al...Ping configured registries
 p,       pkg         <command>       Manage package metadata
 pub,     publish                     Publish package to registry
 

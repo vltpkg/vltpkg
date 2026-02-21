@@ -25,6 +25,7 @@ const canonicalCommands = {
   ci: 'ci',
   config: 'config',
   'dist-tag': 'dist-tag',
+  create: 'create',
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
@@ -36,6 +37,7 @@ const canonicalCommands = {
   list: 'list',
   ls: 'ls',
   pack: 'pack',
+  ping: 'ping',
   pkg: 'pkg',
   publish: 'publish',
   query: 'query',
@@ -120,6 +122,7 @@ export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
 const stopParsingCommands: Commands[keyof Commands][] = [
+  'create',
   'run',
   'run-exec',
   'exec-local',
