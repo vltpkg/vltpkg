@@ -33,7 +33,6 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "semver": "catalog:",
     "ssri": "catalog:",
-    "taze": "^19.9.2",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
@@ -52,7 +51,6 @@
     "knip": "knip --no-config-hints",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "taze": "taze",
     "vlr": "./scripts/bins/vlr",
     "vlrx": "./scripts/bins/vlrx",
     "vlt": "./scripts/bins/vlt",
