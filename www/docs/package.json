@@ -21,7 +21,6 @@
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-slot": "^1.2.4",
     "@scalar/api-reference-react": "^0.7.55",
-    "@scalar/openapi-to-markdown": "^0.2.45",
     "astro": "^5.16.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
