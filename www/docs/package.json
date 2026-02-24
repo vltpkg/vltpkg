@@ -58,7 +58,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22.9.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "astro": "astro",

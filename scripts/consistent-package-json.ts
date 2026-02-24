@@ -17,7 +17,7 @@ import type {
 } from './utils.ts'
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
-const NODE_ENGINES = '>=22.9.0'
+const NODE_ENGINES = '>=22.22.0'
 
 type Workspace = WorkspaceBase & {
   isRoot: boolean
@@ -383,7 +383,7 @@ const fixEngines = async (ws: Workspace) => {
   ws.pj.engines ??= {}
   ws.pj.engines.node = NODE_ENGINES
   if (ws.pj.name === '@vltpkg/vsr-nitro') {
-    ws.pj.engines.node = '>=22.12.0'
+    ws.pj.engines.node = '>=22.22.0'
   }
 }
 

@@ -68,7 +68,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
+          node-version: '^22.22.0'
           check-latest: true
 
       - name: Install Dependencies with known good version of vlt
@@ -151,7 +151,7 @@ jobs:
         shell: ${{ matrix.platform.shell }}
     strategy:
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [22.x]
         platform:
           - name: Ubuntu
             os: ubuntu-latest
@@ -163,7 +163,6 @@ jobs:
             os: windows-latest
             shell: bash
         exclude:
-          - node-version: '24.x'
           - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
       fail-fast: false
 
@@ -174,7 +173,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
+          node-version: '^22.22.0'
           check-latest: true
 
       - name: Install Dependencies with known good version of vlt

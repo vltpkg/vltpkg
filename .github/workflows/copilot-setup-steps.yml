@@ -20,7 +20,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '^22.14.0'
+          node-version: '^22.22.0'
           check-latest: true
 
       - name: Install Dependencies
