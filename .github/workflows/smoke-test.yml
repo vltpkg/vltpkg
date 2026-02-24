@@ -66,7 +66,7 @@ jobs:
         shell: ${{ matrix.platform.shell }}
     strategy:
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [22.x]
         platform:
           - name: Ubuntu
             os: ubuntu-latest
@@ -78,7 +78,6 @@ jobs:
             os: windows-latest
             shell: bash
         exclude:
-          - node-version: '24.x'
           - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
       fail-fast: false
 

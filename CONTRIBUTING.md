@@ -76,8 +76,9 @@ of this project.
 
 If you use [`nvm`](https://github.com/nvm-sh/nvm), a compatible
 version of `node` should be automatically installed & used as defined
-in our project's root `.nvmrc` file. Notably, there are known issues
-in `node` versions `<22.14` and unknown compatibility for `>=23`. If
+in our project's root `.nvmrc` file. Notably, there are
+[known issues](https://nodejs.org/en/blog/vulnerability/december-2025-security-releases#downloads-and-release-details)
+in `node` versions `<22.22` and unknown compatibility for `>=23`. If
 you are using a version outside of the known-good range set you are
 likely to experience errors when developing and should install an
 in-range version.
