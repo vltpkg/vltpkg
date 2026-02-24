@@ -117,6 +117,11 @@ jobs:
             exit 1
           fi
 
+      - name: Knip
+        id: knip
+        continue-on-error: true
+        run: vlr knip
+
       - name: Check Results
         run: |
           declare -A OUTCOMES=(
@@ -125,6 +130,7 @@ jobs:
             [deps]="${{ steps.deps.outcome }}"
             [docs]="${{ steps.docs.outcome }}"
             [workspaces]="${{ steps.workspaces.outcome }}"
+            [knip]="${{ steps.knip.outcome }}"
           )
           STATUS=0
           for STEP in "${!OUTCOMES[@]}"; do
