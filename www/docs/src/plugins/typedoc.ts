@@ -1,9 +1,9 @@
 import { rm, stat } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import type { AstroIntegrationLogger } from 'astro'
-import { typedocContentPath } from '../../typedoc/constants.mts'
+import { typedocBasePath } from '../../typedoc/constants.mts'
 
-export const directory = typedocContentPath
+export const directory = typedocBasePath
 
 export const plugin = {
   name: directory,
