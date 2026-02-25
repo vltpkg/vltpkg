@@ -155,7 +155,10 @@ export const command: CommandFn<ExecResult> = async conf => {
   if (callOption) {
     // Install any specified package and add its bins to PATH, but don't
     // use its default executable - the --call string is the command to run.
-    const pkgOption = conf.options.package ?? conf.positionals[0]
+    // Only install when a package is explicitly defined (via --package flag
+    // or as a positional argument). Don't prompt for confirmation since the
+    // user's explicit --call command implies consent.
+    const pkgOption = conf.get('package') ?? conf.positionals[0]
     if (pkgOption) {
       await vlx.resolve(
         [],
@@ -165,7 +168,7 @@ export const command: CommandFn<ExecResult> = async conf => {
           query: undefined,
           allowScripts,
         },
-        promptFn,
+        // no promptFn: install silently since --call implies user consent
       )
     }
     // Determine the shell to use for the --call command

@@ -100,6 +100,8 @@ t.test('command with --call and package in positionals', async t => {
   const result = { status: 0, signal: null } as unknown as ExecResult
   let resolveArgs: string[] | undefined
   let resolveOptions: (VlxOptions & { package?: string }) | undefined
+  let resolvePromptFn: PromptFn | undefined = (() =>
+    Promise.resolve('')) as PromptFn
   const { command } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts', {
@@ -115,10 +117,11 @@ t.test('command with --call and package in positionals', async t => {
       resolve: async (
         args: string[],
         options: VlxOptions & { package?: string },
-        _promptFn?: PromptFn,
+        pFn?: PromptFn,
       ) => {
         resolveArgs = args
         resolveOptions = options
+        resolvePromptFn = pFn
         return undefined
       },
     },
@@ -136,12 +139,19 @@ t.test('command with --call and package in positionals', async t => {
   t.equal(await command(conf), result)
   t.strictSame(resolveArgs, [])
   t.equal(resolveOptions?.package, 'create-react-app')
+  t.equal(
+    resolvePromptFn,
+    undefined,
+    'no promptFn passed when using --call',
+  )
   t.strictSame(conf.positionals, ['/bin/sh', '-c', 'echo $PWD'])
 })
 
 t.test('command with --call and explicit --package', async t => {
   const result = { status: 0, signal: null } as unknown as ExecResult
   let resolveOptions: (VlxOptions & { package?: string }) | undefined
+  let resolvePromptFn: PromptFn | undefined = (() =>
+    Promise.resolve('')) as PromptFn
   const { command } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts', {
@@ -157,9 +167,10 @@ t.test('command with --call and explicit --package', async t => {
       resolve: async (
         _args: string[],
         options: VlxOptions & { package?: string },
-        _promptFn?: PromptFn,
+        pFn?: PromptFn,
       ) => {
         resolveOptions = options
+        resolvePromptFn = pFn
         return undefined
       },
     },
@@ -167,15 +178,21 @@ t.test('command with --call and explicit --package', async t => {
   unload()
   const conf = {
     positionals: [] as string[],
-    options: { package: 'cowsay' },
+    options: {},
     get: (key: string) => {
       if (key === 'call') return 'cowsay hello'
+      if (key === 'package') return 'cowsay'
       if (key === 'script-shell') return '/bin/sh'
       return undefined
     },
   } as unknown as LoadedConfig
   t.equal(await command(conf), result)
   t.equal(resolveOptions?.package, 'cowsay')
+  t.equal(
+    resolvePromptFn,
+    undefined,
+    'no promptFn passed when using --call',
+  )
   t.strictSame(conf.positionals, ['/bin/sh', '-c', 'cowsay hello'])
 })
 
