@@ -40,6 +40,7 @@ import { peer } from './pseudo/peer.ts'
 import { prerelease } from './pseudo/prerelease.ts'
 import { published } from './pseudo/published.ts'
 import { privateParser } from './pseudo/private.ts'
+import { registry } from './pseudo/registry.ts'
 import { prod } from './pseudo/prod.ts'
 import { root } from './pseudo/root.ts'
 import { scanned } from './pseudo/scanned.ts'
@@ -332,6 +333,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     published,
     private: privateParser,
     prod,
+    registry,
     project,
     root,
     scanned,
