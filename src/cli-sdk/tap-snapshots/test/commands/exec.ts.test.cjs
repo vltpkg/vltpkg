@@ -14,7 +14,7 @@ Is this ok? (y)
 
 exports[`test/commands/exec.ts > TAP > usage > usage 1`] = `
 Usage:
-  vlt exec [--package=<pkg>] [command...]
+  vlt exec [--package=<pkg>] [--call=<cmd>] [command...]
 
 Run a command defined by a package, installing it if necessary.
 
@@ -62,12 +62,26 @@ installs it performs is done in vlt's XDG data directory.
 
     ​vlt exec eslint@9.24 src/file.js
 
+    Install create-react-app and run an arbitrary command with its bins in PATH
+
+    ​vlt exec create-react-app --call="echo $PWD"
+
+    Run an arbitrary command in the context of each workspace
+
+    ​vlt exec --call="echo $PWD" --scope=":workspace"
+
   Options
 
     package
       Explicitly set the package to search for bins.
 
       ​--package=<specifier>
+
+    call
+      Run an arbitrary command string after installing any specified package and
+      adding its bins to PATH.
+
+      ​--call=<cmd>
 
     allow-scripts
       Filter which packages are allowed to run lifecycle scripts using DSS query
