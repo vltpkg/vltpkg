@@ -177,9 +177,9 @@ export const command: CommandFn<ExecResult> = async conf => {
       env.SHELL ??
       /* c8 ignore next */
       (platform === 'win32' ? 'cmd.exe' : '/bin/sh')
-    // Use '/c' for cmd.exe on Windows, '-c' for POSIX shells
+    // cmd.exe uses '/c', all other shells use '-c'
     /* c8 ignore next */
-    const shellFlag = platform === 'win32' ? '/c' : '-c'
+    const shellFlag = shell === 'cmd.exe' ? '/c' : '-c'
     // Replace positionals with [shell, shellFlag, callOption]
     conf.positionals.splice(
       0,
