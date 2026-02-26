@@ -196,6 +196,39 @@ t.test('command with --call and explicit --package', async t => {
   t.strictSame(conf.positionals, ['/bin/sh', '-c', 'cowsay hello'])
 })
 
+t.test('command with --call falls back to /bin/sh when no SHELL env', async t => {
+  const result = {
+    status: 0,
+    signal: null,
+  } as unknown as ExecResult
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/exec.ts')
+  >('../../src/commands/exec.ts', {
+    '../../src/exec-command.ts': {
+      views: {},
+      ExecCommand: class {
+        async run() {
+          return result
+        }
+      },
+    },
+    '@vltpkg/vlx': {
+      resolve: async () => undefined,
+    },
+    'node:process': t.createMock(await import('node:process'), {
+      env: { ...process.env, SHELL: undefined },
+    }),
+  })
+  unload()
+  const conf = {
+    positionals: [] as string[],
+    options: {},
+    get: (key: string) => (key === 'call' ? 'echo hi' : undefined),
+  } as unknown as LoadedConfig
+  t.equal(await command(conf), result)
+  t.strictSame(conf.positionals, ['/bin/sh', '-c', 'echo hi'])
+})
+
 t.test(
   'command with --call uses script-shell if configured',
   async t => {

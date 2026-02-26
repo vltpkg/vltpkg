@@ -174,8 +174,8 @@ export const command: CommandFn<ExecResult> = async conf => {
     // Determine the shell to use for the --call command
     const shell =
       conf.get('script-shell') ??
-      /* c8 ignore next */
       env.SHELL ??
+      /* c8 ignore next */
       (platform === 'win32' ? 'cmd.exe' : '/bin/sh')
     // Use '/c' for cmd.exe on Windows, '-c' for POSIX shells
     /* c8 ignore next */
