@@ -1,0 +1,137 @@
+---
+title: vlt repo
+sidebar:
+  label: repo
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt repo [<spec>] [--target=<query>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Open repository page for a package in a web browser.
+
+## How It Works
+
+The `vlt repo` command locates and opens the source repository for any
+package in your dependency graph. It follows the following resolution
+strategy to find the best repository URL:
+
+1. **Repository field (string)** – Uses the `repository` property
+   directly if it's a string URL
+2. **Repository field (object with url)** – Uses `repository.url` if
+   available
+3. **Hosted Git Info** – For known git hosts (GitHub, GitLab,
+   Bitbucket, etc.), generates the canonical repository browse URL
+4. **Raw URL fallback** – If hosted-git-info can't parse the URL, uses
+   the raw repository URL
+5. **Homepage fallback** – Falls back to the `homepage` field if no
+   repository is found
+6. **Fallback** – If no repository or homepage info is found, falls
+   back to the [vlt.io](https://vlt.io) package page
+
+This means you always get taken to the most relevant source
+repository.
+
+## Basic Usage
+
+### Open repo for current project
+
+When run without arguments, `vlt repo` reads your local `package.json`
+and opens the repository for your current project:
+
+<Code code="$ vlt repo" title="Terminal" lang="bash" />
+
+This is particularly useful when working on a project and you want to
+quickly access the source repository.
+
+### Open repo for any package
+
+Provide a package spec to open the repository for any package, whether
+it's installed in your project or not:
+
+<Code
+  code={`# Open repo for a specific package
+$ vlt repo express
+
+# Open repo for a specific version
+
+$ vlt repo typescript@5.0.0
+
+# Open repo for a scoped package
+
+$ vlt repo @vltpkg/graph`} title="Terminal" lang="bash" />
+
+The command fetches the package manifest from the registry and
+determines the best repository URL to open.
+
+### Query packages using --target
+
+Use the `--target` option with DSS query syntax to find repositories
+for packages in your dependency graph:
+
+<Code
+  code={`# Open repo for a specific package in your graph
+$ vlt repo --target="#lodash"
+
+# List repository URLs for all direct dependencies
+
+$ vlt repo --target=":root > \*"
+
+# Find repos for all packages from a specific scope
+
+$ vlt repo --target="[name^=@types]"`} title="Terminal" lang="bash" />
+
+Note: When the query matches multiple packages, repository URLs are
+listed instead of being opened automatically.
+
+## Use Cases
+
+### Exploring Source Code
+
+Quickly navigate to the source code of a dependency:
+
+<Code
+  code={`# Browse source for a package
+$ vlt repo some-package
+
+# Browse source for packages in your graph
+
+$ vlt repo --target="#some-package"`} title="Terminal" lang="bash" />
+
+### Checking for Updates
+
+Before updating a dependency, review recent commits and changelog:
+
+<Code
+  code={`# Check the repo for a dependency
+$ vlt repo --target="#outdated-dep"
+
+# Check repos for all direct dependencies
+
+$ vlt repo --target=":root > \*"`} title="Terminal" lang="bash" />
+
+## Options
+
+### `--target=<query>`
+
+Filter packages using DSS query syntax. When a single package matches,
+its repository opens in your browser. When multiple packages match,
+their URLs are listed.
+
+<Code
+  code={`# Open repo for a single package
+$ vlt repo --target="#express"
+
+# List repos for all direct dependencies
+
+$ vlt repo --target=":root > \*"
+
+# List repos for dev dependencies
+
+$ vlt repo --target=":type(dev)"`} title="Terminal" lang="bash" />

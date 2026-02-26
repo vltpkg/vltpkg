@@ -211,6 +211,13 @@ const allCommands = [
     defaultOrder: 3,
   },
   {
+    name: 'repo',
+    aliases: [],
+    args: '[<spec>]',
+    desc: 'Open the repository page for a package',
+    showByDefault: false,
+  },
+  {
     name: 'run',
     aliases: ['r'],
     args: '<script>',

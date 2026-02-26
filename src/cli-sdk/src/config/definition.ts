@@ -40,6 +40,7 @@ const canonicalCommands = {
   pkg: 'pkg',
   publish: 'publish',
   query: 'query',
+  repo: 'repo',
   'run-exec': 'run-exec',
   run: 'run',
   token: 'token',
