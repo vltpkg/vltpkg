@@ -1,4 +1,5 @@
 import { unload } from '@vltpkg/vlt-json'
+import { ansiToAnsi } from 'ansi-to-pre'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { command, usage } from '../../src/commands/run-exec.ts'
@@ -119,7 +120,7 @@ t.test('run script across several workspaces', async t => {
       cwd: resolve(dir, 'src/a'),
       status: 0,
       signal: null,
-      stdout: '',
+      stdout: 'ok',
       stderr: '',
     },
     'src/b': {
@@ -128,14 +129,16 @@ t.test('run script across several workspaces', async t => {
       cwd: resolve(dir, 'src/b'),
       status: 0,
       signal: null,
-      stdout: '',
+      stdout: 'pj script ok',
       stderr: '',
     },
   })
   t.strictSame(
     new Set(logs()),
     new Set([
+      [ansiToAnsi('ok')],
       ['src/a', 'ok'],
+      [ansiToAnsi('pj script ok')],
       ['src/b', 'ok'],
     ]),
   )

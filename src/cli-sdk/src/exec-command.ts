@@ -250,10 +250,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     const results: Record<string, RunResult> = {}
     for (const [path, result] of resultMap) {
-      if (result.status === 0 && result.signal === null) {
-        result.stdout = ''
-        result.stderr = ''
-      }
       results[path] = result
     }
     return results
@@ -264,6 +260,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     if (this.view !== 'human') return
 
     if (result.status === 0 && result.signal === null) {
+      /* c8 ignore start */
+      if (result.stderr) stderr(ansiToAnsi(result.stderr))
+      if (result.stdout) stdout(ansiToAnsi(result.stdout))
+      /* c8 ignore stop */
       stdout(path, 'ok')
     } else {
       stdout(
