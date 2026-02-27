@@ -786,3 +786,197 @@ export const getPathBasedGraph = (): GraphLike => {
 
   return graph
 }
+
+// Returns a graph with git dependencies for testing :hostname() selector
+//
+// git-project (#a:prod[github], #b:prod[gitlab], #c:prod[full-url-git])
+// +-- a (github:user/repo)
+// +-- b (gitlab:user/repo)
+// +-- c (git+ssh://git@custom-git.example.com/repo.git)
+//
+export const getGitGraph = (): GraphLike => {
+  const graph = newGraph('git-project')
+  const addNode = newNode(graph)
+
+  const a = addNode('a')
+  a.id = joinDepIDTuple(['git', 'github:user/repo', 'semver:^1.0.0'])
+  graph.nodes.set(a.id, a)
+
+  const b = addNode('b')
+  b.id = joinDepIDTuple(['git', 'gitlab:user/repo', 'semver:^1.0.0'])
+  graph.nodes.set(b.id, b)
+
+  const c = addNode('c')
+  c.id = joinDepIDTuple([
+    'git',
+    'git+ssh://git@custom-git.example.com/repo.git',
+    'semver:^1.0.0',
+  ])
+  graph.nodes.set(c.id, c)
+
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', 'github:user/repo', specOptions),
+    'prod',
+    a,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('b', 'gitlab:user/repo', specOptions),
+    'prod',
+    b,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse(
+      'c',
+      'git+ssh://git@custom-git.example.com/repo.git',
+      specOptions,
+    ),
+    'prod',
+    c,
+  )
+
+  return graph
+}
+
+// Returns a graph with a dep from an unknown registry name
+// (to test the fallback to options.registry)
+//
+// unknown-registry-project (#a:prod[unknownreg])
+// +-- a (from registry "unknownreg" that doesn't exist in registries map)
+//
+export const getUnknownRegistryGraph = (): GraphLike => {
+  const graph = newGraph('unknown-registry-project')
+  const addNode = newNode(graph)
+
+  const a = addNode('a')
+  a.id = joinDepIDTuple(['registry', 'unknownreg', 'a@1.0.0'])
+  graph.nodes.set(a.id, a)
+
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', '^1.0.0', specOptions),
+    'prod',
+    a,
+  )
+
+  return graph
+}
+
+// Returns a graph with a custom named git host (not in gitHostWebsites)
+// to test the fallback path that parses git-hosts template URLs
+//
+// custom-git-host-project (#a:prod[customhost])
+// +-- a (customhost:user/repo)
+//
+export const getCustomGitHostGraph = (): GraphLike => {
+  const graph = newGraph('custom-git-host-project')
+  const addNode = newNode(graph)
+
+  const a = addNode('a')
+  a.id = joinDepIDTuple([
+    'git',
+    'customhost:user/repo',
+    'semver:^1.0.0',
+  ])
+  // Override options to include custom git host
+  a.options = {
+    ...specOptions,
+    'git-hosts': {
+      customhost: 'git+ssh://git@myserver.example.com:$1/$2.git',
+    },
+  }
+  graph.nodes.set(a.id, a)
+
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', 'github:user/repo', specOptions),
+    'prod',
+    a,
+  )
+
+  return graph
+}
+
+// Returns a graph with a git dep whose remote is an
+// unparseable URL (to cover the catch branch)
+//
+// broken-git-project (#a:prod[broken-git])
+// +-- a (notahost:broken:url)
+//
+export const getBrokenGitGraph = (): GraphLike => {
+  const graph = newGraph('broken-git-project')
+  const addNode = newNode(graph)
+
+  const a = addNode('a')
+  a.id = joinDepIDTuple([
+    'git',
+    'notahost:broken:url',
+    'semver:^1.0.0',
+  ])
+  graph.nodes.set(a.id, a)
+
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', 'github:user/repo', specOptions),
+    'prod',
+    a,
+  )
+
+  return graph
+}
+
+// Returns a graph with an https:// git remote (plain URL, no named host)
+//
+// https-git-project (#a:prod[https-git])
+// +-- a (https://git.example.org/repo.git)
+//
+export const getHttpsGitGraph = (): GraphLike => {
+  const graph = newGraph('https-git-project')
+  const addNode = newNode(graph)
+
+  const a = addNode('a')
+  a.id = joinDepIDTuple([
+    'git',
+    'https://git.example.org/repo.git',
+    'semver:^1.0.0',
+  ])
+  graph.nodes.set(a.id, a)
+
+  newEdge(
+    graph.mainImporter,
+    Spec.parse(
+      'a',
+      'git+https://git.example.org/repo.git',
+      specOptions,
+    ),
+    'prod',
+    a,
+  )
+
+  return graph
+}
+
+// Returns a graph with a remote (URL) dependency
+//
+// remote-project (#a:prod[remote])
+// +-- a (https://cdn.example.com/pkg.tgz)
+//
+export const getRemoteGraph = (): GraphLike => {
+  const graph = newGraph('remote-project')
+  const addNode = newNode(graph)
+
+  const a = addNode('a')
+  a.id = joinDepIDTuple(['remote', 'https://cdn.example.com/pkg.tgz'])
+  graph.nodes.set(a.id, a)
+
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', 'https://cdn.example.com/pkg.tgz', specOptions),
+    'prod',
+    a,
+  )
+
+  return graph
+}
