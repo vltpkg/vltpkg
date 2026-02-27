@@ -1,0 +1,426 @@
+---
+title: Migrating from yarn to vlt
+sidebar:
+  label: From yarn
+  order: 2
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+This guide covers migration from both **yarn v1 (classic)** and **yarn
+v2+ (berry)**. Key differences are called out where they apply.
+
+## Quick Start
+
+<Code
+  code={`# Install vlt globally
+$ npm install -g vlt
+
+# In your existing project, run:
+$ vlt install
+$ vlt build`}
+  title="Terminal"
+  lang="bash"
+/>
+
+vlt reads your existing `package.json` files and resolves
+dependencies. The `yarn.lock` file is not migrated — vlt performs a
+fresh resolution and creates `vlt-lock.json`.
+
+---
+
+## Command Mapping
+
+| yarn                             | vlt                             | Notes                                                              |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------ |
+| `yarn` / `yarn install`          | `vlt install`                   | Does **not** run lifecycle scripts                                 |
+| `yarn add <pkg>`                 | `vlt install <pkg>`             |                                                                    |
+| `yarn add -D <pkg>`              | `vlt install -D <pkg>`          |                                                                    |
+| `yarn remove <pkg>`              | `vlt uninstall <pkg>`           |                                                                    |
+| `yarn run <script>`              | `vlt run <script>`              |                                                                    |
+| `yarn <script>`                  | `vlt run <script>`              | See [fallback-command](/cli/configuring#--fallback-commandcommand) |
+| `yarn dlx <pkg>` / `npx <pkg>`   | `vlx <pkg>`                     | Run remote packages                                                |
+| `yarn exec <cmd>`                | `vlt exec <cmd>`                |                                                                    |
+| `yarn init`                      | `vlt init`                      |                                                                    |
+| `yarn pack`                      | `vlt pack`                      |                                                                    |
+| `yarn npm publish`               | `vlt publish`                   |                                                                    |
+| `yarn npm login`                 | `vlt login`                     |                                                                    |
+| `yarn npm whoami`                | `vlt whoami`                    |                                                                    |
+| `yarn workspaces list`           | `vlt list`                      |                                                                    |
+| `yarn why <pkg>`                 | `vlt query '#<pkg>'`            | DSS query; see [Selectors](/cli/selectors)                         |
+| `yarn install --frozen-lockfile` | `vlt install --frozen-lockfile` |                                                                    |
+| `yarn install --immutable`       | `vlt install --expect-lockfile` |                                                                    |
+| `yarn config set <key> <val>`    | `vlt config set <key>=<val>`    |                                                                    |
+| `yarn up <pkg>`                  | `vlt install <pkg>`             | Re-resolves to latest matching                                     |
+
+### Shorthand Script Execution
+
+Yarn lets you run scripts without `run` (e.g., `yarn build`). vlt
+supports this via the `fallback-command` config:
+
+<Code
+  code="$ vlt config set fallback-command=run-exec"
+  title="Terminal"
+  lang="bash"
+/>
+
+After setting this, `vlt build` will first check for a vlt command
+named `build`, and if none matches, look for a `package.json` script.
+
+---
+
+## Configuration
+
+### .yarnrc.yml / .yarnrc → vlt.json
+
+yarn v1 uses `.yarnrc` and `.npmrc`. yarn v2+ uses `.yarnrc.yml`. vlt
+uses `vlt.json`.
+
+**yarn v2+ example:**
+
+<Code
+  code={`# .yarnrc.yml (yarn berry)
+npmRegistryServer: "https://registry.internal.company.com/"
+npmScopes:
+  mycompany:
+    npmRegistryServer: "https://npm.mycompany.com/"
+    npmAuthToken: "abc123"`}
+  title=".yarnrc.yml"
+  lang="yaml"
+/>
+
+**vlt equivalent:**
+
+<Code
+  code={JSON.stringify(
+    {
+      registry: 'https://registry.internal.company.com/',
+      'scope-registries': {
+        '@mycompany': 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Auth tokens are stored separately in vlt's keychain, not in config
+files. See [Authentication](#authentication) below.
+
+**yarn v1 example:**
+
+<Code
+  code={`# .npmrc (yarn classic)
+registry=https://registry.internal.company.com/
+@mycompany:registry=https://npm.mycompany.com/`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+Same `vlt.json` as above.
+
+---
+
+## Registry Configuration
+
+### Scoped Registries
+
+Both yarn and vlt support scope-to-registry mapping:
+
+<Code
+  code={JSON.stringify(
+    {
+      'scope-registries': {
+        '@mycompany': 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Named Registry Aliases
+
+vlt also supports [named registry aliases](/cli/registries), which are
+more explicit than scoped registries. Dependencies reference a named
+registry directly, removing ambiguity:
+
+<Code
+  code={JSON.stringify(
+    {
+      registries: {
+        internal: 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+<Code
+  code={JSON.stringify(
+    {
+      dependencies: {
+        '@mycompany/utils': 'internal:@mycompany/utils@^2.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+---
+
+## Authentication
+
+yarn v1 stores tokens in `.npmrc`. yarn v2+ stores them in
+`.yarnrc.yml`. Both approaches risk accidental commits of secrets.
+
+vlt stores auth tokens in an XDG-compliant keychain file, separate
+from project configuration.
+
+<Code
+  code={`# Log in to default registry
+$ vlt login
+
+# Log in to a custom registry
+
+$ vlt login --registry=https://npm.mycompany.com/`} title="Terminal"
+lang="bash" />
+
+### CI Environments
+
+<Code
+  code={`# yarn v2+
+YARN_NPM_AUTH_TOKEN=abc123 yarn install
+
+# vlt
+
+VLT_TOKEN=abc123 vlt install`} title="Terminal" lang="bash" />
+
+See [Authentication](/cli/auth) for full details.
+
+---
+
+## Lockfile
+
+yarn v1 uses `yarn.lock` (custom format). yarn v2+ also uses
+`yarn.lock` (YAML-based). vlt uses `vlt-lock.json`.
+
+When you first run `vlt install`, vlt creates `vlt-lock.json` from a
+fresh resolution. Your `yarn.lock` is not read.
+
+**What to do:**
+
+1. Run `vlt install` to generate `vlt-lock.json`
+2. Commit `vlt-lock.json`
+3. Optionally remove `yarn.lock` once you've fully switched
+
+---
+
+## Install Script Protection
+
+This is a major difference from yarn.
+
+**yarn v1** runs all lifecycle scripts automatically. **yarn v2+**
+runs scripts for direct dependencies but blocks transitive dependency
+scripts by default (you can allowlist via `.yarnrc.yml`).
+
+**vlt** goes further: `vlt install` runs **no scripts at all** by
+default. The build step is completely separate:
+
+<Code
+  code={`# Phase 1: Install (no code executes)
+$ vlt install
+
+# Phase 2: Build (runs scripts, skipping known malware)
+
+$ vlt build`} title="Terminal" lang="bash" />
+
+By default, `vlt build` uses the target
+`:scripts:not(:built):not(:malware)` — it only runs scripts for
+packages that need building and aren't flagged as malware by
+[Socket](https://socket.dev/).
+
+You can target scripts precisely:
+
+<Code
+  code={`# Only allow specific trusted packages
+$ vlt build --target="#esbuild, #node-gyp"
+
+# Persist your choice
+
+$ vlt config set "command.build.target=#esbuild, #node-gyp"`}
+title="Terminal" lang="bash" />
+
+See [`vlt build`](/cli/commands/build) for full details.
+
+---
+
+## Workspaces
+
+### yarn v1
+
+yarn v1 defines workspaces in the root `package.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      private: true,
+      workspaces: ['packages/*'],
+    },
+    null,
+    2,
+  )}
+  title="package.json (yarn v1)"
+  lang="json"
+/>
+
+### yarn v2+
+
+yarn v2+ is similar but also supports the `workspaces` field in
+`.yarnrc.yml` for additional filtering.
+
+### vlt
+
+vlt defines workspaces in `vlt.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: ['packages/*'],
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+vlt also supports **named workspace groups** for targeted operations:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: {
+        apps: 'apps/*',
+        libs: ['packages/*', 'shared/*'],
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+<Code
+  code={`# Run tests only in the libs group
+$ vlt run test -g libs
+
+# Run build across all workspaces
+
+$ vlt run build --recursive`} title="Terminal" lang="bash" />
+
+### Workspace Commands
+
+| yarn                            | vlt                                               |
+| ------------------------------- | ------------------------------------------------- |
+| `yarn workspace <name> <cmd>`   | `cd <path> && vlt <cmd>` or `vlt <cmd> -w <path>` |
+| `yarn workspaces foreach <cmd>` | `vlt <cmd> --recursive`                           |
+
+See [Workspaces](/cli/workspaces) for full details.
+
+---
+
+## Resolutions → Graph Modifiers
+
+yarn uses `resolutions` in `package.json` to force dependency
+versions. vlt uses [Graph Modifiers](/cli/graph-modifiers) in
+`vlt.json`.
+
+<Code
+  code={JSON.stringify(
+    {
+      resolutions: {
+        lodash: '^4.17.21',
+        'express/qs': '6.10.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json (yarn)"
+  lang="json"
+/>
+
+<Code
+  code={JSON.stringify(
+    {
+      modifiers: {
+        '#lodash': '^4.17.21',
+        ':root > #express > #qs': '=6.10.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Graph Modifiers use DSS selectors, which give you more precise control
+over which instances of a dependency are affected.
+
+---
+
+## Plug'n'Play (PnP)
+
+If you're using yarn v2+ with Plug'n'Play (no `node_modules`), the
+switch to vlt means going back to a `node_modules`-based layout. This
+is generally straightforward — vlt creates a standard `node_modules`
+directory.
+
+If your project relies on PnP-specific features (like `.pnp.cjs`
+loaders), you'll need to remove those references from your build
+tooling and runtime configuration.
+
+---
+
+## Features Not in vlt
+
+Some yarn-specific features don't have direct equivalents:
+
+- **Plug'n'Play / Zero-Installs** — vlt uses `node_modules`
+- **Constraints** — Use vlt's [DSS query system](/cli/selectors) for
+  dependency policy enforcement
+- **Patches** (`yarn patch`) — Not yet available in vlt
+- **Protocols** (`portal:`, `patch:`) — vlt supports `file:`,
+  `workspace:`, `git:`, and `registry:` specifiers
+
+---
+
+## Migration Checklist
+
+1. Install vlt: `npm install -g vlt`
+2. Create `vlt.json` with registry and workspace configuration
+3. Move scoped registry config from `.yarnrc.yml` / `.npmrc` to
+   `vlt.json`
+4. Move workspace definitions from `package.json` to `vlt.json`
+5. Move `resolutions` from `package.json` to `modifiers` in `vlt.json`
+6. If using PnP, remove `.pnp.cjs`, `.pnp.loader.mjs`, and related
+   `.yarnrc.yml` settings
+7. Run `vlt install` then `vlt build`
+8. Commit `vlt-lock.json`
+9. Update CI scripts: replace `yarn install --immutable` with
+   `vlt install --expect-lockfile && vlt build`
+10. Update CI auth: replace `YARN_NPM_AUTH_TOKEN` with `VLT_TOKEN`
+11. Update any `yarn dlx` usage to `vlx`

@@ -1,0 +1,491 @@
+---
+title: Migrating from pnpm to vlt
+sidebar:
+  label: From pnpm
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+## Quick Start
+
+<Code
+  code={`# Install vlt globally
+$ npm install -g vlt
+
+# In your existing project, run:
+$ vlt install
+$ vlt build`}
+  title="Terminal"
+  lang="bash"
+/>
+
+vlt reads your existing `package.json` files and resolves
+dependencies. The `pnpm-lock.yaml` file is not migrated — vlt performs
+a fresh resolution and creates `vlt-lock.json`.
+
+---
+
+## Command Mapping
+
+| pnpm                             | vlt                             | Notes                                                              |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------ |
+| `pnpm install`                   | `vlt install`                   | Does **not** run lifecycle scripts                                 |
+| `pnpm add <pkg>`                 | `vlt install <pkg>`             |                                                                    |
+| `pnpm add -D <pkg>`              | `vlt install -D <pkg>`          |                                                                    |
+| `pnpm remove <pkg>`              | `vlt uninstall <pkg>`           |                                                                    |
+| `pnpm run <script>`              | `vlt run <script>`              |                                                                    |
+| `pnpm <script>`                  | `vlt run <script>`              | See [fallback-command](/cli/configuring#--fallback-commandcommand) |
+| `pnpm dlx <pkg>`                 | `vlx <pkg>`                     | Run remote packages                                                |
+| `pnpm exec <cmd>`                | `vlt exec <cmd>`                |                                                                    |
+| `pnpm init`                      | `vlt init`                      |                                                                    |
+| `pnpm pack`                      | `vlt pack`                      |                                                                    |
+| `pnpm publish`                   | `vlt publish`                   |                                                                    |
+| `pnpm login`                     | `vlt login`                     |                                                                    |
+| `pnpm whoami`                    | `vlt whoami`                    |                                                                    |
+| `pnpm list`                      | `vlt list`                      |                                                                    |
+| `pnpm why <pkg>`                 | `vlt query '#<pkg>'`            | DSS query; see [Selectors](/cli/selectors)                         |
+| `pnpm install --frozen-lockfile` | `vlt install --frozen-lockfile` |                                                                    |
+| `pnpm audit`                     | `vlt query ':malware'`          | More powerful; see [Security](/cli/security)                       |
+| `pnpm config set <key> <val>`    | `vlt config set <key>=<val>`    |                                                                    |
+
+### Shorthand Script Execution
+
+pnpm lets you run scripts without `run` (e.g., `pnpm build`). vlt
+supports this via the `fallback-command` config:
+
+<Code
+  code="$ vlt config set fallback-command=run-exec"
+  title="Terminal"
+  lang="bash"
+/>
+
+After setting this, `vlt build` will first check for a vlt command
+named `build`, and if none matches, look for a `package.json` script.
+
+---
+
+## Configuration
+
+### .npmrc + pnpm-workspace.yaml → vlt.json
+
+pnpm reads registry config from `.npmrc` and workspace config from
+`pnpm-workspace.yaml`. vlt consolidates everything into `vlt.json`.
+
+**pnpm configuration:**
+
+<Code
+  code={`# .npmrc (pnpm)
+registry=https://registry.internal.company.com/
+@mycompany:registry=https://npm.mycompany.com/
+auto-install-peers=true`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+<Code
+  code={`# pnpm-workspace.yaml
+packages:
+  - "packages/*"
+  - "apps/*"`}
+  title="pnpm-workspace.yaml"
+  lang="yaml"
+/>
+
+**vlt equivalent (single file):**
+
+<Code
+  code={JSON.stringify(
+    {
+      registry: 'https://registry.internal.company.com/',
+      'scope-registries': {
+        '@mycompany': 'https://npm.mycompany.com/',
+      },
+      workspaces: ['packages/*', 'apps/*'],
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+---
+
+## Registry Configuration
+
+### Scoped Registries
+
+pnpm's scoped registries (from `.npmrc`) map directly to vlt's
+`scope-registries`:
+
+<Code
+  code={JSON.stringify(
+    {
+      'scope-registries': {
+        '@mycompany': 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Named Registry Aliases
+
+vlt also supports [named registry aliases](/cli/registries) which
+remove the ambiguity of scope-based mapping:
+
+<Code
+  code={JSON.stringify(
+    {
+      registries: {
+        internal: 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Then reference packages explicitly in `package.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      dependencies: {
+        '@mycompany/utils': 'internal:@mycompany/utils@^2.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+---
+
+## Authentication
+
+pnpm stores auth tokens in `.npmrc`, same as npm. vlt stores them in
+an XDG-compliant keychain file, keeping secrets out of project config
+files.
+
+<Code
+  code={`# Log in to default registry
+$ vlt login
+
+# Log in to custom registry
+
+$ vlt login --registry=https://npm.mycompany.com/`} title="Terminal"
+lang="bash" />
+
+### CI Environments
+
+<Code
+  code={`# pnpm
+NPM_TOKEN=abc123 pnpm install
+
+# vlt
+
+VLT_TOKEN=abc123 vlt install`} title="Terminal" lang="bash" />
+
+See [Authentication](/cli/auth) for full details.
+
+---
+
+## Lockfile
+
+pnpm uses `pnpm-lock.yaml`. vlt uses `vlt-lock.json`.
+
+When you first run `vlt install`, vlt creates `vlt-lock.json` from a
+fresh resolution of your `package.json` files. The `pnpm-lock.yaml` is
+not read.
+
+**What to do:**
+
+1. Run `vlt install` to generate `vlt-lock.json`
+2. Commit `vlt-lock.json`
+3. Optionally remove `pnpm-lock.yaml` once you've fully switched
+
+---
+
+## Install Script Protection
+
+pnpm runs lifecycle scripts by default during install (same as npm).
+pnpm v9+ added `onlyBuiltDependencies` in `package.json` as an
+allowlist, but scripts still run by default for listed packages.
+
+**vlt** takes a different approach: `vlt install` runs **no scripts at
+all** by default. Building is a separate, explicit step:
+
+<Code
+  code={`# Phase 1: Install (no code executes)
+$ vlt install
+
+# Phase 2: Build (runs scripts, skipping known malware)
+
+$ vlt build`} title="Terminal" lang="bash" />
+
+By default, `vlt build` uses the target
+`:scripts:not(:built):not(:malware)` — it automatically skips packages
+flagged as malware by [Socket](https://socket.dev/).
+
+### pnpm onlyBuiltDependencies vs vlt build --target
+
+<Code
+  code={JSON.stringify(
+    {
+      pnpm: {
+        onlyBuiltDependencies: ['esbuild', 'node-gyp'],
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json (pnpm)"
+  lang="json"
+/>
+
+<Code
+  code="$ vlt build --target='#esbuild, #node-gyp'"
+  title="Terminal (vlt)"
+  lang="bash"
+/>
+
+You can persist the target:
+
+<Code
+  code='$ vlt config set "command.build.target=#esbuild, #node-gyp"'
+  title="Terminal"
+  lang="bash"
+/>
+
+See [`vlt build`](/cli/commands/build) for full details.
+
+---
+
+## Workspaces
+
+### pnpm
+
+pnpm defines workspaces in `pnpm-workspace.yaml`:
+
+<Code
+  code={`packages:
+  - "packages/*"
+  - "apps/*"`}
+  title="pnpm-workspace.yaml"
+  lang="yaml"
+/>
+
+### vlt
+
+vlt defines workspaces in `vlt.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: ['packages/*', 'apps/*'],
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+vlt also supports **named workspace groups**:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: {
+        apps: 'apps/*',
+        libs: ['packages/*', 'shared/*'],
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Workspace Commands
+
+| pnpm                               | vlt                                               |
+| ---------------------------------- | ------------------------------------------------- |
+| `pnpm --filter <name> <cmd>`       | `vlt <cmd> -w <path>` or `cd <path> && vlt <cmd>` |
+| `pnpm --filter ./packages/* <cmd>` | `vlt <cmd> -w packages/*`                         |
+| `pnpm -r <cmd>`                    | `vlt <cmd> --recursive`                           |
+| `pnpm -r run test`                 | `vlt run test --recursive`                        |
+
+**Note:** vlt's `--workspace` (`-w`) flag takes paths or glob
+patterns, not package names.
+
+<Code
+  code={`# Run tests in a specific workspace
+$ vlt run test -w packages/core
+
+# Run build across a workspace group
+
+$ vlt run build -g libs`} title="Terminal" lang="bash" />
+
+See [Workspaces](/cli/workspaces) for full details.
+
+---
+
+## Catalogs
+
+If you use pnpm's catalog feature (`pnpm-workspace.yaml`), vlt has
+direct support for [catalogs](/cli/catalogs) with compatible syntax.
+
+**pnpm:**
+
+<Code
+  code={`# pnpm-workspace.yaml
+packages:
+  - "packages/*"
+
+catalog: typescript: "^5.0.0" eslint: "^8.0.0"
+
+catalogs: testing: vitest: "^1.0.0"`} title="pnpm-workspace.yaml"
+lang="yaml" />
+
+**vlt:**
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: ['packages/*'],
+      catalog: {
+        typescript: '^5.0.0',
+        eslint: '^8.0.0',
+      },
+      catalogs: {
+        testing: {
+          vitest: '^1.0.0',
+        },
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+The `catalog:` protocol in `package.json` works the same way:
+
+<Code
+  code={JSON.stringify(
+    {
+      devDependencies: {
+        typescript: 'catalog:',
+        vitest: 'catalog:testing',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json"
+  lang="json"
+/>
+
+See [Catalogs](/cli/catalogs) for full details.
+
+---
+
+## Overrides → Graph Modifiers
+
+pnpm uses `pnpm.overrides` in `package.json`. vlt uses
+[Graph Modifiers](/cli/graph-modifiers) in `vlt.json`.
+
+<Code
+  code={JSON.stringify(
+    {
+      pnpm: {
+        overrides: {
+          lodash: '^4.17.21',
+          'express>qs': '6.10.0',
+        },
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json (pnpm)"
+  lang="json"
+/>
+
+<Code
+  code={JSON.stringify(
+    {
+      modifiers: {
+        '#lodash': '^4.17.21',
+        ':root > #express > #qs': '=6.10.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Graph Modifiers use DSS selectors, giving you more precise control
+(e.g., target by path, workspace, or semver range).
+
+---
+
+## node_modules Layout
+
+pnpm uses a content-addressable store with symlinks to create a strict
+`node_modules` layout where packages can only access their declared
+dependencies.
+
+vlt also creates a `node_modules` directory but uses a different
+internal layout (under `node_modules/.vlt/`). The result is similar in
+that packages resolve correctly at runtime — your application code
+doesn't need to change.
+
+---
+
+## Features Not in vlt
+
+Some pnpm-specific features don't have direct equivalents:
+
+- **Content-addressable store** — vlt uses its own on-disk
+  [cache](/cli/configuring#--cachepath) but doesn't hard-link from a
+  global store
+- **Side-effects cache** — Not available in vlt
+- **`pnpm patch`** — Not yet available in vlt
+- **`pnpm deploy`** — Not available; use standard deployment tooling
+- **`pnpm.peerDependencyRules`** — vlt handles peer dependencies
+  automatically with [context isolation](/cli/peer-dependencies)
+
+---
+
+## Migration Checklist
+
+1. Install vlt: `npm install -g vlt`
+2. Create `vlt.json` combining your `.npmrc` registry config and
+   `pnpm-workspace.yaml` workspace definitions
+3. Move scoped registry config from `.npmrc` to `vlt.json`
+4. Move catalogs from `pnpm-workspace.yaml` to `vlt.json` (`catalog`
+   and `catalogs` fields)
+5. Move `pnpm.overrides` from `package.json` to `modifiers` in
+   `vlt.json`
+6. Run `vlt install` then `vlt build`
+7. Commit `vlt-lock.json`
+8. Update CI scripts: replace `pnpm install --frozen-lockfile` with
+   `vlt install --frozen-lockfile && vlt build`
+9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
+10. Update any `pnpm dlx` usage to `vlx`
+11. Remove `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings

@@ -1,0 +1,414 @@
+---
+title: Migrating from npm to vlt
+sidebar:
+  label: From npm
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+## Quick Start
+
+<Code
+  code={`# Install vlt globally
+$ npm install -g vlt
+
+# In your existing project, run:
+$ vlt install
+$ vlt build`}
+  title="Terminal"
+  lang="bash"
+/>
+
+That's it for basic usage. vlt reads your existing `package.json` and
+resolves dependencies. Below are the details on what's different and
+how to handle specific scenarios.
+
+---
+
+## Command Mapping
+
+| npm                            | vlt                                     | Notes                                        |
+| ------------------------------ | --------------------------------------- | -------------------------------------------- |
+| `npm install`                  | `vlt install`                           | Does **not** run lifecycle scripts           |
+| `npm install <pkg>`            | `vlt install <pkg>`                     | Same behavior                                |
+| `npm install -D <pkg>`         | `vlt install -D <pkg>`                  | Same flags                                   |
+| `npm uninstall <pkg>`          | `vlt uninstall <pkg>`                   | Aliases: `rm`, `u`                           |
+| `npm run <script>`             | `vlt run <script>`                      | Aliases: `r`, `run-script`                   |
+| `npm test`                     | `vlt run test`                          | No `vlt test` shorthand                      |
+| `npm start`                    | `vlt run start`                         | No `vlt start` shorthand                     |
+| `npx <pkg>`                    | `vlx <pkg>`                             | Run remote packages                          |
+| `npm exec <cmd>`               | `vlt exec <cmd>`                        | Local bins on PATH                           |
+| `npm init`                     | `vlt init`                              | Creates `package.json`                       |
+| `npm pack`                     | `vlt pack`                              |                                              |
+| `npm publish`                  | `vlt publish`                           |                                              |
+| `npm login`                    | `vlt login`                             |                                              |
+| `npm whoami`                   | `vlt whoami`                            |                                              |
+| `npm ls`                       | `vlt list`                              | Alias: `ls`                                  |
+| `npm query`                    | `vlt query`                             | Uses DSS, not CSS selectors                  |
+| `npm ci`                       | `vlt install --expect-lockfile`         | Strict lockfile mode                         |
+| `npm install --ignore-scripts` | `vlt install`                           | Default behavior                             |
+| `npm audit`                    | `vlt query ':malware'`                  | More powerful; see [Security](/cli/security) |
+| `npm config set <key>=<val>`   | `vlt config set <key>=<val>`            | Writes to `vlt.json`                         |
+| `npm overrides`                | [Graph Modifiers](/cli/graph-modifiers) | DSS-based, more precise                      |
+
+---
+
+## Configuration
+
+### .npmrc → vlt.json
+
+npm reads configuration from `.npmrc` files (INI format, multiple
+locations). vlt uses a single `vlt.json` file in your project root,
+plus an optional user-level `vlt.json` in the XDG config directory.
+
+<Code
+  code={`# .npmrc (npm)
+registry=https://registry.internal.company.com/
+@mycompany:registry=https://npm.mycompany.com/
+save-exact=true`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+<Code
+  code={JSON.stringify(
+    {
+      registry: 'https://registry.internal.company.com/',
+      'scope-registries': {
+        '@mycompany': 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+To create this file interactively:
+
+<Code
+  code={`$ vlt config set registry=https://registry.internal.company.com/
+$ vlt config set scope-registries=@mycompany=https://npm.mycompany.com/`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### User vs Project Config
+
+| npm                          | vlt                           |
+| ---------------------------- | ----------------------------- |
+| `~/.npmrc` (user)            | XDG config dir `vlt/vlt.json` |
+| `.npmrc` (project)           | `vlt.json` (project root)     |
+| `$PREFIX/etc/npmrc` (global) | No global config file         |
+
+View config locations:
+
+<Code
+  code={`$ vlt config location --config=user
+$ vlt config location --config=project`}
+  title="Terminal"
+  lang="bash"
+/>
+
+---
+
+## Registry Configuration
+
+vlt handles registries similarly to npm, with some additions.
+
+### Scoped Registries
+
+npm's scoped registries map directly:
+
+<Code
+  code={`# npm (.npmrc)
+@mycompany:registry=https://npm.mycompany.com/`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+<Code
+  code={JSON.stringify(
+    {
+      'scope-registries': {
+        '@mycompany': 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Named Registry Aliases
+
+vlt also supports [named registry aliases](/cli/registries), which are
+more explicit than scope-based mapping. This is a vlt-specific
+feature:
+
+<Code
+  code={JSON.stringify(
+    {
+      registries: {
+        internal: 'https://npm.mycompany.com/',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Then reference packages explicitly:
+
+<Code
+  code="$ vlt install internal:@mycompany/utils@^2.0"
+  title="Terminal"
+  lang="bash"
+/>
+
+---
+
+## Authentication
+
+### Tokens
+
+npm stores auth tokens in `.npmrc`. vlt stores them in an
+XDG-compliant keychain file, which is less likely to be accidentally
+committed to source control.
+
+<Code
+  code={`# npm: tokens live in .npmrc (risky if committed)
+//registry.npmjs.org/:_authToken=npm_abc123
+
+# vlt: log in interactively
+
+$ vlt login
+
+# vlt: or for custom registries
+
+$ vlt login --registry=https://npm.mycompany.com/`} title="Terminal"
+lang="bash" />
+
+### CI Environments
+
+<Code
+  code={`# npm
+NPM_TOKEN=abc123 npm install
+
+# vlt
+
+VLT_TOKEN=abc123 vlt install`} title="Terminal" lang="bash" />
+
+For non-default registries, replace non-alphanumeric characters in the
+URL with `_`:
+
+<Code
+  code="VLT_TOKEN_https_npm_mycompany_com=abc123 vlt install"
+  title="Terminal"
+  lang="bash"
+/>
+
+See [Authentication](/cli/auth) for full details.
+
+---
+
+## Lockfile
+
+npm uses `package-lock.json`. vlt uses `vlt-lock.json`.
+
+When you first run `vlt install`, vlt resolves from your
+`package.json` and creates `vlt-lock.json`. Your existing
+`package-lock.json` is not read or migrated — vlt performs a fresh
+resolution.
+
+**What to do:**
+
+1. Run `vlt install` to generate `vlt-lock.json`
+2. Commit `vlt-lock.json` to source control
+3. Optionally remove `package-lock.json` (or keep it if you're running
+   both tools during a transition period)
+
+### CI / Frozen Lockfile
+
+<Code
+  code={`# npm
+$ npm ci
+
+# vlt
+
+$ vlt install --expect-lockfile`} title="Terminal" lang="bash" />
+
+---
+
+## Install Script Protection
+
+This is the biggest behavioral difference from npm.
+
+**npm** runs all lifecycle scripts (`preinstall`, `install`,
+`postinstall`) automatically during `npm install`. This is a known
+supply chain attack vector.
+
+**vlt** separates installation into two phases:
+
+1. **`vlt install`** — Downloads and extracts packages. No scripts
+   run.
+2. **`vlt build`** — Runs lifecycle scripts selectively.
+
+<Code
+  code={`# Install packages (safe — no code executes)
+$ vlt install
+
+# Run build scripts, automatically excluding packages flagged as malware
+
+$ vlt build`} title="Terminal" lang="bash" />
+
+By default, `vlt build` uses the target
+`:scripts:not(:built):not(:malware)`, which skips packages with known
+malware alerts.
+
+You can be more selective:
+
+<Code
+  code={`# Only allow specific packages to run scripts
+$ vlt build --target="#esbuild, #node-gyp"
+
+# Or allow scripts for direct dependencies only
+
+$ vlt build --target=":root > :scripts"`} title="Terminal" lang="bash"
+/>
+
+If you need legacy npm behavior (not recommended):
+
+<Code
+  code="$ vlt install --allow-scripts='*'"
+  title="Terminal"
+  lang="bash"
+/>
+
+See [`vlt build`](/cli/commands/build) for full details.
+
+---
+
+## Workspaces
+
+npm workspaces are defined in the root `package.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: ['packages/*'],
+    },
+    null,
+    2,
+  )}
+  title="package.json (npm)"
+  lang="json"
+/>
+
+vlt workspaces are defined in `vlt.json`:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: ['packages/*'],
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Key Differences
+
+- **Definition location** — `vlt.json` instead of `package.json`
+- **Named groups** — vlt supports grouping workspaces for targeted
+  operations:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: {
+        apps: 'apps/*',
+        libs: 'packages/*',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Workspace Commands
+
+| npm                               | vlt                               |
+| --------------------------------- | --------------------------------- |
+| `npm run test -w packages/a`      | `vlt run test -w packages/a`      |
+| `npm run test --workspaces`       | `vlt run test --recursive`        |
+| `npm install <pkg> -w packages/a` | `vlt install <pkg> -w packages/a` |
+
+See [Workspaces](/cli/workspaces) for full details.
+
+---
+
+## Overrides → Graph Modifiers
+
+npm uses `overrides` in `package.json` to force dependency versions.
+vlt uses [Graph Modifiers](/cli/graph-modifiers) in `vlt.json`, which
+are powered by DSS selectors and offer more precise targeting.
+
+<Code
+  code={JSON.stringify(
+    {
+      overrides: {
+        lodash: '^4.17.21',
+        'express>qs': '6.10.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="package.json (npm)"
+  lang="json"
+/>
+
+<Code
+  code={JSON.stringify(
+    {
+      modifiers: {
+        '#lodash': '^4.17.21',
+        ':root > #express > #qs': '=6.10.0',
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+Graph Modifiers use CSS-like specificity rules when multiple selectors
+match the same dependency.
+
+---
+
+## Migration Checklist
+
+1. Install vlt: `npm install -g vlt`
+2. In your project root, create `vlt.json` with your registry and
+   workspace config (or use `vlt config set`)
+3. Move any scoped registry config from `.npmrc` to `vlt.json`
+4. Move workspace definitions from `package.json` to `vlt.json`
+5. Move `overrides` from `package.json` to `modifiers` in `vlt.json`
+6. Run `vlt install` then `vlt build`
+7. Commit `vlt-lock.json`
+8. Update CI scripts: replace `npm ci` with
+   `vlt install --expect-lockfile && vlt build`
+9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
+10. Update any `npx` usage to `vlx`
