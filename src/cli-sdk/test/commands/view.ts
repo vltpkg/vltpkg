@@ -67,6 +67,7 @@ let mockPackumentResult: Packument | undefined
 let mockManifestResult: Manifest | undefined
 let securityStartCalled = false
 let mockSecurityResult: PackageReportData | undefined
+let mockSecurityShouldThrow = false
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/view.ts')
@@ -91,6 +92,9 @@ const Command = await t.mockImport<
     SecurityArchive: {
       start: async (_opts: { nodes: unknown[] }) => {
         securityStartCalled = true
+        if (mockSecurityShouldThrow) {
+          throw new Error('Security service unavailable')
+        }
         return {
           get: () => mockSecurityResult,
         }
@@ -104,6 +108,7 @@ t.beforeEach(() => {
   mockManifestResult = undefined
   securityStartCalled = false
   mockSecurityResult = undefined
+  mockSecurityShouldThrow = false
 })
 
 const makeConfig = (
@@ -370,34 +375,14 @@ t.test('command', async t => {
   })
 
   t.test('security failure does not break command', async t => {
-    let startCalled = false
-    const FailCommand = await t.mockImport<
-      typeof import('../../src/commands/view.ts')
-    >('../../src/commands/view.ts', {
-      '@vltpkg/package-info': {
-        PackageInfoClient: class {
-          async packument() {
-            return mockPackument
-          }
-          async manifest() {
-            return mockManifest
-          }
-        },
-      },
-      '@vltpkg/security-archive': {
-        SecurityArchive: {
-          start: async () => {
-            startCalled = true
-            throw new Error('Security service unavailable')
-          },
-        },
-      },
-    })
+    mockPackumentResult = mockPackument
+    mockManifestResult = mockManifest
+    mockSecurityShouldThrow = true
 
     const config = makeConfig(['test-pkg'])
-    const result = await FailCommand.command(config)
+    const result = await Command.command(config)
 
-    t.ok(startCalled, 'security archive start was attempted')
+    t.ok(securityStartCalled, 'security archive start was attempted')
     t.equal(
       result.security,
       undefined,
