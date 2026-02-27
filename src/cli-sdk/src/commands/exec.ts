@@ -2,6 +2,7 @@ import { exec, execFG } from '@vltpkg/run'
 import type { PromptFn } from '@vltpkg/vlx'
 import * as vlx from '@vltpkg/vlx'
 import { homedir } from 'node:os'
+import { env, platform } from 'node:process'
 import { createInterface } from 'node:readline/promises'
 import { commandUsage } from '../config/usage.ts'
 import type { ExecResult } from '../exec-command.ts'
@@ -13,7 +14,7 @@ export { views } from '../exec-command.ts'
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'exec',
-    usage: '[--package=<pkg>] [command...]',
+    usage: '[--package=<pkg>] [--call=<cmd>] [command...]',
     description: `Run a command defined by a package, installing it
                   if necessary.
 
@@ -61,11 +62,24 @@ export const usage: CommandUsage = () =>
         description:
           'Run the default bin provided by eslint version 9.24',
       },
+      'create-react-app --call="echo $PWD"': {
+        description:
+          'Install create-react-app and run an arbitrary command with its bins in PATH',
+      },
+      '--call="echo $PWD" --scope=":workspace"': {
+        description:
+          'Run an arbitrary command in the context of each workspace',
+      },
     },
     options: {
       package: {
         value: '<specifier>',
         description: 'Explicitly set the package to search for bins.',
+      },
+      call: {
+        value: '<cmd>',
+        description:
+          'Run an arbitrary command string after installing any specified package and adding its bins to PATH.',
       },
       'allow-scripts': {
         value: '<query>',
@@ -137,16 +151,55 @@ export const command: CommandFn<ExecResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
-  const arg0 = await vlx.resolve(
-    conf.positionals,
-    {
-      ...conf.options,
-      query: undefined,
-      allowScripts,
-    },
-    promptFn,
-  )
-  if (arg0) conf.positionals[0] = arg0
+  const callOption = conf.get('call')
+  if (callOption) {
+    // Install any specified package and add its bins to PATH, but don't
+    // use its default executable - the --call string is the command to run.
+    // Only install when a package is explicitly defined (via --package flag
+    // or as a positional argument). Don't prompt for confirmation since the
+    // user's explicit --call command implies consent.
+    const pkgOption = conf.get('package') ?? conf.positionals[0]
+    if (pkgOption) {
+      await vlx.resolve(
+        [],
+        {
+          ...conf.options,
+          package: pkgOption,
+          query: undefined,
+          allowScripts,
+        },
+        // no promptFn: install silently since --call implies user consent
+      )
+    }
+    // Determine the shell to use for the --call command
+    const shell =
+      conf.get('script-shell') ??
+      env.SHELL ??
+      /* c8 ignore next */
+      (platform === 'win32' ? 'cmd.exe' : '/bin/sh')
+    // cmd.exe uses '/c', all other shells use '-c'
+    /* c8 ignore next */
+    const shellFlag = shell === 'cmd.exe' ? '/c' : '-c'
+    // Replace positionals with [shell, shellFlag, callOption]
+    conf.positionals.splice(
+      0,
+      conf.positionals.length,
+      shell,
+      shellFlag,
+      callOption,
+    )
+  } else {
+    const arg0 = await vlx.resolve(
+      conf.positionals,
+      {
+        ...conf.options,
+        query: undefined,
+        allowScripts,
+      },
+      promptFn,
+    )
+    if (arg0) conf.positionals[0] = arg0
+  }
   // now we have arg0! let's gooooo!!
   delete conf.options['script-shell']
   return await new ExecCommand(conf, exec, execFG).run()

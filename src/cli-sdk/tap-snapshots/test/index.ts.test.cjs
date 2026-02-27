@@ -41,6 +41,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --bail
     --before=<date>
     --cache=<path>
+    --call=<cmd>
     --color
     --config=<all | user | project>
     --dashboard-root=<path>
@@ -103,6 +104,7 @@ Unknown config option: asdf
     bail
     before
     cache
+    call
     color
     config
     dashboard-root
