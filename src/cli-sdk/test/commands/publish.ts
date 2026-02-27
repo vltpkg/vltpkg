@@ -479,6 +479,62 @@ t.test('command', async t => {
     t.equal(result.access, 'public')
   })
 
+  t.test('does not send access when not explicitly set', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    let publishBody: string | undefined
+    const tempRequest = RegistryClient.prototype.request
+    RegistryClient.prototype.request = (async (
+      _url: URL | string,
+      opts?: { body?: string },
+    ) => {
+      publishBody = opts?.body
+      return {
+        statusCode: 201,
+        text: () => '{"ok":true}',
+        json: () => ({ ok: true }),
+        getHeader: () => undefined,
+      }
+    }) as unknown as typeof tempRequest
+    t.teardown(() => {
+      RegistryClient.prototype.request = tempRequest
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    const result = (await command(config)) as CommandResultSingle
+    t.equal(
+      result.access,
+      undefined,
+      'access should not be set in result',
+    )
+    t.ok(publishBody, 'should have sent a request body')
+    const metadata = JSON.parse(publishBody!)
+    t.notOk(
+      'access' in metadata,
+      'publish metadata should not include access field',
+    )
+  })
+
   t.test('views format output correctly', async t => {
     const result = {
       id: 'test@1.0.0',

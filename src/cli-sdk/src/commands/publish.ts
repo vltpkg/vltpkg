@@ -53,7 +53,7 @@ export type CommandResultSingle = {
   shasum?: string
   integrity?: string
   size: number
-  access: string
+  access?: string
   unpackedSize: number
   files: string[]
 }
@@ -246,7 +246,7 @@ const commandSingle = async (
         },
       },
     },
-    access,
+    ...(access ? { access } : {}),
     _attachments: {
       [tarballName]: {
         content_type: 'application/octet-stream',
@@ -306,7 +306,7 @@ const commandSingle = async (
     name,
     version,
     tag,
-    access,
+    ...(access ? { access } : {}),
     registry: registryUrl.origin,
     integrity,
     shasum,
