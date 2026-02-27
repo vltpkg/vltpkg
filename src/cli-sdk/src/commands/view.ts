@@ -303,6 +303,7 @@ const createFakeNode = (name: string, version: string): NodeLike =>
     optional: false,
     graph: {} as NodeLike['graph'],
     options: {},
+    /* c8 ignore next 5 - stub methods for NodeLike interface */
     toJSON: () => ({}),
     toString: () => `${name}@${version}`,
     setResolved: () => {},
@@ -331,6 +332,7 @@ const lookupField = (result: ViewResult, path: string): unknown => {
     'contributors',
   ]
 
+  /* c8 ignore next - split always returns at least one element */
   const topLevel = path.split('.')[0] ?? path
 
   if (packumentFields.includes(topLevel)) {

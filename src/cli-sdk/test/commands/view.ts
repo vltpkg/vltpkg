@@ -554,6 +554,58 @@ t.test('human formatting edge cases', async t => {
     t.ok(output.includes('[LOW]'))
   })
 
+  t.test('fallback name and version', async t => {
+    const result = {
+      packument: {
+        name: 'from-packument',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': { version: '1.0.0' },
+        },
+      } as Packument,
+      manifest: { version: undefined } as unknown as Manifest,
+    }
+    const output = Command.views.human(result, {}, {} as LoadedConfig)
+    t.ok(
+      output.includes('from-packument@'),
+      'falls back to packument name',
+    )
+  })
+
+  t.test('non-array keywords', async t => {
+    const result = {
+      packument: {
+        name: 'pkg',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'pkg',
+            version: '1.0.0',
+            keywords: 'single-keyword' as unknown as string[],
+          },
+        },
+      } as Packument,
+      manifest: {
+        name: 'pkg',
+        version: '1.0.0',
+        keywords: 'single-keyword' as unknown as string[],
+      } as Manifest,
+    }
+    const output = Command.views.human(result, {}, {} as LoadedConfig)
+    t.ok(output.includes('keywords: single-keyword'))
+  })
+
+  t.test('human view - field value (number)', async t => {
+    const result = {
+      packument: mockPackument,
+      manifest: mockManifest,
+      fieldPath: 'count',
+      fieldValue: 42,
+    }
+    const output = Command.views.human(result, {}, {} as LoadedConfig)
+    t.equal(output, '42')
+  })
+
   t.test('optional dependencies', async t => {
     const result = {
       packument: {
