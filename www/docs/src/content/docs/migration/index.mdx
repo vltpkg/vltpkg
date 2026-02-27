@@ -1,0 +1,45 @@
+---
+title: Migrating to vlt
+sidebar:
+  label: Overview
+  order: 0
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+## Migrating to vlt from Other Package Managers
+
+This section covers how to switch from npm, yarn, or pnpm to vlt. Each
+guide walks through the concrete steps: configuration, commands,
+lockfiles, workspaces, and the key differences to be aware of.
+
+### Choose Your Migration Path
+
+- [**From npm**](/migration/from-npm) — Migrate from npm to vlt
+- [**From yarn**](/migration/from-yarn) — Migrate from yarn (v1
+  classic or v2+ berry) to vlt
+- [**From pnpm**](/migration/from-pnpm) — Migrate from pnpm to vlt
+
+### What Changes
+
+Regardless of which package manager you're coming from, the core
+changes are:
+
+1. **Configuration moves to `vlt.json`** — A single JSON file replaces
+   `.npmrc`, `.yarnrc.yml`, or `.npmrc` + `pnpm-workspace.yaml`
+2. **Lockfile format changes** — vlt uses `vlt-lock.json` instead of
+   `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`
+3. **Install scripts don't run by default** — vlt separates
+   installation from build. `vlt install` downloads packages without
+   executing any lifecycle scripts. Use `vlt build` to selectively run
+   scripts afterward
+4. **Security is built in** — vlt integrates with
+   [Socket](https://socket.dev/) for malware detection, and the query
+   system lets you audit your dependency graph before any code runs
+
+### What Stays the Same
+
+- Your `package.json` files don't change (dependencies, scripts, etc.)
+- `node_modules` structure is compatible — your code runs the same way
+- Registry authentication uses tokens, just stored differently
+- Workspace packages still use `workspace:` protocol references
