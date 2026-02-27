@@ -252,7 +252,7 @@ const formatHuman = (result: ViewResult): string => {
 }
 
 export const views = {
-  human: (result: ViewResult, _options: ViewOptions) => {
+  human: (result: ViewResult, _options: ViewOptions, _conf) => {
     // Field access mode: just return the value
     if (result.fieldPath !== undefined) {
       const val = result.fieldValue
@@ -269,7 +269,7 @@ export const views = {
     // Full view mode
     return formatHuman(result)
   },
-  json: (result: ViewResult) => {
+  json: (result: ViewResult, _options: ViewOptions, _conf) => {
     if (result.fieldPath !== undefined) {
       return result.fieldValue
     }
@@ -285,11 +285,11 @@ export const views = {
 
 /**
  * Create a minimal NodeLike for SecurityArchive lookup.
+ * Only the fields used by SecurityArchive.start() are needed.
  */
-const createFakeNode = (name: string, version: string): NodeLike => {
-  const depID = joinDepIDTuple(['registry', '', `${name}@${version}`])
-  return {
-    id: depID,
+const createFakeNode = (name: string, version: string): NodeLike =>
+  ({
+    id: joinDepIDTuple(['registry', '', `${name}@${version}`]),
     name,
     version,
     confused: false,
@@ -302,8 +302,13 @@ const createFakeNode = (name: string, version: string): NodeLike => {
     dev: false,
     optional: false,
     graph: {} as NodeLike['graph'],
-  }
-}
+    options: {},
+    toJSON: () => ({}),
+    toString: () => `${name}@${version}`,
+    setResolved: () => {},
+    setConfusedManifest: () => {},
+    maybeSetConfusedManifest: () => {},
+  }) as unknown as NodeLike
 
 /**
  * Lookup fields from a combined packument+manifest view.
@@ -360,10 +365,11 @@ export const command: CommandFn<ViewResult> = async conf => {
   const pic = new PackageInfoClient(conf.options)
 
   // Fetch the packument and resolved manifest
-  const [packument, manifest] = await Promise.all([
+  const [packument, resolvedManifest] = await Promise.all([
     pic.packument(spec),
     pic.manifest(spec),
   ])
+  const manifest = resolvedManifest as Manifest
 
   // Try to get security data for this package
   let security: PackageReportData | undefined
