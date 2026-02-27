@@ -695,7 +695,6 @@ export const definition = j
     access: {
       description: 'Set the access level of the package',
       validOptions: ['public', 'restricted'] as const,
-      default: 'public',
     },
   })
   .opt({
