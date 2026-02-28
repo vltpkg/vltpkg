@@ -1,0 +1,156 @@
+---
+title: vlt dist-tag
+sidebar:
+  label: dist-tag
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt dist-tag add <package>@<version> <tag>
+$ vlt dist-tag rm <package> <tag>
+$ vlt dist-tag ls [<package>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Manage distribution tags for packages in the registry.
+
+Distribution tags (dist-tags) are human-readable labels that can be used
+to organize and label different versions of packages published to the
+registry. By default, packages are published with the `latest` tag, but
+you can create custom tags like `beta`, `next`, or `canary` to help
+users install specific versions.
+
+## Subcommands
+
+### add
+
+Add or update a dist-tag to point to a specific version.
+
+<Code
+  code="$ vlt dist-tag add my-package@1.2.0 beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+This will tag version `1.2.0` of `my-package` with the `beta` tag. Users
+can then install this version using:
+
+<Code
+  code="$ vlt install my-package@beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+For scoped packages:
+
+<Code
+  code="$ vlt dist-tag add @myorg/package@2.0.0-rc.1 rc"
+  title="Terminal"
+  lang="bash"
+/>
+
+### rm
+
+Remove a dist-tag from a package.
+
+<Code
+  code="$ vlt dist-tag rm my-package beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+Note: The `latest` tag cannot be removed as it's required for proper
+package resolution.
+
+### ls
+
+List all dist-tags for a package.
+
+<Code
+  code="$ vlt dist-tag ls my-package"
+  title="Terminal"
+  lang="bash"
+/>
+
+This will display all tags and their associated versions, for example:
+
+```
+latest: 1.0.0
+beta: 1.1.0-beta.1
+next: 2.0.0-alpha.1
+```
+
+## Options
+
+### registry
+
+Registry URL to manage dist-tags in.
+
+<Code
+  code="$ vlt dist-tag ls my-package --registry=<url>"
+  title="Terminal"
+  lang="bash"
+/>
+
+### identity
+
+Identity namespace used to look up auth tokens.
+
+<Code
+  code="$ vlt dist-tag add my-package@1.0.0 beta --identity=<name>"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Examples
+
+### Publishing with a specific tag
+
+When publishing a package, you can specify a tag:
+
+<Code
+  code="$ vlt publish --tag=beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+This is equivalent to publishing normally and then running:
+
+<Code
+  code="$ vlt dist-tag add my-package@<version> beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Managing pre-release versions
+
+Dist-tags are particularly useful for managing pre-release versions:
+
+<Code
+  code="# Publish a beta version
+$ vlt publish --tag=beta
+
+# Users can install the beta version
+$ vlt install my-package@beta
+
+# Later, promote the beta to latest
+$ vlt dist-tag add my-package@1.1.0-beta.1 latest"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Creating a maintenance branch tag
+
+<Code
+  code="# Tag a maintenance version
+$ vlt dist-tag add my-package@1.5.10 maintenance
+
+# Users can install the maintenance version
+$ vlt install my-package@maintenance"
+  title="Terminal"
+  lang="bash"
+/>
