@@ -594,6 +594,12 @@ export const definition = j
                     - inspect: Output results with \`util.inspect\`.
                     - mermaid: Output mermaid diagramming syntax. (Only
                       relevant for certain commands.)
+                    - png: Render the dependency graph as a PNG image and
+                      open it. (Only relevant for certain commands.)
+                    - svg: Render the dependency graph as an SVG image and
+                      open it. (Only relevant for certain commands.)
+                    - pdf: Render the dependency graph as a PDF and open it.
+                      (Only relevant for certain commands.)
                     - count: Output the number of dependency relationships in
                       the result set.
                     - silent: Suppress all output to stdout.
@@ -606,6 +612,9 @@ export const definition = j
         'human',
         'json',
         'mermaid',
+        'png',
+        'svg',
+        'pdf',
         'count',
         'inspect',
         'silent',
