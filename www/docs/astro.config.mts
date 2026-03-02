@@ -93,6 +93,11 @@ export default defineConfig({
           autogenerate: { directory: 'cli' },
         },
         {
+          label: 'Migration',
+          collapsed: true,
+          autogenerate: { directory: 'migration' },
+        },
+        {
           label: 'Packages',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
