@@ -20,6 +20,7 @@ import type {
 } from '@vltpkg/graph'
 import type { DepID } from '@vltpkg/dep-id'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
+import { MermaidImageView } from '../mermaid-image-view.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import type { LoadedConfig } from '../config/index.ts'
@@ -29,9 +30,9 @@ export const usage: CommandUsage = () =>
     command: 'query',
     usage: [
       '',
-      '<query> --view=<human | json | mermaid | count>',
+      '<query> --view=<human | json | mermaid | png | svg | pdf | count>',
       '<query> --expect-results=<comparison string>',
-      '--target=<query> --view=<human | json | mermaid | count>',
+      '--target=<query> --view=<human | json | mermaid | png | svg | pdf | count>',
     ],
     description: `List installed dependencies matching the provided query.
 
@@ -95,9 +96,9 @@ export const usage: CommandUsage = () =>
           'Query selector to filter packages using DSS syntax.',
       },
       view: {
-        value: '[human | json | mermaid | count]',
+        value: '[human | json | mermaid | png | svg | pdf | count]',
         description:
-          'Output format. Defaults to human-readable or json if no tty. Count outputs the number of dependency relationships in the result.',
+          'Output format. Defaults to human-readable or json if no tty. Use png, svg, or pdf to render a mermaid diagram as an image and open it. Count outputs the number of dependency relationships in the result.',
       },
     },
   })
@@ -130,6 +131,9 @@ export const views = {
   mermaid: mermaidOutput,
   human: humanReadableOutput,
   count: (result: QueryResult) => result.edges.length,
+  png: MermaidImageView,
+  svg: MermaidImageView,
+  pdf: MermaidImageView,
 } as const satisfies Views<QueryResult>
 
 export const command: CommandFn<QueryResult> = async conf => {

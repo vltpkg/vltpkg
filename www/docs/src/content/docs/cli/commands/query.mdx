@@ -10,7 +10,7 @@ Usage:
 
 <Code
   code="$ vlt query
-$ vlt query <query> --view=[human | json | mermaid | count]
+$ vlt query <query> --view=[human | json | mermaid | png | svg | pdf | count]
 "
   title="Terminal"
   lang="bash"
@@ -64,10 +64,12 @@ Find packages with critical security issues
 
 ### view
 
-Output format. Defaults to human-readable or json if no tty.
+Output format. Defaults to human-readable or json if no tty. Use
+`png`, `svg`, or `pdf` to render the dependency graph as an image
+and open it automatically.
 
 ```
---view=[human | json | mermaid | count]
+--view=[human | json | mermaid | png | svg | pdf | count]
 ```
 
 ### expect-results
