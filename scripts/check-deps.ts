@@ -146,6 +146,7 @@ const main = async () => {
     'MIT OR Apache-2.0',
     'ISC',
     'MPL-2.0',
+    'EPL-2.0',
     'BSD-2-Clause-Patent',
     'BlueOak-1.0.0',
     'CC0-1.0',
