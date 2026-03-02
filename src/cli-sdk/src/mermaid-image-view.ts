@@ -36,6 +36,7 @@ export class MermaidImageView extends ViewClass<MermaidOutputGraph> {
       mermaidText,
       this.format,
       nodeCount,
+      this.config,
     )
 
     stderr(`Image saved to: ${filePath}`)
