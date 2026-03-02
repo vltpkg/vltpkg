@@ -65,9 +65,9 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
+          '@vltpkg/project': {
+            ...(await t.mockImport<typeof import('@vltpkg/project')>(
+              '@vltpkg/project',
             )),
             reloadConfig: async (path: string) => {
               return {
@@ -144,9 +144,9 @@ t.test('createHostContextsMap', async t => {
       await t.mockImport<
         typeof import('../src/query-host-contexts.ts')
       >('../src/query-host-contexts.ts', {
-        '@vltpkg/server': {
-          ...(await t.mockImport<typeof import('@vltpkg/server')>(
-            '@vltpkg/server',
+        '@vltpkg/project': {
+          ...(await t.mockImport<typeof import('@vltpkg/project')>(
+            '@vltpkg/project',
           )),
           readProjectFolders: async () => [],
         },
@@ -214,9 +214,9 @@ t.test('createHostContextsMap', async t => {
       await t.mockImport<
         typeof import('../src/query-host-contexts.ts')
       >('../src/query-host-contexts.ts', {
-        '@vltpkg/server': {
-          ...(await t.mockImport<typeof import('@vltpkg/server')>(
-            '@vltpkg/server',
+        '@vltpkg/project': {
+          ...(await t.mockImport<typeof import('@vltpkg/project')>(
+            '@vltpkg/project',
           )),
           readProjectFolders: async () => [
             new PathScurry(dir).cwd.resolve('projectA'),
@@ -302,9 +302,9 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
+          '@vltpkg/project': {
+            ...(await t.mockImport<typeof import('@vltpkg/project')>(
+              '@vltpkg/project',
             )),
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('projectA'),
@@ -386,9 +386,9 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
+          '@vltpkg/project': {
+            ...(await t.mockImport<typeof import('@vltpkg/project')>(
+              '@vltpkg/project',
             )),
             readProjectFolders: async () => [],
           },
@@ -471,9 +471,9 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
+          '@vltpkg/project': {
+            ...(await t.mockImport<typeof import('@vltpkg/project')>(
+              '@vltpkg/project',
             )),
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('nested/projectA'),
@@ -621,9 +621,9 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
+          '@vltpkg/project': {
+            ...(await t.mockImport<typeof import('@vltpkg/project')>(
+              '@vltpkg/project',
             )),
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('projectA'),

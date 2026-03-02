@@ -4,7 +4,7 @@ import {
   getProjectData,
   readProjectFolders,
   reloadConfig,
-} from '@vltpkg/server'
+} from '@vltpkg/project'
 import { actual, createVirtualRoot } from '@vltpkg/graph'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'
@@ -86,7 +86,9 @@ export const createHostContextsMap = async (
     const retrieveProjectGraph = async () => {
       const initialEdges: EdgeLike[] = []
       const initialNodes: NodeLike[] = []
-      const config = await reloadConfig(folder.fullpath())
+      const config = (await reloadConfig(
+        folder.fullpath(),
+      )) as unknown as LoadedConfig
 
       // load each individual graph
       const graph = actual.load({
@@ -127,7 +129,9 @@ export const createHostContextsMap = async (
     const mainImporters: NodeLike[] = []
     for (const folder of projectFolders) {
       try {
-        const config = await reloadConfig(folder.fullpath())
+        const config = (await reloadConfig(
+          folder.fullpath(),
+        )) as unknown as LoadedConfig
         const projectInfo = getProjectData(
           {
             packageJson: config.options.packageJson,

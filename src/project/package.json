@@ -1,0 +1,76 @@
+{
+  "name": "@vltpkg/project",
+  "description": "Project discovery and project config utilities",
+  "version": "1.0.0-rc.18",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/project"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "dependencies": {
+    "@vltpkg/cli-sdk": "workspace:*",
+    "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/types": "workspace:*",
+    "@vltpkg/vlt-json": "workspace:*",
+    "path-scurry": "catalog:",
+    "promise-call-limit": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
+    "snap": "tap",
+    "test": "tap",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.js",
+  "module": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "default": "./src/index.ts"
+      }
+    },
+    "./get-project-data": {
+      "import": {
+        "default": "./src/get-project-data.ts"
+      }
+    },
+    "./read-project-folders": {
+      "import": {
+        "default": "./src/read-project-folders.ts"
+      }
+    },
+    "./reload-config": {
+      "import": {
+        "default": "./src/reload-config.ts"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -2,11 +2,9 @@ import {
   get as getConfigValue,
   list as listConfigValues,
 } from '@vltpkg/config'
+import { reloadConfig } from '../../project/src/reload-config.ts'
 
-import type {
-  LoadedConfig,
-  ParsedConfig,
-} from '@vltpkg/cli-sdk/config'
+import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 
 type VltJsonModule = {
@@ -23,22 +21,7 @@ type VltJsonModule = {
   ) => string
 }
 
-export const reloadConfig = async (
-  folder: string,
-): Promise<ParsedConfig> => {
-  // Clear vlt-json caches to ensure fresh file reads
-  try {
-    const { unload } =
-      (await import('@vltpkg/vlt-json')) as VltJsonModule
-    unload('user')
-    unload('project')
-    /* c8 ignore next */
-  } catch {}
-
-  // Create a fresh config instance for the set operation to avoid cache issues
-  const { Config } = await import('@vltpkg/cli-sdk/config')
-  return Config.load(folder, process.argv, true)
-}
+export { reloadConfig }
 
 export class ConfigManager {
   config: LoadedConfig
