@@ -3,10 +3,7 @@ import type { MermaidOutputGraph } from '@vltpkg/graph'
 import type { ViewOptions } from '../src/view.ts'
 import type { LoadedConfig } from '../src/config/index.ts'
 
-t.test('MermaidImageView', async t => {
-  let capturedMermaidText = ''
-  let capturedFormat = ''
-  let capturedNodeCount = 0
+t.test('MermaidImageView with svg format', async t => {
   let capturedOpenPath = ''
   const stderrMessages: string[] = []
 
@@ -14,10 +11,8 @@ t.test('MermaidImageView', async t => {
     typeof import('../src/mermaid-image-view.ts')
   >('../src/mermaid-image-view.ts', {
     '@vltpkg/graph': {
-      mermaidOutput: (_opts: MermaidOutputGraph) => {
-        capturedMermaidText = 'flowchart TD\nmocked'
-        return capturedMermaidText
-      },
+      mermaidOutput: (_opts: MermaidOutputGraph) =>
+        'flowchart TD\nmocked',
     },
     '@vltpkg/url-open': {
       urlOpen: async (path: string) => {
@@ -28,28 +23,22 @@ t.test('MermaidImageView', async t => {
       stderr: (...args: unknown[]) => {
         stderrMessages.push(String(args[0]))
       },
+      stdout: () => {},
     },
     '../src/render-mermaid.ts': {
-      renderMermaid: async (
-        _text: string,
-        format: string,
-        nodeCount: number,
-        _conf: unknown,
-      ) => {
-        capturedFormat = format
-        capturedNodeCount = nodeCount
-        return `/tmp/vlt-mermaid-test/graph.${format}`
-      },
+      renderMermaidToFile: async () =>
+        '/tmp/vlt-mermaid-test/graph.svg',
+      renderMermaidAscii: () => '',
     },
   })
 
   const options: ViewOptions = {}
   const config = {
-    values: { view: 'png' },
+    values: { view: 'svg' },
   } as unknown as LoadedConfig
 
   const view = new MermaidImageView(options, config)
-  t.equal(view.format, 'png', 'should set format from config')
+  t.equal(view.format, 'svg', 'should set format from config')
 
   const fakeResult = {
     edges: [],
@@ -60,15 +49,13 @@ t.test('MermaidImageView', async t => {
 
   await view.done(fakeResult, { time: 0 })
 
-  t.equal(capturedFormat, 'png', 'should pass format to renderer')
-  t.equal(capturedNodeCount, 3, 'should pass node count to renderer')
   t.equal(
     capturedOpenPath,
-    '/tmp/vlt-mermaid-test/graph.png',
+    '/tmp/vlt-mermaid-test/graph.svg',
     'should open the generated file',
   )
   t.ok(
-    stderrMessages.some(m => m.includes('Generating png')),
+    stderrMessages.some(m => m.includes('Generating SVG')),
     'should log generation message',
   )
   t.ok(
@@ -77,8 +64,8 @@ t.test('MermaidImageView', async t => {
   )
 })
 
-t.test('MermaidImageView with svg format', async t => {
-  let capturedFormat = ''
+t.test('MermaidImageView with ascii format', async t => {
+  let capturedOutput = ''
 
   const { MermaidImageView } = await t.mockImport<
     typeof import('../src/mermaid-image-view.ts')
@@ -91,19 +78,20 @@ t.test('MermaidImageView with svg format', async t => {
     },
     '../src/output.ts': {
       stderr: () => {},
+      stdout: (...args: unknown[]) => {
+        capturedOutput = String(args[0])
+      },
     },
     '../src/render-mermaid.ts': {
-      renderMermaid: async (_text: string, format: string) => {
-        capturedFormat = format
-        return `/tmp/graph.${format}`
-      },
+      renderMermaidToFile: async () => '',
+      renderMermaidAscii: () => 'ASCII ART OUTPUT',
     },
   })
 
   const view = new MermaidImageView({}, {
-    values: { view: 'svg' },
+    values: { view: 'ascii' },
   } as unknown as LoadedConfig)
-  t.equal(view.format, 'svg', 'should set svg format')
+  t.equal(view.format, 'ascii', 'should set ascii format')
 
   await view.done(
     {
@@ -115,46 +103,9 @@ t.test('MermaidImageView with svg format', async t => {
     { time: 0 },
   )
 
-  t.equal(capturedFormat, 'svg', 'should render as svg')
-})
-
-t.test('MermaidImageView with pdf format', async t => {
-  let capturedFormat = ''
-
-  const { MermaidImageView } = await t.mockImport<
-    typeof import('../src/mermaid-image-view.ts')
-  >('../src/mermaid-image-view.ts', {
-    '@vltpkg/graph': {
-      mermaidOutput: () => 'flowchart TD\nmocked',
-    },
-    '@vltpkg/url-open': {
-      urlOpen: async () => {},
-    },
-    '../src/output.ts': {
-      stderr: () => {},
-    },
-    '../src/render-mermaid.ts': {
-      renderMermaid: async (_text: string, format: string) => {
-        capturedFormat = format
-        return `/tmp/graph.${format}`
-      },
-    },
-  })
-
-  const view = new MermaidImageView({}, {
-    values: { view: 'pdf' },
-  } as unknown as LoadedConfig)
-  t.equal(view.format, 'pdf', 'should set pdf format')
-
-  await view.done(
-    {
-      edges: [],
-      importers: new Set(),
-      nodes: [],
-      highlightSelection: false,
-    } as unknown as MermaidOutputGraph,
-    { time: 0 },
+  t.equal(
+    capturedOutput,
+    'ASCII ART OUTPUT',
+    'should output ASCII art to stdout',
   )
-
-  t.equal(capturedFormat, 'pdf', 'should render as pdf')
 })

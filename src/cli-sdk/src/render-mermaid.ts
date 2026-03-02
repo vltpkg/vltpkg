@@ -2,77 +2,59 @@ import { writeFile, mkdtemp } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { error } from '@vltpkg/error-cause'
-import { exec } from '@vltpkg/run'
-import * as vlx from '@vltpkg/vlx'
-import type { LoadedConfig } from './config/index.ts'
+import {
+  renderMermaidSVG,
+  renderMermaidASCII,
+} from 'beautiful-mermaid'
 
-export type ImageFormat = 'png' | 'svg' | 'pdf'
-
-const MIN_WIDTH = 4000
-const MAX_WIDTH = 40000
+export type OutputFormat = 'svg' | 'ascii'
 
 /**
- * Calculate image width based on node count.
- * Starts at 4000px and scales up, capped at 40000px.
+ * Renders mermaid diagram text to an SVG string using
+ * the `beautiful-mermaid` library. No external process
+ * is spawned — everything runs in-process.
+ * @returns {string} The SVG markup as a string.
  */
-export const calculateWidth = (nodeCount: number): number =>
-  Math.min(
-    MAX_WIDTH,
-    Math.max(MIN_WIDTH, Math.round(nodeCount * 100)),
-  )
-
-/**
- * Renders mermaid diagram text to an image file.
- *
- * Uses `@mermaid-js/mermaid-cli` (mmdc) via `vlt exec` internals
- * to generate the image. The package is resolved and installed if
- * necessary through vlt's own mechanism. The output file is written
- * to a temporary directory.
- * @returns {Promise<string>} The path to the generated image file.
- */
-export const renderMermaid = async (
-  mermaidText: string,
-  format: ImageFormat,
-  nodeCount: number,
-  conf: LoadedConfig,
-): Promise<string> => {
-  const dir = await mkdtemp(join(tmpdir(), 'vlt-mermaid-'))
-  const inputFile = join(dir, 'input.mmd')
-  const outputFile = join(dir, `graph.${format}`)
-  const width = calculateWidth(nodeCount)
-
-  await writeFile(inputFile, mermaidText)
-
+export const renderMermaidSvg = (mermaidText: string): string => {
   try {
-    const arg0 = await vlx.resolve(['@mermaid-js/mermaid-cli'], {
-      ...conf.options,
-      query: undefined,
-      allowScripts: ':not(*)',
-    })
-
-    if (!arg0) {
-      throw error(
-        'Could not resolve @mermaid-js/mermaid-cli executable',
-      )
-    }
-
-    await exec({
-      arg0,
-      args: [
-        '--input',
-        inputFile,
-        '--output',
-        outputFile,
-        '--width',
-        String(width),
-        '--quiet',
-      ],
-      cwd: dir,
-      projectRoot: conf.projectRoot,
+    return renderMermaidSVG(mermaidText, {
+      bg: '#FFFFFF',
+      fg: '#27272A',
+      padding: 40,
     })
   } catch (cause) {
-    throw error('Error generating image', { cause })
+    throw error('Error rendering SVG', { cause })
   }
+}
 
+/**
+ * Renders mermaid diagram text to an ASCII/Unicode art
+ * string using `beautiful-mermaid`. Synchronous, no
+ * external process.
+ * @returns {string} A multi-line ASCII/Unicode string.
+ */
+export const renderMermaidAscii = (mermaidText: string): string => {
+  try {
+    return renderMermaidASCII(mermaidText, {
+      colorMode: 'truecolor',
+    })
+  } catch (cause) {
+    throw error('Error rendering ASCII', { cause })
+  }
+}
+
+/**
+ * Renders mermaid diagram text to an SVG file.
+ * Uses `beautiful-mermaid` in-process, then writes
+ * the result to a temp directory.
+ * @returns {Promise<string>} The file path of the generated SVG.
+ */
+export const renderMermaidToFile = async (
+  mermaidText: string,
+): Promise<string> => {
+  const svg = renderMermaidSvg(mermaidText)
+  const dir = await mkdtemp(join(tmpdir(), 'vlt-mermaid-'))
+  const outputFile = join(dir, 'graph.svg')
+  await writeFile(outputFile, svg)
   return outputFile
 }
