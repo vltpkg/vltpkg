@@ -1,7 +1,6 @@
 import { homedir } from 'node:os'
 import { parse, posix } from 'node:path'
-import { readProjectFolders } from './read-project-folders.ts'
-import { reloadConfig } from './reload-config.ts'
+import { readProjectFolders, reloadConfig } from '@vltpkg/project'
 import { actual, createVirtualRoot } from '@vltpkg/graph'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'

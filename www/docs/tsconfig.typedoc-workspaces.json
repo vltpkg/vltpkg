@@ -68,6 +68,9 @@
       "path": "../../src/promise-spawn"
     },
     {
+      "path": "../../src/project"
+    },
+    {
       "path": "../../src/query"
     },
     {

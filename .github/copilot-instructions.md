@@ -47,6 +47,8 @@ Following is a list of each workspace along with a brief description:
   information
 - src/package-json, `@vltpkg/package-json` - Helper module to read
   from and write to `package.json` files
+- src/project, `@vltpkg/project` - Project discovery (scanning folders
+  for projects) and per-project config reloading
 - src/query/, `@vltpkg/query` - The query language implementation
 - src/registry-client/, `@vltpkg/registry-client` - A fetch client to
   interact with remote registries
