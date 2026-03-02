@@ -71,6 +71,13 @@ const setExitCode = (result: RunResult) => {
   process.exitCode ||= result.status ?? 1
 }
 
+const formatElapsed = (ms: number): string => {
+  if (ms >= 1000) {
+    return `${(ms / 1000).toFixed(1)}s`
+  }
+  return `${Math.round(ms)}ms`
+}
+
 export const views = {
   // run results for single or multiple will be printed along the way.
   human: result => {
@@ -213,29 +220,47 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       return this.noArgsMulti()
     }
 
+    // Compute max path length for alignment
+    const targets = this.getTargets()
+    this.#maxPathLength = 0
+    for (const { label } of targets) {
+      if (label.length > this.#maxPathLength) {
+        this.#maxPathLength = label.length
+      }
+    }
+
+    const scriptName = this.arg0
+    const totalStart = performance.now()
+
     // run across workspaces
     let failed = false as boolean
+    let taskCount = 0
     const runInDir = async (cwd: string, label: string) => {
+      const start = performance.now()
       const result = await this.bg(this.bgArg(cwd)).catch(
         (er: unknown) => {
+          const elapsed = performance.now() - start
           if (isErrorWithCause(er) && isRunResult(er.cause)) {
-            this.printResult(label, er.cause)
+            this.printResult(label, er.cause, scriptName, elapsed)
           }
           failed = true
           throw er
         },
       )
+      const elapsed = performance.now() - start
       // If we are allowed to ignore missing commands, then command might be
       // an emptry string. If so, we don't print anything and return null to
       // be filtered out later.
       if (!result.command) return null
-      if (!failed) this.printResult(label, result)
+      taskCount++
+      if (!failed)
+        this.printResult(label, result, scriptName, elapsed)
       return result
     }
 
     const resultMap = new Map<string, SpawnResultStdioStrings>()
     if (this.#nodes) {
-      for (const { label, cwd } of this.getTargets()) {
+      for (const { label, cwd } of targets) {
         const result = await runInDir(cwd, label)
         if (result) resultMap.set(label, result)
       }
@@ -248,6 +273,13 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       }
     }
 
+    // Print summary line for multi-workspace runs
+    if (this.view === 'human' && taskCount > 0) {
+      const totalElapsed = performance.now() - totalStart
+      const summary = `\n${taskCount} ${taskCount === 1 ? 'task' : 'tasks'} · ${formatElapsed(totalElapsed)} total`
+      stdout(styleTextStdout('dim', summary))
+    }
+
     const results: Record<string, RunResult> = {}
     for (const [path, result] of resultMap) {
       results[path] = result
@@ -255,27 +287,58 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     return results
   }
 
-  printResult(path: string, result: RunResult) {
+  /** Max path length for alignment in multi-workspace output */
+  #maxPathLength = 0
+
+  printResult(
+    path: string,
+    result: RunResult,
+    scriptName?: string,
+    elapsed = 0,
+  ) {
     // non-human results just get printed at the end
     if (this.view !== 'human') return
 
+    const isMulti = scriptName !== undefined
     if (result.status === 0 && result.signal === null) {
       /* c8 ignore start */
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
       /* c8 ignore stop */
-      stdout(path, 'ok')
+      if (isMulti) {
+        const paddedPath = path.padEnd(this.#maxPathLength)
+        const check = styleTextStdout('green', '✓')
+        const time = formatElapsed(elapsed)
+        stdout(
+          `${styleTextStdout('bold', paddedPath)}  ${check} ${scriptName} ${styleTextStdout('dim', `(${time})`)}`,
+        )
+      } /* c8 ignore start */ else {
+        stdout(path, 'ok')
+      } /* c8 ignore stop */
     } else {
-      stdout(
-        styleTextStdout(
-          ['bgWhiteBright', 'black', 'bold'],
-          path + ' failure',
-        ),
-        {
-          status: result.status,
-          signal: result.signal,
-        },
-      )
+      if (isMulti) {
+        const paddedPath = path.padEnd(this.#maxPathLength)
+        const cross = styleTextStdout('red', '✗')
+        const time = formatElapsed(elapsed)
+        const exitInfo =
+          result.signal ?
+            `signal ${result.signal}`
+          : `exit code ${result.status}`
+        stdout(
+          `${styleTextStdout('bold', paddedPath)}  ${cross} ${scriptName} ${styleTextStdout('dim', `(${time})`)}  ${exitInfo}`,
+        )
+      } /* c8 ignore start */ else {
+        stdout(
+          styleTextStdout(
+            ['bgWhiteBright', 'black', 'bold'],
+            path + ' failure',
+          ),
+          {
+            status: result.status,
+            signal: result.signal,
+          },
+        )
+      } /* c8 ignore stop */
       /* c8 ignore start */
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
