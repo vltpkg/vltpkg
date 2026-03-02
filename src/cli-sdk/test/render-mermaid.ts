@@ -1,5 +1,11 @@
 import { writeFile } from 'node:fs/promises'
 import t from 'tap'
+import type { LoadedConfig } from '../src/config/index.ts'
+
+const mockConf = {
+  projectRoot: '/mock/project',
+  options: {},
+} as unknown as LoadedConfig
 
 t.test('calculateWidth', async t => {
   const { calculateWidth } = await import('../src/render-mermaid.ts')
@@ -35,16 +41,23 @@ t.test('renderMermaid success', async t => {
   const { renderMermaid } = await t.mockImport<
     typeof import('../src/render-mermaid.ts')
   >('../src/render-mermaid.ts', {
-    '@vltpkg/promise-spawn': {
-      promiseSpawn: async (cmd: string, args: string[]) => {
+    '@vltpkg/vlx': {
+      resolve: async () => '/mock/bin/mmdc',
+    },
+    '@vltpkg/run': {
+      exec: async (opts: {
+        arg0: string
+        args: string[]
+        cwd: string
+        projectRoot: string
+      }) => {
         // Simulate mmdc creating the output file
-        const outputIdx = args.indexOf('--output')
-        const outputFile = args[outputIdx + 1]!
+        const outputIdx = opts.args.indexOf('--output')
+        const outputFile = opts.args[outputIdx + 1]!
         await writeFile(outputFile, 'fake-image-data')
-        t.equal(cmd, 'npx')
-        t.ok(args.includes('@mermaid-js/mermaid-cli'))
-        t.ok(args.includes('--yes'))
-        t.ok(args.includes('--quiet'))
+        t.equal(opts.arg0, '/mock/bin/mmdc')
+        t.ok(opts.args.includes('--quiet'))
+        t.equal(opts.projectRoot, '/mock/project')
         return { status: 0, stdout: '', stderr: '' }
       },
     },
@@ -54,6 +67,7 @@ t.test('renderMermaid success', async t => {
     'flowchart TD\na --> b',
     'png',
     10,
+    mockConf,
   )
   t.match(result, /graph\.png$/, 'should return png file path')
 
@@ -61,6 +75,7 @@ t.test('renderMermaid success', async t => {
     'flowchart TD\na --> b',
     'svg',
     10,
+    mockConf,
   )
   t.match(svgResult, /graph\.svg$/, 'should return svg file path')
 
@@ -68,6 +83,7 @@ t.test('renderMermaid success', async t => {
     'flowchart TD\na --> b',
     'pdf',
     10,
+    mockConf,
   )
   t.match(pdfResult, /graph\.pdf$/, 'should return pdf file path')
 })
@@ -77,18 +93,21 @@ t.test('renderMermaid width scaling', async t => {
   const { renderMermaid } = await t.mockImport<
     typeof import('../src/render-mermaid.ts')
   >('../src/render-mermaid.ts', {
-    '@vltpkg/promise-spawn': {
-      promiseSpawn: async (_cmd: string, args: string[]) => {
-        capturedArgs.push(args)
-        const outputIdx = args.indexOf('--output')
-        const outputFile = args[outputIdx + 1]!
+    '@vltpkg/vlx': {
+      resolve: async () => '/mock/bin/mmdc',
+    },
+    '@vltpkg/run': {
+      exec: async (opts: { args: string[] }) => {
+        capturedArgs.push(opts.args)
+        const outputIdx = opts.args.indexOf('--output')
+        const outputFile = opts.args[outputIdx + 1]!
         await writeFile(outputFile, 'fake-image-data')
         return { status: 0, stdout: '', stderr: '' }
       },
     },
   })
 
-  await renderMermaid('flowchart TD\na --> b', 'png', 200)
+  await renderMermaid('flowchart TD\na --> b', 'png', 200, mockConf)
   const widthIdx = capturedArgs[0]!.indexOf('--width')
   t.equal(
     capturedArgs[0]![widthIdx + 1],
@@ -97,22 +116,51 @@ t.test('renderMermaid width scaling', async t => {
   )
 })
 
-t.test('renderMermaid error', async t => {
+t.test('renderMermaid error from exec', async t => {
   const { renderMermaid } = await t.mockImport<
     typeof import('../src/render-mermaid.ts')
   >('../src/render-mermaid.ts', {
-    '@vltpkg/promise-spawn': {
-      promiseSpawn: async () => {
+    '@vltpkg/vlx': {
+      resolve: async () => '/mock/bin/mmdc',
+    },
+    '@vltpkg/run': {
+      exec: async () => {
         throw new Error('mmdc failed')
       },
     },
   })
 
   await t.rejects(
-    renderMermaid('invalid', 'png', 5),
+    renderMermaid('invalid', 'png', 5, mockConf),
     {
       message: 'Error generating image',
     },
     'should wrap error with user-friendly message',
   )
 })
+
+t.test(
+  'renderMermaid error when resolve returns undefined',
+  async t => {
+    const { renderMermaid } = await t.mockImport<
+      typeof import('../src/render-mermaid.ts')
+    >('../src/render-mermaid.ts', {
+      '@vltpkg/vlx': {
+        resolve: async () => undefined,
+      },
+      '@vltpkg/run': {
+        exec: async () => {
+          throw new Error('should not be called')
+        },
+      },
+    })
+
+    await t.rejects(
+      renderMermaid('invalid', 'png', 5, mockConf),
+      {
+        message: 'Error generating image',
+      },
+      'should wrap error when resolve fails',
+    )
+  },
+)
