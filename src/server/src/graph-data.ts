@@ -1,16 +1,17 @@
 import { resolve } from 'node:path'
 import { actual } from '@vltpkg/graph'
-import { getProjectData } from '../../project/src/get-project-data.ts'
+import { getProjectData } from '@vltpkg/project/get-project-data'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { rmSync, writeFileSync } from 'node:fs'
 
 import type { ActualLoadOptions } from '@vltpkg/graph'
 import type { Path } from 'path-scurry'
+import type { ProjectTool } from '@vltpkg/project'
 
 export type GraphDataOptions = ActualLoadOptions
 
 export type GraphProjectData = {
-  tools: string[]
+  tools: ProjectTool[]
   vltInstalled: boolean
 }
 

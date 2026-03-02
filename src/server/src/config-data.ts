@@ -2,7 +2,7 @@ import {
   get as getConfigValue,
   list as listConfigValues,
 } from '@vltpkg/config'
-import { reloadConfig } from '../../project/src/reload-config.ts'
+import { reloadConfig } from '@vltpkg/project/reload-config'
 
 import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
 import type { WhichConfig } from '@vltpkg/vlt-json'

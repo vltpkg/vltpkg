@@ -1,4 +1,4 @@
 export {
   readProjectFolders,
   type ProjectFolderOptions,
-} from '../../project/src/read-project-folders.ts'
+} from '@vltpkg/project/read-project-folders'

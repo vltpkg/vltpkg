@@ -86,9 +86,7 @@ export const createHostContextsMap = async (
     const retrieveProjectGraph = async () => {
       const initialEdges: EdgeLike[] = []
       const initialNodes: NodeLike[] = []
-      const config = (await reloadConfig(
-        folder.fullpath(),
-      )) as unknown as LoadedConfig
+      const config = await reloadConfig(folder.fullpath())
 
       // load each individual graph
       const graph = actual.load({
@@ -129,9 +127,7 @@ export const createHostContextsMap = async (
     const mainImporters: NodeLike[] = []
     for (const folder of projectFolders) {
       try {
-        const config = (await reloadConfig(
-          folder.fullpath(),
-        )) as unknown as LoadedConfig
+        const config = await reloadConfig(folder.fullpath())
         const projectInfo = getProjectData(
           {
             packageJson: config.options.packageJson,

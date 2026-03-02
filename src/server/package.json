@@ -18,6 +18,7 @@
     "@vltpkg/gui": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/project": "workspace:*",
     "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
