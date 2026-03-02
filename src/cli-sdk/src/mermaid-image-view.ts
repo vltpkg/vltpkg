@@ -21,7 +21,10 @@ export class MermaidImageView extends ViewClass<MermaidOutputGraph> {
     this.format = this.config.values.view as ImageFormat
   }
 
-  async done(result: MermaidOutputGraph): Promise<void> {
+  async done(
+    result: MermaidOutputGraph,
+    _opts: { time: number },
+  ): Promise<void> {
     const mermaidText = mermaidOutput(result)
     const nodeCount = result.nodes.length
 
