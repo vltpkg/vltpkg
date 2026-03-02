@@ -25,7 +25,7 @@ import type { JSONObj } from './cache-entry.ts'
 import { CacheEntry } from './cache-entry.ts'
 import { register } from './cache-revalidate.ts'
 import { bun, deno, node } from './env.ts'
-import { handle304Response } from './handle-304-response.ts'
+import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
@@ -531,7 +531,7 @@ export class RegistryClient {
     response: Dispatcher.ResponseData,
     entry?: CacheEntry,
   ): Promise<CacheEntry> {
-    if (handle304Response(response, entry)) return entry
+    if (handleCacheHitResponse(response, entry)) return entry
 
     if (response.statusCode === 401) {
       const repeatRequest = await otplease(this, options, response)
