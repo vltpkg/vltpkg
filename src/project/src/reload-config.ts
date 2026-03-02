@@ -1,8 +1,12 @@
+import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
+
 type VltJsonModule = {
   unload: (which?: 'user' | 'project') => void
 }
 
-export const reloadConfig = async (folder: string) => {
+export const reloadConfig = async (
+  folder: string,
+): Promise<LoadedConfig> => {
   // Clear vlt-json caches to ensure fresh file reads
   try {
     const { unload } =

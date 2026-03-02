@@ -12,13 +12,13 @@ t.test('read some project folders', async t => {
                 _6: {
                   includeme: {
                     'package.json': JSON.stringify({
-                      name: 'becasue it is not too deep',
+                      name: 'because it is not too deep',
                     }),
                   },
                   _7: {
                     ignoreme: {
                       'package.json': JSON.stringify({
-                        name: 'becasue it is too deep',
+                        name: 'because it is too deep',
                       }),
                     },
                   },
@@ -61,7 +61,7 @@ t.test('read some project folders', async t => {
       '.ignore': {
         ignoreme: {
           'package.json': JSON.stringify({
-            name: 'becasue it is in a dot folder',
+            name: 'because it is in a dot folder',
           }),
         },
       },
