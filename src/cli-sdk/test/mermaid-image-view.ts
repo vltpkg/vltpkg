@@ -34,6 +34,7 @@ t.test('MermaidImageView', async t => {
         _text: string,
         format: string,
         nodeCount: number,
+        _conf: unknown,
       ) => {
         capturedFormat = format
         capturedNodeCount = nodeCount
