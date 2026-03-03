@@ -48,6 +48,7 @@ const canonicalCommands = {
   update: 'update',
   'exec-cache': 'exec-cache',
   version: 'version',
+  view: 'view',
   whoami: 'whoami',
 } as const
 
@@ -67,7 +68,9 @@ const aliases = {
   xl: 'exec-local',
   h: 'help',
   '?': 'help',
+  info: 'view',
   ls: 'list',
+  show: 'view',
   xc: 'exec-cache',
 } as const
 
