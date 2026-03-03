@@ -4,7 +4,7 @@ import {
   getProjectData,
   readProjectFolders,
   reloadConfig,
-} from '@vltpkg/server'
+} from '@vltpkg/project'
 import { actual, createVirtualRoot } from '@vltpkg/graph'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'

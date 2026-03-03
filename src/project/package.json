@@ -1,41 +1,24 @@
 {
-  "name": "@vltpkg/server",
-  "description": "The server backend that powers the vlt gui",
+  "name": "@vltpkg/project",
+  "description": "Project discovery and project config utilities",
   "version": "1.0.0-rc.18",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/server"
+    "directory": "src/project"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
-    "@vltpkg/config": "workspace:*",
-    "@vltpkg/dep-id": "workspace:*",
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/git": "workspace:*",
-    "@vltpkg/graph": "workspace:*",
-    "@vltpkg/gui": "workspace:*",
-    "@vltpkg/init": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/project": "workspace:*",
-    "@vltpkg/security-archive": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
-    "mime-types": "^3.0.2",
-    "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
-    "promise-call-limit": "catalog:",
-    "resolve-import": "^2.1.1",
-    "serve-handler": "^6.1.6"
+    "promise-call-limit": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/mime-types": "^3.0.1",
     "@types/node": "catalog:",
-    "@types/serve-handler": "^6.1.4",
-    "@vltpkg/package-info": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
@@ -71,14 +54,19 @@
         "default": "./src/index.ts"
       }
     },
-    "./dashboard": {
+    "./get-project-data": {
       "import": {
-        "default": "./src/dashboard.ts"
+        "default": "./src/get-project-data.ts"
       }
     },
-    "./project-tools": {
+    "./read-project-folders": {
       "import": {
-        "default": "./src/project-tools.ts"
+        "default": "./src/read-project-folders.ts"
+      }
+    },
+    "./reload-config": {
+      "import": {
+        "default": "./src/reload-config.ts"
       }
     }
   },

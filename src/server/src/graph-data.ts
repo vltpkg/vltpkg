@@ -1,29 +1,17 @@
-import { homedir } from 'node:os'
-import { parse, posix, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { actual } from '@vltpkg/graph'
+import { getProjectData } from '@vltpkg/project/get-project-data'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { rmSync, writeFileSync } from 'node:fs'
-import { inferTools } from './project-tools.ts'
 
 import type { ActualLoadOptions } from '@vltpkg/graph'
-import type { PackageJson } from '@vltpkg/package-json'
-import type { Path, PathBase, PathScurry } from 'path-scurry'
-import type { ProjectTools } from './project-tools.ts'
-
-// In restricted environments (like locked-down Codespaces),
-// homedir() might fail. Fall back to parent directory.
-let foundHome
-try {
-  foundHome = posix.format(parse(homedir()))
-  /* c8 ignore next 3 */
-} catch {}
-const home =
-  foundHome ?? posix.dirname(posix.format(parse(process.cwd())))
+import type { Path } from 'path-scurry'
+import type { ProjectTool } from '@vltpkg/project'
 
 export type GraphDataOptions = ActualLoadOptions
 
 export type GraphProjectData = {
-  tools: ProjectTools[]
+  tools: ProjectTool[]
   vltInstalled: boolean
 }
 
@@ -80,33 +68,6 @@ const getGraphData = async (
   }
 }
 
-export const getProjectData = (
-  {
-    packageJson,
-    scurry,
-  }: { packageJson: PackageJson; scurry: PathScurry },
-  folder: PathBase,
-) => {
-  return {
-    root: folder.fullpathPosix(),
-    homedirRelativeRoot: posix.relative(home, folder.fullpathPosix()),
-    tools: inferTools(
-      packageJson.read(folder.fullpath()),
-      folder,
-      scurry,
-    ),
-    vltInstalled:
-      !!folder
-        .resolve('node_modules/.vlt')
-        .lstatSync()
-        ?.isDirectory() ||
-      !!folder
-        .resolve('node_modules/.vlt-lock.json')
-        .lstatSync()
-        ?.isFile(),
-  }
-}
-
 export const loadGraph = (options: ActualLoadOptions) => {
   const { packageJson, projectRoot } = options
   const mainManifest = packageJson.read(projectRoot)
@@ -118,3 +79,5 @@ export const loadGraph = (options: ActualLoadOptions) => {
     skipLoadingNodesOnModifiersChange: false,
   })
 }
+
+export { getProjectData }
