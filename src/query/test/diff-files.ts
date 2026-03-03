@@ -69,6 +69,31 @@ t.test('createDiffFilesProvider', async t => {
     // HEAD compared to itself should return no files
     const files = provider('HEAD')
     t.ok(files instanceof Set, 'should return a Set')
+    t.equal(
+      files.size,
+      0,
+      'HEAD vs HEAD should have no changes',
+    )
+  })
+
+  t.test('returns non-empty set for actual diff', async t => {
+    // Compare HEAD~1 to current — should have at least
+    // some changed files in the repo
+    const cwd = process.cwd()
+    const provider = createDiffFilesProvider(cwd)
+    const files = provider('HEAD~1')
+    t.ok(files instanceof Set, 'should return a Set')
+    t.ok(
+      files.size > 0,
+      'should have at least one changed file',
+    )
+    // All files should be non-empty strings
+    for (const file of files) {
+      t.ok(
+        file.length > 0,
+        `file path should be non-empty: ${file}`,
+      )
+    }
   })
 
   t.test('caches results per commitish', async t => {
