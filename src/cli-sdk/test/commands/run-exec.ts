@@ -7,6 +7,16 @@ import { setupEnv } from '../fixtures/util.ts'
 
 setupEnv(t)
 
+const isPosix = process.platform !== 'win32'
+const esc = (s: string): string => `'${s.replace(/'/g, "'\\''")}'`
+const shellCmd = (cmd: string, args: string[]) =>
+  isPosix ?
+    {
+      command: `${cmd} ${args.map(esc).join(' ')}`,
+      args: [] as string[],
+    }
+  : { command: cmd, args }
+
 const pass = 'node -e "process.exit(0)"'
 
 if (process.argv[1] === import.meta.filename) {
@@ -124,8 +134,7 @@ t.test('run script across several workspaces', async t => {
       stderr: '',
     },
     'src/b': {
-      command: 'echo pj script',
-      args: ['ok'],
+      ...shellCmd('echo pj script', ['ok']),
       cwd: resolve(dir, 'src/b'),
       status: 0,
       signal: null,
