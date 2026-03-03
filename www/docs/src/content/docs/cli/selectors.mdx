@@ -154,6 +154,15 @@ e.g: `#foo` is the same as `[name=foo]`
     directory
 - `:type(registry|file|git|remote|workspace)` Matches packages based
   on their type, e.g, to retrieve all git dependencies: `:type(git)`.
+- `:diff(<commitish>)` Matches packages whose files have changed
+  between the current working tree and the specified git commitish
+  reference. Uses `git diff --name-only` to determine changed files,
+  then maps them to packages by their file path location. Examples:
+  - `:diff(main)` - Packages changed since the main branch
+  - `:diff(HEAD~1)` - Packages changed since the last commit
+  - `:diff("v1.0.0")` - Packages changed since the v1.0.0 tag
+  - `:workspace:diff(main)` - Only workspaces that have changed
+  - `:has(> :diff(main))` - Packages that depend on changed packages
 
 ### Pseudo States
 
