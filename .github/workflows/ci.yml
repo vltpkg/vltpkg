@@ -71,8 +71,11 @@ jobs:
           node-version: '^22.22.0'
           check-latest: true
 
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
       - name: Install Dependencies with known good version of vlt
-        run: npx vlt@latest install
+        run: vlt install
 
       - name: Build source version of vlt
         run: node --run build:bundle
@@ -142,6 +145,46 @@ jobs:
           done
           exit $STATUS
 
+  query-deps:
+    name: Dependency Checks
+    needs: pre-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.22.0'
+          check-latest: true
+
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
+      - name: Install Dependencies
+        run: vlt install
+
+      - name: Check for copyleft licenses
+        uses: vltpkg/query-deps@v1
+        with:
+          query: '*:license(copyleft) --expect-results=0'
+
+      - name: Check for malware
+        uses: vltpkg/query-deps@v1
+        with:
+          query: ':malware --expect-results=0'
+
+      - name: Check for missing licenses
+        uses: vltpkg/query-deps@v1
+        with:
+          query: '*:license(missing) --expect-results=0'
+
+      - name: Check for deprecated packages
+        uses: vltpkg/query-deps@v1
+        with:
+          query: '*:deprecated --expect-results=0'
+
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
     needs: pre-check
@@ -176,8 +219,11 @@ jobs:
           node-version: '^22.22.0'
           check-latest: true
 
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
       - name: Install Dependencies with known good version of vlt
-        run: npx vlt@latest install
+        run: vlt install
 
       - name: Build source version of vlt
         run: node --run build:bundle

@@ -31,8 +31,11 @@ jobs:
           node-version: '^22.22.0'
           check-latest: true
 
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
       - name: Install Dependencies with known good version of vlt
-        run: npx vlt@latest install
+        run: vlt install
 
       - name: Build source version of vlt
         run: node --run build:bundle
