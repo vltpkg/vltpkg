@@ -28,7 +28,8 @@ t.test('MermaidImageView with svg format', async t => {
     '../src/render-mermaid.ts': {
       renderMermaidToFile: async () =>
         '/tmp/vlt-mermaid-test/graph.svg',
-      renderMermaidAscii: () => '',
+      renderMermaidToPng: async () =>
+        '/tmp/vlt-mermaid-test/graph.png',
     },
   })
 
@@ -64,8 +65,9 @@ t.test('MermaidImageView with svg format', async t => {
   )
 })
 
-t.test('MermaidImageView with ascii format', async t => {
-  let capturedOutput = ''
+t.test('MermaidImageView with png format', async t => {
+  let capturedOpenPath = ''
+  const stderrMessages: string[] = []
 
   const { MermaidImageView } = await t.mockImport<
     typeof import('../src/mermaid-image-view.ts')
@@ -74,24 +76,28 @@ t.test('MermaidImageView with ascii format', async t => {
       mermaidOutput: () => 'flowchart TD\nmocked',
     },
     '@vltpkg/url-open': {
-      urlOpen: async () => {},
-    },
-    '../src/output.ts': {
-      stderr: () => {},
-      stdout: (...args: unknown[]) => {
-        capturedOutput = String(args[0])
+      urlOpen: async (path: string) => {
+        capturedOpenPath = path
       },
     },
+    '../src/output.ts': {
+      stderr: (...args: unknown[]) => {
+        stderrMessages.push(String(args[0]))
+      },
+      stdout: () => {},
+    },
     '../src/render-mermaid.ts': {
-      renderMermaidToFile: async () => '',
-      renderMermaidAscii: () => 'ASCII ART OUTPUT',
+      renderMermaidToFile: async () =>
+        '/tmp/vlt-mermaid-test/graph.svg',
+      renderMermaidToPng: async () =>
+        '/tmp/vlt-mermaid-test/graph.png',
     },
   })
 
   const view = new MermaidImageView({}, {
-    values: { view: 'ascii' },
+    values: { view: 'png' },
   } as unknown as LoadedConfig)
-  t.equal(view.format, 'ascii', 'should set ascii format')
+  t.equal(view.format, 'png', 'should set png format')
 
   await view.done(
     {
@@ -104,8 +110,16 @@ t.test('MermaidImageView with ascii format', async t => {
   )
 
   t.equal(
-    capturedOutput,
-    'ASCII ART OUTPUT',
-    'should output ASCII art to stdout',
+    capturedOpenPath,
+    '/tmp/vlt-mermaid-test/graph.png',
+    'should open the generated PNG file',
+  )
+  t.ok(
+    stderrMessages.some(m => m.includes('Generating PNG')),
+    'should log PNG generation message',
+  )
+  t.ok(
+    stderrMessages.some(m => m.includes('Image saved to')),
+    'should log save path',
   )
 })
