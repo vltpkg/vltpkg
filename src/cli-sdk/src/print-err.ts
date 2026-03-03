@@ -5,7 +5,7 @@ import { parseError } from '@vltpkg/output/error'
 import { isErrorWithCause, isObject } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
 import { isGraphRunError } from '@vltpkg/graph-run'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
@@ -59,6 +59,14 @@ const writeErrorLog = (e: unknown, format: Formatter) => {
   }
 }
 
+const readErrorLog = (file: string) => {
+  try {
+    return readFileSync(file, 'utf8')
+  } catch {
+    return null
+  }
+}
+
 export const printErr = (
   e: unknown,
   usage: CommandUsage,
@@ -97,6 +105,15 @@ export const printErr = (
   if (fileWritten) {
     stderr('')
     stderr(`Full details written to: ${fileWritten}`)
+
+    if (process.env.CI) {
+      const fullErrorLog = readErrorLog(fileWritten)
+      if (fullErrorLog) {
+        stderr('')
+        stderr('Full details:')
+        stderr(fullErrorLog)
+      }
+    }
   }
   if (!knownError || knownError.bug) {
     stderr('')
