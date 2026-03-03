@@ -111,24 +111,29 @@ export const command: CommandFn<ExecResult> = async conf => {
     : ':not(*)'
   /* c8 ignore stop */
 
-  // Use vlx to resolve the create-* package, using the same strategy as vlt exec
-  // Pass the package name via options.package, and remaining args as positionals
+  const yesFlag = conf.get('yes')
+
+  // Resolve the create-* package using vlx. We pass the package name as
+  // a synthetic positional so vlx treats it as the command to resolve —
+  // NOT the user's args (like "app"). Without this, vlx would mistake
+  // the first user arg as the executable to spawn.
   const arg0 = await vlx.resolve(
-    args,
+    [packageName],
     {
       ...conf.options,
-      package: packageName,
       query: undefined,
       allowScripts,
     },
-    promptFn,
+    yesFlag ? async () => 'y' : promptFn,
   )
 
-  // Set positionals to the resolved command and its args
+  // Set positionals to the resolved executable and the user's args
   if (arg0) {
     conf.positionals = [arg0, ...args]
   } else {
-    conf.positionals = args
+    throw new Error(
+      `Could not resolve executable for package "${packageName}"`,
+    )
   }
 
   // Execute the create package
