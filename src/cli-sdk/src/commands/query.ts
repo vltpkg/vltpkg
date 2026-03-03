@@ -30,9 +30,9 @@ export const usage: CommandUsage = () =>
     command: 'query',
     usage: [
       '',
-      '<query> --view=<human | json | mermaid | svg | ascii | count>',
+      '<query> --view=<human | json | mermaid | svg | png | count>',
       '<query> --expect-results=<comparison string>',
-      '--target=<query> --view=<human | json | mermaid | svg | ascii | count>',
+      '--target=<query> --view=<human | json | mermaid | svg | png | count>',
     ],
     description: `List installed dependencies matching the provided query.
 
@@ -96,9 +96,9 @@ export const usage: CommandUsage = () =>
           'Query selector to filter packages using DSS syntax.',
       },
       view: {
-        value: '[human | json | mermaid | svg | ascii | count]',
+        value: '[human | json | mermaid | svg | png | count]',
         description:
-          'Output format. Defaults to human-readable or json if no tty. Use svg to render the dependency graph as an SVG image and open it. Use ascii to render a text diagram in the terminal. Count outputs the number of dependency relationships in the result.',
+          'Output format. Defaults to human-readable or json if no tty. Use svg or png to render the dependency graph as an image and open it. Count outputs the number of dependency relationships in the result.',
       },
     },
   })
@@ -132,7 +132,7 @@ export const views = {
   human: humanReadableOutput,
   count: (result: QueryResult) => result.edges.length,
   svg: MermaidImageView,
-  ascii: MermaidImageView,
+  png: MermaidImageView,
 } as const satisfies Views<QueryResult>
 
 export const command: CommandFn<QueryResult> = async conf => {

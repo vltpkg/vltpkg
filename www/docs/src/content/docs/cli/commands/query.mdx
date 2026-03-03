@@ -10,7 +10,7 @@ Usage:
 
 <Code
   code="$ vlt query
-$ vlt query <query> --view=[human | json | mermaid | svg | ascii | count]
+$ vlt query <query> --view=[human | json | mermaid | svg | png | count]
 "
   title="Terminal"
   lang="bash"
@@ -65,11 +65,11 @@ Find packages with critical security issues
 ### view
 
 Output format. Defaults to human-readable or json if no tty. Use `svg`
-to render the dependency graph as an SVG image and open it
-automatically. Use `ascii` to render a text diagram in the terminal.
+or `png` to render the dependency graph as an image and open it
+automatically.
 
 ```
---view=[human | json | mermaid | svg | ascii | count]
+--view=[human | json | mermaid | svg | png | count]
 ```
 
 ### expect-results
