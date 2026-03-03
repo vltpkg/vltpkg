@@ -5,6 +5,16 @@ import t from 'tap'
 import { exec, isRunResult, run } from '../src/index.ts'
 import * as nodeGypUtils from '../src/node-gyp.ts'
 
+const isPosix = process.platform !== 'win32'
+const esc = (s: string): string => `'${s.replace(/'/g, "'\\''")}'`
+const shellCmd = (cmd: string, args: string[]) =>
+  isPosix ?
+    {
+      command: `${cmd} ${args.map(esc).join(' ')}`,
+      args: [] as string[],
+    }
+  : { command: cmd, args }
+
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
 const NODE_OPTIONS = '--no-warnings --experimental-strip-types'
@@ -721,8 +731,13 @@ t.test('runExec (run)', async t => {
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
-      command: node,
-      args: [fixture, 'child', 'runExec', cwd, projectRoot],
+      ...shellCmd(node, [
+        fixture,
+        'child',
+        'runExec',
+        cwd,
+        projectRoot,
+      ]),
       cwd,
       status: 0,
       signal: null,
@@ -760,8 +775,7 @@ t.test('runExec (run)', async t => {
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
-      command: node,
-      args: [
+      ...shellCmd(node, [
         fixture,
         'child',
         'runExec',
@@ -770,7 +784,7 @@ t.test('runExec (run)', async t => {
         'a',
         'b',
         'c',
-      ],
+      ]),
       cwd,
       status: 0,
       signal: null,
@@ -1128,8 +1142,10 @@ t.test('quote things properly only as needed', async t => {
   ])
 
   t.matchStrict(runRes, {
-    command: `${node} -p "'!(ok)' + process.argv.slice(1)"`,
-    args: ['yes', 'ok'],
+    ...shellCmd(`${node} -p "'!(ok)' + process.argv.slice(1)"`, [
+      'yes',
+      'ok',
+    ]),
     status: 0,
     signal: null,
     stdout: '!(ok)yes,ok',
@@ -1143,6 +1159,98 @@ t.test('quote things properly only as needed', async t => {
     stdout: '!(ok)yes,ok',
     stderr: '',
   })
+})
+
+t.test(
+  'shell-escape args with metacharacters',
+  {
+    skip: process.platform === 'win32' && 'POSIX shell required',
+  },
+  async t => {
+    const manifest: Manifest = {
+      name: 'x',
+      version: '1.2.3',
+      scripts: {
+        echo: `${node} -p "JSON.stringify(process.argv.slice(1))"`,
+      },
+    }
+    const cwd = t.testdir({
+      'package.json': JSON.stringify(manifest),
+    })
+
+    const result = await run({
+      cwd,
+      manifest,
+      arg0: 'echo',
+      args: ['#hash', '$dollar', 'normal', "it's"],
+      projectRoot: cwd,
+    })
+
+    t.equal(result.status, 0)
+    t.strictSame(JSON.parse(result.stdout), [
+      '#hash',
+      '$dollar',
+      'normal',
+      "it's",
+    ])
+  },
+)
+
+t.test('shell-escaping is shell-aware', async t => {
+  let captured: { cmd: string; args: string[] } | undefined
+  const { exec: mockExec } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '@vltpkg/promise-spawn': {
+      promiseSpawn: async (cmd: string, args: string[]) => {
+        captured = { cmd, args }
+        return {
+          command: cmd,
+          args,
+          cwd: '',
+          status: 0,
+          signal: null,
+          stdout: '',
+          stderr: '',
+        }
+      },
+    },
+    'foreground-child/proxy-signals': { proxySignals: () => {} },
+  })
+  const cwd = t.testdir({ node_modules: { '.bin': {} } })
+
+  await mockExec({
+    arg0: 'echo',
+    args: ['#hash', '$dollar'],
+    cwd,
+    projectRoot: cwd,
+    'script-shell': 'C:\\Windows\\System32\\cmd.exe',
+  })
+  t.equal(captured?.cmd, 'echo', 'cmd.exe: command is not folded')
+  t.strictSame(
+    captured?.args,
+    ['#hash', '$dollar'],
+    'cmd.exe: args preserved',
+  )
+
+  captured = undefined as typeof captured
+  await mockExec({
+    arg0: 'echo',
+    args: ['#hash', "$it's"],
+    cwd,
+    projectRoot: cwd,
+    'script-shell': '/bin/sh',
+  })
+  t.equal(
+    captured?.cmd,
+    "echo '#hash' '$it'\\''s'",
+    'posix shell string: args folded with escaping',
+  )
+  t.strictSame(
+    captured?.args,
+    [],
+    'posix shell string: args array emptied',
+  )
 })
 
 t.test('node-gyp shim injection into PATH', async t => {
