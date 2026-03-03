@@ -87,10 +87,10 @@ t.test('command', async t => {
           _promptFn?: PromptFn,
         ) => {
           calledResolve = true
-          t.strictSame(args, ['my-app'])
+          // vlx receives the package name as a positional (not user args)
+          t.strictSame(args, ['create-react-app'])
           t.strictSame(options, {
             ...mockOptions,
-            package: 'create-react-app',
             query: undefined,
             allowScripts: ':not(*)',
           })
@@ -130,12 +130,11 @@ t.test('command', async t => {
       '@vltpkg/vlx': {
         resolve: async (
           args: string[],
-          options: VlxOptions,
+          _options: VlxOptions,
           _promptFn?: PromptFn,
         ) => {
           calledResolve = true
-          t.strictSame(args, ['my-project'])
-          t.strictSame(options.package, '@scope/create-template')
+          t.strictSame(args, ['@scope/create-template'])
           return 'arg0'
         },
       },
@@ -187,12 +186,11 @@ t.test('command', async t => {
       '@vltpkg/vlx': {
         resolve: async (
           args: string[],
-          options: VlxOptions,
+          _options: VlxOptions,
           _promptFn?: PromptFn,
         ) => {
           calledResolve = true
-          t.strictSame(args, ['my-project'])
-          t.strictSame(options.package, '@scope/create')
+          t.strictSame(args, ['@scope/create'])
           return 'arg0'
         },
       },
@@ -226,10 +224,11 @@ t.test('command', async t => {
       },
       '@vltpkg/vlx': {
         resolve: async (
-          _args: string[],
+          args: string[],
           options: VlxOptions,
           _promptFn?: PromptFn,
         ) => {
+          t.strictSame(args, ['create-vite'])
           t.strictSame(options.allowScripts, 'create-*')
           return 'arg0'
         },
@@ -245,7 +244,8 @@ t.test('command', async t => {
     await command(conf)
   })
 
-  t.test('when vlx.resolve returns undefined', async t => {
+  t.test('--yes flag auto-accepts prompts', async t => {
+    let promptUsed: PromptFn | undefined
     const mockOptions = {}
     const result = {
       status: 0,
@@ -266,6 +266,47 @@ t.test('command', async t => {
         resolve: async (
           _args: string[],
           _options: VlxOptions,
+          prompt?: PromptFn,
+        ) => {
+          promptUsed = prompt
+          return 'arg0'
+        },
+      },
+    })
+    unload()
+    const conf = {
+      positionals: ['next', 'app'],
+      options: mockOptions,
+      get: (key: string) => (key === 'yes' ? true : undefined),
+    } as unknown as LoadedConfig
+    await command(conf)
+    t.ok(promptUsed, 'promptFn was provided')
+    // When --yes is set, promptFn should auto-accept
+    const answer = await promptUsed!(
+      Spec.parse('a@1'),
+      '/some/path',
+      'https://example.com',
+    )
+    t.equal(answer, 'y', '--yes auto-accepts prompts')
+  })
+
+  t.test('when vlx.resolve returns undefined', async t => {
+    const mockOptions = {}
+    const { command } = await t.mockImport<
+      typeof import('../../src/commands/create.ts')
+    >('../../src/commands/create.ts', {
+      '../../src/exec-command.ts': {
+        views: {},
+        ExecCommand: class {
+          async run() {
+            return { status: 0, signal: null }
+          }
+        },
+      },
+      '@vltpkg/vlx': {
+        resolve: async (
+          _args: string[],
+          _options: VlxOptions,
           _promptFn?: PromptFn,
         ) => {
           return undefined
@@ -278,7 +319,9 @@ t.test('command', async t => {
       options: mockOptions,
       get: (_key: string) => undefined,
     } as unknown as LoadedConfig
-    t.strictSame(await command(conf), result)
-    t.strictSame(conf.positionals, ['my-app'])
+    await t.rejects(
+      command(conf),
+      /Could not resolve executable for package/,
+    )
   })
 })
