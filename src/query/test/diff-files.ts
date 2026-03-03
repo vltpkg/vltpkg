@@ -1,0 +1,85 @@
+import t from 'tap'
+import {
+  createDiffFilesProvider,
+  validateCommitish,
+} from '../src/diff-files.ts'
+
+t.test('validateCommitish', async t => {
+  t.test('accepts valid commitish values', async t => {
+    t.equal(validateCommitish('main'), 'main')
+    t.equal(validateCommitish('HEAD~1'), 'HEAD~1')
+    t.equal(validateCommitish('HEAD^2'), 'HEAD^2')
+    t.equal(validateCommitish('abc123def456'), 'abc123def456')
+    t.equal(validateCommitish('origin/main'), 'origin/main')
+    t.equal(validateCommitish('v1.0.0'), 'v1.0.0')
+    t.equal(
+      validateCommitish('feature/my-branch'),
+      'feature/my-branch',
+    )
+    t.equal(validateCommitish('refs/tags/v1.0.0'), 'refs/tags/v1.0.0')
+    t.equal(validateCommitish('HEAD@{1}'), 'HEAD@{1}')
+  })
+
+  t.test('rejects empty commitish', async t => {
+    t.throws(() => validateCommitish(''), {
+      message: 'Missing commitish argument for :diff() selector',
+    })
+  })
+
+  t.test('rejects unsafe commitish values', async t => {
+    t.throws(() => validateCommitish('main; rm -rf /'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+    t.throws(() => validateCommitish('main && echo pwned'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+    t.throws(() => validateCommitish('$(whoami)'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+    t.throws(() => validateCommitish('main|cat /etc/passwd'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+    t.throws(() => validateCommitish('`id`'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+  })
+})
+
+t.test('createDiffFilesProvider', async t => {
+  t.test('throws on invalid commitish', async t => {
+    const provider = createDiffFilesProvider('/tmp')
+    t.throws(() => provider('$(whoami)'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+  })
+
+  t.test('throws when git command fails', async t => {
+    const provider = createDiffFilesProvider(
+      '/tmp/not-a-git-repo-12345',
+    )
+    t.throws(() => provider('nonexistent-ref-12345'), {
+      message: /Failed to run git diff/,
+    })
+  })
+
+  t.test('returns changed files from git repo', async t => {
+    // Use the actual vltpkg repo for a real test
+    const cwd = process.cwd()
+    const provider = createDiffFilesProvider(cwd)
+    // HEAD compared to itself should return no files
+    const files = provider('HEAD')
+    t.ok(files instanceof Set, 'should return a Set')
+  })
+
+  t.test('caches results per commitish', async t => {
+    const cwd = process.cwd()
+    const provider = createDiffFilesProvider(cwd)
+    const files1 = provider('HEAD')
+    const files2 = provider('HEAD')
+    t.equal(
+      files1,
+      files2,
+      'should return same Set reference for same commitish',
+    )
+  })
+})

@@ -1,64 +1,8 @@
-import { execSync } from 'node:child_process'
-import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
 import { asPostcssNodeWithChildren } from '@vltpkg/dss-parser'
 import { removeDanglingEdges, removeNode } from './helpers.ts'
 import { parseInternals } from './spec.ts'
 import type { ParserState } from '../types.ts'
-
-/**
- * Pattern to validate commitish arguments.
- * Allows branch names, tags, SHAs, HEAD~N, HEAD^N, etc.
- * Rejects shell metacharacters to prevent command injection.
- */
-const VALID_COMMITISH = /^[a-zA-Z0-9_./@^~:#{}-]+$/
-
-/**
- * Validates that a commitish string is safe to use in a git command.
- */
-export const validateCommitish = (commitish: string): string => {
-  if (!commitish) {
-    throw error('Missing commitish argument for :diff() selector')
-  }
-  if (!VALID_COMMITISH.test(commitish)) {
-    throw error('Invalid commitish argument for :diff() selector', {
-      found: commitish,
-    })
-  }
-  return commitish
-}
-
-/**
- * Runs `git diff --name-only <commitish>` and returns the
- * list of changed file paths relative to the project root.
- */
-export const getChangedFiles = (
-  commitish: string,
-  projectRoot: string,
-): Set<string> => {
-  const safeCommitish = validateCommitish(commitish)
-  try {
-    const stdout = execSync(`git diff --name-only ${safeCommitish}`, {
-      cwd: projectRoot,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 30_000,
-    })
-    const files = new Set<string>()
-    for (const line of stdout.split('\n')) {
-      const trimmed = line.trim()
-      if (trimmed) {
-        files.add(trimmed)
-      }
-    }
-    return files
-  } catch (err) {
-    throw error(
-      `Failed to run git diff for commitish: ${safeCommitish}`,
-      { cause: err },
-    )
-  }
-}
 
 /**
  * Given a set of changed file paths and a package location
@@ -96,6 +40,11 @@ export const packageHasChanges = (
  * whose files have changed between the current state and
  * the specified commitish reference.
  *
+ * Requires a `diffFiles` provider to be set on the
+ * {@link ParserState}. The provider is a callback that
+ * takes a commitish string and returns a Set of changed
+ * file paths relative to the project root.
+ *
  * Examples:
  * - :diff(main) — packages changed since main branch
  * - :diff(HEAD~1) — packages changed since last commit
@@ -113,22 +62,12 @@ export const diff = async (state: ParserState) => {
     })
   }
 
-  const commitish = internals.specValue
-
-  // Get the project root from any available node
-  let projectRoot = '.'
-  for (const node of state.partial.nodes) {
-    if (node.projectRoot) {
-      projectRoot = node.projectRoot
-      break
-    }
+  if (!state.diffFiles) {
+    throw error('The :diff() selector requires a diffFiles provider')
   }
 
-  // Resolve project root to an absolute path
-  const resolvedRoot = resolve(projectRoot)
-
-  // Get changed files once for all nodes
-  const changedFiles = getChangedFiles(commitish, resolvedRoot)
+  const commitish = internals.specValue
+  const changedFiles = state.diffFiles(commitish)
 
   for (const node of state.partial.nodes) {
     /* c8 ignore next -- location is always set on real nodes */
