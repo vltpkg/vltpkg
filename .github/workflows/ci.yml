@@ -71,8 +71,11 @@ jobs:
           node-version: '^22.22.0'
           check-latest: true
 
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
       - name: Install Dependencies with known good version of vlt
-        run: npx vlt@latest install
+        run: vlt install
 
       - name: Build source version of vlt
         run: node --run build:bundle
@@ -142,6 +145,47 @@ jobs:
           done
           exit $STATUS
 
+  query-deps:
+    name: Dependency Checks
+    needs: pre-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.22.0'
+          check-latest: true
+
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
+      - name: Install Dependencies
+        run: vlt install
+
+      - name: Check for malware
+        run: |
+          vlt query ':malware'
+          vlt query ':malware' --expect-results=0
+
+      - name: Check for copyleft licenses
+        run: |
+          vlt query '*:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0]))'
+          vlt query '*:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0]))' --expect-results=0
+
+      - name: Check for missing licenses
+        run: |
+          vlt query '*:license(none)'
+          vlt query '*:license(none)' --expect-results=0
+
+      # TODO: re-enable this when we remove GUI/VSR from the project
+      # - name: Check for deprecated packages
+      #   run: |
+      #     vlt query '*:deprecated'
+      #     vlt query '*:deprecated' --expect-results=0
+
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
     needs: pre-check
@@ -176,8 +220,11 @@ jobs:
           node-version: '^22.22.0'
           check-latest: true
 
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
       - name: Install Dependencies with known good version of vlt
-        run: npx vlt@latest install
+        run: vlt install
 
       - name: Build source version of vlt
         run: node --run build:bundle

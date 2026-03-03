@@ -55,37 +55,71 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
 
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version: '^22.22.0'
-          cache: pnpm
           check-latest: true
 
       - name: Install dependencies
-        run: pnpm install
+        run: vlt install
 
       - name: Get Previous CLI Version Number
         id: previous-version
         run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
 
+      # TODO: Replace with `vlt version prerelease --workspace="./infra/cli*" --no-git-tag-version`
+      # once vlt version supports --no-git-tag-version (see: https://github.com/vltpkg/vltpkg/issues/1514)
       - name: Version CLI Packages
-        run: pnpm --filter="./infra/cli*" exec npm version prerelease --no-git-tag-version
+        run: |
+          bump_prerelease() {
+            local current="$1"
+            node --eval "
+              // Parse semver and compute prerelease bump
+              const v = '$current';
+              const m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z]+)(?:\.(\d+))?)?$/);
+              if (!m) { console.error('Invalid semver: ' + v); process.exit(1); }
+              const [, major, minor, patch, id, num] = m;
+              if (id && num !== undefined) {
+                // Has identifier with number (e.g. -rc.18) — increment the number
+                console.log(major + '.' + minor + '.' + patch + '-' + id + '.' + (parseInt(num) + 1));
+              } else if (id) {
+                // Has identifier without number (e.g. -pre) — add .0
+                console.log(major + '.' + minor + '.' + patch + '-' + id + '.0');
+              } else {
+                // Not a prerelease — bump patch and add -pre.0
+                console.log(major + '.' + minor + '.' + (parseInt(patch) + 1) + '-pre.0');
+              }
+            "
+          }
+          for pkg in ./infra/cli*/package.json; do
+            current=$(jq -r .version "$pkg")
+            new_version=$(bump_prerelease "$current")
+            jq --arg v "$new_version" '.version = $v' "$pkg" > "$pkg.tmp" && mv "$pkg.tmp" "$pkg"
+          done
 
       - name: Get CLI Version Number
         id: version
         run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
 
-      # TODO: use git history to determine other packages to bump
+      # TODO: Replace with `vlt version $VERSION --workspace="./src/*" --no-git-tag-version`
+      # once vlt version supports --no-git-tag-version (see: https://github.com/vltpkg/vltpkg/issues/1514)
       - name: Version Workspaces
-        run: pnpm --filter "./src/*" exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          for pkg in ./src/*/package.json; do
+            jq --arg v "$VERSION" '.version = $v' "$pkg" > "$pkg.tmp" && mv "$pkg.tmp" "$pkg"
+          done
 
+      # TODO: Replace with `vlt version $VERSION --no-git-tag-version`
+      # once vlt version supports --no-git-tag-version (see: https://github.com/vltpkg/vltpkg/issues/1514)
       - name: Version Root
-        run: pnpm exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
 
       - name: Commit Version Bumps
         run: |
@@ -94,8 +128,18 @@ jobs:
           git add -A
           git commit -m "Release v${{ steps.version.outputs.value }}"
 
+      # TODO: Replace with `vlt pack --scope=":workspace:changed($COMMIT)"` or similar
+      # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: Pack
-        run: pnpm --filter="[$(git rev-parse HEAD~1)]" --workspace-concurrency=1 exec pnpm pack
+        run: |
+          commit="$(git rev-parse HEAD~1)"
+          # Find workspaces with changes since the previous commit and pack them
+          for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
+            if [[ -f "$dir/package.json" ]]; then
+              echo "Packing $dir..."
+              (cd "$dir" && vlt pack)
+            fi
+          done
 
       - name: Full integrity
         id: integrity
@@ -110,6 +154,8 @@ jobs:
             echo "${delimiter}"
           } >> "${GITHUB_OUTPUT}"
 
+      # TODO: Replace with `vlt ls --scope=":workspace:changed($COMMIT)"` or similar
+      # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: List Packages
         id: packages
         run: |
@@ -120,14 +166,17 @@ jobs:
             local name="$1"
             local filter="$2"
 
+            # Find changed directories within the given filter path
             local packages
-            packages=$(pnpm --shell-mode --filter="{./$filter/}[$commit]" exec "pwd" | sort)
+            packages=$(git diff --name-only "$commit" HEAD | grep -oP "^${filter}/[^/]+" | sort -u)
 
             echo "$packages"
             {
               echo "${name}<<${delimiter}"
               while IFS= read -r package_dir; do
+                [[ -z "$package_dir" ]] && continue
                 local package_json="$package_dir/package.json"
+                [[ ! -f "$package_json" ]] && continue
                 if [[ "$(jq -r .private "$package_json")" == "true" ]]; then
                   continue
                 fi
@@ -218,25 +267,33 @@ jobs:
         with:
           fetch-depth: 2
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
 
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version: '^22.22.0'
-          cache: pnpm
           check-latest: true
 
-      - name: Setup npm
-        run: npm i npm@11 -g
-
       - name: Install dependencies
-        run: pnpm install
+        run: vlt install
 
+      # TODO: Replace with `vlt ls --scope=":workspace:changed($COMMIT)" --json` or similar
+      # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: List Packages to Publish
-        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort
+        run: |
+          commit="$(git rev-parse HEAD~1)"
+          for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
+            if [[ -f "$dir/package.json" ]]; then
+              is_private=$(jq -r '.private // false' "$dir/package.json")
+              if [[ "$is_private" != "true" ]]; then
+                name=$(jq -r '.name' "$dir/package.json")
+                version=$(jq -r '.version' "$dir/package.json")
+                echo "$name@$version"
+              fi
+            fi
+          done | sort
 
       - name: Versions
         id: versions
@@ -252,14 +309,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      # TODO: Replace with `vlt publish --scope=":workspace:changed($COMMIT)" --access=public`
+      # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: Publish
         run: |
-          pnpm publish \
-            --filter="[$(git rev-parse HEAD~1)]" \
-            --access=public \
-            --no-git-checks \
-            --publish-branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" \
-            ${{ needs.pre-check.outputs.dry-run == 'true' && '--dry-run' }}
+          commit="$(git rev-parse HEAD~1)"
+          dry_run_flag=""
+          if [[ "${{ needs.pre-check.outputs.dry-run }}" == "true" ]]; then
+            dry_run_flag="--dry-run"
+          fi
+          for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
+            if [[ -f "$dir/package.json" ]]; then
+              is_private=$(jq -r '.private // false' "$dir/package.json")
+              if [[ "$is_private" == "true" ]]; then
+                echo "Skipping private package in $dir"
+                continue
+              fi
+              echo "Publishing $dir..."
+              (cd "$dir" && vlt publish --access=public $dry_run_flag)
+            fi
+          done
         env:
           NPM_CONFIG_PROVENANCE: false
 

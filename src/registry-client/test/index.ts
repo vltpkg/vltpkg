@@ -186,6 +186,18 @@ const registry = createServer((req, res) => {
     return res.end(JSON.stringify({ location }))
   }
 
+  if (url === '/412-packument') {
+    if (req.headers['if-none-match']) {
+      res.statusCode = 412
+      res.setHeader('content-length', '0')
+      return res.end()
+    }
+    res.setHeader('content-type', 'application/json')
+    res.setHeader('etag', etag)
+    res.setHeader('date', new Date().toUTCString())
+    return res.end(JSON.stringify({ name: 'retried' }))
+  }
+
   if (req.headers['if-none-match'] === etag) {
     res.statusCode = 304
     return res.end('not modified (and this is not valid json)')
@@ -689,6 +701,34 @@ t.test('sending request with PUT method', async t => {
 t.test('identity', async t => {
   const rc = new RC({ identity: 'crisis' })
   t.equal(rc.identity, 'crisis')
+})
+
+t.test('412 precondition failed returns cached entry', async t => {
+  const rc = t.context.rc as RegistryClient
+  const staleEntry = new CacheEntry(
+    200,
+    toRawHeaders({
+      date: new Date(Date.now() - 100 * 60 * 1000).toUTCString(),
+      'cache-control': 'max-age=300',
+      'content-type': 'application/json',
+      etag: '"stale-etag"',
+    }),
+  )
+  staleEntry.addBody(Buffer.from('{"name":"cached"}'))
+  const cache = rc.cache
+  const staleCache = {
+    path: () => cache.path(),
+    fetch: async () => staleEntry.encode(),
+    promise: async () => {},
+    set: () => {},
+  } as unknown as Cache
+  rc.cache = staleCache
+  const result = await rc.request(
+    new URL('/412-packument', registryURL),
+    { staleWhileRevalidate: false },
+  )
+  t.equal(result.statusCode, 200)
+  t.strictSame(result.json(), { name: 'cached' })
 })
 
 t.test('staleWhileRevalidate', async t => {
