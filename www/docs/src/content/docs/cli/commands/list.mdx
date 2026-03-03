@@ -10,7 +10,7 @@ Usage:
 
 <Code
   code="$ vlt ls
-$ vlt ls <query> --view=[human | json | mermaid | count]"
+$ vlt ls <query> --view=[human | json | mermaid | svg | png | count]"
   title="Terminal"
   lang="bash"
 />
@@ -52,8 +52,10 @@ List all peer dependencies of all workspaces
 
 ### view
 
-Output format. Defaults to human-readable or json if no tty.
+Output format. Defaults to human-readable or json if no tty. Use `svg`
+or `png` to render the dependency graph as an image and open it
+automatically.
 
 ```
---view=[human | json | mermaid | count]
+--view=[human | json | mermaid | svg | png | count]
 ```

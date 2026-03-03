@@ -147,9 +147,9 @@ workspace-a
 exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
-  vlt query <query> --view=<human | json | mermaid | count>
+  vlt query <query> --view=<human | json | mermaid | svg | png | count>
   vlt query <query> --expect-results=<comparison string>
-  vlt query --target=<query> --view=<human | json | mermaid | count>
+  vlt query --target=<query> --view=<human | json | mermaid | svg | png | count>
 
 List installed dependencies matching the provided query.
 
@@ -226,10 +226,11 @@ Defaults to listing all dependencies of the project root and workspaces.
       ​--target=<query>
 
     view
-      Output format. Defaults to human-readable or json if no tty. Count outputs
+      Output format. Defaults to human-readable or json if no tty. Use svg or
+      png to render the dependency graph as an image and open it. Count outputs
       the number of dependency relationships in the result.
 
-      ​--view=[human | json | mermaid | count]
+      ​--view=[human | json | mermaid | svg | png | count]
 
 `
 

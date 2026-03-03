@@ -356,6 +356,43 @@ const runImpl = async <
 }
 
 /**
+ * Escapes a string for safe inclusion in a POSIX shell command.
+ * Wraps in single quotes and escapes any embedded single quotes.
+ */
+const shellEscape = (s: string): string =>
+  `'${s.replace(/'/g, "'\\''")}'`
+
+const isPosixShell = (shell: boolean | string): boolean => {
+  if (typeof shell === 'string')
+    return !/(^|\\)cmd\.exe$/i.test(shell)
+  return process.platform !== 'win32'
+}
+
+/**
+ * When running through a POSIX shell, Node.js joins `spawn(cmd, args)`
+ * into a single string without escaping (DEP0190). This means
+ * characters like `#` are interpreted as shell comments, silently
+ * swallowing the rest of the command line.
+ *
+ * Fix: append shell-escaped args directly to the command string
+ * so the script is still shell-interpreted but args are passed
+ * literally.
+ *
+ * On Windows with cmd.exe, these characters are not special, so
+ * we leave args as-is to avoid injecting POSIX quotes that cmd.exe
+ * would pass through literally.
+ */
+const withShellArgs = (
+  shell: boolean | string,
+  arg0: string,
+  args: string[],
+): [cmd: string, args: string[]] => {
+  if (!shell || args.length === 0 || !isPosixShell(shell))
+    return [arg0, args]
+  return [`${arg0} ${args.map(shellEscape).join(' ')}`, []]
+}
+
+/**
  * Execute an arbitrary command in the background
  */
 export const exec = async (
@@ -373,7 +410,9 @@ export const exec = async (
     ...spawnOptions
   } = options
 
-  const p = promiseSpawn(arg0, args, {
+  const [spawnCmd, spawnArgs] = withShellArgs(shell, arg0, args)
+
+  const p = promiseSpawn(spawnCmd, spawnArgs, {
     ...spawnOptions,
     shell,
     stdio: 'pipe',
@@ -413,6 +452,8 @@ export const execFG = async (
     ...spawnOptions
   } = options
 
+  const [spawnCmd, spawnArgs] = withShellArgs(shell, arg0, args)
+
   const processEnv = await addPaths(
     projectRoot,
     cwd,
@@ -426,8 +467,8 @@ export const execFG = async (
 
   return new Promise<SpawnResultNoStdio>(res => {
     foregroundChild(
-      arg0,
-      args,
+      spawnCmd,
+      spawnArgs,
       {
         ...spawnOptions,
         shell,

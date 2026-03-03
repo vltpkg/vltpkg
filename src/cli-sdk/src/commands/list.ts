@@ -20,6 +20,7 @@ import type {
 } from '@vltpkg/graph'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
+import { MermaidImageView } from '../mermaid-image-view.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -28,8 +29,8 @@ export const usage: CommandUsage = () =>
     command: 'ls',
     usage: [
       '',
-      '[package-names...] [--view=human | json | mermaid | count]',
-      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid | count]',
+      '[package-names...] [--view=human | json | mermaid | svg | png | count]',
+      '[--scope=<query>] [--target=<query>] [--view=human | json | mermaid | svg | png | count]',
     ],
     description: `List installed dependencies matching given package names or query selectors.
 
@@ -75,9 +76,9 @@ export const usage: CommandUsage = () =>
           'Query selector to filter packages using the DSS query language syntax.',
       },
       view: {
-        value: '[human | json | mermaid | count]',
+        value: '[human | json | mermaid | svg | png | count]',
         description:
-          'Output format. Defaults to human-readable or json if no tty. Count outputs the number of dependency relationships in the result.',
+          'Output format. Defaults to human-readable or json if no tty. Use svg or png to render the dependency graph as an image and open it. Count outputs the number of dependency relationships in the result.',
       },
     },
   })
@@ -91,6 +92,8 @@ export const views = {
   mermaid: mermaidOutput,
   human: humanReadableOutput,
   count: (result: ListResult) => result.edges.length,
+  svg: MermaidImageView,
+  png: MermaidImageView,
 } as const satisfies Views<ListResult>
 
 export const command: CommandFn<ListResult> = async conf => {
