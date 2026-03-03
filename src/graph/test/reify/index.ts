@@ -10,9 +10,11 @@ import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import {
+  existsSync,
   lstatSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   unlinkSync,
   writeFileSync,
@@ -784,6 +786,111 @@ t.test('allowScripts with query selector :scripts', async t => {
     result.buildQueue?.length,
     0,
     'lodash has no scripts so nothing was run',
+  )
+})
+
+t.test('reify recreates deleted workspace node_modules', async t => {
+  const projectRoot = t.testdir({
+    cache: {},
+    'vlt.json': JSON.stringify({
+      cache: resolve(t.testdirName, 'cache'),
+      workspaces: { packages: ['./packages/*'] },
+    }),
+    'package.json': JSON.stringify({
+      name: 'my-monorepo',
+      version: '1.0.0',
+      dependencies: {
+        'my-ws': 'workspace:*',
+        lodash: '4',
+      },
+    }),
+    packages: {
+      'my-ws': {
+        'package.json': JSON.stringify({
+          name: 'my-ws',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    },
+  })
+
+  t.chdir(projectRoot)
+  unload('project')
+
+  const monorepo = Monorepo.maybeLoad(projectRoot)
+  const packageJson = new PackageJson()
+  const scurry = new PathScurry(projectRoot)
+
+  // First install: creates everything
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo,
+    scurry,
+    packageJson,
+    remover: new RollbackRemove(),
+  })
+  await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo,
+    scurry,
+    packageJson: new PackageJson(),
+    graph,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+
+  // Verify initial install created workspace node_modules
+  const wsNm = resolve(projectRoot, 'packages/my-ws/node_modules')
+  t.ok(
+    existsSync(wsNm),
+    'workspace node_modules should exist after first install',
+  )
+  t.ok(
+    lstatSync(resolve(wsNm, 'lodash')).isSymbolicLink(),
+    'lodash symlink should exist in workspace node_modules',
+  )
+
+  // Delete workspace node_modules to simulate user action
+  rmSync(wsNm, { recursive: true })
+  t.notOk(
+    existsSync(wsNm),
+    'workspace node_modules should be deleted',
+  )
+
+  // Second install: should recreate workspace node_modules
+  const scurry2 = new PathScurry(projectRoot)
+  const monorepo2 = Monorepo.maybeLoad(projectRoot)
+  const graph2 = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: monorepo2,
+    scurry: scurry2,
+    packageJson: new PackageJson(),
+    remover: new RollbackRemove(),
+  })
+  await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: monorepo2,
+    scurry: scurry2,
+    packageJson: new PackageJson(),
+    graph: graph2,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+
+  t.ok(
+    existsSync(wsNm),
+    'workspace node_modules should be recreated after second install',
+  )
+  t.ok(
+    lstatSync(resolve(wsNm, 'lodash')).isSymbolicLink(),
+    'lodash symlink should be recreated in workspace node_modules',
   )
 })
 
