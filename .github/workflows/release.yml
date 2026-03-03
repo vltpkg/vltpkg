@@ -80,14 +80,18 @@ jobs:
             node --eval "
               // Parse semver and compute prerelease bump
               const v = '$current';
-              const pre = v.match(/-pre\.(\d+)$/);
-              if (pre) {
-                // Already a prerelease — increment the prerelease number
-                console.log(v.replace(/-pre\.\d+$/, '-pre.' + (parseInt(pre[1]) + 1)));
+              const m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z]+)(?:\.(\d+))?)?$/);
+              if (!m) { console.error('Invalid semver: ' + v); process.exit(1); }
+              const [, major, minor, patch, id, num] = m;
+              if (id && num !== undefined) {
+                // Has identifier with number (e.g. -rc.18) — increment the number
+                console.log(major + '.' + minor + '.' + patch + '-' + id + '.' + (parseInt(num) + 1));
+              } else if (id) {
+                // Has identifier without number (e.g. -pre) — add .0
+                console.log(major + '.' + minor + '.' + patch + '-' + id + '.0');
               } else {
                 // Not a prerelease — bump patch and add -pre.0
-                const [major, minor, patch] = v.split('-')[0].split('.').map(Number);
-                console.log(major + '.' + minor + '.' + (patch + 1) + '-pre.0');
+                console.log(major + '.' + minor + '.' + (parseInt(patch) + 1) + '-pre.0');
               }
             "
           }
@@ -282,9 +286,12 @@ jobs:
           commit="$(git rev-parse HEAD~1)"
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
             if [[ -f "$dir/package.json" ]]; then
-              name=$(jq -r '.name' "$dir/package.json")
-              version=$(jq -r '.version' "$dir/package.json")
-              echo "$name@$version"
+              is_private=$(jq -r '.private // false' "$dir/package.json")
+              if [[ "$is_private" != "true" ]]; then
+                name=$(jq -r '.name' "$dir/package.json")
+                version=$(jq -r '.version' "$dir/package.json")
+                echo "$name@$version"
+              fi
             fi
           done | sort
 
@@ -319,7 +326,7 @@ jobs:
                 continue
               fi
               echo "Publishing $dir..."
-              (cd "$dir" && vlt publish --access=public $dry_run_flag) || true
+              (cd "$dir" && vlt publish --access=public $dry_run_flag)
             fi
           done
         env:
