@@ -82,7 +82,7 @@ t.test('createDiffFilesProvider', async t => {
     try {
       files = provider('HEAD~1')
     } catch {
-      t.skip('shallow clone — HEAD~1 not available')
+      t.pass('shallow clone — HEAD~1 not available, skipping')
       return
     }
     t.ok(files instanceof Set, 'should return a Set')
@@ -91,6 +91,25 @@ t.test('createDiffFilesProvider', async t => {
     for (const file of files) {
       t.ok(file.length > 0, `file path should be non-empty: ${file}`)
     }
+  })
+
+  t.test('parses git output with mocked execSync', async t => {
+    const { createDiffFilesProvider: mockedCreate } =
+      await t.mockImport<typeof import('../src/diff-files.ts')>(
+        '../src/diff-files.ts',
+        {
+          'node:child_process': {
+            execSync: () =>
+              'src/index.ts\npackages/a/lib/util.ts\n\n',
+          },
+        },
+      )
+
+    const provider = mockedCreate('/tmp')
+    const files = provider('main')
+    t.equal(files.size, 2, 'should parse two files')
+    t.ok(files.has('src/index.ts'))
+    t.ok(files.has('packages/a/lib/util.ts'))
   })
 
   t.test('caches results per commitish', async t => {
