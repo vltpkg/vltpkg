@@ -28,7 +28,8 @@ import type {
   GraphModifier,
   ModifierActiveEntry,
 } from '../modifiers.ts'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 export type LoadOptions = SpecOptions & {
   /**
@@ -445,6 +446,27 @@ const parseDir = (
 }
 
 /**
+ * Verify that all importer node_modules directories exist on disk.
+ * The hidden lockfile may report deps as installed even when a
+ * workspace's node_modules has been manually deleted. Throws if
+ * any importer node_modules directory is missing, causing the
+ * caller to fall through to filesystem-based graph loading.
+ */
+export const verifyImporterNodeModules = (
+  graph: Graph,
+  projectRoot: string,
+): void => {
+  for (const importer of graph.importers) {
+    const nm = resolve(projectRoot, importer.location, 'node_modules')
+    if (!existsSync(nm)) {
+      throw new Error(
+        `Missing node_modules for importer: ${importer.location}`,
+      )
+    }
+  }
+}
+
+/**
  * Read the file system looking for `node_modules` folders and
  * returns a new {@link Graph} that represents the relationship
  * between the dependencies found.
@@ -474,6 +496,7 @@ export const load = (options: LoadOptions): Graph => {
         monorepo,
         scurry,
       })
+      verifyImporterNodeModules(graph, projectRoot)
       done()
       return graph
     } catch {
