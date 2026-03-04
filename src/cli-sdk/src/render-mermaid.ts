@@ -2,7 +2,7 @@ import { writeFile, mkdtemp } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { error } from '@vltpkg/error-cause'
-// eslint-disable-next-line import/no-unresolved
+
 import { renderMermaidSVG } from 'beautiful-mermaid'
 
 export type OutputFormat = 'svg' | 'png'
@@ -23,7 +23,6 @@ const decodeForDisplay = (mermaidText: string): string =>
  */
 export const renderMermaidSvg = (mermaidText: string): string => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
     return renderMermaidSVG(decodeForDisplay(mermaidText), {
       bg: '#FFFFFF',
       fg: '#27272A',
@@ -60,7 +59,7 @@ export const renderMermaidToPng = async (
   mermaidText: string,
 ): Promise<string> => {
   const svg = renderMermaidSvg(mermaidText)
-  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, import/no-unresolved */
+
   const { Resvg, initWasm } = await import('@resvg/resvg-wasm')
   const { readFile: rf } = await import('node:fs/promises')
   const { createRequire: cr } = await import('node:module')
@@ -78,6 +77,6 @@ export const renderMermaidToPng = async (
   const dir = await mkdtemp(join(tmpdir(), 'vlt-mermaid-'))
   const outputFile = join(dir, 'graph.png')
   await writeFile(outputFile, pngBuffer)
-  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, import/no-unresolved */
+
   return outputFile
 }

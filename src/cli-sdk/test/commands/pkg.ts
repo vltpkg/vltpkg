@@ -1144,10 +1144,12 @@ t.test(
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: join(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: join(dir, 'packages/b'),
           },
         ],
@@ -1161,6 +1163,367 @@ t.test(
       result,
       ['@test/a', '@test/b'],
       'should handle workspace array without scope query',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - filter by name',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
+      },
+      '@vltpkg/query': {
+        Query: {
+          hasSecuritySelectors() {
+            return false
+          },
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: join(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { workspace: ['@test/a'] },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a'],
+      'should filter by workspace name',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - filter by fullpath',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
+      },
+      '@vltpkg/query': {
+        Query: {
+          hasSecuritySelectors() {
+            return false
+          },
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const fullpath = join(dir, 'packages/a')
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath,
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { workspace: [fullpath] },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a'],
+      'should filter by workspace fullpath',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - filter by resolved relative path',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
+      },
+      '@vltpkg/query': {
+        Query: {
+          hasSecuritySelectors() {
+            return false
+          },
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: join(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { workspace: ['./packages/a'] },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a'],
+      'should filter by resolved relative path',
+    )
+  },
+)
+
+t.test(
+  'workspace options without scope - filter by minimatch glob',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '2.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '3.0.0',
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/pkg.ts')
+    >('../../src/commands/pkg.ts', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => ({ nodes: new Map() }),
+        },
+        install: () => {},
+        uninstall: () => {},
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
+        createVirtualRoot: () => {},
+        GraphModifier: {
+          maybeLoad: () => undefined,
+        },
+        VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
+      },
+      '@vltpkg/query': {
+        Query: {
+          hasSecuritySelectors() {
+            return false
+          },
+        },
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({}),
+        },
+      },
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: join(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: join(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['get', 'name'],
+      values: { workspace: ['packages/*'] },
+    })
+
+    const result = await Command.command(config)
+    t.strictSame(
+      result,
+      ['@test/a', '@test/b'],
+      'should filter by minimatch glob',
     )
   },
 )
@@ -1232,10 +1595,12 @@ t.test(
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: join(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: join(dir, 'packages/b'),
           },
         ],
@@ -1320,10 +1685,12 @@ t.test(
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: join(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: join(dir, 'packages/b'),
           },
         ],
