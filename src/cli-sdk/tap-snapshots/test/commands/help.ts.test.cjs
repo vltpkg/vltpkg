@@ -20,6 +20,7 @@ b,       build       <selector>      Build packages with lifecycle scripts
          cache       [add|ls|info|...Manage the package cache
          ci                          Clean install (frozen lockfile)
          config      [get|pick|lis...Get or set configuration
+         create      <initializer>...Create a new project from a template
 
          docs                        Open the docs of the current project
 
