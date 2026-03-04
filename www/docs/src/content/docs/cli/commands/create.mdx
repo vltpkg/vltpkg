@@ -40,6 +40,24 @@ local dependencies.
 
 ## Examples
 
+### Start a Next.js Project
+
+<Code
+  code="$ vlt create next-app my-app"
+  title="Terminal"
+  lang="bash"
+/>
+
+This fetches and runs `create-next-app my-app`. You can also pass
+options through:
+
+<Code
+  code={`$ vlt create next-app my-app --typescript --tailwind --eslint
+$ vlt create next-app my-app --use-pnpm  # or any create-next-app flag`}
+  title="Terminal"
+  lang="bash"
+/>
+
 ### Create a React App
 
 <Code
@@ -60,6 +78,16 @@ This executes `create-react-app my-app`
 
 This executes `create-vite my-project`
 
+### Create a SvelteKit Project
+
+<Code
+  code="$ vlt create svelte@latest my-app"
+  title="Terminal"
+  lang="bash"
+/>
+
+This executes `create-svelte@latest my-app`
+
 ### Use a Scoped Template
 
 <Code
@@ -69,6 +97,16 @@ This executes `create-vite my-project`
 />
 
 This executes `@scope/create-template my-app`
+
+### Skip Confirmation Prompts
+
+Use `--yes` to automatically accept the install prompt:
+
+<Code
+  code="$ vlt create next-app my-app --yes"
+  title="Terminal"
+  lang="bash"
+/>
 
 ## Options
 
