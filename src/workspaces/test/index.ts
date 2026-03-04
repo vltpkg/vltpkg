@@ -437,6 +437,34 @@ t.test(
   },
 )
 
+t.test('syntax error in workspace package.json throws', t => {
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({
+      workspaces: { packages: ['./src/*'] },
+    }),
+    src: {
+      valid: {
+        'package.json': JSON.stringify({
+          name: 'valid',
+          version: '1.0.0',
+        }),
+      },
+      invalid: {
+        // Missing comma - intentional JSON syntax error
+        'package.json': '{ "name": "invalid" "version": "1.0.0" }',
+      },
+    },
+  })
+  t.chdir(dir)
+  unload()
+
+  t.throws(() => Monorepo.load(dir), {
+    message: /Failed to parse package\.json in workspace/,
+  })
+
+  t.end()
+})
+
 t.test('duplicate workspace names are not allowed', t => {
   const dir = t.testdir({
     'vlt.json': JSON.stringify({

@@ -13,6 +13,27 @@ import { basename, posix, resolve } from 'node:path'
 import type { Path } from 'path-scurry'
 import { PathScurry } from 'path-scurry'
 
+/**
+ * Check if an error (potentially wrapped by @vltpkg/error-cause) is
+ * caused by a JSON syntax error. The error chain from PackageJson.read()
+ * is: Error { cause: { path, cause: SyntaxError } }
+ */
+/* c8 ignore start - defensive helper, primary path tested via workspace integration */
+const isSyntaxError = (err: unknown): boolean => {
+  if (err instanceof SyntaxError) return true
+  if (err instanceof Error) {
+    const cause = (err as Error & { cause?: unknown }).cause
+    if (cause instanceof SyntaxError) return true
+    if (cause && typeof cause === 'object' && 'cause' in cause) {
+      return (
+        (cause as { cause: unknown }).cause instanceof SyntaxError
+      )
+    }
+  }
+  return false
+}
+/* c8 ignore stop */
+
 export type WorkspacesLoadedConfig = {
   workspace?: string[]
   'workspace-group'?: string[]
@@ -314,7 +335,10 @@ export class Monorepo {
 
   // can't be cached, because it's dependent on the matches set
   // but still worthwhile to have it defined in one place
-  #globOptions(matches: Set<string>): GlobOptionsWithFileTypesFalse {
+  #globOptions(
+    matches: Set<string>,
+    parseErrors?: Map<string, unknown>,
+  ): GlobOptionsWithFileTypesFalse {
     // if the entry or any of its parent dirs are already matched,
     // then we should not explore further down that directory tree.
     // if we hit the projectRoot then stop searching.
@@ -352,7 +376,14 @@ export class Monorepo {
           if (!pj?.isFile()) return true
           try {
             this.packageJson.read(p.fullpath())
-          } catch {
+          } catch (err) {
+            // Track JSON parse errors for later reporting.
+            // We can't throw here because the glob is still running
+            // and we don't yet know if this path is a true workspace
+            // match or a subdirectory of another workspace.
+            if (parseErrors && isSyntaxError(err)) {
+              parseErrors.set(rel, err)
+            }
             return true
           }
           for (const m of maybeDelete) {
@@ -367,7 +398,33 @@ export class Monorepo {
 
   #glob(pattern: string[] | string) {
     const matches = new Set<string>()
-    globSync(pattern, this.#globOptions(matches))
+    const parseErrors = new Map<string, unknown>()
+    globSync(pattern, this.#globOptions(matches, parseErrors))
+
+    // After the glob completes, check for JSON parse errors in paths
+    // that are NOT nested inside an already-matched workspace.
+    // Nested directories (like app/bar/badjson inside workspace app/bar)
+    // are legitimately ignored, but top-level workspace matches with
+    // broken package.json should surface an error.
+    for (const [rel, err] of parseErrors) {
+      let isNested = false
+      for (const m of matches) {
+        if (rel.startsWith(m + '/')) {
+          isNested = true
+          break
+        }
+      }
+      if (!isNested) {
+        throw error(
+          `Failed to parse package.json in workspace "${rel}"`,
+          {
+            path: resolve(this.projectRoot, rel, 'package.json'),
+            cause: err,
+          },
+        )
+      }
+    }
+
     return matches
   }
 
