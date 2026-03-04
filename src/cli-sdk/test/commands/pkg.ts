@@ -1144,10 +1144,12 @@ t.test(
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: join(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: join(dir, 'packages/b'),
           },
         ],
@@ -1232,10 +1234,12 @@ t.test(
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: join(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: join(dir, 'packages/b'),
           },
         ],
@@ -1320,10 +1324,12 @@ t.test(
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: join(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: join(dir, 'packages/b'),
           },
         ],

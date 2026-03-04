@@ -341,10 +341,12 @@ t.test('pack command with scope', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -459,6 +461,7 @@ t.test('pack command with workspace paths', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
         ],
@@ -517,10 +520,12 @@ t.test('pack command with workspace-group', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -581,10 +586,12 @@ t.test('pack command with recursive', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],

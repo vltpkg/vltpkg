@@ -26,6 +26,7 @@ interface TestConfig {
     monorepo?:
       | {
           name: string
+          path?: string
           fullpath: string
         }[]
       | null
@@ -676,10 +677,12 @@ t.test('publish command with scope', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -825,6 +828,7 @@ t.test('publish command with workspace paths', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
         ],
@@ -905,10 +909,12 @@ t.test('publish command with workspace-group', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -991,10 +997,12 @@ t.test('publish command with recursive', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
