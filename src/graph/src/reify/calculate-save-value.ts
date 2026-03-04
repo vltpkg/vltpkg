@@ -7,6 +7,13 @@ export const calculateSaveValue = (
   existing: string | undefined,
   nodeVersion: string | undefined,
 ): string => {
+  // Catalog specs should always be preserved as-is in package.json.
+  // The catalog reference (e.g. "catalog:dev") is the user's intent;
+  // the resolved version is tracked in the lockfile.
+  if (spec.type === 'catalog') {
+    return spec.bareSpec
+  }
+
   if (
     // if not from the registry, save whatever we requested
     nodeType === 'registry' &&

@@ -67,6 +67,26 @@ const cases: [
   ['1.2 || 2.5', '1.2', '1.2 || 2.5', 'saved what was requested'],
 ]
 
+t.test('catalog spec preserved as-is', t => {
+  const s = Spec.parse('typescript', 'catalog:dev', {
+    catalog: {},
+    catalogs: { dev: { typescript: 'npm:typescript@^5.0.0' } },
+    registry: 'https://registry.npmjs.org/',
+    registries: {},
+  })
+  t.equal(
+    calculateSaveValue('registry', s, undefined, '5.9.3'),
+    'catalog:dev',
+    'catalog spec saved as catalog:dev, not resolved value',
+  )
+  t.equal(
+    calculateSaveValue('registry', s, '^4.0.0', '5.9.3'),
+    'catalog:dev',
+    'catalog spec replaces existing non-catalog dep',
+  )
+  t.end()
+})
+
 t.test('registry cases', t => {
   t.plan(cases.length)
   for (const [bareSpec, existing, expect, comment] of cases) {
