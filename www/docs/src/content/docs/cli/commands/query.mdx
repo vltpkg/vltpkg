@@ -48,6 +48,18 @@ Query packages with names starting with "@vltpkg"
   lang="bash"
 />
 
+Find packages changed since main branch
+
+<Code code="$ vlt query ':diff(main)'" title="Terminal" lang="bash" />
+
+Find workspaces changed since last commit
+
+<Code
+  code="$ vlt query ':workspace:diff(HEAD~1)'"
+  title="Terminal"
+  lang="bash"
+/>
+
 Check for malware in dependencies
 
 <Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
