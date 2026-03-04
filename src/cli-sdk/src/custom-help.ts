@@ -100,6 +100,13 @@ const allCommands = [
     showByDefault: false,
   },
   {
+    name: 'create',
+    aliases: [],
+    args: '<initializer> [args...]',
+    desc: 'Create a new project from a template',
+    showByDefault: false,
+  },
+  {
     name: 'docs',
     aliases: [],
     args: '',
