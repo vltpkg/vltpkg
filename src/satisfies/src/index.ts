@@ -37,6 +37,21 @@ export const satisfiesTuple = (
   const { options } = spec
   spec = spec.final
   const [type, first, second] = tuple
+
+  // When a registry spec matches a workspace package by name and
+  // version, treat it as satisfied. This allows monorepo packages
+  // that reference each other with plain semver specs (e.g.
+  // "@dev/build-tools": "^1.0.0") to resolve to local workspace
+  // packages, matching npm/pnpm/yarn behavior.
+  if (spec.type === 'registry' && type === 'workspace') {
+    if (!monorepo) return false
+    const ws = monorepo.get(first)
+    if (!ws || ws.name !== spec.name) return false
+    if (!spec.range) return true
+    const v = parse(ws.manifest.version ?? '')
+    return !!v && spec.range.test(v)
+  }
+
   if (spec.type !== type) return false
 
   switch (spec.type) {
