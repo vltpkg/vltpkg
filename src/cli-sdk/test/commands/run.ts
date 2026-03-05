@@ -559,11 +559,15 @@ t.test(
   async t => {
     const dir = t.testdir({
       'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
-      'package.json': '{}',
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
       src: {
         a: {
           'package.json': JSON.stringify({
             name: 'a',
+            version: '1.0.0',
             scripts: {
               hello: pass,
             },
@@ -572,6 +576,7 @@ t.test(
         b: {
           'package.json': JSON.stringify({
             name: 'b',
+            version: '1.0.0',
             scripts: {
               hello: pass,
             },
@@ -643,11 +648,15 @@ t.test(
   async t => {
     const dir = t.testdir({
       'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
-      'package.json': '{}',
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
       src: {
         a: {
           'package.json': JSON.stringify({
             name: 'a',
+            version: '1.0.0',
             scripts: {
               hello: pass,
             },
@@ -656,6 +665,7 @@ t.test(
         b: {
           'package.json': JSON.stringify({
             name: 'b',
+            version: '1.0.0',
             scripts: {
               hello: pass,
             },
@@ -706,11 +716,13 @@ t.test(
       // Root has NO 'test' script
       'package.json': JSON.stringify({
         name: 'root',
+        version: '1.0.0',
       }),
       src: {
         myapp: {
           'package.json': JSON.stringify({
             name: 'myapp',
+            version: '1.0.0',
             scripts: {
               test: pass,
             },
