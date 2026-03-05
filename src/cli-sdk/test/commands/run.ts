@@ -553,3 +553,4 @@ t.test('show scripts across several workspaces', async t => {
   )
   t.strictSame(errs(), [])
 })
+// CI test
