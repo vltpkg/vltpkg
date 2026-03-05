@@ -77,7 +77,6 @@
     "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
     "snap": "tap",
     "test": "tap",
-    "posttest": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },
   "tap": {
