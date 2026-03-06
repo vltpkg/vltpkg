@@ -13,7 +13,6 @@ import { tmpdir } from 'node:os'
 import { dirname, relative, resolve } from 'node:path'
 import { Dashboard } from './dashboard.ts'
 import { AppDataManager } from './app-data.ts'
-import { getAssetsDir } from './get-assets-dir.ts'
 import { getProjectData, updateGraphData } from './graph-data.ts'
 import { handleRequest } from './handle-request.ts'
 import { listenCarefully } from './listen-carefully.ts'
@@ -135,29 +134,30 @@ export class VltServer extends EventEmitter<{
     }
     /* c8 ignore stop */
 
-    const { publicDir = tmpdir(), assetsDir = await getAssetsDir() } =
-      this.options
+    const { publicDir = tmpdir(), assetsDir } = this.options
     this.assetsDir = assetsDir
     this.publicDir = resolve(publicDir, `vltserver-${this.port}`)
 
     rmSync(this.publicDir, { recursive: true, force: true })
     mkdirSync(this.publicDir, { recursive: true })
 
-    // This is the same as `cpSync(from, to, { recursive: true })`
-    // but that does not work in Deno yet
-    // (https://github.com/denoland/deno/issues/27494).
-    for (const asset of readdirSync(assetsDir, {
-      withFileTypes: true,
-      recursive: true,
-    })) {
-      if (!asset.isFile()) continue
-      const source = resolve(asset.parentPath, asset.name)
-      const target = resolve(
-        this.publicDir,
-        relative(assetsDir, source),
-      )
-      mkdirSync(dirname(target), { recursive: true })
-      writeFileSync(target, readFileSync(source))
+    if (assetsDir) {
+      // This is the same as `cpSync(from, to, { recursive: true })`
+      // but that does not work in Deno yet
+      // (https://github.com/denoland/deno/issues/27494).
+      for (const asset of readdirSync(assetsDir, {
+        withFileTypes: true,
+        recursive: true,
+      })) {
+        if (!asset.isFile()) continue
+        const source = resolve(asset.parentPath, asset.name)
+        const target = resolve(
+          this.publicDir,
+          relative(assetsDir, source),
+        )
+        mkdirSync(dirname(target), { recursive: true })
+        writeFileSync(target, readFileSync(source))
+      }
     }
 
     await this.update()

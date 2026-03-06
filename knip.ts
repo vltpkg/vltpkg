@@ -20,22 +20,10 @@ const workspaces = {
   'src/cli-sdk': {
     entry: [...entry, 'src/commands/*.ts'],
   },
-  'src/server': {
-    entry,
-    // Used within a resolve-import call
-    ignoreDependencies: ['@vltpkg/gui'],
-  },
   'src/vsr': {
     entry: [...entry, 'src/bin/**/*.ts'],
-    ignoreDependencies: ['@vltpkg/gui', 'esbuild', 'cloudflare'],
+    ignoreDependencies: ['esbuild', 'cloudflare'],
     ignoreBinaries: ['pkill', 'lsof'],
-  },
-  'src/gui': {
-    entry: [...entry, 'src/styles/main.css'],
-    ignoreDependencies: [
-      // Used in prepare script via spawn
-      '@tailwindcss/cli',
-    ],
   },
   'www/docs': {
     entry: [

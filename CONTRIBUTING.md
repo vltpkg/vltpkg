@@ -224,16 +224,6 @@ directory, because the end goal is to publish this as the default
 `vlt` package. For now it is published under a scoped name for manual
 testing.
 
-## GUI Live Reload
-
-When run locally the GUI can be set to use live reload so that any
-changes to GUI source code will cause the browser to reload. To enable
-this set `__VLT_INTERNAL_LIVE_RELOAD=1` when running the GUI:
-
-```bash
-__VLT_INTERNAL_LIVE_RELOAD=1 ./scripts/bins/vlt gui
-```
-
 ## Bundling Caveats
 
 When publishing, all of the source code is first bundled and

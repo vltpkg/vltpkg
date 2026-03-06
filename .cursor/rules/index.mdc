@@ -28,7 +28,7 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 
 **Utilities:** `src/keychain`, `src/security-archive`, `src/semver`, `src/git`, `src/error-cause`, `src/output`, `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`, `src/rollback-remove`, `src/dot-prop`, `src/fast-split`, `src/pick-manifest`, `src/vlt-json`, `src/which`
 
-**Frontend:** `src/gui` (React/Zustand — see `@gui-validation-workflow.mdc`), `src/server`
+**Frontend:** `src/server`
 
 **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`, `infra/cli-{platform}`, `infra/smoke-test`
 
@@ -38,7 +38,6 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 
 - `@code-validation-workflow.mdc` — format/lint/test/coverage/typecheck steps
 - `@linting-error-handler.mdc` — fixing unused vars, imports, type guards
-- `@gui-validation-workflow.mdc` — GUI-specific: Vitest, no coverage
 - `@cli-sdk-workspace.mdc` — CLI commands, options, config system
 - `@graph/index.mdc` — dependency graph architecture (has sub-rules)
 - `@query-pseudo-selector-creation.mdc` — adding DSS pseudo-selectors

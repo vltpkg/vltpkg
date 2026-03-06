@@ -28,7 +28,7 @@ type Workspace = WorkspaceBase & {
 const isStandardTypeScriptWorkspace = (ws: Workspace) => {
   return (
     ws.dirName.startsWith('src/') &&
-    !['@vltpkg/gui', '@vltpkg/vsr', '@vltpkg/vsr-nitro'].includes(
+    !['@vltpkg/vsr', '@vltpkg/vsr-nitro'].includes(
       ws.pj.name,
     )
   )
@@ -238,10 +238,7 @@ const fixTools = async (ws: Workspace) => {
 }
 
 const fixLicense = async (ws: Workspace) => {
-  const licenseFile = join(
-    ws.dir,
-    'LICENSE' + (ws.pj.name === '@vltpkg/gui' ? '.md' : ''),
-  )
+  const licenseFile = join(ws.dir, 'LICENSE')
   const license = await readFile(licenseFile, 'utf8').catch(() => '')
 
   const containsVlt = () => {
@@ -284,7 +281,6 @@ const fixLicense = async (ws: Workspace) => {
       containsVlt()
       break
     }
-    case '@vltpkg/gui':
     case '@vltpkg/vsr':
     case '@vltpkg/vsr-nitro': {
       ws.pj.license = 'FSL-1.1-MIT'

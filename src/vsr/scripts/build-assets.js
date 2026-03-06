@@ -9,15 +9,6 @@ async function main() {
   console.log('Copying src/assets to dist/assets...')
   await mkdir('./dist/assets', { recursive: true })
   await cp('./src/assets', './dist/assets', { recursive: true })
-
-  // Copy GUI assets to dist/assets/public
-  console.log('Copying @vltpkg/gui dist to dist/assets/public...')
-  await mkdir('./dist/assets/public', { recursive: true })
-  await cp(
-    './node_modules/@vltpkg/gui/dist',
-    './dist/assets/public',
-    { recursive: true },
-  )
 }
 
 main()
