@@ -48,8 +48,7 @@
     "project",
     "workspace",
     "monorepo",
-    "registry",
-    "vsr"
+    "registry"
   ],
   "publishConfig": {
     "directory": "./.build-publish"

@@ -41,6 +41,5 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 - `@cli-sdk-workspace.mdc` — CLI commands, options, config system
 - `@graph/index.mdc` — dependency graph architecture (has sub-rules)
 - `@query-pseudo-selector-creation.mdc` — adding DSS pseudo-selectors
-- `@registry-development.mdc` — vsr registry patterns (Hono/D1/R2)
 - `@config-reload-jackspeak-issues.mdc` — config caching bugs
 - `@cursor-rules-location.mdc` — where to put new `.mdc` files

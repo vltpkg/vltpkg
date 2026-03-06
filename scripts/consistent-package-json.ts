@@ -25,14 +25,8 @@ type Workspace = WorkspaceBase & {
   dirName: string
 }
 
-const isStandardTypeScriptWorkspace = (ws: Workspace) => {
-  return (
-    ws.dirName.startsWith('src/') &&
-    !['@vltpkg/vsr', '@vltpkg/vsr-nitro'].includes(
-      ws.pj.name,
-    )
-  )
-}
+const isStandardTypeScriptWorkspace = (ws: Workspace) =>
+  ws.dirName.startsWith('src/')
 
 const writeJson = async (p: string, data: unknown) =>
   writeFormatted(p, JSON.stringify(data, null, 2) + '\n')
@@ -281,13 +275,6 @@ const fixLicense = async (ws: Workspace) => {
       containsVlt()
       break
     }
-    case '@vltpkg/vsr':
-    case '@vltpkg/vsr-nitro': {
-      ws.pj.license = 'FSL-1.1-MIT'
-      containsText(ws.pj.license)
-      containsVlt()
-      break
-    }
     default: {
       ws.pj.license = 'BSD-2-Clause-Patent'
       copyFileSync(join(ROOT, 'LICENSE'), licenseFile)
@@ -378,9 +365,6 @@ const fixCliVariants = async (ws: Workspace) => {
 const fixEngines = async (ws: Workspace) => {
   ws.pj.engines ??= {}
   ws.pj.engines.node = NODE_ENGINES
-  if (ws.pj.name === '@vltpkg/vsr-nitro') {
-    ws.pj.engines.node = '>=22.22.0'
-  }
 }
 
 const fixPackage = async (ws: Workspace, config: WorkspaceConfig) => {

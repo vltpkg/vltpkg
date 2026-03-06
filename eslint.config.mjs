@@ -305,21 +305,6 @@ export default [
     },
   },
   {
-    name: `${NAME}/registry`,
-    files: [`src/vsr/**/*${extGlobs.ts}`],
-    rules: {
-      'jsdoc/reject-any-type': 'off',
-      'jsdoc/reject-function-type': 'off',
-      'import/no-unresolved': [
-        'error',
-        {
-          // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
-          ignore: ['cloudflare:test'],
-        },
-      ],
-    },
-  },
-  {
     name: `${NAME}/docs`,
     files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {

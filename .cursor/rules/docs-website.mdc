@@ -24,8 +24,6 @@ www/docs/src/content/docs/
 │   ├── graph-modifiers.mdx
 │   └── commands/            # Per-command docs
 │       ├── install.mdx, build.mdx, query.mdx, ...
-├── registry/                # VSR (serverless registry) docs
-│   ├── api.mdx, configuring.mdx, deployment.mdx, ...
 └── index.mdx
 ```
 

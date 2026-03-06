@@ -20,11 +20,6 @@ const workspaces = {
   'src/cli-sdk': {
     entry: [...entry, 'src/commands/*.ts'],
   },
-  'src/vsr': {
-    entry: [...entry, 'src/bin/**/*.ts'],
-    ignoreDependencies: ['esbuild', 'cloudflare'],
-    ignoreBinaries: ['pkill', 'lsof'],
-  },
   'www/docs': {
     entry: [
       ...entry,
