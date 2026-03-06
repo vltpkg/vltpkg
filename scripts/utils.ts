@@ -63,7 +63,6 @@ const catalogConfig: {
 } = {
   workspaces: [
     { name: '@vltpkg/docs', type: 'dependencies' },
-    { name: '@vltpkg/gui', type: 'dependencies' },
     { name: '@vltpkg/smoke-test', type: 'dependencies' },
   ],
   packages: [

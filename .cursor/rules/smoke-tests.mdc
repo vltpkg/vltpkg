@@ -1,11 +1,11 @@
 ---
-description: End-to-end smoke tests for compiled CLI binary
+description: End-to-end smoke tests for the CLI
 globs: infra/smoke-test/test/*,infra/smoke-test/test/fixtures/*
 alwaysApply: false
 ---
 # Smoke Tests (`infra/smoke-test/`)
 
-Integration tests running the actual CLI binary against real scenarios.
+Integration tests running the CLI against real scenarios.
 
 ## Running
 
@@ -19,7 +19,7 @@ Filter variants via env: `SMOKE_TEST_VARIANTS=Source,Bundle`
 
 ## Variants
 
-Tests run against multiple CLI build variants: `Source` (dev), `Bundle` (bundled), `Compile` (compiled). Results are compared across variants for consistency.
+Tests run against multiple CLI build variants: `Source` (dev) and `Bundle` (bundled). Results are compared across variants for consistency.
 
 ## Test Pattern
 
@@ -44,7 +44,7 @@ t.test('my test', async t => {
 
 - `runMultiple(t, args?, options?)` — run across all variants, compare results
 - `runVariant(variant, t, args?, options?)` — run single variant
-- `source(t, args?, options?)`, `bundle(...)`, `compile(...)` — individual variant shortcuts
+- `source(t, args?, options?)`, `bundle(...)` — individual variant shortcuts
 
 ### CommandOptions
 

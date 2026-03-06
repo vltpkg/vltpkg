@@ -83,11 +83,6 @@ export default defineConfig({
       plugins: [TypedocPlugin.plugin, starlightLinksValidator()],
       sidebar: [
         {
-          label: 'Registry',
-          collapsed: false,
-          autogenerate: { directory: 'registry' },
-        },
-        {
           label: 'Client',
           collapsed: true,
           autogenerate: { directory: 'cli' },

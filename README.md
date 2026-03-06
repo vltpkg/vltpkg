@@ -65,7 +65,6 @@ this repository and its corresponding license:
 | [@vltpkg/git-scp-url](./src/git-scp-url)           | [BSD-2-Clause-Patent](./src/git-scp-url/LICENSE)      | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/git-scp-url?logo=npm)      |
 | [@vltpkg/graph](./src/graph)                       | [BSD-2-Clause-Patent](./src/graph/LICENSE)            | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/graph?logo=npm)            |
 | [@vltpkg/graph-run](./src/graph-run)               | [BSD-2-Clause-Patent](./src/graph-run/LICENSE)        | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/graph-run?logo=npm)        |
-| [@vltpkg/gui](./src/gui)                           | [FSL-1.1-MIT](./src/gui/LICENSE.md)                   | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/gui?logo=npm)              |
 | [@vltpkg/init](./src/init)                         | [BSD-2-Clause-Patent](./src/init/LICENSE)             | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/init?logo=npm)             |
 | [@vltpkg/keychain](./src/keychain)                 | [BSD-2-Clause-Patent](./src/keychain/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/keychain?logo=npm)         |
 | [@vltpkg/output](./src/output)                     | [BSD-2-Clause-Patent](./src/output/LICENSE)           | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/output?logo=npm)           |
@@ -87,26 +86,19 @@ this repository and its corresponding license:
 | [@vltpkg/url-open](./src/url-open)                 | [BSD-2-Clause-Patent](./src/url-open/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/url-open?logo=npm)         |
 | [@vltpkg/vlt-json](./src/vlt-json)                 | [BSD-2-Clause-Patent](./src/vlt-json/LICENSE)         | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/vlt-json?logo=npm)         |
 | [@vltpkg/vlx](./src/vlx)                           | [BSD-2-Clause-Patent](./src/vlx/LICENSE)              | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/vlx?logo=npm)              |
-| [@vltpkg/vsr](./src/vsr)                           | [FSL-1.1-MIT](./src/vsr/LICENSE)                      | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/vsr?logo=npm)              |
 | [@vltpkg/which](./src/which)                       | [ISC](./src/which/LICENSE)                            | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/which?logo=npm)            |
 | [@vltpkg/workspaces](./src/workspaces)             | [BSD-2-Clause-Patent](./src/workspaces/LICENSE)       | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/workspaces?logo=npm)       |
 | [@vltpkg/xdg](./src/xdg)                           | [BSD-2-Clause-Patent](./src/xdg/LICENSE)              | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/xdg?logo=npm)              |
 
 #### Infrastructure (`infra/*`)
 
-| Workspace Name                                       | License                                                 | Downloads                                                                         |
-| ---------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| [@vltpkg/benchmark](./infra/benchmark)               | [BSD-2-Clause-Patent](./infra/benchmark/LICENSE)        | N/A                                                                               |
-| [@vltpkg/infra-build](./infra/build)                 | [BSD-2-Clause-Patent](./infra/build/LICENSE)            | N/A                                                                               |
-| [vlt](./infra/cli)                                   | [BSD-2-Clause-Patent](./infra/cli/LICENSE)              | ![NPM Downloads](https://img.shields.io/npm/dm/vlt?logo=npm)                      |
-| [@vltpkg/cli-compiled](./infra/cli-compiled)         | [BSD-2-Clause-Patent](./infra/cli-compiled/LICENSE)     | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-compiled?logo=npm)     |
-| [@vltpkg/cli-darwin-arm64](./infra/cli-darwin-arm64) | [BSD-2-Clause-Patent](./infra/cli-darwin-arm64/LICENSE) | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-darwin-arm64?logo=npm) |
-| [@vltpkg/cli-darwin-x64](./infra/cli-darwin-x64)     | [BSD-2-Clause-Patent](./infra/cli-darwin-x64/LICENSE)   | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-darwin-x64?logo=npm)   |
-| [@vltpkg/cli-js](./infra/cli-js)                     | [BSD-2-Clause-Patent](./infra/cli-js/LICENSE)           | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-js?logo=npm)           |
-| [@vltpkg/cli-linux-arm64](./infra/cli-linux-arm64)   | [BSD-2-Clause-Patent](./infra/cli-linux-arm64/LICENSE)  | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-linux-arm64?logo=npm)  |
-| [@vltpkg/cli-linux-x64](./infra/cli-linux-x64)       | [BSD-2-Clause-Patent](./infra/cli-linux-x64/LICENSE)    | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-linux-x64?logo=npm)    |
-| [@vltpkg/cli-win32-x64](./infra/cli-win32-x64)       | [BSD-2-Clause-Patent](./infra/cli-win32-x64/LICENSE)    | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-win32-x64?logo=npm)    |
-| [@vltpkg/smoke-test](./infra/smoke-test)             | [BSD-2-Clause-Patent](./infra/smoke-test/LICENSE)       | N/A                                                                               |
+| Workspace Name                           | License                                           | Downloads                                                               |
+| ---------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
+| [@vltpkg/benchmark](./infra/benchmark)   | [BSD-2-Clause-Patent](./infra/benchmark/LICENSE)  | N/A                                                                     |
+| [@vltpkg/infra-build](./infra/build)     | [BSD-2-Clause-Patent](./infra/build/LICENSE)      | N/A                                                                     |
+| [vlt](./infra/cli)                       | [BSD-2-Clause-Patent](./infra/cli/LICENSE)        | ![NPM Downloads](https://img.shields.io/npm/dm/vlt?logo=npm)            |
+| [@vltpkg/cli-js](./infra/cli-js)         | [BSD-2-Clause-Patent](./infra/cli-js/LICENSE)     | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/cli-js?logo=npm) |
+| [@vltpkg/smoke-test](./infra/smoke-test) | [BSD-2-Clause-Patent](./infra/smoke-test/LICENSE) | N/A                                                                     |
 
 #### Documentation (`www/*`)
 

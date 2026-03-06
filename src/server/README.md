@@ -1,12 +1,12 @@
 # @vltpkg/server
 
-The server backend that powers the vlt gui.
+The server backend for serving project data APIs.
 
 **[Usage](#usage)**
 
 ## Overview
 
-This is a library that starts the HTTP server for vlt gui views.
+This is a library that starts the HTTP server for vlt views.
 
 ## Usage
 

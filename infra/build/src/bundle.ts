@@ -258,7 +258,6 @@ export const bundle = async ({
   mkdirSync(outdir, { recursive: true })
 
   const define = {
-    GUI_ASSETS_DIR: 'gui-assets',
     CLI_PACKAGE_JSON: 'cli-package.json',
     REGISTRY_CLIENT_PACKAGE_JSON: 'registry-client-package.json',
     LIVE_RELOAD: false,
@@ -316,13 +315,6 @@ export const bundle = async ({
   cpSync(
     join(CLI, 'package.json'),
     join(outdir, define.CLI_PACKAGE_JSON),
-  )
-
-  // copy built gui assets
-  cpSync(
-    join(WORKSPACE_DIR, 'gui/dist'),
-    join(outdir, define.GUI_ASSETS_DIR),
-    { recursive: true },
   )
 
   // copy @resvg/resvg-wasm for PNG rendering (marked external)
