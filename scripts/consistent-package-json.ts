@@ -15,7 +15,6 @@ import type {
   WorkspaceConfig,
   Workspace as WorkspaceBase,
 } from './utils.ts'
-import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
 const NODE_ENGINES = '>=22.22.0'
 
@@ -293,13 +292,6 @@ const fixCliVariants = async (ws: Workspace) => {
   }
 
   const isDefaultCli = workspaceBasename === 'cli'
-  const isBundle = PUBLISHED_VARIANT === 'Bundle'
-
-  const cliVariant =
-    isDefaultCli ?
-      isBundle ? 'cli-js'
-      : 'cli-compiled'
-    : workspaceBasename
 
   ws.pj.devDependencies = {
     '@vltpkg/infra-build': 'workspace:*',
@@ -311,49 +303,24 @@ const fixCliVariants = async (ws: Workspace) => {
     directory: './.build-publish',
   }
 
-  let descriptionExtra = ''
-
-  switch (cliVariant) {
-    case 'cli-js':
-      ws.pj.name = '@vltpkg/cli-js'
-      break
-    case 'cli-compiled':
-      ws.pj.name = '@vltpkg/cli-compiled'
-      ws.pj.engines = undefined
-      ws.pj.private = isBundle ? true : undefined
-      break
-    default: {
-      const [platform, arch] = workspaceBasename.split('-').splice(1)
-      descriptionExtra += ` (${platform}-${arch})`
-      ws.pj.name = `@vltpkg/cli-${platform}-${arch}`
-      ws.pj.engines = undefined
-      ws.pj.private = isBundle ? true : undefined
-      break
+  if (workspaceBasename === 'cli-js' || isDefaultCli) {
+    ws.pj.name = isDefaultCli ? 'vlt' : '@vltpkg/cli-js'
+    if (isDefaultCli) {
+      delete ws.pj.private
     }
   }
 
-  // The default CLI is always published as `vlt`
-  if (isDefaultCli) {
-    ws.pj.name = 'vlt'
-    delete ws.pj.private
-  }
-
-  ws.pj.description = `The vlt CLI${descriptionExtra}`
+  ws.pj.description = 'The vlt CLI'
   const readmeContent = readFileSync(
     resolve(ws.dir, 'README.md'),
     'utf8',
   )
-  // Split by code blocks to avoid replacing bash comments
   const parts = readmeContent.split(/(```[\s\S]*?```)/g)
   const processedContent = parts
     .map((part, i) => {
-      // Only process non-code-block parts (even indices)
       if (i % 2 === 0) {
         return part
-          .replaceAll(
-            /`vlt`( \(.*\))?/g,
-            `\`vlt\`${descriptionExtra}`,
-          )
+          .replaceAll(/`vlt`( \(.*\))?/g, '`vlt`')
           .replaceAll(/^# .*$/gm, `# ${ws.pj.name}`)
       }
       return part

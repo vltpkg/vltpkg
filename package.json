@@ -41,7 +41,6 @@
   },
   "scripts": {
     "build:bundle": "vlt-build --outdir=.build-bundle bundle",
-    "build:compile": "vlt-build --outdir=.build-compile --quiet compile",
     "deps:check": "./scripts/check-deps.ts",
     "fix": "vlr fix:pkg && vlr lint && vlr format",
     "fix:pkg": "./scripts/consistent-package-json.ts",

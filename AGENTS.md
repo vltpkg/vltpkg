@@ -26,8 +26,8 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`,
   `src/rollback-remove`, `src/dot-prop`, `src/fast-split`,
   `src/pick-manifest`, `src/vlt-json`, `src/which`
-- **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-compiled`,
-  `infra/cli-{platform}`, `infra/smoke-test`
+- **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-js`,
+  `infra/smoke-test`
 - **Docs:** `www/docs` → https://docs.vlt.sh
 
 ## Development

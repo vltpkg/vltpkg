@@ -13,7 +13,6 @@ import {
   createVariants,
   isVariant,
   VARIANTS,
-  PUBLISHED_VARIANT,
 } from '@vltpkg/infra-build'
 import type {
   Bin,
@@ -21,8 +20,7 @@ import type {
   VariantOptions,
 } from '@vltpkg/infra-build'
 
-// only bundle/compile the vlt binary since that is all we test
-// this makes the tests run faster
+// only bundle the vlt binary since that is all we test
 export const Bins = ['vlt'] as const
 
 const filterVariants = (variants: readonly Variant[]) => {
@@ -32,13 +30,7 @@ const filterVariants = (variants: readonly Variant[]) => {
 }
 
 export const allVariants = filterVariants(VARIANTS)
-export const defaultVariants = filterVariants(
-  // Don't test the compiled variant since we arent publishing it as `vlt`.
-  // This is decoupled from the `PUBLISHED_VARIANT` in infra-build because
-  // we will want to test it before publishing.
-  // TODO(compile): turn back on once the compiled CLI is ready
-  VARIANTS.filter(v => v !== 'Compile'),
-)
+export const defaultVariants = allVariants
 
 export const Artifacts = createArtifacts({
   bins: Bins,
@@ -47,7 +39,6 @@ export const Artifacts = createArtifacts({
   dirs: {
     Source: BINS_DIR,
     Bundle: join(process.cwd(), '.build-bundle'),
-    Compile: join(process.cwd(), '.build-compile'),
   },
 })
 
@@ -338,13 +329,6 @@ export const source: Command = (...args) =>
 export const bundle: Command = (...args) =>
   runVariant(Variants.Bundle, ...args)
 
-export const compile: Command = (...args) =>
-  runVariant(Variants.Compile, ...args)
-
-// And export whatever is the currently published variant
-export const runPublished: Command = (...args) =>
-  runVariant(Variants[PUBLISHED_VARIANT], ...args)
-
 export const runMultiple = async (
   t: Test,
   args?: string[],
@@ -385,11 +369,7 @@ export const runMultiple = async (
 
   t.equal(variantResults.length, variants.length, 'ran all variants')
 
-  // treat published variant as the default result for other tests
-  // if it exists, otherwise just the first one
-  const defaultVariant =
-    variantResults.find(([v]) => v === PUBLISHED_VARIANT) ??
-    variantResults[0]
+  const defaultVariant = variantResults[0]
 
   assert(defaultVariant, 'no default result')
 

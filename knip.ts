@@ -31,9 +31,7 @@ const workspaces = {
     // TODO: audit if these really need to be hoisted
     ignoreDependencies: ['@astrojs/mdx', 'sharp', 'vite'],
   },
-  'infra/build': {
-    entry: [...entry, 'src/postinstall.cjs'],
-  },
+  'infra/build': {},
 }
 
 export default {
