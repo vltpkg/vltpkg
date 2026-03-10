@@ -41,10 +41,7 @@ appears in the lockfile:
 import t from 'tap'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import {
-  runMultiple,
-  allVariants,
-} from './fixtures/run.ts'
+import { runMultiple, allVariants } from './fixtures/run.ts'
 
 t.test('install a package', async t => {
   const { status, stdout } = await runMultiple(t, ['i', 'eslint'], {
