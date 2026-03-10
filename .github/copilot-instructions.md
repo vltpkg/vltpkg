@@ -57,8 +57,6 @@ Following is a list of each workspace along with a brief description:
   for security data fetched from Socket.dev APIs
 - src/semver, `@vltpkg/semver` - A library for parsing, validating &
   comparing Semantic Versions
-- src/server, `@vltpkg/server` - The backend server for serving
-  project data APIs
 - src/spec, `@vltpkg/spec` - Parses package specifiers, this defines
   our Spec class which is heavily used in our Graph and adjancent
   libraries

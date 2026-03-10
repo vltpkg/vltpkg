@@ -28,8 +28,6 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 
 **Utilities:** `src/keychain`, `src/security-archive`, `src/semver`, `src/git`, `src/error-cause`, `src/output`, `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`, `src/rollback-remove`, `src/dot-prop`, `src/fast-split`, `src/pick-manifest`, `src/vlt-json`, `src/which`
 
-**Frontend:** `src/server`
-
 **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-js`, `infra/smoke-test`
 
 **Docs:** `www/docs` → https://docs.vlt.sh

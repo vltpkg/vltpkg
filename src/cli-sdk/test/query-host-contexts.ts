@@ -65,10 +65,7 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
-            )),
+          '../src/reload-config.ts': {
             reloadConfig: async (path: string) => {
               return {
                 get: () => undefined,
@@ -144,10 +141,7 @@ t.test('createHostContextsMap', async t => {
       await t.mockImport<
         typeof import('../src/query-host-contexts.ts')
       >('../src/query-host-contexts.ts', {
-        '@vltpkg/server': {
-          ...(await t.mockImport<typeof import('@vltpkg/server')>(
-            '@vltpkg/server',
-          )),
+        '../src/read-project-folders.ts': {
           readProjectFolders: async () => [],
         },
         '@vltpkg/security-archive': {
@@ -214,13 +208,12 @@ t.test('createHostContextsMap', async t => {
       await t.mockImport<
         typeof import('../src/query-host-contexts.ts')
       >('../src/query-host-contexts.ts', {
-        '@vltpkg/server': {
-          ...(await t.mockImport<typeof import('@vltpkg/server')>(
-            '@vltpkg/server',
-          )),
+        '../src/read-project-folders.ts': {
           readProjectFolders: async () => [
             new PathScurry(dir).cwd.resolve('projectA'),
           ],
+        },
+        '../src/reload-config.ts': {
           reloadConfig: async (path: string) => ({
             get: () => undefined,
             options: {
@@ -229,9 +222,6 @@ t.test('createHostContextsMap', async t => {
               packageJson: new PackageJson(),
             },
             values: {},
-          }),
-          getProjectData: () => ({
-            vltInstalled: false, // Project is not vlt-installed
           }),
         },
         '@vltpkg/security-archive': {
@@ -302,13 +292,12 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
-            )),
+          '../src/read-project-folders.ts': {
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('projectA'),
             ],
+          },
+          '../src/reload-config.ts': {
             reloadConfig: async () => {
               throw new Error('Failed to load config')
             },
@@ -386,10 +375,7 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
-            )),
+          '../src/read-project-folders.ts': {
             readProjectFolders: async () => [],
           },
           '@vltpkg/security-archive': {
@@ -471,13 +457,12 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
-            )),
+          '../src/read-project-folders.ts': {
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('nested/projectA'),
             ],
+          },
+          '../src/reload-config.ts': {
             reloadConfig: async (path: string) => ({
               get: () => undefined,
               options: {
@@ -621,14 +606,13 @@ t.test('createHostContextsMap', async t => {
         await t.mockImport<
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
-          '@vltpkg/server': {
-            ...(await t.mockImport<typeof import('@vltpkg/server')>(
-              '@vltpkg/server',
-            )),
+          '../src/read-project-folders.ts': {
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('projectA'),
               new PathScurry(dir).cwd.resolve('nested/projectB'),
             ],
+          },
+          '../src/reload-config.ts': {
             reloadConfig: async (path: string) => ({
               get: () => undefined,
               options: {

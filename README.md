@@ -79,7 +79,6 @@ this repository and its corresponding license:
 | [@vltpkg/satisfies](./src/satisfies)               | [BSD-2-Clause-Patent](./src/satisfies/LICENSE)        | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/satisfies?logo=npm)        |
 | [@vltpkg/security-archive](./src/security-archive) | [BSD-2-Clause-Patent](./src/security-archive/LICENSE) | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/security-archive?logo=npm) |
 | [@vltpkg/semver](./src/semver)                     | [BSD-2-Clause-Patent](./src/semver/LICENSE)           | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/semver?logo=npm)           |
-| [@vltpkg/server](./src/server)                     | [BSD-2-Clause-Patent](./src/server/LICENSE)           | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/server?logo=npm)           |
 | [@vltpkg/spec](./src/spec)                         | [BSD-2-Clause-Patent](./src/spec/LICENSE)             | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/spec?logo=npm)             |
 | [@vltpkg/tar](./src/tar)                           | [BSD-2-Clause-Patent](./src/tar/LICENSE)              | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/tar?logo=npm)              |
 | [@vltpkg/types](./src/types)                       | [BSD-2-Clause-Patent](./src/types/LICENSE)            | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/types?logo=npm)            |
