@@ -1,14 +1,10 @@
 import { posix, win32 } from 'node:path'
 import { rm } from 'node:fs/promises'
 import { bundle } from './bundle.ts'
-import { compile } from './compile.ts'
 import { BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
 
-export const VARIANTS = ['Source', 'Bundle', 'Compile'] as const
-
-// Changing this will change which variant is published as `vlt` on npm.
-export const PUBLISHED_VARIANT: 'Bundle' | 'Compile' = 'Bundle'
+export const VARIANTS = ['Source', 'Bundle'] as const
 
 export const isVariant = (value: unknown): value is Variant =>
   VARIANTS.includes(value as Variant)
@@ -59,14 +55,6 @@ export const createArtifacts = ({
       prepare: () => bundle({ outdir: dirs.Bundle, bins }),
       cleanup: createCleanup(dirs.Bundle),
     },
-    Compile: {
-      dir: dirs.Compile,
-      bin: bin =>
-        path.join(dirs.Compile, bin) + (windows ? '.exe' : ''),
-      prepare: () =>
-        compile({ outdir: dirs.Compile, bins, quiet: true }),
-      cleanup: createCleanup(dirs.Compile),
-    },
   } as const
 }
 
@@ -103,11 +91,5 @@ export const createVariants = ({
       artifact: artifacts.Bundle,
       args: bin => [node, artifacts.Bundle.bin(bin)],
       ...Variants.Bundle,
-    },
-    Compile: {
-      artifact: artifacts.Compile,
-      args: bin => [artifacts.Compile.bin(bin)],
-      PATH: artifacts.Compile.dir,
-      ...Variants.Compile,
     },
   }) as const

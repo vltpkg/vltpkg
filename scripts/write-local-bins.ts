@@ -217,11 +217,6 @@ const Dirs = {
     dest: 'bundle',
     prepare: 'bundle',
   },
-  Compile: {
-    source: ['.build-compile'],
-    dest: 'compile',
-    prepare: 'compile',
-  },
 } as const
 
 const main = async () => {

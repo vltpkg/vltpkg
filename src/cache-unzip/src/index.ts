@@ -1,6 +1,5 @@
 import { spawn } from 'node:child_process'
 import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.ts'
-import { pathToFileURL } from 'node:url'
 
 const isDeno =
   (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
@@ -28,25 +27,16 @@ const handleBeforeExit = () => {
     // https://github.com/denoland/deno/issues/25867
     // TODO: figure out something better to do here?
     const detached = !(isDeno && process.platform === 'win32')
-    // When compiled the script to be run is passed as an
-    // environment variable and then routed by the main entry point
-    if (process.env.__VLT_INTERNAL_COMPILED) {
-      env.__VLT_INTERNAL_MAIN = pathToFileURL(
-        __CODE_SPLIT_SCRIPT_NAME,
-      ).toString()
-      args.push(path)
-    } else {
-      // If we are running deno from source we need to add the
-      // unstable flags we need. The '-A' flag does not need
-      // to be passed in as Deno supplies that automatically.
-      if (isDeno) {
-        args.push(
-          '--unstable-node-globals',
-          '--unstable-bare-node-builtins',
-        )
-      }
-      args.push(__CODE_SPLIT_SCRIPT_NAME, path)
+    // If we are running deno from source we need to add the
+    // unstable flags we need. The '-A' flag does not need
+    // to be passed in as Deno supplies that automatically.
+    if (isDeno) {
+      args.push(
+        '--unstable-node-globals',
+        '--unstable-bare-node-builtins',
+      )
     }
+    args.push(__CODE_SPLIT_SCRIPT_NAME, path)
     registered.delete(path)
     const proc = spawn(process.execPath, args, {
       detached,

@@ -75,26 +75,6 @@ t.test('registering the beforeExit event', async t => {
   t.strictSame(state.written, ['key 1\0', 'key 2\0'])
 })
 
-t.test('compiled', async t => {
-  t.intercept(process, 'env', {
-    value: { __VLT_INTERNAL_COMPILED: 'true' },
-  })
-
-  const { register, beforeExit, state } = await mockUnzip(t)
-
-  register(t.testdirName, 'key 1')
-  register(t.testdirName, 'key 2')
-  register(t.testdirName, 'key 1')
-  beforeExit()
-
-  t.equal(state.args.length, 1)
-  t.match(
-    state.opts.env.__VLT_INTERNAL_MAIN,
-    /^file:.*[\\/]unzip\.ts$/,
-  )
-  t.equal(state.unrefCalled, true)
-})
-
 t.test('deno', async t => {
   t.intercept(
     globalThis as typeof globalThis & { Deno?: any },

@@ -14,7 +14,6 @@ t.test('snapshot', async t => {
   const dirs = {
     Source: '__DIR__',
     Bundle: '__DIR__',
-    Compile: '__DIR__',
   }
   const snap = ({ artifact, env, ...v }: VariantWithArtifact) => ({
     ...v,
@@ -54,41 +53,33 @@ t.test('isVariant', async t => {
 
 t.test('cleanup=true', async t => {
   const dir = t.testdir()
-  const { Source, Bundle, Compile } = createArtifacts({
+  const { Source, Bundle } = createArtifacts({
     cleanup: true,
     bins: ['vlt'],
     dirs: {
       Source: join(dir, 'source'),
       Bundle: join(dir, 'bundle'),
-      Compile: join(dir, 'compile'),
     },
   })
 
   t.notOk(Source.cleanup)
   t.ok(Bundle.cleanup)
-  t.ok(Compile.cleanup)
 
   await Bundle.prepare?.()
   t.ok(existsSync(Bundle.dir))
-  await Compile.prepare?.()
-  t.ok(existsSync(Compile.dir))
   await Bundle.cleanup?.()
   t.notOk(existsSync(Bundle.dir))
-  await Compile.cleanup?.()
-  t.notOk(existsSync(Compile.dir))
 })
 
 t.test('cleanup=false', async t => {
-  const { Source, Bundle, Compile } = createArtifacts({
+  const { Source, Bundle } = createArtifacts({
     cleanup: false,
     dirs: {
       Source: '__DIR__',
       Bundle: '__DIR__',
-      Compile: '__DIR__',
     },
   })
 
   t.notOk(Source.cleanup)
   t.notOk(Bundle.cleanup)
-  t.notOk(Compile.cleanup)
 })

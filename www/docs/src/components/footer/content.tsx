@@ -38,10 +38,6 @@ const resources: Section = {
       href: 'https://docs.vlt.sh',
     },
     {
-      slug: 'VSR Docs',
-      href: 'https://github.com/vltpkg/vsr',
-    },
-    {
       slug: 'Pricing',
       href: 'https://www.vlt.sh/serverless-registry',
     },

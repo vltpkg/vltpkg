@@ -11,39 +11,26 @@ Utilized for smoke testing the source and bundled versions of the CLI.
 This workspace use `child_process.spawn` to test all the variants of
 the CLI.
 
-This is necessary because we compile the CLI for publishing which has
+This is necessary because we bundle the CLI for publishing which has
 some fundamental differences from how the source is run when
 developing.
 
-For example, detached processes normally can be called with
-`spawn(process.execPath, fileName)` in development, but when compiled
-`process.execPath` is the CLI so a different mechanism is needed to
-route the process to the `fileName` entry point.
-
-We are also currently doing all our development with Node and
-experimenting with other runtimes like Deno for compilation.
-
 In general, most of our tests should be co-located in the workspace
 for the functionality they are testing. But when there is specific
-behavior that can only be tested when compiled or bundled, write a
-smoke test in this workspace.
+behavior that can only be tested when bundled, write a smoke test in
+this workspace.
 
 ### Variants
 
 The following variants of the CLI can be tested:
 
 ```ts
-export const allVariants = ['source', 'bundle', 'compile'] as const
+export const allVariants = ['Source', 'Bundle'] as const
 ```
 
-Not all of these are meant to be published, but they should all behave
-the same. And it is helpful for debugging to be able to test some of
-the intermediate variants specifically.
-
-For example, `bundle` is the code after is has been bundled by
-`esbuild` but before it has been compiled to a single binary. So it
-can be helpful to test only that variant if a bug is suspected to be
-caused by bundling and not compilation.
+For example, `Bundle` is the code after it has been bundled by
+`esbuild`. So it can be helpful to test only that variant if a bug is
+suspected to be caused by bundling.
 
 ## API
 
@@ -54,11 +41,7 @@ appears in the lockfile:
 import t from 'tap'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import {
-  runMultiple,
-  allVariants,
-  defaultVariants,
-} from './fixtures/run.ts'
+import { runMultiple, allVariants } from './fixtures/run.ts'
 
 t.test('install a package', async t => {
   const { status, stdout } = await runMultiple(t, ['i', 'eslint'], {

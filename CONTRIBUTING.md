@@ -24,8 +24,6 @@ building, bundling, and benchmarking the other workspaces.
 These are internal and highly coupled to our monorepo setup, so they
 are not published to any registry.
 
-This directory also contains all the `cli-*` variants.
-
 ### [`www`](./www/)
 
 These are websites that get deployed. Currently only
@@ -115,14 +113,8 @@ export PATH=~/projects/vltpkg/vltpkg/scripts/bins:$PATH
 vlt --version
 ```
 
-There are also directories in `./scripts/bins` for each variant of the
-CLI. These directories can be used the same way to manually run the
-following:
-
-- `./scripts/bins/bundle`: The `esbuild` bundled JavaScript with
-  `node`
-- `./scripts/bins/compile`: The compiled variant for the current
-  platform
+There is also a `./scripts/bins/bundle` directory that can be used the
+same way to run the `esbuild` bundled JavaScript variant with `node`.
 
 ## Publishing
 
@@ -190,49 +182,9 @@ gh workflow run release.yml --ref=main -f action=publish
 
 ### Published CLI Packages
 
-The following packages can be published as part of the CLI. Which
-packages are published is dependent on the value of
-`PUBLISHED_VARIANT` in
-[`@vltpkg/infra-build`](./infra/build/src/variants.ts).
-
-- `vlt` This will either be the JS or compiled variant of the CLI.
-- `@vltpkg/cli-js` The JS variant of the CLI. This is always published
-  and is helpful for testing/debugging vs the compiled variant.
-- `@vltpkg/cli-compiled` The is the compiled variant of the CLI. This
-  package only has placeholder bins that are swapped out in a
-  postinstall for one of the platform variants below.
-- `@vltpkg/cli-darmin-arm64`
-- `@vltpkg/cli-darmin-x64`
-- `@vltpkg/cli-linux-arm64`
-- `@vltpkg/cli-linux-x64`
-- `@vltpkg/cli-win32-x64`
-
-Note that the platform specific variants do not have any
-`package.json#bin` entries because that is incompatible with the
-postinstall strategy of the parent package. If you need to install one
-of those directly, you will need to move/run/link the included `vlt`
-executable manually.
-
-The bundled JS variant of the CLI exists in the `infra/cli-js`
-directory, because it is still published for manual testing and
-comparisons and it is an intermediary of the compiled CLI, so it gets
-tested in `smoke-tests` to help debug the build pipeline of
-`TS source` -> `esbuild bundled JS` -> `compiled`.
-
-The compiled variant of the CLI exists in the `infra/cli-compiled`
-directory, because the end goal is to publish this as the default
-`vlt` package. For now it is published under a scoped name for manual
-testing.
-
-## GUI Live Reload
-
-When run locally the GUI can be set to use live reload so that any
-changes to GUI source code will cause the browser to reload. To enable
-this set `__VLT_INTERNAL_LIVE_RELOAD=1` when running the GUI:
-
-```bash
-__VLT_INTERNAL_LIVE_RELOAD=1 ./scripts/bins/vlt gui
-```
+- `vlt` The main CLI package, published as bundled JavaScript.
+- `@vltpkg/cli-js` The bundled JS variant, also published for manual
+  testing and debugging.
 
 ## Bundling Caveats
 
@@ -259,20 +211,10 @@ builds for testing locally.
 ```bash
 # creates a directory with all the bundled JS
 vlr build:bundle
-# creates a directory with the compiled binaries
-# for the current os and cpu
-vlr build:compile
 ```
 
-To generate compiled builds for other platforms use the `--platform`
-and `--arch` flags.
-
-```bash
-vlr build:compile -- --platform=win32 --arch=x64
-```
-
-You can also run `vlt pack` in any of the `./infra/cli-*` directories
-to generate a tarball of the build.
+You can also run `vlt pack` in `./infra/cli` or `./infra/cli-js` to
+generate a tarball of the build.
 
 ## Finding Unused Code and Deps with Knip
 

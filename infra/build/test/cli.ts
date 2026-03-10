@@ -2,7 +2,6 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { resolve } from 'node:path'
 import * as Bundle from '../src/bundle.ts'
-import * as Compile from '../src/compile.ts'
 
 const mockCli = async (
   t: Test,
@@ -23,7 +22,7 @@ const mockCli = async (
     ],
   })
 
-  const calls = { bundle: 0, compile: 0 }
+  const calls = { bundle: 0 }
 
   await t.mockImport<typeof import('../src/cli.ts')>(
     '../src/cli.ts',
@@ -31,12 +30,6 @@ const mockCli = async (
       '../src/bundle.ts': t.createMock(Bundle, {
         bundle: async (o: unknown) => {
           calls.bundle++
-          return o
-        },
-      }),
-      '../src/compile.ts': t.createMock(Compile, {
-        compile: async (o: unknown) => {
-          calls.compile++
           return o
         },
       }),
@@ -53,7 +46,6 @@ t.test('default', async t => {
     argv: [`--outdir=outdir`],
   })
   t.equal(calls.bundle, 1)
-  t.equal(calls.compile, 0)
 })
 
 t.test('invalid bins', async t => {
@@ -69,13 +61,4 @@ t.test('bundle', async t => {
     argv: [`--outdir=outdir`, 'bundle'],
   })
   t.equal(calls.bundle, 1)
-  t.equal(calls.compile, 0)
-})
-
-t.test('compile', async t => {
-  const { calls } = await mockCli(t, {
-    argv: [`--outdir=outdir`, 'compile'],
-  })
-  t.equal(calls.bundle, 0)
-  t.equal(calls.compile, 1)
 })

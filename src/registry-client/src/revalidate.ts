@@ -58,15 +58,8 @@ export const main = async (cache?: string, input = process.stdin) => {
   return true
 }
 
-const g = globalThis as typeof globalThis & {
-  __VLT_INTERNAL_MAIN?: string
-}
-
-if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
+if (isMain(process.argv[1])) {
   process.title = 'vlt-cache-revalidate'
-  // When compiled there can be other leading args supplied by Deno
-  // so always use the last arg unless there are only two which means
-  // no path was supplied.
   const cacheFolder =
     process.argv.length === 2 ? undefined : process.argv.at(-1)
   const res = await main(cacheFolder, process.stdin)

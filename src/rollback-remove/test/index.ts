@@ -153,35 +153,6 @@ t.test('do not delete some stuff', async t => {
   )
 })
 
-t.test('compiled', async t => {
-  t.intercept(process, 'env', {
-    value: { __VLT_INTERNAL_COMPILED: 'true' },
-  })
-
-  const { remover, getSpawn } = await mockRollbackRemove(t, {
-    testdir: {
-      a: {
-        b: '',
-      },
-    },
-  })
-
-  await remover.rm('a/b')
-
-  remover.confirm()
-
-  t.matchStrict(getSpawn(), {
-    args: [],
-    options: {
-      detached: true,
-      env: {
-        __VLT_INTERNAL_MAIN: /^file:.*[\\/]remove\.ts$/,
-      },
-    },
-    reffed: false,
-  })
-})
-
 t.test('deno', async t => {
   t.intercept(
     globalThis as typeof globalThis & { Deno?: any },

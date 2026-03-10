@@ -88,7 +88,7 @@ export const views = {
 
 export const command: CommandFn<InstallResult> = async conf => {
   // TODO: we should probably throw an error if the user
-  // tries to install using either view=mermaid or view=gui
+  // tries to install using view=mermaid
   const monorepo = conf.options.monorepo
   const scurry = conf.options.scurry
   const { add } = parseAddArgs(conf, scurry, monorepo)

@@ -5,7 +5,6 @@ import { mkdirSync, rmSync } from 'node:fs'
 import assert from 'node:assert'
 import { resolve } from 'node:path'
 import { bundle } from './bundle.ts'
-import { compile } from './compile.ts'
 import { isBin } from './bins.ts'
 
 const parseOptions = () => {
@@ -17,8 +16,6 @@ const parseOptions = () => {
     allowNegative: true,
     options: {
       outdir: { type: 'string' },
-      platform: { type: 'string' },
-      arch: { type: 'string' },
       bins: { type: 'string', multiple: true },
       quiet: { type: 'boolean' },
       splitting: { type: 'boolean', default: true },
@@ -43,12 +40,8 @@ const main = async () => {
   mkdirSync(opts.outdir, { recursive: true })
 
   switch (action) {
-    // Bundle the JS version of the CLI
     case 'bundle':
       return bundle(opts)
-    // Compile the binary version of the CLI
-    case 'compile':
-      return compile(opts)
     /* c8 ignore next 2 */
     default:
       throw new Error(`Unknown action: ${action}`)

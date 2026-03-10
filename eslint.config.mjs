@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
-import reactHooks from 'eslint-plugin-react-hooks'
+
 import enforceMockImportTypes from './scripts/eslint-enforce-mock-import-types.js'
 
 const NAME = 'eslint-config-vltpkg'
@@ -275,7 +275,7 @@ export default [
   },
   {
     name: `${NAME}/shadcn-ui`,
-    files: [`{src/gui,www/docs}/src/components/ui/*${extGlobs.ts}`],
+    files: [`www/docs/src/components/ui/*${extGlobs.ts}`],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
     },
@@ -305,21 +305,6 @@ export default [
     },
   },
   {
-    name: `${NAME}/registry`,
-    files: [`src/vsr/**/*${extGlobs.ts}`],
-    rules: {
-      'jsdoc/reject-any-type': 'off',
-      'jsdoc/reject-function-type': 'off',
-      'import/no-unresolved': [
-        'error',
-        {
-          // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
-          ignore: ['cloudflare:test'],
-        },
-      ],
-    },
-  },
-  {
     name: `${NAME}/docs`,
     files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {
@@ -334,18 +319,6 @@ export default [
           ],
         },
       ],
-    },
-  },
-  {
-    name: `${NAME}/gui`,
-    files: [`src/gui/**/*${extGlobs.ts}`],
-    plugins: {
-      'react-hooks': reactHooks,
-    },
-    rules: {
-      'no-console': 'off',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
     },
   },
   {

@@ -8,35 +8,17 @@ Utilized for building vlt.
 
 ## Usage
 
-**Bundle and Compile**
+**Bundle**
 
 ```ts
-import { bundle, compile } from '@vltpkg/infra-build'
+import { bundle } from '@vltpkg/infra-build'
 
 const whichBinsToBundle = ['vlt'] as const
 const bundleResult = await bundle({ outdir: './bundle', bins })
-
-if (youWantToCompileAlso) {
-  compileResult = await compile({
-    source: bundleResult.outdir,
-    outdir: './compile',
-    bins,
-  })
-}
-```
-
-**Compile Only**
-
-```ts
-import { compile } from '@vltpkg/infra-build'
-
-// This will also bundle to a temp dir and compile from that
-const result = await compile({ outdir: './compile', bins })
 ```
 
 **CLI**
 
 ```bash
 vlt-build --outdir=bundle --bins=vlt bundle
-vlt-build --outdir=compile --bins=vlt compile
 ```

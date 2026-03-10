@@ -33,10 +33,6 @@ const main = async () => {
   }
 }
 
-const g = globalThis as typeof globalThis & {
-  __VLT_INTERNAL_MAIN?: string
-}
-
-if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
+if (isMain(process.argv[1])) {
   await main()
 }

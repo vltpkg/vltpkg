@@ -37,7 +37,7 @@ export default cwd => {
     .filter(p => !p.endsWith('package.json'))
     .map(p => join(cwd, p))
 
-  // If there are no entry points (like the gui) then it means to skip this workspace.
+  // If there are no entry points then it means to skip this workspace.
   if (entryPoints.length === 0) {
     return
   }
