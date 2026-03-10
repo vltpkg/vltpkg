@@ -23,24 +23,6 @@ Object {
 }
 `
 
-exports[`test/variants.ts > TAP > snapshot > Compile 1`] = `
-Object {
-  "args": "__DIR__/__BIN__",
-  "bin": "__DIR__/__BIN__",
-  "dir": "__DIR__",
-  "PATH": "__DIR__",
-}
-`
-
-exports[`test/variants.ts > TAP > snapshot > Compile windows 1`] = `
-Object {
-  "args": "__DIR__\\\\__BIN__.exe",
-  "bin": "__DIR__\\\\__BIN__.exe",
-  "dir": "__DIR__",
-  "PATH": "__DIR__",
-}
-`
-
 exports[`test/variants.ts > TAP > snapshot > Source 1`] = `
 Object {
   "args": "node __DIR__/__BIN__.ts",

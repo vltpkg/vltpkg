@@ -1,13 +1,13 @@
 ---
 description: Config reload and JackSpeak caching issues
-globs: src/server/src/config-data.ts,src/cli-sdk/src/config/*,src/vlt-json/src/*
+globs: src/cli-sdk/src/reload-config.ts,src/cli-sdk/src/config/*,src/vlt-json/src/*
 alwaysApply: false
 ---
 # Config Reload & JackSpeak Caching
 
 ## Problem
 
-GUI server config endpoints return stale values after updates due to multi-layer caching:
+Config endpoints return stale values after updates due to multi-layer caching:
 1. JackSpeak parser retains internal state across instances — `setConfigValues()` can't override cached defaults
 2. `Config.#options` memoization persists
 3. `vlt-json` module has fs caches (`datas`, `mtimes`, `paths`, `lstatCache`)
@@ -45,4 +45,4 @@ const { unload, load } = await import('@vltpkg/vlt-json') as VltJsonModule
 
 ## Key Files
 
-`src/server/src/config-data.ts`, `src/cli-sdk/src/config/index.ts`, `src/vlt-json/src/index.ts`
+`src/cli-sdk/src/reload-config.ts`, `src/cli-sdk/src/config/index.ts`, `src/vlt-json/src/index.ts`

@@ -23,7 +23,7 @@ export class ViewClass<T = unknown> {
   }
 
   // TODO: maybe have start() return a flag to say "i got this, do not
-  // run the command", for example to have the gui just open a web browser
+  // run the command", for example to just open a web browser
   // to the page relevant to a given thing, rather than computing it twice
   start() {}
   async done(_result: T, _opts: { time: number }): Promise<unknown> {

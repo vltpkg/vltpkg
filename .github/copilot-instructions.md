@@ -38,9 +38,6 @@ Following is a list of each workspace along with a brief description:
 - src/git, `@vltpkg/git` - A utility for spawning git
 - src/graph, `@vltpkg/graph` - The CLI main data structure, the Graph
   manages what packages are part of an install
-- src/gui - An React, Zustand front-end application to visualize a
-  Graph from `@vltpkg/graph`, distribution files can be find in its
-  nested `dist/` folder
 - src/init - `@vltpkg/init` - Implements the logic for the `vlt init`
   command
 - src/keychain - `@vltpkg/keychain` - Implements a secure way to store
@@ -60,8 +57,6 @@ Following is a list of each workspace along with a brief description:
   for security data fetched from Socket.dev APIs
 - src/semver, `@vltpkg/semver` - A library for parsing, validating &
   comparing Semantic Versions
-- src/server, `@vltpkg/server` - The backend server to serve the
-  src/gui frontend application & its required APIs
 - src/spec, `@vltpkg/spec` - Parses package specifiers, this defines
   our Spec class which is heavily used in our Graph and adjancent
   libraries
