@@ -44,7 +44,6 @@ import { join } from 'node:path'
 import {
   runMultiple,
   allVariants,
-  defaultVariants,
 } from './fixtures/run.ts'
 
 t.test('install a package', async t => {

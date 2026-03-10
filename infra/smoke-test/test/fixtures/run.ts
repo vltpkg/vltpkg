@@ -30,7 +30,6 @@ const filterVariants = (variants: readonly Variant[]) => {
 }
 
 export const allVariants = filterVariants(VARIANTS)
-export const defaultVariants = allVariants
 
 export const Artifacts = createArtifacts({
   bins: Bins,
@@ -334,7 +333,7 @@ export const runMultiple = async (
   args?: string[],
   {
     test,
-    variants = defaultVariants,
+    variants = allVariants,
     match = ['status', 'stdout', 'stderr'],
     ...options
   }: MultipleCommandOptions = {},

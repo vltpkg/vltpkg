@@ -31,7 +31,7 @@ const workspaces = {
     // TODO: audit if these really need to be hoisted
     ignoreDependencies: ['@astrojs/mdx', 'sharp', 'vite'],
   },
-  'infra/build': {},
+  'infra/build': { entry },
 }
 
 export default {
