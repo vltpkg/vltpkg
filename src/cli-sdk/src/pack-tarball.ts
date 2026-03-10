@@ -227,6 +227,7 @@ export const packTarball = async (
             /^\.?\/?vlt-lock\.json$/,
             /~$/,
             /\.swp$/,
+            /\.tgz$/,
           ]
 
           if (

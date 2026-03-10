@@ -120,4 +120,9 @@ installs it performs is done in vlt's XDG data directory.
 
       ​--bail
 
+    script-shell
+      The shell to use for --call commands and script execution.
+
+      ​--script-shell=<shell>
+
 `

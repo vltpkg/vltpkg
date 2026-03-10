@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import assert from 'node:assert'
 import { run } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
@@ -25,6 +25,25 @@ export const usage: CommandUsage = () =>
       'dry-run': {
         description:
           'Show what would be packed without creating a tarball',
+      },
+      scope: {
+        value: '<query>',
+        description:
+          'Filter packages to pack using a DSS query selector.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit pack targets to matching workspaces.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description:
+          'Limit pack targets to workspace groups.',
+      },
+      recursive: {
+        description:
+          'Pack all workspaces in the monorepo.',
       },
     },
   })
@@ -67,6 +86,50 @@ export const views = {
   json: r => r,
 } as const satisfies Views<CommandResult>
 
+/**
+ * Resolve a scope query string to workspace locations using the DSS query system.
+ */
+const scopeLocations = async (
+  queryString: string,
+  conf: LoadedConfig,
+): Promise<string[]> => {
+  const { options, projectRoot } = conf
+  const mainManifest = options.packageJson.maybeRead(projectRoot)
+  let graph
+  if (mainManifest) {
+    graph = actual.load({
+      ...options,
+      mainManifest,
+      monorepo: options.monorepo,
+      loadManifests: false,
+    })
+  }
+  const hostContexts = await createHostContextsMap(conf)
+  const query = new Query({
+    /* c8 ignore next */
+    nodes: graph ? new Set(graph.nodes.values()) : new Set(),
+    edges: graph?.edges ?? new Set(),
+    importers: graph?.importers ?? new Set(),
+    securityArchive: undefined,
+    hostContexts,
+  })
+  const { nodes } = await query.search(queryString, {
+    signal: new AbortController().signal,
+  })
+  const locations: string[] = []
+  for (const node of nodes) {
+    const { location } = node.toJSON()
+    assert(
+      location,
+      error(`node ${node.id} has no location`, {
+        found: node,
+      }),
+    )
+    locations.push(resolve(projectRoot, location))
+  }
+  return locations
+}
+
 export const command: CommandFn<CommandResult> = async conf => {
   const { options, projectRoot } = conf
   const queryString = conf.get('scope')
@@ -78,41 +141,22 @@ export const command: CommandFn<CommandResult> = async conf => {
   let single: string | null = null
 
   if (queryString) {
-    const mainManifest = options.packageJson.maybeRead(projectRoot)
-    let graph
-    if (mainManifest) {
-      graph = actual.load({
-        ...options,
-        mainManifest,
-        monorepo: options.monorepo,
-        loadManifests: false,
-      })
-    }
-    const hostContexts = await createHostContextsMap(conf)
-    const query = new Query({
-      /* c8 ignore next */
-      nodes: graph ? new Set(graph.nodes.values()) : new Set(),
-      edges: graph?.edges ?? new Set(),
-      importers: graph?.importers ?? new Set(),
-      securityArchive: undefined,
-      hostContexts,
-    })
-    const { nodes } = await query.search(queryString, {
-      signal: new AbortController().signal,
-    })
-    for (const node of nodes) {
-      const { location } = node.toJSON()
-      assert(
-        location,
-        error(`node ${node.id} has no location`, {
-          found: node,
-        }),
-      )
-      locations.push(resolve(projectRoot, location))
-    }
+    locations.push(...(await scopeLocations(queryString, conf)))
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
       locations.push(workspace.fullpath)
+    }
+  } else if (options.monorepo) {
+    const cwd = process.cwd()
+    if (cwd === projectRoot) {
+      for (const workspace of options.monorepo) {
+        locations.push(workspace.fullpath)
+      }
+    } else {
+      const rel = relative(projectRoot, cwd)
+      locations.push(
+        ...(await scopeLocations(`:path("${rel}")`, conf)),
+      )
     }
   } else {
     single = options.packageJson.find(process.cwd()) ?? projectRoot

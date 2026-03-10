@@ -66,7 +66,7 @@ const main = async () => {
   rmSync(outdir, { recursive: true, force: true })
   mkdirSync(outdir, { recursive: true })
 
-  await bundle({ outdir, hashbang: true })
+  await bundle({ outdir, hashbang: true, sourcemap: false })
   writeFiles({
     outdir,
     pkg,
