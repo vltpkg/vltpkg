@@ -33,17 +33,14 @@ export const usage: CommandUsage = () =>
       },
       workspace: {
         value: '<path|glob>',
-        description:
-          'Limit pack targets to matching workspaces.',
+        description: 'Limit pack targets to matching workspaces.',
       },
       'workspace-group': {
         value: '<name>',
-        description:
-          'Limit pack targets to workspace groups.',
+        description: 'Limit pack targets to workspace groups.',
       },
       recursive: {
-        description:
-          'Pack all workspaces in the monorepo.',
+        description: 'Pack all workspaces in the monorepo.',
       },
     },
   })

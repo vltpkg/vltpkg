@@ -52,17 +52,14 @@ export const usage: CommandUsage = () =>
       },
       workspace: {
         value: '<path|glob>',
-        description:
-          'Limit publish targets to matching workspaces.',
+        description: 'Limit publish targets to matching workspaces.',
       },
       'workspace-group': {
         value: '<name>',
-        description:
-          'Limit publish targets to workspace groups.',
+        description: 'Limit publish targets to workspace groups.',
       },
       recursive: {
-        description:
-          'Publish all workspaces in the monorepo.',
+        description: 'Publish all workspaces in the monorepo.',
       },
     },
   })

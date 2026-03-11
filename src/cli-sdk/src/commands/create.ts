@@ -49,8 +49,7 @@ export const usage: CommandUsage = () =>
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
       yes: {
-        description:
-          'Skip interactive prompts and accept defaults.',
+        description: 'Skip interactive prompts and accept defaults.',
       },
     },
   })

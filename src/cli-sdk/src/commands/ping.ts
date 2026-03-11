@@ -21,13 +21,11 @@ export const usage: CommandUsage = () =>
     options: {
       registry: {
         value: '<url>',
-        description:
-          'The default registry URL to ping.',
+        description: 'The default registry URL to ping.',
       },
       registries: {
         value: '<alias=url>',
-        description:
-          'Named registry aliases to ping.',
+        description: 'Named registry aliases to ping.',
       },
     },
   })
