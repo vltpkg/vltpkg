@@ -150,7 +150,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         locations.push(workspace.fullpath)
       }
     } else {
-      const rel = relative(projectRoot, cwd)
+      const rel = relative(projectRoot, cwd).replaceAll('\\', '/')
       locations.push(
         ...(await scopeLocations(`:path("${rel}")`, conf)),
       )
