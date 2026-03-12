@@ -52,4 +52,9 @@ installs it performs is done in vlt's XDG data directory.
 
       ​--allow-scripts=<query>
 
+    yes
+      Skip interactive prompts and accept defaults.
+
+      ​--yes
+
 `

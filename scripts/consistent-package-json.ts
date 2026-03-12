@@ -204,6 +204,9 @@ const fixTools = async (ws: Workspace) => {
         rootDir: 'src',
         module: 'nodenext',
         moduleResolution: 'nodenext',
+        sourceMap: false,
+        declarationMap: false,
+        inlineSources: false,
       },
     })
   }

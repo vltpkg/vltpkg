@@ -20,14 +20,12 @@ import type { ParserState } from '../types.ts'
  * This ensures consistent path comparison regardless of how paths are specified.
  */
 export function normalizePath(path: string): string {
-  const trimmed = path.trim()
+  const trimmed = path.trim().replaceAll('\\', '/')
 
-  // Handle root path case - normalize '.' to empty string for consistency
   if (trimmed === '.') {
     return ''
   }
 
-  // Remove leading './' prefix
   if (trimmed.startsWith('./')) {
     return trimmed.slice(2)
   }
