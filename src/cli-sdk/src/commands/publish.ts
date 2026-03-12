@@ -41,6 +41,26 @@ export const usage: CommandUsage = () =>
                     The directory must exist and nothing will be copied to it.`,
         value: '<path>',
       },
+      'dry-run': {
+        description:
+          'Show what would be published without actually publishing.',
+      },
+      scope: {
+        value: '<query>',
+        description:
+          'Filter packages to publish using a DSS query selector.',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description: 'Limit publish targets to matching workspaces.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description: 'Limit publish targets to workspace groups.',
+      },
+      recursive: {
+        description: 'Publish all workspaces in the monorepo.',
+      },
     },
   })
 

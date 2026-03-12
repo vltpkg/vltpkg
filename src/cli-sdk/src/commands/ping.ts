@@ -18,6 +18,16 @@ export const usage: CommandUsage = () =>
                   registry. Registry aliases are configured via the
                   \`registries\` field in vlt.json or with the
                   \`--registries\` option.`,
+    options: {
+      registry: {
+        value: '<url>',
+        description: 'The default registry URL to ping.',
+      },
+      registries: {
+        value: '<alias=url>',
+        description: 'Named registry aliases to ping.',
+      },
+    },
   })
 
 type PingResult = {

@@ -11,6 +11,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "module": "nodenext",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "sourceMap": false,
+    "declarationMap": false,
+    "inlineSources": false
   }
 }

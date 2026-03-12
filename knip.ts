@@ -20,17 +20,6 @@ const workspaces = {
   'src/cli-sdk': {
     entry: [...entry, 'src/commands/*.ts'],
   },
-  'www/docs': {
-    entry: [
-      ...entry,
-      // Referenced via <script> tag
-      'src/components/sidebar/sidebar-states.ts',
-      // Read by Starlight
-      'src/styles/globals.css',
-    ],
-    // TODO: audit if these really need to be hoisted
-    ignoreDependencies: ['@astrojs/mdx', 'sharp', 'vite'],
-  },
   'infra/build': { entry },
 }
 
@@ -46,6 +35,7 @@ export default {
   ignore: [
     '**/tap-snapshots/**/*.cjs',
     './infra/cli-benchmarks/fixtures/**',
+    './www/**',
   ],
   ignoreBinaries: ['hyperfine', 'vlr', 'sleep'],
   eslint: ['eslint.config.mjs'],

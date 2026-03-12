@@ -110,6 +110,11 @@ export const usage: CommandUsage = () =>
         description:
           'When running across multiple workspaces, stop on first failure.',
       },
+      'script-shell': {
+        value: '<shell>',
+        description:
+          'The shell to use for --call commands and script execution.',
+      },
     },
   })
 

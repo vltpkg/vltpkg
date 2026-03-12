@@ -20,4 +20,24 @@ The tarball will be saved to the current directory with the name
 
       ​--dry-run
 
+    scope
+      Filter packages to pack using a DSS query selector.
+
+      ​--scope=<query>
+
+    workspace
+      Limit pack targets to matching workspaces.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit pack targets to workspace groups.
+
+      ​--workspace-group=<name>
+
+    recursive
+      Pack all workspaces in the monorepo.
+
+      ​--recursive
+
 `

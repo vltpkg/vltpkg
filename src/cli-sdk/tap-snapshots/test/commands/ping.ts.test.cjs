@@ -19,4 +19,22 @@ By default, pings all configured registries including the default registry.
 
 If a registry alias is provided, ping only that specific registry. Registry aliases are configured via the \`registries\` field in vlt.json or with the \`--registries\` option.
 
+## Options
+
+### registry
+
+The default registry URL to ping.
+
+\`\`\`
+--registry=<url>
+\`\`\`
+
+### registries
+
+Named registry aliases to ping.
+
+\`\`\`
+--registries=<alias=url>
+\`\`\`
+
 `

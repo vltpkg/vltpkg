@@ -133,11 +133,13 @@ jobs:
       - name: Pack
         run: |
           commit="$(git rev-parse HEAD~1)"
+          # Use the source version of the CLI since pack changes may not be published yet
+          VLT="$(pwd)/scripts/bins/vlt"
           # Find workspaces with changes since the previous commit and pack them
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
             if [[ -f "$dir/package.json" ]]; then
               echo "Packing $dir..."
-              (cd "$dir" && vlt pack)
+              (cd "$dir" && $VLT pack)
             fi
           done
 
@@ -314,6 +316,8 @@ jobs:
       - name: Publish
         run: |
           commit="$(git rev-parse HEAD~1)"
+          # Use the source version of the CLI since pack/publish changes may not be published yet
+          VLT="$(pwd)/scripts/bins/vlt"
           dry_run_flag=""
           if [[ "${{ needs.pre-check.outputs.dry-run }}" == "true" ]]; then
             dry_run_flag="--dry-run"
@@ -326,7 +330,7 @@ jobs:
                 continue
               fi
               echo "Publishing $dir..."
-              (cd "$dir" && vlt publish --access=public $dry_run_flag)
+              (cd "$dir" && $VLT publish --access=public $dry_run_flag)
             fi
           done
         env:

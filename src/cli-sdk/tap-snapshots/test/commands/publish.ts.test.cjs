@@ -40,4 +40,29 @@ and then upload it to the configured registry.
 
       ​--publish-directory=<path>
 
+    dry-run
+      Show what would be published without actually publishing.
+
+      ​--dry-run
+
+    scope
+      Filter packages to publish using a DSS query selector.
+
+      ​--scope=<query>
+
+    workspace
+      Limit publish targets to matching workspaces.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit publish targets to workspace groups.
+
+      ​--workspace-group=<name>
+
+    recursive
+      Publish all workspaces in the monorepo.
+
+      ​--recursive
+
 `
