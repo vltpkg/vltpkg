@@ -7,6 +7,13 @@ import { unload } from '@vltpkg/vlt-json'
 
 setupEnv(t)
 
+// Some tests invoke commands that set process.exitCode = 1 on failure.
+// Ensure it's always cleaned up so tap doesn't report this file as failed.
+const originalExitCode = process.exitCode
+t.teardown(() => {
+  process.exitCode = originalExitCode
+})
+
 const pass = 'node -e "process.exit(0)"'
 const fail = 'node -e "process.exit(1)"'
 
