@@ -292,7 +292,10 @@ t.test('run script across no workspaces', async t => {
 })
 
 t.test('one ws fails, with bail', async t => {
-  const { exitCode } = process
+  const exitCode = process.exitCode
+  t.teardown(() => {
+    process.exitCode = exitCode
+  })
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
       workspaces: 'src/*',
@@ -362,11 +365,13 @@ t.test('one ws fails, with bail', async t => {
   )
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
-  process.exitCode = exitCode
 })
 
 t.test('one ws fails, without bail', async t => {
-  const { exitCode } = process
+  const exitCode = process.exitCode
+  t.teardown(() => {
+    process.exitCode = exitCode
+  })
   const dir = t.testdir({
     'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
@@ -433,7 +438,6 @@ t.test('one ws fails, without bail', async t => {
   )
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
-  process.exitCode = exitCode
 })
 
 t.test(
