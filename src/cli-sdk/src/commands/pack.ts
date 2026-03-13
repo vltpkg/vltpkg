@@ -150,10 +150,15 @@ export const command: CommandFn<CommandResult> = async conf => {
         locations.push(workspace.fullpath)
       }
     } else {
-      const rel = relative(projectRoot, cwd).replaceAll('\\', '/')
-      locations.push(
-        ...(await scopeLocations(`:path("${rel}")`, conf)),
-      )
+      const ws = options.monorepo.get(cwd)
+      if (ws) {
+        locations.push(ws.fullpath)
+      } else {
+        const rel = relative(projectRoot, cwd).replaceAll('\\', '/')
+        locations.push(
+          ...(await scopeLocations(`:path("${rel}")`, conf)),
+        )
+      }
     }
   } else {
     single = options.packageJson.find(process.cwd()) ?? projectRoot

@@ -192,38 +192,44 @@ const spawnCommand = async (
       }
 
       if (tty) {
-        return import('node-pty').then(({ spawn: spawnPty }) => {
-          const proc = spawnPty(command, [...commandArgs, ...args], {
-            cwd: dirs.project,
-            env: spawnEnv,
-          })
-          const kill = (s: NodeJS.Signals = 'SIGTERM') => {
-            debugLog?.('KILL', s)
-            proc.kill(s)
-          }
-          proc.onData(data => {
-            // node-pty does not allow for separating stdout and stderr so we have
-            // to treat all data as both stdout and stderr. This means we can't
-            // use tty:true in smoke tests to test what is on stdout vs stderr.
-            outputs.stdout += data
-            outputs.stderr += data
-            outputs.output += data
-            // This is only used for debugging so we resolve all ansi control
-            // sequences and then strip colors to make it easier to read the logs.
-            debugLog?.(
-              'TTY',
-              stripVTControlCharacters(ansiToAnsi(data)),
+        return import('node-pty')
+          .then(({ spawn: spawnPty }) => {
+            const proc = spawnPty(
+              command,
+              [...commandArgs, ...args],
+              {
+                cwd: dirs.project,
+                env: spawnEnv,
+              },
             )
-            onOutput?.({ ...outputs, kill })
+            const kill = (s: NodeJS.Signals = 'SIGTERM') => {
+              debugLog?.('KILL', s)
+              proc.kill(s)
+            }
+            proc.onData(data => {
+              // node-pty does not allow for separating stdout and stderr so we have
+              // to treat all data as both stdout and stderr. This means we can't
+              // use tty:true in smoke tests to test what is on stdout vs stderr.
+              outputs.stdout += data
+              outputs.stderr += data
+              outputs.output += data
+              // This is only used for debugging so we resolve all ansi control
+              // sequences and then strip colors to make it easier to read the logs.
+              debugLog?.(
+                'TTY',
+                stripVTControlCharacters(ansiToAnsi(data)),
+              )
+              onOutput?.({ ...outputs, kill })
+            })
+            proc.onExit(({ exitCode, signal }) =>
+              res({
+                ...outputs,
+                status: exitCode,
+                signal: signal?.toString() ?? null,
+              }),
+            )
           })
-          proc.onExit(({ exitCode, signal }) =>
-            res({
-              ...outputs,
-              status: exitCode,
-              signal: signal?.toString() ?? null,
-            }),
-          )
-        })
+          .catch(rej)
       }
 
       const proc = spawn(command, [...commandArgs, ...args], {
