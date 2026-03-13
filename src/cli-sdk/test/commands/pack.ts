@@ -761,65 +761,124 @@ t.test('pack command monorepo cwd inference', async t => {
 
     t.chdir(resolve(dir, 'packages/a'))
 
+    const workspaces = [
+      {
+        name: '@test/a',
+        fullpath: resolve(dir, 'packages/a'),
+      },
+      {
+        name: '@test/b',
+        fullpath: resolve(dir, 'packages/b'),
+      },
+    ]
+
     const config = makeTestConfig({
       projectRoot: dir,
       options: {
         packageJson: new PackageJson(),
-        monorepo: [
-          {
-            name: '@test/a',
-            fullpath: resolve(dir, 'packages/a'),
-          },
-          {
-            name: '@test/b',
-            fullpath: resolve(dir, 'packages/b'),
-          },
-        ],
+        monorepo: {
+          [Symbol.iterator]: () => workspaces[Symbol.iterator](),
+          get: (key: string) =>
+            workspaces.find(
+              w => w.fullpath === key || w.name === key,
+            ),
+        },
       },
       positionals: ['pack'],
     })
 
-    const mockNodes = [
-      {
-        id: 'workspace;packages/a',
-        toJSON: () => ({ location: 'packages/a' }),
-      },
-    ]
-
-    const cmd = await t.mockImport<
-      typeof import('../../src/commands/pack.ts')
-    >('../../src/commands/pack.ts', {
-      '@vltpkg/graph': {
-        actual: {
-          load: () => ({
-            nodes: new Map(),
-          }),
-        },
-      },
-      '@vltpkg/query': {
-        Query: class {
-          search = async (query: string) => {
-            t.match(
-              query,
-              ':path("packages/a")',
-              'should use :path() selector with relative path',
-            )
-            return { nodes: mockNodes }
-          }
-        },
-      },
-      '../../src/query-host-contexts.ts': {
-        createHostContextsMap: async () => new Map(),
-      },
-    })
-
-    const result = await cmd.command(config as LoadedConfig)
+    const result = await command(config as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array')
     const results = result as CommandResultSingle[]
     t.equal(results.length, 1, 'should pack only current workspace')
     t.equal(results[0]!.name, '@test/a')
   })
+
+  t.test(
+    'falls back to :path() query when monorepo.get misses',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'root',
+          version: '1.0.0',
+        }),
+        'vlt.json': JSON.stringify({
+          workspaces: ['packages/*'],
+        }),
+        'vlt-lock.json': JSON.stringify({
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
+        packages: {
+          a: {
+            'package.json': JSON.stringify({
+              name: '@test/a',
+              version: '1.0.0',
+            }),
+            'index.js': 'console.log("a")',
+            'vlt.json': '{}',
+          },
+        },
+      })
+
+      t.chdir(resolve(dir, 'packages/a'))
+
+      const config = makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          monorepo: {
+            [Symbol.iterator]: () => [][Symbol.iterator](),
+            get: () => undefined,
+          },
+        },
+        positionals: ['pack'],
+      })
+
+      const mockNodes = [
+        {
+          id: 'workspace;packages/a',
+          toJSON: () => ({ location: 'packages/a' }),
+        },
+      ]
+
+      const cmd = await t.mockImport<
+        typeof import('../../src/commands/pack.ts')
+      >('../../src/commands/pack.ts', {
+        '@vltpkg/graph': {
+          actual: {
+            load: () => ({
+              nodes: new Map(),
+            }),
+          },
+        },
+        '@vltpkg/query': {
+          Query: class {
+            search = async (query: string) => {
+              t.match(
+                query,
+                ':path("packages/a")',
+                'should fall back to :path() selector',
+              )
+              return { nodes: mockNodes }
+            }
+          },
+        },
+        '../../src/query-host-contexts.ts': {
+          createHostContextsMap: async () => new Map(),
+        },
+      })
+
+      const result = await cmd.command(config as LoadedConfig)
+
+      t.ok(Array.isArray(result), 'should return array')
+      const results = result as CommandResultSingle[]
+      t.equal(results.length, 1, 'should pack workspace via fallback')
+      t.equal(results[0]!.name, '@test/a')
+    },
+  )
 })
 
 t.test('pack command fallback to projectRoot', async t => {
