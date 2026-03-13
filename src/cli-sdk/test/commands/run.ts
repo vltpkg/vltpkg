@@ -7,13 +7,6 @@ import { unload } from '@vltpkg/vlt-json'
 
 setupEnv(t)
 
-// Some tests invoke commands that set process.exitCode = 1 on failure.
-// Ensure it's always cleaned up so tap doesn't report this file as failed.
-const originalExitCode = process.exitCode
-t.teardown(() => {
-  process.exitCode = originalExitCode
-})
-
 const pass = 'node -e "process.exit(0)"'
 const fail = 'node -e "process.exit(1)"'
 
@@ -299,10 +292,7 @@ t.test('run script across no workspaces', async t => {
 })
 
 t.test('one ws fails, with bail', async t => {
-  const exitCode = process.exitCode
-  t.teardown(() => {
-    process.exitCode = exitCode
-  })
+  const { exitCode } = process
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
       workspaces: 'src/*',
@@ -372,13 +362,11 @@ t.test('one ws fails, with bail', async t => {
   )
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
+  process.exitCode = exitCode
 })
 
 t.test('one ws fails, without bail', async t => {
-  const exitCode = process.exitCode
-  t.teardown(() => {
-    process.exitCode = exitCode
-  })
+  const { exitCode } = process
   const dir = t.testdir({
     'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
@@ -445,6 +433,7 @@ t.test('one ws fails, without bail', async t => {
   )
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
+  process.exitCode = exitCode
 })
 
 t.test('show scripts if no event specified', async t => {
@@ -604,8 +593,6 @@ t.test(
     unload()
 
     // Simulate: vlt run hello --scope ":workspace#a, :workspace#b"
-    // The 'run' prefix causes stopAtPositionalTest to activate,
-    // pushing --scope and its value into positionals
     const conf = await Config.load(t.testdirName, [
       'run',
       'hello',
@@ -614,8 +601,6 @@ t.test(
       '--view=human',
     ])
     t.equal(conf.command, 'run')
-    // Before the fix, scope would be undefined and the options
-    // would be treated as script args
     t.equal(conf.positionals[0], 'hello')
 
     const logs = t.capture(console, 'log').args
@@ -692,12 +677,12 @@ t.test(
     >('../../src/config/index.ts')
     unload()
 
-    // Simulate: vlt run hello -w src/a
+    // Simulate: vlt run hello -w a
     const conf = await Config.load(t.testdirName, [
       'run',
       'hello',
       '-w',
-      'src/a',
+      'a',
       '--view=human',
     ])
     t.equal(conf.command, 'run')
@@ -705,7 +690,7 @@ t.test(
     const logs = t.capture(console, 'log').args
     const result = await command(conf)
 
-    // Should only run in workspace a
+    // Should only run in workspace 'a'
     t.strictSame(result, {
       command: pass,
       args: [],
@@ -724,7 +709,6 @@ t.test(
   async t => {
     const dir = t.testdir({
       'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
-      // Root has NO 'test' script
       'package.json': JSON.stringify({
         name: 'root',
         version: '1.0.0',
@@ -761,9 +745,6 @@ t.test(
     const logs = t.capture(console, 'log').args
     const result = await command(conf)
 
-    // Should run test in the workspace, not fail on root.
-    // Since there's only one matching workspace, it runs in
-    // foreground mode (flat result, not keyed by workspace).
     t.strictSame(result, {
       command: pass,
       args: [],
