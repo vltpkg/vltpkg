@@ -43,6 +43,7 @@ const canonicalCommands = {
   repo: 'repo',
   'run-exec': 'run-exec',
   run: 'run',
+  skills: 'skills',
   token: 'token',
   uninstall: 'uninstall',
   update: 'update',
@@ -698,6 +699,18 @@ export const definition = j
                     Example: --allow-scripts=":root > *, #my-package"
                     Runs scripts only for direct dependencies of the current project and any occurrences
                     of a specific dependency with the name "my-package" anywhere in the dependency graph.`,
+    },
+  })
+  .opt({
+    'allow-skills': {
+      hint: 'query',
+      description: `Filter which packages are allowed to have skills linked using DSS query syntax.
+                    When provided, only packages matching the query will have their skill files
+                    (skills.md, SKILL.md, *.skill.md) symlinked to the project's skills directory.
+                    Defaults to ':not(*)' which means no skills will be linked.
+                    
+                    Example: --allow-skills="*"
+                    Links skills from all packages that have skill files.`,
     },
   })
   .opt({
