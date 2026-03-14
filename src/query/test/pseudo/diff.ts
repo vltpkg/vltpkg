@@ -129,37 +129,20 @@ t.test(':diff pseudo-selector', async t => {
     },
   )
 
-  t.test('throws on missing commitish argument', async t => {
-    const graph = getSimpleGraph()
-    await t.rejects(async () => {
-      const ast = parse(':diff()')
-      const current = ast.first.first
-      const state: ParserState = {
-        comment: '',
-        current,
-        diffFiles: () => new Set<string>(),
-        initial: {
-          edges: new Set(graph.edges.values()),
-          nodes: new Set(graph.nodes.values()),
-        },
-        partial: {
-          edges: new Set(graph.edges.values()),
-          nodes: new Set(graph.nodes.values()),
-        },
-        collect: {
-          edges: new Set(),
-          nodes: new Set(),
-        },
-        cancellable: async () => {},
-        walk: async i => i,
-        retries: 0,
-        securityArchive: undefined,
-        importers: new Set(graph.importers),
-        signal: new AbortController().signal,
-        specificity: { idCounter: 0, commonCounter: 0 },
-      }
-      await diff(state)
-    }, 'should throw for empty :diff()')
+  t.test('defaults to HEAD when no argument provided', async t => {
+    const graph = getPathBasedGraph()
+    let capturedCommitish = ''
+    const state = getState(':diff()', graph, new Set<string>())
+    state.diffFiles = (commitish: string) => {
+      capturedCommitish = commitish
+      return new Set<string>()
+    }
+    await diff(state)
+    t.equal(
+      capturedCommitish,
+      'HEAD',
+      'should default to HEAD for empty :diff()',
+    )
   })
 
   t.test('throws when diffFiles provider is missing', async t => {

@@ -45,28 +45,36 @@ export const packageHasChanges = (
  * takes a commitish string and returns a Set of changed
  * file paths relative to the project root.
  *
+ * When called with no argument, defaults to HEAD (uncommitted changes).
+ *
  * Examples:
+ * - :diff() — packages with uncommitted changes (defaults to HEAD)
  * - :diff(main) — packages changed since main branch
  * - :diff(HEAD~1) — packages changed since last commit
  * - :diff("v1.0.0") — packages changed since tag v1.0.0
  */
 export const diff = async (state: ParserState) => {
-  let internals
-  try {
-    internals = parseInternals(
-      asPostcssNodeWithChildren(state.current).nodes,
-    )
-  } catch (err) {
-    throw error('Failed to parse :diff selector', {
-      cause: err,
-    })
+  const currentNodes =
+    asPostcssNodeWithChildren(state.current).nodes
+  const hasArg =
+    currentNodes.length > 0 &&
+    asPostcssNodeWithChildren(currentNodes[0]).nodes.length > 0
+
+  let commitish = 'HEAD'
+  if (hasArg) {
+    try {
+      commitish = parseInternals(currentNodes).specValue
+    } catch (err) {
+      throw error('Failed to parse :diff selector', {
+        cause: err,
+      })
+    }
   }
 
   if (!state.diffFiles) {
     throw error('The :diff() selector requires a diffFiles provider')
   }
 
-  const commitish = internals.specValue
   const changedFiles = state.diffFiles(commitish)
 
   for (const node of state.partial.nodes) {

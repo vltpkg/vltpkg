@@ -157,7 +157,9 @@ e.g: `#foo` is the same as `[name=foo]`
 - `:diff(<commitish>)` Matches packages whose files have changed
   between the current working tree and the specified git commitish
   reference. Uses `git diff --name-only` to determine changed files,
-  then maps them to packages by their file path location. Examples:
+  then maps them to packages by their file path location. When called
+  with no argument, defaults to `HEAD` (uncommitted changes). Examples:
+  - `:diff()` - Packages with uncommitted changes (defaults to HEAD)
   - `:diff(main)` - Packages changed since the main branch
   - `:diff(HEAD~1)` - Packages changed since the last commit
   - `:diff("v1.0.0")` - Packages changed since the v1.0.0 tag
