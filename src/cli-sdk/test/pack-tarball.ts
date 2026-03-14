@@ -1113,3 +1113,140 @@ t.test('publish-directory option', async t => {
     },
   )
 })
+
+t.test('publishConfig.directory from package.json', async t => {
+  await t.test(
+    'uses publishConfig.directory when no CLI flag is set',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'original-pkg',
+            version: '1.0.0',
+            publishConfig: {
+              directory: './.build-publish',
+            },
+          }),
+          '.build-publish': {
+            'package.json': JSON.stringify({
+              name: 'built-pkg',
+              version: '1.0.0',
+              bin: { vlt: './vlt.js' },
+            }),
+            'vlt.js': '#!/usr/bin/env node\nconsole.log("vlt")',
+          },
+        },
+      })
+
+      const originalDir = resolve(testdir, 'original-dir')
+
+      // No publish-directory CLI flag
+      const config = createMockConfig(testdir)
+
+      const manifest = {
+        name: 'original-pkg',
+        version: '1.0.0',
+        publishConfig: {
+          directory: './.build-publish',
+        },
+      }
+
+      const result = await packTarball(manifest, originalDir, config)
+
+      // Should use the manifest from .build-publish/
+      t.equal(
+        result.name,
+        'built-pkg',
+        'Should use name from publishConfig.directory manifest',
+      )
+      t.equal(result.version, '1.0.0')
+      t.ok(result.files.includes('vlt.js'))
+    },
+  )
+
+  await t.test(
+    'CLI flag overrides publishConfig.directory',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'original-pkg',
+            version: '1.0.0',
+            publishConfig: {
+              directory: './.build-publish',
+            },
+          }),
+          '.build-publish': {
+            'package.json': JSON.stringify({
+              name: 'build-pkg',
+              version: '1.0.0',
+            }),
+            'build.js': 'console.log("build")',
+          },
+        },
+        'cli-dir': {
+          'package.json': JSON.stringify({
+            name: 'cli-pkg',
+            version: '2.0.0',
+          }),
+          'cli.js': 'console.log("cli")',
+        },
+      })
+
+      const originalDir = resolve(testdir, 'original-dir')
+      const cliDir = resolve(testdir, 'cli-dir')
+
+      const config = createMockConfig(testdir, {
+        'publish-directory': cliDir,
+      })
+
+      const manifest = {
+        name: 'original-pkg',
+        version: '1.0.0',
+        publishConfig: {
+          directory: './.build-publish',
+        },
+      }
+
+      const result = await packTarball(manifest, originalDir, config)
+
+      // CLI flag should take precedence
+      t.equal(result.name, 'cli-pkg')
+      t.equal(result.version, '2.0.0')
+      t.ok(result.files.includes('cli.js'))
+    },
+  )
+
+  await t.test(
+    'throws when publishConfig.directory does not exist',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'test-pkg',
+            version: '1.0.0',
+            publishConfig: {
+              directory: './nonexistent',
+            },
+          }),
+        },
+      })
+
+      const originalDir = resolve(testdir, 'original-dir')
+      const config = createMockConfig(testdir)
+
+      const manifest = {
+        name: 'test-pkg',
+        version: '1.0.0',
+        publishConfig: {
+          directory: './nonexistent',
+        },
+      }
+
+      await t.rejects(
+        packTarball(manifest, originalDir, config),
+        /Publish directory does not exist/,
+      )
+    },
+  )
+})

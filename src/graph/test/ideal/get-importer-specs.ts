@@ -3,7 +3,15 @@ import { PackageJson } from '@vltpkg/package-json'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
-import { inspect } from 'node:util'
+import { inspect as rawInspect } from 'node:util'
+import type { InspectOptions } from 'node:util'
+
+// Normalize inspect output across Node.js versions: strip [Map]/[Set] tags
+// and force consistent multi-line formatting with compact: false
+const inspect = (obj: unknown, opts?: InspectOptions) =>
+  rawInspect(obj, { compact: false, ...opts })
+    .replaceAll(' [Map] ', ' ')
+    .replaceAll(' [Set] ', ' ')
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.ts'

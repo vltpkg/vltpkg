@@ -12,6 +12,7 @@ import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { error } from '@vltpkg/error-cause'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { minimatch } from 'minimatch'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -141,6 +142,20 @@ export const command: CommandFn<CommandResult> = async conf => {
     locations.push(...(await scopeLocations(queryString, conf)))
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
+      // When specific workspace paths are set (including auto-inferred from cwd),
+      // filter to only matching workspaces. Without this, all monorepo workspaces
+      // would be operated on even when only one was specified.
+      if (paths?.length) {
+        const matches = paths.some(
+          (p: string) =>
+            workspace.path === p ||
+            workspace.name === p ||
+            workspace.fullpath === p ||
+            resolve(projectRoot, p) === workspace.fullpath ||
+            minimatch(workspace.path, p),
+        )
+        if (!matches) continue
+      }
       locations.push(workspace.fullpath)
     }
   } else if (options.monorepo) {

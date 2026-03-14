@@ -9,6 +9,7 @@ import { SecurityArchive } from '@vltpkg/security-archive'
 import { views as initViews } from './init.ts'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { minimatch } from 'minimatch'
 import type { Graph } from '@vltpkg/graph'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { NormalizedManifest, NodeLike } from '@vltpkg/types'
@@ -171,6 +172,17 @@ export const command: CommandFn = async conf => {
     }
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
+      if (paths?.length) {
+        const matches = paths.some(
+          (p: string) =>
+            workspace.path === p ||
+            workspace.name === p ||
+            workspace.fullpath === p ||
+            resolve(projectRoot, p) === workspace.fullpath ||
+            minimatch(workspace.path, p),
+        )
+        if (!matches) continue
+      }
       locations.push(workspace.fullpath)
     }
   } else {

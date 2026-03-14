@@ -651,10 +651,12 @@ t.test('version command with scope', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -786,6 +788,7 @@ t.test('version command with workspace paths', async t => {
       monorepo: [
         {
           name: '@test/a',
+          path: 'packages/a',
           fullpath: resolve(dir, 'packages/a'),
         },
       ],
@@ -828,6 +831,268 @@ t.test('version command with workspace paths', async t => {
   })
 })
 
+t.test('version command workspace filtering modes', async t => {
+  t.test('filters by workspace name', async t => {
+    const semverModule = await import('@vltpkg/semver')
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const conf = new MockConfig(['patch'], {
+      workspace: ['@test/a'],
+      monorepo: [
+        {
+          name: '@test/a',
+          path: 'packages/a',
+          fullpath: resolve(dir, 'packages/a'),
+        },
+        {
+          name: '@test/b',
+          path: 'packages/b',
+          fullpath: resolve(dir, 'packages/b'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return resolve(dir, 'packages/a/package.json')
+      return null
+    }
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return { name: '@test/a', version: '1.0.0' }
+      return { name: 'root', version: '1.0.0' }
+    }
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.newVersion, '1.0.1')
+  })
+
+  t.test('filters by workspace fullpath', async t => {
+    const semverModule = await import('@vltpkg/semver')
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const fullpath = resolve(dir, 'packages/a')
+    const conf = new MockConfig(['patch'], {
+      workspace: [fullpath],
+      monorepo: [
+        {
+          name: '@test/a',
+          path: 'packages/a',
+          fullpath,
+        },
+        {
+          name: '@test/b',
+          path: 'packages/b',
+          fullpath: resolve(dir, 'packages/b'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return resolve(dir, 'packages/a/package.json')
+      return null
+    }
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return { name: '@test/a', version: '1.0.0' }
+      return { name: 'root', version: '1.0.0' }
+    }
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.newVersion, '1.0.1')
+  })
+
+  t.test('filters by resolved relative path', async t => {
+    const semverModule = await import('@vltpkg/semver')
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const conf = new MockConfig(['patch'], {
+      workspace: ['./packages/a'],
+      monorepo: [
+        {
+          name: '@test/a',
+          path: 'packages/a',
+          fullpath: resolve(dir, 'packages/a'),
+        },
+        {
+          name: '@test/b',
+          path: 'packages/b',
+          fullpath: resolve(dir, 'packages/b'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return resolve(dir, 'packages/a/package.json')
+      return null
+    }
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return { name: '@test/a', version: '1.0.0' }
+      return { name: 'root', version: '1.0.0' }
+    }
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.newVersion, '1.0.1')
+  })
+
+  t.test('filters by minimatch glob', async t => {
+    const semverModule = await import('@vltpkg/semver')
+    const cmd = await mockCommand(t, {
+      '@vltpkg/semver': semverModule,
+      '@vltpkg/git': mockGit,
+    })
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: '@test/a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: '@test/b',
+            version: '2.0.0',
+          }),
+        },
+      },
+    })
+
+    const conf = new MockConfig(['patch'], {
+      workspace: ['packages/*'],
+      monorepo: [
+        {
+          name: '@test/a',
+          path: 'packages/a',
+          fullpath: resolve(dir, 'packages/a'),
+        },
+        {
+          name: '@test/b',
+          path: 'packages/b',
+          fullpath: resolve(dir, 'packages/b'),
+        },
+      ],
+    })
+    conf.projectRoot = dir
+    conf.writtenManifests = []
+    conf.values.packageJson.find = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return resolve(dir, 'packages/a/package.json')
+      if (cwd.includes(join('packages', 'b')))
+        return resolve(dir, 'packages/b/package.json')
+      return null
+    }
+    conf.values.packageJson.read = (cwd: string) => {
+      if (cwd.includes(join('packages', 'a')))
+        return { name: '@test/a', version: '1.0.0' }
+      if (cwd.includes(join('packages', 'b')))
+        return { name: '@test/b', version: '2.0.0' }
+      return { name: 'root', version: '1.0.0' }
+    }
+    conf.values.packageJson.maybeRead = conf.values.packageJson.read
+
+    const result = await cmd.command(conf as unknown as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2)
+  })
+})
+
 t.test('version command with workspace-group', async t => {
   t.test('updates all workspaces in group', async t => {
     const semverModule = await import('@vltpkg/semver')
@@ -864,10 +1129,12 @@ t.test('version command with workspace-group', async t => {
       monorepo: [
         {
           name: '@test/a',
+          path: 'packages/a',
           fullpath: resolve(dir, 'packages/a'),
         },
         {
           name: '@test/b',
+          path: 'packages/b',
           fullpath: resolve(dir, 'packages/b'),
         },
       ],
@@ -956,10 +1223,12 @@ t.test('version command with recursive', async t => {
       monorepo: [
         {
           name: '@test/a',
+          path: 'packages/a',
           fullpath: resolve(dir, 'packages/a'),
         },
         {
           name: '@test/b',
+          path: 'packages/b',
           fullpath: resolve(dir, 'packages/b'),
         },
       ],

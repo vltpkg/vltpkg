@@ -154,30 +154,43 @@ export const packTarball = async (
 ): Promise<PackTarballResult> => {
   let packDir = dir
 
-  // Check if publishDirectory is configured
-  const publishDirectory = config.get('publish-directory')
+  // Check if publishDirectory is configured via CLI flag or package.json publishConfig.directory
+  const cliPublishDir = config.get('publish-directory')
+  const manifestPublishDir = (
+    manifest as NormalizedManifest & {
+      publishConfig?: { directory?: string }
+    }
+  ).publishConfig?.directory
+
+  const publishDirectory = cliPublishDir ?? manifestPublishDir
   if (publishDirectory) {
+    // CLI flag paths are used as-is; publishConfig.directory is relative to the package dir
+    const resolvedPublishDir =
+      cliPublishDir ? publishDirectory : join(dir, publishDirectory)
     // Validate that the publish directory exists and is a directory
     assert(
-      existsSync(publishDirectory),
-      error(`Publish directory does not exist: ${publishDirectory}`, {
-        found: publishDirectory,
-      }),
+      existsSync(resolvedPublishDir),
+      error(
+        `Publish directory does not exist: ${resolvedPublishDir}`,
+        {
+          found: resolvedPublishDir,
+        },
+      ),
     )
     assert(
-      statSync(publishDirectory).isDirectory(),
+      statSync(resolvedPublishDir).isDirectory(),
       error(
-        `Publish directory is not a directory: ${publishDirectory}`,
+        `Publish directory is not a directory: ${resolvedPublishDir}`,
         {
-          found: publishDirectory,
+          found: resolvedPublishDir,
           wanted: 'directory',
         },
       ),
     )
-    if (existsSync(join(publishDirectory, 'package.json'))) {
-      manifest = config.options.packageJson.read(publishDirectory)
+    if (existsSync(join(resolvedPublishDir, 'package.json'))) {
+      manifest = config.options.packageJson.read(resolvedPublishDir)
     }
-    packDir = publishDirectory
+    packDir = resolvedPublishDir
   }
 
   assert(

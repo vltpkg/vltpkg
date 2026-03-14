@@ -17,6 +17,7 @@ import assert from 'node:assert'
 import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { minimatch } from 'minimatch'
 
 export type VersionOptions = {
   prereleaseId?: string
@@ -324,6 +325,17 @@ export const command: CommandFn<CommandResult> = async conf => {
     }
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
+      if (paths?.length) {
+        const matches = paths.some(
+          (p: string) =>
+            workspace.path === p ||
+            workspace.name === p ||
+            workspace.fullpath === p ||
+            resolve(projectRoot, p) === workspace.fullpath ||
+            minimatch(workspace.path, p),
+        )
+        if (!matches) continue
+      }
       locations.push(workspace.fullpath)
     }
   } else {
