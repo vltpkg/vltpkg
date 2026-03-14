@@ -54,8 +54,7 @@ export const packageHasChanges = (
  * - :diff("v1.0.0") — packages changed since tag v1.0.0
  */
 export const diff = async (state: ParserState) => {
-  const currentNodes =
-    asPostcssNodeWithChildren(state.current).nodes
+  const currentNodes = asPostcssNodeWithChildren(state.current).nodes
   const hasArg =
     currentNodes.length > 0 &&
     asPostcssNodeWithChildren(currentNodes[0]).nodes.length > 0
