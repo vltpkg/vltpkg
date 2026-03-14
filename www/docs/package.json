@@ -56,9 +56,6 @@
     "unist-util-visit": "^5.0.0"
   },
   "license": "BSD-2-Clause-Patent",
-  "engines": {
-    "node": ">=22.22.0"
-  },
   "scripts": {
     "astro": "astro",
     "build": "astro check && astro build",
