@@ -2,7 +2,7 @@ import t from 'tap'
 import {
   createDiffFilesProvider,
   validateCommitish,
-} from '../src/diff-files.ts'
+} from '../src/query-diff-files.ts'
 
 t.test('validateCommitish', async t => {
   t.test('accepts valid commitish values', async t => {
@@ -95,8 +95,8 @@ t.test('createDiffFilesProvider', async t => {
 
   t.test('parses git output with mocked execSync', async t => {
     const { createDiffFilesProvider: mockedCreate } =
-      await t.mockImport<typeof import('../src/diff-files.ts')>(
-        '../src/diff-files.ts',
+      await t.mockImport<typeof import('../src/query-diff-files.ts')>(
+        '../src/query-diff-files.ts',
         {
           'node:child_process': {
             execSync: () =>

@@ -20,7 +20,7 @@ import type {
   RunResult,
 } from '@vltpkg/run'
 import { Query } from '@vltpkg/query'
-import { createDiffFilesProvider } from '@vltpkg/query/diff-files'
+import { createDiffFilesProvider } from './query-diff-files.ts'
 import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
 import { Monorepo } from '@vltpkg/workspaces'

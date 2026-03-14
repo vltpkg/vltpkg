@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process'
 import { error } from '@vltpkg/error-cause'
-import type { DiffFilesProvider } from './types.ts'
+import type { DiffFilesProvider } from '@vltpkg/query'
 
 /**
  * Pattern to validate commitish arguments.
