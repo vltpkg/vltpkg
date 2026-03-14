@@ -26,6 +26,7 @@ interface TestConfig {
     monorepo?:
       | {
           name: string
+          path?: string
           fullpath: string
         }[]
       | null
@@ -676,10 +677,12 @@ t.test('publish command with scope', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -825,6 +828,7 @@ t.test('publish command with workspace paths', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
         ],
@@ -849,6 +853,181 @@ t.test('publish command with workspace paths', async t => {
 
     t.equal(results[0]!.name, '@test/a')
     t.equal(results[0]!.version, '1.0.0')
+  })
+})
+
+t.test('publish command workspace filtering modes', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: '@test/a',
+          version: '1.0.0',
+        }),
+        'index.js': 'console.log("a")',
+        'vlt.json': '{}',
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: '@test/b',
+          version: '2.0.0',
+        }),
+        'index.js': 'console.log("b")',
+        'vlt.json': '{}',
+      },
+    },
+  })
+
+  const tempRequest = RegistryClient.prototype.request
+  t.beforeEach(() => {
+    RegistryClient.prototype.request = (async () => {
+      return {
+        statusCode: 201,
+        text: () => '{"ok":true}',
+        json: () => ({ ok: true }),
+        getHeader: () => undefined,
+      } as MockCacheEntry
+    }) as unknown as typeof tempRequest
+  })
+  t.teardown(() => {
+    RegistryClient.prototype.request = tempRequest
+  })
+
+  t.test('filters by workspace name', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: ['@test/a'] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return ['@test/a']
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by workspace fullpath', async t => {
+    const fullpath = resolve(dir, 'packages/a')
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath,
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: [fullpath] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return [fullpath]
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by resolved relative path', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: ['./packages/a'] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return ['./packages/a']
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by minimatch glob', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: ['packages/*'] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return ['packages/*']
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2)
   })
 })
 
@@ -905,10 +1084,12 @@ t.test('publish command with workspace-group', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -991,10 +1172,12 @@ t.test('publish command with recursive', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
