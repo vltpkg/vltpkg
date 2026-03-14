@@ -8,7 +8,7 @@ import {
 } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { Query } from '@vltpkg/query'
-import { createDiffFilesProvider } from '@vltpkg/query/diff-files'
+import { createDiffFilesProvider } from '../query-diff-files.ts'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'

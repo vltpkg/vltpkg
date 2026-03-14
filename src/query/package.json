@@ -57,11 +57,6 @@
       "import": {
         "default": "./src/index.ts"
       }
-    },
-    "./diff-files": {
-      "import": {
-        "default": "./src/diff-files.ts"
-      }
     }
   },
   "files": [
