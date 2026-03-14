@@ -20,6 +20,7 @@ import type {
   RunResult,
 } from '@vltpkg/run'
 import { Query } from '@vltpkg/query'
+import { createDiffFilesProvider } from '@vltpkg/query/diff-files'
 import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -164,6 +165,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         /* c8 ignore stop */
         securityArchive: undefined,
         hostContexts,
+        diffFiles: createDiffFilesProvider(this.projectRoot),
       })
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,

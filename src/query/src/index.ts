@@ -20,6 +20,7 @@ import type {
   PostcssNodeWithChildren,
 } from '@vltpkg/dss-parser'
 import type {
+  DiffFilesProvider,
   HostContextsMap,
   ParsedSelectorToken,
   ParserState,
@@ -147,6 +148,7 @@ export type QueryOptions = {
   retries?: number
   securityArchive: SecurityArchiveLike | undefined
   hostContexts?: HostContextsMap
+  diffFiles?: DiffFilesProvider
 }
 
 // A list of known security selectors that rely on
@@ -201,6 +203,7 @@ const setMethodToJSON = (node: QueryResponseNode) => {
  */
 export class Query {
   #cache: Map<string, QueryResponse>
+  #diffFiles: DiffFilesProvider | undefined
   #edges: Set<EdgeLike>
   #nodes: Set<NodeLike>
   #importers: Set<NodeLike>
@@ -258,8 +261,10 @@ export class Query {
     retries,
     securityArchive,
     hostContexts,
+    diffFiles,
   }: QueryOptions) {
     this.#cache = new Map()
+    this.#diffFiles = diffFiles
     this.#edges = edges
     this.#nodes = nodes
     this.#importers = importers
@@ -511,6 +516,7 @@ export class Query {
         edges: new Set<EdgeLike>(),
       },
       comment: '',
+      diffFiles: this.#diffFiles,
       loose,
       importers,
       partial: { nodes, edges },

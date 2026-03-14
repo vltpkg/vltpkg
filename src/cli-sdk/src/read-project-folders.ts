@@ -1,6 +1,7 @@
 import { availableParallelism, homedir } from 'node:os'
 import { dirname } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
+// eslint-disable-next-line import/no-unresolved
 import { callLimit } from 'promise-call-limit'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
@@ -106,6 +107,7 @@ export const readProjectFolders = async (
   do {
     t = traverse
     traverse = []
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await callLimit(t, { limit })
   } while (traverse.length)
 

@@ -8,6 +8,7 @@ import {
 } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { Query } from '@vltpkg/query'
+import { createDiffFilesProvider } from '@vltpkg/query/diff-files'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
@@ -166,6 +167,7 @@ export const command: CommandFn<QueryResult> = async conf => {
   const scopeQueryString = conf.get('scope')
   const queryString = targetQueryString || positionalQueryString
   const hostContexts = await createHostContextsMap(conf)
+  const diffFiles = createDiffFilesProvider(conf.options.projectRoot)
   const importers = new Set<Node>()
   const scopeIDs: DepID[] = []
 
@@ -187,6 +189,7 @@ export const command: CommandFn<QueryResult> = async conf => {
       importers,
       securityArchive,
       hostContexts,
+      diffFiles,
     })
     const { nodes: resultNodes } = await scopeQuery.search(
       scopeQueryString,
@@ -232,6 +235,7 @@ export const command: CommandFn<QueryResult> = async conf => {
     importers: importers_,
     securityArchive,
     hostContexts,
+    diffFiles,
   })
   const query =
     queryString ||
