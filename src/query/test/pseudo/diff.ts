@@ -145,6 +145,18 @@ t.test(':diff pseudo-selector', async t => {
     )
   })
 
+  t.test('throws on invalid argument', async t => {
+    const graph = getPathBasedGraph()
+    const state = getState(':diff([attr])', graph, new Set<string>())
+    await t.rejects(
+      async () => diff(state),
+      {
+        message: 'Failed to parse :diff selector',
+      },
+      'should throw for unparseable :diff() argument',
+    )
+  })
+
   t.test('throws when diffFiles provider is missing', async t => {
     const graph = getSimpleGraph()
     // state without diffFiles
