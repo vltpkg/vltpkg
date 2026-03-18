@@ -205,6 +205,36 @@ t.test(
 )
 
 t.test(
+  'GitHub Actions: logs non-JSON body when id token fetch returns non-200',
+  async t => {
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.ACTIONS_ID_TOKEN_REQUEST_URL =
+      'https://token.actions.githubusercontent.com/request'
+    process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'gha-token'
+
+    const { oidc } = await t.mockImport<
+      typeof import('../src/oidc.ts')
+    >('../src/oidc.ts', {
+      '../src/auth.ts': mockAuth,
+      undici: createMockUndici(async () => ({
+        statusCode: 403,
+        body: {
+          json: async () => {
+            throw new Error('not json')
+          },
+        },
+      })),
+    })
+
+    const result = await oidc({
+      packageName: 'pkg',
+      registry: 'https://registry.npmjs.org/',
+    })
+    t.equal(result, undefined)
+  },
+)
+
+t.test(
   'GitHub Actions: returns undefined when id token response has no value',
   async t => {
     process.env.GITHUB_ACTIONS = 'true'
@@ -325,6 +355,32 @@ t.test('exchange returns undefined on non-200', async t => {
         json: async () => ({
           error: 'server error',
         }),
+      },
+    })),
+  })
+
+  const result = await oidc({
+    packageName: 'pkg',
+    registry: 'https://registry.npmjs.org/',
+  })
+  t.equal(result, undefined)
+  t.equal(runtimeTokensSet.length, 0)
+})
+
+t.test('exchange logs non-JSON body on non-200 response', async t => {
+  process.env.GITHUB_ACTIONS = 'true'
+  process.env.NPM_ID_TOKEN = 'some-token'
+
+  const { oidc } = await t.mockImport<
+    typeof import('../src/oidc.ts')
+  >('../src/oidc.ts', {
+    '../src/auth.ts': mockAuth,
+    undici: createMockUndici(async () => ({
+      statusCode: 500,
+      body: {
+        json: async () => {
+          throw new Error('not json')
+        },
       },
     })),
   })
