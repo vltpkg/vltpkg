@@ -97,6 +97,30 @@ t.test('getToken', async t => {
   )
 })
 
+t.test('runtime tokens take precedence', async t => {
+  const {
+    getToken,
+    setRuntimeToken,
+    clearRuntimeTokens,
+    runtimeTokens,
+  } = await t.mockImport<typeof import('../src/auth.ts')>(
+    '../src/auth.ts',
+    mocks,
+  )
+  t.equal(runtimeTokens.size, 0)
+  setRuntimeToken('https://x.com/', 'Bearer oidc-token')
+  t.equal(runtimeTokens.size, 1)
+  t.equal(await getToken('https://x.com/', ''), 'Bearer oidc-token')
+  // env vars should be ignored when runtime token is set
+  process.env.VLT_TOKEN = 'fromenv'
+  process.env.VLT_REGISTRY = 'https://x.com/'
+  t.equal(await getToken('https://x.com/', ''), 'Bearer oidc-token')
+  clearRuntimeTokens()
+  t.equal(runtimeTokens.size, 0)
+  // now falls back to env
+  t.equal(await getToken('https://x.com/', ''), 'Bearer fromenv')
+})
+
 t.test('get a KC with a different identity', async t => {
   const { getKC } = await t.mockImport<
     typeof import('../src/auth.ts')

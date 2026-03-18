@@ -14,11 +14,14 @@ import { Agent, RetryAgent } from 'undici'
 import { addHeader } from './add-header.ts'
 import type { Token } from './auth.ts'
 import {
+  clearRuntimeTokens,
   deleteToken,
   getKC,
   getToken,
   isToken,
   keychains,
+  runtimeTokens,
+  setRuntimeToken,
   setToken,
 } from './auth.ts'
 import type { JSONObj } from './cache-entry.ts'
@@ -34,14 +37,21 @@ import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { getEncondedValue } from './string-encoding.ts'
+import { oidc } from './oidc.ts'
+import type { OidcOptions } from './oidc.ts'
 export {
   CacheEntry,
+  clearRuntimeTokens,
   deleteToken,
   getKC,
   isToken,
   keychains,
+  oidc,
+  runtimeTokens,
+  setRuntimeToken,
   setToken,
   type JSONObj,
+  type OidcOptions,
   type Token,
   type TokenResponse,
   type WebAuthChallenge,
