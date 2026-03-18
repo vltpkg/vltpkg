@@ -239,6 +239,14 @@ jobs:
           # re-install dependencies
           vlt install --view=human
 
+      - name: Fix node-pty spawn-helper permissions
+        if: matrix.platform.name == 'macOS'
+        run: |
+          # node-pty@1.1.0 ships prebuilt spawn-helper binaries for macOS with
+          # 0644 permissions in the npm tarball. The binary needs execute permission
+          # for posix_spawnp to work in the smoke-test TTY tests.
+          chmod +x node_modules/.vlt/~npm~node-pty@*/node_modules/node-pty/prebuilds/darwin-*/spawn-helper 2>/dev/null || true
+
       - name: Prepare
         run: vlr --recursive prepare
 
