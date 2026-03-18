@@ -60,6 +60,62 @@ characters in the registry URL with `_`, and set the appropriate
 VLT_TOKEN_https_my_custom_registry_mycompany_local="helloworldtokendeadbeef" vlt install
 ```
 
+## OIDC (OpenID Connect)
+
+If your CI provider supports OpenID Connect, vlt can authenticate
+with the registry automatically — no static tokens needed. vlt
+detects the CI environment, requests an OIDC ID token from the
+provider, and exchanges it with the registry for a short-lived
+publish token. Everything happens behind the scenes.
+
+### Supported Providers
+
+- **GitHub Actions** — native support, no extra config
+- **GitLab CI** — via `NPM_ID_TOKEN` environment variable
+- **CircleCI** — via `NPM_ID_TOKEN` environment variable
+
+### GitHub Actions
+
+Add `id-token: write` to the job's permissions and vlt handles
+the rest:
+
+<Code
+  code={`jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vltpkg/setup-vlt@v1
+      - run: vlt publish`}
+  title="github-actions.yml"
+  lang="yaml"
+/>
+
+### GitLab CI / CircleCI
+
+Set the `NPM_ID_TOKEN` environment variable with the OIDC ID
+token provided by your CI platform. vlt reads it automatically
+and exchanges it for a publish token.
+
+### How It Works
+
+When you run `vlt publish`, vlt checks for an available OIDC ID
+token from the CI environment. It sends that token to the
+registry's token endpoint, which verifies the token and returns a
+short-lived credential. vlt uses that credential for the publish
+request. No tokens are stored, and nothing persists after the job
+finishes.
+
+### Fallback Behavior
+
+If OIDC isn't available — for example, the registry doesn't
+support it, or the required permissions aren't configured — vlt
+silently falls back to `VLT_TOKEN` or keychain-based auth. No
+errors, no interruptions.
+
 ## OTP
 
 One-time password (OTP) and MFA is supported for non-headless
