@@ -200,6 +200,11 @@ jobs:
           git diff
           git checkout -- 'src/*/package.json'
 
+      - name: Amend Release Commit with Packed Tarballs
+        run: |
+          git add -A
+          git commit --amend --no-edit
+
       - name: Create or Update PR
         id: pr
         if: needs.pre-check.outputs.dry-run != 'true'
