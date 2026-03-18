@@ -5,6 +5,20 @@ export type Token = `Bearer ${string}` | `Basic ${string}`
 // just exported for testing
 export const keychains = new Map<string, Keychain<Token>>()
 
+/**
+ * In-memory token store for OIDC-exchanged tokens.
+ * These take precedence over env vars and keychain.
+ */
+export const runtimeTokens = new Map<string, Token>()
+
+export const setRuntimeToken = (registry: string, token: Token) => {
+  runtimeTokens.set(new URL(registry).origin, token)
+}
+
+export const clearRuntimeTokens = () => {
+  runtimeTokens.clear()
+}
+
 export const getKC = (identity: string) => {
   const kc = keychains.get(identity)
   if (kc) return kc
@@ -43,6 +57,11 @@ export const getToken = async (
 ): Promise<Token | undefined> => {
   const kc = getKC(identity)
   registry = new URL(registry).origin
+
+  // Runtime tokens (e.g. from OIDC exchange) take precedence
+  const rt = runtimeTokens.get(registry)
+  if (rt) return rt
+
   const envReg = process.env.VLT_REGISTRY
   if (envReg && registry === new URL(envReg).origin) {
     const envTok = process.env.VLT_TOKEN
