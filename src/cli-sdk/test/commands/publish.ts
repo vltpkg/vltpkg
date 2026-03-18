@@ -663,6 +663,7 @@ t.test('publish command with scope', async t => {
             } as MockCacheEntry
           }
         },
+        oidc: async () => undefined,
       },
       '../../src/query-host-contexts.ts': {
         createHostContextsMap: async () => new Map(),
@@ -748,6 +749,7 @@ t.test('publish command with scope', async t => {
             } as MockCacheEntry
           }
         },
+        oidc: async () => undefined,
       },
       '../../src/query-host-contexts.ts': {
         createHostContextsMap: async () => new Map(),
