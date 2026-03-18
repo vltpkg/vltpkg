@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, oidc } from '@vltpkg/registry-client'
 import type { CacheEntry } from '@vltpkg/registry-client'
 import { run } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
@@ -289,6 +289,14 @@ const commandSingle = async (
   }
 
   const rc = new RegistryClient(conf.options)
+
+  // Attempt OIDC token exchange for CI environments (GitHub Actions, GitLab, CircleCI).
+  // This is always optional — failures are silent and won't affect local publishing.
+  await oidc({
+    packageName: name,
+    registry: registryUrl.href,
+  })
+
   const publishUrl = new URL(
     name.startsWith('@') ? name.replace('/', '%2F') : name,
     registryUrl,
