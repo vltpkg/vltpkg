@@ -29,6 +29,9 @@
     "typescript": "5.7.3",
     "walk-up-path": "^4.0.0"
   },
+  "modifiers": {
+    "#node-pty": "1.0.0"
+  },
   "config": {
     "allow-scripts": "#tailwindcss, #esbuild, #node-pty"
   }
