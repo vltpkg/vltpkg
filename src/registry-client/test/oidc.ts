@@ -13,7 +13,10 @@ const mockAuth = {
 const createMockUndici = (
   handler: (
     url: URL,
-    opts: { method: string; headers: Record<string, string> },
+    opts: {
+      method: string
+      headers: Record<string, string>
+    },
   ) => Promise<{
     statusCode: number
     body: { json: () => Promise<unknown> }
@@ -76,7 +79,9 @@ t.test('GitHub Actions: uses NPM_ID_TOKEN override', async t => {
       return {
         statusCode: 200,
         body: {
-          json: async () => ({ token: 'exchanged-token' }),
+          json: async () => ({
+            token: 'exchanged-token',
+          }),
         },
       }
     }),
@@ -241,7 +246,9 @@ t.test('GitLab CI: uses NPM_ID_TOKEN', async t => {
       return {
         statusCode: 200,
         body: {
-          json: async () => ({ token: 'gitlab-registry-tok' }),
+          json: async () => ({
+            token: 'gitlab-registry-tok',
+          }),
         },
       }
     }),
@@ -315,7 +322,9 @@ t.test('exchange returns undefined on non-200', async t => {
     undici: createMockUndici(async () => ({
       statusCode: 500,
       body: {
-        json: async () => ({ error: 'server error' }),
+        json: async () => ({
+          error: 'server error',
+        }),
       },
     })),
   })
@@ -398,7 +407,9 @@ t.test(
         return {
           statusCode: 200,
           body: {
-            json: async () => ({ token: 'scoped-tok' }),
+            json: async () => ({
+              token: 'scoped-tok',
+            }),
           },
         }
       }),
