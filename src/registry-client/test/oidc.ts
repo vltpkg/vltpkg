@@ -13,7 +13,10 @@ const mockAuth = {
 const createMockUndici = (
   handler: (
     url: URL,
-    opts: { method: string; headers: Record<string, string> },
+    opts: {
+      method: string
+      headers: Record<string, string>
+    },
   ) => Promise<{
     statusCode: number
     body: { json: () => Promise<unknown> }
@@ -76,7 +79,9 @@ t.test('GitHub Actions: uses NPM_ID_TOKEN override', async t => {
       return {
         statusCode: 200,
         body: {
-          json: async () => ({ token: 'exchanged-token' }),
+          json: async () => ({
+            token: 'exchanged-token',
+          }),
         },
       }
     }),
@@ -179,6 +184,13 @@ t.test(
       'https://token.actions.githubusercontent.com/request'
     process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'gha-token'
 
+    // Include a sensitive key ("token") in the error body so the
+    // recursive redaction branch is exercised in coverage.
+    const logs: string[] = []
+    const origError = console.error
+    t.teardown(() => (console.error = origError))
+    console.error = (...args: unknown[]) => logs.push(args.join(' '))
+
     const { oidc } = await t.mockImport<
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
@@ -186,7 +198,46 @@ t.test(
       undici: createMockUndici(async () => ({
         statusCode: 403,
         body: {
-          json: async () => ({ error: 'forbidden' }),
+          json: async () => ({
+            error: 'forbidden',
+            token: 'leaked-secret',
+          }),
+        },
+      })),
+    })
+
+    const result = await oidc({
+      packageName: 'pkg',
+      registry: 'https://registry.npmjs.org/',
+    })
+    t.equal(result, undefined)
+
+    // Verify sensitive value was redacted in logs
+    const bodyLog = logs.find(l => l.includes('ID token error body'))
+    t.ok(bodyLog, 'logged the error body')
+    t.match(bodyLog, /\[REDACTED\]/)
+    t.notMatch(bodyLog ?? '', /leaked-secret/)
+  },
+)
+
+t.test(
+  'GitHub Actions: logs non-JSON body when id token fetch returns non-200',
+  async t => {
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.ACTIONS_ID_TOKEN_REQUEST_URL =
+      'https://token.actions.githubusercontent.com/request'
+    process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'gha-token'
+
+    const { oidc } = await t.mockImport<
+      typeof import('../src/oidc.ts')
+    >('../src/oidc.ts', {
+      '../src/auth.ts': mockAuth,
+      undici: createMockUndici(async () => ({
+        statusCode: 403,
+        body: {
+          json: async () => {
+            throw new Error('not json')
+          },
         },
       })),
     })
@@ -241,7 +292,9 @@ t.test('GitLab CI: uses NPM_ID_TOKEN', async t => {
       return {
         statusCode: 200,
         body: {
-          json: async () => ({ token: 'gitlab-registry-tok' }),
+          json: async () => ({
+            token: 'gitlab-registry-tok',
+          }),
         },
       }
     }),
@@ -315,7 +368,35 @@ t.test('exchange returns undefined on non-200', async t => {
     undici: createMockUndici(async () => ({
       statusCode: 500,
       body: {
-        json: async () => ({ error: 'server error' }),
+        json: async () => ({
+          error: 'server error',
+        }),
+      },
+    })),
+  })
+
+  const result = await oidc({
+    packageName: 'pkg',
+    registry: 'https://registry.npmjs.org/',
+  })
+  t.equal(result, undefined)
+  t.equal(runtimeTokensSet.length, 0)
+})
+
+t.test('exchange logs non-JSON body on non-200 response', async t => {
+  process.env.GITHUB_ACTIONS = 'true'
+  process.env.NPM_ID_TOKEN = 'some-token'
+
+  const { oidc } = await t.mockImport<
+    typeof import('../src/oidc.ts')
+  >('../src/oidc.ts', {
+    '../src/auth.ts': mockAuth,
+    undici: createMockUndici(async () => ({
+      statusCode: 500,
+      body: {
+        json: async () => {
+          throw new Error('not json')
+        },
       },
     })),
   })
@@ -398,7 +479,9 @@ t.test(
         return {
           statusCode: 200,
           body: {
-            json: async () => ({ token: 'scoped-tok' }),
+            json: async () => ({
+              token: 'scoped-tok',
+            }),
           },
         }
       }),

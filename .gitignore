@@ -3,6 +3,7 @@
 .env.production
 .build-*/
 *.tsbuildinfo
+/infra/**/*.tgz
 tmp
 
 /.turbo
