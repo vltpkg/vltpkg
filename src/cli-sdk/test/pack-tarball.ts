@@ -592,6 +592,38 @@ t.test('packTarball', async t => {
     )
     t.equal(result.name, 'main-package')
     t.equal(result.version, '1.0.0')
+
+    // resolvedManifest should have catalog specs replaced
+    const rm = result.resolvedManifest as Record<string, unknown>
+    const deps = rm.dependencies as Record<string, string>
+    const devDeps = rm.devDependencies as Record<string, string>
+    const optDeps = rm.optionalDependencies as Record<string, string>
+    const peerDeps = rm.peerDependencies as Record<string, string>
+    t.equal(
+      deps.react,
+      '^18.0.0',
+      'catalog: replaced in dependencies',
+    )
+    t.equal(
+      deps.lodash,
+      '^4.17.21',
+      'catalog: replaced in dependencies',
+    )
+    t.equal(
+      devDeps.typescript,
+      '^5.0.0',
+      'catalog:dev replaced in devDependencies',
+    )
+    t.equal(
+      optDeps.vue,
+      '^3.0.0',
+      'catalog:dev replaced in optionalDependencies',
+    )
+    t.equal(
+      peerDeps.jest,
+      '^29.0.0',
+      'catalog:test replaced in peerDependencies',
+    )
   })
 
   t.test('workspace spec error cases', async t => {
@@ -737,11 +769,6 @@ t.test('packTarball', async t => {
     t.equal(result.name, 'main-package')
     t.equal(result.version, '1.0.0')
 
-    // Verify that the packed tarball contains the resolved workspace versions
-    // We need to read the package.json from the tarball to verify the replacement
-    // Since the pack-tarball function restores the original package.json after packing,
-    // we can't directly check the file. Instead, we verify the function completed successfully
-    // which means the workspace specs were properly resolved without errors.
     t.ok(result.integrity, 'should have integrity hash')
     t.ok(result.shasum, 'should have shasum')
     t.ok(
@@ -749,6 +776,38 @@ t.test('packTarball', async t => {
       'should include package.json',
     )
     t.ok(result.files.includes('index.js'), 'should include index.js')
+
+    // resolvedManifest should have workspace specs replaced with actual versions
+    const rm = result.resolvedManifest as Record<string, unknown>
+    const deps = rm.dependencies as Record<string, string>
+    const devDeps = rm.devDependencies as Record<string, string>
+    const optDeps = rm.optionalDependencies as Record<string, string>
+    const peerDeps = rm.peerDependencies as Record<string, string>
+    t.equal(
+      deps['workspace-dep'],
+      '1.2.3',
+      'workspace:* replaced in dependencies',
+    )
+    t.equal(
+      deps['workspace-dep-2'],
+      '2.1.0',
+      'workspace:^2.0.0 replaced in dependencies',
+    )
+    t.equal(
+      devDeps['workspace-dev'],
+      '1.5.2',
+      'workspace:~1.5.0 replaced in devDependencies',
+    )
+    t.equal(
+      optDeps['workspace-optional'],
+      '0.9.0',
+      'workspace:* replaced in optionalDependencies',
+    )
+    t.equal(
+      peerDeps['workspace-peer'],
+      '3.1.0',
+      'workspace:^3.0.0 replaced in peerDependencies',
+    )
   })
 
   t.test(
