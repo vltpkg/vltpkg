@@ -376,7 +376,7 @@ export const packTarball = async (
       files,
       integrity,
       shasum,
-      resolvedManifest: manifest,
+      resolvedManifest: processedManifest,
     }
   } finally {
     // Restore the original package.json to the pack directory
