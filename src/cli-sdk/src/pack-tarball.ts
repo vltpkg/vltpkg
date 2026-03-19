@@ -20,6 +20,8 @@ export type PackTarballResult = {
   files: string[]
   integrity?: string
   shasum?: string
+  /** The manifest used for packing (may differ from input when publishConfig.directory is set). */
+  resolvedManifest: NormalizedManifest
 }
 
 /**
@@ -374,6 +376,7 @@ export const packTarball = async (
       files,
       integrity,
       shasum,
+      resolvedManifest: manifest,
     }
   } finally {
     // Restore the original package.json to the pack directory
