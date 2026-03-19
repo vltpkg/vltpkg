@@ -149,7 +149,7 @@ const fetchGitHubIdToken = async (
       },
     })
     log(`GitHub ID token response: status=${res.statusCode}`)
-    if (res.statusCode !== 200) {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
       const body = await safeJson(res)
       log(
         `GitHub ID token error body: ${body ? JSON.stringify(redact(body)) : '(non-JSON response)'}`,
@@ -197,7 +197,7 @@ const exchangeToken = async (
       },
     })
     log(`Exchange response: status=${res.statusCode}`)
-    if (res.statusCode !== 200) {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
       const body = await safeJson(res)
       log(
         `Exchange error body: ${body ? JSON.stringify(redact(body)) : '(non-JSON response)'}`,
