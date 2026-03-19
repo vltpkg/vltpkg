@@ -245,6 +245,7 @@ const commandSingle = async (
     files,
     integrity,
     shasum,
+    resolvedManifest,
   } = await packTarball(manifest, manifestDir, conf)
 
   await run({
@@ -260,17 +261,17 @@ const commandSingle = async (
   const publishMetadata = {
     _id: name,
     name,
-    description: manifest.description || '',
+    description: resolvedManifest.description || '',
     'dist-tags': {
       [tag]: version,
     },
     versions: {
       [version]: {
-        ...manifest,
+        ...resolvedManifest,
         _id: `${name}@${version}`,
         _nodeVersion: process.versions.node,
         dist: {
-          ...manifest.dist,
+          ...resolvedManifest.dist,
           integrity,
           shasum,
           tarball: new URL(`${name}/-/${tarballName}`, registryUrl)
