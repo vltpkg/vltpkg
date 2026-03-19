@@ -28,20 +28,28 @@ const safeJson = async (
 }
 
 /**
- * Redact sensitive fields from an object before logging.
+ * Keys that are always replaced with '[REDACTED]' before logging.
+ */
+const SENSITIVE_KEYS = new Set([
+  'token',
+  'value',
+  'secret',
+  'key',
+])
+
+/**
+ * Recursively redact sensitive fields from a value before logging.
+ * Works as a JSON.stringify replacer so nested objects are handled
+ * automatically — no sensitive value is ever serialised.
  */
 const redact = (
   obj: Record<string, unknown>,
-): Record<string, unknown> => {
-  const redacted = { ...obj }
-  for (const key of ['token', 'value', 'secret', 'key']) {
-    /* c8 ignore next 3 - redaction varies by response shape */
-    if (key in redacted) {
-      redacted[key] = '[REDACTED]'
-    }
-  }
-  return redacted
-}
+): Record<string, unknown> =>
+  JSON.parse(
+    JSON.stringify(obj, (k, v: unknown) =>
+      SENSITIVE_KEYS.has(k) ? '[REDACTED]' : v,
+    ),
+  ) as Record<string, unknown>
 
 /**
  * Detect CI environment and exchange an OIDC ID token for a
