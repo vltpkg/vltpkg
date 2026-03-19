@@ -17,7 +17,7 @@
     "ansi-to-pre": "^1.0.6"
   },
   "optionalDependencies": {
-    "node-pty": "^1.0.0"
+    "node-pty": "1.2.0-beta.12"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
