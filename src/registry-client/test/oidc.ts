@@ -357,7 +357,36 @@ t.test(
   },
 )
 
-t.test('exchange returns undefined on non-200', async t => {
+t.test('exchange accepts 201 Created from registry', async t => {
+  process.env.GITHUB_ACTIONS = 'true'
+  process.env.NPM_ID_TOKEN = 'some-token'
+
+  const { oidc } = await t.mockImport<
+    typeof import('../src/oidc.ts')
+  >('../src/oidc.ts', {
+    '../src/auth.ts': mockAuth,
+    undici: createMockUndici(async () => ({
+      statusCode: 201,
+      body: {
+        json: async () => ({
+          token: 'created-token',
+          token_type: 'oidc',
+        }),
+      },
+    })),
+  })
+
+  const result = await oidc({
+    packageName: 'pkg',
+    registry: 'https://registry.npmjs.org/',
+  })
+  t.equal(result, 'Bearer created-token')
+  t.strictSame(runtimeTokensSet, [
+    ['https://registry.npmjs.org/', 'Bearer created-token'],
+  ])
+})
+
+t.test('exchange returns undefined on non-2xx', async t => {
   process.env.GITHUB_ACTIONS = 'true'
   process.env.NPM_ID_TOKEN = 'some-token'
 
@@ -383,7 +412,7 @@ t.test('exchange returns undefined on non-200', async t => {
   t.equal(runtimeTokensSet.length, 0)
 })
 
-t.test('exchange logs non-JSON body on non-200 response', async t => {
+t.test('exchange logs non-JSON body on non-2xx response', async t => {
   process.env.GITHUB_ACTIONS = 'true'
   process.env.NPM_ID_TOKEN = 'some-token'
 
