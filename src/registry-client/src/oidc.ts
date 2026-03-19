@@ -30,12 +30,7 @@ const safeJson = async (
 /**
  * Keys that are always replaced with '[REDACTED]' before logging.
  */
-const SENSITIVE_KEYS = new Set([
-  'token',
-  'value',
-  'secret',
-  'key',
-])
+const SENSITIVE_KEYS = new Set(['token', 'value', 'secret', 'key'])
 
 /**
  * Recursively redact sensitive fields from a value before logging.

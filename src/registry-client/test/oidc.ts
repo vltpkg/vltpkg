@@ -184,6 +184,13 @@ t.test(
       'https://token.actions.githubusercontent.com/request'
     process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'gha-token'
 
+    // Include a sensitive key ("token") in the error body so the
+    // recursive redaction branch is exercised in coverage.
+    const logs: string[] = []
+    const origError = console.error
+    t.teardown(() => (console.error = origError))
+    console.error = (...args: unknown[]) => logs.push(args.join(' '))
+
     const { oidc } = await t.mockImport<
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
@@ -191,7 +198,10 @@ t.test(
       undici: createMockUndici(async () => ({
         statusCode: 403,
         body: {
-          json: async () => ({ error: 'forbidden' }),
+          json: async () => ({
+            error: 'forbidden',
+            token: 'leaked-secret',
+          }),
         },
       })),
     })
@@ -201,6 +211,12 @@ t.test(
       registry: 'https://registry.npmjs.org/',
     })
     t.equal(result, undefined)
+
+    // Verify sensitive value was redacted in logs
+    const bodyLog = logs.find(l => l.includes('ID token error body'))
+    t.ok(bodyLog, 'logged the error body')
+    t.match(bodyLog, /\[REDACTED\]/)
+    t.notMatch(bodyLog ?? '', /leaked-secret/)
   },
 )
 
