@@ -58,7 +58,7 @@ If your CI provider supports OpenID Connect, vlt can publish without
 any stored tokens. On GitHub Actions, add `id-token: write` to your
 job's permissions and vlt handles authentication automatically.
 
-See [Authentication — OIDC](/cli/auth/#oidc-openid-connect) for full
+See [Authentication — OIDC](/cli/auth#oidc-openid-connect) for full
 details on supported providers and configuration.
 
 <Code
@@ -80,5 +80,5 @@ details on supported providers and configuration.
 
 For registries that don't support OIDC, set the `VLT_TOKEN`
 environment variable with a valid auth token. See
-[Authentication — CI](/cli/auth/#ci-and-other-headless-environments)
+[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
 for details on configuring tokens for default and custom registries.
