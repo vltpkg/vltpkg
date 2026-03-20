@@ -302,15 +302,21 @@ export const packTarball = async (
                 return matchesDir || matchesContents
               }
 
-              // File pattern: check direct match and if this path is a directory that could contain the pattern
               const directMatch = minimatch(normalizedPath, pattern, {
                 dot: true,
               })
-              // Check if this path is a directory that could contain the pattern
+              // Check if this path is a parent directory of the pattern
               const isParentDir =
                 pattern.includes('/') &&
                 pattern.startsWith(normalizedPath + '/')
-              return directMatch || isParentDir
+              // Check if this path is inside a directory matched by the pattern
+              // (e.g. files: ["dist"] should include dist/index.js)
+              const isChildOfPattern = minimatch(
+                normalizedPath,
+                pattern + '/**',
+                { dot: true },
+              )
+              return directMatch || isParentDir || isChildOfPattern
             })
           }
 

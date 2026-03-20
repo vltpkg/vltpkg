@@ -385,6 +385,80 @@ t.test('packTarball', async t => {
     )
   })
 
+  t.test(
+    'files field with directory name (no trailing slash)',
+    async t => {
+      const dirDir = t.testdir({
+        'dir-test': {
+          'package.json': JSON.stringify({
+            name: 'dir-test',
+            version: '1.0.0',
+            files: ['dist'],
+          }),
+          dist: {
+            'index.js': 'console.log("dist");',
+            'index.d.ts': 'export declare const x: number;',
+            nested: {
+              'helper.js': 'console.log("nested");',
+              'helper.d.ts': 'export declare function h(): void;',
+            },
+          },
+          src: {
+            'index.ts': 'export const x = 1;',
+          },
+          'README.md': '# Dir Test',
+        },
+      })
+
+      const dirPath = resolve(dirDir, 'dir-test')
+      const dirManifestContent = await readFile(
+        resolve(dirPath, 'package.json'),
+        'utf8',
+      )
+      const dirManifest = JSON.parse(dirManifestContent)
+      const dirConfig = createMockConfig(dirDir)
+
+      const result = await packTarball(
+        dirManifest,
+        dirPath,
+        dirConfig,
+      )
+      t.ok(result.tarballData, 'should create tarball')
+
+      const filesInTarball = result.files
+
+      t.ok(
+        filesInTarball.includes('package.json'),
+        'package.json included',
+      )
+      t.ok(
+        filesInTarball.includes('README.md'),
+        'README.md always included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/index.js'),
+        'dist/index.js included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/index.d.ts'),
+        'dist/index.d.ts included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/nested/helper.js'),
+        'dist/nested/helper.js included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/nested/helper.d.ts'),
+        'dist/nested/helper.d.ts included',
+      )
+
+      t.notOk(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ files excluded',
+      )
+    },
+  )
+
   t.test('handles files field with directory patterns', async t => {
     // Create directory with directory patterns in files field
     const dirDir = t.testdir({

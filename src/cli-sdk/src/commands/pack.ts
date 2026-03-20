@@ -224,6 +224,11 @@ export const commandSingle = async (
     arg0: 'prepare',
   })
 
+  // Re-read the manifest after lifecycle scripts, which may have modified package.json.
+  const updatedManifest = conf.options.packageJson.read(manifestDir, {
+    reload: true,
+  })
+
   const {
     name,
     version,
@@ -233,7 +238,7 @@ export const commandSingle = async (
     files,
     integrity,
     shasum,
-  } = await packTarball(manifest, manifestDir, conf)
+  } = await packTarball(updatedManifest, manifestDir, conf)
 
   if (!isDryRun) {
     await writeFile(join(manifestDir, filename), tarballData)
