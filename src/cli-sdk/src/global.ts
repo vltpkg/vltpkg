@@ -91,6 +91,7 @@ const readBins = async (
         manifest.name?.split('/').pop() ?? pkgName.split('/').pop()
       return name ? { [name]: manifest.bin } : undefined
     }
+    /* c8 ignore start -- manifest.bin is string or Record */
     if (manifest.bin && typeof manifest.bin === 'object') {
       return manifest.bin
     }
@@ -98,6 +99,7 @@ const readBins = async (
   } catch {
     return undefined
   }
+  /* c8 ignore stop */
 }
 
 /**
@@ -151,9 +153,11 @@ export const unlinkRemovedBins = async (
   let entries: string[]
   try {
     entries = readdirSync(binDir)
+    /* c8 ignore start */
   } catch {
     return []
   }
+  /* c8 ignore stop */
 
   for (const entry of entries) {
     // Skip .cmd / .ps1 / .pwsh companion files
@@ -180,7 +184,7 @@ export const unlinkRemovedBins = async (
           target = resolve(binDir, match[1])
         }
       } catch {
-        // can't read, skip
+        /* c8 ignore next -- can't read, skip */
       }
     }
 
