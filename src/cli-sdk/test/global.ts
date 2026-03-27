@@ -201,7 +201,7 @@ t.test('unlinkRemovedBins handles unreadable shims', async t => {
 
 t.test('linkGlobalBins links package bins', async t => {
   const dir = t.testdir()
-  let shimCalls: Array<{ from: string; to: string }> = []
+  const shimCalls: { from: string; to: string }[] = []
   const { linkGlobalBins, globalBinDir } = await t.mockImport<
     typeof import('../src/global.ts')
   >('../src/global.ts', {
@@ -263,7 +263,7 @@ t.test(
   'linkGlobalBins reads bins from package.json when node has no bins',
   async t => {
     const dir = t.testdir()
-    const shimCalls: Array<{ from: string; to: string }> = []
+    const shimCalls: { from: string; to: string }[] = []
     const { linkGlobalBins } = await t.mockImport<
       typeof import('../src/global.ts')
     >('../src/global.ts', {
@@ -321,7 +321,7 @@ t.test(
 
 t.test('linkGlobalBins skips packages without bins', async t => {
   const dir = t.testdir()
-  const shimCalls: Array<{ from: string; to: string }> = []
+  const shimCalls: { from: string; to: string }[] = []
   const { linkGlobalBins } = await t.mockImport<
     typeof import('../src/global.ts')
   >('../src/global.ts', {
@@ -377,7 +377,7 @@ t.test('linkGlobalBins skips packages without bins', async t => {
 
 t.test('linkGlobalBins skips edges with no target', async t => {
   const dir = t.testdir()
-  const shimCalls: Array<{ from: string; to: string }> = []
+  const shimCalls: { from: string; to: string }[] = []
   const { linkGlobalBins } = await t.mockImport<
     typeof import('../src/global.ts')
   >('../src/global.ts', {
