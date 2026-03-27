@@ -11,6 +11,7 @@ import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { applyGlobalConfig } from '../global.ts'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
@@ -97,6 +98,9 @@ export const views = {
 } as const satisfies Views<ListResult>
 
 export const command: CommandFn<ListResult> = async conf => {
+  if (conf.get('global') === true) {
+    applyGlobalConfig(conf)
+  }
   const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.maybeRead(

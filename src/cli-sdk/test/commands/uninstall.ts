@@ -52,3 +52,57 @@ t.strictSame(
   } as unknown as UninstallResult),
   { install: true },
 )
+
+t.test('global uninstall flag', async t => {
+  let applyGlobalCalled = false
+  let unlinkRemovedBinsCalled = false
+  let stderrMessages: string[] = []
+
+  const GlobalCommand = await t.mockImport<
+    typeof import('../../src/commands/uninstall.ts')
+  >('../../src/commands/uninstall.ts', {
+    '@vltpkg/graph': {
+      async uninstall() {
+        return { graph: {} }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseRemoveArgs: () => ({ remove: new Map() }),
+    },
+    '../../src/global.ts': {
+      applyGlobalConfig: () => {
+        applyGlobalCalled = true
+        return '/fake/global/dir'
+      },
+      unlinkRemovedBins: async () => {
+        unlinkRemovedBinsCalled = true
+        return ['cowsay']
+      },
+    },
+    '../../src/output.ts': {
+      stderr: (...args: unknown[]) => {
+        stderrMessages.push(String(args[0]))
+      },
+    },
+  })
+
+  await GlobalCommand.command({
+    positionals: ['cowsay'],
+    values: {},
+    options: { scurry: new PathScurry() },
+    get: (key: string) => (key === 'global' ? true : undefined),
+  } as unknown as LoadedConfig)
+
+  t.ok(
+    applyGlobalCalled,
+    'should call applyGlobalConfig when --global is set',
+  )
+  t.ok(
+    unlinkRemovedBinsCalled,
+    'should call unlinkRemovedBins after uninstall',
+  )
+  t.ok(
+    stderrMessages.some(m => m.includes('cowsay')),
+    'should report removed binary names',
+  )
+})

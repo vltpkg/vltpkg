@@ -9,6 +9,7 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
+    "@vltpkg/cmd-shim": "workspace:*",
     "@vltpkg/config": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/dot-prop": "workspace:*",

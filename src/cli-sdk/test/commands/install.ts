@@ -165,6 +165,72 @@ t.test('frozen-lockfile flag', async t => {
   )
 })
 
+t.test('global install flag', async t => {
+  let applyGlobalCalled = false
+  let linkGlobalBinsCalled = false
+  let checkPathHintCalled = false
+  let stderrMessages: string[] = []
+  let installLog = ''
+
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install() {
+        installLog += 'install\n'
+        return {
+          graph: {
+            toJSON: () => ({}),
+            importers: new Set(),
+          },
+        }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseAddArgs: () => ({ add: new Map() }),
+    },
+    '../../src/global.ts': {
+      applyGlobalConfig: () => {
+        applyGlobalCalled = true
+        return '/fake/global/dir'
+      },
+      linkGlobalBins: async () => {
+        linkGlobalBinsCalled = true
+        return ['cowsay']
+      },
+      checkPathHint: () => {
+        checkPathHintCalled = true
+      },
+    },
+    '../../src/output.ts': {
+      stderr: (...args: unknown[]) => {
+        stderrMessages.push(String(args[0]))
+      },
+    },
+  })
+
+  await Command.command({
+    positionals: ['cowsay'],
+    values: {},
+    options: {},
+    get: (key: string) => (key === 'global' ? true : undefined),
+  } as unknown as LoadedConfig)
+
+  t.ok(
+    applyGlobalCalled,
+    'should call applyGlobalConfig when --global is set',
+  )
+  t.ok(
+    linkGlobalBinsCalled,
+    'should call linkGlobalBins after install',
+  )
+  t.ok(checkPathHintCalled, 'should call checkPathHint after install')
+  t.ok(
+    stderrMessages.some(m => m.includes('cowsay')),
+    'should report linked binary names',
+  )
+})
+
 t.test('lockfile-only flag', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({
