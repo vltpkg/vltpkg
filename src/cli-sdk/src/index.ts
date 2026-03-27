@@ -9,6 +9,11 @@ import { Config } from './config/index.ts'
 import { outputCommand, stderr, stdout } from './output.ts'
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
+import {
+  disableTelemetry,
+  flushTelemetry,
+  initTelemetry,
+} from './telemetry.ts'
 
 export type {
   Command,
@@ -22,6 +27,11 @@ const { version } = loadPackageJson(
 ) as {
   version: string
 }
+
+// Initialize telemetry as early as possible so that unhandled
+// errors during config loading are still captured.
+// DO_NOT_TRACK env var is checked inside initTelemetry.
+initTelemetry(version)
 
 const loadVlt = async (cwd: string, argv: string[]) => {
   try {
@@ -67,6 +77,12 @@ const run = async () => {
   const cwd = process.cwd()
   const vlt = await loadVlt(cwd, process.argv)
 
+  // If the user opted out of telemetry via config or CLI flag
+  // (--no-telemetry), shut down Sentry now.
+  if (!vlt.get('telemetry')) {
+    disableTelemetry()
+  }
+
   if (vlt.get('version')) {
     return stdout(version)
   }
@@ -105,6 +121,7 @@ const run = async () => {
 
   const command = await loadCommand(vlt.command)
   await outputCommand(command, vlt, { start })
+  await flushTelemetry()
 }
 
 export default run

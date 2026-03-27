@@ -29,6 +29,7 @@
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@resvg/resvg-wasm": "^2.6.2",
+    "@sentry/node": "^10.46.0",
     "@vltpkg/url-open": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
     "@vltpkg/vlx": "workspace:*",
