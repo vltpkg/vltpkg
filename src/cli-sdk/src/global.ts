@@ -180,8 +180,9 @@ export const unlinkRemovedBins = async (
         const content = await readFile(shimPath, 'utf8')
         // sh shim format: "$basedir/<relative-path>"
         const match = /\$basedir\/([^\s"]+)/.exec(content)
-        if (match?.[1]) {
-          target = resolve(binDir, match[1])
+        const matched = match?.[1]
+        if (matched) {
+          target = resolve(binDir, matched)
         }
       } catch {
         /* c8 ignore next -- can't read, skip */
@@ -193,6 +194,7 @@ export const unlinkRemovedBins = async (
     // Resolve absolute path
     const absTarget =
       target.startsWith('/') || target.startsWith('\\') ?
+        /* c8 ignore next */
         target
       : resolve(binDir, target)
 
