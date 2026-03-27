@@ -112,8 +112,9 @@ t.test('checkPathHint is silent when bin dir is on PATH', async t => {
   const binDir = globalBinDir()
   mkdirSync(binDir, { recursive: true })
   const originalPath = process.env.PATH
-  // Use resolve to normalize the path (important for Windows)
-  process.env.PATH = `${resolve(binDir)}:/usr/bin`
+  // Use resolve to normalize and platform-appropriate separator
+  const sep = process.platform === 'win32' ? ';' : ':'
+  process.env.PATH = `${resolve(binDir)}${sep}/usr/bin`
   checkPathHint((...args: unknown[]) => {
     messages.push(String(args[0]))
   })
