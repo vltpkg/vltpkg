@@ -465,6 +465,16 @@ Object {
     "short": "t",
     "type": "string",
   },
+  "telemetry": Object {
+    "description": String(
+      Enable anonymous error reporting via Sentry to help improve vlt.
+      
+      Set \`--no-telemetry\` to disable, or set the \`DO_NOT_TRACK=1\` environment variable.
+      
+      Defaults to \`true\`.
+    ),
+    "type": "boolean",
+  },
   "version": Object {
     "description": "Print the version",
     "short": "v",
@@ -578,6 +588,7 @@ Array [
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
   "--target=<query>",
+  "--telemetry",
   "--version",
   "--view=<output>",
   "--workspace=<ws>",
@@ -638,6 +649,7 @@ Array [
   "stale-while-revalidate-factor",
   "tag",
   "target",
+  "telemetry",
   "version",
   "view",
   "workspace",
