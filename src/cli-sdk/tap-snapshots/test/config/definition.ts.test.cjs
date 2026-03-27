@@ -268,6 +268,19 @@ Object {
     ),
     "type": "boolean",
   },
+  "global": Object {
+    "description": String(
+      Install or uninstall packages globally.
+      
+      When set, operates on the global package directory instead of the current project. Installed package binaries are linked to a global bin directory.
+      
+      The global directory is located at the XDG data path (e.g. ~/.local/share/vlt/global/ on Linux). The global bin directory defaults to ~/.local/share/vlt/bin/ on Linux.
+      
+      Add the global bin directory to your PATH to use globally installed commands.
+    ),
+    "short": "g",
+    "type": "boolean",
+  },
   "help": Object {
     "description": "Print helpful information",
     "short": "h",
@@ -552,6 +565,7 @@ Array [
   "--git-host-archives=<name=template>",
   "--git-hosts=<name=template>",
   "--git-shallow",
+  "--global",
   "--help",
   "--identity=<name>",
   "--if-present",
@@ -612,6 +626,7 @@ Array [
   "git-host-archives",
   "git-hosts",
   "git-shallow",
+  "global",
   "help",
   "identity",
   "if-present",

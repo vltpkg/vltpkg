@@ -682,6 +682,22 @@ export const definition = j
       description:
         'Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.',
     },
+    global: {
+      short: 'g',
+      description: `Install or uninstall packages globally.
+
+                    When set, operates on the global package directory
+                    instead of the current project. Installed package
+                    binaries are linked to a global bin directory.
+
+                    The global directory is located at the XDG data
+                    path (e.g. ~/.local/share/vlt/global/ on Linux).
+                    The global bin directory defaults to
+                    ~/.local/share/vlt/bin/ on Linux.
+
+                    Add the global bin directory to your PATH to use
+                    globally installed commands.`,
+    },
     'lockfile-only': {
       description:
         'Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.',

@@ -2,6 +2,12 @@ import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { InstallReporter } from './install/reporter.ts'
+import {
+  applyGlobalConfig,
+  linkGlobalBins,
+  checkPathHint,
+} from '../global.ts'
+import { stderr } from '../output.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Graph } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -28,6 +34,10 @@ export const usage: CommandUsage = () =>
     description: `Install the specified packages, updating package.json and
                   vlt-lock.json appropriately.`,
     options: {
+      global: {
+        description:
+          'Install packages globally. Binaries are linked to the global bin directory.',
+      },
       'save-dev': {
         description:
           'Save installed packages to package.json as devDependencies.',
@@ -89,6 +99,10 @@ export const views = {
 export const command: CommandFn<InstallResult> = async conf => {
   // TODO: we should probably throw an error if the user
   // tries to install using view=mermaid
+  const isGlobal = conf.get('global') === true
+  if (isGlobal) {
+    applyGlobalConfig(conf)
+  }
   const monorepo = conf.options.monorepo
   const scurry = conf.options.scurry
   const { add } = parseAddArgs(conf, scurry, monorepo)
@@ -111,5 +125,17 @@ export const command: CommandFn<InstallResult> = async conf => {
     },
     add,
   )
+
+  if (isGlobal) {
+    const linked = await linkGlobalBins(
+      graph,
+      conf.options.projectRoot,
+    )
+    if (linked.length > 0) {
+      stderr(`Linked global binaries: ${linked.join(', ')}`)
+    }
+    checkPathHint(stderr)
+  }
+
   return { buildQueue, graph }
 }
