@@ -40,6 +40,12 @@ export const run = async (
         outputCommand: (_: unknown, conf: LoadedConfig) =>
           (state.config = conf),
       },
+      '../src/telemetry.ts': {
+        initTelemetry: () => {},
+        disableTelemetry: () => {},
+        flushTelemetry: async () => {},
+        isDoNotTrack: () => false,
+      },
     },
   )
   unload()
@@ -219,6 +225,35 @@ t.test('invalid workspace - no vlt.json', async t => {
   t.ok(error instanceof Error)
   t.equal(exitCode, 1)
   t.matchSnapshot(logs.join('\n'))
+})
+
+t.test('--no-telemetry disables telemetry', async t => {
+  let disableCalled = false
+  process.env.XDG_CONFIG_HOME = t.testdirName
+  t.intercept(process, 'argv', {
+    value: [process.execPath, 'index.ts', '--no-telemetry'],
+  })
+  const index = await t.mockImport<typeof import('../src/index.ts')>(
+    '../src/index.ts',
+    {
+      '../src/output.ts': {
+        stdout: () => {},
+        stderr: () => {},
+        outputCommand: () => {},
+      },
+      '../src/telemetry.ts': {
+        initTelemetry: () => {},
+        disableTelemetry: () => {
+          disableCalled = true
+        },
+        flushTelemetry: async () => {},
+        isDoNotTrack: () => false,
+      },
+    },
+  )
+  unload()
+  await index.default()
+  t.equal(disableCalled, true, 'disableTelemetry was called')
 })
 
 t.test('invalid workspace-group', async t => {
