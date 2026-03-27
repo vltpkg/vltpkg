@@ -56,7 +56,7 @@ t.strictSame(
 t.test('global uninstall flag', async t => {
   let applyGlobalCalled = false
   let unlinkRemovedBinsCalled = false
-  let stderrMessages: string[] = []
+  const stderrMessages: string[] = []
 
   const GlobalCommand = await t.mockImport<
     typeof import('../../src/commands/uninstall.ts')

@@ -169,15 +169,13 @@ t.test('global install flag', async t => {
   let applyGlobalCalled = false
   let linkGlobalBinsCalled = false
   let checkPathHintCalled = false
-  let stderrMessages: string[] = []
-  let installLog = ''
+  const stderrMessages: string[] = []
 
   const Command = await t.mockImport<
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
       async install() {
-        installLog += 'install\n'
         return {
           graph: {
             toJSON: () => ({}),

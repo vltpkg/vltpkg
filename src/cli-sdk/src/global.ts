@@ -175,7 +175,7 @@ export const unlinkRemovedBins = async (
       try {
         const content = await readFile(shimPath, 'utf8')
         // sh shim format: "$basedir/<relative-path>"
-        const match = content.match(/\$basedir\/([^\s"]+)/)
+        const match = /\$basedir\/([^\s"]+)/.exec(content)
         if (match?.[1]) {
           target = resolve(binDir, match[1])
         }
