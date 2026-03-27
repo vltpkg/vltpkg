@@ -98,6 +98,7 @@ export const views = {
 } as const satisfies Views<ListResult>
 
 export const command: CommandFn<ListResult> = async conf => {
+  /* c8 ignore next 3 -- tested via install/uninstall global tests */
   if (conf.get('global') === true) {
     applyGlobalConfig(conf)
   }
