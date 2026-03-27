@@ -718,6 +718,19 @@ export const definition = j
   })
 
   .flag({
+    telemetry: {
+      description: `Enable anonymous error reporting via Sentry to help
+                    improve vlt.
+
+                    Set \`--no-telemetry\` to disable, or set the
+                    \`DO_NOT_TRACK=1\` environment variable.
+
+                    Defaults to \`true\`.`,
+      default: true,
+    },
+  })
+
+  .flag({
     yes: {
       short: 'y',
       description: `Automatically accept any confirmation prompts`,
