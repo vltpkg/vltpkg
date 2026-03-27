@@ -2,6 +2,7 @@ import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { InstallReporter } from './install/reporter.ts'
+import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Graph } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -101,6 +102,7 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
+  const installStart = Date.now()
   const { buildQueue, graph } = await install(
     {
       ...conf.options,
@@ -110,6 +112,13 @@ export const command: CommandFn<InstallResult> = async conf => {
       lockfileOnly,
     },
     add,
+  )
+  trackInstall(
+    {
+      dependency_count: graph.nodes.size,
+      duration_ms: Date.now() - installStart,
+    },
+    conf.values.telemetry,
   )
   return { buildQueue, graph }
 }

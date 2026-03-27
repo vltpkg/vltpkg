@@ -104,7 +104,7 @@ const run = async () => {
   }
 
   const command = await loadCommand(vlt.command)
-  await outputCommand(command, vlt, { start })
+  await outputCommand(command, vlt, { start, vltVersion: version })
 }
 
 export default run
