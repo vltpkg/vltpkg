@@ -5,7 +5,11 @@ sidebar:
   order: 3
 ---
 
-import { Code, LinkCard, CardGrid } from '@astrojs/starlight/components'
+import {
+  Code,
+  LinkCard,
+  CardGrid,
+} from '@astrojs/starlight/components'
 
 The vlt query syntax enables usage of CSS-selector-like strings to
 filter and select packages in your dependency graph.
@@ -89,11 +93,7 @@ Find all packages that depend on a vulnerable package:
 
 Find all dev-only dependencies that use eval:
 
-<Code
-  code="$ vlt query ':dev:eval'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':dev:eval'" title="Terminal" lang="bash" />
 
 Combine multiple selectors:
 
