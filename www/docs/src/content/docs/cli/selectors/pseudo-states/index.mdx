@@ -26,20 +26,12 @@ arguments.
 Returns the root node — the package defined at the top-level
 `package.json` of your project.
 
-<Code
-  code="$ vlt query ':root'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':root'" title="Terminal" lang="bash" />
 
 Commonly used with [combinators](/cli/selectors/combinators) to select
 direct dependencies:
 
-<Code
-  code="$ vlt query ':root > *'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':root > *'" title="Terminal" lang="bash" />
 
 ### `:scope`
 
@@ -62,11 +54,7 @@ dependencies.
 
 Matches workspace packages defined in your `vlt.json`.
 
-<Code
-  code="$ vlt query ':workspace'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':workspace'" title="Terminal" lang="bash" />
 
 Find workspaces that have changed since main:
 
@@ -89,21 +77,13 @@ Find workspaces that have changed since main:
 
 Matches production dependencies:
 
-<Code
-  code="$ vlt query ':prod'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':prod'" title="Terminal" lang="bash" />
 
 ### `:dev`
 
 Matches packages that are only used as dev dependencies:
 
-<Code
-  code="$ vlt query ':dev'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':dev'" title="Terminal" lang="bash" />
 
 Find all dev dependencies that are outdated:
 
@@ -117,21 +97,13 @@ Find all dev dependencies that are outdated:
 
 Matches optional dependencies:
 
-<Code
-  code="$ vlt query ':optional'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':optional'" title="Terminal" lang="bash" />
 
 ### `:peer`
 
 Matches peer dependencies:
 
-<Code
-  code="$ vlt query ':peer'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':peer'" title="Terminal" lang="bash" />
 
 ## Package property states
 
@@ -146,31 +118,19 @@ Matches peer dependencies:
 
 Matches packages with `"private": true` in their `package.json`:
 
-<Code
-  code="$ vlt query ':private'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':private'" title="Terminal" lang="bash" />
 
 ### `:empty`
 
 Matches packages that have no dependencies installed:
 
-<Code
-  code="$ vlt query ':empty'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':empty'" title="Terminal" lang="bash" />
 
 ### `:link`
 
 Matches linked packages only:
 
-<Code
-  code="$ vlt query ':link'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':link'" title="Terminal" lang="bash" />
 
 ### `:scanned`
 
@@ -178,11 +138,7 @@ Matches packages that have [Socket](https://socket.dev/) security
 metadata. See [Security Insights](/cli/selectors/security-insights)
 for security-specific selectors.
 
-<Code
-  code="$ vlt query ':scanned'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':scanned'" title="Terminal" lang="bash" />
 
 ## What gets selected
 
