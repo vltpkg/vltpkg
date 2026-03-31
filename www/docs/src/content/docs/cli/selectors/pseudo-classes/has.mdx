@@ -1,0 +1,105 @@
+---
+title: ":has()"
+sidebar:
+  label: ":has()"
+  order: 2
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:has()` pseudo-class matches packages that **have descendants
+matching** a given selector expression. It's the dependency graph
+equivalent of the
+[CSS `:has()` selector](https://developer.mozilla.org/en-US/docs/Web/CSS/:has).
+
+## Syntax
+
+```
+:has(<selector-list>)
+```
+
+The selector list is evaluated against the descendants of each
+candidate node.
+
+## Examples
+
+### Packages with a peer dependency on react
+
+<Code
+  code="$ vlt query ':has(.peer[name=react])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Given this dependency graph:
+
+```
+my-app
+├── react@18.2.0
+├── react-dom@18.2.0
+│   └── react@18.2.0 (peer)
+└── @testing-library/react@14.0.0
+    └── react@18.2.0 (peer)
+```
+
+`:has(.peer[name=react])` selects packages that have a peer
+dependency on react:
+
+```
+my-app
+├── react@18.2.0
+├── react-dom@18.2.0                 ✅ has peer dep on react
+│   └── react@18.2.0 (peer)
+└── @testing-library/react@14.0.0   ✅ has peer dep on react
+    └── react@18.2.0 (peer)
+```
+
+### Packages that depend on vulnerable packages
+
+<Code
+  code="$ vlt query ':has(> :cve(*))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+This finds packages whose **direct dependencies** have known CVEs.
+
+### Packages that depend on outdated packages
+
+<Code
+  code="$ vlt query ':has(> :outdated(major))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Packages that depend on changed packages
+
+Find packages that have a dependency that was modified:
+
+<Code
+  code="$ vlt query ':has(> :diff(main))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Using child combinator inside :has()
+
+The `>` inside `:has()` means **direct dependency**:
+
+<Code
+  code={`# Packages with a direct dep named "lodash"
+$ vlt query ':has(> [name=lodash])'
+
+# Packages with any transitive dep named "lodash"
+$ vlt query ':has([name=lodash])'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:not()`](/cli/selectors/pseudo-classes/not) — negation
+  pseudo-class
+- [`:is()`](/cli/selectors/pseudo-classes/is) — forgiving selector
+  list matching
+- [Combinators](/cli/selectors/combinators) — `>`, ` `, `~`

@@ -1,0 +1,102 @@
+---
+title: Pseudo-class Selectors
+sidebar:
+  label: Pseudo-classes
+  order: 4
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components'
+
+Pseudo-class selectors are functional selectors that accept
+arguments to filter packages. They work similarly to
+[CSS pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+but operate on dependency graph nodes.
+
+## Available pseudo-class selectors
+
+<CardGrid>
+  <LinkCard
+    title=":attr()"
+    description="Match packages by nested package.json properties"
+    href="/cli/selectors/pseudo-classes/attr"
+  />
+  <LinkCard
+    title=":has()"
+    description="Match packages that have descendants matching a selector"
+    href="/cli/selectors/pseudo-classes/has"
+  />
+  <LinkCard
+    title=":host()"
+    description="Switch graph context to another project or scope"
+    href="/cli/selectors/pseudo-classes/host"
+  />
+  <LinkCard
+    title=":is()"
+    description="Match any element in a forgiving selector list"
+    href="/cli/selectors/pseudo-classes/is"
+  />
+  <LinkCard
+    title=":not()"
+    description="Negation — exclude packages matching a selector"
+    href="/cli/selectors/pseudo-classes/not"
+  />
+  <LinkCard
+    title=":outdated()"
+    description="Match packages with newer versions available"
+    href="/cli/selectors/pseudo-classes/outdated"
+  />
+  <LinkCard
+    title=":published()"
+    description="Match packages by publication date"
+    href="/cli/selectors/pseudo-classes/published"
+  />
+  <LinkCard
+    title=":semver()"
+    description="Match packages by semver comparisons"
+    href="/cli/selectors/pseudo-classes/semver"
+  />
+  <LinkCard
+    title=":spec()"
+    description="Match edges by their package specifier"
+    href="/cli/selectors/pseudo-classes/spec"
+  />
+  <LinkCard
+    title=":path()"
+    description="Match workspace and file packages by file path"
+    href="/cli/selectors/pseudo-classes/path"
+  />
+  <LinkCard
+    title=":type()"
+    description="Match packages by type (registry, file, git, etc.)"
+    href="/cli/selectors/pseudo-classes/type"
+  />
+  <LinkCard
+    title=":diff()"
+    description="Match packages whose files have changed"
+    href="/cli/selectors/pseudo-classes/diff"
+  />
+</CardGrid>
+
+## Quick reference
+
+| Selector | Description | Example |
+|---|---|---|
+| [`:attr()`](/cli/selectors/pseudo-classes/attr) | Nested property match | `:attr(engines, [node])` |
+| [`:has()`](/cli/selectors/pseudo-classes/has) | Has matching descendants | `:has(.peer[name=react])` |
+| [`:host()`](/cli/selectors/pseudo-classes/host) | Switch graph context | `:host(local) :malware` |
+| [`:is()`](/cli/selectors/pseudo-classes/is) | Match any in list | `:is([name=a], [name=b])` |
+| [`:not()`](/cli/selectors/pseudo-classes/not) | Negation | `:not([license=MIT])` |
+| [`:outdated()`](/cli/selectors/pseudo-classes/outdated) | Newer version exists | `:outdated(major)` |
+| [`:published()`](/cli/selectors/pseudo-classes/published) | By publish date | `:published(">2024")` |
+| [`:semver()`](/cli/selectors/pseudo-classes/semver) | Semver comparison | `:semver(^1.0.0)` |
+| [`:spec()`](/cli/selectors/pseudo-classes/spec) | By specifier string | `:spec(^1.0.0)` |
+| [`:path()`](/cli/selectors/pseudo-classes/path) | By file path | `:path("packages/**")` |
+| [`:type()`](/cli/selectors/pseudo-classes/type) | By package type | `:type(git)` |
+| [`:diff()`](/cli/selectors/pseudo-classes/diff) | Changed files | `:diff(main)` |
+
+## See also
+
+- [Pseudo-state Selectors](/cli/selectors/pseudo-states) — simple
+  state-based selectors (`:root`, `:dev`, etc.)
+- [Security Insights](/cli/selectors/security-insights) —
+  Socket-powered security pseudo-selectors

@@ -1,0 +1,219 @@
+---
+title: Pseudo-state Selectors
+sidebar:
+  label: Pseudo-states
+  order: 5
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Pseudo-state selectors match packages based on their relationship
+to the project or their dependency type. Unlike
+[pseudo-classes](/cli/selectors/pseudo-classes), they don't take
+arguments.
+
+## Graph structure states
+
+| Selector | Description |
+|---|---|
+| `:root` | The root package (top-level `package.json`) |
+| `:scope` | The current scope of the selector |
+| `:project` | Root node plus all workspaces |
+| `:workspace` | Workspace packages (listed in `vlt.json`) |
+
+### `:root`
+
+Returns the root node — the package defined at the top-level
+`package.json` of your project.
+
+<Code
+  code="$ vlt query ':root'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Commonly used with [combinators](/cli/selectors/combinators) to
+select direct dependencies:
+
+<Code
+  code="$ vlt query ':root > *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:scope`
+
+Returns the current scope of the selector. Useful when using the
+`--scope` CLI flag to limit the query context.
+
+### `:project`
+
+Returns the root node along with any workspaces declared in your
+project. Useful for selecting "your code" vs. third-party
+dependencies.
+
+<Code
+  code="$ vlt query ':project > *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:workspace`
+
+Matches workspace packages defined in your `vlt.json`.
+
+<Code
+  code="$ vlt query ':workspace'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find workspaces that have changed since main:
+
+<Code
+  code="$ vlt query ':workspace:diff(main)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Dependency type states
+
+| Selector | Description |
+|---|---|
+| `:prod` | Production dependencies |
+| `:dev` | Development-only dependencies |
+| `:optional` | Optional dependencies |
+| `:peer` | Peer dependencies |
+
+### `:prod`
+
+Matches production dependencies:
+
+<Code
+  code="$ vlt query ':prod'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:dev`
+
+Matches packages that are only used as dev dependencies:
+
+<Code
+  code="$ vlt query ':dev'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find all dev dependencies that are outdated:
+
+<Code
+  code="$ vlt query ':dev:outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:optional`
+
+Matches optional dependencies:
+
+<Code
+  code="$ vlt query ':optional'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:peer`
+
+Matches peer dependencies:
+
+<Code
+  code="$ vlt query ':peer'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Package property states
+
+| Selector | Description |
+|---|---|
+| `:private` | Packages with `"private": true` |
+| `:empty` | Packages with no dependencies |
+| `:link` | Linked packages |
+| `:scanned` | Packages with security metadata |
+
+### `:private`
+
+Matches packages with `"private": true` in their `package.json`:
+
+<Code
+  code="$ vlt query ':private'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:empty`
+
+Matches packages that have no dependencies installed:
+
+<Code
+  code="$ vlt query ':empty'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:link`
+
+Matches linked packages only:
+
+<Code
+  code="$ vlt query ':link'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:scanned`
+
+Matches packages that have [Socket](https://socket.dev/) security
+metadata. See
+[Security Insights](/cli/selectors/security-insights) for
+security-specific selectors.
+
+<Code
+  code="$ vlt query ':scanned'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## What gets selected
+
+Given a monorepo:
+
+```
+my-monorepo (root)
+├── packages/core (workspace, private)
+│   ├── react@18.2.0 (prod)
+│   └── vitest@1.0.0 (dev)
+├── packages/utils (workspace)
+│   └── lodash@4.17.21 (prod)
+└── typescript@5.3.0 (dev)
+```
+
+| Query | Selected |
+|---|---|
+| `:root` | my-monorepo |
+| `:workspace` | core, utils |
+| `:project` | my-monorepo, core, utils |
+| `:private` | core |
+| `:dev` | vitest, typescript |
+| `:prod` | react, lodash |
+| `:root > :dev` | typescript |
+| `:workspace:private` | core |
+
+## See also
+
+- [Pseudo-class Selectors](/cli/selectors/pseudo-classes) —
+  functional selectors with arguments
+- [Combinators](/cli/selectors/combinators) — traverse the graph
+- [Security Insights](/cli/selectors/security-insights) — security
+  pseudo-selectors

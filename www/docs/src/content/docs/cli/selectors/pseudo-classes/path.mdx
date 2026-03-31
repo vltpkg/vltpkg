@@ -1,0 +1,84 @@
+---
+title: ":path()"
+sidebar:
+  label: ":path()"
+  order: 10
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:path()` pseudo-class matches workspace and file packages
+based on their file path relative to the project root. Patterns use
+glob syntax and must be quoted strings.
+
+## Syntax
+
+```
+:path("<glob>")
+```
+
+## Examples
+
+### Match all workspace packages
+
+<Code
+  code={`$ vlt query ':path("*")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Match a specific path
+
+<Code
+  code={`$ vlt query ':path("./packages/foo")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Match with glob patterns
+
+<Code
+  code={`$ vlt query ':path("packages/**")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given a monorepo:
+
+```
+my-monorepo/
+├── packages/
+│   ├── core/           ← workspace
+│   ├── utils/          ← workspace
+│   └── cli/            ← workspace
+└── apps/
+    └── web/            ← workspace
+```
+
+| Query | Selected |
+|---|---|
+| `:path("*")` | core, utils, cli, web |
+| `:path("packages/**")` | core, utils, cli |
+| `:path("apps/**")` | web |
+| `:path("./packages/core")` | core |
+
+### Combining with other selectors
+
+Find workspaces in `packages/` that have changed since main:
+
+<Code
+  code={`$ vlt query ':path("packages/**"):diff(main)'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:workspace`](/cli/selectors/pseudo-states) — match all workspace
+  packages
+- [`:type()`](/cli/selectors/pseudo-classes/type) — match by package
+  type
+- [`:diff()`](/cli/selectors/pseudo-classes/diff) — match by changed
+  files

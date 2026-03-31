@@ -1,0 +1,117 @@
+---
+title: ":semver()"
+sidebar:
+  label: ":semver()"
+  order: 8
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:semver()` pseudo-class matches packages based on semver
+comparisons. By default it compares against the package `version`
+field, but it can be configured to compare any semver-like value.
+
+## Syntax
+
+```
+:semver(<range>)
+:semver(<range>, <function>)
+:semver(<range>, <function>, <custom-attribute-selector>)
+```
+
+### Parameters
+
+| Parameter | Description | Default |
+|---|---|---|
+| `range` | The semver range to compare against | (required) |
+| `function` | Comparison function | `satisfies` |
+| `custom-attribute-selector` | A different property to compare | `version` |
+
+### Comparison functions
+
+| Function | Description |
+|---|---|
+| `satisfies` | Version satisfies the range (default) |
+| `eq` | Version exactly equals the range |
+| `neq` | Version does not equal the range |
+| `gt` | Version is greater than the range |
+| `gte` | Version is greater than or equal to the range |
+| `lt` | Version is less than the range |
+| `lte` | Version is less than or equal to the range |
+
+## Examples
+
+### Basic range matching
+
+Find packages satisfying `^1.0.0`:
+
+<Code
+  code="$ vlt query ':semver(^1.0.0)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Exact version matching
+
+Find packages at exactly version `2.0.0`:
+
+<Code
+  code="$ vlt query ':semver(2.0.0, eq)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Version comparison
+
+Find packages greater than version 5:
+
+<Code
+  code="$ vlt query ':semver(5.0.0, gt)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Custom property comparison
+
+Match packages whose `engines.node` field satisfies `^22`:
+
+<Code
+  code="$ vlt query ':semver(^22, satisfies, :attr(engines, [node]))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given:
+
+```
+my-app
+├── react@18.2.0
+├── react-dom@18.2.0
+├── typescript@5.3.0
+└── lodash@4.17.21
+```
+
+| Query | Selected |
+|---|---|
+| `:semver(^18.0.0)` | react, react-dom |
+| `:semver(5.0.0, gte)` | typescript |
+| `:semver(^4.0.0)` | lodash |
+
+### Combining with other selectors
+
+Find direct dependencies with version >= 18:
+
+<Code
+  code="$ vlt query ':root > :semver(18.0.0, gte)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:outdated()`](/cli/selectors/pseudo-classes/outdated) — find
+  packages with newer versions available
+- [Attribute Selectors](/cli/selectors/attribute-selectors) — match
+  the `version` field directly

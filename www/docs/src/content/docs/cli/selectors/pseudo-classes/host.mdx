@@ -1,0 +1,76 @@
+---
+title: ":host()"
+sidebar:
+  label: ":host()"
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:host()` pseudo-class switches the current graph context to a
+new set of graphs loaded from a specific host context. This allows
+querying across multiple projects or switching to different project
+scopes.
+
+## Syntax
+
+```
+:host(<context>)
+```
+
+The context parameter can be:
+- A specific project folder path (e.g., `"file:~/my-project"`)
+- The special `local` context — loads all configured projects from
+  your vlt dashboard
+
+## Examples
+
+### Find malware across all projects
+
+<Code
+  code="$ vlt query ':host(local) :malware'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Query a specific project
+
+<Code
+  code="$ vlt query ':host(\"file:~/my-app\") :outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Bump version for a remote project
+
+<Code
+  code="$ vlt version patch --scope=':host(\"file:~/tmp/test-vite\")'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Get all direct deps across local projects
+
+<Code
+  code="$ vlt pkg pick name version --scope=':host(local) > :root > *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## How it works
+
+When you use `:host()`, vlt:
+
+1. Resolves the context to one or more project directories
+2. Loads the dependency graph for each project
+3. Runs the rest of the selector against all loaded graphs
+
+This is particularly useful for organization-wide audits and
+cross-project dependency analysis.
+
+## See also
+
+- [`:diff()`](/cli/selectors/pseudo-classes/diff) — find changed
+  packages
+- [`:outdated()`](/cli/selectors/pseudo-classes/outdated) — find
+  packages with newer versions
