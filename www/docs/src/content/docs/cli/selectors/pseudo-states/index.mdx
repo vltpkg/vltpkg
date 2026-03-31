@@ -7,19 +7,19 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components'
 
-Pseudo-state selectors match packages based on their relationship
-to the project or their dependency type. Unlike
+Pseudo-state selectors match packages based on their relationship to
+the project or their dependency type. Unlike
 [pseudo-classes](/cli/selectors/pseudo-classes), they don't take
 arguments.
 
 ## Graph structure states
 
-| Selector | Description |
-|---|---|
-| `:root` | The root package (top-level `package.json`) |
-| `:scope` | The current scope of the selector |
-| `:project` | Root node plus all workspaces |
-| `:workspace` | Workspace packages (listed in `vlt.json`) |
+| Selector     | Description                                 |
+| ------------ | ------------------------------------------- |
+| `:root`      | The root package (top-level `package.json`) |
+| `:scope`     | The current scope of the selector           |
+| `:project`   | Root node plus all workspaces               |
+| `:workspace` | Workspace packages (listed in `vlt.json`)   |
 
 ### `:root`
 
@@ -32,8 +32,8 @@ Returns the root node — the package defined at the top-level
   lang="bash"
 />
 
-Commonly used with [combinators](/cli/selectors/combinators) to
-select direct dependencies:
+Commonly used with [combinators](/cli/selectors/combinators) to select
+direct dependencies:
 
 <Code
   code="$ vlt query ':root > *'"
@@ -78,12 +78,12 @@ Find workspaces that have changed since main:
 
 ## Dependency type states
 
-| Selector | Description |
-|---|---|
-| `:prod` | Production dependencies |
-| `:dev` | Development-only dependencies |
-| `:optional` | Optional dependencies |
-| `:peer` | Peer dependencies |
+| Selector    | Description                   |
+| ----------- | ----------------------------- |
+| `:prod`     | Production dependencies       |
+| `:dev`      | Development-only dependencies |
+| `:optional` | Optional dependencies         |
+| `:peer`     | Peer dependencies             |
 
 ### `:prod`
 
@@ -135,11 +135,11 @@ Matches peer dependencies:
 
 ## Package property states
 
-| Selector | Description |
-|---|---|
+| Selector   | Description                     |
+| ---------- | ------------------------------- |
 | `:private` | Packages with `"private": true` |
-| `:empty` | Packages with no dependencies |
-| `:link` | Linked packages |
+| `:empty`   | Packages with no dependencies   |
+| `:link`    | Linked packages                 |
 | `:scanned` | Packages with security metadata |
 
 ### `:private`
@@ -175,9 +175,8 @@ Matches linked packages only:
 ### `:scanned`
 
 Matches packages that have [Socket](https://socket.dev/) security
-metadata. See
-[Security Insights](/cli/selectors/security-insights) for
-security-specific selectors.
+metadata. See [Security Insights](/cli/selectors/security-insights)
+for security-specific selectors.
 
 <Code
   code="$ vlt query ':scanned'"
@@ -199,21 +198,21 @@ my-monorepo (root)
 └── typescript@5.3.0 (dev)
 ```
 
-| Query | Selected |
-|---|---|
-| `:root` | my-monorepo |
-| `:workspace` | core, utils |
-| `:project` | my-monorepo, core, utils |
-| `:private` | core |
-| `:dev` | vitest, typescript |
-| `:prod` | react, lodash |
-| `:root > :dev` | typescript |
-| `:workspace:private` | core |
+| Query                | Selected                 |
+| -------------------- | ------------------------ |
+| `:root`              | my-monorepo              |
+| `:workspace`         | core, utils              |
+| `:project`           | my-monorepo, core, utils |
+| `:private`           | core                     |
+| `:dev`               | vitest, typescript       |
+| `:prod`              | react, lodash            |
+| `:root > :dev`       | typescript               |
+| `:workspace:private` | core                     |
 
 ## See also
 
-- [Pseudo-class Selectors](/cli/selectors/pseudo-classes) —
-  functional selectors with arguments
+- [Pseudo-class Selectors](/cli/selectors/pseudo-classes) — functional
+  selectors with arguments
 - [Combinators](/cli/selectors/combinators) — traverse the graph
 - [Security Insights](/cli/selectors/security-insights) — security
   pseudo-selectors

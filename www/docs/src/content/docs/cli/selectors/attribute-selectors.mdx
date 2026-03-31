@@ -14,17 +14,17 @@ but operate on package metadata fields instead of HTML attributes.
 
 ## Syntax
 
-| Selector | Description |
-|---|---|
-| `[attr]` | Has the property `attr` |
-| `[attr=value]` | Property `attr` exactly equals `value` |
-| `[attr^=value]` | Property `attr` starts with `value` |
-| `[attr$=value]` | Property `attr` ends with `value` |
-| `[attr~=value]` | Property `attr` is a whitespace-separated list containing `value` |
-| `[attr\|=value]` | Property `attr` equals `value` or starts with `value-` |
-| `[attr*=value]` | Property `attr` contains `value` |
-| `[attr=value i]` | Case-insensitive comparison |
-| `[attr=value s]` | Case-sensitive comparison (default) |
+| Selector         | Description                                                       |
+| ---------------- | ----------------------------------------------------------------- |
+| `[attr]`         | Has the property `attr`                                           |
+| `[attr=value]`   | Property `attr` exactly equals `value`                            |
+| `[attr^=value]`  | Property `attr` starts with `value`                               |
+| `[attr$=value]`  | Property `attr` ends with `value`                                 |
+| `[attr~=value]`  | Property `attr` is a whitespace-separated list containing `value` |
+| `[attr\|=value]` | Property `attr` equals `value` or starts with `value-`            |
+| `[attr*=value]`  | Property `attr` contains `value`                                  |
+| `[attr=value i]` | Case-insensitive comparison                                       |
+| `[attr=value s]` | Case-sensitive comparison (default)                               |
 
 ## Examples
 
@@ -158,7 +158,7 @@ For nested `package.json` properties (like `engines.node` or
 
 ## See also
 
-- [`:attr()` pseudo-class](/cli/selectors/pseudo-classes/attr) —
-  match nested `package.json` properties
+- [`:attr()` pseudo-class](/cli/selectors/pseudo-classes/attr) — match
+  nested `package.json` properties
 - [ID Selectors](/cli/selectors/id-selectors) — shorthand for
   `[name=value]`

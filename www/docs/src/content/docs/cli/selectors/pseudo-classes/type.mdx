@@ -1,7 +1,7 @@
 ---
-title: ":type()"
+title: ':type()'
 sidebar:
-  label: ":type()"
+  label: ':type()'
   order: 11
 ---
 
@@ -18,13 +18,13 @@ type — how the package is sourced.
 
 ### Available types
 
-| Type | Description |
-|---|---|
-| `registry` | Packages from npm or another registry |
-| `file` | Local file dependencies (`file:../path`) |
-| `git` | Git repository dependencies |
-| `remote` | Remote URL dependencies |
-| `workspace` | Workspace packages in your monorepo |
+| Type        | Description                              |
+| ----------- | ---------------------------------------- |
+| `registry`  | Packages from npm or another registry    |
+| `file`      | Local file dependencies (`file:../path`) |
+| `git`       | Git repository dependencies              |
+| `remote`    | Remote URL dependencies                  |
+| `workspace` | Workspace packages in your monorepo      |
 
 ## Examples
 
@@ -64,12 +64,12 @@ my-app
 └── ../shared-lib (file)     ← type: file
 ```
 
-| Query | Selected |
-|---|---|
-| `:type(registry)` | react |
-| `:type(workspace)` | my-utils |
-| `:type(git)` | my-fork |
-| `:type(file)` | ../shared-lib |
+| Query              | Selected      |
+| ------------------ | ------------- |
+| `:type(registry)`  | react         |
+| `:type(workspace)` | my-utils      |
+| `:type(git)`       | my-fork       |
+| `:type(file)`      | ../shared-lib |
 
 ### Combining with other selectors
 
@@ -93,5 +93,5 @@ Find outdated git dependencies:
 
 - [`:workspace`](/cli/selectors/pseudo-states) — shorthand for
   matching workspaces
-- [`:spec()`](/cli/selectors/pseudo-classes/spec) — match by
-  specifier string
+- [`:spec()`](/cli/selectors/pseudo-classes/spec) — match by specifier
+  string

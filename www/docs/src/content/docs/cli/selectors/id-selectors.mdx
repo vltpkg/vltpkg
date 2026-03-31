@@ -7,8 +7,8 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components'
 
-ID selectors are a shorthand for selecting packages by name. They
-work like
+ID selectors are a shorthand for selecting packages by name. They work
+like
 [CSS ID selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors)
 but match the `name` field in `package.json`.
 
@@ -20,12 +20,10 @@ but match the `name` field in `package.json`.
 
 This is equivalent to `[name=package-name]`.
 
-:::caution
-ID selectors only work for **unscoped** packages. For scoped
-packages (e.g. `@vltpkg/cli`), use
+:::caution ID selectors only work for **unscoped** packages. For
+scoped packages (e.g. `@vltpkg/cli`), use
 [attribute selectors](/cli/selectors/attribute-selectors) instead:
-`[name=@vltpkg/cli]`.
-:::
+`[name=@vltpkg/cli]`. :::
 
 ## Examples
 

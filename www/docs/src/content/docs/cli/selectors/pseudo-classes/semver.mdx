@@ -1,7 +1,7 @@
 ---
-title: ":semver()"
+title: ':semver()'
 sidebar:
-  label: ":semver()"
+  label: ':semver()'
   order: 8
 ---
 
@@ -21,23 +21,23 @@ field, but it can be configured to compare any semver-like value.
 
 ### Parameters
 
-| Parameter | Description | Default |
-|---|---|---|
-| `range` | The semver range to compare against | (required) |
-| `function` | Comparison function | `satisfies` |
-| `custom-attribute-selector` | A different property to compare | `version` |
+| Parameter                   | Description                         | Default     |
+| --------------------------- | ----------------------------------- | ----------- |
+| `range`                     | The semver range to compare against | (required)  |
+| `function`                  | Comparison function                 | `satisfies` |
+| `custom-attribute-selector` | A different property to compare     | `version`   |
 
 ### Comparison functions
 
-| Function | Description |
-|---|---|
-| `satisfies` | Version satisfies the range (default) |
-| `eq` | Version exactly equals the range |
-| `neq` | Version does not equal the range |
-| `gt` | Version is greater than the range |
-| `gte` | Version is greater than or equal to the range |
-| `lt` | Version is less than the range |
-| `lte` | Version is less than or equal to the range |
+| Function    | Description                                   |
+| ----------- | --------------------------------------------- |
+| `satisfies` | Version satisfies the range (default)         |
+| `eq`        | Version exactly equals the range              |
+| `neq`       | Version does not equal the range              |
+| `gt`        | Version is greater than the range             |
+| `gte`       | Version is greater than or equal to the range |
+| `lt`        | Version is less than the range                |
+| `lte`       | Version is less than or equal to the range    |
 
 ## Examples
 
@@ -93,11 +93,11 @@ my-app
 └── lodash@4.17.21
 ```
 
-| Query | Selected |
-|---|---|
-| `:semver(^18.0.0)` | react, react-dom |
-| `:semver(5.0.0, gte)` | typescript |
-| `:semver(^4.0.0)` | lodash |
+| Query                 | Selected         |
+| --------------------- | ---------------- |
+| `:semver(^18.0.0)`    | react, react-dom |
+| `:semver(5.0.0, gte)` | typescript       |
+| `:semver(^4.0.0)`     | lodash           |
 
 ### Combining with other selectors
 

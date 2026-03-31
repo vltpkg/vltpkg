@@ -1,16 +1,16 @@
 ---
-title: ":spec()"
+title: ':spec()'
 sidebar:
-  label: ":spec()"
+  label: ':spec()'
   order: 9
 ---
 
 import { Code } from '@astrojs/starlight/components'
 
-The `:spec()` pseudo-class matches edges where the package
-specifier (bareSpec) equals the provided value. This filters
-dependencies by their exact specification string — i.e., what's
-written in `package.json`.
+The `:spec()` pseudo-class matches edges where the package specifier
+(bareSpec) equals the provided value. This filters dependencies by
+their exact specification string — i.e., what's written in
+`package.json`.
 
 ## Syntax
 
@@ -60,11 +60,11 @@ Given `package.json`:
 }
 ```
 
-| Query | Selected |
-|---|---|
-| `:spec(^18.2.0)` | react |
-| `:spec("*")` | lodash |
-| `:spec("catalog:")` | my-lib |
+| Query               | Selected |
+| ------------------- | -------- |
+| `:spec(^18.2.0)`    | react    |
+| `:spec("*")`        | lodash   |
+| `:spec("catalog:")` | my-lib   |
 
 ## See also
 

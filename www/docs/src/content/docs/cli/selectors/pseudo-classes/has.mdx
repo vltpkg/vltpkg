@@ -1,7 +1,7 @@
 ---
-title: ":has()"
+title: ':has()'
 sidebar:
-  label: ":has()"
+  label: ':has()'
   order: 2
 ---
 
@@ -42,8 +42,8 @@ my-app
     └── react@18.2.0 (peer)
 ```
 
-`:has(.peer[name=react])` selects packages that have a peer
-dependency on react:
+`:has(.peer[name=react])` selects packages that have a peer dependency
+on react:
 
 ```
 my-app
@@ -91,10 +91,8 @@ The `>` inside `:has()` means **direct dependency**:
 $ vlt query ':has(> [name=lodash])'
 
 # Packages with any transitive dep named "lodash"
-$ vlt query ':has([name=lodash])'`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt query ':has([name=lodash])'`} title="Terminal" lang="bash" />
 
 ## See also
 

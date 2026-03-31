@@ -7,8 +7,8 @@ sidebar:
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components'
 
-Pseudo-class selectors are functional selectors that accept
-arguments to filter packages. They work similarly to
+Pseudo-class selectors are functional selectors that accept arguments
+to filter packages. They work similarly to
 [CSS pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
 but operate on dependency graph nodes.
 
@@ -79,20 +79,20 @@ but operate on dependency graph nodes.
 
 ## Quick reference
 
-| Selector | Description | Example |
-|---|---|---|
-| [`:attr()`](/cli/selectors/pseudo-classes/attr) | Nested property match | `:attr(engines, [node])` |
-| [`:has()`](/cli/selectors/pseudo-classes/has) | Has matching descendants | `:has(.peer[name=react])` |
-| [`:host()`](/cli/selectors/pseudo-classes/host) | Switch graph context | `:host(local) :malware` |
-| [`:is()`](/cli/selectors/pseudo-classes/is) | Match any in list | `:is([name=a], [name=b])` |
-| [`:not()`](/cli/selectors/pseudo-classes/not) | Negation | `:not([license=MIT])` |
-| [`:outdated()`](/cli/selectors/pseudo-classes/outdated) | Newer version exists | `:outdated(major)` |
-| [`:published()`](/cli/selectors/pseudo-classes/published) | By publish date | `:published(">2024")` |
-| [`:semver()`](/cli/selectors/pseudo-classes/semver) | Semver comparison | `:semver(^1.0.0)` |
-| [`:spec()`](/cli/selectors/pseudo-classes/spec) | By specifier string | `:spec(^1.0.0)` |
-| [`:path()`](/cli/selectors/pseudo-classes/path) | By file path | `:path("packages/**")` |
-| [`:type()`](/cli/selectors/pseudo-classes/type) | By package type | `:type(git)` |
-| [`:diff()`](/cli/selectors/pseudo-classes/diff) | Changed files | `:diff(main)` |
+| Selector                                                  | Description              | Example                   |
+| --------------------------------------------------------- | ------------------------ | ------------------------- |
+| [`:attr()`](/cli/selectors/pseudo-classes/attr)           | Nested property match    | `:attr(engines, [node])`  |
+| [`:has()`](/cli/selectors/pseudo-classes/has)             | Has matching descendants | `:has(.peer[name=react])` |
+| [`:host()`](/cli/selectors/pseudo-classes/host)           | Switch graph context     | `:host(local) :malware`   |
+| [`:is()`](/cli/selectors/pseudo-classes/is)               | Match any in list        | `:is([name=a], [name=b])` |
+| [`:not()`](/cli/selectors/pseudo-classes/not)             | Negation                 | `:not([license=MIT])`     |
+| [`:outdated()`](/cli/selectors/pseudo-classes/outdated)   | Newer version exists     | `:outdated(major)`        |
+| [`:published()`](/cli/selectors/pseudo-classes/published) | By publish date          | `:published(">2024")`     |
+| [`:semver()`](/cli/selectors/pseudo-classes/semver)       | Semver comparison        | `:semver(^1.0.0)`         |
+| [`:spec()`](/cli/selectors/pseudo-classes/spec)           | By specifier string      | `:spec(^1.0.0)`           |
+| [`:path()`](/cli/selectors/pseudo-classes/path)           | By file path             | `:path("packages/**")`    |
+| [`:type()`](/cli/selectors/pseudo-classes/type)           | By package type          | `:type(git)`              |
+| [`:diff()`](/cli/selectors/pseudo-classes/diff)           | Changed files            | `:diff(main)`             |
 
 ## See also
 
