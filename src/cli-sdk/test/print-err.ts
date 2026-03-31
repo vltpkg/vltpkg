@@ -22,9 +22,10 @@ const testErr = async (
 ) =>
   t.test(name, async t => {
     const dir = t.testdir()
+    const { CI: _, ...envWithoutCI } = process.env
     t.intercept(process, 'env', {
       value: {
-        ...process.env,
+        ...envWithoutCI,
         XDG_DATA_HOME: dir,
       },
     })
@@ -382,9 +383,10 @@ t.test(
   'does not print full error log contents outside CI',
   async t => {
     const dir = t.testdir()
+    const { CI: _, ...envWithoutCI } = process.env
     t.intercept(process, 'env', {
       value: {
-        ...process.env,
+        ...envWithoutCI,
         XDG_DATA_HOME: dir,
       },
     })
