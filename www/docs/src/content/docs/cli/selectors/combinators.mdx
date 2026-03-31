@@ -1,0 +1,171 @@
+---
+title: Combinators
+sidebar:
+  label: Combinators
+  order: 2
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Combinators define relationships between packages in the dependency
+graph. They work similarly to
+[CSS combinators](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors/Selectors_and_combinators#combinators)
+but describe dependency relationships instead of DOM hierarchy.
+
+## Syntax
+
+| Combinator | Name | Description |
+|---|---|---|
+| `>` | Child | Direct dependencies of the previously selected nodes |
+| ` ` (space) | Descendant | All direct & transitive dependencies |
+| `~` | Sibling | Direct dependencies of all dependents of the previously selected nodes |
+
+## Child combinator `>`
+
+Matches packages that are **direct dependencies** of the previously
+selected nodes. Only one level deep.
+
+<Code
+  code="$ vlt query ':root > *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Given this dependency graph:
+
+```
+my-app
+├── react@18.2.0
+│   └── loose-envify@1.4.0
+│       └── js-tokens@4.0.0
+└── typescript@5.3.0
+```
+
+`:root > *` selects only direct dependencies:
+
+```
+my-app
+├── react@18.2.0          ✅ direct dependency of root
+│   └── loose-envify@1.4.0
+│       └── js-tokens@4.0.0
+└── typescript@5.3.0      ✅ direct dependency of root
+```
+
+### Chaining child combinators
+
+You can chain `>` to select at specific depths:
+
+<Code
+  code="$ vlt query ':root > * > *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+```
+my-app
+├── react@18.2.0
+│   └── loose-envify@1.4.0    ✅ grandchild of root
+│       └── js-tokens@4.0.0
+└── typescript@5.3.0
+```
+
+## Descendant combinator (space)
+
+Matches **all** packages that are direct or transitive dependencies
+of the previously selected nodes. Any depth.
+
+<Code
+  code="$ vlt query ':root [name=js-tokens]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+```
+my-app
+├── react@18.2.0
+│   └── loose-envify@1.4.0
+│       └── js-tokens@4.0.0   ✅ transitive dependency of root
+└── typescript@5.3.0
+```
+
+### Descendant vs. child
+
+<Code
+  code={`# Direct deps only
+$ vlt query ':root > [name=js-tokens]'
+# → no results (js-tokens is not a direct dependency)
+
+# All transitive deps
+$ vlt query ':root [name=js-tokens]'
+# → js-tokens@4.0.0 (found transitively)`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Sibling combinator `~`
+
+Matches packages that are **direct dependencies of all dependents**
+of the previously selected nodes. In other words: "other packages
+that share the same parent."
+
+<Code
+  code="$ vlt query '[name=react] ~ *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Given:
+
+```
+my-app
+├── react@18.2.0
+├── react-dom@18.2.0
+└── typescript@5.3.0
+```
+
+`[name=react] ~ *` selects siblings of react (other direct deps of
+the same parent):
+
+```
+my-app
+├── react@18.2.0
+├── react-dom@18.2.0       ✅ sibling of react
+└── typescript@5.3.0       ✅ sibling of react
+```
+
+## Combining with selectors
+
+Combinators are most powerful when combined with
+[attribute selectors](/cli/selectors/attribute-selectors) and
+[pseudo-classes](/cli/selectors/pseudo-classes):
+
+Find all direct dependencies that are outdated:
+
+<Code
+  code="$ vlt query ':root > :outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find workspaces that depend on packages with CVEs:
+
+<Code
+  code="$ vlt query ':workspace > :cve(*)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find all transitive dependencies of a specific package:
+
+<Code
+  code="$ vlt query '[name=react] *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [Pseudo-state Selectors](/cli/selectors/pseudo-states) — `:root`,
+  `:project`, `:workspace`
+- [`:has()` pseudo-class](/cli/selectors/pseudo-classes/has) — filter
+  by descendant relationships

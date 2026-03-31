@@ -1,0 +1,164 @@
+---
+title: Attribute Selectors
+sidebar:
+  label: Attribute Selectors
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Attribute selectors match packages based on values found in their
+`package.json` metadata. They work similarly to
+[CSS attribute selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors)
+but operate on package metadata fields instead of HTML attributes.
+
+## Syntax
+
+| Selector | Description |
+|---|---|
+| `[attr]` | Has the property `attr` |
+| `[attr=value]` | Property `attr` exactly equals `value` |
+| `[attr^=value]` | Property `attr` starts with `value` |
+| `[attr$=value]` | Property `attr` ends with `value` |
+| `[attr~=value]` | Property `attr` is a whitespace-separated list containing `value` |
+| `[attr\|=value]` | Property `attr` equals `value` or starts with `value-` |
+| `[attr*=value]` | Property `attr` contains `value` |
+| `[attr=value i]` | Case-insensitive comparison |
+| `[attr=value s]` | Case-sensitive comparison (default) |
+
+## Examples
+
+### Match by name
+
+Select a package with an exact name:
+
+<Code
+  code="$ vlt query '[name=react]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Select all scoped packages:
+
+<Code
+  code={`$ vlt query '[name^="@"]'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Select packages in the `@vltpkg` scope:
+
+<Code
+  code={`$ vlt query '[name^="@vltpkg"]'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Match by version
+
+Select packages on a specific version:
+
+<Code
+  code="$ vlt query '[version=1.0.0]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Select packages with major version 2:
+
+<Code
+  code="$ vlt query '[version^=2]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Match by any property
+
+Select packages that have a `repository` field:
+
+<Code
+  code="$ vlt query '[repository]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Select packages with a specific license:
+
+<Code
+  code="$ vlt query '[license=MIT]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Select packages whose description mentions "parser":
+
+<Code
+  code="$ vlt query '[description*=parser]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Case-insensitive matching
+
+Find packages with "React" in the description regardless of case:
+
+<Code
+  code="$ vlt query '[description*=react i]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given a project with these dependencies:
+
+```
+my-app
+├── @vltpkg/cli@1.0.0
+├── react@18.2.0
+├── react-dom@18.2.0
+└── typescript@5.3.0
+```
+
+The query `[name^=react]` selects:
+
+```
+my-app
+├── @vltpkg/cli@1.0.0
+├── react@18.2.0          ✅ name starts with "react"
+├── react-dom@18.2.0      ✅ name starts with "react"
+└── typescript@5.3.0
+```
+
+## Combining with other selectors
+
+Attribute selectors can be combined with
+[combinators](/cli/selectors/combinators) and
+[pseudo-classes](/cli/selectors/pseudo-classes):
+
+<Code
+  code="$ vlt query ':root > [license=MIT]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+This selects only direct dependencies with an MIT license.
+
+## Nested properties
+
+For nested `package.json` properties (like `engines.node` or
+`peerDependenciesMeta`), use the
+[`:attr()` pseudo-class](/cli/selectors/pseudo-classes/attr):
+
+<Code
+  code="$ vlt query ':attr(peerDependenciesMeta, foo, [optional=true])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:attr()` pseudo-class](/cli/selectors/pseudo-classes/attr) —
+  match nested `package.json` properties
+- [ID Selectors](/cli/selectors/id-selectors) — shorthand for
+  `[name=value]`

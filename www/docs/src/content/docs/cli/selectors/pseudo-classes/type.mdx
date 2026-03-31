@@ -1,0 +1,97 @@
+---
+title: ":type()"
+sidebar:
+  label: ":type()"
+  order: 11
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:type()` pseudo-class matches packages based on their resolved
+type — how the package is sourced.
+
+## Syntax
+
+```
+:type(<type>)
+```
+
+### Available types
+
+| Type | Description |
+|---|---|
+| `registry` | Packages from npm or another registry |
+| `file` | Local file dependencies (`file:../path`) |
+| `git` | Git repository dependencies |
+| `remote` | Remote URL dependencies |
+| `workspace` | Workspace packages in your monorepo |
+
+## Examples
+
+### Find all git dependencies
+
+<Code
+  code="$ vlt query ':type(git)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Find all workspace dependencies
+
+<Code
+  code="$ vlt query ':type(workspace)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Find all file dependencies
+
+<Code
+  code="$ vlt query ':type(file)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given:
+
+```
+my-app
+├── react@18.2.0             ← type: registry
+├── my-utils (workspace)     ← type: workspace
+├── my-fork (git)            ← type: git
+└── ../shared-lib (file)     ← type: file
+```
+
+| Query | Selected |
+|---|---|
+| `:type(registry)` | react |
+| `:type(workspace)` | my-utils |
+| `:type(git)` | my-fork |
+| `:type(file)` | ../shared-lib |
+
+### Combining with other selectors
+
+Find all non-registry dependencies:
+
+<Code
+  code="$ vlt query ':not(:type(registry))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find outdated git dependencies:
+
+<Code
+  code="$ vlt query ':type(git):outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:workspace`](/cli/selectors/pseudo-states) — shorthand for
+  matching workspaces
+- [`:spec()`](/cli/selectors/pseudo-classes/spec) — match by
+  specifier string

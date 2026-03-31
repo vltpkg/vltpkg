@@ -1,0 +1,66 @@
+---
+title: ":is()"
+sidebar:
+  label: ":is()"
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:is()` pseudo-class takes a forgiving selector list and
+matches any element that can be selected by one of the selectors in
+that list. It works like the
+[CSS `:is()` selector](https://developer.mozilla.org/en-US/docs/Web/CSS/:is)
+and is useful for writing compact selectors.
+
+## Syntax
+
+```
+:is(<forgiving-selector-list>)
+```
+
+The selector list is **forgiving** — any invalid selectors in the
+list are silently ignored rather than causing the entire selector to
+fail.
+
+## Examples
+
+### Compact selector lists
+
+Without `:is()`:
+
+<Code
+  code="$ vlt query ':root > [name=react], :root > [name=vue], :root > [name=svelte]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+With `:is()`:
+
+<Code
+  code="$ vlt query ':root > :is([name=react], [name=vue], [name=svelte])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Both queries produce the same result — direct dependencies named
+`react`, `vue`, or `svelte`.
+
+### Forgiving behavior
+
+Invalid selectors in the list are ignored:
+
+<Code
+  code="$ vlt query ':is([name=react], :nonexistent, [name=vue])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+This still matches `react` and `vue` — the `:nonexistent`
+pseudo-class is silently skipped.
+
+## See also
+
+- [`:not()`](/cli/selectors/pseudo-classes/not) — negation
+  pseudo-class
+- [`:has()`](/cli/selectors/pseudo-classes/has) — descendant matching

@@ -1,0 +1,95 @@
+---
+title: ":not()"
+sidebar:
+  label: ":not()"
+  order: 5
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:not()` pseudo-class is a negation selector — it matches
+packages that **do not match** the given selector list. It works
+like the
+[CSS `:not()` selector](https://developer.mozilla.org/en-US/docs/Web/CSS/:not).
+
+## Syntax
+
+```
+:not(<selector-list>)
+```
+
+## Examples
+
+### Exclude by name
+
+Find all packages except react:
+
+<Code
+  code="$ vlt query ':root > :not([name=react])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Exclude by license
+
+Find packages without an MIT license:
+
+<Code
+  code="$ vlt query ':not([license=MIT])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Exclude by type
+
+Find all non-registry dependencies:
+
+<Code
+  code="$ vlt query ':not(:type(registry))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given this dependency graph:
+
+```
+my-app
+├── react@18.2.0         ← license: MIT
+├── typescript@5.3.0     ← license: Apache-2.0
+└── vite@5.0.0           ← license: MIT
+```
+
+`:root > :not([license=MIT])` selects:
+
+```
+my-app
+├── react@18.2.0
+├── typescript@5.3.0      ✅ license is NOT MIT
+└── vite@5.0.0
+```
+
+### Combining with other pseudo-classes
+
+Find non-dev dependencies that are outdated:
+
+<Code
+  code="$ vlt query ':not(:dev):outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find packages that are not private and not workspaces:
+
+<Code
+  code="$ vlt query ':not(:private):not(:workspace)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:is()`](/cli/selectors/pseudo-classes/is) — forgiving selector
+  list matching
+- [`:has()`](/cli/selectors/pseudo-classes/has) — descendant matching

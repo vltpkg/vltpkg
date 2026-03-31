@@ -1,0 +1,100 @@
+---
+title: ":published()"
+sidebar:
+  label: ":published()"
+  order: 7
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:published()` pseudo-class matches packages based on their
+publication date. Useful for auditing when dependencies were last
+released.
+
+## Syntax
+
+```
+:published(<date>)
+:published("<comparator><date>")
+```
+
+The date parameter supports:
+- Full dates: `2024-01-01`
+- Year only: `2024`
+- Year-month: `2024-06`
+
+When using a comparator (`>`, `<`, `>=`, `<=`), the value must be
+quoted.
+
+## Examples
+
+### Exact date match
+
+<Code
+  code="$ vlt query ':published(2024-01-01)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### After a date
+
+<Code
+  code={`$ vlt query ':published(">2024")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Before a date
+
+<Code
+  code={`$ vlt query ':published("<=2023-12-31")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given:
+
+```
+my-app
+├── react@18.2.0         ← published: 2022-06-14
+├── typescript@5.3.0     ← published: 2023-11-20
+└── vite@5.0.0           ← published: 2023-11-16
+```
+
+The query `:published(">2023")` selects:
+
+```
+my-app
+├── react@18.2.0
+├── typescript@5.3.0      ✅ published after 2023
+└── vite@5.0.0            ✅ published after 2023
+```
+
+### Finding old packages
+
+Find packages published more than 2 years ago:
+
+<Code
+  code={`$ vlt query ':published("<2024")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Combining with other selectors
+
+Find outdated packages that were published before 2023:
+
+<Code
+  code={`$ vlt query ':outdated:published("<2023")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:outdated()`](/cli/selectors/pseudo-classes/outdated) — find
+  packages with newer versions
+- [`:unmaintained`](/cli/selectors/security-insights) — packages not
+  updated in 5+ years
