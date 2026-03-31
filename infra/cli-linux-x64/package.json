@@ -1,0 +1,19 @@
+{
+  "name": "@vltpkg/vlt-linux-x64",
+  "description": "The vlt CLI (linux-x64)",
+  "version": "1.0.0-rc.23",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/cli-linux-x64"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "license": "BSD-2-Clause-Patent",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "preferUnplugged": true
+}

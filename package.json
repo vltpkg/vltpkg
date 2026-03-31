@@ -38,6 +38,7 @@
   "license": "BSD-2-Clause-Patent",
   "scripts": {
     "build:bundle": "vlt-build --outdir=.build-bundle bundle",
+    "build:exe": "node --experimental-strip-types --no-warnings infra/build/src/exe.ts --outdir=.build-exe",
     "deps:check": "./scripts/check-deps.ts",
     "fix": "vlr fix:pkg && vlr lint && vlr format",
     "fix:pkg": "./scripts/consistent-package-json.ts",

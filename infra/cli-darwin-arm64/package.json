@@ -1,0 +1,19 @@
+{
+  "name": "@vltpkg/vlt-darwin-arm64",
+  "description": "The vlt CLI (darwin-arm64)",
+  "version": "1.0.0-rc.23",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/cli-darwin-arm64"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "license": "BSD-2-Clause-Patent",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "preferUnplugged": true
+}

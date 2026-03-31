@@ -43,12 +43,18 @@ tmp
 /infra/**/*.mjs.map
 /infra/**/*.d.mts
 /infra/**/*.d.mts.map
+!/infra/cli/bin/vlt.js
 /infra/*/outdir
 /infra/*/docs
 /infra/*/node_modules
 /infra/*/scripts/fixtures/
 /infra/cli-benchmarks/**/node_modules
 /infra/cli-benchmarks/**/vlt-lock.json
+
+# Platform binary packages — binaries are only created at publish time
+/infra/cli-darwin-*/bin/
+/infra/cli-linux-*/bin/
+/infra/cli-win32-*/bin/
 
 /infra/benchmark/.artifacts
 

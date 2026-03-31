@@ -8,6 +8,14 @@
     "directory": "infra/cli"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "optionalDependencies": {
+    "@vltpkg/vlt-darwin-arm64": "workspace:*",
+    "@vltpkg/vlt-darwin-x64": "workspace:*",
+    "@vltpkg/vlt-linux-arm64": "workspace:*",
+    "@vltpkg/vlt-linux-x64": "workspace:*",
+    "@vltpkg/vlt-win32-arm64": "workspace:*",
+    "@vltpkg/vlt-win32-x64": "workspace:*"
+  },
   "devDependencies": {
     "@vltpkg/infra-build": "workspace:*"
   },

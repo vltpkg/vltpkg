@@ -13,3 +13,11 @@ export type {
   VariantWithArtifact,
   Artifact,
 } from './variants.ts'
+export {
+  EXE_TARGETS,
+  NODE_VERSION,
+  pkgName,
+  dirName,
+  exeFileName,
+} from './exe-targets.ts'
+export type { ExeTarget } from './exe-targets.ts'

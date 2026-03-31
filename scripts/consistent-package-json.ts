@@ -284,6 +284,8 @@ const fixLicense = async (ws: Workspace) => {
   }
 }
 
+const PLATFORM_PACKAGE_RE = /^cli-(darwin|linux|win32)-(arm64|x64)$/
+
 const fixCliVariants = async (ws: Workspace) => {
   if (basename(dirname(ws.dir)) !== 'infra') {
     return
@@ -291,6 +293,17 @@ const fixCliVariants = async (ws: Workspace) => {
 
   const workspaceBasename = basename(ws.dir)
   if (!workspaceBasename.startsWith('cli')) {
+    return
+  }
+
+  // Platform-specific binary packages have their own structure:
+  // they don't use infra-build, prepack, or publishConfig.
+  if (PLATFORM_PACKAGE_RE.test(workspaceBasename)) {
+    const match = PLATFORM_PACKAGE_RE.exec(workspaceBasename)!
+    const os = match[1]!
+    const cpu = match[2]!
+    ws.pj.name = `@vltpkg/vlt-${os}-${cpu}`
+    ws.pj.preferUnplugged = true
     return
   }
 

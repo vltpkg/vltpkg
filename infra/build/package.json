@@ -11,11 +11,16 @@
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "bin": {
     "vlt-build": "./src/cli.ts",
-    "vlt-build-prepack": "./src/prepack.ts"
+    "vlt-build-prepack": "./src/prepack.ts",
+    "vlt-build-exe": "./src/exe.ts"
   },
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
-    "esbuild": "^0.27.1"
+    "esbuild": "^0.27.1",
+    "tsdown": "^0.21.4"
+  },
+  "optionalDependencies": {
+    "@tsdown/exe": "^0.21.4"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

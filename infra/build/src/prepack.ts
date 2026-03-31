@@ -2,6 +2,7 @@
 
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   readFileSync,
   rmSync,
@@ -67,16 +68,25 @@ const main = async () => {
   mkdirSync(outdir, { recursive: true })
 
   await bundle({ outdir, hashbang: true, sourcemap: false })
-  writeFiles({
-    outdir,
-    pkg,
-    pkgExtra: {
-      bin: BINS.reduce<Record<string, string>>((acc, bin) => {
-        acc[bin] = `./${bin}.js`
-        return acc
-      }, {}),
-    },
-  })
+
+  // Copy the binary wrapper if present (used by the `vlt` package
+  // to try the native platform binary before falling back to JS).
+  const binWrapperSrc = resolve('./bin/vlt.js')
+  if (existsSync(binWrapperSrc)) {
+    mkdirSync(resolve(outdir, 'bin'), { recursive: true })
+    cpSync(binWrapperSrc, resolve(outdir, 'bin/vlt.js'))
+  }
+
+  const bin = BINS.reduce<Record<string, string>>((acc, bin) => {
+    // vlt uses the wrapper; others use bundled JS directly
+    acc[bin] =
+      bin === 'vlt' && existsSync(binWrapperSrc) ?
+        './bin/vlt.js'
+      : `./${bin}.js`
+    return acc
+  }, {})
+
+  writeFiles({ outdir, pkg, pkgExtra: { bin } })
 }
 
 await main()

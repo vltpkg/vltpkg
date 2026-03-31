@@ -1,0 +1,19 @@
+{
+  "name": "@vltpkg/vlt-win32-arm64",
+  "description": "The vlt CLI (win32-arm64)",
+  "version": "1.0.0-rc.23",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/cli-win32-arm64"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "license": "BSD-2-Clause-Patent",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "preferUnplugged": true
+}
