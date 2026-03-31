@@ -1,17 +1,16 @@
 ---
-title: ":diff()"
+title: ':diff()'
 sidebar:
-  label: ":diff()"
+  label: ':diff()'
   order: 12
 ---
 
 import { Code } from '@astrojs/starlight/components'
 
-The `:diff()` pseudo-class matches packages whose files have
-changed between the current working tree and a specified git
-commitish reference. It uses `git diff --name-only` to determine
-changed files, then maps them to packages by their file path
-location.
+The `:diff()` pseudo-class matches packages whose files have changed
+between the current working tree and a specified git commitish
+reference. It uses `git diff --name-only` to determine changed files,
+then maps them to packages by their file path location.
 
 ## Syntax
 
@@ -71,8 +70,8 @@ Find packages changed since the `main` branch:
 
 ### What gets selected
 
-Given a monorepo where you changed files in `packages/core/`
-and `packages/utils/` since `main`:
+Given a monorepo where you changed files in `packages/core/` and
+`packages/utils/` since `main`:
 
 ```
 my-monorepo
@@ -112,7 +111,6 @@ Find packages that depend on changed packages:
 
 ## See also
 
-- [`:path()`](/cli/selectors/pseudo-classes/path) — match by file
-  path
+- [`:path()`](/cli/selectors/pseudo-classes/path) — match by file path
 - [`:has()`](/cli/selectors/pseudo-classes/has) — find packages that
   depend on changed packages

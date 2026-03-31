@@ -14,11 +14,11 @@ but describe dependency relationships instead of DOM hierarchy.
 
 ## Syntax
 
-| Combinator | Name | Description |
-|---|---|---|
-| `>` | Child | Direct dependencies of the previously selected nodes |
-| ` ` (space) | Descendant | All direct & transitive dependencies |
-| `~` | Sibling | Direct dependencies of all dependents of the previously selected nodes |
+| Combinator  | Name       | Description                                                            |
+| ----------- | ---------- | ---------------------------------------------------------------------- |
+| `>`         | Child      | Direct dependencies of the previously selected nodes                   |
+| ` ` (space) | Descendant | All direct & transitive dependencies                                   |
+| `~`         | Sibling    | Direct dependencies of all dependents of the previously selected nodes |
 
 ## Child combinator `>`
 
@@ -71,8 +71,8 @@ my-app
 
 ## Descendant combinator (space)
 
-Matches **all** packages that are direct or transitive dependencies
-of the previously selected nodes. Any depth.
+Matches **all** packages that are direct or transitive dependencies of
+the previously selected nodes. Any depth.
 
 <Code
   code="$ vlt query ':root [name=js-tokens]'"
@@ -96,17 +96,18 @@ $ vlt query ':root > [name=js-tokens]'
 # → no results (js-tokens is not a direct dependency)
 
 # All transitive deps
+
 $ vlt query ':root [name=js-tokens]'
+
 # → js-tokens@4.0.0 (found transitively)`}
-  title="Terminal"
-  lang="bash"
-/>
+
+title="Terminal" lang="bash" />
 
 ## Sibling combinator `~`
 
-Matches packages that are **direct dependencies of all dependents**
-of the previously selected nodes. In other words: "other packages
-that share the same parent."
+Matches packages that are **direct dependencies of all dependents** of
+the previously selected nodes. In other words: "other packages that
+share the same parent."
 
 <Code
   code="$ vlt query '[name=react] ~ *'"
@@ -123,8 +124,8 @@ my-app
 └── typescript@5.3.0
 ```
 
-`[name=react] ~ *` selects siblings of react (other direct deps of
-the same parent):
+`[name=react] ~ *` selects siblings of react (other direct deps of the
+same parent):
 
 ```
 my-app

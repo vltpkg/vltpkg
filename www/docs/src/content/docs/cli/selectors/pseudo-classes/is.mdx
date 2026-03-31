@@ -1,15 +1,15 @@
 ---
-title: ":is()"
+title: ':is()'
 sidebar:
-  label: ":is()"
+  label: ':is()'
   order: 4
 ---
 
 import { Code } from '@astrojs/starlight/components'
 
-The `:is()` pseudo-class takes a forgiving selector list and
-matches any element that can be selected by one of the selectors in
-that list. It works like the
+The `:is()` pseudo-class takes a forgiving selector list and matches
+any element that can be selected by one of the selectors in that list.
+It works like the
 [CSS `:is()` selector](https://developer.mozilla.org/en-US/docs/Web/CSS/:is)
 and is useful for writing compact selectors.
 
@@ -19,9 +19,8 @@ and is useful for writing compact selectors.
 :is(<forgiving-selector-list>)
 ```
 
-The selector list is **forgiving** — any invalid selectors in the
-list are silently ignored rather than causing the entire selector to
-fail.
+The selector list is **forgiving** — any invalid selectors in the list
+are silently ignored rather than causing the entire selector to fail.
 
 ## Examples
 
@@ -56,8 +55,8 @@ Invalid selectors in the list are ignored:
   lang="bash"
 />
 
-This still matches `react` and `vue` — the `:nonexistent`
-pseudo-class is silently skipped.
+This still matches `react` and `vue` — the `:nonexistent` pseudo-class
+is silently skipped.
 
 ## See also
 

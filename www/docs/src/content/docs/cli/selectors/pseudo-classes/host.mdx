@@ -1,14 +1,14 @@
 ---
-title: ":host()"
+title: ':host()'
 sidebar:
-  label: ":host()"
+  label: ':host()'
   order: 3
 ---
 
 import { Code } from '@astrojs/starlight/components'
 
-The `:host()` pseudo-class switches the current graph context to a
-new set of graphs loaded from a specific host context. This allows
+The `:host()` pseudo-class switches the current graph context to a new
+set of graphs loaded from a specific host context. This allows
 querying across multiple projects or switching to different project
 scopes.
 
@@ -19,6 +19,7 @@ scopes.
 ```
 
 The context parameter can be:
+
 - A specific project folder path (e.g., `"file:~/my-project"`)
 - The special `local` context — loads all configured projects from
   your vlt dashboard

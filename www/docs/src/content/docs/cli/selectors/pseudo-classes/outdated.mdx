@@ -1,7 +1,7 @@
 ---
-title: ":outdated()"
+title: ':outdated()'
 sidebar:
-  label: ":outdated()"
+  label: ':outdated()'
   order: 6
 ---
 
@@ -20,14 +20,14 @@ controls how "outdated" is defined.
 
 ### Type parameter
 
-| Type | Description |
-|---|---|
-| `any` (default) | A version exists greater than the current one |
-| `in-range` | A greater version exists that satisfies the parent's dependency range |
-| `out-of-range` | A greater version exists that does NOT satisfy the parent's range |
-| `major` | A semver major version bump is available |
-| `minor` | A semver minor version bump is available |
-| `patch` | A semver patch version bump is available |
+| Type            | Description                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| `any` (default) | A version exists greater than the current one                         |
+| `in-range`      | A greater version exists that satisfies the parent's dependency range |
+| `out-of-range`  | A greater version exists that does NOT satisfy the parent's range     |
+| `major`         | A semver major version bump is available                              |
+| `minor`         | A semver minor version bump is available                              |
+| `patch`         | A semver patch version bump is available                              |
 
 ## Examples
 
@@ -79,12 +79,12 @@ my-app
 └── lodash@4.17.21        ← latest: 4.17.21 (up to date)
 ```
 
-| Query | Selected |
-|---|---|
-| `:outdated` | react, typescript, vite |
-| `:outdated(major)` | react |
-| `:outdated(minor)` | typescript |
-| `:outdated(patch)` | vite |
+| Query              | Selected                |
+| ------------------ | ----------------------- |
+| `:outdated`        | react, typescript, vite |
+| `:outdated(major)` | react                   |
+| `:outdated(minor)` | typescript              |
+| `:outdated(patch)` | vite                    |
 
 ### Combining with combinators
 

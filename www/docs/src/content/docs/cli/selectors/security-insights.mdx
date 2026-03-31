@@ -8,14 +8,12 @@ sidebar:
 import { Code } from '@astrojs/starlight/components'
 
 Security insight selectors rely on data provided by
-[Socket](https://socket.dev/). Using any of these selectors
-triggers a network call to fetch package report data.
+[Socket](https://socket.dev/). Using any of these selectors triggers a
+network call to fetch package report data.
 
-:::note
-Security selectors require fetching data from Socket's API. This
-adds latency to queries — the data is fetched before the query
-runs. Keep this in mind for interactive use.
-:::
+:::note Security selectors require fetching data from Socket's API.
+This adds latency to queries — the data is fetched before the query
+runs. Keep this in mind for interactive use. :::
 
 ## Malware & threats
 
@@ -34,12 +32,12 @@ Matches packages that may contain malware with severity >= medium
 
 Filter by severity level:
 
-| Type | Description |
-|---|---|
+| Type              | Description       |
+| ----------------- | ----------------- |
 | `critical` or `0` | Critical severity |
-| `high` or `1` | High severity |
-| `medium` or `2` | Medium severity |
-| `low` or `3` | Low severity |
+| `high` or `1`     | High severity     |
+| `medium` or `2`   | Medium severity   |
+| `low` or `3`      | Low severity      |
 
 Comparators are supported:
 
@@ -64,11 +62,11 @@ Matches packages with names similar to popular packages
 
 `:squat` without arguments matches any severity. Filter with:
 
-| Type | Description |
-|---|---|
+| Type              | Description               |
+| ----------------- | ------------------------- |
 | `critical` or `0` | High-confidence typosquat |
-| `medium` or `2` | Possible typosquat |
-| `none` | Not a typosquat |
+| `medium` or `2`   | Possible typosquat        |
+| `none`            | Not a typosquat           |
 
 ### `:suspicious`
 
@@ -126,12 +124,12 @@ Matches packages with a specific CWE alert:
 
 Matches packages by CVE severity level:
 
-| Level | Description |
-|---|---|
+| Level             | Description            |
+| ----------------- | ---------------------- |
 | `critical` or `0` | Critical severity CVEs |
-| `high` or `1` | High severity CVEs |
-| `medium` or `2` | Medium severity CVEs |
-| `low` or `3` | Low severity CVEs |
+| `high` or `1`     | High severity CVEs     |
+| `medium` or `2`   | Medium severity CVEs   |
+| `low` or `3`      | Low severity CVEs      |
 
 Comparators are supported:
 
@@ -149,29 +147,28 @@ $ vlt query ':severity(">=medium")'`}
 
 Matches packages based on license issues:
 
-| Type | Description |
-|---|---|
-| `unlicensed` | No license |
-| `misc` | Fine-grained license problems |
-| `restricted` | Non-permissive license |
-| `ambiguous` | Ambiguous licensing |
-| `copyleft` | Copyleft license (GPL, etc.) |
-| `unknown` | License data found but type undetermined |
-| `none` | No license data at all |
-| `exception` | SPDX license exception |
+| Type         | Description                              |
+| ------------ | ---------------------------------------- |
+| `unlicensed` | No license                               |
+| `misc`       | Fine-grained license problems            |
+| `restricted` | Non-permissive license                   |
+| `ambiguous`  | Ambiguous licensing                      |
+| `copyleft`   | Copyleft license (GPL, etc.)             |
+| `unknown`    | License data found but type undetermined |
+| `none`       | No license data at all                   |
+| `exception`  | SPDX license exception                   |
 
 <Code
   code={`# Find packages with copyleft licenses
 $ vlt query ':license(copyleft)'
 
 # Find unlicensed packages
+
 $ vlt query ':license(unlicensed)'
 
 # Find packages with any license
-$ vlt query ':license'`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt query ':license'`} title="Terminal" lang="bash" />
 
 ## Code behavior signals
 
@@ -238,8 +235,7 @@ Packages with install scripts (postinstall, preinstall, etc.):
 
 ### `:debug`
 
-Packages using debug, reflection, or dynamic code execution
-features:
+Packages using debug, reflection, or dynamic code execution features:
 
 <Code
   code="$ vlt query ':debug'"
@@ -292,8 +288,7 @@ secrets, or obfuscated code):
 
 ### `:native`
 
-Packages containing native code (compiled binaries, shared
-libraries):
+Packages containing native code (compiled binaries, shared libraries):
 
 <Code
   code="$ vlt query ':native'"
@@ -303,8 +298,8 @@ libraries):
 
 ### `:shrinkwrap`
 
-Packages containing a shrinkwrap file that may bypass normal
-install procedures:
+Packages containing a shrinkwrap file that may bypass normal install
+procedures:
 
 <Code
   code="$ vlt query ':shrinkwrap'"
@@ -398,8 +393,7 @@ Packages containing telemetry:
 
 ### `:undesirable`
 
-Packages that are jokes, parodies, or include undocumented
-behavior:
+Packages that are jokes, parodies, or include undocumented behavior:
 
 <Code
   code="$ vlt query ':undesirable'"
@@ -411,10 +405,10 @@ behavior:
 
 Match packages by security score:
 
-| Parameter | Description |
-|---|---|
-| `rate` | Score value 0–100 (or 0–1), with optional comparator |
-| `kind` | Score category (optional, default: `overall`) |
+| Parameter | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `rate`    | Score value 0–100 (or 0–1), with optional comparator |
+| `kind`    | Score category (optional, default: `overall`)        |
 
 Available kinds: `overall`, `license`, `maintenance`, `quality`,
 `supplyChain`, `vulnerability`.
@@ -424,13 +418,13 @@ Available kinds: `overall`, `license`, `maintenance`, `quality`,
 $ vlt query ':score(80)'
 
 # Packages with score > 0.8
+
 $ vlt query ':score(">0.8")'
 
 # Low maintenance score
-$ vlt query ':score("<=0.5", "maintenance")'`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt query ':score("<=0.5", "maintenance")'`} title="Terminal"
+lang="bash" />
 
 ## Common audit queries
 
@@ -441,19 +435,20 @@ Run a comprehensive security audit:
 $ vlt query ':malware(critical), :cve(*), :obfuscated'
 
 # Supply chain risks
+
 $ vlt query ':abandoned, :unmaintained, :unknown'
 
 # License compliance
+
 $ vlt query ':license(copyleft), :license(unlicensed)'
 
 # Code behavior audit
-$ vlt query ':eval, :shell, :network, :fs'`}
-  title="Terminal"
-  lang="bash"
-/>
+
+$ vlt query ':eval, :shell, :network, :fs'`} title="Terminal"
+lang="bash" />
 
 ## See also
 
-- [`:scanned`](/cli/selectors/pseudo-states) — check if packages
-  have security metadata
+- [`:scanned`](/cli/selectors/pseudo-states) — check if packages have
+  security metadata
 - [vlt security overview](/cli/security) — security features in vlt
