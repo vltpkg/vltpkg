@@ -39,8 +39,9 @@ export const views = {
 export const command: CommandFn<CIResult> = async conf => {
   const ciOptions = {
     ...conf.options,
-    // allow all scripts by default on ci (unless user specifies a filter)
-    allowScripts: conf.get('allow-scripts') ?? '*',
+    // allow scripts but filter out malware via security archive
+    allowScripts:
+      conf.get('allow-scripts') ?? ':scripts:not(:malware)',
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,
