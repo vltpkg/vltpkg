@@ -81,8 +81,8 @@ export const vlxInstall = async (
     projectRoot: dir,
     monorepo: undefined,
     scurry: new PathScurry(dir),
-    // vlx always run lifecycle scripts for all packages
-    allowScripts: '*',
+    // allow lifecycle scripts but filter out malware via security archive
+    allowScripts: ':scripts:not(:malware)',
   })
 
   return vlxInfo(dir, options, manifest)
