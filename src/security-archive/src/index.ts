@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite'
+import { spawn } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
@@ -8,6 +9,8 @@ import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
+import { __CODE_SPLIT_SCRIPT_NAME } from './update-expired.ts'
+import type { UpdateExpiredPayload } from './update-expired.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
 import type {
@@ -106,7 +109,6 @@ export class SecurityArchive
   implements SecurityArchiveLike
 {
   #expired = new Set<DepID>()
-  #pUpdateExpired: Promise<void> | undefined
   #path: string
   #retries: number
   #nodesByName = new Map<string, Set<NodeLike>>()
@@ -225,41 +227,81 @@ export class SecurityArchive
         db.prepare('DELETE FROM cache WHERE depID = ?').run(depID)
       }
     }
-    // TODO: we need to move this to a detached process in order for the
-    // cli commands that make usage of the security-archive, e.g: vlt ls,
-    // vlt query to not hang while waiting for stale-while-revalidate
-    // request to finish and close the db connection
-    this.#pUpdateExpired = this.#updateExpired(db)
+    // Spawn a detached process to revalidate expired entries in the
+    // background so that cli commands (vlt ls, vlt query) don't hang
+    // waiting for stale-while-revalidate requests to complete.
+    this.#spawnUpdateExpired()
   }
 
   /**
-   * Updates the database with renewed entries for expired packages.
+   * Spawns a detached child process to revalidate expired entries.
+   * The process runs independently — the main process does not wait for it.
    */
-  async #updateExpired(db: DatabaseSync): Promise<void> {
-    const expiredQueue = new Set<Record<'purl', string>>()
+  #spawnUpdateExpired(): void {
+    const expired: UpdateExpiredPayload['expired'] = []
     for (const depID of this.#expired) {
       const node = this.#nodesByID.get(baseDepID(depID))
 
       /* c8 ignore start */
-      if (!node?.version) {
-        // skip any missing node or nodes without a version, this
+      if (!node?.version || !node.name) {
+        // skip any missing node or nodes without a version/name, this
         // should not happen, but some optional dependencies might
         // end up in this state when reading from the lockfile
         continue
       }
       /* c8 ignore stop */
 
-      const purl = `pkg:npm/${node.name}@${node.version}`
-      expiredQueue.add({ purl })
+      expired.push({
+        depID: baseDepID(depID),
+        name: node.name,
+        version: node.version,
+      })
     }
-    if (expiredQueue.size > 0) {
-      const res = await pRetry(
-        () => this.#retrieveRemoteData(expiredQueue),
-        { retries: this.#retries },
+
+    if (!expired.length) {
+      return
+    }
+
+    const isDeno =
+      (globalThis as typeof globalThis & { Deno?: any }).Deno !=
+      undefined
+
+    const payload: UpdateExpiredPayload = {
+      dbPath: this.#path,
+      retries: this.#retries,
+      ttl: SecurityArchive.defaultTtl,
+      expired,
+    }
+
+    const args = []
+    // Deno on Windows does not support detached processes
+    const detached = !(isDeno && process.platform === 'win32')
+
+    /* c8 ignore start */
+    if (isDeno) {
+      args.push(
+        '--unstable-node-globals',
+        '--unstable-bare-node-builtins',
       )
-      const ids = this.#loadFromNDJSON(res)
-      this.#storeNewItemsToDatabase(db, ids)
     }
+    /* c8 ignore stop */
+
+    args.push(__CODE_SPLIT_SCRIPT_NAME)
+
+    const proc = spawn(process.execPath, args, {
+      detached,
+      stdio: ['pipe', 'ignore', 'ignore'],
+      env: { ...process.env },
+    })
+
+    proc.stdin.write(JSON.stringify(payload))
+    proc.stdin.end()
+
+    /* c8 ignore start */
+    if (detached) {
+      proc.unref()
+    }
+    /* c8 ignore stop */
   }
 
   /**
@@ -456,27 +498,19 @@ export class SecurityArchive
       // validates the refresh process was successful
       this.#validateReportData()
     } finally {
-      // TODO: once we move the stale-while-revalidate to a detached process
-      // the this.#close method no longer needs to be async
-      void this.#close(db)
+      this.#close(db)
     }
   }
 
   /**
    * Closes the database connection and cleans up the internal state.
    */
-  async #close(db: DatabaseSync) {
-    // the revalidation of stale entries might not yet be completed
-    // so in case we have a pending promise for that, we need to wait
-    await this.#pUpdateExpired
+  #close(db: DatabaseSync) {
     // close db connection
     db.exec('PRAGMA optimize')
     db.close()
     // clean up internal state
     this.#expired.clear()
-    this.#pUpdateExpired = undefined
-    // TODO: at this point we could spawn a deref process to
-    // remove entries with expired ttl values and vaccum the db
   }
 
   /**
