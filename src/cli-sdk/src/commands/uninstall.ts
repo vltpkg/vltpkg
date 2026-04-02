@@ -4,6 +4,8 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
 import { InstallReporter } from './install/reporter.ts'
+import { applyGlobalConfig, unlinkRemovedBins } from '../global.ts'
+import { stderr } from '../output.ts'
 import type { Views } from '../view.ts'
 
 export type UninstallResult = {
@@ -20,6 +22,10 @@ export const usage: CommandUsage = () =>
     description: `The opposite of \`vlt install\`. Removes deps and updates
                   vlt-lock.json and package.json appropriately.`,
     options: {
+      global: {
+        description:
+          'Uninstall packages globally and remove their linked binaries.',
+      },
       workspace: {
         value: '<path|glob>',
         description:
@@ -43,6 +49,10 @@ export const views = {
 } as const satisfies Views<UninstallResult>
 
 export const command: CommandFn<UninstallResult> = async conf => {
+  const isGlobal = conf.get('global') === true
+  if (isGlobal) {
+    applyGlobalConfig(conf)
+  }
   const { monorepo, scurry } = conf.options
   const { remove } = parseRemoveArgs(conf, scurry, monorepo)
   /* c8 ignore start */
@@ -55,5 +65,13 @@ export const command: CommandFn<UninstallResult> = async conf => {
     { ...conf.options, allowScripts },
     remove,
   )
+
+  if (isGlobal) {
+    const removed = await unlinkRemovedBins(conf.options.projectRoot)
+    if (removed.length > 0) {
+      stderr(`Removed global binaries: ${removed.join(', ')}`)
+    }
+  }
+
   return { graph }
 }

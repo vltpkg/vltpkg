@@ -32,6 +32,12 @@ appropriately.
 
   Options
 
+    global
+      Install packages globally. Binaries are linked to the global bin
+      directory.
+
+      ​--global
+
     save-dev
       Save installed packages to package.json as devDependencies.
 

@@ -1484,6 +1484,7 @@
     "workspace~src+cli-sdk ssri": "prod catalog: ~npm~ssri@13.0.1",
     "workspace~src+cli-sdk supports-color": "prod ^10.2.2 ~npm~supports-color@10.2.2",
     "workspace~src+cli-sdk tar": "prod catalog: ~npm~tar@7.5.11",
+    "workspace~src+cli-sdk @vltpkg/cmd-shim": "prod workspace:* workspace~src+cmd-shim",
     "workspace~src+cli-sdk @vltpkg/config": "prod workspace:* workspace~src+config",
     "workspace~src+cli-sdk @vltpkg/dep-id": "prod workspace:* workspace~src+dep-id",
     "workspace~src+cli-sdk @vltpkg/dot-prop": "prod workspace:* workspace~src+dot-prop",
