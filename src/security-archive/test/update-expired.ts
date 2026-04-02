@@ -426,7 +426,7 @@ t.test('update-expired main()', async t => {
       'english-days@1.0.0',
     ])
 
-    initDB(dbPath, [
+    const db = initDB(dbPath, [
       {
         depID: englishDaysId,
         report: JSON.stringify(englishDaysReport),
@@ -434,6 +434,7 @@ t.test('update-expired main()', async t => {
         ttl: SecurityArchive.defaultTtl,
       },
     ])
+    db.close()
 
     t.intercept(global, 'fetch', {
       value: async () =>
@@ -473,7 +474,7 @@ t.test('update-expired main()', async t => {
       'english-days@1.0.0',
     ])
 
-    initDB(dbPath, [
+    const db = initDB(dbPath, [
       {
         depID: englishDaysId,
         report: JSON.stringify(englishDaysReport),
@@ -481,6 +482,7 @@ t.test('update-expired main()', async t => {
         ttl: SecurityArchive.defaultTtl,
       },
     ])
+    db.close()
 
     t.intercept(global, 'fetch', {
       value: async () =>
