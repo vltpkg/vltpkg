@@ -60,6 +60,11 @@
       "import": {
         "default": "./src/browser.ts"
       }
+    },
+    "./update-expired": {
+      "import": {
+        "default": "./src/update-expired.ts"
+      }
     }
   },
   "files": [

@@ -96,18 +96,6 @@ const englishDaysReport = {
   batchIndex: 0,
 }
 
-// New updated version of englishDaysReport for testing stale-while-revalidate
-const englishDaysUpdatedReport = {
-  ...englishDaysReport,
-  id: '15713076834',
-  score: {
-    ...englishDaysReport.score,
-    maintenance: 0.85,
-    overall: 0.65,
-  },
-  alerts: [...englishDaysReport.alerts.slice(1)],
-}
-
 t.test('map-like', async t => {
   const archive = new SecurityArchive()
   const id = joinDepIDTuple(['registry', 'npm', 'bar'])
@@ -359,23 +347,19 @@ ${JSON.stringify(englishDaysReport)}
     )
     dbWrite.run(expiredStart, englishDaysId)
 
-    // Setup the fetch mock to return updated data for the background refresh
-    let fetchCallCount = 0
-    t.intercept(global, 'fetch', {
-      value: async () => {
-        fetchCallCount++
-        return {
-          ok: true,
-          status: 200,
-          text: async () => `${JSON.stringify(englishDaysUpdatedReport)}
-`,
-        } as unknown as Response
-      },
-    })
-
-    // Create a new archive that should load the expired entry and trigger revalidation
+    // Create a new archive that should load the expired entry and trigger
+    // background revalidation in a detached process (non-blocking)
     const refreshedArchive = new SecurityArchive({ path })
+    const startTime = Date.now()
     await refreshedArchive.refresh({ nodes })
+    const elapsed = Date.now() - startTime
+
+    // The refresh should complete quickly since revalidation is detached
+    // (previously it would block waiting for the background fetch)
+    t.ok(
+      elapsed < 2000,
+      `refresh should complete quickly (took ${elapsed}ms), not block on revalidation`,
+    )
 
     // Initially, we should get the stale data while revalidation happens in background
     const initialData = refreshedArchive.get(englishDaysId)
@@ -385,45 +369,14 @@ ${JSON.stringify(englishDaysReport)}
       'should initially return the stale data while revalidating',
     )
 
-    // Wait for the background revalidation to complete
-    // This is a bit hacky but allows us to wait for the background promise to complete
-    await new Promise(resolve => setTimeout(resolve, 200))
-
-    // Verify fetch was called to revalidate the expired entry
-    t.equal(
-      fetchCallCount,
-      1,
-      'should have made a fetch request to revalidate expired entry',
+    // The foo entry should also be available (not expired)
+    const fooData = refreshedArchive.get(
+      joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
     )
-
-    // Query the database directly to verify the update happened
-    const dbRead = db.prepare(
-      'SELECT report FROM cache WHERE depID = ?',
-    )
-    const { report } = dbRead.get(englishDaysId) as { report: string }
-    const updatedEntry = JSON.parse(report)
-
     t.strictSame(
-      updatedEntry.score.maintenance,
-      englishDaysUpdatedReport.score.maintenance,
-      'should have updated the entry in the database with new data',
-    )
-
-    t.equal(
-      updatedEntry.alerts.length,
-      englishDaysUpdatedReport.alerts.length,
-      'should have updated the alerts in the database with new data',
-    )
-
-    // Create another new archive to verify it loads the updated entry
-    const finalArchive = new SecurityArchive({ path })
-    await finalArchive.refresh({ nodes })
-
-    const finalData = finalArchive.get(englishDaysId)
-    t.strictSame(
-      finalData?.score.maintenance,
-      englishDaysUpdatedReport.score.maintenance,
-      'should load the updated data from database after revalidation',
+      fooData,
+      fooReport,
+      'non-expired entries should be loaded from db',
     )
 
     db.close()
