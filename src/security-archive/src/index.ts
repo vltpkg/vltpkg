@@ -275,6 +275,7 @@ export class SecurityArchive
 
     const args = []
     // Deno on Windows does not support detached processes
+    /* c8 ignore next */
     const detached = !(isDeno && process.platform === 'win32')
 
     /* c8 ignore start */
