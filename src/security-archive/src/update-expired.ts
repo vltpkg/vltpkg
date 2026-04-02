@@ -108,10 +108,11 @@ export const main = async (
         try {
           const raw = Buffer.concat(chunks, chunkLen).toString()
           resolve(JSON.parse(raw) as UpdateExpiredPayload)
+        /* c8 ignore start */
         } catch (err) {
-          /* c8 ignore next */
           reject(err)
         }
+        /* c8 ignore stop */
       })
       /* c8 ignore next */
       input.on('error', reject)
