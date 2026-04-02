@@ -417,6 +417,53 @@ t.test('update-expired main()', async t => {
     },
   )
 
+  await t.test('aborts on 404 Missing API', async t => {
+    const dir = t.testdir()
+    const dbPath = resolve(dir, 'test.db')
+    const englishDaysId = joinDepIDTuple([
+      'registry',
+      'npm',
+      'english-days@1.0.0',
+    ])
+
+    initDB(dbPath, [
+      {
+        depID: englishDaysId,
+        report: JSON.stringify(englishDaysReport),
+        start: Date.now() - SecurityArchive.defaultTtl - 1000,
+        ttl: SecurityArchive.defaultTtl,
+      },
+    ])
+
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: false,
+          status: 404,
+          text: async () => 'Missing API',
+        }) as unknown as Response,
+    })
+
+    const payload: UpdateExpiredPayload = {
+      dbPath,
+      retries: 3,
+      ttl: SecurityArchive.defaultTtl,
+      expired: [
+        {
+          depID: baseDepID(englishDaysId),
+          name: 'english-days',
+          version: '1.0.0',
+        },
+      ],
+    }
+
+    await t.rejects(
+      main(payloadStream(payload)),
+      /Missing API/,
+      'should abort retries on 404',
+    )
+  })
+
   await t.test('propagates fetch errors', async t => {
     const dir = t.testdir()
     const dbPath = resolve(dir, 'test.db')
