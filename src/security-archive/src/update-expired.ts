@@ -48,9 +48,11 @@ export type ExpiredEntry = {
   version: string
 }
 
+/* c8 ignore start */
 const isMain = (path?: string) =>
   path === __CODE_SPLIT_SCRIPT_NAME ||
   path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
+/* c8 ignore stop */
 
 /**
  * Fetches security information from the socket.dev API.
@@ -110,6 +112,7 @@ export const main = async (
           reject(err)
         }
       })
+      /* c8 ignore next */
       input.on('error', reject)
     },
   )
@@ -214,6 +217,7 @@ export const main = async (
   return true
 }
 
+/* c8 ignore start */
 if (isMain(process.argv[1])) {
   process.title = 'vlt-security-archive-update'
   const res = await main(process.stdin)
@@ -221,3 +225,4 @@ if (isMain(process.argv[1])) {
     process.exit(1)
   }
 }
+/* c8 ignore stop */
