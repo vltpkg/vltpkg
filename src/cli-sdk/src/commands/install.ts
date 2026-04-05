@@ -70,6 +70,11 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      'allow-skills': {
+        value: '<query>',
+        description:
+          'Filter which packages are allowed to have skills linked using DSS query syntax.',
+      },
     },
   })
 
@@ -101,12 +106,19 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
+  /* c8 ignore start */
+  const allowSkills =
+    conf.get('allow-skills') ?
+      String(conf.get('allow-skills'))
+    : ':not(*)'
+  /* c8 ignore stop */
   const { buildQueue, graph } = await install(
     {
       ...conf.options,
       frozenLockfile,
       expectLockfile,
       allowScripts,
+      allowSkills,
       lockfileOnly,
     },
     add,
