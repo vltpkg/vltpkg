@@ -24,6 +24,11 @@ package.json appropriately.
 
   Options
 
+    global
+      Uninstall packages globally and remove their linked binaries.
+
+      ​--global
+
     workspace
       Limit uninstall targets to matching workspaces.
 
