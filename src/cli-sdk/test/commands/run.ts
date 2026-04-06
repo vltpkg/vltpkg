@@ -553,3 +553,207 @@ t.test('show scripts across several workspaces', async t => {
   )
   t.strictSame(errs(), [])
 })
+
+t.test(
+  'options after script name are extracted (CLI-style args)',
+  async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      src: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+            scripts: {
+              hello: pass,
+            },
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.0.0',
+            scripts: {
+              hello: pass,
+            },
+          }),
+        },
+      },
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run hello --scope ":workspace#a, :workspace#b"
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'hello',
+      '--scope',
+      ':workspace#a, :workspace#b',
+      '--view=human',
+    ])
+    t.equal(conf.command, 'run')
+    t.equal(conf.positionals[0], 'hello')
+
+    const logs = t.capture(console, 'log').args
+    const errs = t.capture(console, 'error').args
+    const result = await command(conf)
+
+    // Should have run in both workspaces
+    t.strictSame(result, {
+      'src/a': {
+        command: pass,
+        args: [],
+        cwd: resolve(dir, 'src/a'),
+        status: 0,
+        signal: null,
+        stdout: '',
+        stderr: '',
+      },
+      'src/b': {
+        command: pass,
+        args: [],
+        cwd: resolve(dir, 'src/b'),
+        status: 0,
+        signal: null,
+        stdout: '',
+        stderr: '',
+      },
+    })
+    t.strictSame(
+      new Set(logs()),
+      new Set([
+        ['src/a', 'ok'],
+        ['src/b', 'ok'],
+      ]),
+    )
+    t.strictSame(new Set(errs()), new Set())
+  },
+)
+
+t.test(
+  'workspace option after script name (CLI-style args)',
+  async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      src: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+            scripts: {
+              hello: pass,
+            },
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.0.0',
+            scripts: {
+              hello: pass,
+            },
+          }),
+        },
+      },
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run hello -w a
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'hello',
+      '-w',
+      'a',
+      '--view=human',
+    ])
+    t.equal(conf.command, 'run')
+
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+
+    // Should only run in workspace 'a'
+    t.strictSame(result, {
+      command: pass,
+      args: [],
+      cwd: resolve(dir, 'src/a'),
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })
+    t.strictSame(logs(), [])
+  },
+)
+
+t.test(
+  'root script missing but workspace has it with --scope',
+  async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      src: {
+        myapp: {
+          'package.json': JSON.stringify({
+            name: 'myapp',
+            version: '1.0.0',
+            scripts: {
+              test: pass,
+            },
+          }),
+        },
+      },
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run test --scope=":workspace"
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'test',
+      '--scope=:workspace',
+      '--view=human',
+    ])
+    t.equal(conf.command, 'run')
+
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+
+    t.strictSame(result, {
+      command: pass,
+      args: [],
+      cwd: resolve(dir, 'src/myapp'),
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })
+    t.strictSame(logs(), [])
+  },
+)
