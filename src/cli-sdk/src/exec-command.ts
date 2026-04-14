@@ -327,6 +327,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       arg0,
       args: this.args,
       env: this.env,
+      ignoreMissing:
+        this.conf.get('if-present') ?? this.#defaultIgnoreMissing,
       projectRoot: this.projectRoot,
       packageJson: this.conf.options.packageJson,
       'script-shell':
