@@ -364,6 +364,76 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+  publish-vlt-registry:
+    name: Publish to vlt Registry
+    runs-on: ubuntu-latest
+    needs:
+      - pre-check
+      - publish
+    if: needs.publish.result == 'success' && needs.pre-check.outputs.dry-run != 'true'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.22.0'
+          check-latest: true
+
+      - name: Install dependencies
+        run: vlt install
+
+      - name: Publish
+        run: |
+          commit="$(git rev-parse HEAD~1)"
+          VLT="$(pwd)/scripts/bins/vlt"
+          for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
+            if [[ -f "$dir/package.json" ]]; then
+              is_private=$(jq -r '.private // false' "$dir/package.json")
+              if [[ "$is_private" == "true" ]]; then
+                echo "Skipping private package in $dir"
+                continue
+              fi
+              echo "Publishing $dir to vlt registry..."
+              (cd "$dir" && $VLT publish --access=public)
+            fi
+          done
+        env:
+          # VLT_REGISTRY sets the publish target and VLT_TOKEN is used for
+          # auth when VLT_REGISTRY matches the request origin (see auth.ts)
+          VLT_TOKEN: ${{ secrets.VLT_LUKE_REGISTRY_PUBLISH_TOKEN }}
+          VLT_REGISTRY: https://registry.vlt.io/luke/
+
+  on-publish-vlt-registry:
+    name: Notify vlt Registry Publish
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.publish-vlt-registry.result == 'failure' }}
+    needs:
+      - publish
+      - publish-vlt-registry
+    steps:
+      - name: Slack Notify
+        uses: rtCamp/action-slack-notify@v2.3.3
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_GITHUB_ALERTS_WEBHOOK_URL }}
+          SLACK_USERNAME: vltops
+          SLACK_CHANNEL: github-alerts
+          SLACK_ICON: https://github.com/vltpkg.png
+          SLACK_COLOR: 'failure'
+          SLACK_FOOTER: ''
+          SLACKIFY_MARKDOWN: true
+          SLACK_TITLE: Release ${{ needs.publish.outputs.version }} vlt Registry Publish Failed
+          SLACK_MESSAGE: |
+            :x: Publishing to the vlt registry (`https://registry.vlt.io/luke/`) failed.
+            This is best-effort and does not affect the main npm publish.
+            It is safe to manually rerun the workflow if the errors were transient.
+
   on-pr:
     name: Notify PR
     runs-on: ubuntu-latest
