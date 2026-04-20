@@ -3,7 +3,7 @@ import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { InstallReporter } from './install/reporter.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { Graph } from '@vltpkg/graph'
+import type { Diff, Graph } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -19,6 +19,10 @@ export type InstallResult = {
    * The resulting graph structure at the end of an install.
    */
   graph: Graph
+  /**
+   * The diff between the actual and ideal graphs, if available.
+   */
+  diff?: Diff
 }
 
 export const usage: CommandUsage = () =>
@@ -74,15 +78,64 @@ export const usage: CommandUsage = () =>
   })
 
 export const views = {
-  json: i => ({
-    ...(i.buildQueue?.length ?
-      {
-        buildQueue: i.buildQueue,
-        message: `${i.buildQueue.length} packages that will need to be built, run "vlt build" to complete the install.`,
+  json: i => {
+    const added = i.diff?.nodes.add ?? new Set()
+    const deleted = i.diff?.nodes.delete ?? new Set()
+
+    // Build a map of deleted nodes by name for detecting changes
+    const deletedByName = new Map<
+      string,
+      { name: string; version?: string }
+    >()
+    for (const node of deleted) {
+      if (!node.importer) {
+        deletedByName.set(node.name, {
+          name: node.name,
+          version: node.version,
+        })
       }
-    : null),
-    graph: i.graph.toJSON(),
-  }),
+    }
+
+    const add: { name: string; version?: string }[] = []
+    const change: {
+      name: string
+      from?: string
+      to?: string
+    }[] = []
+    for (const node of added) {
+      if (node.importer) continue
+      const prev = deletedByName.get(node.name)
+      if (prev) {
+        // Package exists in both add and delete = changed
+        change.push({
+          name: node.name,
+          from: prev.version,
+          to: node.version,
+        })
+        deletedByName.delete(node.name)
+      } else {
+        add.push({ name: node.name, version: node.version })
+      }
+    }
+
+    // Remaining deleted nodes that weren't matched = pure removals
+    const remove = [...deletedByName.values()]
+
+    return {
+      add,
+      added: add.length,
+      change,
+      changed: change.length,
+      remove,
+      removed: remove.length,
+      ...(i.buildQueue?.length ?
+        {
+          buildQueue: i.buildQueue,
+          message: `${i.buildQueue.length} packages that will need to be built, run "vlt build" to complete the install.`,
+        }
+      : null),
+    }
+  },
   human: InstallReporter,
 } as const satisfies Views<InstallResult>
 
@@ -101,7 +154,7 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
-  const { buildQueue, graph } = await install(
+  const { buildQueue, graph, diff } = await install(
     {
       ...conf.options,
       frozenLockfile,
@@ -111,5 +164,5 @@ export const command: CommandFn<InstallResult> = async conf => {
     },
     add,
   )
-  return { buildQueue, graph }
+  return { buildQueue, graph, diff }
 }
