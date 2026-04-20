@@ -424,7 +424,7 @@ export const exec = async (
       {
         ...process.env,
         ...env,
-        FORCE_COLOR: color ? '1' : '0',
+        FORCE_COLOR: color && process.stdout.isTTY ? '1' : '0',
       },
       arg0,
     ),
