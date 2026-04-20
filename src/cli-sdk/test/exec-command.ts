@@ -63,6 +63,69 @@ t.test('with view', t => {
   t.end()
 })
 
+t.test('printResult multi-workspace formatting', t => {
+  const { exitCode } = process
+  const logs = t.capture(console, 'log').args
+  const e = new ExecCommand(
+    {
+      projectRoot: t.testdirName,
+      positionals: ['build'],
+      get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
+      values: {},
+    } as unknown as LoadedConfig,
+    exec,
+    execFG,
+  )
+
+  // success with timing >= 1s
+  e.printResult(
+    'packages/ui',
+    {
+      command: 'tsc',
+      args: [],
+      cwd: '/tmp',
+      stdout: '',
+      stderr: '',
+      status: 0,
+      signal: null,
+    },
+    'build',
+    3100,
+  )
+  const successLogs = logs()
+  t.equal(successLogs.length, 1)
+  t.match(successLogs[0]?.[0], /packages\/ui.*✓ build \(3\.1s\)/)
+
+  // failure with signal
+  e.printResult(
+    'packages/api',
+    {
+      command: 'tsc',
+      args: [],
+      cwd: '/tmp',
+      stdout: '',
+      stderr: '',
+      status: null,
+      signal: 'SIGTERM',
+    } as unknown as RunResult,
+    'build',
+    500,
+  )
+  const failLogs = logs()
+  t.equal(failLogs.length, 1)
+  t.match(
+    failLogs[0]?.[0],
+    /packages\/api.*✗ build \(500ms\)\s+signal SIGTERM/,
+  )
+  process.exitCode = exitCode
+  t.end()
+})
+
 t.test('getCwd', async t => {
   // fallback to process.cwd() when no nodes/monorepo
   // This matches npx behavior and is required for tools like node-gyp
