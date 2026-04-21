@@ -22,7 +22,7 @@ import { asPackument, isIntegrity } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import {
   mkdir,
   readFile,
@@ -214,8 +214,30 @@ export class PackageInfoClient {
           this.#trustedIntegrities.set(r.resolved, response.integrity)
         }
 
+        const buf = response.buffer()
+
+        // Verify tarball integrity against the manifest's dist.integrity.
+        // This is a supply-chain security measure: the registry may not
+        // validate integrity, so we do it client-side on every fresh
+        // download (not from lockfile/cache where it was already verified).
+        if (r.integrity) {
+          const hash = createHash('sha512')
+          hash.update(buf)
+          const computed: Integrity =
+            `sha512-${hash.digest('base64')}`
+          if (computed !== r.integrity) {
+            throw error('Tarball integrity check failed', {
+              code: 'EINTEGRITY',
+              spec,
+              url: r.resolved,
+              wanted: r.integrity,
+              found: computed,
+            })
+          }
+        }
+
         try {
-          await this.tarPool.unpack(response.buffer(), target)
+          await this.tarPool.unpack(buf, target)
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -476,7 +498,26 @@ export class PackageInfoClient {
           this.#trustedIntegrities.set(tarball, response.integrity)
         }
 
-        return response.buffer()
+        const buf = response.buffer()
+
+        // Verify tarball integrity against the manifest's dist.integrity.
+        if (integrity) {
+          const hash = createHash('sha512')
+          hash.update(buf)
+          const computed: Integrity =
+            `sha512-${hash.digest('base64')}`
+          if (computed !== integrity) {
+            throw error('Tarball integrity check failed', {
+              code: 'EINTEGRITY',
+              spec,
+              url: tarball,
+              wanted: integrity,
+              found: computed,
+            })
+          }
+        }
+
+        return buf
       }
 
       case 'git': {
