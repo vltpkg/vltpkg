@@ -81,6 +81,11 @@ export const views = {
   json: i => {
     const added = i.diff?.nodes.add ?? new Set()
     const deleted = i.diff?.nodes.delete ?? new Set()
+    // The actual (from) graph represents what was on disk before the install.
+    // Used to filter out optional deps that were never installed (e.g.
+    // platform-specific binaries). These end up in the delete set via
+    // optionalFail but should not be reported as removals.
+    const actual = i.diff?.from
 
     // Build a map of deleted nodes by name for detecting changes
     const deletedByName = new Map<
@@ -88,12 +93,15 @@ export const views = {
       { name: string; version?: string }
     >()
     for (const node of deleted) {
-      if (!node.importer) {
-        deletedByName.set(node.name, {
-          name: node.name,
-          version: node.version,
-        })
-      }
+      if (node.importer) continue
+      // Skip nodes that were never on disk — these are optional deps
+      // that failed during install (e.g. wrong platform) and were moved
+      // to the delete set by optionalFail.
+      if (actual && !actual.nodes.has(node.id)) continue
+      deletedByName.set(node.name, {
+        name: node.name,
+        version: node.version,
+      })
     }
 
     const add: { name: string; version?: string }[] = []

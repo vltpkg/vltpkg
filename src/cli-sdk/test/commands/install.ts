@@ -59,9 +59,15 @@ const mockNode = (
   version: string,
   importer = false,
 ) => ({
+  id: `~~${name}@${version}`,
   name,
   version,
   importer,
+})
+
+// Helper to create a mock "from" (actual) graph with a set of node IDs
+const mockFrom = (...ids: string[]) => ({
+  nodes: new Map(ids.map(id => [id, true])),
 })
 
 // Test JSON view with no diff (e.g. lockfile-only mode)
@@ -102,11 +108,12 @@ t.strictSame(
   'json view should show added packages',
 )
 
-// Test JSON view with removed packages
+// Test JSON view with removed packages (node was on disk = real removal)
 t.strictSame(
   Command.views.json({
     graph: {} as any,
     diff: {
+      from: mockFrom('~~old-dep@1.0.0'),
       nodes: {
         add: new Set(),
         delete: new Set([mockNode('old-dep', '1.0.0')]),
@@ -129,6 +136,7 @@ t.strictSame(
   Command.views.json({
     graph: {} as any,
     diff: {
+      from: mockFrom('~~my-dep@1.0.0'),
       nodes: {
         add: new Set([mockNode('my-dep', '2.0.0')]),
         delete: new Set([mockNode('my-dep', '1.0.0')]),
@@ -151,6 +159,10 @@ t.strictSame(
   Command.views.json({
     graph: {} as any,
     diff: {
+      from: mockFrom(
+        '~~removed-dep@1.0.0',
+        '~~updated-dep@2.0.0',
+      ),
       nodes: {
         add: new Set([
           mockNode('new-dep', '1.0.0'),
@@ -197,6 +209,65 @@ t.strictSame(
     removed: 0,
   },
   'json view should filter out importer nodes',
+)
+
+// Test JSON view: already-missing optional deps should NOT be reported as removed.
+// These are platform-specific binaries (e.g. lightningcss-android-arm64) that
+// were never installed because they don't match the current OS/arch. The diff's
+// optionalFail moves them to the delete set, but they were never on disk (not
+// in the "from" actual graph) so they should be filtered out.
+t.strictSame(
+  Command.views.json({
+    graph: {} as any,
+    diff: {
+      from: mockFrom(), // empty actual graph — nothing was on disk
+      nodes: {
+        add: new Set(),
+        delete: new Set([
+          mockNode('lightningcss-android-arm64', '1.29.3'),
+          mockNode('@rolldown/binding-win32-x64-msvc', '1.0.0'),
+        ]),
+      },
+    } as any,
+  }),
+  {
+    add: [],
+    added: 0,
+    change: [],
+    changed: 0,
+    remove: [],
+    removed: 0,
+  },
+  'json view should NOT report already-missing optional deps as removed',
+)
+
+// Test JSON view: optional dep that WAS installed and is actually being
+// removed should still appear in the remove list.
+t.strictSame(
+  Command.views.json({
+    graph: {} as any,
+    diff: {
+      // The dep existed in the actual graph (was on disk)
+      from: mockFrom('~~lightningcss-linux-x64-gnu@1.29.3'),
+      nodes: {
+        add: new Set(),
+        delete: new Set([
+          mockNode('lightningcss-linux-x64-gnu', '1.29.3'),
+        ]),
+      },
+    } as any,
+  }),
+  {
+    add: [],
+    added: 0,
+    change: [],
+    changed: 0,
+    remove: [
+      { name: 'lightningcss-linux-x64-gnu', version: '1.29.3' },
+    ],
+    removed: 1,
+  },
+  'json view should report actually-installed optional dep as removed when deleted',
 )
 
 // Test JSON view with buildQueue
