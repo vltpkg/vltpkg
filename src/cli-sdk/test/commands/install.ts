@@ -159,10 +159,7 @@ t.strictSame(
   Command.views.json({
     graph: {} as any,
     diff: {
-      from: mockFrom(
-        '~~removed-dep@1.0.0',
-        '~~updated-dep@2.0.0',
-      ),
+      from: mockFrom('~~removed-dep@1.0.0', '~~updated-dep@2.0.0'),
       nodes: {
         add: new Set([
           mockNode('new-dep', '1.0.0'),
