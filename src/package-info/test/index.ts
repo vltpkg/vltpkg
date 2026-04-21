@@ -942,6 +942,37 @@ t.test('registry tarball integrity verification', async t => {
       )
     },
   )
+
+  await t.test(
+    'extract skips integrity check when integrity comes from lockfile',
+    async t => {
+      // When integrity + resolved are provided (e.g. from lockfile),
+      // the check is skipped because the integrity was already verified
+      // on first install.
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const result = await extract(
+        'abbrev@2',
+        dir + '/from-lockfile',
+        {
+          ...options,
+          resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+          integrity:
+            pakuAbbrev.versions['2.0.0'].dist.integrity,
+        },
+      )
+      t.match(result, {
+        resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      })
+      const json = readFileSync(
+        `${dir}/from-lockfile/package.json`,
+        'utf8',
+      )
+      const pkg = JSON.parse(json)
+      t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+    },
+  )
 })
 
 t.test('extraction failures', async t => {

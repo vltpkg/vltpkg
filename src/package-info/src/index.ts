@@ -138,8 +138,12 @@ export class PackageInfoClient {
       spec = Spec.parse(spec, this.options)
     const { from = this.#projectRoot, integrity, resolved } = options
     const f = spec.final
+    // Track whether integrity/resolved came from the caller (e.g. lockfile)
+    // vs freshly resolved. We only verify tarball integrity on net-new
+    // installs (fresh resolution), not when replaying from lockfile.
+    const fromLockfile = !!(integrity && resolved)
     const r =
-      integrity && resolved ?
+      fromLockfile ?
         { resolved, integrity, spec }
       : await this.resolve(spec, options)
 
@@ -219,8 +223,9 @@ export class PackageInfoClient {
         // Verify tarball integrity against the manifest's dist.integrity.
         // This is a supply-chain security measure: the registry may not
         // validate integrity, so we do it client-side on every fresh
-        // download (not from lockfile/cache where it was already verified).
-        if (r.integrity) {
+        // download. Skip when integrity came from lockfile/cache (it was
+        // already verified on first install).
+        if (r.integrity && !fromLockfile) {
           const hash = createHash('sha512')
           hash.update(buf)
           const computed: Integrity =
