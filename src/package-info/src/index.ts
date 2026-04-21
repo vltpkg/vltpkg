@@ -228,8 +228,7 @@ export class PackageInfoClient {
         if (r.integrity && !fromLockfile) {
           const hash = createHash('sha512')
           hash.update(buf)
-          const computed: Integrity =
-            `sha512-${hash.digest('base64')}`
+          const computed: Integrity = `sha512-${hash.digest('base64')}`
           if (computed !== r.integrity) {
             throw error('Tarball integrity check failed', {
               code: 'EINTEGRITY',
@@ -509,8 +508,7 @@ export class PackageInfoClient {
         if (integrity) {
           const hash = createHash('sha512')
           hash.update(buf)
-          const computed: Integrity =
-            `sha512-${hash.digest('base64')}`
+          const computed: Integrity = `sha512-${hash.digest('base64')}`
           if (computed !== integrity) {
             throw error('Tarball integrity check failed', {
               code: 'EINTEGRITY',

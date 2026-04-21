@@ -202,8 +202,7 @@ const server = createServer((req, res) => {
         version: '1.0.0',
         dist: {
           tarball: `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`,
-          integrity:
-            pakuAbbrev.versions['2.0.0'].dist.integrity,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
         },
       })
       res.setHeader('content-type', 'application/json')
@@ -220,8 +219,7 @@ const server = createServer((req, res) => {
             version: '1.0.0',
             dist: {
               tarball: `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`,
-              integrity:
-                pakuAbbrev.versions['2.0.0'].dist.integrity,
+              integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
             },
           },
         },
@@ -858,11 +856,7 @@ t.test('registry tarball integrity verification', async t => {
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
       unload()
-      const result = await extract(
-        'abbrev@2',
-        dir + '/good',
-        options,
-      )
+      const result = await extract('abbrev@2', dir + '/good', options)
       t.match(result, {
         resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
       })
@@ -915,10 +909,7 @@ t.test('registry tarball integrity verification', async t => {
       t.match(result, {
         resolved: `${defaultRegistry}no-integrity/-/no-integrity-1.0.0.tgz`,
       })
-      const json = readFileSync(
-        `${dir}/no-int/package.json`,
-        'utf8',
-      )
+      const json = readFileSync(`${dir}/no-int/package.json`, 'utf8')
       const pkg = JSON.parse(json)
       t.match(pkg, { name: 'abbrev', version: '2.0.0' })
     },
@@ -958,8 +949,7 @@ t.test('registry tarball integrity verification', async t => {
         {
           ...options,
           resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
-          integrity:
-            pakuAbbrev.versions['2.0.0'].dist.integrity,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
         },
       )
       t.match(result, {
