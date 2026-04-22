@@ -881,6 +881,9 @@ t.test('registry tarball integrity verification', async t => {
         { cause: { code: 'EINTEGRITY' } },
         'should throw EINTEGRITY for corrupted tarball',
       )
+      // flush pending cache writes so file handles are released
+      // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
+      await pi.registryClient.cache.promise()
     },
   )
 
@@ -896,6 +899,9 @@ t.test('registry tarball integrity verification', async t => {
         message: 'Tarball integrity check failed',
         cause: { code: 'EINTEGRITY' },
       })
+      // flush pending cache writes so file handles are released
+      // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
+      await tb.registryClient.cache.promise()
     },
   )
 
