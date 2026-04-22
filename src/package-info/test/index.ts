@@ -887,7 +887,11 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'tarball() throws EINTEGRITY when tarball is corrupted',
     async t => {
-      const tb = new PackageInfoClient(options)
+      const dir = t.testdir()
+      const tb = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
       await t.rejects(tb.tarball('corrupted@1.0.0'), {
         message: 'Tarball integrity check failed',
         cause: { code: 'EINTEGRITY' },
@@ -918,7 +922,11 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'tarball() succeeds when dist.integrity is missing',
     async t => {
-      const tb = new PackageInfoClient(options)
+      const dir = t.testdir()
+      const tb = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
       const buf = await tb.tarball('no-integrity@1.0.0')
       t.ok(buf.length > 0, 'should return tarball data')
       t.equal(
