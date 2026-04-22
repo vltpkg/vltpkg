@@ -436,6 +436,107 @@ t.test('one ws fails, without bail', async t => {
   process.exitCode = exitCode
 })
 
+t.test(
+  'if-present with missing script in single project',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        scripts: {
+          hello: pass,
+        },
+      }),
+      'vlt.json': JSON.stringify({ config: {} }),
+      '.git': {},
+    })
+    t.chdir(dir)
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+    const conf = await Config.load(t.testdirName, [
+      'goodbye',
+      '--if-present',
+    ])
+    conf.projectRoot = dir
+    const logs = t.capture(console, 'log').args
+    const errs = t.capture(console, 'error').args
+    const result = await command(conf)
+    t.strictSame(result, {
+      command: '',
+      args: [],
+      cwd: dir,
+      status: 0,
+      signal: null,
+      stdout: null,
+      stderr: null,
+    })
+    t.strictSame(logs(), [])
+    t.strictSame(errs(), [])
+  },
+)
+
+t.test(
+  'if-present with no matching scripts across workspaces',
+  async t => {
+    const runTest = async (t: Test, { args }: { args: string[] }) => {
+      const dir = t.testdir({
+        'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+        'package.json': '{}',
+        src: {
+          a: {
+            'package.json': JSON.stringify({
+              name: 'a',
+              scripts: {
+                hello: pass,
+              },
+            }),
+          },
+          b: {
+            'package.json': JSON.stringify({
+              name: 'b',
+              scripts: {
+                hello: pass,
+              },
+            }),
+          },
+        },
+        '.git': {},
+      })
+      t.chdir(dir)
+
+      const { Config } = await t.mockImport<
+        typeof import('../../src/config/index.ts')
+      >('../../src/config/index.ts')
+      unload()
+      const conf = await Config.load(t.testdirName, [
+        'goodbye',
+        ...args,
+        '--view=human',
+      ])
+      t.equal(conf.projectRoot, dir)
+      const logs = t.capture(console, 'log').args
+      const errs = t.capture(console, 'error').args
+
+      const result = await command(conf)
+      t.strictSame(result, {})
+      t.strictSame(logs(), [])
+      t.strictSame(errs(), [])
+    }
+
+    t.test('with workspaces', async t => {
+      await runTest(t, {
+        args: ['-w', 'src/a', '-w', 'src/b'],
+      })
+    })
+
+    t.test('with scope', async t => {
+      await runTest(t, {
+        args: ['--scope', ':workspace#a, :workspace#b'],
+      })
+    })
+  },
+)
+
 t.test('show scripts if no event specified', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({
