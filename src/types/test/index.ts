@@ -87,14 +87,40 @@ const kIsPublisher = Symbol.for('isPublisher')
 const createExpectedContributor = (
   name?: string,
   email?: string,
-  writeAccess = false,
-  isPublisher = false,
-) => ({
-  name,
-  email,
-  [kWriteAccess]: writeAccess,
-  [kIsPublisher]: isPublisher,
-})
+  urlOrWriteAccess?: string | boolean,
+  writeAccessOrIsPublisher?: boolean,
+  isPublisher?: boolean,
+) => {
+  // Handle the two calling patterns:
+  // 1. New: name, email, url, writeAccess, isPublisher
+  // 2. Old: name, email, writeAccess, isPublisher
+  let url: string | undefined
+  let writeAccess: boolean
+  let isPublisherFlag: boolean
+
+  if (
+    typeof urlOrWriteAccess === 'string' ||
+    urlOrWriteAccess === undefined
+  ) {
+    // New pattern
+    url = urlOrWriteAccess
+    writeAccess = writeAccessOrIsPublisher ?? false
+    isPublisherFlag = isPublisher ?? false
+  } else {
+    // Old pattern
+    url = undefined
+    writeAccess = urlOrWriteAccess
+    isPublisherFlag = writeAccessOrIsPublisher ?? false
+  }
+
+  return {
+    name,
+    email,
+    ...(url ? { url } : {}),
+    [kWriteAccess]: writeAccess,
+    [kIsPublisher]: isPublisherFlag,
+  }
+}
 
 t.test('manifest', t => {
   t.equal(isManifest(true), false)
@@ -1732,6 +1758,109 @@ t.test('parsePerson', t => {
       t.end()
     },
   )
+
+  t.test('parses string with URL only', t => {
+    const result = parsePerson('John Doe (http://johndoe.com)')
+    t.same(
+      result,
+      createExpectedContributor(
+        'John Doe',
+        undefined,
+        'http://johndoe.com',
+        false,
+        false,
+      ),
+    )
+    t.end()
+  })
+
+  t.test('parses string with name, email, and URL', t => {
+    const result = parsePerson(
+      'Barney Rubble <barney@npmjs.com> (http://barnyrubble.npmjs.com/)',
+    )
+    t.same(
+      result,
+      createExpectedContributor(
+        'Barney Rubble',
+        'barney@npmjs.com',
+        'http://barnyrubble.npmjs.com/',
+        false,
+        false,
+      ),
+    )
+    t.end()
+  })
+
+  t.test('parses string with email and URL only', t => {
+    const result = parsePerson(
+      '<barney@npmjs.com> (http://barnyrubble.npmjs.com/)',
+    )
+    t.same(
+      result,
+      createExpectedContributor(
+        undefined,
+        'barney@npmjs.com',
+        'http://barnyrubble.npmjs.com/',
+        false,
+        false,
+      ),
+    )
+    t.end()
+  })
+
+  t.test('parses object format with URL', t => {
+    const result = parsePerson({
+      name: 'John Doe',
+      email: 'john@example.com',
+      url: 'http://johndoe.com',
+    })
+    t.same(
+      result,
+      createExpectedContributor(
+        'John Doe',
+        'john@example.com',
+        'http://johndoe.com',
+        false,
+        false,
+      ),
+    )
+    t.end()
+  })
+
+  t.test('parses object with only URL', t => {
+    const result = parsePerson({
+      url: 'http://johndoe.com',
+    })
+    t.same(
+      result,
+      createExpectedContributor(
+        undefined,
+        undefined,
+        'http://johndoe.com',
+        false,
+        false,
+      ),
+    )
+    t.end()
+  })
+
+  t.test('handles empty URL patterns', t => {
+    const result1 = parsePerson('John Doe ()')
+    t.same(
+      result1,
+      createExpectedContributor(
+        'John Doe',
+        undefined,
+        undefined,
+        false,
+        false,
+      ),
+    )
+
+    const result2 = parsePerson('()')
+    t.equal(result2, undefined)
+    t.end()
+  })
 
   t.end()
 })
