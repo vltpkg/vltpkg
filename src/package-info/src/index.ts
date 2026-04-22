@@ -22,7 +22,7 @@ import { asPackument, isIntegrity } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import {
   mkdir,
   readFile,
@@ -138,8 +138,12 @@ export class PackageInfoClient {
       spec = Spec.parse(spec, this.options)
     const { from = this.#projectRoot, integrity, resolved } = options
     const f = spec.final
+    // Track whether integrity/resolved came from the caller (e.g. lockfile)
+    // vs freshly resolved. We only verify tarball integrity on net-new
+    // installs (fresh resolution), not when replaying from lockfile.
+    const fromLockfile = !!(integrity && resolved)
     const r =
-      integrity && resolved ?
+      fromLockfile ?
         { resolved, integrity, spec }
       : await this.resolve(spec, options)
 
@@ -214,8 +218,30 @@ export class PackageInfoClient {
           this.#trustedIntegrities.set(r.resolved, response.integrity)
         }
 
+        const buf = response.buffer()
+
+        // Verify tarball integrity against the manifest's dist.integrity.
+        // This is a supply-chain security measure: the registry may not
+        // validate integrity, so we do it client-side on every fresh
+        // download. Skip when integrity came from lockfile/cache (it was
+        // already verified on first install).
+        if (r.integrity && !fromLockfile) {
+          const hash = createHash('sha512')
+          hash.update(buf)
+          const computed: Integrity = `sha512-${hash.digest('base64')}`
+          if (computed !== r.integrity) {
+            throw error('Tarball integrity check failed', {
+              code: 'EINTEGRITY',
+              spec,
+              url: r.resolved,
+              wanted: r.integrity,
+              found: computed,
+            })
+          }
+        }
+
         try {
-          await this.tarPool.unpack(response.buffer(), target)
+          await this.tarPool.unpack(buf, target)
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -476,7 +502,25 @@ export class PackageInfoClient {
           this.#trustedIntegrities.set(tarball, response.integrity)
         }
 
-        return response.buffer()
+        const buf = response.buffer()
+
+        // Verify tarball integrity against the manifest's dist.integrity.
+        if (integrity) {
+          const hash = createHash('sha512')
+          hash.update(buf)
+          const computed: Integrity = `sha512-${hash.digest('base64')}`
+          if (computed !== integrity) {
+            throw error('Tarball integrity check failed', {
+              code: 'EINTEGRITY',
+              spec,
+              url: tarball,
+              wanted: integrity,
+              found: computed,
+            })
+          }
+        }
+
+        return buf
       }
 
       case 'git': {
