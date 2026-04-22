@@ -94,6 +94,8 @@ const has = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
           nodes: new Set(state.partial.nodes),
         },
+        diffFiles: state.diffFiles,
+        loose: state.loose,
         hostContexts: state.hostContexts,
         importers: state.importers,
         retries: state.retries,
@@ -175,6 +177,7 @@ const is = async (state: ParserState) => {
           nodes: new Set(),
         },
         current: node,
+        diffFiles: state.diffFiles,
         initial: state.initial,
         loose: true,
         partial: {
@@ -221,7 +224,9 @@ const not = async (state: ParserState) => {
           nodes: new Set(),
         },
         current: node,
+        diffFiles: state.diffFiles,
         initial: state.initial,
+        loose: state.loose,
         partial: {
           nodes: new Set(state.partial.nodes),
           edges: new Set(state.partial.edges),

@@ -1,12 +1,13 @@
 import t from 'tap'
 import { diff, packageHasChanges } from '../../src/pseudo/diff.ts'
 import { pseudo } from '../../src/pseudo.ts'
+import { walk } from '../../src/index.ts'
 import {
   getPathBasedGraph,
   getSimpleGraph,
 } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
-import type { GraphLike } from '@vltpkg/types'
+import type { GraphLike, NodeLike } from '@vltpkg/types'
 import { parse } from '@vltpkg/dss-parser'
 
 const getState = (
@@ -311,4 +312,106 @@ t.test(':diff pseudo-selector', async t => {
       'should pass commitish to provider',
     )
   })
+})
+
+t.test(':diff inside nested selectors', async t => {
+  const makeNestedState = (
+    query: string,
+    graph: GraphLike,
+    changedFiles: Set<string>,
+  ): ParserState => {
+    const ast = parse(query)
+    return {
+      comment: '',
+      current: ast,
+      diffFiles: () => changedFiles,
+      initial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      partial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      collect: {
+        edges: new Set(),
+        nodes: new Set<NodeLike>(),
+      },
+      cancellable: async () => {},
+      walk,
+      retries: 0,
+      securityArchive: undefined,
+      importers: new Set(graph.importers),
+      signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
+    }
+  }
+
+  t.test(
+    ':has(> :diff) propagates diffFiles to nested state',
+    async t => {
+      const graph = getPathBasedGraph()
+      const changedFiles = new Set(['packages/a/src/index.ts'])
+      const state = makeNestedState(
+        ':has(> :diff(main))',
+        graph,
+        changedFiles,
+      )
+      const res = await walk(state)
+      const names = [...res.collect.nodes].map(n => n.name).sort()
+      t.ok(
+        names.includes('path-based-project'),
+        'root should match because it has child "a" that changed',
+      )
+    },
+  )
+
+  t.test(
+    ':not(:diff) propagates diffFiles to nested state',
+    async t => {
+      const graph = getPathBasedGraph()
+      const changedFiles = new Set(['packages/a/src/index.ts'])
+      const state = makeNestedState(
+        ':not(:diff(main))',
+        graph,
+        changedFiles,
+      )
+      const res = await walk(state)
+      const names = [...res.collect.nodes].map(n => n.name).sort()
+      t.notOk(
+        names.includes('a'),
+        'a should be excluded by :not(:diff) since it changed',
+      )
+      t.ok(
+        names.includes('x'),
+        'x should remain since its files did not change',
+      )
+    },
+  )
+
+  t.test(
+    ':is(:diff) propagates diffFiles to nested state',
+    async t => {
+      const graph = getPathBasedGraph()
+      const changedFiles = new Set([
+        'packages/a/src/index.ts',
+        'packages/b/test/foo.ts',
+      ])
+      const state = makeNestedState(
+        ':is(:diff(main))',
+        graph,
+        changedFiles,
+      )
+      const res = await walk(state)
+      const names = [...res.collect.nodes].map(n => n.name).sort()
+      t.ok(
+        names.includes('a'),
+        'a should match :is(:diff) since it changed',
+      )
+      t.ok(
+        names.includes('b'),
+        'b should match :is(:diff) since it changed',
+      )
+    },
+  )
 })
