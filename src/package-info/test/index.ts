@@ -181,6 +181,89 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', j.byteLength)
       return res.end(j)
     }
+    case '/corrupted/-/corrupted-1.0.0.tgz': {
+      // Serve a tarball whose content does NOT match the integrity
+      // in the manifest (simulates a supply-chain attack / registry bug)
+      const corrupted = Buffer.from(tgzAbbrev)
+      // Flip some bytes to corrupt it while keeping gzip magic
+      corrupted[100] = (corrupted[100]! ^ 0xff) & 0xff
+      corrupted[101] = (corrupted[101]! ^ 0xff) & 0xff
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', corrupted.byteLength)
+      res.setHeader(
+        'integrity',
+        pakuAbbrev.versions['2.0.0'].dist.integrity,
+      )
+      return res.end(corrupted)
+    }
+    case '/corrupted/1.0.0': {
+      const json = JSON.stringify({
+        name: 'corrupted',
+        version: '1.0.0',
+        dist: {
+          tarball: `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/corrupted': {
+      const json = JSON.stringify({
+        name: 'corrupted',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'corrupted',
+            version: '1.0.0',
+            dist: {
+              tarball: `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`,
+              integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+            },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/no-integrity/-/no-integrity-1.0.0.tgz': {
+      // Serve a valid tarball for a package with no dist.integrity
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      return res.end(tgzAbbrev)
+    }
+    case '/no-integrity/1.0.0': {
+      const json = JSON.stringify({
+        name: 'no-integrity',
+        version: '1.0.0',
+        dist: {
+          tarball: `${defaultRegistry}no-integrity/-/no-integrity-1.0.0.tgz`,
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/no-integrity': {
+      const json = JSON.stringify({
+        name: 'no-integrity',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'no-integrity',
+            version: '1.0.0',
+            dist: {
+              tarball: `${defaultRegistry}no-integrity/-/no-integrity-1.0.0.tgz`,
+            },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     default: {
       res.statusCode = 404
       t.comment('not found', req.url)
@@ -762,6 +845,130 @@ t.test('remote integrity computation', async t => {
         { cause: { code: 'EINTEGRITY' } },
         'should throw EINTEGRITY when integrity mismatch',
       )
+    },
+  )
+})
+
+t.test('registry tarball integrity verification', async t => {
+  await t.test(
+    'extract succeeds when tarball matches dist.integrity',
+    async t => {
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const result = await extract('abbrev@2', dir + '/good', options)
+      t.match(result, {
+        resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      })
+      const json = readFileSync(`${dir}/good/package.json`, 'utf8')
+      const pkg = JSON.parse(json)
+      t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+    },
+  )
+
+  await t.test(
+    'extract throws EINTEGRITY when tarball is corrupted',
+    async t => {
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(
+        pi.extract('corrupted@1.0.0', dir + '/corrupted'),
+        { cause: { code: 'EINTEGRITY' } },
+        'should throw EINTEGRITY for corrupted tarball',
+      )
+    },
+  )
+
+  await t.test(
+    'tarball() throws EINTEGRITY when tarball is corrupted',
+    async t => {
+      const dir = t.testdir()
+      const tb = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(tb.tarball('corrupted@1.0.0'), {
+        message: 'Tarball integrity check failed',
+        cause: { code: 'EINTEGRITY' },
+      })
+    },
+  )
+
+  await t.test(
+    'extract succeeds when dist.integrity is missing',
+    async t => {
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const result = await extract(
+        'no-integrity@1.0.0',
+        dir + '/no-int',
+        options,
+      )
+      t.match(result, {
+        resolved: `${defaultRegistry}no-integrity/-/no-integrity-1.0.0.tgz`,
+      })
+      const json = readFileSync(`${dir}/no-int/package.json`, 'utf8')
+      const pkg = JSON.parse(json)
+      t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+    },
+  )
+
+  await t.test(
+    'tarball() succeeds when dist.integrity is missing',
+    async t => {
+      const dir = t.testdir()
+      const tb = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      const buf = await tb.tarball('no-integrity@1.0.0')
+      t.ok(buf.length > 0, 'should return tarball data')
+      t.equal(
+        buf[0],
+        0x1f,
+        'should be a gzip file (first magic byte)',
+      )
+      t.equal(
+        buf[1],
+        0x8b,
+        'should be a gzip file (second magic byte)',
+      )
+    },
+  )
+
+  await t.test(
+    'extract skips integrity check when integrity comes from lockfile',
+    async t => {
+      // When integrity + resolved are provided (e.g. from lockfile),
+      // the check is skipped because the integrity was already verified
+      // on first install.
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const result = await extract(
+        'abbrev@2',
+        dir + '/from-lockfile',
+        {
+          ...options,
+          resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+        },
+      )
+      t.match(result, {
+        resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      })
+      const json = readFileSync(
+        `${dir}/from-lockfile/package.json`,
+        'utf8',
+      )
+      const pkg = JSON.parse(json)
+      t.match(pkg, { name: 'abbrev', version: '2.0.0' })
     },
   )
 })
