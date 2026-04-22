@@ -1158,6 +1158,10 @@ t.test('file spec must have file', async t => {
 })
 
 t.test('fails on non-200 response', async t => {
+  // Reset the global 404 tracker so we only capture URLs from this test,
+  // making the snapshot deterministic regardless of test execution order.
+  notFoundURLs.length = 0
+
   const d = t.testdir()
   await t.rejects(packument('lodash', options))
   await t.rejects(manifest('lodash', options))
@@ -1177,6 +1181,12 @@ t.test('fails on non-200 response', async t => {
   )
   await t.rejects(
     extract(`lodash@${defaultRegistry}lodash.tgz`, d, options),
+  )
+
+  // Verify the expected 404 URLs were hit during this test
+  t.matchSnapshot(
+    new Set(notFoundURLs.sort((a, b) => a.localeCompare(b))),
+    'expected not-found URLs',
   )
 })
 
@@ -1259,13 +1269,6 @@ t.test('workspace group option', async t => {
   t.equal(pi.monorepo?.get('bb'), undefined)
   t.equal(pi.monorepo?.get('aa'), undefined)
   await t.rejects(pi.resolve('aa@workspace:*'))
-  t.end()
-})
-
-t.test('verify we got the expected missing urls', t => {
-  t.matchSnapshot(
-    new Set(notFoundURLs.sort((a, b) => a.localeCompare(b))),
-  )
   t.end()
 })
 
