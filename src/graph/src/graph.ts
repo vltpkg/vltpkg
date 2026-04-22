@@ -445,6 +445,20 @@ export class Graph implements GraphLike {
       toFoundNode.detached = false
       toFoundNode.dev &&= flags.dev
       toFoundNode.optional &&= flags.optional
+
+      // Hydrate manifest and integrity on existing nodes (e.g. loaded
+      // from a lockfile without manifest data).  Without this, nodes
+      // that already have `resolved` set from the lockfile will never
+      // get their integrity populated because `setResolved()` is
+      // skipped when `resolved` is already present.
+      if (manifest) {
+        if (!toFoundNode.manifest) {
+          toFoundNode.manifest = manifest
+          this.manifests.set(toFoundNode.id, manifest)
+        }
+        toFoundNode.integrity ??= manifest.dist?.integrity
+      }
+
       return toFoundNode
     }
 
