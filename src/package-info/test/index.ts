@@ -228,6 +228,65 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
+    case '/corrupted-once/-/corrupted-once-1.0.0.tgz': {
+      // First request: serve corrupted tarball.
+      // Second request: serve correct tarball.
+      // This simulates a CDN serving stale/corrupted data that gets
+      // fixed on retry.
+      corruptedOnceServed++
+      if (corruptedOnceServed <= 1) {
+        const corrupted = Buffer.from(tgzAbbrev)
+        corrupted[100] = (corrupted[100]! ^ 0xff) & 0xff
+        corrupted[101] = (corrupted[101]! ^ 0xff) & 0xff
+        res.setHeader('content-type', 'application/octet-stream')
+        res.setHeader('content-length', corrupted.byteLength)
+        res.setHeader(
+          'integrity',
+          pakuAbbrev.versions['2.0.0'].dist.integrity,
+        )
+        return res.end(corrupted)
+      }
+      // Second request: correct tarball
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader(
+        'integrity',
+        pakuAbbrev.versions['2.0.0'].dist.integrity,
+      )
+      return res.end(tgzAbbrev)
+    }
+    case '/corrupted-once/1.0.0': {
+      const json = JSON.stringify({
+        name: 'corrupted-once',
+        version: '1.0.0',
+        dist: {
+          tarball: `${defaultRegistry}corrupted-once/-/corrupted-once-1.0.0.tgz`,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/corrupted-once': {
+      const json = JSON.stringify({
+        name: 'corrupted-once',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'corrupted-once',
+            version: '1.0.0',
+            dist: {
+              tarball: `${defaultRegistry}corrupted-once/-/corrupted-once-1.0.0.tgz`,
+              integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+            },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     case '/no-integrity/-/no-integrity-1.0.0.tgz': {
       // Serve a valid tarball for a package with no dist.integrity
       res.setHeader('content-type', 'application/octet-stream')
@@ -274,6 +333,7 @@ const server = createServer((req, res) => {
 })
 
 const notFoundURLs: string[] = []
+let corruptedOnceServed = 0
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
@@ -895,8 +955,11 @@ t.test('registry tarball integrity verification', async t => {
         ...options,
         cache: dir + '/cache',
       })
+      // The tarball retry may cause the final error to come from
+      // the registry client's checkIntegrity (which throws
+      // "Integrity check failure") rather than our client-side
+      // sha512 check ("Tarball integrity check failed").
       await t.rejects(tb.tarball('corrupted@1.0.0'), {
-        message: 'Tarball integrity check failed',
         cause: { code: 'EINTEGRITY' },
       })
       // flush pending cache writes so file handles are released
@@ -1000,6 +1063,37 @@ t.test('registry tarball integrity verification', async t => {
         }),
         { cause: { code: 'EINTEGRITY' } },
         'should verify tarball integrity even with integrity+resolved provided',
+      )
+      await pi.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'extract retries with cache bust on EINTEGRITY then succeeds',
+    async t => {
+      // The corrupted-once endpoint serves corrupted data the first
+      // time, then correct data on the second request. This
+      // simulates a CDN serving a stale/corrupted cached tarball that
+      // resolves after a fresh download.
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      corruptedOnceServed = 0
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      const result = await pi.extract(
+        'corrupted-once@1.0.0',
+        dir + '/retry-ok',
+      )
+      t.match(result, {
+        resolved: `${defaultRegistry}corrupted-once/-/corrupted-once-1.0.0.tgz`,
+      })
+      t.equal(
+        corruptedOnceServed,
+        2,
+        'should have fetched twice (first corrupted, then fresh)',
       )
       await pi.registryClient.cache.promise()
     },
