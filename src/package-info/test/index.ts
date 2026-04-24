@@ -949,10 +949,10 @@ t.test('registry tarball integrity verification', async t => {
   )
 
   await t.test(
-    'extract skips integrity check when integrity comes from lockfile',
+    'extract skips integrity check when fromLockfile is true',
     async t => {
-      // When integrity + resolved are provided (e.g. from lockfile),
-      // the check is skipped because the integrity was already verified
+      // When fromLockfile is explicitly set, the client-side sha512
+      // check is skipped because the integrity was already verified
       // on first install.
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
@@ -964,6 +964,7 @@ t.test('registry tarball integrity verification', async t => {
           ...options,
           resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
           integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+          fromLockfile: true,
         },
       )
       t.match(result, {
@@ -975,6 +976,32 @@ t.test('registry tarball integrity verification', async t => {
       )
       const pkg = JSON.parse(json)
       t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+    },
+  )
+
+  await t.test(
+    'extract DOES verify integrity even when integrity+resolved provided without fromLockfile',
+    async t => {
+      // Previously, the heuristic `!!(integrity && resolved)` would
+      // skip the check whenever both were provided. Now, the check
+      // only skips with an explicit `fromLockfile: true`.
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(
+        pi.extract('corrupted@1.0.0', dir + '/should-fail', {
+          resolved: `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+          // fromLockfile NOT set (defaults to false)
+        }),
+        { cause: { code: 'EINTEGRITY' } },
+        'should verify tarball integrity even with integrity+resolved provided',
+      )
+      await pi.registryClient.cache.promise()
     },
   )
 })

@@ -18,7 +18,7 @@ import type {
   Packument,
   ManifestRegistry,
 } from '@vltpkg/types'
-import { asPackument, isIntegrity } from '@vltpkg/types'
+import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -77,6 +77,13 @@ export type PackageInfoClientExtractOptions =
   PackageInfoClientRequestOptions & {
     integrity?: Integrity
     resolved?: string
+    /**
+     * When true, indicates that integrity + resolved came from a
+     * lockfile (i.e. they were already verified on first install).
+     * Skips the client-side tarball integrity check.
+     * Defaults to false — fresh installs always verify integrity.
+     */
+    fromLockfile?: boolean
   }
 
 // the maximum duration of a manifest cache file
@@ -136,14 +143,18 @@ export class PackageInfoClient {
   ): Promise<Resolution> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
-    const { from = this.#projectRoot, integrity, resolved } = options
+    const {
+      from = this.#projectRoot,
+      integrity,
+      resolved,
+      fromLockfile = false,
+    } = options
     const f = spec.final
-    // Track whether integrity/resolved came from the caller (e.g. lockfile)
-    // vs freshly resolved. We only verify tarball integrity on net-new
-    // installs (fresh resolution), not when replaying from lockfile.
-    const fromLockfile = !!(integrity && resolved)
+    // If the caller already provides both integrity and resolved
+    // (from lockfile or prior resolution), skip re-resolving.
+    const alreadyResolved = !!(integrity && resolved)
     const r =
-      fromLockfile ?
+      alreadyResolved ?
         { resolved, integrity, spec }
       : await this.resolve(spec, options)
 
@@ -651,16 +662,6 @@ export class PackageInfoClient {
               options,
             )
         if (!mani) throw this.#resolveError(spec, options)
-        const { integrity, tarball } =
-          mani.dist ?? /* c8 ignore next */ {}
-        if (isIntegrity(integrity) && tarball) {
-          const registryOrigin = new URL(String(f.registry)).origin
-          const tgzOrigin = new URL(tarball).origin
-          // if it comes from the same origin, trust the integrity
-          if (tgzOrigin === registryOrigin) {
-            this.#trustedIntegrities.set(tarball, integrity)
-          }
-        }
 
         // Cache the manifest data
         if (cachePath) {
