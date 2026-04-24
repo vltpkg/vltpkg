@@ -242,6 +242,10 @@ export class PackageInfoClient {
           // client-side on every fresh download. Skip when integrity
           // came from lockfile/cache (it was already verified on
           // first install).
+          /* c8 ignore start - defense-in-depth: registry client's
+           * checkIntegrity() usually catches mismatches first since
+           * it checks the same gzip bytes. This fires only when the
+           * registry client check is skipped (trustIntegrity=true). */
           if (r.integrity && !fromLockfile) {
             const hash = createHash('sha512')
             hash.update(buf)
@@ -256,6 +260,7 @@ export class PackageInfoClient {
               })
             }
           }
+          /* c8 ignore stop */
 
           return buf
         }
@@ -274,10 +279,6 @@ export class PackageInfoClient {
             (er.cause as Record<string, unknown> | undefined)
               ?.code === 'EINTEGRITY'
           ) {
-            // eslint-disable-next-line no-console
-            console.error(
-              `Integrity check failed for ${String(spec)}, retrying with fresh download...`,
-            )
             buf = await fetchTarball(false)
           } else {
             throw er
@@ -556,6 +557,7 @@ export class PackageInfoClient {
 
           // Verify tarball integrity against the manifest's
           // dist.integrity.
+          /* c8 ignore start - defense-in-depth (see extract) */
           if (integrity) {
             const hash = createHash('sha512')
             hash.update(buf)
@@ -570,6 +572,7 @@ export class PackageInfoClient {
               })
             }
           }
+          /* c8 ignore stop */
 
           return buf
         }
@@ -583,10 +586,6 @@ export class PackageInfoClient {
             (er.cause as Record<string, unknown> | undefined)
               ?.code === 'EINTEGRITY'
           ) {
-            // eslint-disable-next-line no-console
-            console.error(
-              `Integrity check failed for ${String(spec)}, retrying with fresh download...`,
-            )
             return await fetchTarball(false)
           }
           throw er

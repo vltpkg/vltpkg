@@ -228,6 +228,50 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
+    case '/corrupted-no-header/-/corrupted-no-header-1.0.0.tgz': {
+      // Serve a corrupted tarball WITHOUT an integrity response
+      // header. The registry client won't verify integrity at its
+      // level, but the client-side sha512 check will catch it.
+      const corrupted = Buffer.from(tgzAbbrev)
+      corrupted[100] = (corrupted[100]! ^ 0xff) & 0xff
+      corrupted[101] = (corrupted[101]! ^ 0xff) & 0xff
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', corrupted.byteLength)
+      // NOTE: no 'integrity' header set here
+      return res.end(corrupted)
+    }
+    case '/corrupted-no-header/1.0.0': {
+      const json = JSON.stringify({
+        name: 'corrupted-no-header',
+        version: '1.0.0',
+        dist: {
+          tarball: `${defaultRegistry}corrupted-no-header/-/corrupted-no-header-1.0.0.tgz`,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/corrupted-no-header': {
+      const json = JSON.stringify({
+        name: 'corrupted-no-header',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'corrupted-no-header',
+            version: '1.0.0',
+            dist: {
+              tarball: `${defaultRegistry}corrupted-no-header/-/corrupted-no-header-1.0.0.tgz`,
+              integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+            },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     case '/corrupted-once/-/corrupted-once-1.0.0.tgz': {
       // First request: serve corrupted tarball.
       // Second request: serve correct tarball.
@@ -964,6 +1008,47 @@ t.test('registry tarball integrity verification', async t => {
       })
       // flush pending cache writes so file handles are released
       // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
+      await tb.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'extract throws EINTEGRITY via client-side sha512 check',
+    async t => {
+      // The corrupted-no-header endpoint does NOT send an integrity
+      // response header, so the registry client's checkIntegrity()
+      // has nothing to check. The client-side sha512 check in
+      // extract() catches the mismatch instead.
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(
+        pi.extract(
+          'corrupted-no-header@1.0.0',
+          dir + '/corrupted-no-header',
+        ),
+        { cause: { code: 'EINTEGRITY' } },
+        'should throw EINTEGRITY via sha512 check',
+      )
+      await pi.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'tarball() throws EINTEGRITY via client-side sha512 check',
+    async t => {
+      const dir = t.testdir()
+      const tb = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(tb.tarball('corrupted-no-header@1.0.0'), {
+        cause: { code: 'EINTEGRITY' },
+      })
       await tb.registryClient.cache.promise()
     },
   )
