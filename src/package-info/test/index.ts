@@ -228,6 +228,62 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
+    case '/transient-corrupt/-/transient-corrupt-1.0.0.tgz': {
+      // First request serves corrupted data, subsequent requests
+      // serve the real tarball (simulates transient CDN corruption)
+      transientCorruptHits++
+      if (transientCorruptHits === 1) {
+        const corrupted = Buffer.from(tgzAbbrev)
+        corrupted[100] = (corrupted[100]! ^ 0xff) & 0xff
+        corrupted[101] = (corrupted[101]! ^ 0xff) & 0xff
+        res.setHeader('content-type', 'application/octet-stream')
+        res.setHeader('content-length', corrupted.byteLength)
+        res.setHeader(
+          'integrity',
+          pakuAbbrev.versions['2.0.0'].dist.integrity,
+        )
+        return res.end(corrupted)
+      }
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader(
+        'integrity',
+        pakuAbbrev.versions['2.0.0'].dist.integrity,
+      )
+      return res.end(tgzAbbrev)
+    }
+    case '/transient-corrupt/1.0.0': {
+      const json = JSON.stringify({
+        name: 'transient-corrupt',
+        version: '1.0.0',
+        dist: {
+          tarball: `${defaultRegistry}transient-corrupt/-/transient-corrupt-1.0.0.tgz`,
+          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/transient-corrupt': {
+      const json = JSON.stringify({
+        name: 'transient-corrupt',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'transient-corrupt',
+            version: '1.0.0',
+            dist: {
+              tarball: `${defaultRegistry}transient-corrupt/-/transient-corrupt-1.0.0.tgz`,
+              integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+            },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     case '/no-integrity/-/no-integrity-1.0.0.tgz': {
       // Serve a valid tarball for a package with no dist.integrity
       res.setHeader('content-type', 'application/octet-stream')
@@ -274,6 +330,7 @@ const server = createServer((req, res) => {
 })
 
 const notFoundURLs: string[] = []
+let transientCorruptHits = 0
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
@@ -975,6 +1032,133 @@ t.test('registry tarball integrity verification', async t => {
       )
       const pkg = JSON.parse(json)
       t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+    },
+  )
+})
+
+t.test('EINTEGRITY retry with cache bust', async t => {
+  await t.test(
+    'extract retries on transient EINTEGRITY and succeeds',
+    async t => {
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      // Reset the counter so the first tarball request is corrupted
+      transientCorruptHits = 0
+      const errs: string[] = []
+      const origError = console.error
+      t.teardown(() => (console.error = origError))
+      console.error = (...args: unknown[]) =>
+        errs.push(args.join(' '))
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      const result = await pi.extract(
+        'transient-corrupt@1.0.0',
+        dir + '/retry-ok',
+      )
+      t.match(result, {
+        resolved: `${defaultRegistry}transient-corrupt/-/transient-corrupt-1.0.0.tgz`,
+      })
+      t.equal(
+        transientCorruptHits,
+        2,
+        'should have hit the server twice (initial + retry)',
+      )
+      t.equal(errs.length, 1, 'should have logged one warning')
+      t.match(
+        errs[0],
+        /Integrity check failed.*retrying with fresh download/,
+        'warning message mentions retry',
+      )
+      const json = readFileSync(
+        `${dir}/retry-ok/package.json`,
+        'utf8',
+      )
+      const pkg = JSON.parse(json)
+      t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+      await pi.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'extract fails after retry when corruption is persistent',
+    async t => {
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const errs: string[] = []
+      const origError = console.error
+      t.teardown(() => (console.error = origError))
+      console.error = (...args: unknown[]) =>
+        errs.push(args.join(' '))
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(
+        pi.extract('corrupted@1.0.0', dir + '/still-bad'),
+        { cause: { code: 'EINTEGRITY' } },
+        'should still throw EINTEGRITY after retry fails',
+      )
+      t.equal(errs.length, 1, 'should have logged one warning')
+      t.match(
+        errs[0],
+        /Integrity check failed.*retrying with fresh download/,
+        'warning message mentions retry',
+      )
+      await pi.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'tarball() retries on transient EINTEGRITY and succeeds',
+    async t => {
+      const dir = t.testdir()
+      // Reset the counter so the first tarball request is corrupted
+      transientCorruptHits = 0
+      const errs: string[] = []
+      const origError = console.error
+      t.teardown(() => (console.error = origError))
+      console.error = (...args: unknown[]) =>
+        errs.push(args.join(' '))
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      const buf = await pi.tarball('transient-corrupt@1.0.0')
+      t.ok(buf.length > 0, 'should return tarball data')
+      t.equal(buf[0], 0x1f, 'should be a gzip file (first byte)')
+      t.equal(buf[1], 0x8b, 'should be a gzip file (second byte)')
+      t.equal(
+        transientCorruptHits,
+        2,
+        'should have hit the server twice',
+      )
+      t.equal(errs.length, 1, 'should have logged one warning')
+      await pi.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'tarball() fails after retry when corruption is persistent',
+    async t => {
+      const dir = t.testdir()
+      const errs: string[] = []
+      const origError = console.error
+      t.teardown(() => (console.error = origError))
+      console.error = (...args: unknown[]) =>
+        errs.push(args.join(' '))
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: dir + '/cache',
+      })
+      await t.rejects(pi.tarball('corrupted@1.0.0'), {
+        cause: { code: 'EINTEGRITY' },
+      })
+      t.equal(errs.length, 1, 'should have logged one warning')
+      await pi.registryClient.cache.promise()
     },
   )
 })

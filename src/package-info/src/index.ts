@@ -187,56 +187,89 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
-        const trustIntegrity =
-          this.#trustedIntegrities.get(r.resolved) === r.integrity
+        const fetchTarball = async (useCache?: false) => {
+          const trustIntegrity =
+            this.#trustedIntegrities.get(r.resolved) === r.integrity
 
-        const response = await this.registryClient.request(
-          r.resolved,
-          {
-            integrity: r.integrity,
-            trustIntegrity,
-          },
-        )
-
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            'failed to fetch tarball',
+          const response = await this.registryClient.request(
+            r.resolved,
             {
-              url: r.resolved,
-              response,
+              integrity: r.integrity,
+              trustIntegrity,
+              ...(useCache === false ? { useCache } : {}),
             },
           )
-        }
 
-        // if it's not trusted already, but valid, start trusting
-        if (
-          !trustIntegrity &&
-          response.checkIntegrity({ spec, url: resolved })
-        ) {
-          this.#trustedIntegrities.set(r.resolved, response.integrity)
-        }
-
-        const buf = response.buffer()
-
-        // Verify tarball integrity against the manifest's dist.integrity.
-        // This is a supply-chain security measure: the registry may not
-        // validate integrity, so we do it client-side on every fresh
-        // download. Skip when integrity came from lockfile/cache (it was
-        // already verified on first install).
-        if (r.integrity && !fromLockfile) {
-          const hash = createHash('sha512')
-          hash.update(buf)
-          const computed: Integrity = `sha512-${hash.digest('base64')}`
-          if (computed !== r.integrity) {
-            throw error('Tarball integrity check failed', {
-              code: 'EINTEGRITY',
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
               spec,
-              url: r.resolved,
-              wanted: r.integrity,
-              found: computed,
-            })
+              options,
+              'failed to fetch tarball',
+              {
+                url: r.resolved,
+                response,
+              },
+            )
+          }
+
+          // if it's not trusted already, but valid, start trusting
+          if (
+            !trustIntegrity &&
+            response.checkIntegrity({ spec, url: resolved })
+          ) {
+            this.#trustedIntegrities.set(
+              r.resolved,
+              response.integrity,
+            )
+          }
+
+          const buf = response.buffer()
+
+          // Verify tarball integrity against the manifest's
+          // dist.integrity. This is a supply-chain security measure:
+          // the registry may not validate integrity, so we do it
+          // client-side on every fresh download. Skip when integrity
+          // came from lockfile/cache (it was already verified on first
+          // install).
+          if (r.integrity && !fromLockfile) {
+            const hash = createHash('sha512')
+            hash.update(buf)
+            const computed: Integrity = `sha512-${hash.digest('base64')}`
+            if (computed !== r.integrity) {
+              throw error('Tarball integrity check failed', {
+                code: 'EINTEGRITY',
+                spec,
+                url: r.resolved,
+                wanted: r.integrity,
+                found: computed,
+              })
+            }
+          }
+
+          return buf
+        }
+
+        let buf: Buffer
+        try {
+          buf = await fetchTarball()
+        } catch (er) {
+          // On EINTEGRITY, retry once bypassing cache. This handles
+          // transient issues such as corrupted downloads or CDN
+          // inconsistencies that cause the cached tarball to not match
+          // the expected integrity hash.
+          if (
+            er instanceof Error &&
+            'cause' in er &&
+            (er.cause as Record<string, unknown> | undefined)
+              ?.code === 'EINTEGRITY'
+          ) {
+            // eslint-disable-next-line no-console
+            console.error(
+              `Integrity check failed for ${String(spec)}, retrying with fresh download...`,
+            )
+            buf = await fetchTarball(false)
+          } else {
+            throw er
           }
         }
 
@@ -477,50 +510,76 @@ export class PackageInfoClient {
           )
         }
 
-        const trustIntegrity =
-          this.#trustedIntegrities.get(tarball) === integrity
+        const fetchTarball = async (useCache?: false) => {
+          const trustIntegrity =
+            this.#trustedIntegrities.get(tarball) === integrity
 
-        const response = await this.registryClient.request(tarball, {
-          ...options,
-          integrity,
-          trustIntegrity,
-        })
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            'failed to fetch tarball',
-            { response, url: tarball },
+          const response = await this.registryClient.request(
+            tarball,
+            {
+              ...options,
+              integrity,
+              trustIntegrity,
+              ...(useCache === false ? { useCache } : {}),
+            },
           )
-        }
-
-        // if we don't already trust it, but it's valid, start trusting it
-        if (
-          !trustIntegrity &&
-          response.checkIntegrity({ spec, url: tarball })
-        ) {
-          this.#trustedIntegrities.set(tarball, response.integrity)
-        }
-
-        const buf = response.buffer()
-
-        // Verify tarball integrity against the manifest's dist.integrity.
-        if (integrity) {
-          const hash = createHash('sha512')
-          hash.update(buf)
-          const computed: Integrity = `sha512-${hash.digest('base64')}`
-          if (computed !== integrity) {
-            throw error('Tarball integrity check failed', {
-              code: 'EINTEGRITY',
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
               spec,
-              url: tarball,
-              wanted: integrity,
-              found: computed,
-            })
+              options,
+              'failed to fetch tarball',
+              { response, url: tarball },
+            )
           }
+
+          // if we don't already trust it, but it's valid, start
+          // trusting it
+          if (
+            !trustIntegrity &&
+            response.checkIntegrity({ spec, url: tarball })
+          ) {
+            this.#trustedIntegrities.set(tarball, response.integrity)
+          }
+
+          const buf = response.buffer()
+
+          // Verify tarball integrity against the manifest's
+          // dist.integrity.
+          if (integrity) {
+            const hash = createHash('sha512')
+            hash.update(buf)
+            const computed: Integrity = `sha512-${hash.digest('base64')}`
+            if (computed !== integrity) {
+              throw error('Tarball integrity check failed', {
+                code: 'EINTEGRITY',
+                spec,
+                url: tarball,
+                wanted: integrity,
+                found: computed,
+              })
+            }
+          }
+
+          return buf
         }
 
-        return buf
+        try {
+          return await fetchTarball()
+        } catch (er) {
+          if (
+            er instanceof Error &&
+            'cause' in er &&
+            (er.cause as Record<string, unknown> | undefined)
+              ?.code === 'EINTEGRITY'
+          ) {
+            // eslint-disable-next-line no-console
+            console.error(
+              `Integrity check failed for ${String(spec)}, retrying with fresh download...`,
+            )
+            return await fetchTarball(false)
+          }
+          throw er
+        }
       }
 
       case 'git': {
