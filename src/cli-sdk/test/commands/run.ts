@@ -778,12 +778,12 @@ t.test(
     >('../../src/config/index.ts')
     unload()
 
-    // Simulate: vlt run hello -w a
+    // Simulate: vlt run hello -w src/a
     const conf = await Config.load(t.testdirName, [
       'run',
       'hello',
       '-w',
-      'a',
+      'src/a',
       '--view=human',
     ])
     t.equal(conf.command, 'run')
