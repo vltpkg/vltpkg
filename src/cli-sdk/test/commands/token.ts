@@ -7,6 +7,10 @@ const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/token.ts')
 >('../../src/commands/token.ts', {
   '@vltpkg/registry-client': {
+    normalizeRegistryKey(url: string) {
+      const u = new URL(url)
+      return (u.origin + u.pathname).replace(/\/+$/, '')
+    },
     async setToken(reg: string, tok: Token) {
       log.push(['add', reg, tok])
     },
@@ -39,6 +43,43 @@ t.strictSame(log, [
   ['add', 'https://registry.vlt.javascript', 'Bearer result'],
   ['delete', 'https://registry.vlt.javascript'],
 ])
+
+t.test('preserves path for path-scoped registry', async t => {
+  const pathLog: string[][] = []
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      normalizeRegistryKey(url: string) {
+        const u = new URL(url)
+        return (u.origin + u.pathname).replace(/\/+$/, '')
+      },
+      async setToken(reg: string, tok: Token) {
+        pathLog.push(['add', reg, tok])
+      },
+      async deleteToken(reg: string) {
+        pathLog.push(['delete', reg])
+      },
+    },
+    '../../src/read-password.ts': {
+      async readPassword(_prompt: string) {
+        return 'tok123'
+      },
+    },
+  })
+  await cmd({
+    options: { registry: 'https://registry.vlt.io/luke/' },
+    positionals: ['add'],
+  } as LoadedConfig)
+  await cmd({
+    options: { registry: 'https://registry.vlt.io/luke/' },
+    positionals: ['rm'],
+  } as LoadedConfig)
+  t.strictSame(pathLog, [
+    ['add', 'https://registry.vlt.io/luke', 'Bearer tok123'],
+    ['delete', 'https://registry.vlt.io/luke'],
+  ])
+})
 
 t.test('invalid token sub command', async t => {
   await t.rejects(
