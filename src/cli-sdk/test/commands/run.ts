@@ -858,3 +858,106 @@ t.test(
     t.strictSame(logs(), [])
   },
 )
+
+t.test('boolean option after script name (--recursive)', async t => {
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    '.git': {},
+  })
+  t.chdir(dir)
+
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  unload()
+
+  // Simulate: vlt run hello --recursive --view=human
+  const conf = await Config.load(t.testdirName, [
+    'run',
+    'hello',
+    '--recursive',
+    '--view=human',
+  ])
+  t.equal(conf.command, 'run')
+
+  const logs = t.capture(console, 'log').args
+  const result = await command(conf)
+
+  // Should run in workspace 'a' (recursive across all workspaces)
+  t.strictSame(result, {
+    command: pass,
+    args: [],
+    cwd: resolve(dir, 'src/a'),
+    stdout: null,
+    stderr: null,
+    status: 0,
+    signal: null,
+  })
+  t.strictSame(logs(), [])
+})
+
+t.test(
+  'string option at end without value stays as script arg',
+  async t => {
+    // Use a script that accepts arbitrary args without failing
+    const passWithArgs = 'node -e "process.exitCode = 0" --'
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({}),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        scripts: {
+          hello: passWithArgs,
+        },
+      }),
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run hello --view=human --scope (no value)
+    // --scope at the very end with no value should be kept as
+    // a script arg since there is no next arg to consume.
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'hello',
+      '--view=human',
+      '--scope',
+    ])
+    t.equal(conf.command, 'run')
+
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+
+    // --scope with no value is kept as a script arg, not extracted
+    t.strictSame(result, {
+      command: passWithArgs,
+      args: ['--scope'],
+      cwd: dir,
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })
+    t.strictSame(logs(), [])
+  },
+)

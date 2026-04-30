@@ -171,6 +171,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     for (let i = 0; i < this.args.length; i++) {
       const arg = this.args[i]
+      /* c8 ignore next - defensive: loop condition already guards */
       if (arg === undefined) break
 
       // Handle --option=value form
