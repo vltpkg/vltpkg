@@ -1062,7 +1062,7 @@ t.test('saveHidden skips when graph has no manifest', async t => {
     graph.mainImporter,
     'prod',
     Spec.parse('foo@^1.0.0'),
-    { name: 'foo' } as any,
+    { name: 'foo' },
     depId,
   )
   if (!foo) throw new Error('Missing foo package')

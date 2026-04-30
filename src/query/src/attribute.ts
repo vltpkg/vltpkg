@@ -22,7 +22,7 @@ export const getManifestPropertyValues = (
 ): string[] | undefined => {
   if (!node.manifest) return
 
-  const traverse = new Set<JSONField>([node.manifest as JSONField])
+  const traverse = new Set<JSONField>([node.manifest])
   const props = new Set<JSONField>()
   for (const key of properties) {
     for (const prop of traverse) {

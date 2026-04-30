@@ -154,13 +154,9 @@ t.test('do not delete some stuff', async t => {
 })
 
 t.test('deno', async t => {
-  t.intercept(
-    globalThis as typeof globalThis & { Deno?: any },
-    'Deno',
-    {
-      value: {},
-    },
-  )
+  t.intercept(globalThis, 'Deno', {
+    value: {},
+  })
 
   t.intercept(process, 'platform', { value: 'linux' })
 
@@ -190,13 +186,9 @@ t.test('deno', async t => {
 })
 
 t.test('deno + windows', async t => {
-  t.intercept(
-    globalThis as typeof globalThis & { Deno?: any },
-    'Deno',
-    {
-      value: {},
-    },
-  )
+  t.intercept(globalThis, 'Deno', {
+    value: {},
+  })
 
   t.intercept(process, 'platform', { value: 'win32' })
 

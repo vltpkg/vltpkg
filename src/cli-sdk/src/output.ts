@@ -20,6 +20,19 @@ import {
   trackError,
 } from './telemetry.ts'
 
+/* c8 ignore start - CI env detection is a best-effort heuristic */
+const isCI = (): boolean =>
+  !!(
+    process.env.CI ||
+    process.env.GITHUB_ACTIONS ||
+    process.env.GITLAB_CI ||
+    process.env.CIRCLECI ||
+    process.env.JENKINS_URL ||
+    process.env.BUILDKITE ||
+    process.env.TRAVIS
+  )
+/* c8 ignore stop */
+
 const supportsColor = (stream: WriteStream) => {
   const res = createSupportsColor(stream, { sniffFlags: false })
   if (res === false) return false
@@ -181,15 +194,7 @@ export const outputCommand = async <T>(
         vlt_version: vltVersion ?? 'unknown',
         os: process.platform,
         arch: process.arch,
-        ci: !!(
-          process.env.CI ||
-          process.env.GITHUB_ACTIONS ||
-          process.env.GITLAB_CI ||
-          process.env.CIRCLECI ||
-          process.env.JENKINS_URL ||
-          process.env.BUILDKITE ||
-          process.env.TRAVIS
-        ),
+        ci: isCI(),
       },
       telemetryEnabled,
     )
@@ -224,15 +229,7 @@ export const outputCommand = async <T>(
         vlt_version: vltVersion ?? 'unknown',
         os: process.platform,
         arch: process.arch,
-        ci: !!(
-          process.env.CI ||
-          process.env.GITHUB_ACTIONS ||
-          process.env.GITLAB_CI ||
-          process.env.CIRCLECI ||
-          process.env.JENKINS_URL ||
-          process.env.BUILDKITE ||
-          process.env.TRAVIS
-        ),
+        ci: isCI(),
       },
       telemetryEnabled,
     )

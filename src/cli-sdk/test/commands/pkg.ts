@@ -4,7 +4,6 @@ import { join } from 'node:path'
 import t from 'tap'
 import * as Command from '../../src/commands/pkg.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { ViewOptions } from '../../src/view.ts'
 import { setupEnv } from '../fixtures/util.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
@@ -14,11 +13,10 @@ const kIndent = Symbol.for('indent')
 const readPackageJson = (dir: string) =>
   readFileSync(join(dir, 'package.json'), 'utf8')
 
-const makeTestConfig = (config: any): LoadedConfig =>
-  ({
-    ...config,
-    get: (key: string) => config.values?.[key],
-  }) as unknown as LoadedConfig
+const makeTestConfig = (config: any): LoadedConfig => ({
+  ...config,
+  get: (key: string) => config.values?.[key],
+})
 
 setupEnv(t)
 
@@ -101,7 +99,7 @@ t.test('get', async t => {
     await Command.command(
       Object.assign(config, {
         positionals: ['get'],
-      }) as LoadedConfig,
+      }),
     ),
     { ...pkg, [kNewline]: '', [kIndent]: '' },
   )
@@ -110,7 +108,7 @@ t.test('get', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['get', 'name'],
-      }) as LoadedConfig,
+      }),
     ),
     'package-name',
   )
@@ -119,7 +117,7 @@ t.test('get', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['get', 'nested.keywords[3].obj[1]'],
-      }) as LoadedConfig,
+      }),
     ),
     'arrays',
   )
@@ -128,7 +126,7 @@ t.test('get', async t => {
     Command.command(
       Object.assign({}, config, {
         positionals: ['get', 'name', 'version'],
-      }) as LoadedConfig,
+      }),
     ),
     { cause: { code: 'EUSAGE' } },
   )
@@ -159,7 +157,7 @@ t.test('pick', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['pick'],
-      }) as LoadedConfig,
+      }),
     ),
     { ...pkg, [kNewline]: '', [kIndent]: '' },
   )
@@ -168,7 +166,7 @@ t.test('pick', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['pick', 'name'],
-      }) as LoadedConfig,
+      }),
     ),
     { name: 'package-name' },
   )
@@ -177,7 +175,7 @@ t.test('pick', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['pick', 'nested.keywords[3].obj[1]'],
-      }) as LoadedConfig,
+      }),
     ),
     {
       nested: {
@@ -190,7 +188,7 @@ t.test('pick', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['pick', 'nested.keywords'],
-      }) as LoadedConfig,
+      }),
     ),
     {
       nested: {
@@ -203,7 +201,7 @@ t.test('pick', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['pick', 'name', 'version'],
-      }) as LoadedConfig,
+      }),
     ),
     {
       name: pkg.name,
@@ -234,7 +232,7 @@ t.test('pick', async t => {
       await Command.command(
         Object.assign({}, config, {
           positionals: ['get', 'name'],
-        }) as LoadedConfig,
+        }),
       ),
       'workspace-a',
       'should get name from workspace directory',
@@ -262,7 +260,7 @@ t.test('pick', async t => {
         await Command.command(
           Object.assign({}, config, {
             positionals: ['get', 'name'],
-          }) as LoadedConfig,
+          }),
         ),
         'my-project',
         'should default to the project root location',
@@ -292,7 +290,7 @@ t.test('set', async t => {
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'name=new-package-name'],
-    }) as LoadedConfig,
+    }),
   )
   t.strictSame(JSON.parse(readPackageJson(dir)), {
     name: 'new-package-name',
@@ -304,7 +302,7 @@ t.test('set', async t => {
     Command.command(
       Object.assign({}, config, {
         positionals: ['set'],
-      }) as LoadedConfig,
+      }),
     ),
     { cause: { code: 'EUSAGE' } },
   )
@@ -313,7 +311,7 @@ t.test('set', async t => {
     Command.command(
       Object.assign({}, config, {
         positionals: ['set', 'name'],
-      }) as LoadedConfig,
+      }),
     ),
     { cause: { code: 'EUSAGE' } },
   )
@@ -340,7 +338,7 @@ t.test('set', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['set', 'foo=bar'],
-      }) as LoadedConfig,
+      }),
     )
 
     t.strictSame(
@@ -380,13 +378,13 @@ t.test('delete', async t => {
   await Command.command(
     Object.assign({}, config, {
       positionals: ['rm', 'name'],
-    }) as LoadedConfig,
+    }),
   )
 
   await Command.command(
     Object.assign({}, config, {
       positionals: ['rm', 'nested.keywords[3].obj[0]'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(JSON.parse(readPackageJson(dir)), {
@@ -401,7 +399,7 @@ t.test('delete', async t => {
     Command.command(
       Object.assign({}, config, {
         positionals: ['rm'],
-      }) as LoadedConfig,
+      }),
     ),
     { cause: { code: 'EUSAGE' } },
   )
@@ -429,7 +427,7 @@ t.test('delete', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['rm', 'foo'],
-      }) as LoadedConfig,
+      }),
     )
 
     t.strictSame(
@@ -555,7 +553,7 @@ t.test('scope functionality', async t => {
   const getResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['get', 'name'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -567,7 +565,7 @@ t.test('scope functionality', async t => {
   const pickResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['pick', 'name', 'version'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -582,7 +580,7 @@ t.test('scope functionality', async t => {
   const pickAllResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['pick'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -605,7 +603,7 @@ t.test('scope functionality', async t => {
     await Command.command(
       Object.assign({}, config, {
         positionals: ['get'],
-      }) as LoadedConfig,
+      }),
     )
   } catch {}
 
@@ -662,7 +660,7 @@ t.test('scope functionality', async t => {
     Command2.command(
       Object.assign({}, config, {
         positionals: ['get', null as any],
-      }) as LoadedConfig,
+      }),
     ),
     {
       cause: { code: 'EUSAGE' },
@@ -673,7 +671,7 @@ t.test('scope functionality', async t => {
   const getMultipleResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['get', 'version'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -685,7 +683,7 @@ t.test('scope functionality', async t => {
   const pickMultipleWithArgsResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['pick', 'name'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -697,7 +695,7 @@ t.test('scope functionality', async t => {
   const rmMultipleResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['rm', 'customField'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -709,7 +707,7 @@ t.test('scope functionality', async t => {
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'customField=scopedValue'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -728,7 +726,7 @@ t.test('scope functionality', async t => {
   const rmResult = await Command.command(
     Object.assign({}, config, {
       positionals: ['rm', 'description'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -816,7 +814,7 @@ t.test('scope with no matching workspaces', async t => {
     Command.command(
       Object.assign({}, config, {
         positionals: ['get', 'name'],
-      }) as LoadedConfig,
+      }),
     ),
     /No matching package found using scope/,
     'should reject when no workspaces match scope',
@@ -907,7 +905,7 @@ t.test('scope with security selectors', async t => {
   const result = await Command.command(
     Object.assign({}, config, {
       positionals: ['get', 'name'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.strictSame(
@@ -937,7 +935,7 @@ t.test('alternative command aliases', async t => {
   await Command.command(
     Object.assign({}, config, {
       positionals: ['remove', 'toRemove'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.notOk(
@@ -948,13 +946,13 @@ t.test('alternative command aliases', async t => {
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'toRemove=should be removed'],
-    }) as LoadedConfig,
+    }),
   )
 
   await Command.command(
     Object.assign({}, config, {
       positionals: ['unset', 'toRemove'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.notOk(
@@ -965,13 +963,13 @@ t.test('alternative command aliases', async t => {
   await Command.command(
     Object.assign({}, config, {
       positionals: ['set', 'toRemove=should be removed'],
-    }) as LoadedConfig,
+    }),
   )
 
   await Command.command(
     Object.assign({}, config, {
       positionals: ['delete', 'toRemove'],
-    }) as LoadedConfig,
+    }),
   )
 
   t.notOk(
@@ -985,13 +983,9 @@ t.test('human output', async t => {
     res: unknown,
     { positionals }: { positionals: string[] },
   ) =>
-    Command.views.human(
-      res,
-      {} as ViewOptions,
-      {
-        positionals,
-      } as LoadedConfig,
-    )
+    Command.views.human(res, {}, {
+      positionals,
+    } as LoadedConfig)
 
   t.test('init', async t => {
     t.matchSnapshot(
