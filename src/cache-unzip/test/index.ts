@@ -76,9 +76,14 @@ t.test('registering the beforeExit event', async t => {
 })
 
 t.test('deno', async t => {
-  t.intercept(globalThis, 'Deno', {
-    value: {},
-  })
+  t.intercept(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    globalThis as typeof globalThis & { Deno?: any },
+    'Deno',
+    {
+      value: {},
+    },
+  )
 
   t.intercept(process, 'platform', { value: 'linux' })
 
@@ -95,9 +100,14 @@ t.test('deno', async t => {
 })
 
 t.test('deno + windows', async t => {
-  t.intercept(globalThis, 'Deno', {
-    value: {},
-  })
+  t.intercept(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    globalThis as typeof globalThis & { Deno?: any },
+    'Deno',
+    {
+      value: {},
+    },
+  )
 
   t.intercept(process, 'platform', { value: 'win32' })
 
