@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { deleteToken, setToken } from '@vltpkg/registry-client'
+import {
+  deleteToken,
+  normalizeRegistryKey,
+  setToken,
+} from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
 import { readPassword } from '../read-password.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -22,7 +26,7 @@ export const usage: CommandUsage = () =>
   })
 
 export const command: CommandFn<void> = async conf => {
-  const reg = new URL(conf.options.registry).origin
+  const reg = normalizeRegistryKey(conf.options.registry)
   switch (conf.positionals[0]) {
     case 'add': {
       await setToken(
