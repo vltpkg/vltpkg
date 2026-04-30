@@ -101,7 +101,7 @@ t.test('with spec arg - fetches manifest', async t => {
       type: 'git',
       url: 'https://github.com/npm/abbrev',
     },
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     docs: () => 'https://github.com/npm/abbrev#readme',
@@ -135,7 +135,7 @@ t.test('homepage takes priority over repository', async t => {
       type: 'git',
       url: 'https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     docs: () => 'https://github.com/user/repo#readme',
@@ -165,7 +165,7 @@ t.test('homepage used when no repository', async t => {
   mockManifest = {
     name: 'homepage-only',
     homepage: 'https://my-docs-site.com',
-  } as Manifest
+  }
 
   const config = {
     positionals: ['homepage-only'],
@@ -191,7 +191,7 @@ t.test('repository as string', async t => {
   mockManifest = {
     name: 'test-pkg',
     repository: 'https://github.com/user/repo',
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     docs: () => 'https://github.com/user/repo#readme',
@@ -223,7 +223,7 @@ t.test('git+ prefix stripped from repository url', async t => {
       type: 'git',
       url: 'git+https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   const fromUrlCalls: string[] = []
   mockFromUrlResult = {
@@ -272,7 +272,7 @@ t.test('git+ prefix stripped from repository url', async t => {
 t.test('fallback to vlt.io when no repository', async t => {
   mockManifest = {
     name: 'no-repo-pkg',
-  } as Manifest
+  }
 
   const config = {
     positionals: ['no-repo-pkg'],
@@ -306,7 +306,7 @@ t.test('fallback to vlt.io when hosted-git-info fails', async t => {
   mockManifest = {
     name: 'unknown-host-pkg',
     repository: 'https://unknown-git-host.com/user/repo',
-  } as Manifest
+  }
 
   mockFromUrlResult = null
 
@@ -349,7 +349,7 @@ t.test('error when no manifest found', async t => {
 })
 
 t.test('error when manifest has no name', async t => {
-  mockManifest = {} as Manifest
+  mockManifest = {}
 
   const config = {
     positionals: ['invalid'],

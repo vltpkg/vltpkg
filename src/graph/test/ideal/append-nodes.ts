@@ -1550,17 +1550,17 @@ t.test('skip peerOptional dependencies', async t => {
                 optional: true,
               },
             },
-          } as Manifest
+          }
         case 'peer-dep':
           return {
             name: 'peer-dep',
             version: '1.0.0',
-          } as Manifest
+          }
         case 'peer-optional-dep':
           return {
             name: 'peer-optional-dep',
             version: '1.0.0',
-          } as Manifest
+          }
         case 'lib-a':
           return {
             name: 'lib-a',
@@ -1568,7 +1568,7 @@ t.test('skip peerOptional dependencies', async t => {
             dependencies: {
               'shared-dep': '^1.0.0',
             },
-          } as Manifest
+          }
         case 'lib-b':
           return {
             name: 'lib-b',
@@ -1581,12 +1581,12 @@ t.test('skip peerOptional dependencies', async t => {
                 optional: true,
               },
             },
-          } as Manifest
+          }
         case 'shared-dep':
           return {
             name: 'shared-dep',
             version: '1.0.0',
-          } as Manifest
+          }
         default:
           throw new Error('404 - ' + spec.name, { cause: { spec } })
       }

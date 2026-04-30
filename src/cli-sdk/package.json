@@ -18,6 +18,7 @@
     "@vltpkg/graph-run": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",
+    "posthog-node": "^4.0.0",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",

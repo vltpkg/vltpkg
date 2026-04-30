@@ -84,6 +84,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
     --target=<query>
+    --telemetry
     --version
     --view=<output>
     --workspace=<ws>
@@ -147,6 +148,7 @@ Unknown config option: asdf
     stale-while-revalidate-factor
     tag
     target
+    telemetry
     version
     view
     workspace

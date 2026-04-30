@@ -115,11 +115,7 @@ t.test('getCwd', async t => {
       signal: null,
     })) as any
     const dummyFG = dummyBG
-    const e = new ExecCommand(
-      conf as unknown as LoadedConfig,
-      dummyBG,
-      dummyFG,
-    )
+    const e = new ExecCommand(conf, dummyBG, dummyFG)
     await e.run()
     t.equal(e.getCwd(), resolve(dir, 'src/a'))
   }

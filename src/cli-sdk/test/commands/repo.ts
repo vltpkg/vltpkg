@@ -101,7 +101,7 @@ t.test('with spec arg - fetches manifest', async t => {
       type: 'git',
       url: 'https://github.com/npm/abbrev-js',
     },
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     browse: () => 'https://github.com/npm/abbrev-js',
@@ -131,7 +131,7 @@ t.test('repository as string - uses hostedGitInfo', async t => {
   mockManifest = {
     name: 'some-package',
     repository: 'https://github.com/user/repo',
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     browse: () => 'https://github.com/user/repo',
@@ -164,7 +164,7 @@ t.test('git+ prefix stripped from repository url', async t => {
       type: 'git',
       url: 'git+https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   const fromUrlCalls: string[] = []
   mockFromUrlResult = {
@@ -219,7 +219,7 @@ t.test(
         type: 'git',
         url: 'https://unknown-git-host.com/user/repo',
       },
-    } as Manifest
+    }
 
     mockFromUrlResult = null
 
@@ -248,7 +248,7 @@ t.test('homepage fallback when no repository', async t => {
   mockManifest = {
     name: 'homepage-pkg',
     homepage: 'https://example.com/homepage-pkg',
-  } as Manifest
+  }
 
   const config = {
     positionals: ['homepage-pkg'],
@@ -275,7 +275,7 @@ t.test(
   async t => {
     mockManifest = {
       name: 'no-repo-pkg',
-    } as Manifest
+    }
 
     const config = {
       positionals: ['no-repo-pkg'],
@@ -326,7 +326,7 @@ t.test('error when no manifest found', async t => {
 })
 
 t.test('error when manifest has no name', async t => {
-  mockManifest = {} as Manifest
+  mockManifest = {}
 
   const config = {
     positionals: ['invalid'],

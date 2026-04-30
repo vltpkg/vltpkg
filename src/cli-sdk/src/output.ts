@@ -14,6 +14,24 @@ import {
   generateDefaultHelp,
   generateFullHelp,
 } from './custom-help.ts'
+import {
+  flush as flushTelemetry,
+  trackCommand,
+  trackError,
+} from './telemetry.ts'
+
+/* c8 ignore start - CI env detection is a best-effort heuristic */
+const isCI = (): boolean =>
+  !!(
+    process.env.CI ||
+    process.env.GITHUB_ACTIONS ||
+    process.env.GITLAB_CI ||
+    process.env.CIRCLECI ||
+    process.env.JENKINS_URL ||
+    process.env.BUILDKITE ||
+    process.env.TRAVIS
+  )
+/* c8 ignore stop */
 
 const supportsColor = (stream: WriteStream) => {
   const res = createSupportsColor(stream, { sniffFlags: false })
@@ -123,7 +141,9 @@ const startView = <T>(
 export const outputCommand = async <T>(
   cliCommand: Command<T>,
   conf: LoadedConfig,
-  { start }: { start: number } = { start: Date.now() },
+  { start, vltVersion }: { start: number; vltVersion?: string } = {
+    start: Date.now(),
+  },
 ) => {
   const { usage, views, command } = cliCommand
 
@@ -158,8 +178,27 @@ export const outputCommand = async <T>(
     { start },
   )
 
+  const telemetryEnabled = conf.values.telemetry
+  const commandName = conf.command
+
   try {
     const output = await onDone(await command(conf))
+
+    const duration_ms = Date.now() - start
+    trackCommand(
+      {
+        command: commandName,
+        duration_ms,
+        success: true,
+        node_version: process.version,
+        vlt_version: vltVersion ?? 'unknown',
+        os: process.platform,
+        arch: process.arch,
+        ci: isCI(),
+      },
+      telemetryEnabled,
+    )
+
     if (output !== undefined && conf.values.view !== 'silent') {
       stdout(
         conf.values.view === 'json' ?
@@ -173,9 +212,48 @@ export const outputCommand = async <T>(
           ),
       )
     }
+
+    // Fire-and-forget flush — do not await to avoid blocking exit
+    void flushTelemetry()
   } catch (err) {
     onError?.(err)
     process.exitCode ||= 1
+
+    const duration_ms = Date.now() - start
+    trackCommand(
+      {
+        command: commandName,
+        duration_ms,
+        success: false,
+        node_version: process.version,
+        vlt_version: vltVersion ?? 'unknown',
+        os: process.platform,
+        arch: process.arch,
+        ci: isCI(),
+      },
+      telemetryEnabled,
+    )
+
+    const errorCode =
+      (
+        err instanceof Error &&
+        err.cause &&
+        typeof err.cause === 'object' &&
+        'code' in err.cause &&
+        typeof err.cause.code === 'string'
+      ) ?
+        err.cause.code
+      : undefined
+    trackError(
+      {
+        command: commandName,
+        error_code: errorCode,
+      },
+      telemetryEnabled,
+    )
+
+    // Fire-and-forget flush — do not await to avoid blocking exit
+    void flushTelemetry()
 
     printErr(err, usage, stderr, {
       ...formatOptions,

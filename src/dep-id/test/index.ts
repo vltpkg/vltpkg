@@ -165,19 +165,12 @@ t.test('named registry', t => {
 t.test('unnamed registry', t => {
   t.equal(
     String(
-      hydrate(
-        `${delimiter}http://vlt.sh${delimiter}x@1.2.3` as DepID,
-        'x',
-      ),
+      hydrate(`${delimiter}http://vlt.sh${delimiter}x@1.2.3`, 'x'),
     ),
     'x@registry:http://vlt.sh#x@1.2.3',
   )
   t.equal(
-    String(
-      hydrate(
-        `${delimiter}http://vlt.sh${delimiter}x@1.2.3` as DepID,
-      ),
-    ),
+    String(hydrate(`${delimiter}http://vlt.sh${delimiter}x@1.2.3`)),
     'x@registry:http://vlt.sh#x@1.2.3',
   )
   t.end()
@@ -185,10 +178,8 @@ t.test('unnamed registry', t => {
 
 t.test('default registry name', t => {
   t.equal(
-    String(
-      splitDepID(`${delimiter}npm${delimiter}foo@1.0.0` as DepID),
-    ),
-    String(splitDepID(`${delimiter}${delimiter}foo@1.0.0` as DepID)),
+    String(splitDepID(`${delimiter}npm${delimiter}foo@1.0.0`)),
+    String(splitDepID(`${delimiter}${delimiter}foo@1.0.0`)),
   )
   t.end()
 })
@@ -456,7 +447,7 @@ t.test('hydrate edge cases', t => {
   t.equal(
     String(
       hydrate(
-        `${delimiter}https://custom.registry.com${delimiter}pkg@1.0.0` as DepID,
+        `${delimiter}https://custom.registry.com${delimiter}pkg@1.0.0`,
         'pkg',
         getOptions({
           registry: 'https://custom.registry.com',
@@ -469,7 +460,7 @@ t.test('hydrate edge cases', t => {
   t.equal(
     String(
       hydrate(
-        `${delimiter}https://custom.registry.com/${delimiter}pkg@1.0.0` as DepID,
+        `${delimiter}https://custom.registry.com/${delimiter}pkg@1.0.0`,
         'pkg',
         getOptions({
           registry: 'https://custom.registry.com',
@@ -482,7 +473,7 @@ t.test('hydrate edge cases', t => {
   t.equal(
     String(
       hydrate(
-        `${delimiter}custom${delimiter}pkg@1.0.0` as DepID,
+        `${delimiter}custom${delimiter}pkg@1.0.0`,
         'pkg',
         getOptions({
           registry: 'https://custom.registry.com',

@@ -465,6 +465,16 @@ Object {
     "short": "t",
     "type": "string",
   },
+  "telemetry": Object {
+    "description": String(
+      Enable anonymous usage telemetry.
+      
+      vlt collects anonymized usage data to help improve the tool. No personally identifiable information is ever sent.
+      
+      Set \`--no-telemetry\` or \`VLT_TELEMETRY=0\` or \`DO_NOT_TRACK=1\` to opt out.
+    ),
+    "type": "boolean",
+  },
   "version": Object {
     "description": "Print the version",
     "short": "v",
@@ -578,6 +588,7 @@ Array [
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
   "--target=<query>",
+  "--telemetry",
   "--version",
   "--view=<output>",
   "--workspace=<ws>",
@@ -638,6 +649,7 @@ Array [
   "stale-while-revalidate-factor",
   "tag",
   "target",
+  "telemetry",
   "version",
   "view",
   "workspace",

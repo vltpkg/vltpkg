@@ -488,11 +488,7 @@ t.test('human formatting edge cases', async t => {
         name: 'pkg',
         'dist-tags': { latest: '1.0.0' },
         versions: { '1.0.0': { name: 'pkg', version: '1.0.0' } },
-        maintainers: [
-          'string-maintainer' as unknown as {
-            name: string
-          },
-        ],
+        maintainers: ['string-maintainer'],
       } as Packument,
       manifest: { name: 'pkg', version: '1.0.0' } as Manifest,
     }
@@ -581,14 +577,14 @@ t.test('human formatting edge cases', async t => {
           '1.0.0': {
             name: 'pkg',
             version: '1.0.0',
-            keywords: 'single-keyword' as unknown as string[],
+            keywords: 'single-keyword',
           },
         },
       } as Packument,
       manifest: {
         name: 'pkg',
         version: '1.0.0',
-        keywords: 'single-keyword' as unknown as string[],
+        keywords: 'single-keyword',
       } as Manifest,
     }
     const output = Command.views.human(result, {}, {} as LoadedConfig)

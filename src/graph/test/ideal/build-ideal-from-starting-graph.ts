@@ -275,7 +275,7 @@ t.test('add from manifest file only', async t => {
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
     } as Record<DepID, LockfileNode>,
-    edges: {} as LockfileEdges,
+    edges: {},
   }
   const mainManifest = {
     name: 'my-project',
@@ -691,8 +691,8 @@ t.test('optional subdeps binary distribution strategy', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 1,
     options: {},
-    nodes: {} as Record<DepID, LockfileNode>,
-    edges: {} as LockfileEdges,
+    nodes: {},
+    edges: {},
   }
   const mainManifest = {
     name: 'test-optional-strat',

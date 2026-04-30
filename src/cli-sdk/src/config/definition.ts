@@ -718,6 +718,20 @@ export const definition = j
   })
 
   .flag({
+    telemetry: {
+      description: `Enable anonymous usage telemetry.
+
+                    vlt collects anonymized usage data to help improve
+                    the tool. No personally identifiable information is
+                    ever sent.
+
+                    Set \`--no-telemetry\` or \`VLT_TELEMETRY=0\` or
+                    \`DO_NOT_TRACK=1\` to opt out.`,
+      default: true,
+    },
+  })
+
+  .flag({
     yes: {
       short: 'y',
       description: `Automatically accept any confirmation prompts`,

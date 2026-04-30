@@ -173,6 +173,24 @@ t.test('outputCommand', async t => {
     t.strictSame(errsPrinted, [new Error('poop')])
   })
 
+  t.test('fail output with error cause code', async t => {
+    errsPrinted.length = 0
+    const { exitCode = 0 } = process
+    const exits = t.capture(process, 'exit').args
+    t.teardown(() => {
+      if (t.passing()) process.exitCode = exitCode
+    })
+    cliCommand.command = async () => {
+      throw new Error('boom', { cause: { code: 'ECODE' } })
+    }
+    await outputCommand(cliCommand, confInspect)
+    t.strictSame(exits(), [[1]])
+    t.equal(process.exitCode, 1)
+    t.strictSame(errsPrinted, [
+      new Error('boom', { cause: { code: 'ECODE' } }),
+    ])
+  })
+
   t.test('fail output with onError method', async t => {
     errsPrinted.length = 0
     const { exitCode = 0 } = process

@@ -103,10 +103,7 @@ export const command: CommandFn<
       } else {
         // otherwise we assume it's an Record<string, string[]> object
         // and we'll add the new workspaces to the `packages` keys
-        workspaces = (workspacesConfig ?? {}) as Record<
-          string,
-          string[]
-        >
+        workspaces = workspacesConfig ?? {}
         // if the `packages` key is not being used
         if (!workspaces.packages) {
           workspaces.packages = addToConfig
