@@ -19,6 +19,9 @@ const workspaces = {
   },
   'src/cli-sdk': {
     entry: [...entry, 'src/commands/*.ts'],
+    // posthog-node is loaded via createRequire (dynamic require)
+    // which knip cannot statically detect
+    ignoreDependencies: ['posthog-node'],
   },
   'infra/build': { entry },
 }
