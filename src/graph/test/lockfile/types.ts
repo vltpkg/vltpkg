@@ -1,6 +1,5 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { Integrity } from '@vltpkg/types'
 import type {
   LockfileData,
   LockfileNode,
@@ -97,13 +96,8 @@ t.test('lockfile type checks', t => {
   // Valid LockfileNode variations
   ln = [0] // minimal
   ln = [1, 'pkg-name'] // with name
-  ln = [2, 'pkg-name', 'sha512-abc==' as Integrity] // with integrity
-  ln = [
-    3,
-    'pkg-name',
-    'sha512-abc==' as Integrity,
-    'https://example.com/pkg.tgz',
-  ] // with resolved
+  ln = [2, 'pkg-name', 'sha512-abc=='] // with integrity
+  ln = [3, 'pkg-name', 'sha512-abc==', 'https://example.com/pkg.tgz'] // with resolved
   ln = [0, 'pkg-name', null, null, '/path/to/pkg'] // with location
   ln = [
     1,
@@ -125,7 +119,7 @@ t.test('lockfile type checks', t => {
   ln = [
     3,
     'pkg-name',
-    'sha512-abc==' as Integrity,
+    'sha512-abc==',
     'https://example.com/pkg.tgz',
     '/path',
     { name: 'pkg', version: '1.0.0' },
@@ -174,7 +168,7 @@ t.test('lockfile type checks', t => {
   lek = 123
 
   // Valid LockfileEdgeKey (template literal type)
-  lek = `${fromDepId} dep-name` as LockfileEdgeKey
+  lek = `${fromDepId} dep-name`
 
   // LockfileEdgeValue type checks
   //@ts-expect-error - must be in format "${DependencyTypeShort} ${Spec['bareSpec']} ${DepID | 'MISSING'}"
@@ -184,8 +178,8 @@ t.test('lockfile type checks', t => {
   lev = 123
 
   // Valid LockfileEdgeValue (template literal type)
-  lev = `prod ^1.0.0 ${toDepId}` as LockfileEdgeValue
-  lev = 'dev ^2.0.0 MISSING' as LockfileEdgeValue
+  lev = `prod ^1.0.0 ${toDepId}`
+  lev = 'dev ^2.0.0 MISSING'
   lev = `opt ~1.5.0 ${toDepId}` as LockfileEdgeValue
 
   t.pass('all lockfile type checks passed')
@@ -367,7 +361,7 @@ t.test('lockfile type constraints', t => {
   const validNode: LockfileNode = [
     1, // flags: LockfileNodeFlags
     'test-pkg', // name: string | null
-    'sha512-abc==' as Integrity, // integrity: Integrity | null
+    'sha512-abc==', // integrity: Integrity | null
     'https://example.com/pkg.tgz', // resolved: string | null
     '/path/to/pkg', // location: string | null
     { name: 'test-pkg', version: '1.0.0' }, // manifest: Manifest | null

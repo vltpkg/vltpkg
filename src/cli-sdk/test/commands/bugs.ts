@@ -95,7 +95,7 @@ t.test('with spec arg - fetches manifest', async t => {
     bugs: {
       url: 'https://github.com/npm/abbrev/issues',
     },
-  } as Manifest
+  }
 
   const config = {
     positionals: ['abbrev@2.0.0'],
@@ -125,7 +125,7 @@ t.test('bugs as string takes priority', async t => {
       type: 'git',
       url: 'https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     bugs: () => 'https://github.com/user/repo/issues',
@@ -161,7 +161,7 @@ t.test('bugs.url takes priority over repository', async t => {
       type: 'git',
       url: 'https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     bugs: () => 'https://github.com/user/repo/issues',
@@ -193,7 +193,7 @@ t.test('bugs.email creates mailto link', async t => {
     bugs: {
       email: 'bugs@example.com',
     },
-  } as Manifest
+  }
 
   const config = {
     positionals: ['email-only'],
@@ -219,7 +219,7 @@ t.test('repository fallback when no bugs field', async t => {
   mockManifest = {
     name: 'test-pkg',
     repository: 'https://github.com/user/repo',
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     bugs: () => 'https://github.com/user/repo/issues',
@@ -251,7 +251,7 @@ t.test('repository object fallback when no bugs field', async t => {
       type: 'git',
       url: 'https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   mockFromUrlResult = {
     bugs: () => 'https://github.com/user/repo/issues',
@@ -283,7 +283,7 @@ t.test('git+ prefix stripped from repository url', async t => {
       type: 'git',
       url: 'git+https://github.com/user/repo',
     },
-  } as Manifest
+  }
 
   const fromUrlCalls: string[] = []
   mockFromUrlResult = {
@@ -332,7 +332,7 @@ t.test('git+ prefix stripped from repository url', async t => {
 t.test('fallback to vlt.io when no bugs or repository', async t => {
   mockManifest = {
     name: 'no-bugs-pkg',
-  } as Manifest
+  }
 
   const config = {
     positionals: ['no-bugs-pkg'],
@@ -366,7 +366,7 @@ t.test('fallback to vlt.io when hosted-git-info fails', async t => {
   mockManifest = {
     name: 'unknown-host-pkg',
     repository: 'https://unknown-git-host.com/user/repo',
-  } as Manifest
+  }
 
   mockFromUrlResult = null
 
@@ -409,7 +409,7 @@ t.test('error when no manifest found', async t => {
 })
 
 t.test('error when manifest has no name', async t => {
-  mockManifest = {} as Manifest
+  mockManifest = {}
 
   const config = {
     positionals: ['invalid'],

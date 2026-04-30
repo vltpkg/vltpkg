@@ -567,7 +567,7 @@ export const normalizeKeywords = (
   } else if (Array.isArray(keywords)) {
     // If all keywords are already normalized, return them directly
     if (isNormalizedKeywords(keywords)) {
-      return keywords as unknown as NormalizedKeywords
+      return keywords
     }
     // Handle array of strings, filter out empty/invalid entries
     keywordArray = keywords

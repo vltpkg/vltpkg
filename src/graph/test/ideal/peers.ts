@@ -2378,7 +2378,7 @@ t.test('endPeerPlacement', async t => {
       const end = endPeerPlacement(
         peerContext,
         nextDeps,
-        nextPeerDeps as any,
+        nextPeerDeps,
         graph,
         nodeSpec,
         graph.mainImporter,
@@ -2485,7 +2485,7 @@ t.test('endPeerPlacement', async t => {
       const end = endPeerPlacement(
         peerContext,
         nextDeps,
-        nextPeerDeps as any,
+        nextPeerDeps,
         graph,
         nodeSpec,
         graph.mainImporter,
@@ -2559,7 +2559,7 @@ t.test('endPeerPlacement', async t => {
       const end = endPeerPlacement(
         peerContext,
         nextDeps,
-        nextPeerDeps as any,
+        nextPeerDeps,
         graph,
         nodeSpec,
         graph.mainImporter,
@@ -2675,7 +2675,7 @@ t.test('endPeerPlacement', async t => {
     const end = endPeerPlacement(
       peerContext,
       nextDeps,
-      nextPeerDeps as any,
+      nextPeerDeps,
       graph,
       nodeSpec,
       graph.mainImporter,
@@ -2749,7 +2749,7 @@ t.test('endPeerPlacement', async t => {
         const end = endPeerPlacement(
           peerContext,
           nextDeps,
-          nextPeerDeps as any,
+          nextPeerDeps,
           graph,
           nodeSpec,
           graph.mainImporter,
@@ -2827,7 +2827,7 @@ t.test('endPeerPlacement', async t => {
     const end = endPeerPlacement(
       peerContext,
       nextDeps,
-      nextPeerDeps as any,
+      nextPeerDeps,
       graph,
       nodeSpec,
       graph.mainImporter,

@@ -203,7 +203,7 @@ const getSimpleGraph = (): GraphLike => {
         email: 'ruyadorno@example.com',
       },
     ],
-  } as NormalizedManifest
+  }
 
   c.manifest = {
     ...c.manifest,
@@ -213,7 +213,7 @@ const getSimpleGraph = (): GraphLike => {
       },
     },
     keywords: ['something', 'someother'],
-  } as NormalizedManifest
+  }
 
   d.manifest = {
     ...d.manifest,
@@ -336,19 +336,19 @@ const getMultiWorkspaceGraph = (): GraphLike => {
     from: graph.mainImporter,
     spec: Spec.parse('a', 'workspace:*', specOptions),
     type: 'prod',
-  } as EdgeLike)
+  })
   graph.mainImporter.workspaces!.set('b', {
     name: 'b',
     from: graph.mainImporter,
     spec: Spec.parse('b', 'workspace:*', specOptions),
     type: 'prod',
-  } as EdgeLike)
+  })
   graph.mainImporter.workspaces!.set('c', {
     name: 'c',
     from: graph.mainImporter,
     spec: Spec.parse('c', 'workspace:*', specOptions),
     type: 'prod',
-  } as EdgeLike)
+  })
 
   const [d, e, f, y] = ['d', 'e', 'f', '@x/y'].map(i => {
     const n = addNode(i)
@@ -382,7 +382,7 @@ const mockSpecOptions: SpecOptions = {
 // Helper function to create a test edge
 const createMockEdge = (from: Node, to: Node, name: string): Edge => {
   const spec = new Spec(name, '1.0.0')
-  return new Edge('prod' as DependencyTypeShort, spec, from, to)
+  return new Edge('prod', spec, from, to)
 }
 
 t.test('GraphModifier', async t => {
