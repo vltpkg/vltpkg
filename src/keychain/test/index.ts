@@ -62,6 +62,32 @@ t.test('basic behavior', async t => {
   t.equal(kc.getSync('x'), undefined)
 })
 
+t.test('keys and keysSync', async t => {
+  const { Keychain } = await getKC(t)
+  const kc = new Keychain('test/keys')
+  t.strictSame(kc.keysSync(), [])
+  t.strictSame(await kc.keys(), [])
+  kc.set('a', '1')
+  kc.set('b', '2')
+  kc.set('c', '3')
+  t.strictSame(kc.keysSync(), ['a', 'b', 'c'])
+  t.strictSame(await kc.keys(), ['a', 'b', 'c'])
+  kc.delete('b')
+  t.strictSame(kc.keysSync(), ['a', 'c'])
+  t.strictSame(await kc.keys(), ['a', 'c'])
+})
+
+t.test('keys loads data if not loaded', async t => {
+  const { Keychain } = await getKC(t)
+  const kc = new Keychain('test/keys-load')
+  kc.set('x', 'y')
+  await kc.save()
+  const kc2 = new Keychain('test/keys-load')
+  // kc2 hasn't been loaded yet; keys() should trigger load
+  const result = await kc2.keys()
+  t.strictSame(result, ['x'])
+})
+
 t.test('treat borked file as just not being there', async t => {
   const { Keychain } = await getKC(t)
   const kc = new Keychain('test/bork')

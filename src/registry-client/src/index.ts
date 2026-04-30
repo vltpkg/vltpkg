@@ -18,8 +18,10 @@ import {
   deleteToken,
   getKC,
   getToken,
+  getTokenByURL,
   isToken,
   keychains,
+  normalizeRegistryKey,
   runtimeTokens,
   setRuntimeToken,
   setToken,
@@ -44,8 +46,10 @@ export {
   clearRuntimeTokens,
   deleteToken,
   getKC,
+  getTokenByURL,
   isToken,
   keychains,
+  normalizeRegistryKey,
   oidc,
   runtimeTokens,
   setRuntimeToken,
@@ -425,7 +429,6 @@ export class RegistryClient {
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
     // first, try to get from the cache before making any request.
-    const { origin } = u
     const key = `${method !== 'GET' ? method + ' ' : ''}${u}`
     const buffer =
       useCache ?
@@ -483,7 +486,7 @@ export class RegistryClient {
     options.headers = addHeader(
       options.headers,
       'authorization',
-      await getToken(origin, this.identity),
+      await getTokenByURL(String(u), this.identity),
     )
 
     let response: Dispatcher.ResponseData | null = null
