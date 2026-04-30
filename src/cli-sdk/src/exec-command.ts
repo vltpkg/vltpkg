@@ -114,7 +114,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.conf = conf
     this.bg = bg
     this.fg = fg
-    this.view = this.validViewValues.get(conf.values.view) ?? 'human'
     const {
       projectRoot,
       positionals: [arg0, ...args],
@@ -122,6 +121,102 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.arg0 = arg0
     this.args = args
     this.projectRoot = projectRoot
+
+    // Extract known vlt options that may appear after the script name
+    // due to stopAtPositionalTest treating them as positionals.
+    // Options like --scope, --workspace, --recursive etc. should be
+    // recognized regardless of their position in the command line.
+    this.#extractTrailingOptions()
+
+    // Set view after extracting trailing options, since --view
+    // may have been specified after the script name.
+    this.view = this.validViewValues.get(conf.values.view) ?? 'human'
+  }
+
+  /**
+   * Known vlt options for exec commands. These are extracted from
+   * trailing args that ended up as positionals due to
+   * stop-at-positional parsing.
+   */
+  static readonly #knownOptions: Record<
+    string,
+    { key: string; type: 'string' | 'boolean' | 'string[]' }
+  > = {
+    '--scope': { key: 'scope', type: 'string' },
+    '--workspace': { key: 'workspace', type: 'string[]' },
+    '-w': { key: 'workspace', type: 'string[]' },
+    '--workspace-group': {
+      key: 'workspace-group',
+      type: 'string[]',
+    },
+    '--recursive': { key: 'recursive', type: 'boolean' },
+    '-R': { key: 'recursive', type: 'boolean' },
+    '--if-present': { key: 'if-present', type: 'boolean' },
+    '--bail': { key: 'bail', type: 'boolean' },
+    '--script-shell': { key: 'script-shell', type: 'string' },
+    '--view': { key: 'view', type: 'string' },
+  }
+
+  /**
+   * Scan trailing args for known vlt options that ended up as
+   * positionals due to stop-at-positional parsing. Extract them
+   * and apply to conf.values so they're available via conf.get().
+   */
+  #extractTrailingOptions(): void {
+    if (this.args.length === 0) return
+
+    const remaining: string[] = []
+    const opts = ExecCommand.#knownOptions
+    const values = this.conf.values as Record<string, unknown>
+
+    for (let i = 0; i < this.args.length; i++) {
+      const arg = this.args[i]
+      /* c8 ignore next - defensive: loop condition already guards */
+      if (arg === undefined) break
+
+      // Handle --option=value form
+      const eqIdx = arg.indexOf('=')
+      const optName = eqIdx !== -1 ? arg.slice(0, eqIdx) : arg
+      const opt = opts[optName]
+
+      if (!opt) {
+        remaining.push(arg)
+        continue
+      }
+
+      if (opt.type === 'boolean') {
+        values[opt.key] = true
+        continue
+      }
+
+      // Get the value: either from =value or next arg
+      let val: string | undefined
+      if (eqIdx !== -1) {
+        val = arg.slice(eqIdx + 1)
+      } else {
+        const next = this.args[i + 1]
+        if (next !== undefined) {
+          val = next
+          i++
+        }
+      }
+
+      if (val === undefined) {
+        // No value available — keep as script arg
+        remaining.push(arg)
+        continue
+      }
+
+      if (opt.type === 'string[]') {
+        const arr = (values[opt.key] as string[] | undefined) ?? []
+        arr.push(val)
+        values[opt.key] = arr
+      } else {
+        values[opt.key] = val
+      }
+    }
+
+    this.args = remaining
   }
 
   #targetCount(): number {
