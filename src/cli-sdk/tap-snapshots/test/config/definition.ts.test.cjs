@@ -8,6 +8,7 @@
 exports[`test/config/definition.ts > TAP > commands 1`] = `
 Object {
   "?": "help",
+  "access": "access",
   "add": "install",
   "b": "build",
   "bugs": "bugs",
@@ -181,6 +182,7 @@ Object {
     "hint": "command",
     "type": "string",
     "validOptions": Array [
+      "access",
       "bugs",
       "build",
       "cache",
