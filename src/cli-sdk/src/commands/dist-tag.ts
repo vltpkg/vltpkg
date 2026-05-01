@@ -182,7 +182,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         })
       }
 
-      return { id: name, tag, version } as DistTagAddResult
+      return { id: name, tag, version }
     }
 
     case 'rm':
@@ -211,7 +211,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         })
       }
 
-      return { id: name, tag } as DistTagRmResult
+      return { id: name, tag }
     }
 
     case 'ls':
@@ -232,7 +232,7 @@ export const command: CommandFn<CommandResult> = async conf => {
 
       const tags = response.json() as Record<string, string>
 
-      return { id: name, tags } as DistTagLsResult
+      return { id: name, tags }
     }
 
     default: {

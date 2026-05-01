@@ -30,9 +30,7 @@ const Command = await t.mockImport<
           url: String(url),
           method: options.method ?? 'GET',
           body: options.body,
-          headers: options.headers as
-            | Record<string, string>
-            | undefined,
+          headers: options.headers,
         })
         return mockResponse
       }
