@@ -48,6 +48,7 @@ const canonicalCommands = {
   run: 'run',
   token: 'token',
   uninstall: 'uninstall',
+  unpublish: 'unpublish',
   update: 'update',
   'exec-cache': 'exec-cache',
   version: 'version',
@@ -676,6 +677,11 @@ export const definition = j
   .flag({
     'dry-run': {
       description: 'Run command without making any changes',
+    },
+    force: {
+      short: 'f',
+      description:
+        'Force potentially dangerous operations, such as unpublishing an entire package.',
     },
     'expect-lockfile': {
       description:
