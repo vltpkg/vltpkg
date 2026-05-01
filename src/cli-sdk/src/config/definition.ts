@@ -19,6 +19,7 @@ export const defaultEditor = () =>
   : 'vi')
 
 const canonicalCommands = {
+  access: 'access',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',
