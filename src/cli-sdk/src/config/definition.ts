@@ -19,12 +19,14 @@ export const defaultEditor = () =>
   : 'vi')
 
 const canonicalCommands = {
+  access: 'access',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',
   ci: 'ci',
   config: 'config',
   create: 'create',
+  deprecate: 'deprecate',
   'dist-tag': 'dist-tag',
   docs: 'docs',
   exec: 'exec',
@@ -39,6 +41,7 @@ const canonicalCommands = {
   pack: 'pack',
   ping: 'ping',
   pkg: 'pkg',
+  profile: 'profile',
   publish: 'publish',
   query: 'query',
   repo: 'repo',
@@ -46,6 +49,7 @@ const canonicalCommands = {
   run: 'run',
   token: 'token',
   uninstall: 'uninstall',
+  unpublish: 'unpublish',
   update: 'update',
   'exec-cache': 'exec-cache',
   version: 'version',
@@ -674,6 +678,11 @@ export const definition = j
   .flag({
     'dry-run': {
       description: 'Run command without making any changes',
+    },
+    force: {
+      short: 'f',
+      description:
+        'Force potentially dangerous operations, such as unpublishing an entire package.',
     },
     'expect-lockfile': {
       description:
