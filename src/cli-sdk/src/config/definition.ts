@@ -38,6 +38,7 @@ const canonicalCommands = {
   pack: 'pack',
   ping: 'ping',
   pkg: 'pkg',
+  profile: 'profile',
   publish: 'publish',
   query: 'query',
   repo: 'repo',
