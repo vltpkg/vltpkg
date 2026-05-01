@@ -9,10 +9,34 @@ import { Code } from '@astrojs/starlight/components'
 Usage:
 
 <Code
-  code="$ vlt token add
+  code="$ vlt token list
+$ vlt token add
 $ vlt token rm"
   title="Terminal"
   lang="bash"
 />
 
-Explicitly add or remove tokens in the vlt keychain
+Manage registry authentication tokens in the vlt keychain.
+
+## Subcommands
+
+### list
+
+List all tokens for configured registries. Queries each registry's
+token API and displays token metadata including key, creation date,
+and permissions.
+
+<Code code="$ vlt token list" title="Terminal" lang="bash" />
+
+### add
+
+Add a token for the specified registry. You will be prompted to paste
+the bearer token.
+
+<Code code="$ vlt token add" title="Terminal" lang="bash" />
+
+### rm
+
+Remove the stored token for the specified registry.
+
+<Code code="$ vlt token rm" title="Terminal" lang="bash" />
