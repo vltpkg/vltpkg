@@ -254,6 +254,13 @@ const allCommands = [
     showByDefault: false,
   },
   {
+    name: 'unpublish',
+    aliases: [],
+    args: '<pkg>[@<version>]',
+    desc: 'Remove a package from the registry',
+    showByDefault: false,
+  },
+  {
     name: 'update',
     aliases: ['u'],
     args: '',
