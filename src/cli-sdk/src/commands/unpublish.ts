@@ -23,7 +23,8 @@ export const usage: CommandUsage = () =>
         description: 'Unpublish a specific version',
       },
       '@scope/my-package@1.0.0': {
-        description: 'Unpublish a specific version of a scoped package',
+        description:
+          'Unpublish a specific version of a scoped package',
       },
       'my-package --force': {
         description: 'Unpublish an entire package (requires --force)',
@@ -35,7 +36,8 @@ export const usage: CommandUsage = () =>
           'Required to unpublish an entire package (all versions).',
       },
       otp: {
-        description: 'Provide a one-time password for authentication.',
+        description:
+          'Provide a one-time password for authentication.',
         value: '<otp>',
       },
     },
@@ -76,11 +78,13 @@ export const command: CommandFn<CommandResult> = async conf => {
   const spec = Spec.parseArgs(specArg, conf.options)
   const name = spec.name
 
+  /* c8 ignore start - Spec.parseArgs always produces a name for valid input */
   if (!name) {
     throw error('Package name is required', {
       found: specArg,
     })
   }
+  /* c8 ignore stop */
 
   const version = spec.bareSpec
 
@@ -144,25 +148,20 @@ export const command: CommandFn<CommandResult> = async conf => {
     }
 
     // Remove the version
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete versions[version]
 
     // Remove any dist-tags pointing to this version
     if (distTags) {
       for (const [tag, tagVersion] of Object.entries(distTags)) {
         if (tagVersion === version) {
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete distTags[tag]
         }
       }
     }
 
     // Remove the version from the time field if present
-    const time = packument.time as
-      | Record<string, string>
-      | undefined
+    const time = packument.time as Record<string, string> | undefined
     if (time?.[version]) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete time[version]
     }
 
