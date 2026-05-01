@@ -1,0 +1,74 @@
+---
+title: ':spec()'
+sidebar:
+  label: ':spec()'
+  order: 9
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:spec()` pseudo-class matches edges where the package specifier
+(bareSpec) equals the provided value. This filters dependencies by
+their exact specification string — i.e., what's written in
+`package.json`.
+
+## Syntax
+
+```
+:spec(<specifier>)
+```
+
+## Examples
+
+### Match by semver range
+
+<Code
+  code="$ vlt query ':spec(^1.0.0)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Match wildcard dependencies
+
+<Code
+  code={`$ vlt query ':spec("*")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Match catalog dependencies
+
+Find dependencies using the catalog protocol:
+
+<Code
+  code={`$ vlt query ':spec("catalog:")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given `package.json`:
+
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "lodash": "*",
+    "my-lib": "catalog:"
+  }
+}
+```
+
+| Query               | Selected |
+| ------------------- | -------- |
+| `:spec(^18.2.0)`    | react    |
+| `:spec("*")`        | lodash   |
+| `:spec("catalog:")` | my-lib   |
+
+## See also
+
+- [Attribute Selectors](/cli/selectors/attribute-selectors) — match
+  resolved version values
+- [`:type()`](/cli/selectors/pseudo-classes/type) — match by
+  dependency type

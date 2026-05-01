@@ -1,0 +1,354 @@
+---
+title: Security Insights
+sidebar:
+  label: Security Insights
+  order: 6
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Security insight selectors rely on data provided by
+[Socket](https://socket.dev/). Using any of these selectors triggers a
+network call to fetch package report data.
+
+:::note Security selectors require fetching data from Socket's API.
+This adds latency to queries — the data is fetched before the query
+runs. Keep this in mind for interactive use. :::
+
+## Malware & threats
+
+### `:malware`
+
+Matches packages that may contain malware with severity >= medium
+(critical, high, medium — excludes low).
+
+<Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
+
+#### `:malware(<type>)`
+
+Filter by severity level:
+
+| Type              | Description       |
+| ----------------- | ----------------- |
+| `critical` or `0` | Critical severity |
+| `high` or `1`     | High severity     |
+| `medium` or `2`   | Medium severity   |
+| `low` or `3`      | Low severity      |
+
+Comparators are supported:
+
+<Code
+  code={`$ vlt query ':malware(critical)'
+$ vlt query ':malware(">1")'
+$ vlt query ':malware(">=medium")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:squat` / `:squat(<type>)`
+
+Matches packages with names similar to popular packages
+(typosquatting).
+
+<Code code="$ vlt query ':squat'" title="Terminal" lang="bash" />
+
+`:squat` without arguments matches any severity. Filter with:
+
+| Type              | Description               |
+| ----------------- | ------------------------- |
+| `critical` or `0` | High-confidence typosquat |
+| `medium` or `2`   | Possible typosquat        |
+| `none`            | Not a typosquat           |
+
+### `:suspicious`
+
+Matches packages with artificially inflated GitHub stars (bots,
+crowdsourcing, etc.):
+
+<Code code="$ vlt query ':suspicious'" title="Terminal" lang="bash" />
+
+### `:confused`
+
+Matches packages affected by manifest confusion — the published
+`package.json` differs from what's in the tarball:
+
+<Code code="$ vlt query ':confused'" title="Terminal" lang="bash" />
+
+## Vulnerabilities
+
+### `:cve(<id>)`
+
+Matches packages with a specific CVE alert:
+
+<Code
+  code="$ vlt query ':cve(CVE-2023-1234)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Match packages with any CVE:
+
+<Code code="$ vlt query ':cve(*)'" title="Terminal" lang="bash" />
+
+### `:cwe(<id>)`
+
+Matches packages with a specific CWE alert:
+
+<Code
+  code="$ vlt query ':cwe(CWE-79)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:severity(<level>)`
+
+Matches packages by CVE severity level:
+
+| Level             | Description            |
+| ----------------- | ---------------------- |
+| `critical` or `0` | Critical severity CVEs |
+| `high` or `1`     | High severity CVEs     |
+| `medium` or `2`   | Medium severity CVEs   |
+| `low` or `3`      | Low severity CVEs      |
+
+Comparators are supported:
+
+<Code
+  code={`$ vlt query ':severity(critical)'
+$ vlt query ':severity(">1")'
+$ vlt query ':severity(">=medium")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Licensing
+
+### `:license(<type>)`
+
+Matches packages based on license issues:
+
+| Type         | Description                              |
+| ------------ | ---------------------------------------- |
+| `unlicensed` | No license                               |
+| `misc`       | Fine-grained license problems            |
+| `restricted` | Non-permissive license                   |
+| `ambiguous`  | Ambiguous licensing                      |
+| `copyleft`   | Copyleft license (GPL, etc.)             |
+| `unknown`    | License data found but type undetermined |
+| `none`       | No license data at all                   |
+| `exception`  | SPDX license exception                   |
+
+<Code
+  code={`# Find packages with copyleft licenses
+$ vlt query ':license(copyleft)'
+
+# Find unlicensed packages
+
+$ vlt query ':license(unlicensed)'
+
+# Find packages with any license
+
+$ vlt query ':license'`} title="Terminal" lang="bash" />
+
+## Code behavior signals
+
+### `:eval`
+
+Packages using dynamic code execution (`eval()`, `new Function()`,
+etc.):
+
+<Code code="$ vlt query ':eval'" title="Terminal" lang="bash" />
+
+### `:network`
+
+Packages that access the network:
+
+<Code code="$ vlt query ':network'" title="Terminal" lang="bash" />
+
+### `:fs`
+
+Packages that access the file system:
+
+<Code code="$ vlt query ':fs'" title="Terminal" lang="bash" />
+
+### `:env`
+
+Packages that access environment variables:
+
+<Code code="$ vlt query ':env'" title="Terminal" lang="bash" />
+
+### `:shell`
+
+Packages that access the system shell:
+
+<Code code="$ vlt query ':shell'" title="Terminal" lang="bash" />
+
+### `:scripts`
+
+Packages with install scripts (postinstall, preinstall, etc.):
+
+<Code code="$ vlt query ':scripts'" title="Terminal" lang="bash" />
+
+### `:debug`
+
+Packages using debug, reflection, or dynamic code execution features:
+
+<Code code="$ vlt query ':debug'" title="Terminal" lang="bash" />
+
+### `:dynamic`
+
+Packages using dynamic imports:
+
+<Code code="$ vlt query ':dynamic'" title="Terminal" lang="bash" />
+
+## Obfuscation & hiding
+
+### `:obfuscated`
+
+Packages with intentionally obfuscated code:
+
+<Code code="$ vlt query ':obfuscated'" title="Terminal" lang="bash" />
+
+### `:minified`
+
+Packages containing minified code:
+
+<Code code="$ vlt query ':minified'" title="Terminal" lang="bash" />
+
+### `:entropic`
+
+Packages with high-entropy strings (possibly encrypted data, leaked
+secrets, or obfuscated code):
+
+<Code code="$ vlt query ':entropic'" title="Terminal" lang="bash" />
+
+### `:native`
+
+Packages containing native code (compiled binaries, shared libraries):
+
+<Code code="$ vlt query ':native'" title="Terminal" lang="bash" />
+
+### `:shrinkwrap`
+
+Packages containing a shrinkwrap file that may bypass normal install
+procedures:
+
+<Code code="$ vlt query ':shrinkwrap'" title="Terminal" lang="bash" />
+
+## Package health
+
+### `:deprecated`
+
+Packages marked as deprecated:
+
+<Code code="$ vlt query ':deprecated'" title="Terminal" lang="bash" />
+
+### `:unmaintained`
+
+Packages not updated in more than 5 years:
+
+<Code
+  code="$ vlt query ':unmaintained'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:unpopular`
+
+Packages that are not widely used:
+
+<Code code="$ vlt query ':unpopular'" title="Terminal" lang="bash" />
+
+### `:trivial`
+
+Packages with less than 10 lines of code:
+
+<Code code="$ vlt query ':trivial'" title="Terminal" lang="bash" />
+
+### `:abandoned`
+
+Packages published by an npm account that no longer exists:
+
+<Code code="$ vlt query ':abandoned'" title="Terminal" lang="bash" />
+
+### `:unknown`
+
+Packages with a new npm collaborator publishing for the first time:
+
+<Code code="$ vlt query ':unknown'" title="Terminal" lang="bash" />
+
+### `:unstable`
+
+Packages with unstable ownership (new collaborator publishing):
+
+<Code code="$ vlt query ':unstable'" title="Terminal" lang="bash" />
+
+## Other
+
+### `:tracker`
+
+Packages containing telemetry:
+
+<Code code="$ vlt query ':tracker'" title="Terminal" lang="bash" />
+
+### `:undesirable`
+
+Packages that are jokes, parodies, or include undocumented behavior:
+
+<Code
+  code="$ vlt query ':undesirable'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:score(<rate>, <kind>)`
+
+Match packages by security score:
+
+| Parameter | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `rate`    | Score value 0–100 (or 0–1), with optional comparator |
+| `kind`    | Score category (optional, default: `overall`)        |
+
+Available kinds: `overall`, `license`, `maintenance`, `quality`,
+`supplyChain`, `vulnerability`.
+
+<Code
+  code={`# Packages with exactly 0.8 overall score
+$ vlt query ':score(80)'
+
+# Packages with score > 0.8
+
+$ vlt query ':score(">0.8")'
+
+# Low maintenance score
+
+$ vlt query ':score("<=0.5", "maintenance")'`} title="Terminal"
+lang="bash" />
+
+## Common audit queries
+
+Run a comprehensive security audit:
+
+<Code
+  code={`# Critical issues
+$ vlt query ':malware(critical), :cve(*), :obfuscated'
+
+# Supply chain risks
+
+$ vlt query ':abandoned, :unmaintained, :unknown'
+
+# License compliance
+
+$ vlt query ':license(copyleft), :license(unlicensed)'
+
+# Code behavior audit
+
+$ vlt query ':eval, :shell, :network, :fs'`} title="Terminal"
+lang="bash" />
+
+## See also
+
+- [`:scanned`](/cli/selectors/pseudo-states) — check if packages have
+  security metadata
+- [vlt security overview](/cli/security) — security features in vlt
