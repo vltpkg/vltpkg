@@ -51,6 +51,7 @@ rx,      run-exec    <script>        Run a script &/or fallback to executing a b
          token       [add|rm]        Manage authentication tokens
 
 rm,      uninstall   [<package>...]  Remove dependencies
+         unpublish   <pkg>[@<versi...Remove a package from the registry
 u,       update                      Update package versions to latest in-range
 
          version     <increment>     Bump package version

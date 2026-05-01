@@ -12,7 +12,6 @@ import { getDependencies } from './dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   Dependency,
-  RemoveImportersDependenciesMap,
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { DepID } from '@vltpkg/dep-id'
@@ -199,7 +198,7 @@ export const install = async (
   try {
     const remove = Object.assign(new Map<DepID, Set<string>>(), {
       modifiedDependencies: false,
-    }) as RemoveImportersDependenciesMap
+    })
     const modifiers = GraphModifier.maybeLoad(options)
 
     let act: Graph | undefined = actualLoad({

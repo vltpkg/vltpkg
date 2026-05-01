@@ -81,3 +81,58 @@ export const flushTelemetry = async (
   if (!sentryActive) return
   await Sentry.flush(timeoutMs)
 }
+
+/**
+ * Alias for {@link flushTelemetry} — matches the PostHog API surface
+ * so that callers don't need to know which backend is active.
+ */
+export const flush = flushTelemetry
+
+// ---------------------------------------------------------------------------
+// Event-tracking stubs
+//
+// The PostHog telemetry module exposed trackCommand / trackInstall /
+// trackError for explicit analytics events.  Sentry captures errors
+// automatically, so these are intentional no-ops — we keep the
+// exports so that call-sites in output.ts / install.ts compile
+// without changes.
+// ---------------------------------------------------------------------------
+
+export interface CommandEvent {
+  command: string
+  duration_ms: number
+  success: boolean
+  node_version: string
+  vlt_version: string
+  os: string
+  arch: string
+  ci: boolean
+}
+
+export interface InstallEvent {
+  dependency_count: number
+  duration_ms: number
+}
+
+export interface ErrorEvent {
+  command: string
+  error_code?: string
+}
+
+/** No-op — Sentry captures errors automatically. */
+export const trackCommand = (
+  _ev: CommandEvent,
+  _telemetryFlag?: boolean,
+): void => {}
+
+/** No-op — Sentry captures errors automatically. */
+export const trackInstall = (
+  _ev: InstallEvent,
+  _telemetryFlag?: boolean,
+): void => {}
+
+/** No-op — Sentry captures errors automatically. */
+export const trackError = (
+  _ev: ErrorEvent,
+  _telemetryFlag?: boolean,
+): void => {}

@@ -137,7 +137,7 @@ t.test('load graph with confused manifest', async () => {
         ...transferData.lockfile.edges,
         [`${joinDepIDTuple(['file', '.'])} confused`]:
           'prod ^1.0.0 ~~confused@1.0.0',
-      } as LockfileEdges,
+      },
     },
   }
   const result = load(transferDataWithConfused)
@@ -421,7 +421,7 @@ t.test('node creation error cases', async () => {
 
   // Test addNode with missing id
   t.throws(() => {
-    graph.addNode(undefined as any, {
+    graph.addNode(undefined, {
       name: 'test',
       version: '1.0.0',
     })
@@ -429,7 +429,7 @@ t.test('node creation error cases', async () => {
 
   // Test addNode with missing manifest
   t.throws(() => {
-    graph.addNode('test-id' as any, undefined as any)
+    graph.addNode('test-id' as any, undefined)
   }, /manifest is required/)
 })
 

@@ -337,7 +337,7 @@ t.test('getNodeOrderedDependencies', async t => {
         ],
       ]),
       { modifiedDependencies: false },
-    ) as AddImportersDependenciesMap
+    )
     const removeMap = Object.assign(new Map(), {
       modifiedDependencies: false,
     }) as RemoveImportersDependenciesMap
@@ -386,7 +386,7 @@ t.test('getNodeOrderedDependencies', async t => {
     const removeMap = Object.assign(
       new Map([[graph.mainImporter.id, new Set(['to-remove'])]]),
       { modifiedDependencies: false },
-    ) as RemoveImportersDependenciesMap
+    )
     const result = getNodeOrderedDependencies(graph.mainImporter, {
       add: addMap,
       remove: removeMap,
@@ -442,11 +442,11 @@ t.test('getNodeOrderedDependencies', async t => {
         ],
       ]),
       { modifiedDependencies: false },
-    ) as AddImportersDependenciesMap
+    )
     const removeMap = Object.assign(
       new Map([[graph.mainImporter.id, new Set(['to-remove'])]]),
       { modifiedDependencies: false },
-    ) as RemoveImportersDependenciesMap
+    )
     const result = getNodeOrderedDependencies(graph.mainImporter, {
       add: addMap,
       remove: removeMap,
@@ -495,7 +495,7 @@ t.test('getNodeOrderedDependencies', async t => {
         ],
       ]),
       { modifiedDependencies: false },
-    ) as AddImportersDependenciesMap
+    )
     const removeMap = Object.assign(new Map(), {
       modifiedDependencies: false,
     }) as RemoveImportersDependenciesMap
@@ -573,11 +573,11 @@ t.test('getNodeOrderedDependencies', async t => {
           ],
         ]),
         { modifiedDependencies: false },
-      ) as AddImportersDependenciesMap
+      )
       const removeMap = Object.assign(
         new Map([[otherNodeId, new Set(['other-dep'])]]),
         { modifiedDependencies: false },
-      ) as RemoveImportersDependenciesMap
+      )
       const result = getNodeOrderedDependencies(graph.mainImporter, {
         add: addMap,
         remove: removeMap,
