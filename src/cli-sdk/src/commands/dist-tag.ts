@@ -157,13 +157,10 @@ export const command: CommandFn<CommandResult> = async conf => {
       const version = spec.bareSpec
 
       if (!version) {
-        throw error(
-          'dist-tag add requires a version in the spec',
-          {
-            code: 'EUSAGE',
-            found: specArg,
-          },
-        )
+        throw error('dist-tag add requires a version in the spec', {
+          code: 'EUSAGE',
+          found: specArg,
+        })
       }
 
       const tag = args[1] ?? conf.options.tag
@@ -178,10 +175,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
 
-      if (
-        response.statusCode < 200 ||
-        response.statusCode >= 300
-      ) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw error('Failed to add dist-tag', {
           url,
           response,
@@ -197,12 +191,9 @@ export const command: CommandFn<CommandResult> = async conf => {
       const tag = args[1]
 
       if (!pkgArg || !tag) {
-        throw error(
-          'dist-tag rm requires a package name and tag',
-          {
-            code: 'EUSAGE',
-          },
-        )
+        throw error('dist-tag rm requires a package name and tag', {
+          code: 'EUSAGE',
+        })
       }
 
       const name = readPackageName(pkgArg, conf)
@@ -213,10 +204,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
 
-      if (
-        response.statusCode < 200 ||
-        response.statusCode >= 300
-      ) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw error('Failed to remove dist-tag', {
           url,
           response,
@@ -235,10 +223,7 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
 
-      if (
-        response.statusCode < 200 ||
-        response.statusCode >= 300
-      ) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw error('Failed to list dist-tags', {
           url,
           response,

@@ -136,12 +136,9 @@ t.test('add subcommand', async t => {
   })
 
   t.test('throws without version in spec', async t => {
-    await t.rejects(
-      Command.command(makeConfig(['add', 'my-pkg'])),
-      {
-        cause: { code: 'EUSAGE' },
-      },
-    )
+    await t.rejects(Command.command(makeConfig(['add', 'my-pkg'])), {
+      cause: { code: 'EUSAGE' },
+    })
   })
 
   t.test('throws on failed response', async t => {
@@ -199,9 +196,7 @@ t.test('ls subcommand', async t => {
       statusCode: 200,
       json: () => ({ latest: '1.0.0', beta: '2.0.0-beta.1' }),
     }
-    const result = await Command.command(
-      makeConfig(['ls', 'my-pkg']),
-    )
+    const result = await Command.command(makeConfig(['ls', 'my-pkg']))
     t.strictSame(result, {
       id: 'my-pkg',
       tags: { latest: '1.0.0', beta: '2.0.0-beta.1' },
