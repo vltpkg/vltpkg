@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { minimatch } from 'minimatch'
 import { init } from '@vltpkg/init'
+import { install } from '@vltpkg/graph'
 import { load, save } from '@vltpkg/vlt-json'
 import { assertWSConfig, asWSConfig } from '@vltpkg/workspaces'
 import { commandUsage } from '../config/usage.ts'
@@ -13,7 +14,9 @@ export const usage: CommandUsage = () =>
   commandUsage({
     command: 'init',
     usage: '',
-    description: `Create a new package.json file in the current directory.`,
+    description: `Initialize a new project in the current directory.
+                  Creates a package.json, a .gitignore, and installs
+                  dependencies so the project is ready to use immediately.`,
     options: {
       workspace: {
         value: '<path|glob>',
@@ -30,16 +33,20 @@ export const views = {
     // if results is an array, it means multiple workspaces were initialized
     if (Array.isArray(results)) {
       for (const result of results) {
-        for (const [type, { path }] of Object.entries(result)) {
-          output.push(`Wrote ${type} to ${path}:`)
+        for (const [type, value] of Object.entries(result)) {
+          output.push(`Wrote ${type} to ${value.path}`)
         }
       }
     } else {
       // otherwise, it's a single result
-      for (const [type, { path, data }] of Object.entries(results)) {
-        output.push(`Wrote ${type} to ${path}:
-
-${JSON.stringify(data, null, 2)}`)
+      for (const [type, value] of Object.entries(results)) {
+        if ('data' in value) {
+          output.push(
+            `Wrote ${type} to ${value.path}:\n\n${JSON.stringify(value.data, null, 2)}`,
+          )
+        } else {
+          output.push(`Wrote ${type} to ${value.path}`)
+        }
       }
     }
     output.push(`\nModify/add properties using \`vlt pkg\`. For example:
@@ -52,6 +59,13 @@ ${JSON.stringify(data, null, 2)}`)
 export const command: CommandFn<
   InitFileResults | InitFileResults[]
 > = async conf => {
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
+
   if (conf.values.workspace?.length) {
     const workspacesConfig = load('workspaces', assertWSConfig)
     const parsedWSConfig = asWSConfig(workspacesConfig ?? {})
@@ -127,8 +141,17 @@ export const command: CommandFn<
       // finally, we add the new workspaces to the config file
       save('workspaces', workspaces)
     }
+
+    // run install to set up node_modules and vlt-lock.json
+    await install({ ...conf.options, allowScripts })
+
     return results
   }
 
-  return init({ cwd: process.cwd() })
+  const result = await init({ cwd: process.cwd() })
+
+  // run install to set up node_modules and vlt-lock.json
+  await install({ ...conf.options, allowScripts })
+
+  return result
 }

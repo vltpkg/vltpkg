@@ -6,6 +6,7 @@ import type { InitFileResults } from '@vltpkg/init'
 
 const inited: string[] = []
 const vltJsonData: Record<string, any> = {}
+let installCalled = false
 
 const { usage, command, views } = await t.mockImport<
   typeof import('../../src/commands/init.ts')
@@ -16,6 +17,12 @@ const { usage, command, views } = await t.mockImport<
     },
     getAuthorFromGitUser() {
       return ''
+    },
+  },
+  '@vltpkg/graph': {
+    install: async () => {
+      installCalled = true
+      return { graph: { toJSON: () => ({}) } }
     },
   },
   '@vltpkg/vlt-json': {
@@ -30,12 +37,18 @@ t.matchSnapshot(usage().usageMarkdown())
 
 t.test('test command', async t => {
   t.chdir(t.testdir())
-  await command({ values: {} } as LoadedConfig)
+  installCalled = false
+  await command({
+    values: {},
+    get: () => undefined,
+  } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
+  t.ok(installCalled, 'should call install')
 })
 
 t.test('test command with workspace', async t => {
   const res: InitFileResults[] = []
+  installCalled = false
   const { command, views } = await t.mockImport<
     typeof import('../../src/commands/init.ts')
   >('../../src/commands/init.ts', {
@@ -55,6 +68,12 @@ t.test('test command with workspace', async t => {
         return ''
       },
     },
+    '@vltpkg/graph': {
+      install: async () => {
+        installCalled = true
+        return { graph: { toJSON: () => ({}) } }
+      },
+    },
   })
   const dir = t.testdir({
     'README.md': 'This is a workspace',
@@ -70,6 +89,7 @@ t.test('test command with workspace', async t => {
     options: {
       projectRoot: dir,
     },
+    get: () => undefined,
   } as unknown as LoadedConfig)
   t.strictSame(
     res,
@@ -83,6 +103,7 @@ t.test('test command with workspace', async t => {
     ],
     'should have initial result',
   )
+  t.ok(installCalled, 'should call install after workspace init')
   t.matchSnapshot(
     readFileSync(resolve(dir, 'vlt.json'), 'utf8'),
     'should add workspace to vlt.json',
@@ -99,23 +120,29 @@ t.test('test command with workspace', async t => {
 t.test('test command with empty workspace array', async t => {
   t.chdir(t.testdir())
   inited.length = 0 // reset array
+  installCalled = false
   await command({
     values: {
       workspace: [],
     },
+    get: () => undefined,
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
+  t.ok(installCalled, 'should call install')
 })
 
 t.test('test command with undefined workspace', async t => {
   t.chdir(t.testdir())
   inited.length = 0 // reset array
+  installCalled = false
   await command({
     values: {
       workspace: undefined,
     },
+    get: () => undefined,
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
+  t.ok(installCalled, 'should call install')
 })
 
 t.test(
@@ -137,6 +164,7 @@ t.test(
       options: {
         projectRoot: dir,
       },
+      get: () => undefined,
     } as unknown as LoadedConfig)
 
     t.strictSame(inited, [resolve(dir, 'packages/a')])
@@ -165,6 +193,7 @@ t.test(
       options: {
         projectRoot: dir,
       },
+      get: () => undefined,
     } as unknown as LoadedConfig)
 
     t.strictSame(inited, [resolve(dir, 'docs/website')])
@@ -196,6 +225,7 @@ t.test(
       options: {
         projectRoot: dir,
       },
+      get: () => undefined,
     } as unknown as LoadedConfig)
 
     t.strictSame(inited, [resolve(dir, 'packages/a')])
@@ -230,6 +260,7 @@ t.test(
       options: {
         projectRoot: dir,
       },
+      get: () => undefined,
     } as unknown as LoadedConfig)
 
     t.strictSame(inited, [resolve(dir, 'docs/website')])
@@ -262,6 +293,7 @@ t.test(
       options: {
         projectRoot: dir,
       },
+      get: () => undefined,
     } as unknown as LoadedConfig)
 
     t.strictSame(inited, [resolve(dir, 'packages/b')])
@@ -294,6 +326,7 @@ t.test(
       options: {
         projectRoot: dir,
       },
+      get: () => undefined,
     } as unknown as LoadedConfig)
 
     t.strictSame(inited, [resolve(dir, 'docs/website')])
@@ -323,6 +356,7 @@ t.test('test multiple workspaces with mixed matching', async t => {
     options: {
       projectRoot: dir,
     },
+    get: () => undefined,
   } as unknown as LoadedConfig)
 
   t.strictSame(inited, [
@@ -347,6 +381,44 @@ t.test('human output', t => {
         data: { name: 'myproject' },
       },
     }),
+  )
+  t.end()
+})
+
+t.test('human output with gitignore', t => {
+  t.matchSnapshot(
+    views.human({
+      manifest: {
+        path: '/some/path/package.json',
+        data: { name: 'myproject', version: '1.0.0' },
+      },
+      gitignore: {
+        path: '/some/path/.gitignore',
+      },
+    }),
+  )
+  t.end()
+})
+
+t.test('human output array', t => {
+  t.matchSnapshot(
+    views.human([
+      {
+        manifest: {
+          path: '/some/path/packages/a/package.json',
+          data: { name: 'a' },
+        },
+        gitignore: {
+          path: '/some/path/packages/a/.gitignore',
+        },
+      },
+      {
+        manifest: {
+          path: '/some/path/packages/b/package.json',
+          data: { name: 'b' },
+        },
+      },
+    ]),
   )
   t.end()
 })

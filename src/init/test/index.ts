@@ -1,19 +1,18 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 
 t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
-const { init } = await t.mockImport<typeof import('../src/index.ts')>(
-  '../src/index.ts',
-  {
-    '@vltpkg/git': {
-      async getUser() {
-        return { name: 'User', email: 'foo@bar.ca' }
-      },
+const { init, ensureGitignore } = await t.mockImport<
+  typeof import('../src/index.ts')
+>('../src/index.ts', {
+  '@vltpkg/git': {
+    async getUser() {
+      return { name: 'User', email: 'foo@bar.ca' }
     },
   },
-)
+})
 
 t.test('init', async t => {
   const dir = t.testdir({
@@ -34,6 +33,11 @@ t.test('init', async t => {
   t.matchSnapshot(
     readFileSync(resolve(dir, 'my-project', 'package.json'), 'utf8'),
     'should init a new package.json file',
+  )
+
+  t.matchSnapshot(
+    readFileSync(resolve(dir, 'my-project', '.gitignore'), 'utf8'),
+    'should init a new .gitignore file',
   )
 })
 
@@ -95,6 +99,14 @@ t.test('init existing', async t => {
       email: 'foo@bar.ca',
     },
     'should add missing author',
+  )
+
+  // Should create gitignore
+  t.ok(result.gitignore, 'should return gitignore info')
+  t.equal(
+    readFileSync(resolve(dir, 'my-project', '.gitignore'), 'utf8'),
+    'node_modules\n',
+    'should create .gitignore with node_modules',
   )
 
   // Verify the file was actually updated
@@ -282,3 +294,97 @@ t.test('init existing partial package.json', async t => {
     'should add missing author from template',
   )
 })
+
+t.test('ensureGitignore - creates new file', async t => {
+  const dir = t.testdir({ 'my-project': {} })
+  const cwd = resolve(dir, 'my-project')
+  const result = ensureGitignore(cwd)
+  t.ok(result, 'should return gitignore info')
+  t.equal(
+    readFileSync(resolve(cwd, '.gitignore'), 'utf8'),
+    'node_modules\n',
+    'should create .gitignore with node_modules',
+  )
+})
+
+t.test(
+  'ensureGitignore - appends to existing file missing node_modules',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.gitignore': 'dist\n',
+      },
+    })
+    const cwd = resolve(dir, 'my-project')
+    const result = ensureGitignore(cwd)
+    t.ok(result, 'should return gitignore info')
+    t.equal(
+      readFileSync(resolve(cwd, '.gitignore'), 'utf8'),
+      'dist\nnode_modules\n',
+      'should append node_modules to existing .gitignore',
+    )
+  },
+)
+
+t.test(
+  'ensureGitignore - appends to file with no trailing newline',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.gitignore': 'dist',
+      },
+    })
+    const cwd = resolve(dir, 'my-project')
+    const result = ensureGitignore(cwd)
+    t.ok(result, 'should return gitignore info')
+    t.equal(
+      readFileSync(resolve(cwd, '.gitignore'), 'utf8'),
+      'dist\nnode_modules\n',
+      'should add newline before node_modules',
+    )
+  },
+)
+
+t.test(
+  'ensureGitignore - no change when node_modules already present',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.gitignore': 'dist\nnode_modules\n',
+      },
+    })
+    const cwd = resolve(dir, 'my-project')
+    const result = ensureGitignore(cwd)
+    t.equal(
+      result,
+      undefined,
+      'should return undefined when no change needed',
+    )
+    t.equal(
+      readFileSync(resolve(cwd, '.gitignore'), 'utf8'),
+      'dist\nnode_modules\n',
+      'should not modify .gitignore',
+    )
+  },
+)
+
+t.test(
+  'init - no gitignore returned when node_modules already in .gitignore',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.gitignore': 'node_modules\n',
+      },
+    })
+    const result = await init({ cwd: resolve(dir, 'my-project') })
+    t.equal(
+      result.gitignore,
+      undefined,
+      'should not return gitignore info when entry already exists',
+    )
+    t.ok(
+      existsSync(resolve(dir, 'my-project', '.gitignore')),
+      'gitignore should still exist',
+    )
+  },
+)
