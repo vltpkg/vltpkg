@@ -117,6 +117,6 @@ export const init = async ({
 
   return {
     manifest: { path, data },
-    ...(gitignore ? { gitignore } : undefined),
+    ...(gitignore ? { gitignore } : {}),
   }
 }
