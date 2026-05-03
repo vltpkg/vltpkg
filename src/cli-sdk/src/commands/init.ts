@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { minimatch } from 'minimatch'
 import { init } from '@vltpkg/init'
+import { install } from '@vltpkg/graph'
 import { load, save } from '@vltpkg/vlt-json'
 import { assertWSConfig, asWSConfig } from '@vltpkg/workspaces'
 import { commandUsage } from '../config/usage.ts'
@@ -130,5 +131,14 @@ export const command: CommandFn<
     return results
   }
 
-  return init({ cwd: process.cwd() })
+  const result = await init({ cwd: process.cwd() })
+
+  // Run install to create node_modules/ and vlt-lock.json,
+  // giving the user a fully functional project immediately.
+  await install({
+    ...conf.options,
+    allowScripts: ':not(*)',
+  })
+
+  return result
 }

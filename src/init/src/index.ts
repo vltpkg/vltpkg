@@ -3,6 +3,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { JSONObj } from '@vltpkg/registry-client'
 import type { NormalizedManifest } from '@vltpkg/types'
 import { basename, resolve } from 'node:path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 import { asError, normalizeManifest } from '@vltpkg/types'
 export { getAuthorFromGitUser }
@@ -43,6 +44,35 @@ export type InitFileResults = {
   // config?: JSONFileInfo
 }
 
+/**
+ * Ensures that a `.gitignore` file exists at the given directory and
+ * contains `node_modules`. If the file does not exist, it is created.
+ * If it exists but does not contain a `node_modules` entry, the entry
+ * is appended.
+ */
+export const ensureGitignore = (cwd: string): void => {
+  const gitignorePath = resolve(cwd, '.gitignore')
+  if (existsSync(gitignorePath)) {
+    const content = readFileSync(gitignorePath, 'utf8')
+    // Check if node_modules is already listed as its own entry
+    const lines = content.split(/\r?\n/)
+    const hasNodeModules = lines.some(
+      line => line.trim() === 'node_modules',
+    )
+    if (!hasNodeModules) {
+      // Append node_modules, ensuring we start on a new line
+      const separator =
+        content.length > 0 && !content.endsWith('\n') ? '\n' : ''
+      writeFileSync(
+        gitignorePath,
+        content + separator + 'node_modules\n',
+      )
+    }
+  } else {
+    writeFileSync(gitignorePath, 'node_modules\n')
+  }
+}
+
 export const init = async ({
   cwd = process.cwd(),
   author,
@@ -75,5 +105,6 @@ export const init = async ({
 
   const indent = 2
   packageJson.write(cwd, data, indent)
+  ensureGitignore(cwd)
   return { manifest: { path, data } }
 }

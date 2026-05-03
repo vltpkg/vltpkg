@@ -5,6 +5,7 @@ import type { LoadedConfig } from '../../src/config/index.ts'
 import type { InitFileResults } from '@vltpkg/init'
 
 const inited: string[] = []
+const installed: Record<string, unknown>[] = []
 const vltJsonData: Record<string, any> = {}
 
 const { usage, command, views } = await t.mockImport<
@@ -16,6 +17,12 @@ const { usage, command, views } = await t.mockImport<
     },
     getAuthorFromGitUser() {
       return ''
+    },
+  },
+  '@vltpkg/graph': {
+    install: async (options: Record<string, unknown>) => {
+      installed.push(options)
+      return { graph: { nodes: new Map() } }
     },
   },
   '@vltpkg/vlt-json': {
@@ -30,12 +37,23 @@ t.matchSnapshot(usage().usageMarkdown())
 
 t.test('test command', async t => {
   t.chdir(t.testdir())
-  await command({ values: {} } as LoadedConfig)
+  installed.length = 0
+  await command({
+    values: {},
+    options: { projectRoot: t.testdirName },
+  } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
+  t.equal(installed.length, 1, 'install should be called once')
+  t.equal(
+    installed[0]?.allowScripts,
+    ':not(*)',
+    'install should disable scripts',
+  )
 })
 
 t.test('test command with workspace', async t => {
   const res: InitFileResults[] = []
+  const wsInstalled: Record<string, unknown>[] = []
   const { command, views } = await t.mockImport<
     typeof import('../../src/commands/init.ts')
   >('../../src/commands/init.ts', {
@@ -53,6 +71,12 @@ t.test('test command with workspace', async t => {
       },
       getAuthorFromGitUser() {
         return ''
+      },
+    },
+    '@vltpkg/graph': {
+      install: async (options: Record<string, unknown>) => {
+        wsInstalled.push(options)
+        return { graph: { nodes: new Map() } }
       },
     },
   })
@@ -94,28 +118,48 @@ t.test('test command with workspace', async t => {
       .replace(resolve(dir, 'packages/a'), 'packages/a'),
     'should output human readable message',
   )
+
+  t.equal(
+    wsInstalled.length,
+    0,
+    'install should not be called for workspace init',
+  )
 })
 
 t.test('test command with empty workspace array', async t => {
   t.chdir(t.testdir())
   inited.length = 0 // reset array
+  installed.length = 0
   await command({
     values: {
       workspace: [],
     },
+    options: { projectRoot: t.testdirName },
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
+  t.equal(
+    installed.length,
+    1,
+    'install should be called for empty workspace array',
+  )
 })
 
 t.test('test command with undefined workspace', async t => {
   t.chdir(t.testdir())
   inited.length = 0 // reset array
+  installed.length = 0
   await command({
     values: {
       workspace: undefined,
     },
+    options: { projectRoot: t.testdirName },
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
+  t.equal(
+    installed.length,
+    1,
+    'install should be called for undefined workspace',
+  )
 })
 
 t.test(

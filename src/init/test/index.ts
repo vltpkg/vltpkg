@@ -4,16 +4,15 @@ import t from 'tap'
 
 t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
-const { init } = await t.mockImport<typeof import('../src/index.ts')>(
-  '../src/index.ts',
-  {
-    '@vltpkg/git': {
-      async getUser() {
-        return { name: 'User', email: 'foo@bar.ca' }
-      },
+const { init, ensureGitignore } = await t.mockImport<
+  typeof import('../src/index.ts')
+>('../src/index.ts', {
+  '@vltpkg/git': {
+    async getUser() {
+      return { name: 'User', email: 'foo@bar.ca' }
     },
   },
-)
+})
 
 t.test('init', async t => {
   const dir = t.testdir({
@@ -281,4 +280,110 @@ t.test('init existing partial package.json', async t => {
     },
     'should add missing author from template',
   )
+})
+
+t.test('init creates .gitignore', async t => {
+  const dir = t.testdir({
+    'my-project': {},
+  })
+  const cwd = resolve(dir, 'my-project')
+  await init({ cwd, logger: () => {} })
+  const gitignore = readFileSync(resolve(cwd, '.gitignore'), 'utf8')
+  t.equal(
+    gitignore,
+    'node_modules\n',
+    'should create .gitignore with node_modules',
+  )
+})
+
+t.test('ensureGitignore creates .gitignore when missing', t => {
+  const dir = t.testdir({})
+  ensureGitignore(dir)
+  const content = readFileSync(resolve(dir, '.gitignore'), 'utf8')
+  t.equal(content, 'node_modules\n', 'should create .gitignore')
+  t.end()
+})
+
+t.test(
+  'ensureGitignore appends to existing .gitignore without node_modules',
+  t => {
+    const dir = t.testdir({
+      '.gitignore': 'dist\n.env\n',
+    })
+    ensureGitignore(dir)
+    const content = readFileSync(resolve(dir, '.gitignore'), 'utf8')
+    t.equal(
+      content,
+      'dist\n.env\nnode_modules\n',
+      'should append node_modules',
+    )
+    t.end()
+  },
+)
+
+t.test(
+  'ensureGitignore appends with newline separator when file does not end with newline',
+  t => {
+    const dir = t.testdir({
+      '.gitignore': 'dist',
+    })
+    ensureGitignore(dir)
+    const content = readFileSync(resolve(dir, '.gitignore'), 'utf8')
+    t.equal(
+      content,
+      'dist\nnode_modules\n',
+      'should add newline before node_modules',
+    )
+    t.end()
+  },
+)
+
+t.test(
+  'ensureGitignore does not modify .gitignore that already has node_modules',
+  t => {
+    const original = 'dist\nnode_modules\n.env\n'
+    const dir = t.testdir({
+      '.gitignore': original,
+    })
+    ensureGitignore(dir)
+    const content = readFileSync(resolve(dir, '.gitignore'), 'utf8')
+    t.equal(
+      content,
+      original,
+      'should not modify file that already contains node_modules',
+    )
+    t.end()
+  },
+)
+
+t.test(
+  'ensureGitignore does not modify when node_modules has surrounding whitespace',
+  t => {
+    const original = '  node_modules  \n'
+    const dir = t.testdir({
+      '.gitignore': original,
+    })
+    ensureGitignore(dir)
+    const content = readFileSync(resolve(dir, '.gitignore'), 'utf8')
+    t.equal(
+      content,
+      original,
+      'should handle node_modules with whitespace',
+    )
+    t.end()
+  },
+)
+
+t.test('ensureGitignore handles empty .gitignore', t => {
+  const dir = t.testdir({
+    '.gitignore': '',
+  })
+  ensureGitignore(dir)
+  const content = readFileSync(resolve(dir, '.gitignore'), 'utf8')
+  t.equal(
+    content,
+    'node_modules\n',
+    'should write node_modules to empty file',
+  )
+  t.end()
 })
