@@ -80,8 +80,6 @@ export const flushTelemetry = async (
   await Sentry.flush(timeoutMs)
 }
 
-
-
 // ---------------------------------------------------------------------------
 // Event-tracking stubs
 //
