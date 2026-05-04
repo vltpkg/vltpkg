@@ -8,7 +8,6 @@
  *   (https://consoledonottrack.com/)
  * - `--no-telemetry` CLI flag
  * - `"telemetry": false` in vlt.json config
- *
  * @module
  */
 
@@ -36,8 +35,7 @@ let didInit = false
  * This should be called as early as possible in the CLI
  * lifecycle so that unhandled exceptions are captured.
  * If `DO_NOT_TRACK` is set, this is a no-op.
- *
- * @param version - The CLI version string.
+ * @param {string} version - The CLI version string.
  */
 export const initTelemetry = (version?: string): void => {
   if (didInit) return
@@ -76,17 +74,13 @@ export const disableTelemetry = (): void => {
  * (or after the timeout expires).
  */
 export const flushTelemetry = async (
-  timeoutMs: number = 2000,
+  timeoutMs = 2000,
 ): Promise<void> => {
   if (!sentryActive) return
   await Sentry.flush(timeoutMs)
 }
 
-/**
- * Alias for {@link flushTelemetry} — matches the PostHog API surface
- * so that callers don't need to know which backend is active.
- */
-export const flush = flushTelemetry
+
 
 // ---------------------------------------------------------------------------
 // Event-tracking stubs

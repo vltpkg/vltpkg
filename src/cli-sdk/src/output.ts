@@ -15,7 +15,7 @@ import {
   generateFullHelp,
 } from './custom-help.ts'
 import {
-  flush as flushTelemetry,
+  flushTelemetry,
   trackCommand,
   trackError,
 } from './telemetry.ts'

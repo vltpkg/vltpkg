@@ -13,7 +13,6 @@ import {
   disableTelemetry,
   flushTelemetry,
   initTelemetry,
-  isDoNotTrack,
 } from './telemetry.ts'
 
 export type {
@@ -80,7 +79,7 @@ const run = async () => {
 
   // If the user opted out of telemetry via config or CLI flag
   // (--no-telemetry), shut down Sentry now.
-  if (vlt.get('telemetry') === false) {
+  if (!vlt.get('telemetry')) {
     disableTelemetry()
   }
 
