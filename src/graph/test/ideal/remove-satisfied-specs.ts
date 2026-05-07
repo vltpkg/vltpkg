@@ -163,6 +163,36 @@ t.test('graph with an actual node', async t => {
     )
   })
 
+  await t.test('catalog spec is not removed even if node satisfies', async t => {
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
+    const add = new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map(
+          Object.entries({
+            foo: asDependency({
+              spec: Spec.parse('foo', 'catalog:', {
+                catalog: { foo: '^1.0.0' },
+                catalogs: {},
+              }),
+              type: 'prod',
+            }),
+          }),
+        ),
+      ],
+    ]) as AddImportersDependenciesMap
+    removeSatisfiedSpecs({ add, graph })
+    t.matchSnapshot(
+      inspect(add, { depth: Infinity }),
+      'should keep the catalog spec in the add list',
+    )
+  })
+
   await t.test('refer to missing importer', async t => {
     const graph = new Graph({
       mainManifest: {},
