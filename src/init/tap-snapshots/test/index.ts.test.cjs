@@ -5,6 +5,11 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > init > should init a new .gitignore file 1`] = `
+node_modules
+
+`
+
 exports[`test/index.ts > TAP > init > should init a new package.json file 1`] = `
 {
   "name": "my-project",
@@ -21,6 +26,9 @@ exports[`test/index.ts > TAP > init > should init a new package.json file 1`] = 
 
 exports[`test/index.ts > TAP > init > should initialize the data 1`] = `
 Object {
+  "gitignore": Object {
+    "path": "{CWD}/.tap/fixtures/test-index.ts-init/my-project/.gitignore",
+  },
   "manifest": Object {
     "data": Object {
       "author": Object {
@@ -58,6 +66,9 @@ exports[`test/index.ts > TAP > init with author info > should init a new package
 
 exports[`test/index.ts > TAP > init with author info > should output expected message with author info 1`] = `
 Object {
+  "gitignore": Object {
+    "path": "{CWD}/.tap/fixtures/test-index.ts-init-with-author-info/my-project/.gitignore",
+  },
   "manifest": Object {
     "data": Object {
       "author": Object {
@@ -88,6 +99,9 @@ exports[`test/index.ts > TAP > missing user info > should init a new package.jso
 
 exports[`test/index.ts > TAP > missing user info > should initialize with data 1`] = `
 Object {
+  "gitignore": Object {
+    "path": "{CWD}/.tap/fixtures/test-index.ts-missing-user-info/my-project/.gitignore",
+  },
   "manifest": Object {
     "data": Object {
       "description": "",

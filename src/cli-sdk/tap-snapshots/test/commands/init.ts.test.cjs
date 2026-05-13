@@ -17,6 +17,30 @@ Modify/add properties using \`vlt pkg\`. For example:
   vlt pkg set "description=My new project"
 `
 
+exports[`test/commands/init.ts > TAP > human output array > must match snapshot 1`] = `
+Wrote manifest to /some/path/packages/a/package.json
+Wrote gitignore to /some/path/packages/a/.gitignore
+Wrote manifest to /some/path/packages/b/package.json
+
+Modify/add properties using \`vlt pkg\`. For example:
+
+  vlt pkg set "description=My new project"
+`
+
+exports[`test/commands/init.ts > TAP > human output with gitignore > must match snapshot 1`] = `
+Wrote manifest to /some/path/package.json:
+
+{
+  "name": "myproject",
+  "version": "1.0.0"
+}
+Wrote gitignore to /some/path/.gitignore
+
+Modify/add properties using \`vlt pkg\`. For example:
+
+  vlt pkg set "description=My new project"
+`
+
 exports[`test/commands/init.ts > TAP > must match snapshot 1`] = `
 Usage:
 
@@ -24,7 +48,7 @@ Usage:
 vlt init
 \`\`\`
 
-Create a new package.json file in the current directory.
+Initialize a new project in the current directory. Creates a package.json, a .gitignore, and installs dependencies so the project is ready to use immediately.
 
 ## Options
 
@@ -50,7 +74,7 @@ exports[`test/commands/init.ts > TAP > test command with workspace > should add 
 `
 
 exports[`test/commands/init.ts > TAP > test command with workspace > should output human readable message 1`] = `
-Wrote manifest to packages/a:
+Wrote manifest to packages/a
 
 Modify/add properties using \`vlt pkg\`. For example:
 
