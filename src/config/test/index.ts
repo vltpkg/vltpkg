@@ -174,7 +174,7 @@ t.test('del', async t => {
       })
       t.strictSame(conf.deletedKeys, [
         'project',
-        ['scope-registries.@darcy'],
+        ['scoped-registries.@darcy'],
       ])
     })
 
@@ -224,7 +224,7 @@ t.test('get', async t => {
 
   t.test('npm-style @scope:registry', async t => {
     const mockOptions = {
-      'scope-registries': [
+      'scoped-registries': [
         '@darcy=https://registry.vlt.io/darcy/main/',
       ],
     }
@@ -519,7 +519,7 @@ t.test('set', async t => {
       t.ok(conf.addedConfig, 'config should be added')
       const [which, configData] = conf.addedConfig!
       t.equal(which, 'project')
-      t.strictSame(configData['scope-registries'], {
+      t.strictSame(configData['scoped-registries'], {
         '@darcy': 'https://registry.vlt.io/darcy/main/',
       })
     })

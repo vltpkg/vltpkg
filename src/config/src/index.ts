@@ -22,19 +22,19 @@ export const list = (conf: LoadedConfig) => {
 /**
  * Match npm-style scoped registry keys like `@scope:registry`.
  * The scope is captured (including the leading `@`) so it can be
- * mapped onto the `scope-registries` record field.
+ * mapped onto the `scoped-registries` record field.
  */
 const npmScopeRegistryRe = /^(@[^:/\s]+):registry$/
 
 /**
  * Translate an npm-style `@scope:registry` config key into the
- * vlt equivalent dot-prop path `scope-registries.@scope`.
+ * vlt equivalent dot-prop path `scoped-registries.@scope`.
  *
  * Any other key is returned unchanged.
  */
 const normalizeConfigKey = (key: string): string => {
   const m = npmScopeRegistryRe.exec(key)
-  return m?.[1] ? `scope-registries.${m[1]}` : key
+  return m?.[1] ? `scoped-registries.${m[1]}` : key
 }
 
 export const del = async (conf: LoadedConfig) => {

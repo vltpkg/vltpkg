@@ -80,7 +80,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --save-peer
     --save-prod
     --scope=<query>
-    --scope-registries=<@scope=url>
+    --scoped-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
@@ -145,7 +145,7 @@ Unknown config option: asdf
     save-peer
     save-prod
     scope
-    scope-registries
+    scoped-registries
     script-shell
     stale-while-revalidate-factor
     tag

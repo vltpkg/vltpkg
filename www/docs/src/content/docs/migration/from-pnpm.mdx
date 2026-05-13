@@ -95,7 +95,7 @@ packages:
   code={JSON.stringify(
     {
       registry: 'https://registry.internal.company.com/',
-      'scope-registries': {
+      'scoped-registries': {
         '@mycompany': 'https://npm.mycompany.com/',
       },
       workspaces: ['packages/*', 'apps/*'],
@@ -114,12 +114,12 @@ packages:
 ### Scoped Registries
 
 pnpm's scoped registries (from `.npmrc`) map directly to vlt's
-`scope-registries`:
+`scoped-registries`:
 
 <Code
   code={JSON.stringify(
     {
-      'scope-registries': {
+      'scoped-registries': {
         '@mycompany': 'https://npm.mycompany.com/',
       },
     },

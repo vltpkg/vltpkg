@@ -120,7 +120,7 @@ export const recordFields = [
   'git-hosts',
   'registries',
   'git-host-archives',
-  'scope-registries',
+  'scoped-registries',
   'jsr-registries',
 ] as const
 
@@ -221,12 +221,12 @@ export const definition = j
                     `,
     },
 
-    'scope-registries': {
+    'scoped-registries': {
       hint: '@scope=url',
       description: `Map package name scopes to registry URLs.
 
                     For example,
-                    \`--scope-registries @acme=https://registry.acme/\`
+                    \`--scoped-registries @acme=https://registry.acme/\`
                     would tell vlt to fetch any packages named
                     \`@acme/...\` from the \`https://registry.acme/\`
                     registry.
