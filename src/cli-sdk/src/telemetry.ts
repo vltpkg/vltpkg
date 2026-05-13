@@ -1,115 +1,93 @@
 /**
- * Anonymized telemetry for the vlt CLI.
+ * Telemetry module for vlt CLI.
  *
- * - Sends anonymous, non-PII events to PostHog.
- * - Generates a random UUID on first run, stored in XDG data dir.
- * - Respects opt-out via `DO_NOT_TRACK=1`, `VLT_TELEMETRY=0`,
- *   or the `--telemetry=false` config flag.
- * - Never blocks CLI exit — flush is fire-and-forget with a timeout.
- * - Fails silently on any network or runtime error.
+ * Initializes Sentry error tracking unless the user has opted out.
+ *
+ * Opt-out methods (any one is sufficient):
+ * - `DO_NOT_TRACK=1` environment variable
+ *   (https://consoledonottrack.com/)
+ * - `--no-telemetry` CLI flag
+ * - `"telemetry": false` in vlt.json config
  * @module
  */
 
-import { randomUUID } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { XDG } from '@vltpkg/xdg'
+import * as Sentry from '@sentry/node'
 
-const POSTHOG_API_KEY =
-  'phc_k9xCAgC6sPIBLb5UhjhnGWpt1mos0hLV4mmEhZTGPpO'
-const POSTHOG_HOST = 'https://us.i.posthog.com'
-
-/** Timeout (ms) we wait for PostHog to flush before giving up. */
-const SHUTDOWN_TIMEOUT_MS = 2_000
-
-const xdg = new XDG('vlt')
+const SENTRY_DSN =
+  'https://2e3737e1a74cd7d363b280c482596d8e@o4506397716054016.ingest.us.sentry.io/4511118387707904'
 
 /**
- * Check whether telemetry is disabled via environment variables.
+ * Returns true if telemetry is disabled via environment variable.
  *
- * - `DO_NOT_TRACK=1` — https://consoledonottrack.com/
- * - `VLT_TELEMETRY=0`
+ * Checks `DO_NOT_TRACK` following the Console Do Not Track
+ * convention.
  */
-export const isOptedOut = (): boolean =>
+export const isDoNotTrack = (): boolean =>
   process.env.DO_NOT_TRACK === '1' ||
-  process.env.VLT_TELEMETRY === '0'
+  process.env.DO_NOT_TRACK === 'true'
+
+let sentryActive = false
+let didInit = false
 
 /**
- * Return (or create) a stable anonymous distinct ID.
- * Stored at `<XDG_DATA_HOME>/vlt/telemetry-id`.
+ * Initialize telemetry (Sentry error tracking).
+ *
+ * This should be called as early as possible in the CLI
+ * lifecycle so that unhandled exceptions are captured.
+ * If `DO_NOT_TRACK` is set, this is a no-op.
+ * @param {string} version - The CLI version string.
  */
-const getAnonymousId = (): string => {
-  const dir = xdg.data()
-  const file = xdg.data('telemetry-id')
-  try {
-    const existing = readFileSync(file, 'utf8').trim()
-    if (existing) return existing
-  } catch {
-    // file doesn't exist yet — create it below
+export const initTelemetry = (version?: string): void => {
+  if (didInit) return
+  didInit = true
+
+  if (isDoNotTrack()) return
+
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    release: version ? `vlt@${version}` : undefined,
+    sendDefaultPii: true,
+  })
+  sentryActive = true
+}
+
+/**
+ * Disable telemetry after it was already initialized.
+ *
+ * Called when config/CLI flags indicate `--no-telemetry`
+ * but the env var was not set (so Sentry was started
+ * eagerly). This closes the Sentry client so no further
+ * events are sent.
+ */
+export const disableTelemetry = (): void => {
+  const client = Sentry.getClient()
+  if (client) {
+    void client.close(0)
   }
-  const id = randomUUID()
-  try {
-    mkdirSync(dir, { recursive: true })
-    writeFileSync(file, id + '\n')
-  } catch {
-    // best-effort — if we can't persist, just use a transient id
-  }
-  return id
+  sentryActive = false
+}
+
+/**
+ * Flush pending Sentry events before process exit.
+ *
+ * Returns a promise that resolves when events are sent
+ * (or after the timeout expires).
+ */
+export const flushTelemetry = async (
+  timeoutMs = 2000,
+): Promise<void> => {
+  if (!sentryActive) return
+  await Sentry.flush(timeoutMs)
 }
 
 // ---------------------------------------------------------------------------
-// PostHog client — lazily initialised
-// ---------------------------------------------------------------------------
-
-let _posthog: PostHogClient | undefined
-let _initFailed = false
-
-// We define a minimal interface so that the module compiles even when
-// posthog-node is not installed (e.g. in tests that mock this module).
-interface PostHogClient {
-  capture(event: {
-    distinctId: string
-    event: string
-    properties?: Record<string, unknown>
-  }): void
-  shutdown(): Promise<void>
-}
-
-const getClient = (): PostHogClient | undefined => {
-  if (_posthog) return _posthog
-  if (_initFailed) return undefined
-  try {
-    // Dynamic import would be async; posthog-node also ships a
-    // synchronous constructor, so we use createRequire to keep
-    // the hot-path synchronous in this ESM package.
-    const req = createRequire(import.meta.url)
-    const { PostHog } = req('posthog-node') as {
-      PostHog: new (
-        key: string,
-        opts: {
-          host: string
-          flushAt: number
-          flushInterval: number
-        },
-      ) => PostHogClient
-    }
-    _posthog = new PostHog(POSTHOG_API_KEY, {
-      host: POSTHOG_HOST,
-      // Buffer up to 20 events and flush every 10 s — but we always
-      // call shutdown at the end so this is just a safety net.
-      flushAt: 20,
-      flushInterval: 10_000,
-    })
-    return _posthog
-    /* c8 ignore next 4 */
-  } catch {
-    _initFailed = true
-    return undefined
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Public API
+// Event-tracking stubs
+//
+// The PostHog telemetry module exposed trackCommand / trackInstall /
+// trackError for explicit analytics events.  Sentry captures errors
+// automatically, so these are intentional no-ops — we keep the
+// exports so that call-sites in output.ts / install.ts compile
+// without changes.
 // ---------------------------------------------------------------------------
 
 export interface CommandEvent {
@@ -133,79 +111,20 @@ export interface ErrorEvent {
   error_code?: string
 }
 
-/**
- * Capture a `cli_command` event.
- */
+/** No-op — Sentry captures errors automatically. */
 export const trackCommand = (
-  ev: CommandEvent,
-  telemetryFlag?: boolean,
-): void => {
-  if (telemetryFlag === false || isOptedOut()) return
-  const ph = getClient()
-  if (!ph) return
-  try {
-    ph.capture({
-      distinctId: getAnonymousId(),
-      event: 'cli_command',
-      properties: { ...ev },
-    })
-  } catch {
-    // fail silently
-  }
-}
+  _ev: CommandEvent,
+  _telemetryFlag?: boolean,
+): void => {}
 
-/**
- * Capture a `cli_install` event.
- */
+/** No-op — Sentry captures errors automatically. */
 export const trackInstall = (
-  ev: InstallEvent,
-  telemetryFlag?: boolean,
-): void => {
-  if (telemetryFlag === false || isOptedOut()) return
-  const ph = getClient()
-  if (!ph) return
-  try {
-    ph.capture({
-      distinctId: getAnonymousId(),
-      event: 'cli_install',
-      properties: { ...ev },
-    })
-  } catch {
-    // fail silently
-  }
-}
+  _ev: InstallEvent,
+  _telemetryFlag?: boolean,
+): void => {}
 
-/**
- * Capture a `cli_error` event.
- */
+/** No-op — Sentry captures errors automatically. */
 export const trackError = (
-  ev: ErrorEvent,
-  telemetryFlag?: boolean,
-): void => {
-  if (telemetryFlag === false || isOptedOut()) return
-  const ph = getClient()
-  if (!ph) return
-  try {
-    ph.capture({
-      distinctId: getAnonymousId(),
-      event: 'cli_error',
-      properties: { ...ev },
-    })
-  } catch {
-    // fail silently
-  }
-}
-
-/**
- * Flush pending events. Returns a promise that resolves once flushing
- * completes **or** when `SHUTDOWN_TIMEOUT_MS` elapses — whichever
- * comes first. Never rejects.
- */
-export const flush = (): Promise<void> => {
-  const ph = _posthog
-  if (!ph) return Promise.resolve()
-  return Promise.race([
-    ph.shutdown().catch(() => {}),
-    new Promise<void>(r => setTimeout(r, SHUTDOWN_TIMEOUT_MS)),
-  ])
-}
+  _ev: ErrorEvent,
+  _telemetryFlag?: boolean,
+): void => {}

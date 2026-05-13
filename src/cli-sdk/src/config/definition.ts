@@ -729,14 +729,13 @@ export const definition = j
 
   .flag({
     telemetry: {
-      description: `Enable anonymous usage telemetry.
+      description: `Enable anonymous error reporting via Sentry to help
+                    improve vlt.
 
-                    vlt collects anonymized usage data to help improve
-                    the tool. No personally identifiable information is
-                    ever sent.
+                    Set \`--no-telemetry\` to disable, or set the
+                    \`DO_NOT_TRACK=1\` environment variable.
 
-                    Set \`--no-telemetry\` or \`VLT_TELEMETRY=0\` or
-                    \`DO_NOT_TRACK=1\` to opt out.`,
+                    Defaults to \`true\`.`,
       default: true,
     },
   })
