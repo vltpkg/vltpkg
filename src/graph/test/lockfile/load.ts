@@ -440,7 +440,7 @@ t.test('load with custom scope registry', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 1,
     options: {
-      'scope-registries': {
+      'scoped-registries': {
         '@myscope': 'http://example.com',
       },
     },

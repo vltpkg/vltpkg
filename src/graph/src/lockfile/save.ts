@@ -180,7 +180,7 @@ export const lockfileData = ({
   registries,
   saveManifests,
   saveBuildData,
-  'scope-registries': scopeRegistries,
+  'scoped-registries': scopeRegistries,
   'jsr-registries': jsrRegistries,
   throwOnMissingManifest,
 }: SaveOptions): LockfileData => {
@@ -219,7 +219,7 @@ export const lockfileData = ({
       ...(hasItems(catalog) ? { catalog } : {}),
       ...(hasItems(catalogs) ? { catalogs } : {}),
       ...(hasItems(cleanScopeRegistries) ?
-        { 'scope-registries': cleanScopeRegistries }
+        { 'scoped-registries': cleanScopeRegistries }
       : undefined),
       ...(hasItems(cleanJsrRegistries) ?
         { 'jsr-registries': cleanJsrRegistries }

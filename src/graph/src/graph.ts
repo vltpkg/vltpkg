@@ -168,7 +168,7 @@ export class Graph implements GraphLike {
       registries: options.registries,
       'git-hosts': options['git-hosts'],
       'git-host-archives': options['git-host-archives'],
-      'scope-registries': options['scope-registries'],
+      'scoped-registries': options['scoped-registries'],
       'jsr-registries': options['jsr-registries'],
       catalog: options.catalog,
       catalogs: options.catalogs,

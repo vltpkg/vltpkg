@@ -85,7 +85,7 @@ Spec {
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
-    "scope-registries": Object {},
+    "scoped-registries": Object {},
   },
   "overridden": false,
   "range": undefined,
@@ -165,7 +165,7 @@ Spec {
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
-    "scope-registries": Object {
+    "scoped-registries": Object {
       "@myscope": "http://example.com",
     },
   },

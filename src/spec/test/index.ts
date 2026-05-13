@@ -400,7 +400,7 @@ t.test('mixing scopes and names', t => {
       x: 'https://x.com/',
       i: 'https://i.com/',
     },
-    'scope-registries': scopeRegistries,
+    'scoped-registries': scopeRegistries,
   }
   for (const [scope, reg] of scopeRegs) {
     scopeRegistries[scope] = reg

@@ -68,10 +68,10 @@ internal private registries, while all the _other_ packages come from
 a default public registry, meaning that you do not need to proxy
 everything.
 
-To do this in vlt, use the `scope-registries` configuration.
+To do this in vlt, use the `scoped-registries` configuration.
 
 ```bash
-vlt config set scope-registries=@mycompany=https://registry.local/
+vlt config set scoped-registries=@mycompany=https://registry.local/
 ```
 
 When you do this in your project, you will see that it adds the option
@@ -80,7 +80,7 @@ to a `vlt.json` file in your project root.
 ```bash
 $ cat vlt.json
 {
-  "scope-registries": {
+  "scoped-registries": {
     "@mycompany": "https://registry.local/",
   }
 }

@@ -19,8 +19,26 @@ export const list = (conf: LoadedConfig) => {
   return recordsToPairs(conf.options)
 }
 
+/**
+ * Match npm-style scoped registry keys like `@scope:registry`.
+ * The scope is captured (including the leading `@`) so it can be
+ * mapped onto the `scoped-registries` record field.
+ */
+const npmScopeRegistryRe = /^(@[^:/\s]+):registry$/
+
+/**
+ * Translate an npm-style `@scope:registry` config key into the
+ * vlt equivalent dot-prop path `scoped-registries.@scope`.
+ *
+ * Any other key is returned unchanged.
+ */
+const normalizeConfigKey = (key: string): string => {
+  const m = npmScopeRegistryRe.exec(key)
+  return m?.[1] ? `scoped-registries.${m[1]}` : key
+}
+
 export const del = async (conf: LoadedConfig) => {
-  const fields = conf.positionals.slice(1)
+  const fields = conf.positionals.slice(1).map(normalizeConfigKey)
   if (!fields.length) {
     throw error('At least one key is required', {
       code: 'EUSAGE',
@@ -35,7 +53,7 @@ export const del = async (conf: LoadedConfig) => {
 
 export const get = async (conf: LoadedConfig) => {
   const keys = conf.positionals.slice(1)
-  const k = keys[0]
+  const k = keys[0] && normalizeConfigKey(keys[0])
   if (!k || keys.length > 1) {
     throw error('Exactly one key is required', {
       code: 'EUSAGE',
@@ -128,7 +146,7 @@ export const set = async (conf: LoadedConfig) => {
       })
     }
 
-    const key = pair.substring(0, eq)
+    const key = normalizeConfigKey(pair.substring(0, eq))
     const value = pair.substring(eq + 1)
     if (key.includes('.')) {
       const [field, ...rest] = key.split('.')

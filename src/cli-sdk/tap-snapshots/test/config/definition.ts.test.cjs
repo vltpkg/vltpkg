@@ -430,11 +430,11 @@ Object {
     "short": "s",
     "type": "string",
   },
-  "scope-registries": Object {
+  "scoped-registries": Object {
     "description": String(
       Map package name scopes to registry URLs.
       
-      For example, \`--scope-registries @acme=https://registry.acme/\` would tell vlt to fetch any packages named \`@acme/...\` from the \`https://registry.acme/\` registry.
+      For example, \`--scoped-registries @acme=https://registry.acme/\` would tell vlt to fetch any packages named \`@acme/...\` from the \`https://registry.acme/\` registry.
       
       Note: this way of specifying registries is more ambiguous, compared with using the \`--registries\` field and explicit prefixes, because instead of failing when the configuration is absent, it will instead attempt to fetch from the default registry.
       
@@ -599,7 +599,7 @@ Array [
   "--save-peer",
   "--save-prod",
   "--scope=<query>",
-  "--scope-registries=<@scope=url>",
+  "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
@@ -661,7 +661,7 @@ Array [
   "save-peer",
   "save-prod",
   "scope",
-  "scope-registries",
+  "scoped-registries",
   "script-shell",
   "stale-while-revalidate-factor",
   "tag",
