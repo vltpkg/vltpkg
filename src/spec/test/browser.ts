@@ -716,6 +716,49 @@ t.test('try to guess the conventional tarball URL', t => {
   t.end()
 })
 
+t.test(
+  'conventionalRegistryTarball preserves registry URL path',
+  async t => {
+    // when the configured registry URL includes a path component
+    // (e.g. https://registry.example.com/npm/), the conventional tarball
+    // URL must keep that path prefix rather than resolving against the
+    // host root.
+    const cases: [string, string, string][] = [
+      [
+        'https://registry.example.com/npm/',
+        'foo',
+        'https://registry.example.com/npm/foo/-/foo-1.0.0.tgz',
+      ],
+      [
+        // missing trailing slash should still work
+        'https://registry.example.com/npm',
+        'foo',
+        'https://registry.example.com/npm/foo/-/foo-1.0.0.tgz',
+      ],
+      [
+        'https://registry.example.com/npm/',
+        '@scope/foo',
+        'https://registry.example.com/npm/@scope/foo/-/foo-1.0.0.tgz',
+      ],
+      [
+        // root-path registry behaves the same as before
+        'https://registry.npmjs.org/',
+        'foo',
+        'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+      ],
+    ]
+    for (const [registry, name, expected] of cases) {
+      const s = Spec.parse(name, '1.0.0', { registry })
+      t.equal(
+        s.conventionalRegistryTarball,
+        expected,
+        `${registry} + ${name}`,
+      )
+    }
+    t.end()
+  },
+)
+
 t.test('git path selector must be relative', async t => {
   const nogood = [
     //can't clean up absolute in browser 'git+ssh://user@host/repo#main::path:/x',
