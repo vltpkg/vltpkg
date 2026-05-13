@@ -30,6 +30,14 @@ export const removeSatisfiedSpecs = ({
         continue
       }
 
+      // If the spec type has changed (e.g., from "registry" to
+      // "catalog" or vice versa), keep it in the add list so the
+      // edge gets rebuilt with the updated spec, even if the
+      // resolved node is the same.
+      const edgeIsCatalog = edge.spec.type === 'catalog'
+      const depIsCatalog = dependency.spec.type === 'catalog'
+      if (edgeIsCatalog !== depIsCatalog) continue
+
       // If the current graph edge is already valid, then we remove that
       // dependency item from the list of items to be added to the graph
       if (

@@ -19,6 +19,12 @@ exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node 
 Map {}
 `
 
+exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > catalog spec is not removed even if node satisfies > should keep the catalog spec in the add list 1`] = `
+Map(1) {
+  'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@catalog:}, type: 'prod' } }
+}
+`
+
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > registry tag > should not return registry tag item if something already satisfies it 1`] = `
 Map(0) {}
 `
