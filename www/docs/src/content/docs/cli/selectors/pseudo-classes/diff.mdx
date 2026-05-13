@@ -1,0 +1,108 @@
+---
+title: ':diff()'
+sidebar:
+  label: ':diff()'
+  order: 12
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:diff()` pseudo-class matches packages whose files have changed
+between the current working tree and a specified git commitish
+reference. It uses `git diff --name-only` to determine changed files,
+then maps them to packages by their file path location.
+
+## Syntax
+
+```
+:diff()
+:diff(<commitish>)
+```
+
+When called with no argument, defaults to `HEAD` (uncommitted
+changes).
+
+## Examples
+
+### Uncommitted changes
+
+Find packages with uncommitted changes:
+
+<Code code="$ vlt query ':diff()'" title="Terminal" lang="bash" />
+
+### Changes since a branch
+
+Find packages changed since the `main` branch:
+
+<Code code="$ vlt query ':diff(main)'" title="Terminal" lang="bash" />
+
+### Changes since last commit
+
+<Code
+  code="$ vlt query ':diff(HEAD~1)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Changes since a tag
+
+<Code
+  code={`$ vlt query ':diff("v1.0.0")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### Only workspaces that changed
+
+<Code
+  code="$ vlt query ':workspace:diff(main)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given a monorepo where you changed files in `packages/core/` and
+`packages/utils/` since `main`:
+
+```
+my-monorepo
+├── packages/core/        ← files changed
+├── packages/utils/       ← files changed
+├── packages/cli/
+└── apps/web/
+```
+
+`:diff(main)` selects:
+
+```
+my-monorepo
+├── packages/core/        ✅ has changed files
+├── packages/utils/       ✅ has changed files
+├── packages/cli/
+└── apps/web/
+```
+
+### CI use cases
+
+Run tests only for changed workspaces:
+
+<Code
+  code="$ vlt query ':workspace:diff(main)' --view=json | xargs -I {} vlr test -w {}"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find packages that depend on changed packages:
+
+<Code
+  code="$ vlt query ':has(> :diff(main))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:path()`](/cli/selectors/pseudo-classes/path) — match by file path
+- [`:has()`](/cli/selectors/pseudo-classes/has) — find packages that
+  depend on changed packages

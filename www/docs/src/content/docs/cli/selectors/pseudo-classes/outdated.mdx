@@ -1,0 +1,108 @@
+---
+title: ':outdated()'
+sidebar:
+  label: ':outdated()'
+  order: 6
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:outdated()` pseudo-class matches packages that have newer
+versions available on the registry. An optional type parameter
+controls how "outdated" is defined.
+
+## Syntax
+
+```
+:outdated
+:outdated(<type>)
+```
+
+### Type parameter
+
+| Type            | Description                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| `any` (default) | A version exists greater than the current one                         |
+| `in-range`      | A greater version exists that satisfies the parent's dependency range |
+| `out-of-range`  | A greater version exists that does NOT satisfy the parent's range     |
+| `major`         | A semver major version bump is available                              |
+| `minor`         | A semver minor version bump is available                              |
+| `patch`         | A semver patch version bump is available                              |
+
+## Examples
+
+### Find all outdated packages
+
+<Code code="$ vlt query ':outdated'" title="Terminal" lang="bash" />
+
+### Find major version bumps
+
+<Code
+  code="$ vlt query ':outdated(major)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Find safe updates (in-range)
+
+Updates that satisfy the existing dependency range:
+
+<Code
+  code="$ vlt query ':outdated(in-range)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Find breaking updates (out-of-range)
+
+Updates that would require changing the dependency range:
+
+<Code
+  code="$ vlt query ':outdated(out-of-range)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given:
+
+```
+my-app
+├── react@17.0.2          ← latest: 18.2.0 (major)
+├── typescript@5.2.0      ← latest: 5.3.0 (minor)
+├── vite@5.0.0            ← latest: 5.0.12 (patch)
+└── lodash@4.17.21        ← latest: 4.17.21 (up to date)
+```
+
+| Query              | Selected                |
+| ------------------ | ----------------------- |
+| `:outdated`        | react, typescript, vite |
+| `:outdated(major)` | react                   |
+| `:outdated(minor)` | typescript              |
+| `:outdated(patch)` | vite                    |
+
+### Combining with combinators
+
+Find outdated direct dependencies only:
+
+<Code
+  code="$ vlt query ':root > :outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find outdated direct dependencies with major bumps:
+
+<Code
+  code="$ vlt query ':root > :outdated(major)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:semver()`](/cli/selectors/pseudo-classes/semver) — custom semver
+  comparisons
+- [`:published()`](/cli/selectors/pseudo-classes/published) — filter
+  by publication date

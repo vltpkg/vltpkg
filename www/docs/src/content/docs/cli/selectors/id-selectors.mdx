@@ -1,0 +1,73 @@
+---
+title: ID Selectors
+sidebar:
+  label: ID Selectors
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+ID selectors are a shorthand for selecting packages by name. They work
+like
+[CSS ID selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors)
+but match the `name` field in `package.json`.
+
+## Syntax
+
+```
+#package-name
+```
+
+This is equivalent to `[name=package-name]`.
+
+:::caution ID selectors only work for **unscoped** packages. For
+scoped packages (e.g. `@vltpkg/cli`), use
+[attribute selectors](/cli/selectors/attribute-selectors) instead:
+`[name=@vltpkg/cli]`. :::
+
+## Examples
+
+Select a package by name:
+
+<Code code="$ vlt query '#react'" title="Terminal" lang="bash" />
+
+This is the same as:
+
+<Code
+  code="$ vlt query '[name=react]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Combining with combinators
+
+Find all dependencies of `react`:
+
+<Code code="$ vlt query '#react > *'" title="Terminal" lang="bash" />
+
+Find direct deps that have `react` as a sibling:
+
+<Code code="$ vlt query '#react ~ *'" title="Terminal" lang="bash" />
+
+### Combining with pseudo-classes
+
+Check if a specific package is outdated:
+
+<Code
+  code="$ vlt query '#typescript:outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## When to use attribute selectors instead
+
+Use `[name=value]` instead of `#value` when:
+
+- The package is scoped: `[name=@vltpkg/cli]`
+- You need partial matching: `[name^=react]` (starts with "react")
+- You need case-insensitive matching: `[name=React i]`
+
+## See also
+
+- [Attribute Selectors](/cli/selectors/attribute-selectors) — full
+  attribute matching syntax
