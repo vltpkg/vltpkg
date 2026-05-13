@@ -71,7 +71,7 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] 
 {
   "lockfileVersion": 1,
   "options": {
-    "scope-registries": {
+    "scoped-registries": {
       "@myscope": "https://example.com/"
     }
   },

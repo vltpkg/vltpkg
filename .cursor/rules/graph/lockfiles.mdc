@@ -33,7 +33,7 @@ type LockfileData = {
 
 Flags: 0=prod, 1=optional, 2=dev, 3=devOptional
 
-Options stored: `modifiers`, `catalog`, `catalogs`, `scope-registries`, `jsr-registries`, `registry`, `registries`, `git-hosts`, `git-host-archives`
+Options stored: `modifiers`, `catalog`, `catalogs`, `scoped-registries`, `jsr-registries`, `registry`, `registries`, `git-hosts`, `git-host-archives`
 
 ## Integration
 

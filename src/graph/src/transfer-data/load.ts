@@ -31,9 +31,17 @@ const loadSpecOptions = (
     registry,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
-    'scope-registries': scopeRegistries,
+    'scoped-registries': scopedRegistriesOption,
     'jsr-registries': jsrRegistries,
   } = lockfile.options
+  // backwards-compat: legacy lockfiles wrote this field as `scope-registries`
+  const scopeRegistries =
+    scopedRegistriesOption ??
+    (
+      lockfile.options as {
+        'scope-registries'?: Record<string, string>
+      }
+    )['scope-registries']
   return {
     catalog,
     catalogs,
@@ -45,7 +53,7 @@ const loadSpecOptions = (
       ...defaultGitHostArchives,
       ...gitHostArchives,
     },
-    'scope-registries': {
+    'scoped-registries': {
       ...defaultScopeRegistries,
       ...scopeRegistries,
     },

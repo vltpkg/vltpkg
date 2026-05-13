@@ -168,6 +168,16 @@ t.test('del', async t => {
       ])
     })
 
+    t.test('npm-style @scope:registry', async t => {
+      const { conf } = await run(t, ['del', '@darcy:registry'], {
+        config: 'project',
+      })
+      t.strictSame(conf.deletedKeys, [
+        'project',
+        ['scoped-registries.@darcy'],
+      ])
+    })
+
     t.test('delete multiple registry properties', async t => {
       const { conf } = await run(
         t,
@@ -210,6 +220,20 @@ t.test('get', async t => {
       mockOptions,
     )
     t.strictSame(result, 'http://localhost:1337')
+  })
+
+  t.test('npm-style @scope:registry', async t => {
+    const mockOptions = {
+      'scoped-registries': [
+        '@darcy=https://registry.vlt.io/darcy/main/',
+      ],
+    }
+    const { result } = await run(
+      t,
+      ['get', '@darcy:registry'],
+      mockOptions,
+    )
+    t.strictSame(result, 'https://registry.vlt.io/darcy/main/')
   })
 
   t.test('dot-prop non-existent registry', async t => {
@@ -480,6 +504,23 @@ t.test('set', async t => {
             },
           },
         },
+      })
+    })
+
+    t.test('npm-style @scope:registry', async t => {
+      const { conf } = await run(
+        t,
+        [
+          'set',
+          '@darcy:registry=https://registry.vlt.io/darcy/main/',
+        ],
+        { config: 'project' },
+      )
+      t.ok(conf.addedConfig, 'config should be added')
+      const [which, configData] = conf.addedConfig!
+      t.equal(which, 'project')
+      t.strictSame(configData['scoped-registries'], {
+        '@darcy': 'https://registry.vlt.io/darcy/main/',
       })
     })
 

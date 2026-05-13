@@ -72,7 +72,7 @@ save-exact=true`}
   code={JSON.stringify(
     {
       registry: 'https://registry.internal.company.com/',
-      'scope-registries': {
+      'scoped-registries': {
         '@mycompany': 'https://npm.mycompany.com/',
       },
     },
@@ -87,7 +87,7 @@ To create this file interactively:
 
 <Code
   code={`$ vlt config set registry=https://registry.internal.company.com/
-$ vlt config set scope-registries=@mycompany=https://npm.mycompany.com/`}
+$ vlt config set scoped-registries=@mycompany=https://npm.mycompany.com/`}
   title="Terminal"
   lang="bash"
 />
@@ -129,7 +129,7 @@ npm's scoped registries map directly:
 <Code
   code={JSON.stringify(
     {
-      'scope-registries': {
+      'scoped-registries': {
         '@mycompany': 'https://npm.mycompany.com/',
       },
     },

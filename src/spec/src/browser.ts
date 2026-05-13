@@ -69,7 +69,7 @@ export const getOptions = (
     ...defaultJsrRegistries,
   },
   registry: options?.registry ?? defaultRegistry,
-  'scope-registries': options?.['scope-registries'] ?? {},
+  'scoped-registries': options?.['scoped-registries'] ?? {},
   'git-hosts':
     options?.['git-hosts'] ?
       {
@@ -642,7 +642,7 @@ export class Spec implements SpecLike<Spec> {
       this.distTag = this.bareSpec
     }
     this.registrySpec = this.bareSpec
-    const { 'scope-registries': scopeRegs, registry } = this.options
+    const { 'scoped-registries': scopeRegs, registry } = this.options
     const scopeReg = this.scope && scopeRegs[this.scope]
     this.registry = scopeReg ?? registry
     // no guessing the tarball for JSR registries
@@ -658,7 +658,7 @@ export class Spec implements SpecLike<Spec> {
     if (s > 1 && s < name.length - 1) {
       const scope = name.substring(0, s) as Scope
       this.registry = this.scopeRegistry =
-        this.options['scope-registries'][scope]
+        this.options['scoped-registries'][scope]
       this.scope = scope
     }
   }
@@ -751,8 +751,8 @@ export class Spec implements SpecLike<Spec> {
       )
     this.subspec = this.constructor.parse(name, {
       ...this.options,
-      'scope-registries': {
-        ...this.options['scope-registries'],
+      'scoped-registries': {
+        ...this.options['scoped-registries'],
         '@jsr': url,
       },
     })

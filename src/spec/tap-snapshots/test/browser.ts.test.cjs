@@ -7756,7 +7756,7 @@ Object {
     "jsr": "https://npm.jsr.io/",
   },
   "registry": "https://registry.npmjs.org/",
-  "scope-registries": Object {},
+  "scoped-registries": Object {},
   "git-hosts": Object {
     "github": "git+ssh://git@github.com:$1/$2.git",
     "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",

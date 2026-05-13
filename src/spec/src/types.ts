@@ -16,7 +16,7 @@ export type SpecOptionsFilled = {
   /** tarball hosting services for hosts listed in git-hosts */
   'git-host-archives': Record<string, string>
   /** registries mapped to a `@scope` */
-  'scope-registries': Record<Scope, string>
+  'scoped-registries': Record<Scope, string>
   /** registries that work like https://npm.jsr.io */
   'jsr-registries': Record<string, string>
   catalog: Record<string, string>

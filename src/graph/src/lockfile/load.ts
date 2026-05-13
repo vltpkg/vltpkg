@@ -109,23 +109,31 @@ export const loadObject = (
   const {
     catalog = {},
     catalogs = {},
-    'scope-registries': scopeRegistries,
+    'scoped-registries': scopedRegistriesOption,
     registry,
     registries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
     /* c8 ignore next */
   } = lockfileData.options ?? {}
+  // backwards-compat: legacy lockfiles wrote this field as `scope-registries`
+  const scopeRegistries =
+    scopedRegistriesOption ??
+    (
+      lockfileData.options as {
+        'scope-registries'?: Record<string, string>
+      }
+    )['scope-registries']
 
   // Optimize options merging - only create new objects when needed
   const mergedOptions = {
     ...options,
     catalog,
     catalogs,
-    'scope-registries':
+    'scoped-registries':
       scopeRegistries ?
-        { ...options['scope-registries'], ...scopeRegistries }
-      : options['scope-registries'],
+        { ...options['scoped-registries'], ...scopeRegistries }
+      : options['scoped-registries'],
     registry: registry ?? options.registry,
     registries:
       registries ?

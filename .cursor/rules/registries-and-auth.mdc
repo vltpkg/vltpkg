@@ -9,7 +9,7 @@ alwaysApply: false
 
 1. **Default**: `--registry=<url>` (default: `https://registry.npmjs.org/`)
 2. **Named aliases**: `--registries=<name>=<url>` → use as `name:pkg@ver` in dependencies
-3. **Scope registries**: `--scope-registries=@scope=<url>` → `@scope/*` auto-routes
+3. **Scope registries**: `--scoped-registries=@scope=<url>` → `@scope/*` auto-routes
 4. **Built-in aliases**: `npm:` (public npm), `jsr:` (jsr.io), `gh:` (GitHub packages)
 
 ## Registry Consistency
@@ -22,7 +22,7 @@ Child deps inherit parent's registry by default. If `foo` comes from registry X,
 {
   "registry": "https://registry.npmjs.org/",
   "registries": { "internal": "https://npm.internal.co/" },
-  "scope-registries": { "@myco": "https://npm.myco.com/" },
+  "scoped-registries": { "@myco": "https://npm.myco.com/" },
   "jsr-registries": { "jsr": "https://npm.jsr.io/" }
 }
 ```

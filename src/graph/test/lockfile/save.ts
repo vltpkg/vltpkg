@@ -195,7 +195,7 @@ t.test('jsr-registries', async t => {
     },
   }
   const specOptions = {
-    'scope-registries': {
+    'scoped-registries': {
       '@myscope': 'https://example.com/',
     },
   }
@@ -579,12 +579,12 @@ t.test('store modifiers', async t => {
     foo.setResolved()
 
     // Test with undefined scope registries
-    // (should not include scope-registries in lockfile)
+    // (should not include scoped-registries in lockfile)
     t.matchSnapshot(
       lockfileData({
         ...configData,
         graph,
-        'scope-registries': undefined,
+        'scoped-registries': undefined,
       }),
       'should save lockfile without scope registries when undefined',
     )
@@ -624,12 +624,12 @@ t.test('store modifiers', async t => {
     }
     foo.setResolved()
 
-    // Test with invalid scope registries (not a record of strings) - should not include scope-registries in lockfile
+    // Test with invalid scope registries (not a record of strings) - should not include scoped-registries in lockfile
     t.matchSnapshot(
       lockfileData({
         ...configData,
         graph,
-        'scope-registries': 'invalid-type' as any,
+        'scoped-registries': 'invalid-type' as any,
       }),
       'should save lockfile without scope registries when invalid type',
     )
