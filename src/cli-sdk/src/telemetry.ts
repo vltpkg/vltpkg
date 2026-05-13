@@ -5,7 +5,7 @@
  * - Generates a random UUID on first run, stored in XDG data dir.
  * - Respects opt-out via `DO_NOT_TRACK=1`, `VLT_TELEMETRY=0`,
  *   or the `--telemetry=false` config flag.
- * - Never blocks CLI exit — flush is fire-and-forget with a timeout.
+ * - Flush is awaited with a timeout cap so it never blocks CLI exit for long.
  * - Fails silently on any network or runtime error.
  * @module
  */
@@ -200,12 +200,23 @@ export const trackError = (
  * Flush pending events. Returns a promise that resolves once flushing
  * completes **or** when `SHUTDOWN_TIMEOUT_MS` elapses — whichever
  * comes first. Never rejects.
+ *
+ * The safety-net timer is unreffed so it cannot keep the process alive
+ * on its own — if the caller does not `await` this, Node will still
+ * exit promptly once all other handles are drained.
  */
 export const flush = (): Promise<void> => {
   const ph = _posthog
   if (!ph) return Promise.resolve()
+  // Clear the reference so no further events are captured and
+  // PostHog's internal timers can be garbage-collected.
+  _posthog = undefined
   return Promise.race([
     ph.shutdown().catch(() => {}),
-    new Promise<void>(r => setTimeout(r, SHUTDOWN_TIMEOUT_MS)),
+    new Promise<void>(r => {
+      const t = setTimeout(r, SHUTDOWN_TIMEOUT_MS)
+      // Unref so this timer alone won't keep the process alive.
+      if (typeof t === 'object' && 'unref' in t) t.unref()
+    }),
   ])
 }
