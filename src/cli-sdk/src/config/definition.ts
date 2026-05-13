@@ -27,6 +27,7 @@ const canonicalCommands = {
   config: 'config',
   create: 'create',
   deprecate: 'deprecate',
+  'dist-tag': 'dist-tag',
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
