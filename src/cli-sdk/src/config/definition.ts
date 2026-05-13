@@ -129,32 +129,17 @@ export type RecordField = (typeof recordFields)[number]
 export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
-const stopParsingCommands: Commands[keyof Commands][] = [
-  'create',
-  'run',
-  'run-exec',
-  'exec-local',
-  'exec',
-]
-
-let stopParsing: boolean | undefined = undefined
-
 const j = jack({
   envPrefix: 'VLT',
   allowPositionals: true,
   usage: `vlt [<options>] [<cmd> [<args> ...]]`,
-  stopAtPositionalTest: arg => {
-    if (stopParsing) return true
-    const a = arg as keyof Commands
-    // we stop parsing AFTER the thing, so you can do
-    // vlt run --vlt --configs scriptName --args --for --script
-    // or
-    // vlt exec --vlt --configs command --args --for --command
-    if (stopParsingCommands.includes(commands[a])) {
-      stopParsing = true
-    }
-    return false
-  },
+  // vlt options can appear on either side of the command/script
+  // name. To forward an argument (especially a flag-like one) to
+  // the underlying bin/script without vlt interpreting it, place
+  // it after a `--` terminator, e.g.:
+  //   vlt run scriptName --vlt-flag -- --script-flag --more
+  // Node's `parseArgs` natively treats everything following `--`
+  // as positional, so no special-casing is needed here.
 })
   .heading('vlt')
   .description(

@@ -912,7 +912,7 @@ t.test('boolean option after script name (--recursive)', async t => {
 })
 
 t.test(
-  'string option at end without value stays as script arg',
+  '-- terminator forwards remaining args to script unchanged',
   async t => {
     // Use a script that accepts arbitrary args without failing
     const passWithArgs = 'node -e "process.exitCode = 0" --'
@@ -934,24 +934,30 @@ t.test(
     >('../../src/config/index.ts')
     unload()
 
-    // Simulate: vlt run hello --view=human --scope (no value)
-    // --scope at the very end with no value should be kept as
-    // a script arg since there is no next arg to consume.
+    // Simulate: vlt run hello --view=human -- --bail --scope foo
+    // Everything after `--` should be forwarded to the script
+    // unchanged, even when those tokens collide with vlt option
+    // names. The `--` itself is consumed (POSIX convention).
     const conf = await Config.load(t.testdirName, [
       'run',
       'hello',
       '--view=human',
+      '--',
+      '--bail',
       '--scope',
+      'foo',
     ])
     t.equal(conf.command, 'run')
+    // vlt options past `--` must not be captured into config
+    // (scope has no default, so it should remain unset)
+    t.equal(conf.get('scope'), undefined)
 
     const logs = t.capture(console, 'log').args
     const result = await command(conf)
 
-    // --scope with no value is kept as a script arg, not extracted
     t.strictSame(result, {
       command: passWithArgs,
-      args: ['--scope'],
+      args: ['--bail', '--scope', 'foo'],
       cwd: dir,
       stdout: null,
       stderr: null,
