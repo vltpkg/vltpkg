@@ -717,10 +717,14 @@ export class Spec implements SpecLike<Spec> {
     const { name, registry, range } = this.final
     if (!registry || !range?.isSingle) return
     const stripScope = /^@[^/]+\//
+    // resolve relative to the registry URL so that any path component
+    // (e.g. https://registry.example.com/npm/) is preserved. Using a
+    // leading `/` would make the path absolute and discard that prefix.
+    const base = registry.endsWith('/') ? registry : registry + '/'
     this.conventionalRegistryTarball = String(
       new URL(
-        `/${name}/-/${name.replace(stripScope, '')}-${range}.tgz`,
-        registry,
+        `${name}/-/${name.replace(stripScope, '')}-${range}.tgz`,
+        base,
       ),
     )
   }
