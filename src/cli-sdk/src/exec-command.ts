@@ -161,6 +161,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
    * Scan trailing args for known vlt options that ended up as
    * positionals due to stop-at-positional parsing. Extract them
    * and apply to conf.values so they're available via conf.get().
+   *
+   * A bare `--` terminates extraction: everything after it is
+   * passed through to the script unchanged (the `--` itself is
+   * consumed, per POSIX convention).
    */
   #extractTrailingOptions(): void {
     if (this.args.length === 0) return
@@ -173,6 +177,18 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const arg = this.args[i]
       /* c8 ignore next - defensive: loop condition already guards */
       if (arg === undefined) break
+
+      // A bare `--` terminates vlt option extraction.
+      // Everything after it is passed through to the script.
+      if (arg === '--') {
+        for (let j = i + 1; j < this.args.length; j++) {
+          const rest = this.args[j]
+          /* c8 ignore next - defensive: loop condition already guards */
+          if (rest === undefined) break
+          remaining.push(rest)
+        }
+        break
+      }
 
       // Handle --option=value form
       const eqIdx = arg.indexOf('=')

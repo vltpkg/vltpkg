@@ -146,10 +146,15 @@ const j = jack({
   stopAtPositionalTest: arg => {
     if (stopParsing) return true
     const a = arg as keyof Commands
-    // we stop parsing AFTER the thing, so you can do
-    // vlt run --vlt --configs scriptName --args --for --script
-    // or
-    // vlt exec --vlt --configs command --args --for --command
+    // We stop parsing AFTER the command name, so options that
+    // appear after the script/command name end up as positionals.
+    // ExecCommand.#extractTrailingOptions() then re-scans those
+    // positionals for known vlt options (--scope, --workspace,
+    // --recursive, etc.) regardless of position.  A bare `--`
+    // terminates that re-scan so flags after it are always
+    // forwarded to the script:
+    //   vlt run scriptName --scope "..." --bail  ← vlt gets both
+    //   vlt run scriptName -- --bail              ← script gets --bail
     if (stopParsingCommands.includes(commands[a])) {
       stopParsing = true
     }

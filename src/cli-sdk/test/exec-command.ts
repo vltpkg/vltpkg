@@ -37,6 +37,77 @@ t.test('basic', t => {
   t.end()
 })
 
+t.test('-- terminates trailing option extraction', t => {
+  const e = new ExecCommand(
+    {
+      projectRoot: t.testdirName,
+      positionals: ['script', '--', '--bail', '--recursive'],
+      get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
+      values: {},
+    } as unknown as LoadedConfig,
+    exec,
+    execFG,
+  )
+
+  // --bail and --recursive appear after -- so they should NOT
+  // be extracted as vlt options; they should remain as script args
+  t.strictSame(e.args, ['--bail', '--recursive'])
+  t.end()
+})
+
+t.test('-- with vlt options before it', t => {
+  const values: Record<string, unknown> = {}
+  const e = new ExecCommand(
+    {
+      projectRoot: t.testdirName,
+      positionals: ['script', '-w', 'src/a', '--', '--bail'],
+      get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
+      values,
+    } as unknown as LoadedConfig,
+    exec,
+    execFG,
+  )
+
+  // -w src/a before -- should be extracted
+  t.strictSame(values.workspace, ['src/a'])
+  // --bail after -- should be forwarded as a script arg
+  t.strictSame(e.args, ['--bail'])
+  t.end()
+})
+
+t.test('-- alone with no trailing args', t => {
+  const values: Record<string, unknown> = {}
+  const e = new ExecCommand(
+    {
+      projectRoot: t.testdirName,
+      positionals: ['script', '--'],
+      get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
+      values,
+    } as unknown as LoadedConfig,
+    exec,
+    execFG,
+  )
+
+  // -- consumed, no remaining args
+  t.strictSame(e.args, [])
+  t.end()
+})
+
 t.test('with view', t => {
   const e = new ExecCommand(
     {

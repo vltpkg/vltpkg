@@ -961,3 +961,163 @@ t.test(
     t.strictSame(logs(), [])
   },
 )
+
+t.test(
+  '-- terminates vlt option extraction (flags forwarded to script)',
+  async t => {
+    // Use a script that accepts arbitrary args without failing
+    const passWithArgs = 'node -e "process.exitCode = 0" --'
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({}),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        scripts: {
+          hello: passWithArgs,
+        },
+      }),
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run hello -- --bail
+    // --bail is a known vlt option but appears after --, so it
+    // should be forwarded to the script, not extracted.
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'hello',
+      '--',
+      '--bail',
+    ])
+    t.equal(conf.command, 'run')
+
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+
+    t.strictSame(result, {
+      command: passWithArgs,
+      args: ['--bail'],
+      cwd: dir,
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })
+    t.strictSame(logs(), [])
+  },
+)
+
+t.test(
+  '-- allows forwarding multiple vlt-like flags to script',
+  async t => {
+    const passWithArgs = 'node -e "process.exitCode = 0" --'
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({}),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        scripts: {
+          hello: passWithArgs,
+        },
+      }),
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run hello -- --bail --recursive --scope foo
+    // All of these are known vlt options but should be forwarded
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'hello',
+      '--',
+      '--bail',
+      '--recursive',
+      '--scope',
+      'foo',
+    ])
+    t.equal(conf.command, 'run')
+
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+
+    t.strictSame(result, {
+      command: passWithArgs,
+      args: ['--bail', '--recursive', '--scope', 'foo'],
+      cwd: dir,
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })
+    t.strictSame(logs(), [])
+  },
+)
+
+t.test(
+  'vlt options before -- are extracted, flags after are forwarded',
+  async t => {
+    const passWithArgs = 'node -e "process.exitCode = 0" --'
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      src: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+            scripts: {
+              hello: passWithArgs,
+            },
+          }),
+        },
+      },
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+
+    // Simulate: vlt run hello -w src/a -- --bail
+    // -w src/a should be extracted as a vlt option (workspace)
+    // --bail after -- should be forwarded to the script
+    const conf = await Config.load(t.testdirName, [
+      'run',
+      'hello',
+      '-w',
+      'src/a',
+      '--',
+      '--bail',
+    ])
+    t.equal(conf.command, 'run')
+
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+
+    t.strictSame(result, {
+      command: passWithArgs,
+      args: ['--bail'],
+      cwd: resolve(dir, 'src/a'),
+      stdout: null,
+      stderr: null,
+      status: 0,
+      signal: null,
+    })
+    t.strictSame(logs(), [])
+  },
+)
