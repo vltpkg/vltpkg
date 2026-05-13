@@ -213,8 +213,12 @@ export const outputCommand = async <T>(
       )
     }
 
-    // Fire-and-forget flush — do not await to avoid blocking exit
-    void flushTelemetry()
+    // Await the flush so pending telemetry events are sent before
+    // the process exits.  The flush has a built-in timeout cap
+    // (SHUTDOWN_TIMEOUT_MS) so it will never block for long, and the
+    // timer is unreffed so even if this is not awaited the process
+    // can still exit promptly.
+    await flushTelemetry()
   } catch (err) {
     onError?.(err)
     process.exitCode ||= 1
@@ -252,8 +256,7 @@ export const outputCommand = async <T>(
       telemetryEnabled,
     )
 
-    // Fire-and-forget flush — do not await to avoid blocking exit
-    void flushTelemetry()
+    await flushTelemetry()
 
     printErr(err, usage, stderr, {
       ...formatOptions,
