@@ -400,6 +400,11 @@ jobs:
                 echo "Skipping private package in $dir"
                 continue
               fi
+              package_name=$(jq -r '.name' "$dir/package.json")
+              if [[ "$package_name" != @vltpkg/* ]]; then
+                echo "Skipping non-@vltpkg scoped package: $package_name"
+                continue
+              fi
               echo "Publishing $dir to vlt registry..."
               (cd "$dir" && $VLT publish --access=public)
             fi
@@ -407,8 +412,8 @@ jobs:
         env:
           # VLT_REGISTRY sets the publish target and VLT_TOKEN is used for
           # auth when VLT_REGISTRY matches the request origin (see auth.ts)
-          VLT_TOKEN: ${{ secrets.VLT_LUKE_REGISTRY_PUBLISH_TOKEN }}
-          VLT_REGISTRY: https://registry.vlt.io/luke/
+          VLT_TOKEN: ${{ secrets.VLTPKG_REGISTRY_PUBLISH_TOKEN }}
+          VLT_REGISTRY: https://registry.vlt.io/vltpkg/main/
 
   on-publish-vlt-registry:
     name: Notify vlt Registry Publish
@@ -430,7 +435,7 @@ jobs:
           SLACKIFY_MARKDOWN: true
           SLACK_TITLE: Release ${{ needs.publish.outputs.version }} vlt Registry Publish Failed
           SLACK_MESSAGE: |
-            :x: Publishing to the vlt registry (`https://registry.vlt.io/luke/`) failed.
+            :x: Publishing to the vlt registry (`https://registry.vlt.io/vltpkg/main/`) failed.
             This is best-effort and does not affect the main npm publish.
             It is safe to manually rerun the workflow if the errors were transient.
 
