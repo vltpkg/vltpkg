@@ -4,6 +4,7 @@ import {
   getKC,
   getToken,
   normalizeRegistryKey,
+  registryBase,
   RegistryClient,
   setToken,
 } from '@vltpkg/registry-client'
@@ -154,7 +155,7 @@ const listTokens = async (
   if (!localTok) {
     return { registry, alias, tokens: [] }
   }
-  const tokensUrl = new URL('-/npm/v1/tokens', registry)
+  const tokensUrl = new URL('-/npm/v1/tokens', registryBase(registry))
   try {
     const objects = await rc.scroll<TokenInfo>(tokensUrl, {
       useCache: false,

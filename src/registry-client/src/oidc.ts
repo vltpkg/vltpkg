@@ -77,14 +77,13 @@ const _oidc = async ({
   const isGitLab = process.env.GITLAB_CI === 'true'
   const isCircle = process.env.CIRCLECI === 'true'
 
+  if (!isGitHub && !isGitLab && !isCircle) {
+    return undefined
+  }
+
   log(
     `CI detected: github=${isGitHub} gitlab=${isGitLab} circle=${isCircle}`,
   )
-
-  if (!isGitHub && !isGitLab && !isCircle) {
-    log('Not in a supported CI environment — skipping')
-    return undefined
-  }
 
   // NPM_ID_TOKEN is supported as an override in all CI environments
   let idToken = process.env.NPM_ID_TOKEN

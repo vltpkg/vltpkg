@@ -80,6 +80,13 @@ export const otplease = async (
     })
   }
 
+  if (wwwAuth.has('bearer')) {
+    throw error(
+      'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
+      { response },
+    )
+  }
+
   if (wwwAuth.size) {
     throw error('Unknown authentication challenge', { response })
   }
