@@ -61,6 +61,20 @@ t.test('cannot auth if ipaddress rejected', async t => {
   )
 })
 
+t.test('bearer www-authenticate prompts to log in', async t => {
+  await t.rejects(
+    otplease(mockClient, {}, {
+      headers: {
+        'www-authenticate': 'Bearer',
+      },
+    } as unknown as Dispatcher.ResponseData),
+    {
+      message:
+        'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
+    },
+  )
+})
+
 t.test('unknown www-authenticate challenges', async t => {
   await t.rejects(
     otplease(mockClient, {}, {

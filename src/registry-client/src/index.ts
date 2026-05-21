@@ -22,6 +22,7 @@ import {
   isToken,
   keychains,
   normalizeRegistryKey,
+  registryBase,
   runtimeTokens,
   setRuntimeToken,
   setToken,
@@ -52,6 +53,7 @@ export {
   keychains,
   normalizeRegistryKey,
   oidc,
+  registryBase,
   runtimeTokens,
   setRuntimeToken,
   setToken,
@@ -298,7 +300,8 @@ export class RegistryClient {
 
     const s = tok.replace(/^(Bearer|Basic) /i, '')
 
-    const tokensUrl = new URL('-/npm/v1/tokens', registry)
+    const base = registryBase(registry)
+    const tokensUrl = new URL('-/npm/v1/tokens', base)
     const record = await this.seek<{
       key: string
       token: string
@@ -309,7 +312,7 @@ export class RegistryClient {
     if (record) {
       const { key } = record
       await this.request(
-        new URL(`-/npm/v1/tokens/token/${key}`, registry),
+        new URL(`-/npm/v1/tokens/token/${key}`, base),
         { useCache: false, method: 'DELETE' },
       )
     }
@@ -331,7 +334,7 @@ export class RegistryClient {
     // - hang on the doneUrl until done
     //
     // if that fails: fall back to couchdb login
-    const webLoginURL = new URL('-/v1/login', registry)
+    const webLoginURL = new URL('-/v1/login', registryBase(registry))
     const response = await this.request(webLoginURL, {
       method: 'POST',
       useCache: false,

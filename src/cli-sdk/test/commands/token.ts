@@ -8,6 +8,9 @@ const mockRegistryClient = {
     const u = new URL(url)
     return (u.origin + u.pathname).replace(/\/+$/, '')
   },
+  registryBase(url: string) {
+    return url.endsWith('/') ? url : url + '/'
+  },
   async setToken(_reg: string, _tok: Token) {},
   async deleteToken(_reg: string) {},
   async getToken(): Promise<Token | undefined> {

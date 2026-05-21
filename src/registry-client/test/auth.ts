@@ -1,5 +1,9 @@
 import t from 'tap'
-import { isToken, normalizeRegistryKey } from '../src/auth.ts'
+import {
+  isToken,
+  normalizeRegistryKey,
+  registryBase,
+} from '../src/auth.ts'
 
 const checkLog = (kc: any) => (kc as Keychain).log
 
@@ -83,6 +87,26 @@ t.test('normalizeRegistryKey', t => {
   )
   // Throws on invalid URL
   t.throws(() => normalizeRegistryKey('not a url'))
+  t.end()
+})
+
+t.test('registryBase', t => {
+  t.equal(
+    registryBase('https://registry.npmjs.org'),
+    'https://registry.npmjs.org/',
+  )
+  t.equal(
+    registryBase('https://registry.npmjs.org/'),
+    'https://registry.npmjs.org/',
+  )
+  t.equal(
+    registryBase('https://registry.vlt.io/vltpkg/main'),
+    'https://registry.vlt.io/vltpkg/main/',
+  )
+  t.equal(
+    registryBase('https://registry.vlt.io/vltpkg/main/'),
+    'https://registry.vlt.io/vltpkg/main/',
+  )
   t.end()
 })
 

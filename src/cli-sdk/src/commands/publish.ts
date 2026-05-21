@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient, oidc } from '@vltpkg/registry-client'
+import {
+  RegistryClient,
+  oidc,
+  registryBase,
+} from '@vltpkg/registry-client'
 import type { CacheEntry } from '@vltpkg/registry-client'
 import { run } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
@@ -205,7 +209,7 @@ const commandSingle = async (
     'dry-run': dry = false,
     otp,
   } = conf.options
-  const registryUrl = new URL(registry)
+  const registryUrl = new URL(registryBase(registry))
 
   const runOptions = {
     cwd: manifestDir,
