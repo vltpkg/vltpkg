@@ -350,7 +350,10 @@ const parseDir = (
       const depType = shorten(type, alias, fromNode.manifest)
       let spec = Spec.parse(alias, bareSpec, {
         ...options,
-        registry: fromNode.registry,
+        // fall back to options.registry (which the lockfile merges into)
+        // so importer-level edges don't silently revert to the default
+        // npm registry. see vltpkg/vltpkg#1580.
+        registry: fromNode.registry ?? options.registry,
       })
 
       // Check for active modifiers and replace spec if a modifier is complete
@@ -425,7 +428,7 @@ const parseDir = (
       const depType = shorten(type, name, fromNode.manifest)
       let spec = Spec.parse(name, bareSpec, {
         ...options,
-        registry: fromNode.registry,
+        registry: fromNode.registry ?? options.registry,
       })
 
       // Check for active modifiers and replace spec for missing dependencies
