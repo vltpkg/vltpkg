@@ -12,6 +12,7 @@ import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
 import assert from 'node:assert'
 import { asError } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { dirname, resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
 import { actual } from '@vltpkg/graph'
@@ -188,6 +189,24 @@ export const command: CommandFn<CommandResult> = async conf => {
   return results
 }
 
+type PublishConfig = {
+  directory?: string
+  registry?: string
+  access?: string
+  tag?: string
+}
+
+const getPublishConfig = (
+  manifest: NormalizedManifest,
+): PublishConfig | undefined => {
+  const pc: unknown = (manifest as Record<string, unknown>)
+    .publishConfig
+  if (pc && typeof pc === 'object') {
+    return pc
+  }
+  return undefined
+}
+
 const commandSingle = async (
   location: string,
   conf: LoadedConfig,
@@ -202,13 +221,11 @@ const commandSingle = async (
     error('Package has been marked as private'),
   )
 
-  const {
-    tag,
-    access,
-    registry,
-    'dry-run': dry = false,
-    otp,
-  } = conf.options
+  const { 'dry-run': dry = false, otp } = conf.options
+  const publishConfig = getPublishConfig(manifest)
+  const tag = publishConfig?.tag ?? conf.options.tag
+  const access = publishConfig?.access ?? conf.options.access
+  const registry = publishConfig?.registry ?? conf.options.registry
   const registryUrl = new URL(registryBase(registry))
 
   const runOptions = {
@@ -334,8 +351,9 @@ const commandSingle = async (
 
     if (response.statusCode !== 200 && response.statusCode !== 201) {
       let extraMsg = ''
-      // special case 404 errors to provide a better hint to the user
-      if (response.statusCode === 404) {
+      if (response.statusCode === 409) {
+        extraMsg = `.\n⚠️ ${name}@${version} already exists in the registry. Bump the version and try again.`
+      } else if (response.statusCode === 404) {
         extraMsg =
           ".\n⚠️ Make sure you're logged in and have access to publish the package."
       }
