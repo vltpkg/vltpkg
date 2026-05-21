@@ -102,7 +102,10 @@ t.test('setToken', async t => {
   await t.rejects(setToken('not a url', 'Bearer token', ''))
   await setToken('https://x.com/', 'Bearer token', '')
   t.strictSame(checkLog(getKC('')), [
+    ['load'],
+    ['load'],
     ['set', 'https://x.com', 'Bearer token'],
+    ['save'],
   ])
   function typeChecks() {
     //@ts-expect-error
@@ -121,7 +124,9 @@ t.test('setToken preserves path', async t => {
     '',
   )
   t.strictSame(checkLog(getKC('')), [
+    ['load'],
     ['set', 'https://registry.vlt.io/luke', 'Bearer luketoken'],
+    ['save'],
   ])
 })
 

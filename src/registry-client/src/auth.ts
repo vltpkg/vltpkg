@@ -63,7 +63,9 @@ export const setToken = async (
   identity: string,
 ): Promise<void> => {
   const kc = getKC(identity)
-  return kc.set(normalizeRegistryKey(registry), token)
+  await kc.load()
+  kc.set(normalizeRegistryKey(registry), token)
+  await kc.save()
 }
 
 export const getToken = async (
