@@ -401,12 +401,21 @@ jobs:
                 continue
               fi
               package_name=$(jq -r '.name' "$dir/package.json")
+              renamed=false
               if [[ "$package_name" != @vltpkg/* ]]; then
-                echo "Skipping non-@vltpkg scoped package: $package_name"
-                continue
+                scoped_name="@vltpkg/$package_name"
+                echo "Temporarily renaming $package_name → $scoped_name for vlt registry publish"
+                jq --arg n "$scoped_name" '.name = $n' "$dir/package.json" > "$dir/package.json.tmp"
+                mv "$dir/package.json.tmp" "$dir/package.json"
+                renamed=true
               fi
               echo "Publishing $dir to vlt registry..."
               (cd "$dir" && $VLT publish --access=public)
+              if [[ "$renamed" == "true" ]]; then
+                echo "Restoring original package name: $package_name"
+                jq --arg n "$package_name" '.name = $n' "$dir/package.json" > "$dir/package.json.tmp"
+                mv "$dir/package.json.tmp" "$dir/package.json"
+              fi
             fi
           done
         env:
