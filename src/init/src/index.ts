@@ -41,16 +41,20 @@ export type JSONFileInfo<T extends JSONObj = JSONObj> = {
   data: T
 }
 
-export type GitignoreFileInfo = {
+export type IgnoreFileInfo = {
   path: string
 }
 
+export type GitignoreFileInfo = IgnoreFileInfo
+
 export type InitFileResults = {
   manifest?: JSONFileInfo<NormalizedManifest>
-  gitignore?: GitignoreFileInfo
+  gitignore?: IgnoreFileInfo
+  npmignore?: IgnoreFileInfo
 }
 
 const GITIGNORE_ENTRY = 'node_modules'
+const NPMIGNORE_ENTRY = 'vlt.json'
 
 /**
  * Create or update a `.gitignore` file ensuring `node_modules` is listed.
@@ -76,6 +80,33 @@ export const ensureGitignore = (
       'utf8',
     )
     return { path: gitignorePath }
+  }
+  return undefined
+}
+
+/**
+ * Create or update a `.npmignore` file ensuring `vlt.json` is listed.
+ * Returns `{ path }` of the file that was written, or `undefined` if the
+ * file already contained the entry and no changes were needed.
+ */
+export const ensureNpmignore = (
+  cwd: string,
+): IgnoreFileInfo | undefined => {
+  const npmignorePath = resolve(cwd, '.npmignore')
+  if (!existsSync(npmignorePath)) {
+    writeFileSync(npmignorePath, `${NPMIGNORE_ENTRY}\n`, 'utf8')
+    return { path: npmignorePath }
+  }
+  const content = readFileSync(npmignorePath, 'utf8')
+  const lines = content.split('\n').map(l => l.trim())
+  if (!lines.includes(NPMIGNORE_ENTRY)) {
+    const prefix = content.endsWith('\n') ? '' : '\n'
+    appendFileSync(
+      npmignorePath,
+      `${prefix}${NPMIGNORE_ENTRY}\n`,
+      'utf8',
+    )
+    return { path: npmignorePath }
   }
   return undefined
 }
@@ -114,9 +145,11 @@ export const init = async ({
   packageJson.write(cwd, data, indent)
 
   const gitignore = ensureGitignore(cwd)
+  const npmignore = ensureNpmignore(cwd)
 
   return {
     manifest: { path, data },
     ...(gitignore ? { gitignore } : {}),
+    ...(npmignore ? { npmignore } : {}),
   }
 }

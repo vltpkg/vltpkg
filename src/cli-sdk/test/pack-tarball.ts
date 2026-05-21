@@ -165,7 +165,6 @@ t.test('packTarball', async t => {
   })
 
   t.test('filter excludes all patterns correctly', async t => {
-    // Create a directory with all excluded file types
     const excludeDir = t.testdir({
       'exclude-test': {
         'package.json': JSON.stringify({
@@ -196,6 +195,9 @@ t.test('packTarball', async t => {
         '.gitignore': 'node_modules',
         '.npmignore': 'test',
         '.editorconfig': 'config',
+        'vlt.json': JSON.stringify({
+          registry: 'https://registry.npmjs.org',
+        }),
         'backup~': 'backup',
         'file.swp': 'swap',
         'index.js': 'console.log("included")',
@@ -217,17 +219,15 @@ t.test('packTarball', async t => {
     )
     t.ok(result.tarballData, 'should create tarball')
 
-    // Check files list directly from result
     const filesInTarball = result.files
 
-    // Should include package.json and index.js
     t.ok(
       filesInTarball.includes('package.json'),
       'package.json included',
     )
     t.ok(filesInTarball.includes('index.js'), 'index.js included')
 
-    // Should exclude all the patterns
+    // Always-excluded patterns
     t.notOk(
       filesInTarball.some(f => f.startsWith('.git/')),
       '.git excluded',
@@ -268,6 +268,7 @@ t.test('packTarball', async t => {
       filesInTarball.includes('.editorconfig'),
       '.editorconfig excluded',
     )
+    t.notOk(filesInTarball.includes('vlt.json'), 'vlt.json excluded')
     t.notOk(filesInTarball.includes('backup~'), 'backup~ excluded')
     t.notOk(filesInTarball.includes('file.swp'), 'file.swp excluded')
   })
@@ -1379,6 +1380,236 @@ t.test('publishConfig.directory from package.json', async t => {
       await t.rejects(
         packTarball(manifest, originalDir, config),
         /Publish directory does not exist/,
+      )
+    },
+  )
+})
+
+t.test('ignore file support', async t => {
+  t.test('.npmignore is read and respected', async t => {
+    const dir = t.testdir({
+      pkg: {
+        'package.json': JSON.stringify({
+          name: 'npmignore-test',
+          version: '1.0.0',
+        }),
+        '.npmignore': 'src\n*.log\n',
+        'index.js': 'module.exports = {}',
+        'debug.log': 'some log output',
+        src: {
+          'app.ts': 'export const x = 1',
+        },
+        lib: {
+          'app.js': 'const x = 1',
+        },
+      },
+    })
+
+    const pkgPath = resolve(dir, 'pkg')
+    const manifestContent = await readFile(
+      resolve(pkgPath, 'package.json'),
+      'utf8',
+    )
+    const manifest = JSON.parse(manifestContent)
+    const config = createMockConfig(dir)
+
+    const result = await packTarball(manifest, pkgPath, config)
+    const filesInTarball = result.files
+
+    t.ok(filesInTarball.includes('index.js'), 'index.js included')
+    t.ok(filesInTarball.includes('lib/app.js'), 'lib/app.js included')
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('src/')),
+      'src/ excluded by .npmignore',
+    )
+    t.notOk(
+      filesInTarball.includes('debug.log'),
+      '*.log excluded by .npmignore',
+    )
+    t.notOk(
+      filesInTarball.includes('.npmignore'),
+      '.npmignore itself excluded',
+    )
+  })
+
+  t.test(
+    '.gitignore is used as fallback when no .npmignore',
+    async t => {
+      const dir = t.testdir({
+        pkg: {
+          'package.json': JSON.stringify({
+            name: 'gitignore-test',
+            version: '1.0.0',
+          }),
+          '.gitignore': 'dist\n*.tmp\n',
+          'index.js': 'module.exports = {}',
+          'scratch.tmp': 'temp data',
+          dist: {
+            'bundle.js': 'bundled code',
+          },
+          src: {
+            'app.ts': 'export const x = 1',
+          },
+        },
+      })
+
+      const pkgPath = resolve(dir, 'pkg')
+      const manifestContent = await readFile(
+        resolve(pkgPath, 'package.json'),
+        'utf8',
+      )
+      const manifest = JSON.parse(manifestContent)
+      const config = createMockConfig(dir)
+
+      const result = await packTarball(manifest, pkgPath, config)
+      const filesInTarball = result.files
+
+      t.ok(filesInTarball.includes('index.js'), 'index.js included')
+      t.ok(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ included (not in .gitignore)',
+      )
+      t.notOk(
+        filesInTarball.some(f => f.startsWith('dist/')),
+        'dist/ excluded by .gitignore',
+      )
+      t.notOk(
+        filesInTarball.includes('scratch.tmp'),
+        '*.tmp excluded by .gitignore',
+      )
+    },
+  )
+
+  t.test('.npmignore takes precedence over .gitignore', async t => {
+    const dir = t.testdir({
+      pkg: {
+        'package.json': JSON.stringify({
+          name: 'precedence-test',
+          version: '1.0.0',
+        }),
+        '.npmignore': 'test\n',
+        '.gitignore': 'dist\ntest\n',
+        'index.js': 'module.exports = {}',
+        test: {
+          'test.js': 'test code',
+        },
+        dist: {
+          'bundle.js': 'bundled code',
+        },
+      },
+    })
+
+    const pkgPath = resolve(dir, 'pkg')
+    const manifestContent = await readFile(
+      resolve(pkgPath, 'package.json'),
+      'utf8',
+    )
+    const manifest = JSON.parse(manifestContent)
+    const config = createMockConfig(dir)
+
+    const result = await packTarball(manifest, pkgPath, config)
+    const filesInTarball = result.files
+
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('test/')),
+      'test/ excluded by .npmignore',
+    )
+    // dist/ is in .gitignore but NOT in .npmignore — .npmignore takes precedence
+    t.ok(
+      filesInTarball.some(f => f.startsWith('dist/')),
+      'dist/ included (.gitignore ignored when .npmignore exists)',
+    )
+  })
+
+  t.test(
+    'files field takes precedence over ignore files',
+    async t => {
+      const dir = t.testdir({
+        pkg: {
+          'package.json': JSON.stringify({
+            name: 'files-precedence-test',
+            version: '1.0.0',
+            files: ['lib/'],
+          }),
+          '.npmignore': 'lib\n',
+          'index.js': 'module.exports = {}',
+          lib: {
+            'app.js': 'const x = 1',
+          },
+          src: {
+            'app.ts': 'export const x = 1',
+          },
+        },
+      })
+
+      const pkgPath = resolve(dir, 'pkg')
+      const manifestContent = await readFile(
+        resolve(pkgPath, 'package.json'),
+        'utf8',
+      )
+      const manifest = JSON.parse(manifestContent)
+      const config = createMockConfig(dir)
+
+      const result = await packTarball(manifest, pkgPath, config)
+      const filesInTarball = result.files
+
+      // files field wins: lib/ is included even though .npmignore says to exclude it
+      t.ok(
+        filesInTarball.some(f => f.startsWith('lib/')),
+        'lib/ included (files field overrides .npmignore)',
+      )
+      t.notOk(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ excluded (not in files field)',
+      )
+      t.notOk(
+        filesInTarball.includes('index.js'),
+        'index.js excluded (not in files field)',
+      )
+    },
+  )
+
+  t.test(
+    'no ignore files: all non-excluded files included',
+    async t => {
+      const dir = t.testdir({
+        pkg: {
+          'package.json': JSON.stringify({
+            name: 'no-ignore-test',
+            version: '1.0.0',
+          }),
+          'index.js': 'module.exports = {}',
+          '.editorconfig': 'root = true',
+          'config.yml': 'key: value',
+          src: {
+            'app.ts': 'export const x = 1',
+          },
+        },
+      })
+
+      const pkgPath = resolve(dir, 'pkg')
+      const manifestContent = await readFile(
+        resolve(pkgPath, 'package.json'),
+        'utf8',
+      )
+      const manifest = JSON.parse(manifestContent)
+      const config = createMockConfig(dir)
+
+      const result = await packTarball(manifest, pkgPath, config)
+      const filesInTarball = result.files
+
+      t.ok(filesInTarball.includes('index.js'), 'index.js included')
+      t.ok(
+        filesInTarball.includes('config.yml'),
+        'config.yml included (no ignore file to exclude it)',
+      )
+      t.notOk(
+        filesInTarball.includes('.editorconfig'),
+        '.editorconfig always excluded',
+      )
+      t.ok(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ included',
       )
     },
   )
