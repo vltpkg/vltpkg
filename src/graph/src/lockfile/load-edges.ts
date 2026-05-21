@@ -123,11 +123,18 @@ export const loadEdges = (
       }
     }
 
-    // Parse spec once we know the nodes are valid
-    const spec = Spec.parse(specName, valRest.substring(0, vrSplit), {
-      ...options,
-      registry: fromNode.registry,
-    })
+    // Use the merged options directly — they already carry the
+    // correct registry from the lockfile's `options` + caller config.
+    // `fromNode.registry` is not populated yet at this point (the
+    // post-load hydration loop in load.ts sets it *after* edges are
+    // loaded), so overriding here would always inject `undefined`
+    // and silently revert to the default npm registry.
+    // See vltpkg/vltpkg#1580.
+    const spec = Spec.parse(
+      specName,
+      valRest.substring(0, vrSplit),
+      options,
+    )
 
     if (useOptimizations) {
       edgeProcessingQueue.push({

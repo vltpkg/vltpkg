@@ -48,8 +48,11 @@ export const uninstall = async (
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
     if (options.lockfileOnly) {
-      // Save only the main lockfile, skip all filesystem operations
-      lockfile.save({ graph, modifiers })
+      // Save only the main lockfile, skip all filesystem operations.
+      // Spread `options` so that spec-level config (registry,
+      // scoped-registries, git-hosts, catalogs, etc.) round-trips
+      // through the lockfile. See vltpkg/vltpkg#1580.
+      lockfile.save({ ...options, graph, modifiers })
       const saveImportersPackageJson =
         /* c8 ignore next */
         remove?.modifiedDependencies ?
