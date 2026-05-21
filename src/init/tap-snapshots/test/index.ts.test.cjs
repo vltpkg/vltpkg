@@ -10,6 +10,11 @@ node_modules
 
 `
 
+exports[`test/index.ts > TAP > init > should init a new .npmignore file 1`] = `
+vlt.json
+
+`
+
 exports[`test/index.ts > TAP > init > should init a new package.json file 1`] = `
 {
   "name": "my-project",
@@ -43,6 +48,9 @@ Object {
       "version": "1.0.0",
     },
     "path": "{CWD}/.tap/fixtures/test-index.ts-init/my-project/package.json",
+  },
+  "npmignore": Object {
+    "path": "{CWD}/.tap/fixtures/test-index.ts-init/my-project/.npmignore",
   },
 }
 `
@@ -84,6 +92,9 @@ Object {
     },
     "path": "{CWD}/.tap/fixtures/test-index.ts-init-with-author-info/my-project/package.json",
   },
+  "npmignore": Object {
+    "path": "{CWD}/.tap/fixtures/test-index.ts-init-with-author-info/my-project/.npmignore",
+  },
 }
 `
 
@@ -110,6 +121,9 @@ Object {
       "version": "1.0.0",
     },
     "path": "{CWD}/.tap/fixtures/test-index.ts-missing-user-info/my-project/package.json",
+  },
+  "npmignore": Object {
+    "path": "{CWD}/.tap/fixtures/test-index.ts-missing-user-info/my-project/.npmignore",
   },
 }
 `
