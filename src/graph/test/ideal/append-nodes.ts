@@ -3077,7 +3077,7 @@ t.test(
         }
         return null
       },
-    } as PackageInfoClient
+    } as unknown as PackageInfoClient
 
     // Create a dep that uses a plain registry spec
     // for a workspace package
