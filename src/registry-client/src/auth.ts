@@ -17,6 +17,16 @@ export const normalizeRegistryKey = (url: string): string => {
   return (u.origin + u.pathname).replace(/\/+$/, '')
 }
 
+/**
+ * Ensure a registry URL ends with `/` so that `new URL(path, base)`
+ * appends under the full path instead of replacing the last segment.
+ *
+ *   registryBase('https://r.io/scope/name')
+ *   // → 'https://r.io/scope/name/'
+ */
+export const registryBase = (url: string): string =>
+  url.endsWith('/') ? url : url + '/'
+
 // just exported for testing
 export const keychains = new Map<string, Keychain<Token>>()
 
