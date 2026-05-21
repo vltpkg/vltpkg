@@ -20,7 +20,7 @@ Manage registry authentication tokens in the vlt keychain.
 
 ### list
 
-List all tokens for configured registries. Queries each registry's token API and displays token metadata including key, creation date, and permissions.
+List tokens for configured registries. Shows locally stored auth tokens and queries each registry's token API for remote token metadata.
 
 \`\`\`
 vlt token list
