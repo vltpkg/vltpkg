@@ -46,6 +46,7 @@ export {
   clearRuntimeTokens,
   deleteToken,
   getKC,
+  getToken,
   getTokenByURL,
   isToken,
   keychains,
@@ -546,9 +547,15 @@ export class RegistryClient {
   ): Promise<CacheEntry> {
     if (handleCacheHitResponse(response, entry)) return entry
 
+    let consumedBody: string | undefined
     if (response.statusCode === 401) {
-      const repeatRequest = await otplease(this, options, response)
-      if (repeatRequest) return await this.request(url, repeatRequest)
+      const otpResult = await otplease(this, options, response)
+      if (otpResult && 'retry' in otpResult) {
+        return await this.request(url, otpResult.retry)
+      }
+      if (otpResult && 'bodyConsumed' in otpResult) {
+        consumedBody = otpResult.bodyConsumed
+      }
     }
 
     const h: Uint8Array[] = []
@@ -566,6 +573,16 @@ export class RegistryClient {
     }
 
     const { integrity, trustIntegrity } = options
+
+    // When otplease already consumed the body, use its length
+    // instead of the Content-Length header to size the CacheEntry
+    // buffer correctly.
+    const contentLength =
+      consumedBody !== undefined ? consumedBody.length
+      : response.headers['content-length'] ?
+        Number(response.headers['content-length'])
+      : /* c8 ignore next */ undefined
+
     const result = new CacheEntry(
       /* c8 ignore next - should always have a status code */
       response.statusCode || 200,
@@ -575,10 +592,7 @@ export class RegistryClient {
         trustIntegrity,
         'stale-while-revalidate-factor':
           this.staleWhileRevalidateFactor,
-        contentLength:
-          response.headers['content-length'] ?
-            Number(response.headers['content-length'])
-          : /* c8 ignore next */ undefined,
+        contentLength,
       },
     )
 
@@ -587,6 +601,16 @@ export class RegistryClient {
       const [nextURL, nextOptions] = redirect(options, result, url)
       if (nextOptions && nextURL) {
         return await this.request(nextURL, nextOptions)
+      }
+      return result
+    }
+
+    // If otplease already consumed the body (e.g. checking for OTP
+    // prompt on a plain 401), use the text it read rather than trying
+    // to re-read from the already-drained stream.
+    if (consumedBody !== undefined) {
+      if (consumedBody.length > 0) {
+        result.addBody(new TextEncoder().encode(consumedBody))
       }
       return result
     }
