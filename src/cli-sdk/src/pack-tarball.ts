@@ -4,11 +4,12 @@ import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
-import { existsSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
 import { parse, stringify } from 'polite-json'
+import ignore from 'ignore'
 
 export type PackTarballResult = {
   name: string
@@ -142,6 +143,161 @@ const replaceWorkspaceAndCatalogSpecs = (
   return manifest
 }
 
+const alwaysExcludePatterns = [
+  /^\.?\/?\.git(\/|$)/,
+  /^\.?\/?node_modules(\/|$)/,
+  /^\.?\/?\.nyc_output(\/|$)/,
+  /^\.?\/?coverage(\/|$)/,
+  /^\.?\/?\.vscode(\/|$)/,
+  /^\.?\/?\.idea(\/|$)/,
+  /^\.?\/?\.DS_Store$/,
+  /^\.?\/?\.npmrc$/,
+  /^\.?\/?\.gitignore$/,
+  /^\.?\/?\.npmignore$/,
+  /^\.?\/?\.editorconfig$/,
+  /^\.?\/?package-lock\.json$/,
+  /^\.?\/?yarn\.lock$/,
+  /^\.?\/?pnpm-lock\.yaml$/,
+  /^\.?\/?bun\.lockb$/,
+  /^\.?\/?bun\.lock$/,
+  /^\.?\/?vlt-lock\.json$/,
+  /^\.?\/?vlt\.json$/,
+  /~$/,
+  /\.swp$/,
+  /\.tgz$/,
+]
+
+const alwaysIncludePatterns = [
+  /^README(\..*)?$/i,
+  /^CHANGELOG(\..*)?$/i,
+  /^HISTORY(\..*)?$/i,
+  /^LICENSE(\..*)?$/i,
+  /^LICENCE(\..*)?$/i,
+]
+
+/**
+ * Read an ignore file (.npmignore or .gitignore) and return its contents,
+ * or undefined if the file does not exist.
+ */
+const readIgnoreFile = (
+  dir: string,
+  name: string,
+): string | undefined => {
+  const filePath = join(dir, name)
+  if (!existsSync(filePath)) return undefined
+  return readFileSync(filePath, 'utf8')
+}
+
+/**
+ * Build the tar filter function for packing.
+ *
+ * Follows npm's precedence rules:
+ *   1. `files` field in package.json → allowlist (ignore files are not read)
+ *   2. `.npmignore` → denylist (`.gitignore` is NOT read)
+ *   3. `.gitignore` → fallback denylist when no `.npmignore` exists
+ *
+ * Regardless of mode, always-excluded files (lockfiles, .git, node_modules,
+ * .npmrc, vlt.json, etc.) are excluded and always-included files (package.json,
+ * README, LICENSE, etc.) are included.
+ */
+export const buildPackFilter = (
+  manifest: NormalizedManifest,
+  packDir: string,
+): ((path: string) => boolean) => {
+  const manifestWithFiles = manifest as NormalizedManifest & {
+    files?: string[]
+  }
+  const hasFilesField =
+    Array.isArray(manifestWithFiles.files) &&
+    manifestWithFiles.files.length > 0
+  const hasEmptyFilesField =
+    Array.isArray(manifestWithFiles.files) &&
+    manifestWithFiles.files.length === 0
+
+  // Build ignore matcher from .npmignore or .gitignore (only when no files field)
+  let ig: ReturnType<typeof ignore> | undefined
+  if (!hasFilesField && !hasEmptyFilesField) {
+    const npmignoreContent = readIgnoreFile(packDir, '.npmignore')
+    if (npmignoreContent !== undefined) {
+      ig = ignore().add(npmignoreContent)
+    } else {
+      const gitignoreContent = readIgnoreFile(packDir, '.gitignore')
+      if (gitignoreContent !== undefined) {
+        ig = ignore().add(gitignoreContent)
+      }
+    }
+  }
+
+  return (path: string) => {
+    const normalizedPath = path.replace(/^\.\//, '')
+
+    if (path === '.' || normalizedPath === '') {
+      return true
+    }
+
+    if (
+      alwaysExcludePatterns.some(pattern =>
+        pattern.test(normalizedPath),
+      )
+    ) {
+      return false
+    }
+
+    if (
+      alwaysIncludePatterns.some(pattern =>
+        pattern.test(normalizedPath),
+      )
+    ) {
+      return true
+    }
+
+    if (normalizedPath === 'package.json') {
+      return true
+    }
+
+    // files field: allowlist mode
+    if (hasEmptyFilesField) {
+      return false
+    }
+
+    if (hasFilesField && manifestWithFiles.files) {
+      return manifestWithFiles.files.some((pattern: string) => {
+        if (pattern.endsWith('/')) {
+          const dirName = pattern.slice(0, -1)
+          const globPattern = pattern.replace(/\/$/, '/**')
+          const matchesDir = normalizedPath === dirName
+          const matchesContents = minimatch(
+            normalizedPath,
+            globPattern,
+            { dot: true },
+          )
+          return matchesDir || matchesContents
+        }
+
+        const directMatch = minimatch(normalizedPath, pattern, {
+          dot: true,
+        })
+        const isParentDir =
+          pattern.includes('/') &&
+          pattern.startsWith(normalizedPath + '/')
+        const isChildOfPattern = minimatch(
+          normalizedPath,
+          pattern + '/**',
+          { dot: true },
+        )
+        return directMatch || isParentDir || isChildOfPattern
+      })
+    }
+
+    // Ignore-file mode: apply .npmignore or .gitignore deny patterns
+    if (ig?.ignores(normalizedPath)) {
+      return false
+    }
+
+    return true
+  }
+}
+
 /**
  * Create a tarball from a package directory
  * @param {NormalizedManifest} manifest - The manifest of the package to pack
@@ -211,128 +367,15 @@ export const packTarball = async (
   try {
     config.options.packageJson.write(packDir, processedManifest)
 
+    const packFilter = buildPackFilter(manifest, packDir)
+
     const tarballData = await tarCreate(
       {
         cwd: packDir,
         gzip: true,
         portable: true,
         prefix: 'package/',
-        filter: (path: string) => {
-          // Normalize path - remove leading './'
-          const normalizedPath = path.replace(/^\.\//, '')
-
-          // Always include root directory
-          if (path === '.' || normalizedPath === '') {
-            return true
-          }
-
-          // Always exclude certain files/directories
-          const alwaysExcludePatterns = [
-            /^\.?\/?\.git(\/|$)/,
-            /^\.?\/?node_modules(\/|$)/,
-            /^\.?\/?\.nyc_output(\/|$)/,
-            /^\.?\/?coverage(\/|$)/,
-            /^\.?\/?\.DS_Store$/,
-            /^\.?\/?\.npmrc$/,
-            /^\.?\/?package-lock\.json$/,
-            /^\.?\/?yarn\.lock$/,
-            /^\.?\/?pnpm-lock\.yaml$/,
-            /^\.?\/?bun\.lockb$/,
-            /^\.?\/?bun\.lock$/,
-            /^\.?\/?vlt-lock\.json$/,
-            /~$/,
-            /\.swp$/,
-            /\.tgz$/,
-          ]
-
-          if (
-            alwaysExcludePatterns.some(pattern =>
-              pattern.test(normalizedPath),
-            )
-          ) {
-            return false
-          }
-
-          // Always include certain files
-          const alwaysIncludePatterns = [
-            /^README(\..*)?$/i,
-            /^CHANGELOG(\..*)?$/i,
-            /^HISTORY(\..*)?$/i,
-            /^LICENSE(\..*)?$/i,
-            /^LICENCE(\..*)?$/i,
-          ]
-
-          if (
-            alwaysIncludePatterns.some(pattern =>
-              pattern.test(normalizedPath),
-            )
-          ) {
-            return true
-          }
-
-          // Always include package.json
-          if (normalizedPath === 'package.json') {
-            return true
-          }
-
-          // If files field is specified in package.json, use it for inclusion
-          const manifestWithFiles = manifest as NormalizedManifest & {
-            files?: string[]
-          }
-          if (
-            manifestWithFiles.files &&
-            Array.isArray(manifestWithFiles.files)
-          ) {
-            // Empty files array means exclude everything except always-included files
-            if (manifestWithFiles.files.length === 0) {
-              return false
-            }
-            return manifestWithFiles.files.some((pattern: string) => {
-              if (pattern.endsWith('/')) {
-                const dirName = pattern.slice(0, -1)
-                const globPattern = pattern.replace(/\/$/, '/**')
-                const matchesDir = normalizedPath === dirName
-                const matchesContents = minimatch(
-                  normalizedPath,
-                  globPattern,
-                  {
-                    dot: true,
-                  },
-                )
-                return matchesDir || matchesContents
-              }
-
-              const directMatch = minimatch(normalizedPath, pattern, {
-                dot: true,
-              })
-              // Check if this path is a parent directory of the pattern
-              const isParentDir =
-                pattern.includes('/') &&
-                pattern.startsWith(normalizedPath + '/')
-              // Check if this path is inside a directory matched by the pattern
-              // (e.g. files: ["dist"] should include dist/index.js)
-              const isChildOfPattern = minimatch(
-                normalizedPath,
-                pattern + '/**',
-                { dot: true },
-              )
-              return directMatch || isParentDir || isChildOfPattern
-            })
-          }
-
-          // Default behavior when no files field - exclude common development files
-          const defaultExcludePatterns = [
-            /^\.?\/?\.vscode(\/|$)/,
-            /^\.?\/?\.idea(\/|$)/,
-            /^\.?\/?\.gitignore$/,
-            /^\.?\/?\.npmignore$/,
-            /^\.?\/?\.editorconfig$/,
-          ]
-
-          return !defaultExcludePatterns.some(pattern =>
-            pattern.test(normalizedPath),
-          )
-        },
+        filter: packFilter,
       },
       ['.'],
     ).concat()

@@ -4,7 +4,7 @@ import t from 'tap'
 
 t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
-const { init, ensureGitignore } = await t.mockImport<
+const { init, ensureGitignore, ensureNpmignore } = await t.mockImport<
   typeof import('../src/index.ts')
 >('../src/index.ts', {
   '@vltpkg/git': {
@@ -38,6 +38,11 @@ t.test('init', async t => {
   t.matchSnapshot(
     readFileSync(resolve(dir, 'my-project', '.gitignore'), 'utf8'),
     'should init a new .gitignore file',
+  )
+
+  t.matchSnapshot(
+    readFileSync(resolve(dir, 'my-project', '.npmignore'), 'utf8'),
+    'should init a new .npmignore file',
   )
 })
 
@@ -107,6 +112,14 @@ t.test('init existing', async t => {
     readFileSync(resolve(dir, 'my-project', '.gitignore'), 'utf8'),
     'node_modules\n',
     'should create .gitignore with node_modules',
+  )
+
+  // Should create npmignore
+  t.ok(result.npmignore, 'should return npmignore info')
+  t.equal(
+    readFileSync(resolve(dir, 'my-project', '.npmignore'), 'utf8'),
+    'vlt.json\n',
+    'should create .npmignore with vlt.json',
   )
 
   // Verify the file was actually updated
@@ -385,6 +398,100 @@ t.test(
     t.ok(
       existsSync(resolve(dir, 'my-project', '.gitignore')),
       'gitignore should still exist',
+    )
+  },
+)
+
+t.test('ensureNpmignore - creates new file', async t => {
+  const dir = t.testdir({ 'my-project': {} })
+  const cwd = resolve(dir, 'my-project')
+  const result = ensureNpmignore(cwd)
+  t.ok(result, 'should return npmignore info')
+  t.equal(
+    readFileSync(resolve(cwd, '.npmignore'), 'utf8'),
+    'vlt.json\n',
+    'should create .npmignore with vlt.json',
+  )
+})
+
+t.test(
+  'ensureNpmignore - appends to existing file missing vlt.json',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.npmignore': 'test\n',
+      },
+    })
+    const cwd = resolve(dir, 'my-project')
+    const result = ensureNpmignore(cwd)
+    t.ok(result, 'should return npmignore info')
+    t.equal(
+      readFileSync(resolve(cwd, '.npmignore'), 'utf8'),
+      'test\nvlt.json\n',
+      'should append vlt.json to existing .npmignore',
+    )
+  },
+)
+
+t.test(
+  'ensureNpmignore - appends to file with no trailing newline',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.npmignore': 'test',
+      },
+    })
+    const cwd = resolve(dir, 'my-project')
+    const result = ensureNpmignore(cwd)
+    t.ok(result, 'should return npmignore info')
+    t.equal(
+      readFileSync(resolve(cwd, '.npmignore'), 'utf8'),
+      'test\nvlt.json\n',
+      'should add newline before vlt.json',
+    )
+  },
+)
+
+t.test(
+  'ensureNpmignore - no change when vlt.json already present',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.npmignore': 'test\nvlt.json\n',
+      },
+    })
+    const cwd = resolve(dir, 'my-project')
+    const result = ensureNpmignore(cwd)
+    t.equal(
+      result,
+      undefined,
+      'should return undefined when no change needed',
+    )
+    t.equal(
+      readFileSync(resolve(cwd, '.npmignore'), 'utf8'),
+      'test\nvlt.json\n',
+      'should not modify .npmignore',
+    )
+  },
+)
+
+t.test(
+  'init - no npmignore returned when vlt.json already in .npmignore',
+  async t => {
+    const dir = t.testdir({
+      'my-project': {
+        '.npmignore': 'vlt.json\n',
+      },
+    })
+    const result = await init({ cwd: resolve(dir, 'my-project') })
+    t.equal(
+      result.npmignore,
+      undefined,
+      'should not return npmignore info when entry already exists',
+    )
+    t.ok(
+      existsSync(resolve(dir, 'my-project', '.npmignore')),
+      'npmignore should still exist',
     )
   },
 )
