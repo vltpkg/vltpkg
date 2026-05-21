@@ -46,7 +46,7 @@ export const satisfiesTuple = (
   if (spec.type === 'registry' && type === 'workspace') {
     if (!monorepo) return false
     const ws = monorepo.get(first)
-    if (!ws || ws.name !== spec.name) return false
+    if (ws?.name !== spec.name) return false
     if (!spec.range) return true
     const v = parse(ws.manifest.version ?? '')
     return !!v && spec.range.test(v)
