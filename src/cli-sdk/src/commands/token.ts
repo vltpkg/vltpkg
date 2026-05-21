@@ -1,6 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import {
   deleteToken,
+  getKC,
+  getToken,
   normalizeRegistryKey,
   RegistryClient,
   setToken,
@@ -26,11 +28,16 @@ export type TokenInfo = {
 export type RegistryTokens = {
   registry: string
   alias?: string
+  /** Masked local keychain token, if stored */
+  localToken?: string
   tokens: TokenInfo[]
   error?: string
 }
 
-export type TokenListResult = RegistryTokens[]
+export type TokenListResult = {
+  identity: string
+  registries: RegistryTokens[]
+}
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -40,10 +47,9 @@ export const usage: CommandUsage = () =>
     subcommands: {
       list: {
         usage: '',
-        description: `List all tokens for configured registries.
-                      Queries each registry's token API and displays
-                      token metadata including key, creation date,
-                      and permissions.`,
+        description: `List tokens for configured registries. Shows
+                      locally stored auth tokens and queries each
+                      registry's token API for remote token metadata.`,
       },
       add: {
         usage: '',
@@ -81,6 +87,12 @@ const formatDate = (iso: string): string => {
   })
 }
 
+const maskToken = (token: string): string => {
+  const bare = token.replace(/^(Bearer|Basic)\s+/i, '')
+  if (bare.length <= 8) return bare + '…'
+  return bare.slice(0, 8) + '…'
+}
+
 const formatTokenEntry = (t: TokenInfo): string => {
   const parts = [
     `key: ${t.key}`,
@@ -96,18 +108,32 @@ const formatTokenEntry = (t: TokenInfo): string => {
 
 const formatRegistryTokens = (r: RegistryTokens): string => {
   const header = r.alias ? `${r.alias} (${r.registry})` : r.registry
-  if (r.error) return `${header}\n  error: ${r.error}`
-  if (r.tokens.length === 0) return `${header}\n  (no tokens found)`
-  return [
-    header,
-    ...r.tokens.map(t => `  ${formatTokenEntry(t)}`),
-  ].join('\n')
+  const lines: string[] = [header]
+  lines.push(
+    `  local: ${r.localToken ? maskToken(r.localToken) : '(none)'}`,
+  )
+  if (!r.localToken) {
+    lines.push('  (skipped remote query — no auth token)')
+  } else if (r.error) {
+    lines.push(`  error: ${r.error}`)
+  } else if (r.tokens.length === 0) {
+    lines.push('  (no remote tokens found)')
+  } else {
+    for (const t of r.tokens) {
+      lines.push(`  ${formatTokenEntry(t)}`)
+    }
+  }
+  return lines.join('\n')
 }
 
 export const views = {
   human: (r: TokenListResult | void) => {
     if (!r) return
-    return r.map(formatRegistryTokens).join('\n\n')
+    const header =
+      r.identity ? `identity: ${r.identity}` : 'identity: (default)'
+    return [header, ...r.registries.map(formatRegistryTokens)].join(
+      '\n\n',
+    )
   },
   json: (r: TokenListResult | void) => {
     if (!r) return
@@ -118,8 +144,16 @@ export const views = {
 const listTokens = async (
   rc: RegistryClient,
   registry: string,
+  identity: string,
   alias?: string,
 ): Promise<RegistryTokens> => {
+  const localTok = await getToken(
+    normalizeRegistryKey(registry),
+    identity,
+  )
+  if (!localTok) {
+    return { registry, alias, tokens: [] }
+  }
   const tokensUrl = new URL('-/npm/v1/tokens', registry)
   try {
     const objects = await rc.scroll<TokenInfo>(tokensUrl, {
@@ -128,6 +162,7 @@ const listTokens = async (
     return {
       registry,
       alias,
+      localToken: localTok,
       tokens: objects.map(o => ({
         key: o.key,
         token: o.token,
@@ -140,6 +175,7 @@ const listTokens = async (
     return {
       registry,
       alias,
+      localToken: localTok,
       tokens: [],
       error: err instanceof Error ? err.message : String(err),
     }
@@ -153,23 +189,47 @@ export const command: CommandFn<
   switch (conf.positionals[0]) {
     case 'list': {
       const rc = new RegistryClient(conf.options)
-      const results: RegistryTokens[] = []
+      const identity = conf.options.identity
+      const registries: RegistryTokens[] = []
+      const seen = new Set<string>()
 
       // Always query the default registry first
-      results.push(
-        await listTokens(rc, conf.options.registry, 'default'),
+      const defaultReg = conf.options.registry
+      seen.add(normalizeRegistryKey(defaultReg))
+      registries.push(
+        await listTokens(rc, defaultReg, identity, 'default'),
       )
 
       // Then query all configured registry aliases
-      const registries = conf.options.registries
-      for (const [alias, registry] of Object.entries(registries)) {
-        // Skip if it's the same as the default registry
-        if (registry !== conf.options.registry) {
-          results.push(await listTokens(rc, registry, alias))
+      const configuredRegistries = conf.options.registries
+      for (const [alias, registry] of Object.entries(
+        configuredRegistries,
+      )) {
+        const key = normalizeRegistryKey(registry)
+        if (!seen.has(key)) {
+          seen.add(key)
+          registries.push(
+            await listTokens(rc, registry, identity, alias),
+          )
         }
       }
 
-      return results
+      // Also show any keychain entries for registries not
+      // already covered (e.g. added via `vlt token add --registry`)
+      const kc = getKC(identity)
+      for (const key of await kc.keys()) {
+        if (!seen.has(key)) {
+          seen.add(key)
+          const tok = await kc.get(key)
+          registries.push({
+            registry: key,
+            localToken: tok ?? undefined,
+            tokens: [],
+          })
+        }
+      }
+
+      return { identity, registries }
     }
 
     case 'add': {

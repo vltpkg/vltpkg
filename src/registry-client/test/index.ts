@@ -43,10 +43,15 @@ process.env.XDG_RUNTIME_HOME = dir
 // mock function, just sets the npm-otp header
 const otplease = async (
   _client: any,
-  options: RegistryClientRequestOptions,
-  _response: any,
-): Promise<RegistryClientRequestOptions | undefined> => {
-  if (!options.otp) return { ...options, otp: 'hello' }
+  options: RegistryClientRequestOptions & Record<string, unknown>,
+  response: any,
+) => {
+  if (response.statusCode === 401 && options.bodyConsumedTest) {
+    // Consume the real body just like the real otplease does
+    const text = await response.body.text()
+    return { bodyConsumed: text }
+  }
+  if (!options.otp) return { retry: { ...options, otp: 'hello' } }
 }
 
 let doneUrlRetry: boolean | string = false
@@ -687,6 +692,44 @@ t.test('401 prompting otplease', async t => {
     { useCache: false },
   )
   t.match(result, { statusCode: 200 })
+})
+
+t.test('401 with body consumed by otplease', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  const result = await rc.request(
+    new URL('/-/401/consumed', registryURL),
+    { useCache: false, bodyConsumedTest: true } as any,
+  )
+  t.match(result, { statusCode: 401 })
+  t.strictSame(result.json(), { needs: 'otp' })
+})
+
+t.test('401 with empty body consumed by otplease', async t => {
+  dropConnection = false
+
+  const mockOtpEmpty = async (
+    _client: any,
+    options: RegistryClientRequestOptions & Record<string, unknown>,
+    _response: any,
+  ) => {
+    if (options.emptyBodyTest) {
+      return { bodyConsumed: '' }
+    }
+    if (!options.otp) return { retry: { ...options, otp: 'hello' } }
+  }
+
+  const { RegistryClient: EmptyRC } = await mockIndex(t, {
+    '../src/otplease.ts': { otplease: mockOtpEmpty },
+  })
+  const rc2 = new EmptyRC({})
+  const result = await rc2.request(
+    new URL('/-/401/empty', registryURL),
+    { useCache: false, emptyBodyTest: true } as any,
+  )
+  t.match(result, { statusCode: 401 })
+  // Body is empty since otplease consumed it and returned ''
+  t.equal(result.text(), '')
 })
 
 t.test('sending request with PUT method', async t => {
