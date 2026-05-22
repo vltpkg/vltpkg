@@ -946,6 +946,25 @@ t.test('catalogs', async t => {
       spec: 'b@catalog:z',
     },
   })
+
+  t.test(
+    'propagates configured registry to catalog subspec',
+    async t => {
+      const registry = 'https://registry.example.com/'
+      const parsed = Spec.parse('a@catalog:', { ...opts, registry })
+      t.equal(parsed.type, 'catalog')
+      t.equal(
+        parsed.subspec?.registry,
+        registry,
+        'subspec inherits configured registry',
+      )
+      t.equal(
+        parsed.registry,
+        registry,
+        'catalog spec exposes registry from its subspec',
+      )
+    },
+  )
 })
 
 t.test('isSpec', async t => {
