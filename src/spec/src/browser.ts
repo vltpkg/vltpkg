@@ -397,8 +397,9 @@ export class Spec implements SpecLike<Spec> {
           validOptions: Object.keys(catalog),
         })
       }
-      this.subspec = Spec.parse(this.name, sub)
+      this.subspec = Spec.parse(this.name, sub, this.options)
       this.type = 'catalog'
+      this.registry = this.subspec.final.registry
       return
     }
 
