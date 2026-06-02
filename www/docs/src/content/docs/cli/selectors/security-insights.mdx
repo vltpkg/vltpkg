@@ -76,6 +76,16 @@ Matches packages affected by manifest confusion — the published
 
 ## Vulnerabilities
 
+### `:vulnerable` / `:vuln`
+
+Matches packages that have any CVE associated with them:
+
+<Code code="$ vlt query ':vulnerable'" title="Terminal" lang="bash" />
+
+The `:vuln` alias works identically:
+
+<Code code="$ vlt query ':vuln'" title="Terminal" lang="bash" />
+
 ### `:cve(<id>)`
 
 Matches packages with a specific CVE alert:
