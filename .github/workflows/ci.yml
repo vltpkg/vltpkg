@@ -165,26 +165,24 @@ jobs:
       - name: Install Dependencies
         run: vlt install
 
-      - name: Check for malware
-        run: |
-          vlt query ':malware'
-          vlt query ':malware' --expect-results=0
+      - name: Enforce Dependency Policies
+        uses: vltpkg/policies@v2
+        with:
+          queries: |
+            # Block any malware
+            :malware --expect-results=0
+            
+            # Check for packages with known vulnerabilities
+            :vulnerable --view=json
 
-      - name: Check for copyleft licenses
-        run: |
-          vlt query '*:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0]))'
-          vlt query '*:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0]))' --expect-results=0
+            # Check for copy-lefy licenses
+            *:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0])) --expect-results=0
 
-      - name: Check for missing licenses
-        run: |
-          vlt query '*:license(none)'
-          vlt query '*:license(none)' --expect-results=0
-
-      # TODO: re-enable this when we remove GUI/VSR from the project
-      # - name: Check for deprecated packages
-      #   run: |
-      #     vlt query '*:deprecated'
-      #     vlt query '*:deprecated' --expect-results=0
+            # Check for missing licenses
+            *:license(none) --expect-results=0
+            
+            # Ensure no deprecated packages
+            :deprecated --expect-results=0
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
