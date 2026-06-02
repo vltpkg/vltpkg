@@ -62,6 +62,7 @@ import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
+import { vulnerable } from './pseudo/vulnerable.ts'
 import { workspace } from './pseudo/workspace.ts'
 
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
@@ -364,6 +365,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
     unpopular,
     unstable,
     v: semver,
+    vuln: vulnerable,
+    vulnerable,
     workspace,
   }),
 )
