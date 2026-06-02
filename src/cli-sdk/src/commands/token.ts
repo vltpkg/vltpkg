@@ -188,6 +188,7 @@ export const command: CommandFn<
 > = async conf => {
   const reg = normalizeRegistryKey(conf.options.registry)
   switch (conf.positionals[0]) {
+    case 'ls':
     case 'list': {
       const rc = new RegistryClient(conf.options)
       const identity = conf.options.identity
@@ -242,6 +243,7 @@ export const command: CommandFn<
       break
     }
 
+    case 'remove':
     case 'rm': {
       await deleteToken(reg, conf.options.identity)
       break
@@ -250,7 +252,7 @@ export const command: CommandFn<
     default: {
       throw error('Invalid token subcommand', {
         found: conf.positionals[0],
-        validOptions: ['list', 'add', 'rm'],
+        validOptions: ['list', 'ls', 'add', 'rm', 'remove'],
         code: 'EUSAGE',
       })
     }
