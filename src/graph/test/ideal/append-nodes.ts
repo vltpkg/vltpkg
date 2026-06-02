@@ -3200,3 +3200,173 @@ t.test(
     )
   },
 )
+
+t.test(
+  'workspace: spec that does not match workspace version throws descriptive error',
+  async t => {
+    const mainManifest = {
+      name: 'my-monorepo',
+      version: '1.0.0',
+    }
+    const libAManifest = {
+      name: '@scope/lib-a',
+      version: '1.0.0',
+    }
+    const consumerManifest = {
+      name: 'consumer',
+      version: '1.0.0',
+      dependencies: {
+        '@scope/lib-a': 'workspace:^2.0.0',
+      },
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        'lib-a': {
+          'package.json': JSON.stringify(libAManifest),
+        },
+        consumer: {
+          'package.json': JSON.stringify(consumerManifest),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson,
+      load: {
+        paths: ['packages/lib-a', 'packages/consumer'],
+      },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    const packageInfo = {
+      async manifest() {
+        throw new Error('should not fetch from registry')
+      },
+    } as unknown as PackageInfoClient
+
+    const consumerNode = [...graph.importers].find(
+      n => n.name === 'consumer',
+    )
+    t.ok(consumerNode, 'consumer should be an importer')
+
+    const dep = asDependency({
+      spec: Spec.parse(
+        '@scope/lib-a',
+        'workspace:^2.0.0',
+        configData,
+      ),
+      type: 'prod',
+    })
+
+    await t.rejects(
+      appendNodes(
+        packageInfo,
+        graph,
+        consumerNode!,
+        [dep],
+        scurry,
+        configData,
+        new Set<DepID>(),
+        new Map([['@scope/lib-a', dep]]),
+      ),
+      {
+        message:
+          /workspace dependency.*does not match the local workspace version/,
+      },
+      'should throw a descriptive error about version mismatch',
+    )
+  },
+)
+
+t.test(
+  'workspace: spec for a non-existent workspace throws descriptive error',
+  async t => {
+    const mainManifest = {
+      name: 'my-monorepo',
+      version: '1.0.0',
+    }
+    const consumerManifest = {
+      name: 'consumer',
+      version: '1.0.0',
+      dependencies: {
+        'nonexistent-ws': 'workspace:*',
+      },
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        consumer: {
+          'package.json': JSON.stringify(consumerManifest),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson,
+      load: { paths: ['packages/consumer'] },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    const packageInfo = {
+      async manifest() {
+        throw new Error('should not fetch from registry')
+      },
+    } as unknown as PackageInfoClient
+
+    const consumerNode = [...graph.importers].find(
+      n => n.name === 'consumer',
+    )
+    t.ok(consumerNode, 'consumer should be an importer')
+
+    const dep = asDependency({
+      spec: Spec.parse('nonexistent-ws', 'workspace:*', configData),
+      type: 'prod',
+    })
+
+    await t.rejects(
+      appendNodes(
+        packageInfo,
+        graph,
+        consumerNode!,
+        [dep],
+        scurry,
+        configData,
+        new Set<DepID>(),
+        new Map([['nonexistent-ws', dep]]),
+      ),
+      {
+        message: /no workspace found matching/,
+      },
+      'should throw a descriptive error about missing workspace',
+    )
+  },
+)
