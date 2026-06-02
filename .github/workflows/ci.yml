@@ -171,7 +171,7 @@ jobs:
           queries: |
             # Block any malware
             :malware --expect-results=0
-            
+
             # Check for packages with known vulnerabilities
             :vulnerable --view=json
 
@@ -180,7 +180,7 @@ jobs:
 
             # Check for missing licenses
             *:license(none) --expect-results=0
-            
+
             # Ensure no deprecated packages
             :deprecated --expect-results=0
 
