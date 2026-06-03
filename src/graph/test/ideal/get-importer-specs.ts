@@ -1149,3 +1149,64 @@ t.test(
     t.equal(nestedRemoves?.size, 2, 'should have expected items')
   },
 )
+
+t.test(
+  'workspace dep with missing workspace marks dep for removal',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        'my-workspace': 'workspace:*',
+        abbrev: '^3.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+      }),
+      packages: {},
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot, {
+        scurry,
+        packageJson,
+      }),
+    })
+    // simulate a dangling edge (workspace node missing from graph)
+    const rootNode = graph.mainImporter
+    const spec = Spec.parse('my-workspace', 'workspace:*', {})
+    new Edge('prod', spec, rootNode, undefined)
+
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const add = new Map() as AddImportersDependenciesMap
+    const remove = new Map([
+      [rootDepID, new Set<string>()],
+    ]) as RemoveImportersDependenciesMap
+    const specs = getImporterSpecs({
+      add,
+      graph,
+      remove,
+      scurry,
+      packageJson,
+    })
+
+    const rootRemoves = specs.remove.get(rootDepID)
+    t.ok(
+      rootRemoves?.has('my-workspace'),
+      'missing workspace dep should be marked for removal',
+    )
+    const rootAdds = specs.add.get(rootDepID)
+    t.notOk(
+      rootAdds?.has('my-workspace'),
+      'missing workspace dep should NOT be in add set',
+    )
+  },
+)
