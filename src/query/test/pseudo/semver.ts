@@ -580,6 +580,98 @@ t.test('select from semver definition', async t => {
     },
   )
 
+  await t.test('subset on edges - matching', async t => {
+    const res = await semverParser(
+      getState(':semver(>=1, subset)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.edges].map(e => `${e.name}@${e.spec.bareSpec}`),
+      [
+        'a@^1.0.0',
+        'b@~2.2.0',
+        'c@3 || 4 || 5',
+        'd@1.2 - 2.3.4',
+        'f@4.x.x',
+        'g@1.2.3-rc.1+rev.2',
+        'e@=1.3.4-beta.1',
+      ],
+      'should match edges whose bareSpec is a subset of the provided range',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('subset on edges - narrow range', async t => {
+    const res = await semverParser(
+      getState(':semver(^2, subset)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.edges].map(e => `${e.name}@${e.spec.bareSpec}`),
+      ['b@~2.2.0'],
+      'should match edges whose bareSpec is a subset of ^2',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('intersects on edges', async t => {
+    const res = await semverParser(
+      getState(':semver(>=3, intersects)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.edges].map(e => `${e.name}@${e.spec.bareSpec}`),
+      ['c@3 || 4 || 5', 'e@<=120', 'f@4.x.x'],
+      'should match edges whose bareSpec intersects with the provided range',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test(
+    'subset with :attr comparison value (range vs manifest property)',
+    async t => {
+      const res = await semverParser(
+        getState(
+          ':semver(>=10, subset, :attr(engines, [node]))',
+          getSemverRichGraph(),
+        ),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+        ['b@2.2.1', 'c@3.4.0'],
+        'should match nodes whose engines.node range is a subset of >=10',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+
+  await t.test('intersects with :attr comparison value', async t => {
+    const res = await semverParser(
+      getState(
+        ':semver(>=20, intersects, :attr(engines, [node]))',
+        getSemverRichGraph(),
+      ),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['b@2.2.1', 'c@3.4.0'],
+      'should match nodes whose engines.node range intersects >=20',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
   await t.test(
     'attribute matching arbitrary manifest property',
     async t => {
@@ -650,6 +742,14 @@ t.test('isSemverFunctionName', async t => {
   t.ok(
     isSemverFunctionName('satisfies'),
     'should return true for valid semver function name',
+  )
+  t.ok(
+    isSemverFunctionName('subset'),
+    'should return true for subset function name',
+  )
+  t.ok(
+    isSemverFunctionName('intersects'),
+    'should return true for intersects function name',
   )
   t.notOk(
     isSemverFunctionName('unsupported'),

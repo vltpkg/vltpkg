@@ -56,6 +56,34 @@ Object {
 }
 `
 
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects on edges > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "c",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "c",
+    "e",
+    "f",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects with :attr comparison value > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "c",
+  ],
+  "nodes": Array [
+    "b",
+    "c",
+  ],
+}
+`
+
 exports[`test/pseudo/semver.ts > TAP > select from semver definition > quoted custom semver function > must match snapshot 1`] = `
 Object {
   "edges": Array [
@@ -192,6 +220,53 @@ Object {
   ],
   "nodes": Array [
     "f",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > subset on edges - matching > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "f",
+    "g",
+    "e",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "f",
+    "g",
+    "e",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > subset on edges - narrow range > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > subset with :attr comparison value (range vs manifest property) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "c",
+  ],
+  "nodes": Array [
+    "b",
+    "c",
   ],
 }
 `

@@ -457,6 +457,189 @@ export const intersects = (
 }
 
 /**
+ * Check if range r1 is a subset of range r2.
+ * Returns true if every version that satisfies r1 also satisfies r2.
+ */
+export const subset = (
+  r1: Range | string,
+  r2: Range | string,
+  includePrerelease?: boolean,
+): boolean => {
+  const range1 =
+    typeof r1 === 'string' ? parseRange(r1, includePrerelease) : r1
+  const range2 =
+    typeof r2 === 'string' ? parseRange(r2, includePrerelease) : r2
+
+  if (!range1 || !range2) return false
+
+  // Any range is only a subset of another 'any' range
+  if (range2.isAny) return true
+  if (range1.isAny) return false
+
+  // Every comparator set in r1 must be a subset of at least one
+  // comparator set in r2
+  return range1.set.every(set1 =>
+    range2.set.some(set2 => comparatorSubset(set1, set2)),
+  )
+}
+
+/**
+ * Check if comparator comp1 is a subset of comparator comp2.
+ * Every version satisfying comp1 must also satisfy comp2.
+ */
+const comparatorSubset = (
+  comp1: Comparator,
+  comp2: Comparator,
+): boolean => {
+  const tuples1 = comp1.tuples.filter((t): t is OVTuple =>
+    Array.isArray(t),
+  )
+  const tuples2 = comp2.tuples.filter((t): t is OVTuple =>
+    Array.isArray(t),
+  )
+
+  // comp1 must be satisfiable
+  if (!satisfiableRange(tuples1)) return true
+
+  const bounds1 = getBounds(tuples1)
+  const bounds2 = getBounds(tuples2)
+
+  // If comp2 has an exact match, comp1 must only match that exact version
+  if (bounds2.hasExact) {
+    if (bounds1.hasExact) {
+      return eq(bounds1.hasExact, bounds2.hasExact)
+    }
+    // bounds1 must collapse to exactly that version
+    if (
+      !bounds1.lowerBound ||
+      !bounds1.upperBound ||
+      !eq(bounds1.lowerBound, bounds2.hasExact) ||
+      !eq(bounds1.upperBound, bounds2.hasExact) ||
+      !bounds1.lowerInclusive ||
+      !bounds1.upperInclusive
+    ) {
+      return false
+    }
+    return true
+  }
+
+  // If comp1 has an exact match, check it satisfies comp2's bounds
+  if (bounds1.hasExact) {
+    if (bounds2.lowerBound) {
+      if (
+        bounds2.lowerInclusive ?
+          lt(bounds1.hasExact, bounds2.lowerBound)
+        : lte(bounds1.hasExact, bounds2.lowerBound)
+      ) {
+        return false
+      }
+    }
+    if (bounds2.upperBound) {
+      if (
+        bounds2.upperInclusive ?
+          gt(bounds1.hasExact, bounds2.upperBound)
+        : gte(bounds1.hasExact, bounds2.upperBound)
+      ) {
+        return false
+      }
+    }
+    return true
+  }
+
+  // comp1's lower bound must be >= comp2's lower bound
+  if (bounds2.lowerBound) {
+    if (!bounds1.lowerBound) return false
+    const cmp = compare(bounds1.lowerBound, bounds2.lowerBound)
+    if (cmp < 0) return false
+    if (
+      cmp === 0 &&
+      !bounds2.lowerInclusive &&
+      bounds1.lowerInclusive
+    )
+      return false
+  }
+
+  // comp1's upper bound must be <= comp2's upper bound
+  if (bounds2.upperBound) {
+    if (!bounds1.upperBound) return false
+    const cmp = compare(bounds1.upperBound, bounds2.upperBound)
+    if (cmp > 0) return false
+    if (
+      cmp === 0 &&
+      !bounds2.upperInclusive &&
+      bounds1.upperInclusive
+    )
+      return false
+  }
+
+  return true
+}
+
+type Bounds = {
+  lowerBound: Version | null
+  lowerInclusive: boolean
+  upperBound: Version | null
+  upperInclusive: boolean
+  hasExact: Version | null
+}
+
+const getBounds = (tuples: OVTuple[]): Bounds => {
+  let lowerBound: Version | null = null
+  let lowerInclusive = false
+  let upperBound: Version | null = null
+  let upperInclusive = false
+  let hasExact: Version | null = null
+
+  for (const [op, ver] of tuples) {
+    switch (op) {
+      case '':
+        hasExact = ver
+        break
+      case '>=':
+        if (
+          !lowerBound ||
+          gt(ver, lowerBound) ||
+          (eq(ver, lowerBound) && !lowerInclusive)
+        ) {
+          lowerBound = ver
+          lowerInclusive = true
+        }
+        break
+      case '>':
+        if (!lowerBound || gt(ver, lowerBound)) {
+          lowerBound = ver
+          lowerInclusive = false
+        }
+        break
+      case '<=':
+        if (
+          !upperBound ||
+          lt(ver, upperBound) ||
+          (eq(ver, upperBound) && !upperInclusive)
+        ) {
+          upperBound = ver
+          upperInclusive = true
+        }
+        break
+      case '<':
+        if (!upperBound || lt(ver, upperBound)) {
+          upperBound = ver
+          upperInclusive = false
+        }
+        break
+    }
+  }
+
+  return {
+    lowerBound,
+    lowerInclusive,
+    upperBound,
+    upperInclusive,
+    hasExact,
+  }
+}
+
+/**
  * Check if two comparators can be satisfied simultaneously
  */
 const intersectComparators = (
