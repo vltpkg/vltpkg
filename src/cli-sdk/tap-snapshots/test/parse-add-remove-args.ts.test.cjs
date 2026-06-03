@@ -162,8 +162,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../../a' => {
+        spec: Spec {(unknown)@file:../../a},
         type: 'implicit'
       }
     },
@@ -192,8 +192,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../../a' => {
+        spec: Spec {(unknown)@file:../../a},
         type: 'implicit'
       }
     },
@@ -214,8 +214,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../a' => {
+        spec: Spec {(unknown)@file:../a},
         type: 'implicit'
       }
     },
@@ -236,8 +236,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../a' => {
+        spec: Spec {(unknown)@file:../a},
         type: 'implicit'
       }
     },
@@ -266,8 +266,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../../a' => {
+        spec: Spec {(unknown)@file:../../a},
         type: 'implicit'
       }
     },
@@ -288,8 +288,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../../a' => {
+        spec: Spec {(unknown)@file:../../a},
         type: 'implicit'
       }
     },
@@ -310,8 +310,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
         spec: Spec {(unknown)@github:a/b},
         type: 'implicit'
       },
-      '(unknown)@file:./a' => {
-        spec: Spec {(unknown)@file:./a},
+      '(unknown)@file:../../a' => {
+        spec: Spec {(unknown)@file:../../a},
         type: 'implicit'
       }
     },
@@ -386,6 +386,86 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
     'workspace~bar' => Map(1) {
       'foo' => {
         spec: Spec {foo@},
+        type: 'implicit'
+      }
+    },
+    modifiedDependencies: true
+  }
+}
+`
+
+exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > file spec not rebased when cwd matches workspace > should keep file spec unchanged when cwd is workspace dir 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) {
+    'workspace~ws-a' => Map(1) {
+      '(unknown)@file:../external' => {
+        spec: Spec {(unknown)@file:../external},
+        type: 'implicit'
+      }
+    },
+    modifiedDependencies: true
+  }
+}
+`
+
+exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > file spec pointing to a workspace resolves as workspace:* > should convert file spec to workspace:* 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) {
+    'workspace~app+b' => Map(1) {
+      'a' => {
+        spec: Spec {a@workspace:*},
+        type: 'implicit'
+      }
+    },
+    modifiedDependencies: true
+  }
+}
+`
+
+exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > file spec rebased for multiple workspaces > should rebase file spec per workspace 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(2) {
+    'workspace~app+a' => Map(1) {
+      'foo' => {
+        spec: Spec {foo@workspace:*},
+        type: 'implicit'
+      }
+    },
+    'workspace~utils+c' => Map(1) {
+      'foo' => {
+        spec: Spec {foo@workspace:*},
+        type: 'implicit'
+      }
+    },
+    modifiedDependencies: true
+  }
+}
+`
+
+exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > file spec rebased relative to workspace importer > should rebase file spec relative to workspace 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) {
+    'workspace~app+a' => Map(1) {
+      'foo' => {
+        spec: Spec {foo@workspace:*},
+        type: 'implicit'
+      }
+    },
+    modifiedDependencies: true
+  }
+}
+`
+
+exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > non-file specs shared across workspaces with file specs > should include both registry and rebased file specs 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) {
+    'workspace~app+a' => Map(2) {
+      'express' => {
+        spec: Spec {express@^5},
+        type: 'implicit'
+      },
+      'foo' => {
+        spec: Spec {foo@workspace:*},
         type: 'implicit'
       }
     },
