@@ -2513,11 +2513,7 @@ t.test('normalizeBugs with already normalized entries', async t => {
       { type: 'email', email: 'bugs@example.com' },
     ]
     const result = normalizeBugs(alreadyNormalized)
-    // Note: Due to a bug in the implementation, normalized entries get duplicated
-    t.same(result, [
-      { type: 'email', email: 'bugs@example.com' },
-      { type: 'email', email: 'bugs@example.com' },
-    ])
+    t.same(result, [{ type: 'email', email: 'bugs@example.com' }])
     t.end()
   })
 
@@ -2527,9 +2523,7 @@ t.test('normalizeBugs with already normalized entries', async t => {
       'bugs@example.com',
     ]
     const result = normalizeBugs(mixed)
-    // Note: Due to a bug in the implementation, normalized entries get duplicated
     t.same(result, [
-      { type: 'link', url: 'https://github.com/owner/repo/issues' },
       { type: 'link', url: 'https://github.com/owner/repo/issues' },
       { type: 'email', email: 'bugs@example.com' },
     ])

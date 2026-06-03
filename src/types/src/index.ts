@@ -486,14 +486,15 @@ const normalizeSingleBug = (bug: unknown): NormalizedBugsEntry[] => {
   } else if (isObject(bug)) {
     if (isNormalizedBugsEntry(bug)) {
       res.push(bug)
-    }
-    const obj = bug as { url?: string; email?: string }
+    } else {
+      const obj = bug as { url?: string; email?: string }
 
-    if (obj.url) {
-      res.push({ type: 'link', url: obj.url })
-    }
-    if (obj.email) {
-      res.push({ type: 'email', email: obj.email })
+      if (obj.url) {
+        res.push({ type: 'link', url: obj.url })
+      }
+      if (obj.email) {
+        res.push({ type: 'email', email: obj.email })
+      }
     }
   }
 
