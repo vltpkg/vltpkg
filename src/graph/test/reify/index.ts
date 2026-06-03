@@ -827,6 +827,95 @@ t.test('allowScripts with query selector :scripts', async t => {
   )
 })
 
+t.test(
+  'no-op reify still reports buildQueue when nodes need building',
+  async t => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const packageJson = new PackageJson()
+
+    // First install: creates node_modules and lockfiles
+    const graph = await ideal.build({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson,
+      remover: new RollbackRemove(),
+    })
+    await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      graph,
+      allowScripts: ':not(*)',
+      remover: new RollbackRemove(),
+    })
+
+    // Load actual from disk — nodes carry buildState from hidden lockfile
+    const scurry2 = new PathScurry(projectRoot)
+    const act = actual.load({
+      projectRoot,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: scurry2,
+      packageJson: new PackageJson(),
+      loadManifests: true,
+    })
+
+    // Find a non-importer node and mark it as needing a build
+    const lodashId = joinDepIDTuple([
+      'registry',
+      '',
+      'lodash@4.17.21',
+    ])
+    const lodashNode = act.nodes.get(lodashId)
+    t.ok(lodashNode, 'lodash node exists in actual graph')
+    if (!lodashNode) throw new Error('missing lodash node')
+    lodashNode.buildState = 'needed'
+
+    // Second reify: same ideal graph, no diff changes,
+    // but actual has a node with buildState === 'needed'
+    const result = await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: scurry2,
+      packageJson: new PackageJson(),
+      graph,
+      actual: act,
+      allowScripts: ':not(*)',
+      remover: new RollbackRemove(),
+    })
+
+    t.equal(
+      result.diff.hasChanges(),
+      false,
+      'diff should have no changes',
+    )
+    t.ok(result.buildQueue, 'buildQueue should be present')
+    t.ok(
+      result.buildQueue?.includes(lodashId),
+      'buildQueue should include the node that needs building',
+    )
+  },
+)
+
 t.test('reify recreates deleted workspace node_modules', async t => {
   const projectRoot = t.testdir({
     cache: {},

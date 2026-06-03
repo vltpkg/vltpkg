@@ -147,6 +147,16 @@ export const reify = async (
       const lfData = lockfileData(options)
       saveData(lfData, scurry.resolve('vlt-lock.json'), false)
     }
+    // Even with no reify changes, report nodes that still need building.
+    // Build state is persisted in the hidden lockfile and loaded into the
+    // actual graph, so check there for pending builds.
+    const pending = [...actual.nodes.values()]
+      .filter(n => n.buildState === 'needed')
+      .map(n => n.id)
+    if (pending.length) {
+      res.buildQueue = pending
+    }
+
     done()
     return res
   }
