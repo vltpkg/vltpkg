@@ -1821,3 +1821,74 @@ t.test(
     )
   },
 )
+
+t.test('install with frozenLockfile and changed options', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+      dependencies: {
+        'some-package': '^1.0.0',
+      },
+    }),
+    'vlt-lock.json': JSON.stringify({
+      lockfileVersion: 1,
+      options: {},
+      nodes: {},
+      edges: {},
+    }),
+    node_modules: {
+      'some-package': {
+        'package.json': JSON.stringify({
+          name: 'some-package',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+
+  const options = {
+    projectRoot: dir,
+    scurry: new PathScurry(dir),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    frozenLockfile: true,
+    allowScripts: ':not(*)',
+  } as unknown as InstallOptions
+
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/reify/index.ts': {
+      reify: async () => ({ buildQueue: {}, diff: {} }),
+    },
+    '../src/ideal/get-importer-specs.ts': {
+      getImporterSpecs: () => ({
+        add: Object.assign(new Map(), {
+          modifiedDependencies: false,
+        }),
+        remove: Object.assign(new Map(), {
+          modifiedDependencies: false,
+        }),
+      }),
+    },
+    '../src/lockfile/load.ts': {
+      load: () => ({
+        nodes: new Map(),
+        importers: [],
+        optionsChanged: true,
+        gc: () => {},
+      }),
+      loadHidden: () => ({
+        nodes: new Map(),
+        importers: [],
+      }),
+    },
+  })
+
+  await t.rejects(
+    install(options, new Map() as AddImportersDependenciesMap),
+    /Lockfile is out of sync with package\.json/,
+    'should throw when config options changed with frozen lockfile',
+  )
+})
