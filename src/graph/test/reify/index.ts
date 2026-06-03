@@ -572,6 +572,44 @@ t.test('early termination when no changes are needed', async t => {
     false,
     'deleteNodes should not be called when no changes',
   )
+
+  // Verify lockfiles are still written even on early termination
+  t.ok(
+    existsSync(resolve(projectRoot, 'vlt-lock.json')),
+    'vlt-lock.json should be created even with no changes',
+  )
+  t.ok(
+    existsSync(resolve(projectRoot, 'node_modules/.vlt-lock.json')),
+    'node_modules/.vlt-lock.json should be created even with no changes',
+  )
+
+  // Remove hidden lockfile and re-run to cover the branch where
+  // vlt-lock.json exists but node_modules/.vlt-lock.json does not
+  rmSync(resolve(projectRoot, 'node_modules'), {
+    recursive: true,
+    force: true,
+  })
+  t.equal(
+    existsSync(resolve(projectRoot, 'node_modules/.vlt-lock.json')),
+    false,
+    'hidden lockfile removed',
+  )
+  const scurry2 = new PathScurry(projectRoot)
+  await testReify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: scurry2,
+    packageJson: new PackageJson(),
+    graph: baseGraph,
+    actual: baseGraph,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+  t.ok(
+    existsSync(resolve(projectRoot, 'node_modules/.vlt-lock.json')),
+    'hidden lockfile recreated when missing',
+  )
 })
 
 t.test('checkNeededBuild is called during reification', async t => {
