@@ -334,6 +334,23 @@ const fetchManifestsForDeps = async (
       continue
     }
 
+    // workspace: specs can only resolve to local workspace packages.
+    // If we didn't find a matching workspace node above, it means either
+    // the workspace doesn't exist or its version doesn't satisfy the range.
+    if (spec.final.type === 'workspace') {
+      const wsVersion = graph.nodesByName
+        .get(spec.name)
+        ?.values()
+        .next().value?.version
+      throw error(
+        wsVersion ?
+          `workspace dependency ${spec} does not match the ` +
+            `local workspace version (${wsVersion})`
+        : `no workspace found matching ${spec}`,
+        { spec },
+      )
+    }
+
     // is the current edge pointint go an optional dependency?
     const edgeOptional =
       type === 'optional' || type === 'peerOptional'
