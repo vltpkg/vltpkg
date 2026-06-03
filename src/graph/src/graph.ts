@@ -155,6 +155,13 @@ export class Graph implements GraphLike {
   peerContextForkCache = new Map<string, PeerContext>()
 
   /**
+   * Whether the options used to create this graph differ from the
+   * options stored in the lockfile it was loaded from. When true,
+   * the ideal builder must reset edges and rebuild the graph.
+   */
+  optionsChanged = false
+
+  /**
    * Tracks the current peer context index.
    */
   currentPeerContextIndex = 0
