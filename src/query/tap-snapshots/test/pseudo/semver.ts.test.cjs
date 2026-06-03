@@ -56,6 +56,59 @@ Object {
 }
 `
 
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects excludes dist-tag edges (no semver) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "e",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "e",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects on edges > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "c",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "c",
+    "e",
+    "f",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects with :attr comparison value > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "c",
+  ],
+  "nodes": Array [
+    "b",
+    "c",
+  ],
+}
+`
+
 exports[`test/pseudo/semver.ts > TAP > select from semver definition > quoted custom semver function > must match snapshot 1`] = `
 Object {
   "edges": Array [
@@ -66,6 +119,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
@@ -76,6 +130,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
 }
 `
@@ -106,10 +161,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > quoted lt
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -196,18 +253,67 @@ Object {
 }
 `
 
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > subset on edges - matching > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "f",
+    "g",
+    "e",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "f",
+    "g",
+    "e",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > subset on edges - narrow range > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > subset with :attr comparison value (range vs manifest property) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "c",
+  ],
+  "nodes": Array [
+    "b",
+    "c",
+  ],
+}
+`
+
 exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted complex semver with spaces > must match snapshot 1`] = `
 Object {
   "edges": Array [
     "a",
     "b",
     "d",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
     "b",
     "d",
+    "h",
   ],
 }
 `
@@ -235,6 +341,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
@@ -245,6 +352,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
 }
 `
@@ -313,10 +421,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted 
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -325,10 +435,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted 
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -337,10 +449,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted 
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -396,11 +510,13 @@ Object {
   "edges": Array [
     "e",
     "f",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "e",
     "f",
+    "h",
   ],
 }
 `

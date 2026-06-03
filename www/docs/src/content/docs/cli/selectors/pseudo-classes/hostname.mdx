@@ -1,0 +1,74 @@
+---
+title: ':hostname()'
+sidebar:
+  label: ':hostname()'
+  order: 13
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:hostname()` pseudo-class matches packages based on the hostname
+of the registry or git remote they were fetched from.
+
+## Syntax
+
+```
+:hostname(<domain>)
+```
+
+### Parameters
+
+| Parameter | Description                                               |
+| --------- | --------------------------------------------------------- |
+| `domain`  | The hostname to match against (e.g. `npm.pkg.github.com`) |
+
+## How it works
+
+The selector extracts the hostname from each package's source:
+
+- **Registry packages**: hostname from the registry URL
+- **Git packages**: hostname from the git remote (supports named hosts
+  like `github` → `github.com`)
+- **Remote packages**: hostname from the tarball URL
+- **File/workspace packages**: never match (no hostname)
+
+## Examples
+
+Find all packages from the default npm registry:
+
+<Code
+  code="$ vlt query ':hostname(registry.npmjs.org)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find packages from GitHub's package registry:
+
+<Code
+  code="$ vlt query ':hostname(npm.pkg.github.com)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find git dependencies hosted on GitHub:
+
+<Code
+  code="$ vlt query ':hostname(github.com)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find packages from a custom registry:
+
+<Code
+  code="$ vlt query ':hostname(registry.example.com)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:registry()`](/cli/selectors/pseudo-classes/registry) — match by
+  registry configuration name
+- [`:type()`](/cli/selectors/pseudo-classes/type) — match by package
+  type (registry, git, file, etc.)

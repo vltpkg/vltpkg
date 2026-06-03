@@ -7,6 +7,9 @@ import type { LucideProps } from 'lucide-react'
 export const labelMap: Record<string, string> = {
   packages: 'Internals',
   cli: 'Client',
+  selectors: 'Selectors',
+  'pseudo-classes': 'Pseudo-Classes',
+  'pseudo-states': 'Pseudo-States',
 }
 
 export const majorSections = new Set([
@@ -43,6 +46,7 @@ export const iconMap: Partial<Record<string, IconName>> = {
   selectors: 'Search',
   security: 'Shield',
   workspaces: 'Folder',
+  'peer dependencies': 'GitMerge',
   'graph modifiers': 'GitBranch',
   cache: 'Cache',
   config: 'Config',

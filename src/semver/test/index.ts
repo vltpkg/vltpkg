@@ -31,6 +31,7 @@ import {
   sortedLowest,
   sortMethod,
   stable,
+  subset,
   valid,
   validRange,
   Version,
@@ -801,5 +802,167 @@ t.test('intersects', t => {
     t.end()
   })
 
+  t.end()
+})
+
+t.test('subset', t => {
+  t.equal(
+    subset('^1.2.0', '>=1.0.0'),
+    true,
+    '^1.2.0 is subset of >=1.0.0',
+  )
+  t.equal(subset('~2.2.0', '^2'), true, '~2.2.0 is subset of ^2')
+  t.equal(subset('^2', '~2.2.0'), false, '^2 is not subset of ~2.2.0')
+  t.equal(subset('>=1.0.0', '*'), true, 'any range is subset of *')
+  t.equal(
+    subset('*', '>=1.0.0'),
+    false,
+    '* is not subset of a bounded range',
+  )
+  t.equal(
+    subset('1.2.3', '>=1.0.0 <2.0.0'),
+    true,
+    'exact version subset of range',
+  )
+  t.equal(
+    subset('>=2.0.0', '>=1.0.0'),
+    true,
+    '>=2.0.0 is subset of >=1.0.0',
+  )
+  t.equal(
+    subset('>=1.0.0', '>=2.0.0'),
+    false,
+    '>=1.0.0 is not subset of >=2.0.0',
+  )
+  t.equal(
+    subset('<2.0.0', '<3.0.0'),
+    true,
+    '<2.0.0 is subset of <3.0.0',
+  )
+  t.equal(
+    subset('<3.0.0', '<2.0.0'),
+    false,
+    '<3.0.0 is not subset of <2.0.0',
+  )
+  t.equal(
+    subset('>1.0.0 <2.0.0', '>=1.0.0 <=2.0.0'),
+    true,
+    'exclusive inside inclusive',
+  )
+  t.equal(
+    subset('>=1.0.0 <=2.0.0', '>1.0.0 <2.0.0'),
+    false,
+    'inclusive not inside exclusive',
+  )
+  t.equal(
+    subset('1.0.0 || 2.0.0', '>=1.0.0 <=2.0.0'),
+    true,
+    'OR range subset',
+  )
+  t.equal(
+    subset('1.0.0 || 3.0.0', '>=1.0.0 <2.0.0'),
+    false,
+    'OR range not subset',
+  )
+  t.equal(
+    subset('invalid', '>=1.0.0'),
+    false,
+    'invalid range returns false',
+  )
+  t.equal(
+    subset('>=1.0.0', 'invalid'),
+    false,
+    'invalid second range returns false',
+  )
+  t.equal(
+    subset('1.0.0', '1.0.0'),
+    true,
+    'exact same version is subset',
+  )
+  t.equal(
+    subset('1.0.0', '2.0.0'),
+    false,
+    'different exact versions not subset',
+  )
+  t.equal(
+    subset('>1.0.0 <2.0.0', '>1.0.0 <1.5.0'),
+    false,
+    'wider not subset of narrower upper',
+  )
+  t.equal(
+    subset('>=1.0.0 <=2.0.0', '>=1.0.0 <2.0.0'),
+    false,
+    'inclusive upper not subset of exclusive upper at same point',
+  )
+  t.equal(
+    subset('>=1.0.0 <2.0.0', '>=1.0.0 <=2.0.0'),
+    true,
+    'exclusive upper subset of inclusive upper at same point',
+  )
+  t.equal(
+    subset('>1.0.0', '>=1.0.0'),
+    true,
+    'exclusive lower is subset of inclusive lower at same point',
+  )
+  t.equal(
+    subset('>=1.0.0', '>1.0.0'),
+    false,
+    'inclusive lower not subset of exclusive lower at same point',
+  )
+  t.equal(
+    subset('>=1.0.0 <=1.0.0', '1.0.0'),
+    true,
+    'range that reduces to exact is subset of exact',
+  )
+  t.equal(
+    subset('1.5.0', '>1.0.0 <2.0.0'),
+    true,
+    'exact version in exclusive bounds',
+  )
+  t.equal(
+    subset('1.0.0', '>1.0.0 <2.0.0'),
+    false,
+    'exact version at exclusive lower bound',
+  )
+  t.equal(
+    subset('2.0.0', '>1.0.0 <2.0.0'),
+    false,
+    'exact version at exclusive upper bound',
+  )
+  t.equal(
+    subset('>=1.0.0 <=2.0.0', '1.5.0'),
+    false,
+    'range not subset of exact version it does not collapse to',
+  )
+  t.equal(
+    subset(parseRange('^1.2.0')!, parseRange('>=1.0.0')!),
+    true,
+    'Range objects passed directly',
+  )
+  t.equal(
+    subset('>=2.0.0 <1.0.0', '>=1.0.0'),
+    true,
+    'unsatisfiable range is subset of anything',
+  )
+  t.equal(
+    subset('<3.0.0', '>=1.0.0 <=5.0.0'),
+    false,
+    'range without lower bound not subset of bounded range',
+  )
+  t.equal(
+    subset('>=1.0.0', '>=1.0.0 <5.0.0'),
+    false,
+    'range without upper bound not subset of bounded range',
+  )
+  t.equal(
+    subset('>1.0.0 >2.0.0', '>2.0.0'),
+    true,
+    'multiple > operators in same comparator set',
+  )
+  t.equal(
+    subset('<5.0.0 <3.0.0', '<3.0.0'),
+    true,
+    'multiple < operators in same comparator set',
+  )
   t.end()
 })

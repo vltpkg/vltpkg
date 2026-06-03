@@ -70,7 +70,7 @@ Object {
     "e",
     "g",
   ],
-  "initialEdges": 8,
+  "initialEdges": 9,
   "remainingEdges": 2,
 }
 `

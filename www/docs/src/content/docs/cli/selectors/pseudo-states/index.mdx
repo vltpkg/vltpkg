@@ -1,8 +1,8 @@
 ---
 title: Pseudo-state Selectors
 sidebar:
-  label: Pseudo-states
-  order: 5
+  label: Overview
+  order: -1
 ---
 
 import { Code } from '@astrojs/starlight/components'
@@ -66,12 +66,14 @@ Find workspaces that have changed since main:
 
 ## Dependency type states
 
-| Selector    | Description                   |
-| ----------- | ----------------------------- |
-| `:prod`     | Production dependencies       |
-| `:dev`      | Development-only dependencies |
-| `:optional` | Optional dependencies         |
-| `:peer`     | Peer dependencies             |
+| Selector      | Description                             |
+| ------------- | --------------------------------------- |
+| `:prod`       | Production dependencies                 |
+| `:dev`        | Development-only dependencies           |
+| `:optional`   | Optional dependencies                   |
+| `:peer`       | Peer dependencies                       |
+| `:missing`    | Dependencies declared but not installed |
+| `:overridden` | Dependencies with an override applied   |
 
 ### `:prod`
 
@@ -105,14 +107,30 @@ Matches peer dependencies:
 
 <Code code="$ vlt query ':peer'" title="Terminal" lang="bash" />
 
+### `:missing`
+
+Matches edges (dependency declarations) that are not resolved to any
+installed package. This selector returns edges only — no nodes.
+
+<Code code="$ vlt query ':missing'" title="Terminal" lang="bash" />
+
+### `:overridden`
+
+Matches dependencies that have an override applied (via the
+`overrides` field in `package.json`):
+
+<Code code="$ vlt query ':overridden'" title="Terminal" lang="bash" />
+
 ## Package property states
 
-| Selector   | Description                     |
-| ---------- | ------------------------------- |
-| `:private` | Packages with `"private": true` |
-| `:empty`   | Packages with no dependencies   |
-| `:link`    | Linked packages                 |
-| `:scanned` | Packages with security metadata |
+| Selector      | Description                              |
+| ------------- | ---------------------------------------- |
+| `:private`    | Packages with `"private": true`          |
+| `:empty`      | Packages with no dependencies            |
+| `:link`       | Linked packages                          |
+| `:prerelease` | Packages with prerelease versions        |
+| `:built`      | Packages successfully built during reify |
+| `:scanned`    | Packages with security metadata          |
 
 ### `:private`
 
@@ -131,6 +149,28 @@ Matches packages that have no dependencies installed:
 Matches linked packages only:
 
 <Code code="$ vlt query ':link'" title="Terminal" lang="bash" />
+
+### `:prerelease`
+
+Matches packages whose version contains prerelease identifiers (e.g.,
+`1.0.0-beta.1`, `2.0.0-rc.1+rev.2`, `0.0.0-canary`):
+
+<Code code="$ vlt query ':prerelease'" title="Terminal" lang="bash" />
+
+Find direct prerelease dependencies:
+
+<Code
+  code="$ vlt query ':root > :prerelease'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### `:built`
+
+Matches packages that have been successfully built during the reify
+process (have `buildState` set to `'built'`):
+
+<Code code="$ vlt query ':built'" title="Terminal" lang="bash" />
 
 ### `:scanned`
 
@@ -154,16 +194,18 @@ my-monorepo (root)
 └── typescript@5.3.0 (dev)
 ```
 
-| Query                | Selected                 |
-| -------------------- | ------------------------ |
-| `:root`              | my-monorepo              |
-| `:workspace`         | core, utils              |
-| `:project`           | my-monorepo, core, utils |
-| `:private`           | core                     |
-| `:dev`               | vitest, typescript       |
-| `:prod`              | react, lodash            |
-| `:root > :dev`       | typescript               |
-| `:workspace:private` | core                     |
+| Query                | Selected                     |
+| -------------------- | ---------------------------- |
+| `:root`              | my-monorepo                  |
+| `:workspace`         | core, utils                  |
+| `:project`           | my-monorepo, core, utils     |
+| `:private`           | core                         |
+| `:dev`               | vitest, typescript           |
+| `:prod`              | react, lodash                |
+| `:root > :dev`       | typescript                   |
+| `:workspace:private` | core                         |
+| `:prerelease`        | (packages with pre-versions) |
+| `:missing`           | (edges with no resolved pkg) |
 
 ## See also
 
