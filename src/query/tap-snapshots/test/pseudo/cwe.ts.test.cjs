@@ -29,6 +29,18 @@ Object {
 }
 `
 
+exports[`test/pseudo/cwe.ts > TAP > selects packages with a CWE alert > parameterless :cwe matches any package with a CWE > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "e",
+  ],
+  "nodes": Array [
+    "e",
+  ],
+}
+`
+
 exports[`test/pseudo/cwe.ts > TAP > selects packages with a CWE alert > should not match an unseen CWE ID > must match snapshot 1`] = `
 Object {
   "edges": Array [],

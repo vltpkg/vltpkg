@@ -122,6 +122,22 @@ t.test('selects packages with a CWE alert', async t => {
       })
     },
   )
+
+  await t.test(
+    'parameterless :cwe matches any package with a CWE',
+    async t => {
+      const res = await cwe(getState(':cwe'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['e'],
+        'should select packages with any CWE alert',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
 })
 
 t.test('missing security archive', async t => {
@@ -161,7 +177,8 @@ t.test('missing security archive', async t => {
   )
 })
 
-t.test('missing CWE ID', async t => {
+t.test(':cwe() with empty parens matches any CWE', async t => {
+  const graph = getSimpleGraph()
   const getState = (query: string) => {
     const ast = parse(query)
     const current = ast.first.first
@@ -169,12 +186,12 @@ t.test('missing CWE ID', async t => {
       comment: '',
       current,
       initial: {
-        edges: new Set(),
-        nodes: new Set(),
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
       },
       partial: {
-        edges: new Set(),
-        nodes: new Set(),
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
       },
       collect: {
         edges: new Set(),
@@ -183,17 +200,56 @@ t.test('missing CWE ID', async t => {
       cancellable: async () => {},
       walk: async i => i,
       retries: 0,
-      securityArchive: asSecurityArchiveLike(new Map()),
-      importers: new Set(),
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'e@1.0.0']),
+            {
+              id: 'e@1.0.0',
+              author: [],
+              size: 0,
+              type: 'npm',
+              name: 'e',
+              version: '1.0.0',
+              license: 'MIT',
+              score: {
+                overall: 0,
+                license: 0,
+                maintenance: 0,
+                quality: 0,
+                supplyChain: 0,
+                vulnerability: 0,
+                signal: new AbortController().signal,
+                specificity: { idCounter: 0, commonCounter: 0 },
+              },
+              alerts: [
+                {
+                  key: '12314320948130',
+                  type: 'cve',
+                  severity: 'high',
+                  category: 'security',
+                  props: {
+                    lastPublish: '2023-01-01',
+                    cveId: 'CVE-2023-1234' as const,
+                    cwes: [{ id: 'CWE-79' as const }],
+                  },
+                },
+              ],
+            } as PackageReportData,
+          ],
+        ]),
+      ),
+      importers: new Set(graph.importers),
       signal: new AbortController().signal,
       specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
 
-  await t.rejects(
-    cwe(getState(':cwe()')),
-    /Failed to parse :cwe selector/,
-    'should throw an error',
+  const res = await cwe(getState(':cwe()'))
+  t.strictSame(
+    [...res.partial.nodes].map(n => n.name),
+    ['e'],
+    'should select packages with any CWE alert',
   )
 })

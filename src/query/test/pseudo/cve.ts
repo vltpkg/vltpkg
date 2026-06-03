@@ -120,6 +120,95 @@ t.test('selects packages with a CVE alert', async t => {
       })
     },
   )
+
+  await t.test(
+    'parameterless :cve matches any package with a CVE',
+    async t => {
+      const res = await cve(getState(':cve'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['e'],
+        'should select packages with any CVE alert',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+})
+
+t.test(':cve() with empty parens matches any CVE', async t => {
+  const graph = getSimpleGraph()
+  const ast = parse(':cve()')
+  const current = ast.first.first
+  const state: ParserState = {
+    comment: '',
+    current,
+    initial: {
+      edges: new Set(graph.edges.values()),
+      nodes: new Set(graph.nodes.values()),
+    },
+    partial: {
+      edges: new Set(graph.edges.values()),
+      nodes: new Set(graph.nodes.values()),
+    },
+    collect: {
+      edges: new Set(),
+      nodes: new Set(),
+    },
+    cancellable: async () => {},
+    walk: async i => i,
+    retries: 0,
+    securityArchive: asSecurityArchiveLike(
+      new Map([
+        [
+          joinDepIDTuple(['registry', '', 'e@1.0.0']),
+          asPackageReportData({
+            id: 'e@1.0.0',
+            author: [],
+            size: 0,
+            type: 'npm',
+            name: 'e',
+            version: '1.0.0',
+            license: 'MIT',
+            score: {
+              overall: 0,
+              license: 0,
+              maintenance: 0,
+              quality: 0,
+              supplyChain: 0,
+              vulnerability: 0,
+              signal: new AbortController().signal,
+              specificity: { idCounter: 0, commonCounter: 0 },
+            },
+            alerts: [
+              {
+                key: '12314320948130',
+                type: 'cve',
+                severity: 'high',
+                category: 'security',
+                props: {
+                  cveId: 'CVE-2023-1234',
+                  lastPublish: '2023-01-01',
+                },
+              },
+            ],
+          }),
+        ],
+      ]),
+    ),
+    importers: new Set(graph.importers),
+    signal: new AbortController().signal,
+    specificity: { idCounter: 0, commonCounter: 0 },
+  }
+
+  const res = await cve(state)
+  t.strictSame(
+    [...res.partial.nodes].map(n => n.name),
+    ['e'],
+    'should select packages with any CVE alert',
+  )
 })
 
 t.test('missing security archive', async t => {
@@ -155,43 +244,6 @@ t.test('missing security archive', async t => {
   await t.rejects(
     cve(getState(':cve(CVE-2023-1234)')),
     /Missing security archive/,
-    'should throw an error',
-  )
-})
-
-t.test('missing CVE ID', async t => {
-  const getState = (query: string) => {
-    const ast = parse(query)
-    const current = ast.first.first
-    const state: ParserState = {
-      comment: '',
-      current,
-      initial: {
-        edges: new Set(),
-        nodes: new Set(),
-      },
-      partial: {
-        edges: new Set(),
-        nodes: new Set(),
-      },
-      collect: {
-        edges: new Set(),
-        nodes: new Set(),
-      },
-      cancellable: async () => {},
-      walk: async i => i,
-      retries: 0,
-      securityArchive: asSecurityArchiveLike(new Map()),
-      importers: new Set(),
-      signal: new AbortController().signal,
-      specificity: { idCounter: 0, commonCounter: 0 },
-    }
-    return state
-  }
-
-  await t.rejects(
-    cve(getState(':cve()')),
-    /Failed to parse :cve selector/,
     'should throw an error',
   )
 })
