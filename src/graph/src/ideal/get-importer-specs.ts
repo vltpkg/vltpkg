@@ -94,8 +94,24 @@ export const getImporterSpecs = (
         // skip if the edge exists and already uses the same spec
         if (edge?.to && depSpec === edge.spec.bareSpec) continue
 
+        const spec = Spec.parse(depName, depSpec, options)
+
+        // if a workspace dep references a workspace that no longer exists
+        // (folder was removed), mark it for removal instead of trying to
+        // resolve it — the workspace can't be satisfied
+        if (spec.type === 'workspace' && !edge?.to) {
+          const wsExists = [...graph.importers].some(
+            n => n.name === depName,
+          )
+          if (!wsExists) {
+            removeDeps.add(depName)
+            removeResult.modifiedDependencies = true
+            continue
+          }
+        }
+
         const dependency = asDependency({
-          spec: Spec.parse(depName, depSpec, options),
+          spec,
           type: shorten(depType, depName, importer.manifest),
         })
         addDeps.set(depName, dependency)

@@ -1042,4 +1042,49 @@ t.test('lockfile version validation', async t => {
       )
     },
   )
+
+  t.test(
+    'load gracefully skips edges from missing workspace nodes',
+    async t => {
+      const abbrevId = joinDepIDTuple([
+        'registry',
+        '',
+        'abbrev@3.0.1',
+      ])
+      const lockfileData = {
+        lockfileVersion: LOCKFILE_VERSION,
+        options: {},
+        nodes: {
+          [abbrevId]: [0, 'abbrev'],
+        },
+        edges: {
+          [edgeKey(['file', '.'], 'abbrev')]:
+            `prod ^3.0.0 ${abbrevId}`,
+          // edge from a workspace that no longer exists
+          [edgeKey(['workspace', 'packages/removed-ws'], 'abbrev')]:
+            `prod ^3.0.0 ${abbrevId}`,
+        },
+      } as unknown as LockfileData
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          packageJson,
+        },
+        lockfileData,
+      )
+      // root should still have its edge
+      t.ok(
+        graph.mainImporter.edgesOut.has('abbrev'),
+        'root edge to abbrev should be loaded',
+      )
+      // the workspace edge should have been skipped without throwing
+      t.equal(
+        graph.edges.size,
+        1,
+        'only the root edge should exist (workspace edge skipped)',
+      )
+    },
+  )
 })
