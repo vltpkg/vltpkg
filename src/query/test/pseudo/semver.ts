@@ -130,7 +130,7 @@ t.test('select from semver definition', async t => {
     )
     t.strictSame(
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
-      ['semver-rich-project@1.0.0', 'a@1.0.1'],
+      ['semver-rich-project@1.0.0', 'a@1.0.1', 'h@1.0.0'],
       'should have expected result using quoted lte semver',
     )
     t.matchSnapshot({
@@ -145,7 +145,7 @@ t.test('select from semver definition', async t => {
     )
     t.strictSame(
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
-      ['semver-rich-project@1.0.0', 'a@1.0.1'],
+      ['semver-rich-project@1.0.0', 'a@1.0.1', 'h@1.0.0'],
       'should have expected result using unquoted lte semver',
     )
     t.matchSnapshot({
@@ -220,7 +220,7 @@ t.test('select from semver definition', async t => {
     )
     t.strictSame(
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
-      ['semver-rich-project@1.0.0', 'a@1.0.1'],
+      ['semver-rich-project@1.0.0', 'a@1.0.1', 'h@1.0.0'],
       'should have expected result using unquoted less than semver',
     )
     t.matchSnapshot({
@@ -235,7 +235,7 @@ t.test('select from semver definition', async t => {
     )
     t.strictSame(
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
-      ['semver-rich-project@1.0.0', 'a@1.0.1'],
+      ['semver-rich-project@1.0.0', 'a@1.0.1', 'h@1.0.0'],
       'should have expected result using unquoted less than or equal semver',
     )
     t.matchSnapshot({
@@ -349,6 +349,7 @@ t.test('select from semver definition', async t => {
         'f@4.5.6',
         'g@1.2.3-rc.1+rev.2',
         'e@1.3.4-beta.1',
+        'h@1.0.0',
       ],
       'should have expected result using quoted custom semver function',
     )
@@ -373,6 +374,7 @@ t.test('select from semver definition', async t => {
         'f@4.5.6',
         'g@1.2.3-rc.1+rev.2',
         'e@1.3.4-beta.1',
+        'h@1.0.0',
       ],
       'should have expected result using unquoted custom semver function',
     )
@@ -535,7 +537,13 @@ t.test('select from semver definition', async t => {
     )
     t.strictSame(
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
-      ['semver-rich-project@1.0.0', 'a@1.0.1', 'b@2.2.1', 'd@2.3.4'],
+      [
+        'semver-rich-project@1.0.0',
+        'a@1.0.1',
+        'b@2.2.1',
+        'd@2.3.4',
+        'h@1.0.0',
+      ],
       'should match nodes with versions that satisfy the range',
     )
     t.matchSnapshot({
@@ -550,7 +558,12 @@ t.test('select from semver definition', async t => {
     )
     t.strictSame(
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
-      ['semver-rich-project@1.0.0', 'e@120.0.0', 'f@4.5.6'],
+      [
+        'semver-rich-project@1.0.0',
+        'e@120.0.0',
+        'f@4.5.6',
+        'h@1.0.0',
+      ],
       'should match nodes with versions that satisfy either condition',
     )
     t.matchSnapshot({
@@ -632,6 +645,25 @@ t.test('select from semver definition', async t => {
       edges: [...res.partial.edges].map(e => e.name),
     })
   })
+
+  await t.test(
+    'intersects excludes dist-tag edges (no semver)',
+    async t => {
+      const res = await semverParser(
+        getState(':semver(>=0, intersects)', getSemverRichGraph()),
+      )
+      t.notOk(
+        [...res.partial.edges].some(
+          e => e.spec.bareSpec === 'latest',
+        ),
+        'should exclude dist-tag edges that have no semver range',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
 
   await t.test(
     'subset with :attr comparison value (range vs manifest property)',

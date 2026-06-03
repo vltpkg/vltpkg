@@ -929,5 +929,40 @@ t.test('subset', t => {
     false,
     'exact version at exclusive upper bound',
   )
+  t.equal(
+    subset('>=1.0.0 <=2.0.0', '1.5.0'),
+    false,
+    'range not subset of exact version it does not collapse to',
+  )
+  t.equal(
+    subset(parseRange('^1.2.0')!, parseRange('>=1.0.0')!),
+    true,
+    'Range objects passed directly',
+  )
+  t.equal(
+    subset('>=2.0.0 <1.0.0', '>=1.0.0'),
+    true,
+    'unsatisfiable range is subset of anything',
+  )
+  t.equal(
+    subset('<3.0.0', '>=1.0.0 <=5.0.0'),
+    false,
+    'range without lower bound not subset of bounded range',
+  )
+  t.equal(
+    subset('>=1.0.0', '>=1.0.0 <5.0.0'),
+    false,
+    'range without upper bound not subset of bounded range',
+  )
+  t.equal(
+    subset('>1.0.0 >2.0.0', '>2.0.0'),
+    true,
+    'multiple > operators in same comparator set',
+  )
+  t.equal(
+    subset('<5.0.0 <3.0.0', '<3.0.0'),
+    true,
+    'multiple < operators in same comparator set',
+  )
   t.end()
 })

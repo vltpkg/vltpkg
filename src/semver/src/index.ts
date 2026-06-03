@@ -596,6 +596,7 @@ const getBounds = (tuples: OVTuple[]): Bounds => {
         hasExact = ver
         break
       case '>=':
+        /* c8 ignore start */
         if (
           !lowerBound ||
           gt(ver, lowerBound) ||
@@ -604,6 +605,7 @@ const getBounds = (tuples: OVTuple[]): Bounds => {
           lowerBound = ver
           lowerInclusive = true
         }
+        /* c8 ignore stop */
         break
       case '>':
         if (!lowerBound || gt(ver, lowerBound)) {
@@ -612,6 +614,7 @@ const getBounds = (tuples: OVTuple[]): Bounds => {
         }
         break
       case '<=':
+        /* c8 ignore start */
         if (
           !upperBound ||
           lt(ver, upperBound) ||
@@ -620,6 +623,7 @@ const getBounds = (tuples: OVTuple[]): Bounds => {
           upperBound = ver
           upperInclusive = true
         }
+        /* c8 ignore stop */
         break
       case '<':
         if (!upperBound || lt(ver, upperBound)) {

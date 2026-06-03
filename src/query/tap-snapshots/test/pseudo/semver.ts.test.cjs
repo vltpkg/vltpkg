@@ -56,6 +56,31 @@ Object {
 }
 `
 
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects excludes dist-tag edges (no semver) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "e",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "e",
+  ],
+}
+`
+
 exports[`test/pseudo/semver.ts > TAP > select from semver definition > intersects on edges > must match snapshot 1`] = `
 Object {
   "edges": Array [
@@ -94,6 +119,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
@@ -104,6 +130,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
 }
 `
@@ -134,10 +161,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > quoted lt
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -277,12 +306,14 @@ Object {
     "a",
     "b",
     "d",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
     "b",
     "d",
+    "h",
   ],
 }
 `
@@ -310,6 +341,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
@@ -320,6 +352,7 @@ Object {
     "f",
     "g",
     "e",
+    "h",
   ],
 }
 `
@@ -388,10 +421,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted 
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -400,10 +435,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted 
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -412,10 +449,12 @@ exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted 
 Object {
   "edges": Array [
     "a",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "a",
+    "h",
   ],
 }
 `
@@ -471,11 +510,13 @@ Object {
   "edges": Array [
     "e",
     "f",
+    "h",
   ],
   "nodes": Array [
     "semver-rich-project",
     "e",
     "f",
+    "h",
   ],
 }
 `

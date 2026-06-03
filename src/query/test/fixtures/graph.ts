@@ -509,6 +509,20 @@ export const getSemverRichGraph = (): GraphLike => {
     ...g.manifest,
     version: '1.2.3-rc.1+rev.2',
   }
+  // dist-tag edge (spec.semver is undefined, only bareSpec is set)
+  const h = addNode('h')
+  graph.nodes.set(h.id, h)
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('h', 'latest', specOptions),
+    'prod',
+    h,
+  )
+  updateNodeVersion(h, '1.0.0')
+  h.manifest = {
+    ...h.manifest,
+    version: '1.0.0',
+  }
   return graph
 }
 
