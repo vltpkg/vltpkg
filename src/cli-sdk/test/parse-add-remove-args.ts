@@ -398,6 +398,133 @@ t.test('parseAddArgs', async t => {
         )
       },
     )
+
+    await t.test(
+      'file spec rebased relative to workspace importer',
+      async t => {
+        t.chdir(dir)
+        unload()
+        const scurry = new PathScurry(dir)
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        // ./foo is relative to cwd (project root) but workspace
+        // "a" is at app/a, so the file: spec should be rebased
+        // to ../../foo (relative to app/a)
+        conf.positionals = ['./foo']
+        conf.values = {
+          workspace: ['a'],
+        } as OptionsResults<ConfigDefinitions>
+        const result = parseAddArgs(conf, scurry, monorepo)
+        t.matchSnapshot(
+          inspect(result, { depth: Infinity }),
+          'should rebase file spec relative to workspace',
+        )
+      },
+    )
+
+    await t.test(
+      'file spec pointing to a workspace resolves as workspace:*',
+      async t => {
+        t.chdir(dir)
+        unload()
+        const scurry = new PathScurry(dir)
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        // ./app/a points to workspace "a", should become workspace:*
+        conf.positionals = ['./app/a']
+        conf.values = {
+          workspace: ['b'],
+        } as OptionsResults<ConfigDefinitions>
+        const result = parseAddArgs(conf, scurry, monorepo)
+        t.matchSnapshot(
+          inspect(result, { depth: Infinity }),
+          'should convert file spec to workspace:*',
+        )
+      },
+    )
+
+    await t.test(
+      'file spec rebased for multiple workspaces',
+      async t => {
+        t.chdir(dir)
+        unload()
+        const scurry = new PathScurry(dir)
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        // ./foo relative to cwd, installing into workspaces a (app/a)
+        // and c (utils/c) — each should get a different relative path
+        conf.positionals = ['./foo']
+        conf.values = {
+          workspace: ['a', 'c'],
+        } as OptionsResults<ConfigDefinitions>
+        const result = parseAddArgs(conf, scurry, monorepo)
+        t.matchSnapshot(
+          inspect(result, { depth: Infinity }),
+          'should rebase file spec per workspace',
+        )
+      },
+    )
+
+    await t.test(
+      'non-file specs shared across workspaces with file specs',
+      async t => {
+        t.chdir(dir)
+        unload()
+        const scurry = new PathScurry(dir)
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        // mix of registry and file specs
+        conf.positionals = ['express@^5', './foo']
+        conf.values = {
+          workspace: ['a'],
+        } as OptionsResults<ConfigDefinitions>
+        const result = parseAddArgs(conf, scurry, monorepo)
+        t.matchSnapshot(
+          inspect(result, { depth: Infinity }),
+          'should include both registry and rebased file specs',
+        )
+      },
+    )
+
+    await t.test(
+      'file spec not rebased when cwd matches workspace',
+      async t => {
+        // create an extra dir that is NOT a workspace
+        const dir2 = t.testdir({
+          'vlt.json': JSON.stringify({
+            workspaces: { ws: ['ws-a'] },
+          }),
+          'ws-a': {
+            'package.json': JSON.stringify({
+              name: 'ws-a',
+              version: '1.0.0',
+            }),
+          },
+          external: {
+            'package.json': JSON.stringify({
+              name: 'external',
+              version: '1.0.0',
+            }),
+          },
+        })
+        // cwd is inside the workspace directory, so the relative
+        // path from cwd and from the workspace are the same
+        t.chdir(`${dir2}/ws-a`)
+        unload()
+        const scurry = new PathScurry(dir2)
+        const monorepo = Monorepo.load(dir2)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['../external']
+        conf.values = {
+          workspace: ['ws-a'],
+        } as OptionsResults<ConfigDefinitions>
+        const result = parseAddArgs(conf, scurry, monorepo)
+        t.matchSnapshot(
+          inspect(result, { depth: Infinity }),
+          'should keep file spec unchanged when cwd is workspace dir',
+        )
+      },
+    )
   })
 })
 

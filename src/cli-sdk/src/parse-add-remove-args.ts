@@ -1,6 +1,7 @@
 import { asDependency } from '@vltpkg/graph'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, splitDepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
+import { isAbsolute, relative, resolve } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { DepID } from '@vltpkg/dep-id'
 import type {
@@ -96,6 +97,47 @@ class RemoveImportersDependenciesMapImpl
 }
 
 /**
+ * Rebase a file: spec's relative path from process.cwd() to the
+ * importer's location. CLI positional args are relative to cwd,
+ * but the graph resolver resolves file: paths relative to the
+ * importer node's location. When these differ (e.g. `-w` flag),
+ * the path must be rebased.
+ *
+ * Also detects when the target path is a workspace and converts
+ * the spec to `workspace:*`.
+ */
+const rebaseFileSpec = (
+  spec: Spec,
+  importerPath: string,
+  scurryCwd: string,
+  specOptions: SpecOptions,
+  monorepo?: Monorepo,
+): Spec => {
+  if (spec.type !== 'file' || !spec.file || isAbsolute(spec.file)) {
+    return spec
+  }
+
+  const targetAbs = resolve(process.cwd(), spec.file)
+
+  if (monorepo) {
+    for (const ws of monorepo.values()) {
+      if (ws.fullpath === targetAbs) {
+        return Spec.parse(ws.name, 'workspace:*', specOptions)
+      }
+    }
+  }
+
+  const importerAbs = resolve(scurryCwd, importerPath)
+  const rebasedPath = relative(importerAbs, targetAbs)
+    .split('\\')
+    .join('/')
+
+  if (rebasedPath === spec.file) return spec
+
+  return Spec.parseArgs(rebasedPath, specOptions)
+}
+
+/**
  * Parses the positional arguments into {@link AddImportersDependenciesMap}.
  */
 export const parseAddArgs = (
@@ -108,7 +150,6 @@ export const parseAddArgs = (
   const items = config.positionals
   const type = getType(config.values)
   const importers = getWorkspaceImporters(config.values, monorepo)
-  const newDependencies = new Map<string, Dependency>()
   const specOptions: SpecOptions = config.options
 
   // nameless spec definitions will need to use their full
@@ -119,23 +160,58 @@ export const parseAddArgs = (
 
   // parses each positional argument into a Spec and
   // adds it to the new dependencies Map
+  const parsedItems: { spec: Spec; type: DependencySaveType }[] = []
+  let hasFileSpecs = false
   for (const item of items) {
     const spec = Spec.parseArgs(item, specOptions)
-    newDependencies.set(getName(spec), asDependency({ spec, type }))
+    parsedItems.push({ spec, type })
+    if (spec.type === 'file') hasFileSpecs = true
     add.modifiedDependencies = true
   }
 
   // assigns the new dependencies to each selected workspace importer
-  for (const importer of importers) {
-    add.set(importer, newDependencies)
-  }
+  // file: specs need per-importer rebasing since CLI paths are relative
+  // to process.cwd() but get resolved relative to the importer's location
+  if (hasFileSpecs && importers.size) {
+    const scurryCwd = scurry.cwd.fullpath()
+    for (const importer of importers) {
+      const [, importerPath] = splitDepID(importer)
+      const importerDeps = new Map<string, Dependency>()
+      for (const { spec, type: depType } of parsedItems) {
+        const rebased = rebaseFileSpec(
+          spec,
+          importerPath,
+          scurryCwd,
+          specOptions,
+          monorepo,
+        )
+        importerDeps.set(
+          getName(rebased),
+          asDependency({ spec: rebased, type: depType }),
+        )
+      }
+      add.set(importer, importerDeps)
+    }
+  } else {
+    const newDependencies = new Map<string, Dependency>()
+    for (const { spec, type: depType } of parsedItems) {
+      newDependencies.set(
+        getName(spec),
+        asDependency({ spec, type: depType }),
+      )
+    }
 
-  // if no workspaces were selected, default to the cwd importer which
-  // can be either the root or a nested folder in case the user is installing
-  // from a subfolder that is also a file: type dependency
-  if (!importers.size) {
-    const cwdDepID = getCwdDepID(scurry)
-    add.set(cwdDepID, newDependencies)
+    for (const importer of importers) {
+      add.set(importer, newDependencies)
+    }
+
+    // if no workspaces were selected, default to the cwd importer which
+    // can be either the root or a nested folder in case the user is installing
+    // from a subfolder that is also a file: type dependency
+    if (!importers.size) {
+      const cwdDepID = getCwdDepID(scurry)
+      add.set(cwdDepID, newDependencies)
+    }
   }
 
   return {
