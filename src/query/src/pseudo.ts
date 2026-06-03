@@ -17,6 +17,7 @@ import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dev } from './pseudo/dev.ts'
 import { diff } from './pseudo/diff.ts'
+import { dist } from './pseudo/dist.ts'
 import { dynamic } from './pseudo/dynamic.ts'
 import { empty } from './pseudo/empty.ts'
 import { entropic } from './pseudo/entropic.ts'
@@ -313,6 +314,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     deprecated,
     dev,
     diff,
+    dist,
     dynamic,
     eval: evalParser,
     empty,

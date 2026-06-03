@@ -21,6 +21,11 @@ but operate on dependency graph nodes.
     href="/cli/selectors/pseudo-classes/attr"
   />
   <LinkCard
+    title=":dist()"
+    description="Match packages by registry dist-tag"
+    href="/cli/selectors/pseudo-classes/dist"
+  />
+  <LinkCard
     title=":has()"
     description="Match packages that have descendants matching a selector"
     href="/cli/selectors/pseudo-classes/has"
@@ -82,6 +87,7 @@ but operate on dependency graph nodes.
 | Selector                                                  | Description              | Example                   |
 | --------------------------------------------------------- | ------------------------ | ------------------------- |
 | [`:attr()`](/cli/selectors/pseudo-classes/attr)           | Nested property match    | `:attr(engines, [node])`  |
+| [`:dist()`](/cli/selectors/pseudo-classes/dist)           | By registry dist-tag     | `:dist(latest)`           |
 | [`:has()`](/cli/selectors/pseudo-classes/has)             | Has matching descendants | `:has(.peer[name=react])` |
 | [`:host()`](/cli/selectors/pseudo-classes/host)           | Switch graph context     | `:host(local) :malware`   |
 | [`:is()`](/cli/selectors/pseudo-classes/is)               | Match any in list        | `:is([name=a], [name=b])` |
