@@ -111,7 +111,11 @@ export const refreshIdealGraph = async ({
   }
 
   // removes all edges to start recalculating the graph
-  if (add.modifiedDependencies || remove.modifiedDependencies) {
+  if (
+    add.modifiedDependencies ||
+    remove.modifiedDependencies ||
+    graph.optionsChanged
+  ) {
     graph.resetEdges()
   }
 
