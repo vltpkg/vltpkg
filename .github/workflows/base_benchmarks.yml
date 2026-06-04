@@ -35,7 +35,10 @@ jobs:
         uses: vltpkg/setup-vlt@v1
 
       - name: Install Dependencies with known good version of vlt
-        run: vlt install
+        run: |
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       - name: Build source version of vlt
         run: node --run build:bundle

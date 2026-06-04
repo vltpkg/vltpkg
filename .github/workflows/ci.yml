@@ -75,7 +75,12 @@ jobs:
         uses: vltpkg/setup-vlt@v1
 
       - name: Install Dependencies with known good version of vlt
-        run: vlt install
+        run: |
+          # temporarily remove the lockfile so the bootstrap vlt
+          # is not tripped up by a newer lockfile format version
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       - name: Build source version of vlt
         run: node --run build:bundle
@@ -163,7 +168,10 @@ jobs:
         uses: vltpkg/setup-vlt@v1
 
       - name: Install Dependencies
-        run: vlt install
+        run: |
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       - name: Check for malware
         run: |
@@ -224,7 +232,10 @@ jobs:
         uses: vltpkg/setup-vlt@v1
 
       - name: Install Dependencies with known good version of vlt
-        run: vlt install
+        run: |
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       - name: Build source version of vlt
         run: node --run build:bundle
