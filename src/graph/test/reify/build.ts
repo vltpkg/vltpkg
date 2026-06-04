@@ -865,3 +865,81 @@ t.test(
     )
   },
 )
+
+t.test(
+  'hasScripts=false with binding.gyp triggers implicit install',
+  async t => {
+    const gypId = joinDepIDTuple(['registry', '', 'gyp-pkg@1.0.0'])
+
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'project',
+        version: '1.0.0',
+        dependencies: { 'gyp-pkg': '' },
+      }),
+      'vlt.json': '{}',
+      node_modules: {
+        '.vlt': {
+          [gypId]: {
+            node_modules: {
+              'gyp-pkg': {
+                'package.json': JSON.stringify({
+                  name: 'gyp-pkg',
+                  version: '1.0.0',
+                }),
+                'binding.gyp': JSON.stringify({
+                  targets: [{ target_name: 'addon' }],
+                }),
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const { Graph } = await import('../../src/graph.ts')
+    const { Spec } = await import('@vltpkg/spec')
+
+    const before = new Graph({
+      projectRoot,
+      mainManifest: { name: 'project', version: '1.0.0' },
+    })
+
+    const after = new Graph({
+      projectRoot,
+      mainManifest: { name: 'project', version: '1.0.0' },
+    })
+    const node = after.addNode(
+      gypId,
+      undefined,
+      undefined,
+      'gyp-pkg',
+      '1.0.0',
+    )
+    node.hasScripts = false
+    after.mainImporter.addEdgesTo(
+      'prod',
+      Spec.parse('gyp-pkg', '*'),
+      node,
+    )
+
+    const diff = new Diff(before, after)
+
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set([gypId]),
+    )
+
+    // binding.gyp found, so manifest is read and implicit install runs
+    t.ok(node.manifest, 'manifest should have been read from disk')
+    t.equal(runs.length, 1, 'implicit install should run')
+    t.equal(runs[0]?.arg0, 'install', 'should run install script')
+    t.equal(
+      result.success.length,
+      1,
+      'node should be marked as built',
+    )
+  },
+)
