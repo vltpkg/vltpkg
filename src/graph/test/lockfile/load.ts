@@ -18,6 +18,7 @@ import type {
   LockfileEdges,
   LockfileEdgeValue,
 } from '../../src/lockfile/types.ts'
+import { LOCKFILE_VERSION } from '../../src/lockfile/types.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 
 t.cleanSnapshot = s =>
@@ -1092,7 +1093,7 @@ t.test('lockfile version validation', async t => {
 t.test('optionsChanged detection', async t => {
   const abbrevId = joinDepIDTuple(['registry', '', 'abbrev@2.0.0'])
   const baseLockfileData = {
-    lockfileVersion: 1,
+    lockfileVersion: LOCKFILE_VERSION,
     options: {},
     nodes: {
       [abbrevId]: [0, 'abbrev', 'sha512-abc=='],

@@ -12,6 +12,7 @@ import type {
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
+import { LOCKFILE_VERSION } from '../src/lockfile/types.ts'
 import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
 
@@ -1832,7 +1833,7 @@ t.test('install with frozenLockfile and changed options', async t => {
       },
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 1,
+      lockfileVersion: LOCKFILE_VERSION,
       options: {},
       nodes: {},
       edges: {},
