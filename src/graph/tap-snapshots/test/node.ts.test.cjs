@@ -25,6 +25,7 @@ Node [@vltpkg/graph.Node] {
   resolved: undefined,
   platform: undefined,
   bins: undefined,
+  hasScripts: false,
   built: false,
   buildState: 'none',
   peerSetHash: undefined,

@@ -323,7 +323,7 @@ t.test('frozen-lockfile flag', async t => {
       version: '1.0.0',
     }),
     'vlt-lock.json': JSON.stringify({
-      lockfileVersion: 1,
+      lockfileVersion: 2,
       options: {},
       nodes: {},
       edges: {},

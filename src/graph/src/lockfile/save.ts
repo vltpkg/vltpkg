@@ -17,6 +17,7 @@ import {
   getBuildStateFromNode,
   LOCKFILE_VERSION,
 } from './types.ts'
+import { computeHasScripts } from '../has-scripts.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { Edge } from '../edge.ts'
@@ -81,6 +82,9 @@ const formatNodes = (
         undefined
       : node.location
 
+    if (node.manifest && !node.hasScripts) {
+      node.hasScripts = computeHasScripts(node.manifest)
+    }
     const flags = getFlagNumFromNode(node)
     const lockfileNode: LockfileNode = [flags, node.name]
 

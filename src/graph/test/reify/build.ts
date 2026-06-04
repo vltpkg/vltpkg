@@ -776,3 +776,92 @@ t.test(
     }
   },
 )
+
+t.test(
+  'skip manifest read for nodes without scripts (hasScripts=false)',
+  async t => {
+    const noscriptsId = joinDepIDTuple([
+      'registry',
+      '',
+      'no-scripts-pkg@1.0.0',
+    ])
+
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'project',
+        version: '1.0.0',
+        dependencies: { 'no-scripts-pkg': '' },
+      }),
+      'vlt.json': '{}',
+      node_modules: {
+        '.vlt': {
+          [noscriptsId]: {
+            node_modules: {
+              'no-scripts-pkg': {
+                'package.json': JSON.stringify({
+                  name: 'no-scripts-pkg',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const { Graph } = await import('../../src/graph.ts')
+    const { Spec } = await import('@vltpkg/spec')
+
+    // Build "before" graph without the node
+    const before = new Graph({
+      projectRoot,
+      mainManifest: {
+        name: 'project',
+        version: '1.0.0',
+      },
+    })
+
+    // Build "after" graph with the node (no manifest, simulating lockfile load)
+    const after = new Graph({
+      projectRoot,
+      mainManifest: {
+        name: 'project',
+        version: '1.0.0',
+      },
+    })
+    const node = after.addNode(
+      noscriptsId,
+      undefined,
+      undefined,
+      'no-scripts-pkg',
+      '1.0.0',
+    )
+    node.hasScripts = false
+    after.mainImporter.addEdgesTo(
+      'prod',
+      Spec.parse('no-scripts-pkg', '*'),
+      node,
+    )
+
+    const diff = new Diff(before, after)
+
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set([noscriptsId]),
+    )
+
+    t.equal(runs.length, 0, 'no scripts should run')
+    t.equal(
+      node.manifest,
+      undefined,
+      'manifest should not have been read from disk',
+    )
+    t.equal(
+      result.success.length,
+      1,
+      'node should be marked as built',
+    )
+  },
+)

@@ -279,7 +279,7 @@ exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
 
 exports[`test/lockfile/load.ts > TAP > missing options object > should be able to parse lockfile without options object 1`] = `
 {
-  "lockfileVersion": 1,
+  "lockfileVersion": 2,
   "options": {
     "registries": {
       "example": "http://foo"
@@ -292,7 +292,7 @@ exports[`test/lockfile/load.ts > TAP > missing options object > should be able t
 
 exports[`test/lockfile/load.ts > TAP > option-defined values should overwrite lockfile values > should overwrite lockfile values with option-defined values 1`] = `
 {
-  "lockfileVersion": 1,
+  "lockfileVersion": 2,
   "options": {
     "registry": "http://example.com",
     "registries": {

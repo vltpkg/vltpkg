@@ -6,12 +6,12 @@
  */
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
-@vltpkg/graph.Graph { lockfileVersion: 1, options: {}, nodes: {}, edges: {} }
+@vltpkg/graph.Graph { lockfileVersion: 2, options: {}, nodes: {}, edges: {} }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > should add a type=git package 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 1,
+  lockfileVersion: 2,
   options: {},
   nodes: {
     '~npm~bar@1.0.0': [
@@ -42,7 +42,7 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
 
 exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 1,
+  lockfileVersion: 2,
   options: {},
   nodes: {
     '~npm~bar@1.0.0': [
@@ -72,7 +72,7 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 1,
+  lockfileVersion: 2,
   options: {},
   nodes: {
     '~npm~bar@1.0.0': [
@@ -100,7 +100,7 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
 
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
-  lockfileVersion: 1,
+  lockfileVersion: 2,
   options: {},
   nodes: {
     '~npm~bar@1.0.0': [
@@ -146,6 +146,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
+    "hasScripts": false,
     "id": "file~_d",
     "importer": true,
     "integrity": undefined,
@@ -265,6 +266,7 @@ Set {
           "edgesOut": Map {},
           "extracted": false,
           "graph": "Graph {}",
+          "hasScripts": false,
           "id": "workspace~packages+b",
           "importer": true,
           "integrity": undefined,
@@ -389,6 +391,7 @@ Set {
           "edgesOut": Map {},
           "extracted": false,
           "graph": "Graph {}",
+          "hasScripts": false,
           "id": "workspace~packages+a",
           "importer": true,
           "integrity": undefined,
@@ -422,6 +425,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
+    "hasScripts": false,
     "id": "workspace~packages+b",
     "importer": true,
     "integrity": undefined,
@@ -451,6 +455,7 @@ Set {
     "edgesOut": Map {},
     "extracted": false,
     "graph": "Graph {}",
+    "hasScripts": false,
     "id": "workspace~packages+a",
     "importer": true,
     "integrity": undefined,
