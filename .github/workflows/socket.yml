@@ -1,0 +1,28 @@
+name: ⚡️ Security Scan
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  security-scan:
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run Socket Basics
+        # Pin to a commit SHA for supply-chain safety.
+        # Dependabot will keep this up to date automatically — see docs/github-action.md.
+        uses: SocketDev/socket-basics@aa80fcef76614b40e24e8194490bb5fc89b8edc2 # v2.0.3
+        env:
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          socket_security_api_key: ${{ secrets.SOCKET_SECURITY_API_KEY }}
