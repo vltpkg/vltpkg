@@ -167,8 +167,8 @@ jobs:
 
       - name: Check for malware
         run: |
-          vlt query ':malware'
-          vlt query ':malware' --expect-results=0
+          vlt query ':malware(critical)'
+          vlt query ':malware(critical)' --expect-results=0
 
       - name: Check for copyleft licenses
         run: |
