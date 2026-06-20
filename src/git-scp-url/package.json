@@ -7,6 +7,10 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "src/git-scp-url"
   },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/git-scp-url#readme",
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "devDependencies": {
     "@eslint/js": "catalog:",
