@@ -41,7 +41,7 @@ const LinearMenu = () => {
       {menuData.map(item =>
         item.children ?
           <MenuGroup key={item.title} item={item} />
-          : <MenuLink key={item.title} item={item} />,
+        : <MenuLink key={item.title} item={item} />,
       )}
     </div>
   )
@@ -78,21 +78,21 @@ const MenuLink = ({
   className?: string
 }) => {
   return !item.path ?
-    <span
-      className={`inline-flex items-center gap-x-3 text-nowrap px-3 py-3 ${className}`}>
-      {item.icon ?
-        <MenuLinkIcon item={item} />
+      <span
+        className={`inline-flex items-center gap-x-3 text-nowrap px-3 py-3 ${className}`}>
+        {item.icon ?
+          <MenuLinkIcon item={item} />
         : null}{' '}
-      {item.title}
-    </span>
+        {item.title}
+      </span>
     : <a
-      href={item.path}
-      className={`text-15 group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-foreground no-underline hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
-      {item.icon ?
-        <MenuLinkIcon item={item} />
+        href={item.path}
+        className={`text-15 group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-foreground no-underline hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
+        {item.icon ?
+          <MenuLinkIcon item={item} />
         : null}{' '}
-      {item.title}
-    </a>
+        {item.title}
+      </a>
 }
 
 const MenuLinkIcon = ({ item }: { item: MenuItem }) => {
