@@ -10,15 +10,7 @@ export const sitemapAlias = (): AstroIntegration => ({
       const indexFile = `${destDir}/sitemap-index.xml`
       const targetFile = `${destDir}/sitemap.xml`
 
-      const xml = await readFile(indexFile, 'utf8').catch(() => null)
-      if (!xml) {
-        logger.warn(
-          `sitemap-index.xml not found; skipping /sitemap.xml alias. ` +
-            `Ensure @astrojs/sitemap runs before this integration.`,
-        )
-        return
-      }
-
+      const xml = await readFile(indexFile, 'utf8')
       await copyFile(indexFile, targetFile)
       logger.info(`published /sitemap.xml (${xml.length} bytes)`)
     },
