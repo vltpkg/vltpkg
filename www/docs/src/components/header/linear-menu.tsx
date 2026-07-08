@@ -17,23 +17,23 @@ interface MenuItem {
 const LinearMenu = () => {
   const menuData: MenuItem[] = [
     {
-      title: 'Product',
+      title: 'Platform',
       children: [
         {
           icon: 'client',
           title: 'Client',
-          path: 'https://vlt.sh/client',
+          path: 'https://vlt.io/open-source/client',
         },
         {
           icon: 'serverless-registry',
           title: 'Serverless Registry',
-          path: 'https://vlt.sh/serverless-registry',
+          path: 'https://vlt.io/open-source/serverless-registry',
         },
       ],
     },
-    { title: 'Docs', path: 'https://docs.vlt.sh/' },
-    { title: 'Blog', path: 'https://blog.vlt.sh/' },
-    { title: 'Company', path: 'https://vlt.sh/company' },
+    { title: 'Docs', path: 'https://docs.vlt.io/' },
+    { title: 'Blog', path: 'https://vlt.io/blog' },
+    { title: 'Company', path: 'https://vlt.io/about' },
   ]
 
   return (
@@ -41,7 +41,7 @@ const LinearMenu = () => {
       {menuData.map(item =>
         item.children ?
           <MenuGroup key={item.title} item={item} />
-        : <MenuLink key={item.title} item={item} />,
+          : <MenuLink key={item.title} item={item} />,
       )}
     </div>
   )
@@ -78,21 +78,21 @@ const MenuLink = ({
   className?: string
 }) => {
   return !item.path ?
-      <span
-        className={`inline-flex items-center gap-x-3 text-nowrap px-3 py-3 ${className}`}>
-        {item.icon ?
-          <MenuLinkIcon item={item} />
+    <span
+      className={`inline-flex items-center gap-x-3 text-nowrap px-3 py-3 ${className}`}>
+      {item.icon ?
+        <MenuLinkIcon item={item} />
         : null}{' '}
-        {item.title}
-      </span>
+      {item.title}
+    </span>
     : <a
-        href={item.path}
-        className={`text-15 group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-foreground no-underline hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
-        {item.icon ?
-          <MenuLinkIcon item={item} />
+      href={item.path}
+      className={`text-15 group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-foreground no-underline hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
+      {item.icon ?
+        <MenuLinkIcon item={item} />
         : null}{' '}
-        {item.title}
-      </a>
+      {item.title}
+    </a>
 }
 
 const MenuLinkIcon = ({ item }: { item: MenuItem }) => {
