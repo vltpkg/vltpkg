@@ -63,8 +63,7 @@ export type SemverRangeComparatorFn = (
   r2: string,
 ) => boolean
 export type SemverCompareAttribute =
-  | Pick<AttrInternals, 'attribute' | 'properties'>
-  | undefined
+  Pick<AttrInternals, 'attribute' | 'properties'> | undefined
 
 const semverFunctionNames = new Set([
   'satisfies',

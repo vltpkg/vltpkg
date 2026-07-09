@@ -350,6 +350,11 @@ const fixPackage = async (ws: Workspace, config: WorkspaceConfig) => {
     ...(relDirToWorkspace ? { directory: relDirToWorkspace } : {}),
   }
 
+  ws.pj.homepage = `https://github.com/vltpkg/vltpkg/tree/main/${ws.dirName}#readme`
+  ws.pj.bugs = {
+    url: 'https://github.com/vltpkg/vltpkg/issues',
+  }
+
   ws.pj.author =
     'vlt technology inc. <support@vlt.sh> (http://vlt.sh)'
 

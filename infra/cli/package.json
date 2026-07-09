@@ -53,6 +53,8 @@
   "publishConfig": {
     "directory": "./.build-publish"
   },
-  "bugs": "https://github.com/vltpkg/vltpkg/issues",
-  "homepage": "https://vlt.sh"
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/infra/cli#readme"
 }
