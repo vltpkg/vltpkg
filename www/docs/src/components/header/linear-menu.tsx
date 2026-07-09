@@ -17,23 +17,23 @@ interface MenuItem {
 const LinearMenu = () => {
   const menuData: MenuItem[] = [
     {
-      title: 'Product',
+      title: 'Platform',
       children: [
         {
           icon: 'client',
           title: 'Client',
-          path: 'https://vlt.sh/client',
+          path: 'https://vlt.io/open-source/client',
         },
         {
           icon: 'serverless-registry',
           title: 'Serverless Registry',
-          path: 'https://vlt.sh/serverless-registry',
+          path: 'https://vlt.io/open-source/serverless-registry',
         },
       ],
     },
     { title: 'Docs', path: 'https://docs.vlt.io/' },
-    { title: 'Blog', path: 'https://blog.vlt.sh/' },
-    { title: 'Company', path: 'https://vlt.sh/company' },
+    { title: 'Blog', path: 'https://vlt.io/blog' },
+    { title: 'Company', path: 'https://vlt.io/about' },
   ]
 
   return (
