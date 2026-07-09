@@ -75,10 +75,7 @@ const isX = (c?: string) => !c || c === 'X' || c === 'x' || c === '*'
  * version like `1.2.3` or an X-Range like `1.2.x`
  */
 export type ParsedXRange =
-  | ParsedXMajor
-  | ParsedXMinor
-  | ParsedXPatch
-  | ParsedXVersion
+  ParsedXMajor | ParsedXMinor | ParsedXPatch | ParsedXVersion
 /**
  * a {@link ParsedXRange} that is just a `*`
  */

@@ -53,5 +53,9 @@
     "vlxl": "./scripts/bins/vlxl"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/.#readme"
 }

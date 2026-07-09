@@ -20,12 +20,7 @@ import type { PostcssNode } from '@vltpkg/dss-parser'
 export type ScoreKinds = keyof PackageScore
 
 export type ScoreComparator =
-  | '>'
-  | '<'
-  | '>='
-  | '<='
-  | '='
-  | undefined
+  '>' | '<' | '>=' | '<=' | '=' | undefined
 
 const kinds = new Set<ScoreKinds | undefined>([
   'overall',
