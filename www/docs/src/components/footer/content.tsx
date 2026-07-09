@@ -35,7 +35,7 @@ const resources: Section = {
   contents: [
     {
       slug: 'Client Docs',
-      href: 'https://docs.vlt.sh',
+      href: 'https://docs.vlt.io',
     },
     {
       slug: 'Pricing',

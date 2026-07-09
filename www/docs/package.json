@@ -7,11 +7,16 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "www/docs"
   },
-  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "author": {
+    "name": "vlt technology inc.",
+    "email": "support@vlt.sh",
+    "url": "http://vlt.sh"
+  },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.12",
     "@astrojs/react": "^4.4.2",
+    "@astrojs/sitemap": "3.7.3",
     "@astrojs/starlight": "^0.30.6",
     "@astrojs/starlight-tailwind": "^3.0.1",
     "@astrojs/tailwind": "^5.1.5",
