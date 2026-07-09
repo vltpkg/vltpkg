@@ -1,0 +1,62 @@
+---
+title: Dependencies
+sidebar:
+  label: Dependencies
+  order: 1
+---
+
+import { FileTree } from '@astrojs/starlight/components'
+
+**Dependencies** are external packages of code your project uses to
+function.
+
+In the Node.js ecosystem, developers use `package.json` at the root of
+the project to declare a list of **direct dependencies** in the
+`dependencies` (e.g., `"express": "^4.18.0"`). Each of those most
+likely have **transitive dependencies** (i.e., express pulls in
+body-parser, accepts, cookie respectively.). This list of packages,
+and their dependencies are what constitutes a dependency tree for a
+project.
+
+## Direct vs. transitive
+
+| Type           | What it is                               | Example                          |
+| -------------- | ---------------------------------------- | -------------------------------- |
+| **Direct**     | Listed in your `package.json`            | `express@^4.18.0`                |
+| **Transitive** | A dependency of one of your dependencies | `body-parser` (express needs it) |
+
+For example, after running `vlt install express typescript`, this is
+what your filesystem might look like:
+
+{/*prettier-ignore*/}
+<FileTree>
+
+- package.json list `express@^4.18.0` directly
+- node_modules
+  - express ← **direct dependency** (you installed it)
+    - index.js
+    - node_modules
+      - body-parser ← **transitive** (express needs it)
+      - accepts ← **transitive**
+      - cookie ← **transitive**
+      - …
+  - typescript ← **direct dependency** (dev)
+    </FileTree>
+
+## Dependency types
+
+Packages in `package.json` can be declared under several categories:
+
+| Field in `package.json` | Purpose                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| `dependencies`          | Production dependencies needed at runtime                                      |
+| `devDependencies`       | Development-only tools (testing, building)                                     |
+| `peerDependencies`      | Expected host dependency (e.g., a component library that is built off `react`) |
+| `optionalDependencies`  | Non-failing — install skipped if resolution fails                              |
+
+Familiar with CSS selectors? Then you'll like DSS.
+
+The vlt CLI provides handy colon-prefixed commands to query and filter
+by dependency types
+[pseudo-state selectors](/cli/selectors/pseudo-states) like `:prod`,
+`:dev`, `:peer`, and `:optional`.
