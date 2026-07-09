@@ -1,10 +1,12 @@
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import react from '@astrojs/react'
+import sitemap from '@astrojs/sitemap'
 import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel'
 import { ExpressiveCodeTheme } from '@astrojs/starlight/expressive-code'
 import * as TypedocPlugin from './src/plugins/typedoc.ts'
+import { sitemapAlias } from './src/plugins/sitemap.ts'
 import { readFileSync } from 'node:fs'
 import starlightLinksValidator from 'starlight-links-validator'
 
@@ -18,7 +20,7 @@ if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
 const MIXPANEL_TOKEN = '7853b372fb0f20e238be6d11e53f60fe'
 
 export default defineConfig({
-  site: 'https://docs.vlt.sh',
+  site: 'https://docs.vlt.io',
   trailingSlash: 'never',
   integrations: [
     starlight({
@@ -101,6 +103,13 @@ export default defineConfig({
     }),
     react(),
     tailwind({ applyBaseStyles: false }),
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: { en: 'en-US' },
+      },
+    }),
+    sitemapAlias(),
   ],
   output: 'static',
   adapter: vercel(),
