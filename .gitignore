@@ -67,6 +67,7 @@ tmp
 /www/**/*.d.mts.map
 /www/*/node_modules
 /www/*/scripts/fixtures/
+/www/*/plans/**
 
 /scripts/*.js
 /scripts/*.js.map

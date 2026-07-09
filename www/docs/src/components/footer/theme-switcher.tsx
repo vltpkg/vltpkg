@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils.ts'
 export type Theme = 'system' | 'light' | 'dark'
 
 const DOMAIN =
-  process.env.NODE_ENV === 'development' ? 'localhost' : '.vlt.sh'
+  process.env.NODE_ENV === 'development' ? 'localhost' : '.vlt.io'
 
 const setThemeCookie = (theme: Theme, resolveTo: Theme) => {
   const CookieDate = new Date()
