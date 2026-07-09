@@ -7,11 +7,7 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "www/docs"
   },
-  "author": {
-    "name": "vlt technology inc.",
-    "email": "support@vlt.sh",
-    "url": "http://vlt.sh"
-  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.12",
@@ -83,5 +79,9 @@
     "preview": "astro preview"
   },
   "prettier": "../../.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/www/docs#readme"
 }

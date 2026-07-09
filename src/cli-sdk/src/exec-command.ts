@@ -40,10 +40,7 @@ export type MultiRunResult = Record<string, RunResult>
 export type ScriptSet = Record<string, string>
 export type MultiScriptSet = Record<string, ScriptSet>
 export type ExecResult =
-  | RunFGResult
-  | MultiRunResult
-  | ScriptSet
-  | MultiScriptSet
+  RunFGResult | MultiRunResult | ScriptSet | MultiScriptSet
 
 const isScriptSet = (o: unknown): o is ScriptSet => {
   if (!o || typeof o !== 'object') return false

@@ -10,8 +10,7 @@ import type {
 
 const isPipe = (
   stdio:
-    | Exclude<StdioOptions, IOType>[number]
-    | StdioOptions = 'pipe',
+    Exclude<StdioOptions, IOType>[number] | StdioOptions = 'pipe',
   fd: number,
 ): stdio is IOTypePipe =>
   stdio === 'pipe' || stdio === 'overlapped' || stdio === null ? true

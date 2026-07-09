@@ -53,5 +53,9 @@
         "default": "./src/index.ts"
       }
     }
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/infra/build#readme"
 }

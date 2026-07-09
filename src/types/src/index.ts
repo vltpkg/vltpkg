@@ -56,24 +56,19 @@ export type ConditionalValueObject = {
 }
 
 export type ConditionalValue =
-  | ConditionalValue[]
-  | ConditionalValueObject
-  | string
-  | null
+  ConditionalValue[] | ConditionalValueObject | string | null
 
 export type ExportsSubpaths = {
   [path in '.' | `./${string}`]?: ConditionalValue
 }
 
 export type Exports =
-  | Exclude<ConditionalValue, null>
-  | ExportsSubpaths
+  Exclude<ConditionalValue, null> | ExportsSubpaths
 
 export type Imports = Record<`#${string}`, ConditionalValue>
 
 export type FundingEntry =
-  | string
-  | { url: string; type?: string; [key: string]: JSONField }
+  string | { url: string; type?: string; [key: string]: JSONField }
 export type Funding = FundingEntry | FundingEntry[]
 
 /**
@@ -1443,11 +1438,7 @@ export type DependencyTypeLong =
  * Unique keys that define different types of dependencies relationship.
  */
 export type DependencyTypeShort =
-  | 'dev'
-  | 'optional'
-  | 'peer'
-  | 'peerOptional'
-  | 'prod'
+  'dev' | 'optional' | 'peer' | 'peerOptional' | 'prod'
 
 /**
  * Unique keys that indicate how a new or updated dependency should be saved

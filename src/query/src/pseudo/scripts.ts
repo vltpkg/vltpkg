@@ -26,7 +26,7 @@ const nodeNeedsBuild = (node: NodeLike): boolean => {
   const prepable = node.id.startsWith('git') || node.importer
   const runPrepare =
     !!(
-      (scripts.prepare || scripts.preprepare || scripts.postprepare)
+      scripts.prepare || scripts.preprepare || scripts.postprepare
       /* c8 ignore next 2 */
     ) && prepable
   if (runPrepare) return true

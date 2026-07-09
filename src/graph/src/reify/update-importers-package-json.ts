@@ -57,8 +57,7 @@ const addOrRemoveDeps = (
   nodeId: DepID,
   graph: Graph,
   addOrRemove?:
-    | AddImportersDependenciesMap
-    | RemoveImportersDependenciesMap,
+    AddImportersDependenciesMap | RemoveImportersDependenciesMap,
 ): NormalizedManifest | undefined => {
   const node = graph.nodes.get(nodeId)
   if (!node) {
