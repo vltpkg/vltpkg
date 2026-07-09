@@ -106,14 +106,14 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: 'Get Started',
+          collapsed: false,
+          autogenerate: { directory: 'get-started' },
+        },
+        {
           label: 'Client',
           collapsed: true,
           autogenerate: { directory: 'cli' },
-        },
-        {
-          label: 'Migration',
-          collapsed: true,
-          autogenerate: { directory: 'migration' },
         },
         {
           label: 'Packages',

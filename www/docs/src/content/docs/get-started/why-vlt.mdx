@@ -1,0 +1,91 @@
+---
+title: Why vlt
+sidebar:
+  label: Why vlt
+  order: 2
+---
+
+## Nooo... not another command line tool
+
+Yeah, we get it. The last thing you want to hear is how one more
+stupid slash-command will change your life.
+
+We're shipping and maintaing software in uncertain times. There's less
+jobs, less headcount, less budget to spend, more drivel than ever
+about AI replacing developers... security breaches and compromised
+environments become just one more thing to dread.
+
+## The ways infrastructure that underlies open source have simply stopped working
+
+Since late 2025, the Node ecosystem and critical open source
+maintainers have been targets of an unprecedented number of cyber
+attacks.[1] These attacks breached over 25,000 GitHub repositories,
+and exposed over 40,000 sensitive credentials across AWS, Azure, and
+GCP cloud environments. (We won't name them, but you can imagine many
+an Important SaaS Vendor was impacted ;) )
+
+Despite 63% download growth,
+[Sonatype's State of Supply Chain 2026](https://www.sonatype.com/state-of-the-software-supply-chain/introduction)
+found 838,778 packages published with a CVSS 9.0+ score. AI assisted
+development can only compound more when human review and the
+faultlines of existing platforms can no longer keep up with the
+demands for release, recovery and verification where it matters.
+
+> We're doing this because we expect more from systems we've always
+> counted on to host and distribute our software.
+
+## Move fast and stay safe
+
+vlt is a toolset created by seasoned developers of the core npm team,
+who have spent decades of their work lives enduring maintenance
+strife.
+
+- First class support for Javascript and Typescript projects: Whether
+  you use Next, Vue, Svelte... we run our benchmarks against projects
+  for those frameworks.
+
+- Blazingly fast per-package installations: 1.1ms for installing
+  `node_modules`! vlt drops CI compute time and bandwidth at scale.
+
+- Slimmer packuments: the vlt registry serves 76% smaller packuments
+  than han the ten thousand most downloaded npm packages.
+
+## Safer installations
+
+Our CLI separates run and build steps through a two-phase install
+(first, download, then opt-in build), which prevents potential
+malicious lifecycle lifecycle scripts from running by default.
+
+- Integrity caching for performance: we use content-addressable
+  storage which reverifies a package per fetch request.
+
+All of this works with your favorite npm-compatible package managers!
+No extra tooling or migration needed.
+
+## Not security theatre: Verify package reproducibility instead of provenance
+
+[vlt/reproduce](https://github.com/vltpkg/reproduce) is an open source
+tool that proposes a different way to ensure your package isn't
+compromised. It downloads,rebuilds and compares exact commits of
+packages to check for
+
+Give our product a whirl, especially if:
+
+- you're curious what hosting a package on private cloud is like
+- you (or your team) publish packages that critical software relies on
+- you need to host packages that are used at insane scale (like 100k
+  downloads/month)
+- you're tired of being scared of being worried that running
+  `npm install` will blow up your weekend
+- you work at a large organization where no one makes plans to upgrade
+  frameworks, let alone dependencies
+- you want to know your packages and dependencies are tracked
+- you want to sleep better come release time
+
+- [^1] In 2025, attackers published ~455,000 malicious npm packages on
+  the npm registry. In September 2025, malicious actors used a variety
+  of phishing and browser wallet-hijacking to target the maintainers
+  of widely used open source packages with 2.6 Billion daily
+  downloads. Many of the packages were considered building blocks to
+  devtools and libraries. Next came a series of self-propagating worms
+  that compromised 500-800 packages over the course of two waves.
