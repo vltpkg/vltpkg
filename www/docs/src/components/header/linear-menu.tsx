@@ -34,6 +34,7 @@ const LinearMenu = () => {
     { title: 'Docs', path: 'https://docs.vlt.io/' },
     { title: 'Blog', path: 'https://vlt.io/blog' },
     { title: 'Company', path: 'https://vlt.io/about' },
+    { title: 'Community', path: 'https://discord.com/invite/qdbXTqxZzZ' },
   ]
 
   return (
