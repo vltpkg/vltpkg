@@ -55,7 +55,8 @@ type CommandResultMultiple = {
 }[]
 
 export type CommandResult =
-  CommandResultSingle | CommandResultMultiple
+  | CommandResultSingle
+  | CommandResultMultiple
 
 export const views = {
   human: r => {

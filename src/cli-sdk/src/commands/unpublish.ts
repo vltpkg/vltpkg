@@ -134,9 +134,11 @@ export const command: CommandFn<CommandResult> = async conf => {
       unknown
     >
     const versions = packument.versions as
-      Record<string, unknown> | undefined
+      | Record<string, unknown>
+      | undefined
     const distTags = packument['dist-tags'] as
-      Record<string, string> | undefined
+      | Record<string, string>
+      | undefined
 
     if (!versions?.[version]) {
       throw error(`Version ${version} not found in package ${name}`, {

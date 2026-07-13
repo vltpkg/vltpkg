@@ -85,7 +85,8 @@ export type CommandResultSingle = {
 }
 
 export type CommandResult =
-  CommandResultSingle | CommandResultSingle[]
+  | CommandResultSingle
+  | CommandResultSingle[]
 
 export const views = {
   human: results => {

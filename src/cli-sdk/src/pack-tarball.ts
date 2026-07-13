@@ -412,7 +412,8 @@ export const packTarball = async (
     // @ts-expect-error -- types from DT are missing hexDigest
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const shasum = integrityMap.sha1?.[0]?.hexDigest() as
-      string | undefined
+      | string
+      | undefined
 
     return {
       name: manifest.name,

@@ -1,0 +1,102 @@
+---
+title: Reference
+sidebar:
+  label: Reference
+  order: -1
+---
+
+**Jump to:**
+
+- [Artefact / Artifact](#artefact--artifact)
+- [Ecosystem](#ecosystem)
+- [Library](#library)
+- [Mirror](#mirror)
+- [Module](#module)
+- [Package](#package)
+- [Package Metadata](#package-metadata)
+- [Project](#project)
+- [Registry](#registry)
+- [Version](#version)
+
+## Artefact / Artifact
+
+The file (or bundle of files) that comes out of a build step — for
+example, the `.tgz` tarball produced when you publish a package, or
+the compiled output of your app. Think of it as the "finished product"
+you ship to others. Once it's built, it's meant to stay the same, so
+everyone who downloads it gets the identical thing.
+
+## Ecosystem
+
+The world of tools, libraries, and conventions that has grown up
+around a programming language. The JavaScript ecosystem, for example,
+includes frameworks, package managers, lint and build tools, monorepo
+setups, editor extensions, and the conventions everyone loosely
+follows. When you pick a language to ship an app in, you're also
+joining its ecosystem — the collection of libraries and tools that
+make creating and shipping apps easier.
+
+## Library
+
+Code written to be _used_ by other code, not to be run on its own.
+Libraries are intended for reuse across different codebases. They are
+focused sets of code that concentrate functionality and convention, so
+other developers can leverage the same functionality.
+
+## Mirror
+
+A read-only copy of a registry. A mirror stays in sync with an
+upstream registry and serves the same packages, often from a server
+closer to you (or behind your company firewall). You use it the same
+way you'd use the original registry; you just can't publish new
+packages to it.
+
+## Module
+
+A unit of code inside a language's import/export system — the thing
+you `import` from or `export` functionality from. People sometimes use
+"module" to mean the same thing as "package," and sometimes to mean a
+smaller piece _inside_ a package. Because the word gets used two ways,
+you usually need a little context to know which one someone means.
+
+## Package
+
+A bundle of code made to be shared and reused. It has a name, a
+version, and some metadata that gives it a stable identity, and it
+exposes an interface (an API, a schema) that other code calls into.
+Packages are what you publish to a registry and what you install into
+a project. If you've ever run `npm install react`, you installed a
+package.
+
+## Package Metadata
+
+The data _about_ a piece of software, attached to it rather than
+inside it. For a package this means things like its name, version,
+description, and the list of other packages it needs. It's the label
+on the tin: it tells tools and humans what's inside before anyone
+opens it.
+
+## Project
+
+Software defined by what it's trying to _do_, not by whether parts of
+it get reused. An app or service you ship to users is a project. It
+might depend on a pile of packages, or vendor in some code, or in rare
+cases pull in nothing at all — what makes it a project is its goal.
+
+## Registry
+
+A server (or service) that hosts packages and lets you publish and
+download them. Most languages have several prominent public registries
+where open source developers share code. For JavaScript that's the npm
+registry — and many teams also run private registries inside their
+company. When your package manager "goes to fetch" something, the
+registry is where it goes.
+
+## Version
+
+The label pinned to a specific release of some software, usually found
+in its metadata. Most ecosystems use _semantic versioning_
+(`major.minor.patch`, like `2.1.3`) to indicate how much changed and
+whether you should expect breaking differences. How strictly that's
+enforced varies a lot between languages, but the version is always
+what tells you _which_ release of a package you're getting.
