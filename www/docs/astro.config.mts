@@ -24,6 +24,10 @@ export default defineConfig({
   trailingSlash: 'never',
   integrations: [
     starlight({
+      editLink: {
+        baseUrl:
+          'https://github.com/vltpkg/vltpkg/edit/main/www/docs/',
+      },
       head: [
         {
           tag: 'script',

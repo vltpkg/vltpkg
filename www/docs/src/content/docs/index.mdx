@@ -5,8 +5,12 @@ sidebar:
   label: Overview
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import { Code } from '@astrojs/starlight/components'
+import {
+  Code,
+  Tabs,
+  TabItem,
+  Steps,
+} from '@astrojs/starlight/components'
 import { CardGrid, CardGridLink } from '@/components/cards/cards.tsx'
 
 ## Introduction to vlt
@@ -23,31 +27,28 @@ critical package distribution at scale.
 To learn more how we're different, check out
 ["Why Vlt?"](/get-started/why-vlt)
 
-## Use Cases
+## Using vlt packages
 
-vlt was created with the needs of open source maintainers and everyday
-developer in mind.
+vlt has every package that npm already has so you still have access to
+all the libraries you're used to.
 
-1. Private registry for internal packages — Share private packages
-   within your org, while keeping them out of the public npm registry.
+All you have to do:
 
-1. High-availability for critical open-source packages and libraries
-   used by many.
+<Steps>
+  <ol>
+    <li> Set your package manager to use vlt as the registry</li>
+    <li> Run install</li>
+  </ol>
+</Steps>
 
-1. Multi-registry workflows — Configure named registries in vlt to
-   pull from npm, a private mirror, and an internal registry
-   simultaneously, routing specific scopes (e.g. `@internal/`) to the
-   right source.
+## Publishing a package to vlt
 
-1. Security scanning of dependencies — Run vlt query ':malware' to
-   detect malware, vulnerabilities, and license issues in your dep
-   graph via Socket integration, without leaving the CLI.
+### Sign Up
 
-1. Full transparency on dependencies inside package artifacts.
-
-1. Monorepo package management — vlt's workspace-aware client can
-   install, query, and manage dependencies across a multi-package
-   monorepo with a single tool, replacing fragmented workflows.
+To publish a private or public package with vlt, you first have to
+[sign up](https://www.vlt.io/onboarding/account-setup). You can sign
+up with  
+Github, Google (Gmail) or with an email and password.
 
 ## Explore
 
@@ -68,7 +69,7 @@ developer in mind.
 
 <CardGridLink
   title="CLI"
-  description="Our CLI extends npm's and provides dependency management superpowers"
+  description="vlt CLI extends npm's and provides dependency management superpowers"
   href="/cli"
   icon="Client"
 />
