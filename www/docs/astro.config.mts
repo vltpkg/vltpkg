@@ -111,7 +111,7 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Packages',
+          label: 'API Reference',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
         },
