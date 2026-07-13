@@ -7,9 +7,12 @@ sidebar:
 
 ## Artefact / Artifact
 
-The publishable file (or bundle of files) that a build process
-produces — for example, the `.tgz` tarball produced when you run
-`npm run pack`.
+Artifacts serve as outputs of the development process. In context of
+Javascript these are the bundled and minified .app.js files within a
+dist/ folder, the `.tgz` tarball produced when you run `npm run pack`.
+A package can be an artifact, but not all packages are artifacts since
+there are also libraries, extensions, tools that can be packaged, but
+might require a totally different way to use and distribute.
 
 ## Ecosystem
 
@@ -46,20 +49,21 @@ you usually need a little context to know which one someone means.
 
 ## Package
 
-A bundle of code made to be shared and reused. It has a name, a
-version, and some metadata that gives it a stable identity, and it
-exposes an interface (an API, a schema) that other code calls into.
-Packages are what you publish to a registry and what you install into
-a project. If you've ever run `npm install react`, you installed a
-package.
+An artifact that contains code, and metadata for resolving
+dependencies and running its scripts effectively.
+
+Artifacts are often made to be shared and reused by other developers,
+but can also play a role in audit and traceability. Packages are what
+you publish to a registry and what you install into a project. If
+you've ever run `npm install react`, you installed a package!
 
 ## Package Metadata
 
-The data _about_ a piece of software, attached to it rather than
-inside it. For a package this means things like its name, version,
-description, and the list of other packages it needs. It's the label
-on the tin: it tells tools and humans what's inside before anyone
-opens it.
+The data _about_ a piece of software, collocated with its code. For a
+Javascript package it's most prominently the
+[manifest](/concepts/manifest), `package.json` and
+`package-lock.json`. It's the label on the tin: it tells tools and
+humans what's inside before anyone opens it.
 
 ## Project
 
@@ -85,3 +89,10 @@ in its metadata. Most ecosystems use _semantic versioning_
 whether you should expect breaking differences. How strictly that's
 enforced varies a lot between languages, but the version is always
 what tells you _which_ release of a package you're getting.
+
+- **Major** (e.g. `3.0.0`): breaking changes — updating may require
+  code changes in your project.
+- **Minor** (e.g. `2.1.0`): new features added in a
+  backwards-compatible way.
+- **Patch** (e.g. `2.1.3`): backwards-compatible bug fixes or small
+  tweaks.

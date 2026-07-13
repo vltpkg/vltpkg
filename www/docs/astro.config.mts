@@ -103,11 +103,7 @@ export default defineConfig({
               collapsed: true,
               autogenerate: { directory: 'get-started/concepts' },
             },
-            {
-              label: 'Reference',
-              collapsed: true,
-              autogenerate: { directory: 'get-started/reference' },
-            },
+            'get-started/reference',
           ],
         },
         {
