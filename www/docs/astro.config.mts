@@ -102,19 +102,16 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Client',
+          label: 'CLI',
           collapsed: true,
           autogenerate: { directory: 'cli' },
-        },
-        {
-          label: 'Migration',
-          collapsed: true,
-          autogenerate: { directory: 'migration' },
-        },
-        {
-          label: 'API Reference',
-          collapsed: true,
-          autogenerate: { directory: TypedocPlugin.directory },
+          items: [
+            {
+              label: 'API Reference',
+              collapsed: true,
+              autogenerate: { directory: TypedocPlugin.directory },
+            },
+          ],
         },
       ],
     }),
