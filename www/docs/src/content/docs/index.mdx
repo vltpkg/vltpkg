@@ -9,66 +9,80 @@ import { Tabs, TabItem } from '@astrojs/starlight/components'
 import { Code } from '@astrojs/starlight/components'
 import { CardGrid, CardGridLink } from '@/components/cards/cards.tsx'
 
-# Documentation
+## Introduction to vlt
 
-VLT delivers the tools and infrastructure developers need to
-streamline package management, scale efficiently, and secure a faster,
-more tailored web experience.
+vlt is the next generation platform for Javascript registries.
 
-## Getting Started
+Our toolset streamlines package management for a secure, faster,
+developer experience.
 
-Learn how to get the VLT client set up in your project.
+vlt was started by seasoned developers of the core npm team and
+veteran open source contributors who have seen the challenges of
+critical package distribution at scale.
 
-<Tabs>
-  <TabItem label="npm">
-    <Code code="$ npm i -g vlt" lang="bash" />
-  </TabItem>
-  <TabItem label="pnpm">
-    <Code code="$ pnpm i -g vlt" lang="bash" />
-  </TabItem>
-</Tabs>
+To learn more how we're different, check out
+["Why Vlt?"](/get-started/why-vlt)
 
-> vlt is supported on Node versions 20 or 22 currently.
+## Use Cases
+
+vlt was created with the needs of open source maintainers and everyday
+developer in mind.
+
+1. Private registry for internal packages — Share private packages
+   within your org, while keeping them out of the public npm registry.
+
+1. High-availability for critical open-source packages and libraries
+   used by many.
+
+1. Multi-registry workflows — Configure named registries in vlt to
+   pull from npm, a private mirror, and an internal registry
+   simultaneously, routing specific scopes (e.g. `@internal/`) to the
+   right source.
+
+1. Security scanning of dependencies — Run vlt query ':malware' to
+   detect malware, vulnerabilities, and license issues in your dep
+   graph via Socket integration, without leaving the CLI.
+
+1. Full transparency on dependencies inside package artifacts.
+
+1. Monorepo package management — vlt's workspace-aware client can
+   install, query, and manage dependencies across a multi-package
+   monorepo with a single tool, replacing fragmented workflows.
 
 ## Explore
 
-Discover the full range of commands and options available in the VLT
-CLI.
-
 <CardGrid>
-  <CardGridLink
-    title="Authentication"
-    description="Setup credentials for multiple registries"
-    href="/cli/auth"
-    icon="Authentication"
-  />
-  <CardGridLink
-    title="Commands"
-    description="The commands you already know, made more powerful"
-    href="/cli/commands"
-    icon="Client"
-  />
-  <CardGridLink
-    title="Configuration"
-    description="Do more, type less with companion binary shortcuts"
-    href="/cli/configuring"
-    icon="Config"
-  />
-  <CardGridLink
-    title="Packages"
-    description="The workspaces that makeup the VLT monorepo"
-    href="/packages"
+ <CardGridLink
+    title="vlt Registries"
+    description="Learn how vlt enables hassle-free package publishing"
+    href="/registry"
     icon="Package"
   />
-  <CardGridLink
-    title="Dependency Selectors"
-    description="Effortless dependency targeting with selectors"
-    href="/cli/selectors"
-    icon="Query"
-  />
+
+<CardGridLink
+  title="Migrate to vlt registry"
+  description="Migrating to vlt from npm, pnpm, bun"
+  href="/migration"
+  icon="Graph"
+/>
+
+<CardGridLink
+  title="CLI"
+  description="Our CLI extends npm's and provides dependency management superpowers"
+  href="/cli"
+  icon="Client"
+/>
+
+<CardGridLink
+  title=""
+  description="The workspaces that makeup the VLT monorepo"
+  href="/packages"
+  icon="Package"
+/>
+
   <CardGridLink
     title="Security & Malware Detection"
-    description="Identify security risks and malware in dependencies"
+    description="Identify security risks and malware hiding in dependencies"
     href="/cli/security"
     icon="Authentication"
   />
