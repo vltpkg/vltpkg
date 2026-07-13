@@ -1,45 +1,84 @@
 ---
-title: Migrating to vlt
+title: Use the Registry
 sidebar:
   label: Overview
   order: 0
 ---
 
-import { Code } from '@astrojs/starlight/components'
+import {
+  Badge,
+  Code,
+  Tabs,
+  TabItem,
+} from '@astrojs/starlight/components'
 
-## Migrating to vlt from Other Package Managers
+### Pre-requisites
 
-This section covers how to switch from npm, yarn, or pnpm to vlt. Each
-guide walks through the concrete steps: configuration, commands,
-lockfiles, workspaces, and the key differences to be aware of.
+This tutorial assumes working familiarity with npm, git, and running
+bash commands within your computer's terminal.
 
-### Choose Your Migration Path
+1. If you haven't already:
+   [Sign up](https://www.vlt.io/onboarding/account-setup)
 
-- [**From npm**](/migration/from-npm) — Migrate from npm to vlt
-- [**From yarn**](/migration/from-yarn) — Migrate from yarn (v1
-  classic or v2+ berry) to vlt
-- [**From pnpm**](/migration/from-pnpm) — Migrate from pnpm to vlt
+<Badge text="Protip" variant="tip" /> Hang onto your username; you're
+gonna need it!
 
-### What Changes
+<Tabs>
+  <TabItem label="pnpm">
 
-Regardless of which package manager you're coming from, the core
-changes are:
+1. Assuming you have a package you want to publish, grab the project
+   path from its root.
 
-1. **Configuration moves to `vlt.json`** — A single JSON file replaces
-   `.npmrc`, `.yarnrc.yml`, or `.npmrc` + `pnpm-workspace.yaml`
-2. **Lockfile format changes** — vlt uses `vlt-lock.json` instead of
-   `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`
-3. **Install scripts don't run by default** — vlt separates
-   installation from build. `vlt install` downloads packages without
-   executing any lifecycle scripts. Use `vlt build` to selectively run
-   scripts afterward
-4. **Security is built in** — vlt integrates with
-   [Socket](https://socket.dev/) for malware detection, and the query
-   system lets you audit your dependency graph before any code runs
+<Code
+  title="Switch vlt to be your registry"
+  code={`pnpm config set registry https://registry.vlt.io/<your-username>/npm --location=project-path`}
+/>
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      title="Switch vlt to your registry"
+      code={`{echo 'registry "https://registry.vlt.io/your-username/npm/" >> .yarnrc'}`}
+    />
+    <Code
+      title="login to obtain your auth token"
+      code={`yarn login --registry https://registry.vlt.io/<your-username>/main`}
+    />
+    <Code
+      title="Switch all dependencies to vlt's npm mirror"
+      code="rm -rf yarn.lock node_modules && yarn install"
+      />
+  </TabItem>
+  <TabItem
+    label="yarn berry"
+    >
+   <Code
+      title="Set yarn config to use the vlt.io npm mirror"
+      code={`yarn config set npmRegistryServer "https://registry.vlt.io/your-username/npm/" --location=project`}
+    />
+    This will update the `.yarnrc.yml`.
 
-### What Stays the Same
+<Code
+  title="Log in to obtain an authentication token"
+  code="yarn npm login --web-login --always-auth"
+/>
 
-- Your `package.json` files don't change (dependencies, scripts, etc.)
-- `node_modules` structure is compatible — your code runs the same way
-- Registry authentication uses tokens, just stored differently
-- Workspace packages still use `workspace:` protocol references
+<Code title="Publish your package" code="yarn publish" />
+
+Your .yarnrc.yml will look like this:
+
+```yaml
+npmScopes:
+  <your-username-scope>:
+    npmAlwaysAuth: false
+    npmAuthToken: '${NODE_AUTH_TOKEN:-}'
+    npmRegistryServer: 'https://registry.vlt.io/your-username/npm/'
+```
+
+<Code
+  title="Switch all dependencies to vlt's npm mirror"
+  code="rm -rf yarn.lock node_modules && yarn install"
+/>
+
+</TabItem>
+
+</Tabs>

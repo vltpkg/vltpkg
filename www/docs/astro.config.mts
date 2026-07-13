@@ -99,6 +99,11 @@ export default defineConfig({
               autogenerate: { directory: 'get-started/concepts' },
             },
             'get-started/reference',
+            {
+              label: 'Migrate from npm, pnpm, bun, deno',
+              collapsed: true,
+              autogenerate: { directory: 'migration' },
+            },
           ],
         },
         {
@@ -106,11 +111,7 @@ export default defineConfig({
           collapsed: true,
           autogenerate: { directory: 'cli' },
         },
-        {
-          label: 'Migration',
-          collapsed: true,
-          autogenerate: { directory: 'migration' },
-        },
+
         {
           label: 'API Reference',
           collapsed: true,
