@@ -26,7 +26,12 @@ import type { PostcssNode } from '@vltpkg/dss-parser'
  * The possible values accepted by the :outdated() pseudo selector.
  */
 export type OutdatedKinds =
-  'any' | 'major' | 'minor' | 'patch' | 'in-range' | 'out-of-range'
+  | 'any'
+  | 'major'
+  | 'minor'
+  | 'patch'
+  | 'in-range'
+  | 'out-of-range'
 
 /**
  * Result of the internal parsing of the :outdated() pseudo selector.

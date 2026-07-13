@@ -75,7 +75,9 @@ the object in the file must be:
 ```ts
 type VltProject = {
   workspaces:
-    string | string[] | { [group: string]: string | string[] }
+    | string
+    | string[]
+    | { [group: string]: string | string[] }
 }
 ```
 

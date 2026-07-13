@@ -95,6 +95,22 @@ export default defineConfig({
           autogenerate: { directory: 'migration' },
         },
         {
+          label: 'Get Started',
+          collapsed: true,
+          items: [
+            {
+              label: 'Concepts',
+              collapsed: true,
+              autogenerate: { directory: 'get-started/concepts' },
+            },
+            {
+              label: 'Reference',
+              collapsed: true,
+              autogenerate: { directory: 'get-started/reference' },
+            },
+          ],
+        },
+        {
           label: 'Packages',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },

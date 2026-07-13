@@ -154,8 +154,8 @@ export abstract class RunnerBase<
   /** Type returned by the visit() method */
   Result = void,
   Sync extends boolean = false,
-  O extends (Sync extends true ? RunnerOptionsSync<Node, Result>
-  : RunnerOptions<Node, Result>) = Sync extends true ?
+  O extends Sync extends true ? RunnerOptionsSync<Node, Result>
+  : RunnerOptions<Node, Result> = Sync extends true ?
     RunnerOptionsSync<Node, Result>
   : RunnerOptions<Node, Result>,
 > {

@@ -5,7 +5,11 @@ const root = homedir()
 const path = (p: string) => resolve(root, p)
 
 export type PathType =
-  'cache' | 'config' | 'data' | 'runtime' | 'state'
+  | 'cache'
+  | 'config'
+  | 'data'
+  | 'runtime'
+  | 'state'
 
 const defaults =
   process.platform === 'darwin' ?

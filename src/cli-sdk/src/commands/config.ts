@@ -369,7 +369,8 @@ const getProjectConfigList = (): string[] => {
 
 // Get the entire user config object
 const getUserConfigObject = ():
-  Record<string, unknown> | undefined => {
+  | Record<string, unknown>
+  | undefined => {
   try {
     const userConfig = load(
       'config',
@@ -407,7 +408,8 @@ const getUserConfigValue = (key: string): unknown => {
 
 // Get the entire project config object
 const getProjectConfigObject = ():
-  Record<string, unknown> | undefined => {
+  | Record<string, unknown>
+  | undefined => {
   try {
     const projectConfig = load(
       'config',
