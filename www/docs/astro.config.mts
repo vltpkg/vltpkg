@@ -85,16 +85,6 @@ export default defineConfig({
       plugins: [TypedocPlugin.plugin, starlightLinksValidator()],
       sidebar: [
         {
-          label: 'Client',
-          collapsed: true,
-          autogenerate: { directory: 'cli' },
-        },
-        {
-          label: 'Migration',
-          collapsed: true,
-          autogenerate: { directory: 'migration' },
-        },
-        {
           label: 'Get Started',
           collapsed: true,
           items: [
@@ -105,6 +95,16 @@ export default defineConfig({
             },
             'get-started/reference',
           ],
+        },
+        {
+          label: 'Client',
+          collapsed: true,
+          autogenerate: { directory: 'cli' },
+        },
+        {
+          label: 'Migration',
+          collapsed: true,
+          autogenerate: { directory: 'migration' },
         },
         {
           label: 'API Reference',
