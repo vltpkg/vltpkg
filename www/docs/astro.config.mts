@@ -88,6 +88,7 @@ export default defineConfig({
           label: 'Get Started',
           collapsed: true,
           items: [
+            'get-started/use-cases',
             {
               label: 'Concepts',
               collapsed: true,
