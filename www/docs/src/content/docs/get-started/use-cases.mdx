@@ -1,29 +1,30 @@
 ---
 title: Use cases
 sidebar:
-  label: Use Cases
+  label: Use cases
   order: 0
 ---
 
-## Use Cases
+vlt was created with the needs of open source maintainers and
+development teams in mind.
 
-vlt was created with the needs of open source maintainers and everyday
-developer in mind.
+These are some primary use cases for choosing vlt.
 
 1. Private registry for internal packages — Share private packages
    within your org, while keeping them out of the public npm registry.
 
 1. High-availability for critical open-source packages and libraries
-   used by many.
+   used by thousands of developers.
 
 1. Multi-registry workflows — Configure named registries in vlt to
    pull from npm, a private mirror, and an internal registry
    simultaneously, routing specific scopes (e.g. `@internal/`) to the
    right source.
 
-1. Security scanning of dependencies — Run vlt query ':malware' to
-   detect malware, vulnerabilities, and license issues in your dep
-   graph via Socket integration, without leaving the CLI.
+1. Supply chain protection for your team vlt offers security scanning
+   of dependencies — Run `vlt query ':malware'` with our CLI to detect
+   malware, vulnerabilities, and license issues in your dep graph via
+   Socket integration, without leaving the CLI.
 
 1. Full transparency on dependencies inside package artifacts.
 
