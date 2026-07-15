@@ -56,6 +56,11 @@ export type UpdatePackageJsonOptions = {
    * instead of the default semver range operator (e.g. `^1.2.3`).
    */
   saveExact?: boolean
+  /**
+   * The prefix to use when saving dependency versions (e.g. `^`, `~`, `>=`, ``).
+   * Defaults to `^` if not specified. Ignored when `saveExact` is true.
+   */
+  savePrefix?: string
 }
 
 const addOrRemoveDeps = (
@@ -65,6 +70,7 @@ const addOrRemoveDeps = (
     | AddImportersDependenciesMap
     | RemoveImportersDependenciesMap,
   saveExact?: boolean,
+  savePrefix?: string,
 ): NormalizedManifest | undefined => {
   const node = graph.nodes.get(nodeId)
   if (!node) {
@@ -147,6 +153,7 @@ const addOrRemoveDeps = (
         existing,
         n.version,
         saveExact,
+        savePrefix,
       )
       dependencies[name] = saveValue
       manifestChanged = manifestChanged || saveValue !== existing
@@ -165,6 +172,7 @@ export const updatePackageJson = ({
   packageJson,
   remove,
   saveExact,
+  savePrefix,
 }: UpdatePackageJsonOptions) => {
   const manifestsToUpdate = new Set<NormalizedManifest>()
   const operations = new Set([add, remove])
@@ -180,6 +188,7 @@ export const updatePackageJson = ({
           graph,
           operation,
           saveExact,
+          savePrefix,
         )
         if (manifest) {
           manifestsToUpdate.add(manifest)

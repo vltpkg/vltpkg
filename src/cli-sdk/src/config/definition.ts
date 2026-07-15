@@ -651,6 +651,16 @@ export const definition = j
   })
 
   .opt({
+    'save-prefix': {
+      description: `The version prefix to use when saving dependencies to
+                    package.json (e.g. \`^\`, \`~\`, \`>=\`, or empty string
+                    for exact versions). Defaults to \`^\`.
+                    Ignored when \`--save-exact\` is set.`,
+      default: '^',
+    },
+  })
+
+  .opt({
     'expect-results': {
       hint: 'value',
       validate: (v: unknown) =>

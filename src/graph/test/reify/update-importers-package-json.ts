@@ -683,6 +683,221 @@ t.test('updatePackageJson', async t => {
     },
   )
 
+  await t.test('save-prefix ~ saves tilde versions', async t => {
+    const testRootMani = {
+      name: 'tilde-root',
+      version: '1.0.0',
+    }
+
+    const testGraph = new Graph({
+      mainManifest: testRootMani,
+      projectRoot: t.testdirName,
+    })
+    const testRoot = testGraph.mainImporter
+
+    const abbrevMani = { name: 'abbrev', version: '4.0.0' }
+    const abbrevSpec = Spec.parse('abbrev')
+    const abbrev = testGraph.addNode(
+      undefined,
+      abbrevMani,
+      abbrevSpec,
+      abbrevMani.name,
+      abbrevMani.version,
+    )
+    testGraph.addEdge('prod', abbrevSpec, testRoot, abbrev)
+
+    updatePackageJson({
+      packageJson,
+      graph: testGraph,
+      savePrefix: '~',
+      add: new Map([
+        [
+          testRoot.id,
+          new Map([
+            [
+              'abbrev',
+              asDependency({
+                spec: abbrevSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+    })()
+
+    const res = retrieveManifestResult()
+    t.strictSame(res.length, 1, 'should have been called once')
+    t.strictSame(
+      res[0]?.[0]?.dependencies?.abbrev,
+      '~4.0.0',
+      'should save version with tilde prefix',
+    )
+  })
+
+  await t.test('save-prefix >= saves gte versions', async t => {
+    const testRootMani = {
+      name: 'gte-root',
+      version: '1.0.0',
+    }
+
+    const testGraph = new Graph({
+      mainManifest: testRootMani,
+      projectRoot: t.testdirName,
+    })
+    const testRoot = testGraph.mainImporter
+
+    const abbrevMani = { name: 'abbrev', version: '4.0.0' }
+    const abbrevSpec = Spec.parse('abbrev')
+    const abbrev = testGraph.addNode(
+      undefined,
+      abbrevMani,
+      abbrevSpec,
+      abbrevMani.name,
+      abbrevMani.version,
+    )
+    testGraph.addEdge('prod', abbrevSpec, testRoot, abbrev)
+
+    updatePackageJson({
+      packageJson,
+      graph: testGraph,
+      savePrefix: '>=',
+      add: new Map([
+        [
+          testRoot.id,
+          new Map([
+            [
+              'abbrev',
+              asDependency({
+                spec: abbrevSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+    })()
+
+    const res = retrieveManifestResult()
+    t.strictSame(res.length, 1, 'should have been called once')
+    t.strictSame(
+      res[0]?.[0]?.dependencies?.abbrev,
+      '>=4.0.0',
+      'should save version with >= prefix',
+    )
+  })
+
+  await t.test(
+    'save-prefix empty string saves exact versions',
+    async t => {
+      const testRootMani = {
+        name: 'empty-prefix-root',
+        version: '1.0.0',
+      }
+
+      const testGraph = new Graph({
+        mainManifest: testRootMani,
+        projectRoot: t.testdirName,
+      })
+      const testRoot = testGraph.mainImporter
+
+      const abbrevMani = { name: 'abbrev', version: '4.0.0' }
+      const abbrevSpec = Spec.parse('abbrev')
+      const abbrev = testGraph.addNode(
+        undefined,
+        abbrevMani,
+        abbrevSpec,
+        abbrevMani.name,
+        abbrevMani.version,
+      )
+      testGraph.addEdge('prod', abbrevSpec, testRoot, abbrev)
+
+      updatePackageJson({
+        packageJson,
+        graph: testGraph,
+        savePrefix: '',
+        add: new Map([
+          [
+            testRoot.id,
+            new Map([
+              [
+                'abbrev',
+                asDependency({
+                  spec: abbrevSpec,
+                  type: 'prod',
+                }),
+              ],
+            ]),
+          ],
+        ]) as AddImportersDependenciesMap,
+      })()
+
+      const res = retrieveManifestResult()
+      t.strictSame(res.length, 1, 'should have been called once')
+      t.strictSame(
+        res[0]?.[0]?.dependencies?.abbrev,
+        '4.0.0',
+        'should save exact version with empty prefix',
+      )
+    },
+  )
+
+  await t.test(
+    'save-exact takes precedence over save-prefix',
+    async t => {
+      const testRootMani = {
+        name: 'precedence-root',
+        version: '1.0.0',
+      }
+
+      const testGraph = new Graph({
+        mainManifest: testRootMani,
+        projectRoot: t.testdirName,
+      })
+      const testRoot = testGraph.mainImporter
+
+      const abbrevMani = { name: 'abbrev', version: '4.0.0' }
+      const abbrevSpec = Spec.parse('abbrev')
+      const abbrev = testGraph.addNode(
+        undefined,
+        abbrevMani,
+        abbrevSpec,
+        abbrevMani.name,
+        abbrevMani.version,
+      )
+      testGraph.addEdge('prod', abbrevSpec, testRoot, abbrev)
+
+      updatePackageJson({
+        packageJson,
+        graph: testGraph,
+        saveExact: true,
+        savePrefix: '~',
+        add: new Map([
+          [
+            testRoot.id,
+            new Map([
+              [
+                'abbrev',
+                asDependency({
+                  spec: abbrevSpec,
+                  type: 'prod',
+                }),
+              ],
+            ]),
+          ],
+        ]) as AddImportersDependenciesMap,
+      })()
+
+      const res = retrieveManifestResult()
+      t.strictSame(res.length, 1, 'should have been called once')
+      t.strictSame(
+        res[0]?.[0]?.dependencies?.abbrev,
+        '4.0.0',
+        'save-exact takes precedence over save-prefix ~',
+      )
+    },
+  )
+
   await t.test('save-exact saves exact versions', async t => {
     const testRootMani = {
       name: 'exact-root',

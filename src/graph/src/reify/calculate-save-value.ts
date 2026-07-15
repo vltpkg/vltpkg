@@ -1,5 +1,6 @@
 import type { Spec } from '@vltpkg/spec'
-const SAVE_PREFIX = '^'
+
+const DEFAULT_SAVE_PREFIX = '^'
 
 export const calculateSaveValue = (
   nodeType: string,
@@ -7,6 +8,7 @@ export const calculateSaveValue = (
   existing: string | undefined,
   nodeVersion: string | undefined,
   saveExact?: boolean,
+  savePrefix?: string,
 ): string => {
   // Catalog specs should always be preserved as-is in package.json.
   // The catalog reference (e.g. "catalog:dev") is the user's intent;
@@ -33,7 +35,8 @@ export const calculateSaveValue = (
       // then leave it as-is, because we just installed our pj dep
       return existing
     } else {
-      const prefix = saveExact ? '' : SAVE_PREFIX
+      const prefix =
+        saveExact ? '' : (savePrefix ?? DEFAULT_SAVE_PREFIX)
       const finalRange =
         (spec.final.semver && !saveExact && spec.final.bareSpec) ||
         `${prefix}${nodeVersion}`

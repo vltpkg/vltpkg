@@ -424,6 +424,10 @@ Object {
     "description": "Save installed packages to a package.json file as peerDependencies",
     "type": "boolean",
   },
+  "save-prefix": Object {
+    "description": "The version prefix to use when saving dependencies to package.json (e.g. \`^\`, \`~\`, \`>=\`, or empty string for exact versions). Defaults to \`^\`. Ignored when \`--save-exact\` is set.",
+    "type": "string",
+  },
   "save-prod": Object {
     "description": "Save installed packages into dependencies specifically. This is useful if a package already exists in devDependencies or optionalDependencies, but you want to move it to be a non-optional production dependency.",
     "short": "P",
@@ -603,6 +607,7 @@ Array [
   "--save-exact",
   "--save-optional",
   "--save-peer",
+  "--save-prefix=<save-prefix>",
   "--save-prod",
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
@@ -666,6 +671,7 @@ Array [
   "save-exact",
   "save-optional",
   "save-peer",
+  "save-prefix",
   "save-prod",
   "scope",
   "scoped-registries",
