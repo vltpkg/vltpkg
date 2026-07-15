@@ -28,6 +28,7 @@ export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   cleanInstall?: boolean // Only set by ci command for clean install
   allowScripts: string
+  saveExact?: boolean
 }
 
 export const install = async (

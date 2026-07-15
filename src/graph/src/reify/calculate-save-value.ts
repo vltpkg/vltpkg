@@ -6,6 +6,7 @@ export const calculateSaveValue = (
   spec: Spec,
   existing: string | undefined,
   nodeVersion: string | undefined,
+  saveExact?: boolean,
 ): string => {
   // Catalog specs should always be preserved as-is in package.json.
   // The catalog reference (e.g. "catalog:dev") is the user's intent;
@@ -32,9 +33,10 @@ export const calculateSaveValue = (
       // then leave it as-is, because we just installed our pj dep
       return existing
     } else {
+      const prefix = saveExact ? '' : SAVE_PREFIX
       const finalRange =
-        (spec.final.semver && spec.final.bareSpec) ||
-        `${SAVE_PREFIX}${nodeVersion}`
+        (spec.final.semver && !saveExact && spec.final.bareSpec) ||
+        `${prefix}${nodeVersion}`
       // didn't have dep previously, or depended on a different thing
       // than what was requested. Update with the ^ range based on
       // the node that landed in the graph, but preserve alias prefix

@@ -37,6 +37,11 @@ appropriately.
 
       ​--save-dev
 
+    save-exact
+      Save installed packages with exact versions instead of a semver range.
+
+      ​--save-exact
+
     save-optional
       Save installed packages to package.json as optionalDependencies.
 

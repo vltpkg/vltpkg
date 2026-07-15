@@ -98,3 +98,98 @@ t.test('registry cases', t => {
     )
   }
 })
+
+// save-exact registry cases
+// nodeVersion is always 1.2.3
+const saveExactCases: [
+  spec: string,
+  existing: string | undefined,
+  expect: string,
+  comment: string,
+][] = [
+  ['', undefined, '1.2.3', 'new dep, no spec, use exact version'],
+  [
+    '1',
+    undefined,
+    '1.2.3',
+    'range spec overridden with exact version',
+  ],
+  ['npm:b', undefined, 'npm:b@1.2.3', 'alias with exact version'],
+  [
+    'npm:b@',
+    undefined,
+    'npm:b@1.2.3',
+    'alias with @ uses exact version',
+  ],
+  [
+    'npm:b@npm:c',
+    undefined,
+    'npm:c@1.2.3',
+    'chained alias shortened with exact version',
+  ],
+  [
+    'jsr:@a/b@',
+    undefined,
+    'jsr:@a/b@1.2.3',
+    'jsr alias with exact version',
+  ],
+  [
+    'npm:@i/j@jsr:@a/b',
+    undefined,
+    'jsr:@a/b@1.2.3',
+    'jsr alias shorten with exact version',
+  ],
+  ['jsr:', undefined, 'jsr:1.2.3', 'jsr exact version'],
+  ['latest', 'latest', 'latest', 'spec matches manifest, unchanged'],
+  ['', 'latest', 'latest', 'spec from manifest, unchanged'],
+  ['1.2.3', 'latest', '1.2.3', 'specific version stays exact'],
+  [
+    '',
+    '1.2.3',
+    '1.2.3',
+    'manifest needs specific version, unchanged',
+  ],
+  ['1.2', '1.2', '1.2', 'got exactly what we wanted, unchanged'],
+]
+
+t.test('save-exact registry cases', t => {
+  t.plan(saveExactCases.length)
+  for (const [
+    bareSpec,
+    existing,
+    expect,
+    comment,
+  ] of saveExactCases) {
+    const spec = Spec.parse('@x/y', bareSpec)
+    t.equal(
+      calculateSaveValue('registry', spec, existing, '1.2.3', true),
+      expect,
+      comment,
+    )
+  }
+})
+
+t.test('save-exact with non-registry type', t => {
+  const s = Spec.parse('x', 'github:a/b')
+  t.equal(
+    calculateSaveValue('git', s, 'a/b', '1.2.3', true),
+    'github:a/b',
+    'non-registry type unaffected by saveExact',
+  )
+  t.end()
+})
+
+t.test('save-exact with catalog spec', t => {
+  const s = Spec.parse('typescript', 'catalog:dev', {
+    catalog: {},
+    catalogs: { dev: { typescript: 'npm:typescript@^5.0.0' } },
+    registry: 'https://registry.npmjs.org/',
+    registries: {},
+  })
+  t.equal(
+    calculateSaveValue('registry', s, undefined, '5.9.3', true),
+    'catalog:dev',
+    'catalog spec preserved even with saveExact',
+  )
+  t.end()
+})

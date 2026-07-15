@@ -626,6 +626,12 @@ export const definition = j
       description: `Save installed packages to a package.json file as
                     devDependencies`,
     },
+    'save-exact': {
+      short: 'E',
+      description: `Save installed packages to package.json with an exact
+                    version rather than using the default semver range
+                    operator (e.g. \`1.2.3\` instead of \`^1.2.3\`).`,
+    },
     'save-optional': {
       short: 'O',
       description: `Save installed packages to a package.json file as

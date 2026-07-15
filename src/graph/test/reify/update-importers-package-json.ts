@@ -682,4 +682,59 @@ t.test('updatePackageJson', async t => {
       )
     },
   )
+
+  await t.test('save-exact saves exact versions', async t => {
+    const testRootMani = {
+      name: 'exact-root',
+      version: '1.0.0',
+    }
+
+    const testGraph = new Graph({
+      mainManifest: testRootMani,
+      projectRoot: t.testdirName,
+    })
+    const testRoot = testGraph.mainImporter
+
+    // Dependency resolves to version 4.0.0
+    const abbrevMani = { name: 'abbrev', version: '4.0.0' }
+    // Bare spec with no version (like running `vlt i abbrev`)
+    const abbrevSpec = Spec.parse('abbrev')
+    const abbrev = testGraph.addNode(
+      undefined,
+      abbrevMani,
+      abbrevSpec,
+      abbrevMani.name,
+      abbrevMani.version,
+    )
+    testGraph.addEdge('prod', abbrevSpec, testRoot, abbrev)
+
+    updatePackageJson({
+      packageJson,
+      graph: testGraph,
+      saveExact: true,
+      add: new Map([
+        [
+          testRoot.id,
+          new Map([
+            [
+              'abbrev',
+              asDependency({
+                spec: abbrevSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+    })()
+
+    const res = retrieveManifestResult()
+    t.strictSame(res.length, 1, 'should have been called once')
+    // The key assertion: should be 4.0.0 (exact), NOT ^4.0.0 (caret)
+    t.strictSame(
+      res[0]?.[0]?.dependencies?.abbrev,
+      '4.0.0',
+      'should save exact version without caret prefix',
+    )
+  })
 })

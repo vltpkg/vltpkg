@@ -410,6 +410,11 @@ Object {
     "short": "D",
     "type": "boolean",
   },
+  "save-exact": Object {
+    "description": "Save installed packages to package.json with an exact version rather than using the default semver range operator (e.g. \`1.2.3\` instead of \`^1.2.3\`).",
+    "short": "E",
+    "type": "boolean",
+  },
   "save-optional": Object {
     "description": "Save installed packages to a package.json file as optionalDependencies",
     "short": "O",
@@ -595,6 +600,7 @@ Array [
   "--registries=<name=url>",
   "--registry=<url>",
   "--save-dev",
+  "--save-exact",
   "--save-optional",
   "--save-peer",
   "--save-prod",
@@ -657,6 +663,7 @@ Array [
   "registries",
   "registry",
   "save-dev",
+  "save-exact",
   "save-optional",
   "save-peer",
   "save-prod",
