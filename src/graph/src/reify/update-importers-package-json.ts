@@ -67,8 +67,7 @@ const addOrRemoveDeps = (
   nodeId: DepID,
   graph: Graph,
   addOrRemove?:
-    | AddImportersDependenciesMap
-    | RemoveImportersDependenciesMap,
+    AddImportersDependenciesMap | RemoveImportersDependenciesMap,
   saveExact?: boolean,
   savePrefix?: string,
 ): NormalizedManifest | undefined => {
