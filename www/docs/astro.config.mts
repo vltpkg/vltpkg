@@ -96,7 +96,10 @@ export default defineConfig({
               label: 'Source',
               url: 'https://github.com/vltpkg/vltpkg',
             },
-            { label: 'npm', url: 'https://www.npmjs.com/package/vlt' },
+            {
+              label: 'npm',
+              url: 'https://www.npmjs.com/package/vlt',
+            },
           ],
           rawContent: true,
         }),
