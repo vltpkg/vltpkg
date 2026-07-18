@@ -60,7 +60,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "bugs": {
     "url": "https://github.com/vltpkg/vltpkg/issues"
