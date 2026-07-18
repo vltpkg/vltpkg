@@ -9,6 +9,8 @@ tmp
 /.turbo
 /docs
 /node_modules
+# install-generated skill mounts (vltpkg/vltpkg#1540)
+/skills
 /scripts/fixtures/
 /results/
 
