@@ -1,37 +1,78 @@
 # dss-query skill evals
 
-Regression tests for the [dss-query](../SKILL.md) agent skill. Each
-case runs a real headless Claude Code session (`claude -p`) from the
-repo root — the same way users hit the skill — and grades the
-transcript deterministically (no LLM judge):
+How we evaluate the [dss-query](../SKILL.md) agent skill:
 
-| Check                                                                | How                                                        |
-| -------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Skill triggers when it should (and stays quiet when it shouldn't)    | Skill `tool_use` events in the stream-json transcript      |
-| Generated selectors are valid DSS                                    | `@vltpkg/dss-parser` `parse()` throws on invalid selectors |
-| Query has the expected shape / explanation covers the right concepts | regex over extracted selectors / response text             |
+Claude's skill-creator plugin "Evaluate a skill" decomposes into three
+different measurements with different levels of rigor
 
-## Run
+| Layer                  | Question                                                | Method                                                                                      | LLM involved?         | CI-gateable?                                |
+| ---------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------- |
+| 1. Content correctness | Are the skill's documented selectors valid and current? | Extract selectors from SKILL.md/REFERENCE.md, parse + execute against the real query engine | No                    | Yes — deterministic                         |
+| 2. Content efficacy    | Does the skill make model output measurably better?     | With-skill vs baseline differential, graded deterministically                               | As subject, not judge | Not as a hard gate (single-sample variance) |
+| 3. Trigger efficacy    | Does the skill activate when it should?                 | Repeated trigger-rate sampling on the production model                                      | Yes, unavoidably      | No — probabilistic, monitor only            |
 
-```bash
-cd src/query/skills/dss-query/evals
-node run.ts
-```
+Two principles behind this split, learned the hard way:
 
-Requirements: `claude` CLI on PATH with working auth, Node ≥22.18
-(built-in TypeScript type stripping). Each case is a live agent run —
-expect ~30–60s and normal API cost per case. For cheaper sweeps:
+- **Never use an LLM as the judge of a skill written for that LLM** —
+  grade with deterministic checks (parse, execute, regex). The LLM may
+  be the _subject_ of an eval, never its grader.
+- **A skill's value is its lift over baseline.** A strong model may
+  already know the domain (correctness lift ≈ 0) while the skill still
+  earns its keep on response style, concision, and latency. Only a
+  with/without differential reveals which.
 
-```bash
-CLAUDE_EVAL_MODEL=haiku node run.ts
-```
+## Layer 2: the efficacy differential (primary loop)
+
+Lives in [`../../dss-query-workspace/`](../../dss-query-workspace/)
+(gitignored). Test prompts + deterministic assertions are defined in
+[evals.json](evals.json). Each iteration:
+
+1. For every eval, spawn two subagents in the same turn: one told to
+   read and follow the live SKILL.md (**force-loaded** — this removes
+   the trigger confound, see below), one baseline (no skill, or a
+   snapshot of the pre-edit skill when iterating).
+2. Grade every answer with [grade.mjs](grade.mjs) (run from
+   `src/query`:
+   `node skills/dss-query/evals/grade.mjs <iteration-dir>`) — no LLM:
+   - extract selectors from the answer (`vlt query '…'` and bare
+     code-block selectors);
+   - every selector must **parse** via `@vltpkg/dss-parser`;
+   - structural selectors must **execute** via `Query.search()`
+     against the in-memory fixture graph
+     (`src/query/test/fixtures/graph.ts`). Selectors using `:outdated`
+     (registry fetch) or security pseudo-selectors (need the Socket
+     archive) are parse-checked only, so grading stays offline.
+     Comma-separated selectors are split at the top level first —
+     multi-selector lists enable the engine's loose mode, which
+     silently swallows invalid segments;
+   - per-eval regex assertions (expected shape, style contract,
+     required caveats).
+3. Aggregate with skill-creator's `aggregate_benchmark` and review
+   outputs in its eval viewer; human feedback drives the next skill
+   edit, then re-run with the pre-edit snapshot as baseline.
+
+Read the benchmark honestly: pass-rate delta is the skill's
+correctness lift; time/token deltas are its efficiency cost/benefit;
+assertions that pass in **both** configs are non-discriminating — they
+can't detect skill regressions on that model (but may on weaker ones).
+
+## Layer 1: doc-selector validation
+
+Machinery exists in [grade.mjs](grade.mjs) (parse + offline execute);
+a standalone sweep that extracts every selector from
+SKILL.md/REFERENCE.md and validates it the same way is the natural CI
+gate — it catches the regression that actually bites: the query engine
+changes and the skill's documented examples silently go stale.
 
 ## Adding cases
 
-Add to [cases.ts](cases.ts). Prefer `expectSelector` (deterministic)
-over `expectText`; when a trigger phrase is added to the skill's
-frontmatter description, add a matching trigger case here — the
-description is the contract these evals test.
+Add to [evals.json](evals.json). Prefer deterministic assertions
+(selector parses, executes, matches shape) over prose matching; make
+prompts realistic (casual phrasing, a wrong attempt to correct,
+project context) rather than textbook questions; and verify any
+factual claim an assertion encodes against the engine source first —
+e.g. `:license()` takes only category kinds, so an eval expecting
+`:license(mit)` would grade correct answers as failures.
 
 This directory is excluded from the published `@vltpkg/query` package
 (see the `files` field in `package.json`) — it's repo tooling, not
