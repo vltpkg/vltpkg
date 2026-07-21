@@ -89,7 +89,7 @@ export default defineConfig({
         starlightLlmsTxt({
           projectName: 'vlt',
           description:
-            'vlt (pronounced /vōlt/) is a next-generation platform for JavaScript/TypeScript.',
+            'vlt (pronounced /vōlt/) is the platform built for JavaScript and TypeScript.',
           details: 'Develop. Run. Distribute.',
           optionalLinks: [
             {
