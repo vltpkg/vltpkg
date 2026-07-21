@@ -65,9 +65,7 @@ export type DistTagRmResult = {
 }
 
 export type CommandResult =
-  | DistTagLsResult
-  | DistTagAddResult
-  | DistTagRmResult
+  DistTagLsResult | DistTagAddResult | DistTagRmResult
 
 const isLsResult = (r: CommandResult): r is DistTagLsResult =>
   'tags' in r

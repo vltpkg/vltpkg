@@ -21,8 +21,7 @@ export const Characters = {
 } as const
 
 export type Character =
-  | (typeof Characters)[keyof typeof Characters]
-  | (string & {})
+  (typeof Characters)[keyof typeof Characters] | (string & {})
 
 export const Parts = {
   Start: 'start',
