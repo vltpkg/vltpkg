@@ -104,12 +104,14 @@ export default defineConfig({
         {
           label: 'CLI',
           collapsed: true,
-          autogenerate: { directory: 'cli' },
           items: [
+            'cli',
             {
               label: 'API Reference',
               collapsed: true,
-              autogenerate: { directory: TypedocPlugin.directory },
+              autogenerate: {
+                directory: 'packages',
+              },
             },
           ],
         },
@@ -120,7 +122,7 @@ export default defineConfig({
     sitemap({
       i18n: {
         defaultLocale: 'en',
-        locales: { en: 'en-US' },
+        locales: { en: 'en-CA' },
       },
     }),
     sitemapAlias(),
