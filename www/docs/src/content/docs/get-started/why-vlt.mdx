@@ -5,34 +5,38 @@ sidebar:
   order: 2
 ---
 
-vlt is the package registry built for JavaScript: a home for the
-packages your team installs and publishes, engineered around the
-dependency graph. A package manager with secure defaults and a CLI for
-exploring that graph come with it, but the registry is the foundation
-everything else builds on.
+Most registries treat your packages as files to store. vlt treats them
+as a dependency graph to understand, and builds everything else on top
+of that.
 
-Install the same npm packages in less time, block malicious
+That is what makes vlt the package registry built for JavaScript:
+install the same npm packages in less time, block malicious
 dependencies before they reach your builds, publish privately, and
-trace every relationship in your dependency graph ...all without
+query every relationship in your graph. A package manager with secure
+defaults and a CLI for exploring that graph come with it, all without
 changing the tools your team already uses.
 
 ## A new package registry
 
-JavaScript packages are not just artifacts. They form enormous,
-dynamic dependency graphs that affect every install, build, and
-deployment. Most registry infrastructure was designed to store files
-instead of empowering developers to easily understand
-[the relationships between them](https://www.vlt.io/blog/the-massive-hole-in-the-npm-ecosystem).
+JavaScript packages aren't just artifacts. They form enormous, dynamic
+dependency graphs that decide what actually runs on every install,
+build, and deployment, and most registry infrastructure was built to
+[store files, not to understand those relationships](https://www.vlt.io/blog/the-massive-hole-in-the-npm-ecosystem).
+
+When the registry understands the graph, the rest follows. Speed,
+security, and observability become properties of the infrastructure
+instead of features bolted onto a file store: vlt can flag a malicious
+dependency three levels deep, prove a published package matches its
+source, and turn a question about your dependencies into an
+enforceable policy.
 
 ## Motivation
 
 > We're doing this because we expect more from the systems we've
 > always counted on to host and distribute our software.
 
-vlt is built around the JavaScript dependency graph from the ground
-up, so delivery, security, and observability all come from
-understanding those relationships rather than bolting features onto a
-file store.
+The team behind vlt has spent years building and maintaining the tools
+the ecosystem runs on. vlt is where that experience goes next.
 
 ## Move fast without changing your tools
 
@@ -105,6 +109,15 @@ with selectors designed specifically for JavaScript dependencies.
   [graph transformations](https://www.vlt.io/blog/introducing-graph-modifiers),
   blocking dependencies based on package properties, relationships, or
   security metadata.
+
+## Built in the open
+
+vlt's own stack is open source, built by a team that has created and
+maintained ecosystem projects for years. That includes the vlt CLI and
+its supporting packages, [vsr](https://github.com/vltpkg/vsr), a
+serverless npm-compatible registry, and
+[reproduce](https://github.com/vltpkg/reproduce) for verifying package
+integrity.
 
 ## The private registry built for JavaScript teams
 
