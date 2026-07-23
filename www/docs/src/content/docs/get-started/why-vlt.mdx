@@ -6,149 +6,111 @@ sidebar:
 ---
 
 Most registries treat your packages as files to store. vlt treats them
-as a dependency graph to understand, and builds everything else on top
-of that.
+as a dependency graph to understand, and builds everything else on
+that.
 
-That is what makes vlt the package registry built for JavaScript:
+That's what makes vlt the package registry built for JavaScript:
 install the same npm packages in less time, block malicious
 dependencies before they reach your builds, publish privately, and
-query every relationship in your graph. A package manager with secure
-defaults and a CLI for exploring that graph come with it, all without
-changing the tools your team already uses.
+query every relationship in your graph, all without changing the tools
+your team already uses.
 
 ## A new package registry
 
-JavaScript packages aren't just artifacts. They form enormous, dynamic
-dependency graphs that decide what actually runs on every install,
-build, and deployment, and most registry infrastructure was built to
-[store files, not to understand those relationships](https://www.vlt.io/blog/the-massive-hole-in-the-npm-ecosystem).
-
-When the registry understands the graph, the rest follows. Speed,
-security, and observability become properties of the infrastructure
-instead of features bolted onto a file store: vlt can flag a malicious
-dependency three levels deep, prove a published package matches its
-source, and turn a question about your dependencies into an
-enforceable policy.
-
-## Motivation
+JavaScript packages aren't just files. They form dependency graphs
+that decide what runs on every install, build, and deployment, yet
+most registries were built to
+[store files, not understand those relationships](https://www.vlt.io/blog/the-massive-hole-in-the-npm-ecosystem).
+When the registry understands the graph, speed, security, and
+observability become properties of the infrastructure, not features
+bolted onto a file store.
 
 > We're doing this because we expect more from the systems we've
 > always counted on to host and distribute our software.
 
-The team behind vlt has spent years building and maintaining the tools
-the ecosystem runs on. vlt is where that experience goes next.
+The team behind vlt has built and maintained the tools the ecosystem
+runs on for years. vlt is where that experience goes next.
 
 ## Move fast without changing your tools
 
-vlt serves npm-compatible packages through infrastructure optimized
-specifically for JavaScript package metadata and installation
-patterns. You reduce download size, improve cache efficiency, and cut
-CI time while continuing to use the tools your team already knows.
+vlt serves npm-compatible packages through infrastructure tuned for
+JavaScript metadata and install patterns, cutting download size, cache
+misses, and CI time.
 
-- **First-class support for JavaScript & TypeScript projects.**
-  Whether you use Next, Vue, or Svelte, we run our benchmarks against
-  real projects for those frameworks.
-- **The receipts, on clean installs.** Across the benchmark suite, the
-  vlt registry serves the same packages 3–6x faster than AWS
-  CodeArtifact and 4–9x faster than GitHub Packages, and stays ahead
-  of JFrog and the public npm registry on typical framework apps (npm:
-  Astro 1.7x, Svelte 1.6x, Vue 1.25x). Numbers move daily, so see the
-  [live registry benchmarks](https://benchmarks.vlt.sh/#/registries/registry-clean).
-- **Slimmer packuments.** The vlt registry serves packuments 76%
-  smaller than the ten thousand most downloaded npm packages, a
-  problem big enough that packument bloat
-  [blocked a popular library's releases for a month](https://www.vlt.io/blog/packument-size-limits).
+- **Real-project benchmarks.** We measure against actual Next, Vue,
+  and Svelte apps.
+- **Faster clean installs.** vlt serves the same packages 3–6x faster
+  than AWS CodeArtifact and 4–9x faster than GitHub Packages, and
+  leads npm on typical framework apps (Astro 1.7x, Svelte 1.6x, Vue
+  1.25x). Numbers move daily; see the
+  [live benchmarks](https://benchmarks.vlt.sh/#/registries/registry-clean).
+- **Slimmer packuments.** 76% smaller than the ten thousand
+  most-downloaded npm packages, bloat big enough to have
+  [blocked a library's releases for a month](https://www.vlt.io/blog/packument-size-limits).
 
 ## Stop unsafe packages before they reach your builds
 
-Every public package request passes through a security layer that can
-identify known malware and vulnerabilities before the package is
-served. vlt also reduces install-time risk with safer package-manager
-defaults and enforceable dependency policies.
+Every public package request passes through a security layer that
+flags known malware and vulnerabilities before the package is served.
 
-- **Registry protection.** Known malicious packages are blocked before
-  delivery, backed by continuous advisory and malware intelligence, on
-  a safe npm mirror.
-- **Safer installation.** Our CLI separates run and build steps
-  through a two-phase install (first download, then opt-in build), so
-  potentially malicious
+- **Registry protection.** Known-malicious packages blocked before
+  delivery, on a safe npm mirror backed by continuous malware
+  intelligence.
+- **Safer installs.** A two-phase install (download, then opt-in
+  build) restricts
   [lifecycle scripts](https://www.vlt.io/blog/npm-12-breaking-changes)
-  are restricted by default. These are secure defaults rather than
-  opt-in hardening.
-- **Integrity you can trust.** Content-addressable storage reverifies
+  by default. Secure defaults, not opt-in hardening.
+- **Verifiable integrity.** Content-addressable storage reverifies
   each package on every fetch.
 
-This matters more every release. Despite 63% download growth,
-[Sonatype's State of the Software Supply Chain 2026](https://www.sonatype.com/state-of-the-software-supply-chain/introduction)
-found 838,778 packages published with a CVSS 9.0+ score, and AI
-assisted development only compounds the pressure when human review and
-aging platforms can no longer keep up with the demands for release,
-recovery, and verification.[^1]
+It matters more every release: despite 63% download growth,
+[Sonatype's 2026 supply-chain report](https://www.sonatype.com/state-of-the-software-supply-chain/introduction)
+counted 838,778 packages published with a CVSS 9.0+ score.[^1]
 
-### Verify reproducibility, not just provenance
+### Reproducibility, not just provenance
 
-[vlt/reproduce](https://github.com/vltpkg/reproduce) is an open source
-tool that takes a different approach to trust: it downloads, rebuilds,
-and compares packages against their exact source commits to confirm a
-published artifact really matches its source. Not security theatre,
-but [verifiable outcomes](https://www.vlt.io/blog/reproducibility).
+[vlt/reproduce](https://github.com/vltpkg/reproduce) downloads,
+rebuilds, and compares packages against their exact source commits to
+confirm an artifact matches its source. Not security theatre, but
+[verifiable outcomes](https://www.vlt.io/blog/reproducibility).
 
 ## Understand every dependency
 
-Explore public packages and your project's fully resolved dependency
-graph. Trace why a dependency exists, inspect how specifications
-resolve, identify affected transitive packages, and query the graph
-with selectors designed specifically for JavaScript dependencies.
+Query your fully resolved dependency graph with selectors built for
+JavaScript:
 
 - **Explore.** Browse package and ecosystem relationships.
-- **Trace.** See why and how dependencies were resolved.
-- **Query.** Identify packages using Dependency Selector Syntax (DSS),
+- **Trace.** See why and how a dependency resolved.
+- **Query.** Match packages with Dependency Selector Syntax (DSS),
   including
-  [security insights powered by Socket](https://www.vlt.io/blog/insights-selectors).
-- **Control.** Turn those queries into enforceable CI rules and
-  [graph transformations](https://www.vlt.io/blog/introducing-graph-modifiers),
-  blocking dependencies based on package properties, relationships, or
-  security metadata.
+  [security insights from Socket](https://www.vlt.io/blog/insights-selectors).
+- **Control.** Turn queries into enforceable CI rules and
+  [graph transformations](https://www.vlt.io/blog/introducing-graph-modifiers).
 
 ## Built in the open
 
-vlt's own stack is open source, built by a team that has created and
-maintained ecosystem projects for years. That includes the vlt CLI and
-its supporting packages, [vsr](https://github.com/vltpkg/vsr), a
-serverless npm-compatible registry, and
-[reproduce](https://github.com/vltpkg/reproduce) for verifying package
-integrity.
+vlt's stack is open source, built by a team that has maintained
+ecosystem projects for years: the vlt CLI and its packages,
+[vsr](https://github.com/vltpkg/vsr) (a serverless npm-compatible
+registry), and [reproduce](https://github.com/vltpkg/reproduce).
 
 ## The private registry built for JavaScript teams
 
 [Publish scoped and private packages](https://www.vlt.io/blog/pack-publish-version),
 manage organizations and access, and give every developer and CI
-environment a consistent source for public and private JavaScript
-dependencies.
+environment one consistent source for public and private dependencies.
 
-vlt is a strong fit if:
-
-- you or your team publish packages that other critical software
-  depends on
-- you serve dependencies at scale (100k+ downloads/month) and need
-  them to stay fast and available
-- you want risky lifecycle scripts and unvetted dependencies contained
-  by default, not by opt-in hardening
-- your organization struggles to keep frameworks and dependencies
-  current
-- you need every package and dependency accounted for, from local
-  installs through CI
+vlt is a strong fit if you publish packages others depend on, serve
+dependencies at scale, need risky scripts contained by default, or
+want every dependency accounted for from local installs through CI.
 
 See how it holds up on your own dependencies.
 [Start publishing.](https://www.vlt.io/sign-up)
 
 [^1]:
-    In 2025, attackers published ~455,000 malicious npm packages on
-    the npm registry. In September 2025, malicious actors used a mix
-    of phishing and browser wallet-hijacking to target the maintainers
-    of widely used open source packages with 2.6 billion daily
-    downloads, many of them building blocks for devtools and
-    libraries. A series of self-propagating worms then compromised
-    500-800 packages across two waves, breaching over 25,000 GitHub
-    repositories and exposing over 40,000 sensitive credentials across
-    AWS, Azure, and GCP environments.
+    In 2025, attackers published ~455,000 malicious npm packages. In
+    September 2025, phishing and wallet-hijacking campaigns targeted
+    maintainers of packages with 2.6 billion daily downloads, and
+    self-propagating worms compromised 500-800 packages across two
+    waves, breaching 25,000+ repositories and exposing 40,000+
+    credentials across AWS, Azure, and GCP.
