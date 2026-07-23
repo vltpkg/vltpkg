@@ -9,6 +9,7 @@ import * as TypedocPlugin from './src/plugins/typedoc.ts'
 import { sitemapAlias } from './src/plugins/sitemap.ts'
 import { readFileSync } from 'node:fs'
 import starlightLinksValidator from 'starlight-links-validator'
+import starlightLlmsTxt from 'starlight-llms-txt'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -82,7 +83,27 @@ export default defineConfig({
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
       },
-      plugins: [TypedocPlugin.plugin, starlightLinksValidator()],
+      plugins: [
+        TypedocPlugin.plugin,
+        starlightLinksValidator(),
+        starlightLlmsTxt({
+          projectName: 'vlt',
+          description:
+            'vlt (pronounced /vōlt/) is the platform built for JavaScript and TypeScript.',
+          details: 'Develop. Run. Distribute.',
+          optionalLinks: [
+            {
+              label: 'Source',
+              url: 'https://github.com/vltpkg/vltpkg',
+            },
+            {
+              label: 'npm',
+              url: 'https://www.npmjs.com/package/vlt',
+            },
+          ],
+          rawContent: true,
+        }),
+      ],
       sidebar: [
         {
           label: 'Client',
