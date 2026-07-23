@@ -116,7 +116,7 @@ export default defineConfig({
           autogenerate: { directory: 'cli' },
         },
         {
-          label: 'Packages',
+          label: 'API Reference',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
         },
