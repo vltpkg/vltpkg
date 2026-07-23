@@ -1302,3 +1302,78 @@ t.test('node-gyp shim injection into PATH', async t => {
     },
   )
 })
+
+t.test('exec bg FORCE_COLOR respects isTTY', async t => {
+  const cwd = t.testdir({
+    node_modules: { '.bin': {} },
+  })
+
+  const printForceColor = `${node} -p "process.env.FORCE_COLOR"`
+
+  t.test('color=true with isTTY=true sets FORCE_COLOR=1', async t => {
+    const originalIsTTY = process.stdout.isTTY
+    t.teardown(() => {
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: originalIsTTY,
+        writable: true,
+        configurable: true,
+      })
+    })
+    Object.defineProperty(process.stdout, 'isTTY', {
+      value: true,
+      writable: true,
+      configurable: true,
+    })
+
+    const result = await exec({
+      arg0: printForceColor,
+      cwd,
+      projectRoot: cwd,
+      color: true,
+      'script-shell': true,
+    })
+    t.equal(result.status, 0)
+    t.equal(result.stdout.trim(), '1')
+  })
+
+  t.test(
+    'color=true with isTTY=undefined sets FORCE_COLOR=0',
+    async t => {
+      const originalIsTTY = process.stdout.isTTY
+      t.teardown(() => {
+        Object.defineProperty(process.stdout, 'isTTY', {
+          value: originalIsTTY,
+          writable: true,
+          configurable: true,
+        })
+      })
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      })
+
+      const result = await exec({
+        arg0: printForceColor,
+        cwd,
+        projectRoot: cwd,
+        color: true,
+        'script-shell': true,
+      })
+      t.equal(result.status, 0)
+      t.equal(result.stdout.trim(), '0')
+    },
+  )
+
+  t.test('color=false always sets FORCE_COLOR=0', async t => {
+    const result = await exec({
+      arg0: printForceColor,
+      cwd,
+      projectRoot: cwd,
+      color: false,
+      'script-shell': true,
+    })
+    t.equal(result.status, 0)
+    t.equal(result.stdout.trim(), '0')
+  })
+})

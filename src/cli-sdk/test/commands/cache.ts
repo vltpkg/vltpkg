@@ -9,7 +9,6 @@ import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { ViewOptions } from '../../src/view.ts'
 
 const logged: unknown[][] = []
 const stdout = (...a: unknown[]) => logged.push(a)
@@ -89,10 +88,7 @@ t.test('add', async t => {
 
   const { command, CacheView } = await mockCommand(t)
 
-  new CacheView(
-    {} as unknown as ViewOptions,
-    {} as unknown as LoadedConfig,
-  )
+  new CacheView({}, {} as unknown as LoadedConfig)
   const result = await command(conf)
   t.equal(result, undefined)
   t.equal(requested, true)
@@ -125,10 +121,7 @@ t.test('delete-all', async t => {
   }
 
   const { command, CacheView } = await mockCommand(t)
-  new CacheView(
-    {} as unknown as ViewOptions,
-    {} as unknown as LoadedConfig,
-  )
+  new CacheView({}, {} as unknown as LoadedConfig)
   await command({
     positionals: ['delete-all'],
     options: {
@@ -220,10 +213,7 @@ const createCache = (t: Test) => {
 t.test('delete', async t => {
   const dir = createCache(t)
   const { command, CacheView } = await mockCommand(t)
-  new CacheView(
-    {} as unknown as ViewOptions,
-    {} as unknown as LoadedConfig,
-  )
+  new CacheView({}, {} as unknown as LoadedConfig)
 
   const options = {
     cache: dir,
@@ -354,7 +344,7 @@ t.test('ls', async t => {
     options,
   } as unknown as LoadedConfig
 
-  new CacheView({} as unknown as ViewOptions, conf)
+  new CacheView({}, conf)
 
   const result = await command(conf)
   if (!result) throw new Error('no result??')
@@ -389,10 +379,7 @@ t.test('ls', async t => {
 t.test('human view coverage bits', async t => {
   const { CacheView } = await mockCommand(t)
 
-  const view = new CacheView(
-    {} as unknown as ViewOptions,
-    {} as unknown as LoadedConfig,
-  )
+  const view = new CacheView({}, {} as unknown as LoadedConfig)
 
   view.stdout('hello', 'world')
 })

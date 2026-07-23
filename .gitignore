@@ -3,6 +3,7 @@
 .env.production
 .build-*/
 *.tsbuildinfo
+/infra/**/*.tgz
 tmp
 
 /.turbo
@@ -66,7 +67,7 @@ tmp
 /www/**/*.d.mts.map
 /www/*/node_modules
 /www/*/scripts/fixtures/
-
+/www/docs/plans/**
 /scripts/*.js
 /scripts/*.js.map
 /scripts/*.d.ts
@@ -75,3 +76,6 @@ knip.js
 knip.js.map
 knip.d.ts
 knip.d.ts.map
+
+.opencode.jsonc*
+.opencode/*

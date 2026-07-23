@@ -38,7 +38,7 @@ type PackageReportData = {
 
 **Malware/threats**: `:malware`, `:malware(critical|high|medium|low)`, `:obfuscated`, `:eval`, `:shell`, `:scripts`
 
-**Vulnerabilities**: `:cve(CVE-ID)`, `:cwe(CWE-ID)`, `:severity(level)`, `:deprecated`
+**Vulnerabilities**: `:cve` (any CVE), `:cve(CVE-ID)`, `:cwe` (any CWE), `:cwe(CWE-ID)`, `:severity(level)`, `:deprecated`
 
 **Behavioral**: `:fs`, `:network`, `:env`, `:native`, `:dynamic`, `:debug`, `:entropic`, `:minified`
 

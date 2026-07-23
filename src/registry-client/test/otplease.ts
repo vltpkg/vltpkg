@@ -61,6 +61,20 @@ t.test('cannot auth if ipaddress rejected', async t => {
   )
 })
 
+t.test('bearer www-authenticate prompts to log in', async t => {
+  await t.rejects(
+    otplease(mockClient, {}, {
+      headers: {
+        'www-authenticate': 'Bearer',
+      },
+    } as unknown as Dispatcher.ResponseData),
+    {
+      message:
+        'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
+    },
+  )
+})
+
 t.test('unknown www-authenticate challenges', async t => {
   await t.rejects(
     otplease(mockClient, {}, {
@@ -102,7 +116,7 @@ t.test('www-authenticate otp challenge', async t => {
   } as unknown as Dispatcher.ResponseData)
   t.strictSame(doneUrlsOpened, ['done url'])
   t.strictSame(urlsOpened, ['login url'])
-  t.match(result, { otp: 'token' })
+  t.match(result, { retry: { otp: 'token' } })
 })
 
 t.test('npm-notice prompting for OTP', async t => {
@@ -122,7 +136,7 @@ t.test('npm-notice prompting for OTP', async t => {
     'Open {login-url} to use your security key for authentication or enter OTP from your authenticator app',
   ])
   t.strictSame(result, {
-    otp: 'OTP: ',
+    retry: { otp: 'OTP: ' },
   })
 })
 
@@ -133,6 +147,23 @@ t.test('body prompting for OTP', async t => {
       text: async () => 'oNe-TiME pAsS',
     },
   } as unknown as Dispatcher.ResponseData
-  const opts = await otplease(mockClient, {}, resp)
-  t.equal(opts?.otp, 'oNe-TiME pAsS')
+  const result = await otplease(mockClient, {}, resp)
+  t.ok(result && 'retry' in result)
+  if (result && 'retry' in result) {
+    t.equal(result.retry.otp, 'oNe-TiME pAsS')
+  }
+})
+
+t.test('non-OTP 401 returns consumed body', async t => {
+  const resp = {
+    headers: {},
+    body: {
+      text: async () => '{"error":"You must be logged in"}',
+    },
+  } as unknown as Dispatcher.ResponseData
+  const result = await otplease(mockClient, {}, resp)
+  t.ok(result && 'bodyConsumed' in result)
+  if (result && 'bodyConsumed' in result) {
+    t.equal(result.bodyConsumed, '{"error":"You must be logged in"}')
+  }
 })

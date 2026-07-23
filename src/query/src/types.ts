@@ -29,11 +29,19 @@ export type GraphSelectionState = {
   edges: Set<EdgeLike>
 }
 
+/**
+ * Callback that returns changed file paths for a given
+ * commitish reference. Used by the :diff() pseudo selector.
+ * The returned paths should be relative to the project root.
+ */
+export type DiffFilesProvider = (commitish: string) => Set<string>
+
 export type ParserState = {
   cancellable: () => Promise<void>
   collect: GraphSelectionState
   comment: string
   current: PostcssNode
+  diffFiles?: DiffFilesProvider
   hostContexts?: HostContextsMap
   importers: Set<NodeLike>
   initial: GraphSelectionState

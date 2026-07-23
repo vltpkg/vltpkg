@@ -333,18 +333,26 @@ const fixCliVariants = async (ws: Workspace) => {
 }
 
 const fixEngines = async (ws: Workspace) => {
+  if (ws.isRoot) {
+    delete ws.pj.engines
+    return
+  }
   ws.pj.engines ??= {}
-  ws.pj.engines.node = NODE_ENGINES
+  ws.pj.engines.node =
+    ws.pj.name === '@vltpkg/docs' ? '22.x' : NODE_ENGINES
 }
 
 const fixPackage = async (ws: Workspace, config: WorkspaceConfig) => {
-  ws.pj.engines ??= {}
-
   const relDirToWorkspace = relative(ROOT, ws.dir)
   ws.pj.repository = {
     type: 'git',
     url: 'git+https://github.com/vltpkg/vltpkg.git',
     ...(relDirToWorkspace ? { directory: relDirToWorkspace } : {}),
+  }
+
+  ws.pj.homepage = `https://github.com/vltpkg/vltpkg/tree/main/${ws.dirName}#readme`
+  ws.pj.bugs = {
+    url: 'https://github.com/vltpkg/vltpkg/issues',
   }
 
   ws.pj.author =

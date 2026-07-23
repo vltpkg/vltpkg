@@ -61,8 +61,5 @@ const nodes = {
 }
 
 for (const [key, val] of Object.entries(nodes)) {
-  t.matchSnapshot(
-    stringifyNode(val as unknown as NodeLike),
-    `should format ${key} node`,
-  )
+  t.matchSnapshot(stringifyNode(val), `should format ${key} node`)
 }

@@ -6,6 +6,8 @@ import {
   lte,
   eq,
   neq,
+  intersects,
+  subset,
   parse,
   parseRange,
 } from '@vltpkg/semver'
@@ -26,13 +28,19 @@ import {
   isStringNode,
   isTagNode,
 } from '@vltpkg/dss-parser'
-import { removeNode, removeQuotes } from './helpers.ts'
+import {
+  removeEdge,
+  removeNode,
+  removeQuotes,
+  removeUnlinkedNodes,
+} from './helpers.ts'
 import type { ParserState } from '../types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 
 export type SemverInternals = {
   semverValue: string
   semverFunction: SemverComparatorFn
+  semverRangeFunction: SemverRangeComparatorFn | undefined
   compareAttribute: SemverCompareAttribute
 }
 
@@ -44,13 +52,18 @@ export type SemverFunctionNames =
   | 'lte'
   | 'eq'
   | 'neq'
+  | 'intersects'
+  | 'subset'
 export type SemverComparatorFn = (
   version: Version | string,
   range: string,
 ) => boolean
+export type SemverRangeComparatorFn = (
+  r1: string,
+  r2: string,
+) => boolean
 export type SemverCompareAttribute =
-  | Pick<AttrInternals, 'attribute' | 'properties'>
-  | undefined
+  Pick<AttrInternals, 'attribute' | 'properties'> | undefined
 
 const semverFunctionNames = new Set([
   'satisfies',
@@ -60,6 +73,8 @@ const semverFunctionNames = new Set([
   'lte',
   'eq',
   'neq',
+  'intersects',
+  'subset',
 ])
 export const isSemverFunctionName = (
   name: string,
@@ -88,6 +103,14 @@ const semverFunctions = new Map<
   ['lte', lte],
   ['eq', eq],
   ['neq', neq],
+])
+
+const semverRangeFunctions = new Map<
+  SemverFunctionNames,
+  SemverRangeComparatorFn
+>([
+  ['intersects', intersects],
+  ['subset', subset],
 ])
 
 export const parseInternals = (
@@ -151,13 +174,17 @@ export const parseInternals = (
   }
 
   const semverFunction = semverFunctions.get(fnName)
+  const semverRangeFunction = semverRangeFunctions.get(fnName)
   // the following should never happen as long as the semver function names
   // type and Set are correctly mirroring each other values
   /* c8 ignore start */
-  if (!semverFunction) {
+  if (!semverFunction && !semverRangeFunction) {
     throw error('Invalid semver function name', {
       found: fnName,
-      validOptions: Array.from(semverFunctions.keys()),
+      validOptions: [
+        ...Array.from(semverFunctions.keys()),
+        ...Array.from(semverRangeFunctions.keys()),
+      ],
     })
   }
   /* c8 ignore stop */
@@ -188,7 +215,8 @@ export const parseInternals = (
 
   return {
     semverValue,
-    semverFunction,
+    semverFunction: semverFunction ?? satisfies,
+    semverRangeFunction,
     compareAttribute,
   }
 }
@@ -206,7 +234,46 @@ export const semverParser = async (state: ParserState) => {
     })
   }
 
-  const { semverValue, semverFunction, compareAttribute } = internals
+  const {
+    semverValue,
+    semverFunction,
+    semverRangeFunction,
+    compareAttribute,
+  } = internals
+
+  // Range-vs-range functions (subset, intersects) operate on edges by default
+  if (semverRangeFunction) {
+    if (compareAttribute) {
+      // Compare the semverValue against a manifest property value as ranges
+      for (const node of state.partial.nodes) {
+        const compareValues = getManifestPropertyValues(
+          node,
+          compareAttribute.properties,
+          compareAttribute.attribute,
+        )
+        const compareValue = compareValues?.[0]
+        if (
+          !compareValue ||
+          !semverRangeFunction(compareValue, semverValue)
+        ) {
+          removeNode(state, node)
+        }
+      }
+    } else {
+      // Default: operate on edges using bareSpec
+      for (const edge of state.partial.edges) {
+        const edgeRange = edge.spec.semver ?? edge.spec.bareSpec
+        if (
+          !edgeRange ||
+          !semverRangeFunction(edgeRange, semverValue)
+        ) {
+          removeEdge(state, edge)
+        }
+      }
+      removeUnlinkedNodes(state)
+    }
+    return state
+  }
 
   for (const node of state.partial.nodes) {
     if (compareAttribute) {

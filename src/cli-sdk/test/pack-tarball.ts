@@ -165,7 +165,6 @@ t.test('packTarball', async t => {
   })
 
   t.test('filter excludes all patterns correctly', async t => {
-    // Create a directory with all excluded file types
     const excludeDir = t.testdir({
       'exclude-test': {
         'package.json': JSON.stringify({
@@ -196,6 +195,9 @@ t.test('packTarball', async t => {
         '.gitignore': 'node_modules',
         '.npmignore': 'test',
         '.editorconfig': 'config',
+        'vlt.json': JSON.stringify({
+          registry: 'https://registry.npmjs.org',
+        }),
         'backup~': 'backup',
         'file.swp': 'swap',
         'index.js': 'console.log("included")',
@@ -217,17 +219,15 @@ t.test('packTarball', async t => {
     )
     t.ok(result.tarballData, 'should create tarball')
 
-    // Check files list directly from result
     const filesInTarball = result.files
 
-    // Should include package.json and index.js
     t.ok(
       filesInTarball.includes('package.json'),
       'package.json included',
     )
     t.ok(filesInTarball.includes('index.js'), 'index.js included')
 
-    // Should exclude all the patterns
+    // Always-excluded patterns
     t.notOk(
       filesInTarball.some(f => f.startsWith('.git/')),
       '.git excluded',
@@ -268,6 +268,7 @@ t.test('packTarball', async t => {
       filesInTarball.includes('.editorconfig'),
       '.editorconfig excluded',
     )
+    t.notOk(filesInTarball.includes('vlt.json'), 'vlt.json excluded')
     t.notOk(filesInTarball.includes('backup~'), 'backup~ excluded')
     t.notOk(filesInTarball.includes('file.swp'), 'file.swp excluded')
   })
@@ -384,6 +385,80 @@ t.test('packTarball', async t => {
       'index.js excluded by empty files field',
     )
   })
+
+  t.test(
+    'files field with directory name (no trailing slash)',
+    async t => {
+      const dirDir = t.testdir({
+        'dir-test': {
+          'package.json': JSON.stringify({
+            name: 'dir-test',
+            version: '1.0.0',
+            files: ['dist'],
+          }),
+          dist: {
+            'index.js': 'console.log("dist");',
+            'index.d.ts': 'export declare const x: number;',
+            nested: {
+              'helper.js': 'console.log("nested");',
+              'helper.d.ts': 'export declare function h(): void;',
+            },
+          },
+          src: {
+            'index.ts': 'export const x = 1;',
+          },
+          'README.md': '# Dir Test',
+        },
+      })
+
+      const dirPath = resolve(dirDir, 'dir-test')
+      const dirManifestContent = await readFile(
+        resolve(dirPath, 'package.json'),
+        'utf8',
+      )
+      const dirManifest = JSON.parse(dirManifestContent)
+      const dirConfig = createMockConfig(dirDir)
+
+      const result = await packTarball(
+        dirManifest,
+        dirPath,
+        dirConfig,
+      )
+      t.ok(result.tarballData, 'should create tarball')
+
+      const filesInTarball = result.files
+
+      t.ok(
+        filesInTarball.includes('package.json'),
+        'package.json included',
+      )
+      t.ok(
+        filesInTarball.includes('README.md'),
+        'README.md always included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/index.js'),
+        'dist/index.js included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/index.d.ts'),
+        'dist/index.d.ts included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/nested/helper.js'),
+        'dist/nested/helper.js included',
+      )
+      t.ok(
+        filesInTarball.includes('dist/nested/helper.d.ts'),
+        'dist/nested/helper.d.ts included',
+      )
+
+      t.notOk(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ files excluded',
+      )
+    },
+  )
 
   t.test('handles files field with directory patterns', async t => {
     // Create directory with directory patterns in files field
@@ -592,6 +667,38 @@ t.test('packTarball', async t => {
     )
     t.equal(result.name, 'main-package')
     t.equal(result.version, '1.0.0')
+
+    // resolvedManifest should have catalog specs replaced
+    const rm = result.resolvedManifest as Record<string, unknown>
+    const deps = rm.dependencies as Record<string, string>
+    const devDeps = rm.devDependencies as Record<string, string>
+    const optDeps = rm.optionalDependencies as Record<string, string>
+    const peerDeps = rm.peerDependencies as Record<string, string>
+    t.equal(
+      deps.react,
+      '^18.0.0',
+      'catalog: replaced in dependencies',
+    )
+    t.equal(
+      deps.lodash,
+      '^4.17.21',
+      'catalog: replaced in dependencies',
+    )
+    t.equal(
+      devDeps.typescript,
+      '^5.0.0',
+      'catalog:dev replaced in devDependencies',
+    )
+    t.equal(
+      optDeps.vue,
+      '^3.0.0',
+      'catalog:dev replaced in optionalDependencies',
+    )
+    t.equal(
+      peerDeps.jest,
+      '^29.0.0',
+      'catalog:test replaced in peerDependencies',
+    )
   })
 
   t.test('workspace spec error cases', async t => {
@@ -737,11 +844,6 @@ t.test('packTarball', async t => {
     t.equal(result.name, 'main-package')
     t.equal(result.version, '1.0.0')
 
-    // Verify that the packed tarball contains the resolved workspace versions
-    // We need to read the package.json from the tarball to verify the replacement
-    // Since the pack-tarball function restores the original package.json after packing,
-    // we can't directly check the file. Instead, we verify the function completed successfully
-    // which means the workspace specs were properly resolved without errors.
     t.ok(result.integrity, 'should have integrity hash')
     t.ok(result.shasum, 'should have shasum')
     t.ok(
@@ -749,6 +851,38 @@ t.test('packTarball', async t => {
       'should include package.json',
     )
     t.ok(result.files.includes('index.js'), 'should include index.js')
+
+    // resolvedManifest should have workspace specs replaced with actual versions
+    const rm = result.resolvedManifest as Record<string, unknown>
+    const deps = rm.dependencies as Record<string, string>
+    const devDeps = rm.devDependencies as Record<string, string>
+    const optDeps = rm.optionalDependencies as Record<string, string>
+    const peerDeps = rm.peerDependencies as Record<string, string>
+    t.equal(
+      deps['workspace-dep'],
+      '1.2.3',
+      'workspace:* replaced in dependencies',
+    )
+    t.equal(
+      deps['workspace-dep-2'],
+      '2.1.0',
+      'workspace:^2.0.0 replaced in dependencies',
+    )
+    t.equal(
+      devDeps['workspace-dev'],
+      '1.5.2',
+      'workspace:~1.5.0 replaced in devDependencies',
+    )
+    t.equal(
+      optDeps['workspace-optional'],
+      '0.9.0',
+      'workspace:* replaced in optionalDependencies',
+    )
+    t.equal(
+      peerDeps['workspace-peer'],
+      '3.1.0',
+      'workspace:^3.0.0 replaced in peerDependencies',
+    )
   })
 
   t.test(
@@ -1110,6 +1244,373 @@ t.test('publish-directory option', async t => {
       t.ok(result.tarballData)
       t.ok(result.files.includes('package.json'))
       t.ok(result.files.includes('index.js'))
+    },
+  )
+})
+
+t.test('publishConfig.directory from package.json', async t => {
+  await t.test(
+    'uses publishConfig.directory when no CLI flag is set',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'original-pkg',
+            version: '1.0.0',
+            publishConfig: {
+              directory: './.build-publish',
+            },
+          }),
+          '.build-publish': {
+            'package.json': JSON.stringify({
+              name: 'built-pkg',
+              version: '1.0.0',
+              bin: { vlt: './vlt.js' },
+            }),
+            'vlt.js': '#!/usr/bin/env node\nconsole.log("vlt")',
+          },
+        },
+      })
+
+      const originalDir = resolve(testdir, 'original-dir')
+
+      // No publish-directory CLI flag
+      const config = createMockConfig(testdir)
+
+      const manifest = {
+        name: 'original-pkg',
+        version: '1.0.0',
+        publishConfig: {
+          directory: './.build-publish',
+        },
+      }
+
+      const result = await packTarball(manifest, originalDir, config)
+
+      // Should use the manifest from .build-publish/
+      t.equal(
+        result.name,
+        'built-pkg',
+        'Should use name from publishConfig.directory manifest',
+      )
+      t.equal(result.version, '1.0.0')
+      t.ok(result.files.includes('vlt.js'))
+    },
+  )
+
+  await t.test(
+    'CLI flag overrides publishConfig.directory',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'original-pkg',
+            version: '1.0.0',
+            publishConfig: {
+              directory: './.build-publish',
+            },
+          }),
+          '.build-publish': {
+            'package.json': JSON.stringify({
+              name: 'build-pkg',
+              version: '1.0.0',
+            }),
+            'build.js': 'console.log("build")',
+          },
+        },
+        'cli-dir': {
+          'package.json': JSON.stringify({
+            name: 'cli-pkg',
+            version: '2.0.0',
+          }),
+          'cli.js': 'console.log("cli")',
+        },
+      })
+
+      const originalDir = resolve(testdir, 'original-dir')
+      const cliDir = resolve(testdir, 'cli-dir')
+
+      const config = createMockConfig(testdir, {
+        'publish-directory': cliDir,
+      })
+
+      const manifest = {
+        name: 'original-pkg',
+        version: '1.0.0',
+        publishConfig: {
+          directory: './.build-publish',
+        },
+      }
+
+      const result = await packTarball(manifest, originalDir, config)
+
+      // CLI flag should take precedence
+      t.equal(result.name, 'cli-pkg')
+      t.equal(result.version, '2.0.0')
+      t.ok(result.files.includes('cli.js'))
+    },
+  )
+
+  await t.test(
+    'throws when publishConfig.directory does not exist',
+    async t => {
+      const testdir = t.testdir({
+        'original-dir': {
+          'package.json': JSON.stringify({
+            name: 'test-pkg',
+            version: '1.0.0',
+            publishConfig: {
+              directory: './nonexistent',
+            },
+          }),
+        },
+      })
+
+      const originalDir = resolve(testdir, 'original-dir')
+      const config = createMockConfig(testdir)
+
+      const manifest = {
+        name: 'test-pkg',
+        version: '1.0.0',
+        publishConfig: {
+          directory: './nonexistent',
+        },
+      }
+
+      await t.rejects(
+        packTarball(manifest, originalDir, config),
+        /Publish directory does not exist/,
+      )
+    },
+  )
+})
+
+t.test('ignore file support', async t => {
+  t.test('.npmignore is read and respected', async t => {
+    const dir = t.testdir({
+      pkg: {
+        'package.json': JSON.stringify({
+          name: 'npmignore-test',
+          version: '1.0.0',
+        }),
+        '.npmignore': 'src\n*.log\n',
+        'index.js': 'module.exports = {}',
+        'debug.log': 'some log output',
+        src: {
+          'app.ts': 'export const x = 1',
+        },
+        lib: {
+          'app.js': 'const x = 1',
+        },
+      },
+    })
+
+    const pkgPath = resolve(dir, 'pkg')
+    const manifestContent = await readFile(
+      resolve(pkgPath, 'package.json'),
+      'utf8',
+    )
+    const manifest = JSON.parse(manifestContent)
+    const config = createMockConfig(dir)
+
+    const result = await packTarball(manifest, pkgPath, config)
+    const filesInTarball = result.files
+
+    t.ok(filesInTarball.includes('index.js'), 'index.js included')
+    t.ok(filesInTarball.includes('lib/app.js'), 'lib/app.js included')
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('src/')),
+      'src/ excluded by .npmignore',
+    )
+    t.notOk(
+      filesInTarball.includes('debug.log'),
+      '*.log excluded by .npmignore',
+    )
+    t.notOk(
+      filesInTarball.includes('.npmignore'),
+      '.npmignore itself excluded',
+    )
+  })
+
+  t.test(
+    '.gitignore is used as fallback when no .npmignore',
+    async t => {
+      const dir = t.testdir({
+        pkg: {
+          'package.json': JSON.stringify({
+            name: 'gitignore-test',
+            version: '1.0.0',
+          }),
+          '.gitignore': 'dist\n*.tmp\n',
+          'index.js': 'module.exports = {}',
+          'scratch.tmp': 'temp data',
+          dist: {
+            'bundle.js': 'bundled code',
+          },
+          src: {
+            'app.ts': 'export const x = 1',
+          },
+        },
+      })
+
+      const pkgPath = resolve(dir, 'pkg')
+      const manifestContent = await readFile(
+        resolve(pkgPath, 'package.json'),
+        'utf8',
+      )
+      const manifest = JSON.parse(manifestContent)
+      const config = createMockConfig(dir)
+
+      const result = await packTarball(manifest, pkgPath, config)
+      const filesInTarball = result.files
+
+      t.ok(filesInTarball.includes('index.js'), 'index.js included')
+      t.ok(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ included (not in .gitignore)',
+      )
+      t.notOk(
+        filesInTarball.some(f => f.startsWith('dist/')),
+        'dist/ excluded by .gitignore',
+      )
+      t.notOk(
+        filesInTarball.includes('scratch.tmp'),
+        '*.tmp excluded by .gitignore',
+      )
+    },
+  )
+
+  t.test('.npmignore takes precedence over .gitignore', async t => {
+    const dir = t.testdir({
+      pkg: {
+        'package.json': JSON.stringify({
+          name: 'precedence-test',
+          version: '1.0.0',
+        }),
+        '.npmignore': 'test\n',
+        '.gitignore': 'dist\ntest\n',
+        'index.js': 'module.exports = {}',
+        test: {
+          'test.js': 'test code',
+        },
+        dist: {
+          'bundle.js': 'bundled code',
+        },
+      },
+    })
+
+    const pkgPath = resolve(dir, 'pkg')
+    const manifestContent = await readFile(
+      resolve(pkgPath, 'package.json'),
+      'utf8',
+    )
+    const manifest = JSON.parse(manifestContent)
+    const config = createMockConfig(dir)
+
+    const result = await packTarball(manifest, pkgPath, config)
+    const filesInTarball = result.files
+
+    t.notOk(
+      filesInTarball.some(f => f.startsWith('test/')),
+      'test/ excluded by .npmignore',
+    )
+    // dist/ is in .gitignore but NOT in .npmignore — .npmignore takes precedence
+    t.ok(
+      filesInTarball.some(f => f.startsWith('dist/')),
+      'dist/ included (.gitignore ignored when .npmignore exists)',
+    )
+  })
+
+  t.test(
+    'files field takes precedence over ignore files',
+    async t => {
+      const dir = t.testdir({
+        pkg: {
+          'package.json': JSON.stringify({
+            name: 'files-precedence-test',
+            version: '1.0.0',
+            files: ['lib/'],
+          }),
+          '.npmignore': 'lib\n',
+          'index.js': 'module.exports = {}',
+          lib: {
+            'app.js': 'const x = 1',
+          },
+          src: {
+            'app.ts': 'export const x = 1',
+          },
+        },
+      })
+
+      const pkgPath = resolve(dir, 'pkg')
+      const manifestContent = await readFile(
+        resolve(pkgPath, 'package.json'),
+        'utf8',
+      )
+      const manifest = JSON.parse(manifestContent)
+      const config = createMockConfig(dir)
+
+      const result = await packTarball(manifest, pkgPath, config)
+      const filesInTarball = result.files
+
+      // files field wins: lib/ is included even though .npmignore says to exclude it
+      t.ok(
+        filesInTarball.some(f => f.startsWith('lib/')),
+        'lib/ included (files field overrides .npmignore)',
+      )
+      t.notOk(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ excluded (not in files field)',
+      )
+      t.notOk(
+        filesInTarball.includes('index.js'),
+        'index.js excluded (not in files field)',
+      )
+    },
+  )
+
+  t.test(
+    'no ignore files: all non-excluded files included',
+    async t => {
+      const dir = t.testdir({
+        pkg: {
+          'package.json': JSON.stringify({
+            name: 'no-ignore-test',
+            version: '1.0.0',
+          }),
+          'index.js': 'module.exports = {}',
+          '.editorconfig': 'root = true',
+          'config.yml': 'key: value',
+          src: {
+            'app.ts': 'export const x = 1',
+          },
+        },
+      })
+
+      const pkgPath = resolve(dir, 'pkg')
+      const manifestContent = await readFile(
+        resolve(pkgPath, 'package.json'),
+        'utf8',
+      )
+      const manifest = JSON.parse(manifestContent)
+      const config = createMockConfig(dir)
+
+      const result = await packTarball(manifest, pkgPath, config)
+      const filesInTarball = result.files
+
+      t.ok(filesInTarball.includes('index.js'), 'index.js included')
+      t.ok(
+        filesInTarball.includes('config.yml'),
+        'config.yml included (no ignore file to exclude it)',
+      )
+      t.notOk(
+        filesInTarball.includes('.editorconfig'),
+        '.editorconfig always excluded',
+      )
+      t.ok(
+        filesInTarball.some(f => f.startsWith('src/')),
+        'src/ included',
+      )
     },
   )
 })

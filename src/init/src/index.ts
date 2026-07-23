@@ -2,6 +2,12 @@ import { getUser } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
 import type { JSONObj } from '@vltpkg/registry-client'
 import type { NormalizedManifest } from '@vltpkg/types'
+import {
+  appendFileSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
 import { basename, resolve } from 'node:path'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 import { asError, normalizeManifest } from '@vltpkg/types'
@@ -35,12 +41,74 @@ export type JSONFileInfo<T extends JSONObj = JSONObj> = {
   data: T
 }
 
+export type IgnoreFileInfo = {
+  path: string
+}
+
+export type GitignoreFileInfo = IgnoreFileInfo
+
 export type InitFileResults = {
   manifest?: JSONFileInfo<NormalizedManifest>
-  // TODO: enable these if/when we do more than just the manifest
-  // Eg:
-  // workspaces?: JSONFileInfo
-  // config?: JSONFileInfo
+  gitignore?: IgnoreFileInfo
+  npmignore?: IgnoreFileInfo
+}
+
+const GITIGNORE_ENTRY = 'node_modules'
+const NPMIGNORE_ENTRY = 'vlt.json'
+
+/**
+ * Create or update a `.gitignore` file ensuring `node_modules` is listed.
+ * Returns `{ path }` of the file that was written, or `undefined` if the
+ * file already contained the entry and no changes were needed.
+ */
+export const ensureGitignore = (
+  cwd: string,
+): GitignoreFileInfo | undefined => {
+  const gitignorePath = resolve(cwd, '.gitignore')
+  if (!existsSync(gitignorePath)) {
+    writeFileSync(gitignorePath, `${GITIGNORE_ENTRY}\n`, 'utf8')
+    return { path: gitignorePath }
+  }
+  const content = readFileSync(gitignorePath, 'utf8')
+  const lines = content.split('\n').map(l => l.trim())
+  if (!lines.includes(GITIGNORE_ENTRY)) {
+    // Append with a leading newline to avoid joining onto an existing last line
+    const prefix = content.endsWith('\n') ? '' : '\n'
+    appendFileSync(
+      gitignorePath,
+      `${prefix}${GITIGNORE_ENTRY}\n`,
+      'utf8',
+    )
+    return { path: gitignorePath }
+  }
+  return undefined
+}
+
+/**
+ * Create or update a `.npmignore` file ensuring `vlt.json` is listed.
+ * Returns `{ path }` of the file that was written, or `undefined` if the
+ * file already contained the entry and no changes were needed.
+ */
+export const ensureNpmignore = (
+  cwd: string,
+): IgnoreFileInfo | undefined => {
+  const npmignorePath = resolve(cwd, '.npmignore')
+  if (!existsSync(npmignorePath)) {
+    writeFileSync(npmignorePath, `${NPMIGNORE_ENTRY}\n`, 'utf8')
+    return { path: npmignorePath }
+  }
+  const content = readFileSync(npmignorePath, 'utf8')
+  const lines = content.split('\n').map(l => l.trim())
+  if (!lines.includes(NPMIGNORE_ENTRY)) {
+    const prefix = content.endsWith('\n') ? '' : '\n'
+    appendFileSync(
+      npmignorePath,
+      `${prefix}${NPMIGNORE_ENTRY}\n`,
+      'utf8',
+    )
+    return { path: npmignorePath }
+  }
+  return undefined
 }
 
 export const init = async ({
@@ -75,5 +143,13 @@ export const init = async ({
 
   const indent = 2
   packageJson.write(cwd, data, indent)
-  return { manifest: { path, data } }
+
+  const gitignore = ensureGitignore(cwd)
+  const npmignore = ensureNpmignore(cwd)
+
+  return {
+    manifest: { path, data },
+    ...(gitignore ? { gitignore } : {}),
+    ...(npmignore ? { npmignore } : {}),
+  }
 }

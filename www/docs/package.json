@@ -12,6 +12,7 @@
     "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.12",
     "@astrojs/react": "^4.4.2",
+    "@astrojs/sitemap": "3.7.3",
     "@astrojs/starlight": "^0.30.6",
     "@astrojs/starlight-tailwind": "^3.0.1",
     "@astrojs/tailwind": "^5.1.5",
@@ -29,6 +30,7 @@
     "react-dom": "^18.3.1",
     "sharp": "^0.34.5",
     "starlight-links-validator": "^0.14.3",
+    "starlight-llms-txt": "0.7.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^3.4.18",
     "tailwindcss-animate": "^1.0.7",
@@ -57,7 +59,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22.22.0"
+    "node": "22.x"
   },
   "scripts": {
     "astro": "astro",
@@ -78,5 +80,9 @@
     "preview": "astro preview"
   },
   "prettier": "../../.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/www/docs#readme"
 }

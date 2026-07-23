@@ -77,6 +77,7 @@ t.test('registering the beforeExit event', async t => {
 
 t.test('deno', async t => {
   t.intercept(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     globalThis as typeof globalThis & { Deno?: any },
     'Deno',
     {
@@ -100,6 +101,7 @@ t.test('deno', async t => {
 
 t.test('deno + windows', async t => {
   t.intercept(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     globalThis as typeof globalThis & { Deno?: any },
     'Deno',
     {

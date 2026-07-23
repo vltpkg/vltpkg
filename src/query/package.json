@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/query",
   "description": "Query syntax parser that retrieves items from a graph",
-  "version": "1.0.0-rc.18",
+  "version": "1.0.0-rc.32",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -61,5 +61,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/query#readme"
 }

@@ -16,7 +16,6 @@ import type {
   Manifest,
   NodeLike,
 } from '@vltpkg/types'
-import type { SpecOptions } from '@vltpkg/spec'
 
 t.test('shorten', async t => {
   t.strictSame(
@@ -154,7 +153,7 @@ const createMockNode = (
   edgesIn: new Set(),
   edgesOut: new Map(),
   manifest,
-  options: {} as SpecOptions,
+  options: {},
   workspaces: undefined,
   rawManifest: manifest,
   name: 'test-pkg',

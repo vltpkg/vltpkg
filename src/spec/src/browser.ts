@@ -69,7 +69,7 @@ export const getOptions = (
     ...defaultJsrRegistries,
   },
   registry: options?.registry ?? defaultRegistry,
-  'scope-registries': options?.['scope-registries'] ?? {},
+  'scoped-registries': options?.['scoped-registries'] ?? {},
   'git-hosts':
     options?.['git-hosts'] ?
       {
@@ -397,8 +397,9 @@ export class Spec implements SpecLike<Spec> {
           validOptions: Object.keys(catalog),
         })
       }
-      this.subspec = Spec.parse(this.name, sub)
+      this.subspec = Spec.parse(this.name, sub, this.options)
       this.type = 'catalog'
+      this.registry = this.subspec.final.registry
       return
     }
 
@@ -642,7 +643,7 @@ export class Spec implements SpecLike<Spec> {
       this.distTag = this.bareSpec
     }
     this.registrySpec = this.bareSpec
-    const { 'scope-registries': scopeRegs, registry } = this.options
+    const { 'scoped-registries': scopeRegs, registry } = this.options
     const scopeReg = this.scope && scopeRegs[this.scope]
     this.registry = scopeReg ?? registry
     // no guessing the tarball for JSR registries
@@ -658,7 +659,7 @@ export class Spec implements SpecLike<Spec> {
     if (s > 1 && s < name.length - 1) {
       const scope = name.substring(0, s) as Scope
       this.registry = this.scopeRegistry =
-        this.options['scope-registries'][scope]
+        this.options['scoped-registries'][scope]
       this.scope = scope
     }
   }
@@ -717,10 +718,14 @@ export class Spec implements SpecLike<Spec> {
     const { name, registry, range } = this.final
     if (!registry || !range?.isSingle) return
     const stripScope = /^@[^/]+\//
+    // resolve relative to the registry URL so that any path component
+    // (e.g. https://registry.example.com/npm/) is preserved. Using a
+    // leading `/` would make the path absolute and discard that prefix.
+    const base = registry.endsWith('/') ? registry : registry + '/'
     this.conventionalRegistryTarball = String(
       new URL(
-        `/${name}/-/${name.replace(stripScope, '')}-${range}.tgz`,
-        registry,
+        `${name}/-/${name.replace(stripScope, '')}-${range}.tgz`,
+        base,
       ),
     )
   }
@@ -747,8 +752,8 @@ export class Spec implements SpecLike<Spec> {
       )
     this.subspec = this.constructor.parse(name, {
       ...this.options,
-      'scope-registries': {
-        ...this.options['scope-registries'],
+      'scoped-registries': {
+        ...this.options['scoped-registries'],
         '@jsr': url,
       },
     })

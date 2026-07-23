@@ -1,6 +1,6 @@
 {
   "name": "@vltpkg/vltpkg",
-  "version": "1.0.0-rc.18",
+  "version": "1.0.0-rc.32",
   "private": true,
   "repository": {
     "type": "git",
@@ -36,9 +36,6 @@
     "typescript-eslint": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
-  "engines": {
-    "node": ">=22.22.0"
-  },
   "scripts": {
     "build:bundle": "vlt-build --outdir=.build-bundle bundle",
     "deps:check": "./scripts/check-deps.ts",
@@ -56,5 +53,9 @@
     "vlxl": "./scripts/bins/vlxl"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/.#readme"
 }

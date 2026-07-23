@@ -1550,17 +1550,17 @@ t.test('skip peerOptional dependencies', async t => {
                 optional: true,
               },
             },
-          } as Manifest
+          }
         case 'peer-dep':
           return {
             name: 'peer-dep',
             version: '1.0.0',
-          } as Manifest
+          }
         case 'peer-optional-dep':
           return {
             name: 'peer-optional-dep',
             version: '1.0.0',
-          } as Manifest
+          }
         case 'lib-a':
           return {
             name: 'lib-a',
@@ -1568,7 +1568,7 @@ t.test('skip peerOptional dependencies', async t => {
             dependencies: {
               'shared-dep': '^1.0.0',
             },
-          } as Manifest
+          }
         case 'lib-b':
           return {
             name: 'lib-b',
@@ -1581,12 +1581,12 @@ t.test('skip peerOptional dependencies', async t => {
                 optional: true,
               },
             },
-          } as Manifest
+          }
         case 'shared-dep':
           return {
             name: 'shared-dep',
             version: '1.0.0',
-          } as Manifest
+          }
         default:
           throw new Error('404 - ' + spec.name, { cause: { spec } })
       }
@@ -2996,6 +2996,377 @@ t.test(
       secondLibAUi?.edgesOut.get('react')?.to?.id,
       firstReact?.id,
       'ui-component peer edge to react preserved',
+    )
+  },
+)
+
+t.test(
+  'resolves registry specs to workspace packages when name and version match',
+  async t => {
+    // When a workspace package is referenced with a plain semver
+    // spec (e.g. "@scope/lib-a": "^1.0.0"), vlt should resolve it
+    // to the local workspace package if the version satisfies the
+    // range — matching npm/pnpm/yarn behavior.
+    const mainManifest = {
+      name: 'my-monorepo',
+      version: '1.0.0',
+    }
+    const libAManifest = {
+      name: '@scope/lib-a',
+      version: '1.2.3',
+    }
+    const libBManifest = {
+      name: '@scope/lib-b',
+      version: '2.0.0',
+      dependencies: {
+        // plain registry spec that should resolve to workspace
+        '@scope/lib-a': '^1.0.0',
+      },
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        'lib-a': {
+          'package.json': JSON.stringify(libAManifest),
+        },
+        'lib-b': {
+          'package.json': JSON.stringify(libBManifest),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson,
+      load: { paths: ['packages/lib-a', 'packages/lib-b'] },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    // lib-a and lib-b workspace nodes should exist as importers
+    const libANode = [...graph.importers].find(
+      n => n.name === '@scope/lib-a',
+    )
+    const libBNode = [...graph.importers].find(
+      n => n.name === '@scope/lib-b',
+    )
+    t.ok(libANode, 'lib-a should be an importer')
+    t.ok(libBNode, 'lib-b should be an importer')
+
+    // Mock packageInfo that should NOT be called for @scope/lib-a
+    // since it should resolve from the workspace
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === '@scope/lib-a') {
+          throw new Error(
+            'Should not fetch @scope/lib-a from registry — ' +
+              'it should resolve from workspace',
+          )
+        }
+        return null
+      },
+    } as unknown as PackageInfoClient
+
+    // Create a dep that uses a plain registry spec
+    // for a workspace package
+    const dep = asDependency({
+      spec: Spec.parse('@scope/lib-a', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+    // Append nodes from lib-b's perspective
+    await appendNodes(
+      packageInfo,
+      graph,
+      libBNode!,
+      [dep],
+      scurry,
+      configData,
+      new Set<DepID>(),
+      new Map([['@scope/lib-a', dep]]),
+    )
+
+    // Verify lib-b now has an edge to the workspace lib-a node
+    const edge = libBNode!.edgesOut.get('@scope/lib-a')
+    t.ok(edge, 'lib-b should have edge to @scope/lib-a')
+    t.equal(
+      edge?.to?.id,
+      libANode!.id,
+      'edge should point to the workspace lib-a node',
+    )
+    t.equal(
+      edge?.to?.importer,
+      true,
+      'resolved node should be a workspace importer',
+    )
+  },
+)
+
+t.test(
+  'does NOT resolve registry spec to workspace when version is out of range',
+  async t => {
+    const mainManifest = {
+      name: 'my-monorepo',
+      version: '1.0.0',
+    }
+    const libAManifest = {
+      name: '@scope/lib-a',
+      version: '1.2.3',
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        'lib-a': {
+          'package.json': JSON.stringify(libAManifest),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson,
+      load: { paths: ['packages/lib-a'] },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    // Mock packageInfo that should be called because version
+    // doesn't match (workspace is 1.2.3, spec wants ^2.0.0)
+    let fetchCalled = false
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === '@scope/lib-a') {
+          fetchCalled = true
+          return {
+            name: '@scope/lib-a',
+            version: '2.0.0',
+          }
+        }
+        return null
+      },
+    } as PackageInfoClient
+
+    const dep = asDependency({
+      spec: Spec.parse('@scope/lib-a', '^2.0.0', configData),
+      type: 'prod',
+    })
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dep],
+      scurry,
+      configData,
+      new Set<DepID>(),
+      new Map([['@scope/lib-a', dep]]),
+    )
+
+    t.ok(
+      fetchCalled,
+      'should have fetched from registry when version out of range',
+    )
+    // The edge should point to the registry version, not the workspace
+    const edge = graph.mainImporter.edgesOut.get('@scope/lib-a')
+    t.ok(edge, 'should have edge to @scope/lib-a')
+    t.equal(
+      edge?.to?.id,
+      joinDepIDTuple(['registry', '', '@scope/lib-a@2.0.0']),
+      'should resolve to registry version, not workspace',
+    )
+  },
+)
+
+t.test(
+  'workspace: spec that does not match workspace version throws descriptive error',
+  async t => {
+    const mainManifest = {
+      name: 'my-monorepo',
+      version: '1.0.0',
+    }
+    const libAManifest = {
+      name: '@scope/lib-a',
+      version: '1.0.0',
+    }
+    const consumerManifest = {
+      name: 'consumer',
+      version: '1.0.0',
+      dependencies: {
+        '@scope/lib-a': 'workspace:^2.0.0',
+      },
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        'lib-a': {
+          'package.json': JSON.stringify(libAManifest),
+        },
+        consumer: {
+          'package.json': JSON.stringify(consumerManifest),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson,
+      load: {
+        paths: ['packages/lib-a', 'packages/consumer'],
+      },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    const packageInfo = {
+      async manifest() {
+        throw new Error('should not fetch from registry')
+      },
+    } as unknown as PackageInfoClient
+
+    const consumerNode = [...graph.importers].find(
+      n => n.name === 'consumer',
+    )
+    t.ok(consumerNode, 'consumer should be an importer')
+
+    const dep = asDependency({
+      spec: Spec.parse(
+        '@scope/lib-a',
+        'workspace:^2.0.0',
+        configData,
+      ),
+      type: 'prod',
+    })
+
+    await t.rejects(
+      appendNodes(
+        packageInfo,
+        graph,
+        consumerNode!,
+        [dep],
+        scurry,
+        configData,
+        new Set<DepID>(),
+        new Map([['@scope/lib-a', dep]]),
+      ),
+      {
+        message:
+          /workspace dependency.*does not match the local workspace version/,
+      },
+      'should throw a descriptive error about version mismatch',
+    )
+  },
+)
+
+t.test(
+  'workspace: spec for a non-existent workspace throws descriptive error',
+  async t => {
+    const mainManifest = {
+      name: 'my-monorepo',
+      version: '1.0.0',
+    }
+    const consumerManifest = {
+      name: 'consumer',
+      version: '1.0.0',
+      dependencies: {
+        'nonexistent-ws': 'workspace:*',
+      },
+    }
+
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        consumer: {
+          'package.json': JSON.stringify(consumerManifest),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+
+    const scurry = new PathScurry(dir)
+    const packageJson = new PackageJson()
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson,
+      load: { paths: ['packages/consumer'] },
+    })
+
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+
+    const packageInfo = {
+      async manifest() {
+        throw new Error('should not fetch from registry')
+      },
+    } as unknown as PackageInfoClient
+
+    const consumerNode = [...graph.importers].find(
+      n => n.name === 'consumer',
+    )
+    t.ok(consumerNode, 'consumer should be an importer')
+
+    const dep = asDependency({
+      spec: Spec.parse('nonexistent-ws', 'workspace:*', configData),
+      type: 'prod',
+    })
+
+    await t.rejects(
+      appendNodes(
+        packageInfo,
+        graph,
+        consumerNode!,
+        [dep],
+        scurry,
+        configData,
+        new Set<DepID>(),
+        new Map([['nonexistent-ws', dep]]),
+      ),
+      {
+        message: /no workspace found matching/,
+      },
+      'should throw a descriptive error about missing workspace',
     )
   },
 )

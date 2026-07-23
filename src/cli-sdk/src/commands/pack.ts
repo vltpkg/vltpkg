@@ -12,6 +12,7 @@ import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { error } from '@vltpkg/error-cause'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { minimatch } from 'minimatch'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -58,8 +59,7 @@ export type CommandResultSingle = {
 }
 
 export type CommandResult =
-  | CommandResultSingle
-  | CommandResultSingle[]
+  CommandResultSingle | CommandResultSingle[]
 
 export const views = {
   human: results => {
@@ -141,6 +141,20 @@ export const command: CommandFn<CommandResult> = async conf => {
     locations.push(...(await scopeLocations(queryString, conf)))
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
+      // When specific workspace paths are set (including auto-inferred from cwd),
+      // filter to only matching workspaces. Without this, all monorepo workspaces
+      // would be operated on even when only one was specified.
+      if (paths?.length) {
+        const matches = paths.some(
+          (p: string) =>
+            workspace.path === p ||
+            workspace.name === p ||
+            workspace.fullpath === p ||
+            resolve(projectRoot, p) === workspace.fullpath ||
+            minimatch(workspace.path, p),
+        )
+        if (!matches) continue
+      }
       locations.push(workspace.fullpath)
     }
   } else if (options.monorepo) {
@@ -150,10 +164,15 @@ export const command: CommandFn<CommandResult> = async conf => {
         locations.push(workspace.fullpath)
       }
     } else {
-      const rel = relative(projectRoot, cwd).replaceAll('\\', '/')
-      locations.push(
-        ...(await scopeLocations(`:path("${rel}")`, conf)),
-      )
+      const ws = options.monorepo.get(cwd)
+      if (ws) {
+        locations.push(ws.fullpath)
+      } else {
+        const rel = relative(projectRoot, cwd).replaceAll('\\', '/')
+        locations.push(
+          ...(await scopeLocations(`:path("${rel}")`, conf)),
+        )
+      }
     }
   } else {
     single = options.packageJson.find(process.cwd()) ?? projectRoot
@@ -204,6 +223,11 @@ export const commandSingle = async (
     arg0: 'prepare',
   })
 
+  // Re-read the manifest after lifecycle scripts, which may have modified package.json.
+  const updatedManifest = conf.options.packageJson.read(manifestDir, {
+    reload: true,
+  })
+
   const {
     name,
     version,
@@ -213,7 +237,7 @@ export const commandSingle = async (
     files,
     integrity,
     shasum,
-  } = await packTarball(manifest, manifestDir, conf)
+  } = await packTarball(updatedManifest, manifestDir, conf)
 
   if (!isDryRun) {
     await writeFile(join(manifestDir, filename), tarballData)

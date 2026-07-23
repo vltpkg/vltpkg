@@ -101,8 +101,8 @@ t.test('command with --call and package in positionals', async t => {
   const result = { status: 0, signal: null } as unknown as ExecResult
   let resolveArgs: string[] | undefined
   let resolveOptions: (VlxOptions & { package?: string }) | undefined
-  let resolvePromptFn: PromptFn | undefined = (() =>
-    Promise.resolve('')) as PromptFn
+  let resolvePromptFn: PromptFn | undefined = () =>
+    Promise.resolve('')
   const { command } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts', {
@@ -151,8 +151,8 @@ t.test('command with --call and package in positionals', async t => {
 t.test('command with --call and explicit --package', async t => {
   const result = { status: 0, signal: null } as unknown as ExecResult
   let resolveOptions: (VlxOptions & { package?: string }) | undefined
-  let resolvePromptFn: PromptFn | undefined = (() =>
-    Promise.resolve('')) as PromptFn
+  let resolvePromptFn: PromptFn | undefined = () =>
+    Promise.resolve('')
   const { command } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts', {

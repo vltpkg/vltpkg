@@ -279,7 +279,7 @@ t.test('hasChanges method', async t => {
         nodes: {
           [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -306,7 +306,7 @@ t.test('hasChanges method', async t => {
             'sha512-newpackage==',
           ],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -356,7 +356,7 @@ t.test('hasChanges method', async t => {
             'sha512-oldpackage==',
           ],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -378,7 +378,7 @@ t.test('hasChanges method', async t => {
         nodes: {
           [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -426,7 +426,7 @@ t.test('hasChanges method', async t => {
           },
         },
         nodes: sharedNodes,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -526,7 +526,7 @@ t.test('hasChanges method', async t => {
           },
         },
         nodes: sharedNodes,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -659,7 +659,7 @@ t.test('optionalOnly method', async t => {
             'sha512-foofoofoo==',
           ],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -681,7 +681,7 @@ t.test('optionalOnly method', async t => {
         nodes: {
           [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -714,7 +714,7 @@ t.test('optionalOnly method', async t => {
         nodes: {
           [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -746,7 +746,7 @@ t.test('optionalOnly method', async t => {
             'another-optional@1.0.0',
           ])]: [0, 'another-optional', 'sha512-anotheroptional=='],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -790,7 +790,7 @@ t.test('optionalOnly method', async t => {
         nodes: {
           [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -817,7 +817,7 @@ t.test('optionalOnly method', async t => {
             'sha512-requiredpkg==',
           ],
         } as Record<DepID, LockfileNode>,
-        edges: {} as LockfileEdges,
+        edges: {},
       },
     )
 
@@ -854,7 +854,7 @@ t.test('optionalOnly method', async t => {
           nodes: {
             [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
           } as Record<DepID, LockfileNode>,
-          edges: {} as LockfileEdges,
+          edges: {},
         },
       )
 
@@ -880,7 +880,7 @@ t.test('optionalOnly method', async t => {
             [joinDepIDTuple(['registry', '', 'required-pkg@1.0.0'])]:
               [0, 'required-pkg', 'sha512-requiredpkg=='],
           } as Record<DepID, LockfileNode>,
-          edges: {} as LockfileEdges,
+          edges: {},
         },
       )
 
@@ -928,7 +928,7 @@ t.test('optionalOnly method', async t => {
               'sha512-todelete==',
             ],
           } as Record<DepID, LockfileNode>,
-          edges: {} as LockfileEdges,
+          edges: {},
         },
       )
 
@@ -950,7 +950,7 @@ t.test('optionalOnly method', async t => {
           nodes: {
             [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
           } as Record<DepID, LockfileNode>,
-          edges: {} as LockfileEdges,
+          edges: {},
         },
       )
 

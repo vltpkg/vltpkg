@@ -341,10 +341,12 @@ t.test('pack command with scope', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -459,6 +461,7 @@ t.test('pack command with workspace paths', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
         ],
@@ -479,6 +482,162 @@ t.test('pack command with workspace paths', async t => {
 
     t.equal(results[0]!.name, '@test/a')
     t.equal(results[0]!.version, '1.0.0')
+  })
+})
+
+t.test('pack command workspace filtering modes', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: '@test/a',
+          version: '1.0.0',
+        }),
+        'index.js': 'console.log("a")',
+        'vlt.json': '{}',
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: '@test/b',
+          version: '2.0.0',
+        }),
+        'index.js': 'console.log("b")',
+        'vlt.json': '{}',
+      },
+    },
+  })
+
+  t.test('filters by workspace name', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { workspace: ['@test/a'] },
+    })
+    config.get = (key: string) => {
+      if (key === 'workspace') return ['@test/a']
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by workspace fullpath', async t => {
+    const fullpath = resolve(dir, 'packages/a')
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath,
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { workspace: [fullpath] },
+    })
+    config.get = (key: string) => {
+      if (key === 'workspace') return [fullpath]
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by resolved relative path', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { workspace: ['./packages/a'] },
+    })
+    config.get = (key: string) => {
+      if (key === 'workspace') return ['./packages/a']
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by minimatch glob', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['pack'],
+      values: { workspace: ['packages/*'] },
+    })
+    config.get = (key: string) => {
+      if (key === 'workspace') return ['packages/*']
+      return config.values?.[key]
+    }
+
+    const result = await command(config as LoadedConfig)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2)
   })
 })
 
@@ -517,10 +676,12 @@ t.test('pack command with workspace-group', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -581,10 +742,12 @@ t.test('pack command with recursive', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -761,65 +924,124 @@ t.test('pack command monorepo cwd inference', async t => {
 
     t.chdir(resolve(dir, 'packages/a'))
 
+    const workspaces = [
+      {
+        name: '@test/a',
+        fullpath: resolve(dir, 'packages/a'),
+      },
+      {
+        name: '@test/b',
+        fullpath: resolve(dir, 'packages/b'),
+      },
+    ]
+
     const config = makeTestConfig({
       projectRoot: dir,
       options: {
         packageJson: new PackageJson(),
-        monorepo: [
-          {
-            name: '@test/a',
-            fullpath: resolve(dir, 'packages/a'),
-          },
-          {
-            name: '@test/b',
-            fullpath: resolve(dir, 'packages/b'),
-          },
-        ],
+        monorepo: {
+          [Symbol.iterator]: () => workspaces[Symbol.iterator](),
+          get: (key: string) =>
+            workspaces.find(
+              w => w.fullpath === key || w.name === key,
+            ),
+        },
       },
       positionals: ['pack'],
     })
 
-    const mockNodes = [
-      {
-        id: 'workspace;packages/a',
-        toJSON: () => ({ location: 'packages/a' }),
-      },
-    ]
-
-    const cmd = await t.mockImport<
-      typeof import('../../src/commands/pack.ts')
-    >('../../src/commands/pack.ts', {
-      '@vltpkg/graph': {
-        actual: {
-          load: () => ({
-            nodes: new Map(),
-          }),
-        },
-      },
-      '@vltpkg/query': {
-        Query: class {
-          search = async (query: string) => {
-            t.match(
-              query,
-              ':path("packages/a")',
-              'should use :path() selector with relative path',
-            )
-            return { nodes: mockNodes }
-          }
-        },
-      },
-      '../../src/query-host-contexts.ts': {
-        createHostContextsMap: async () => new Map(),
-      },
-    })
-
-    const result = await cmd.command(config as LoadedConfig)
+    const result = await command(config as LoadedConfig)
 
     t.ok(Array.isArray(result), 'should return array')
     const results = result as CommandResultSingle[]
     t.equal(results.length, 1, 'should pack only current workspace')
     t.equal(results[0]!.name, '@test/a')
   })
+
+  t.test(
+    'falls back to :path() query when monorepo.get misses',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'root',
+          version: '1.0.0',
+        }),
+        'vlt.json': JSON.stringify({
+          workspaces: ['packages/*'],
+        }),
+        'vlt-lock.json': JSON.stringify({
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
+        packages: {
+          a: {
+            'package.json': JSON.stringify({
+              name: '@test/a',
+              version: '1.0.0',
+            }),
+            'index.js': 'console.log("a")',
+            'vlt.json': '{}',
+          },
+        },
+      })
+
+      t.chdir(resolve(dir, 'packages/a'))
+
+      const config = makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          monorepo: {
+            [Symbol.iterator]: () => [][Symbol.iterator](),
+            get: () => undefined,
+          },
+        },
+        positionals: ['pack'],
+      })
+
+      const mockNodes = [
+        {
+          id: 'workspace;packages/a',
+          toJSON: () => ({ location: 'packages/a' }),
+        },
+      ]
+
+      const cmd = await t.mockImport<
+        typeof import('../../src/commands/pack.ts')
+      >('../../src/commands/pack.ts', {
+        '@vltpkg/graph': {
+          actual: {
+            load: () => ({
+              nodes: new Map(),
+            }),
+          },
+        },
+        '@vltpkg/query': {
+          Query: class {
+            search = async (query: string) => {
+              t.match(
+                query,
+                ':path("packages/a")',
+                'should fall back to :path() selector',
+              )
+              return { nodes: mockNodes }
+            }
+          },
+        },
+        '../../src/query-host-contexts.ts': {
+          createHostContextsMap: async () => new Map(),
+        },
+      })
+
+      const result = await cmd.command(config as LoadedConfig)
+
+      t.ok(Array.isArray(result), 'should return array')
+      const results = result as CommandResultSingle[]
+      t.equal(results.length, 1, 'should pack workspace via fallback')
+      t.equal(results[0]!.name, '@test/a')
+    },
+  )
 })
 
 t.test('pack command fallback to projectRoot', async t => {

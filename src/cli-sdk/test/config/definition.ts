@@ -28,8 +28,12 @@ for (const r of recordFields) t.equal(isRecordField(r), true)
 t.equal(isRecordField('editor'), false)
 
 t.test(
-  'stop parsing at first positional after certain commands',
+  'continue parsing options after positional command name',
   t => {
+    // vlt options can appear anywhere on the command line — both
+    // before and after positionals like the run/exec command name.
+    // To forward flag-like args through to a script unchanged, the
+    // user must place them after `--`.
     const { values, positionals } = definition.parse([
       '-c',
       'run',
@@ -37,11 +41,30 @@ t.test(
       'xyz',
       '-c',
     ])
-    t.hasStrict(values, { color: false })
-    t.strictSame(positionals, ['run', 'xyz', '-c'])
+    t.hasStrict(values, { color: true })
+    t.strictSame(positionals, ['run', 'xyz'])
     t.end()
   },
 )
+
+t.test('-- terminates option parsing for run/exec scripts', t => {
+  const { values, positionals } = definition.parse([
+    'run',
+    'my-script',
+    '--color',
+    '--',
+    '--no-color',
+    '--bail',
+  ])
+  t.hasStrict(values, { color: true })
+  t.strictSame(positionals, [
+    'run',
+    'my-script',
+    '--no-color',
+    '--bail',
+  ])
+  t.end()
+})
 
 t.test('identity can only be lowercase alphanum', async t => {
   t.throws(() => {

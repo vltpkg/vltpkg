@@ -54,6 +54,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --fetch-retry-factor=<n>
     --fetch-retry-maxtimeout=<n>
     --fetch-retry-mintimeout=<n>
+    --force
     --frozen-lockfile
     --git-host-archives=<name=template>
     --git-hosts=<name=template>
@@ -79,11 +80,12 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --save-peer
     --save-prod
     --scope=<query>
-    --scope-registries=<@scope=url>
+    --scoped-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
     --target=<query>
+    --telemetry
     --version
     --view=<output>
     --workspace=<ws>
@@ -117,6 +119,7 @@ Unknown config option: asdf
     fetch-retry-factor
     fetch-retry-maxtimeout
     fetch-retry-mintimeout
+    force
     frozen-lockfile
     git-host-archives
     git-hosts
@@ -142,11 +145,12 @@ Unknown config option: asdf
     save-peer
     save-prod
     scope
-    scope-registries
+    scoped-registries
     script-shell
     stale-while-revalidate-factor
     tag
     target
+    telemetry
     version
     view
     workspace

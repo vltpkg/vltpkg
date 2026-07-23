@@ -1,0 +1,114 @@
+---
+title: ':attr()'
+sidebar:
+  label: ':attr()'
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:attr()` pseudo-class selects packages based on **nested
+properties** of their `package.json` metadata. While
+[attribute selectors](/cli/selectors/attribute-selectors) match
+top-level fields, `:attr()` lets you drill into nested objects.
+
+## Syntax
+
+```
+:attr(key, [attr=value])
+:attr(key, nestedKey, [attr=value])
+```
+
+Arguments are a path of property keys, ending with a standard
+attribute selector.
+
+## Examples
+
+### Optional peer dependencies
+
+Select packages that declare `foo` as an optional peer dependency:
+
+<Code
+  code="$ vlt query ':attr(peerDependenciesMeta, foo, [optional=true])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+This is equivalent to checking:
+
+```json
+{
+  "peerDependenciesMeta": {
+    "foo": {
+      "optional": true
+    }
+  }
+}
+```
+
+### Engine requirements
+
+Select packages that have a `node` engine requirement:
+
+<Code
+  code="$ vlt query ':attr(engines, [node])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Scripts
+
+Select packages that have a `build` script:
+
+<Code
+  code="$ vlt query ':attr(scripts, [build])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Select packages that have a `test` script using `vitest`:
+
+<Code
+  code="$ vlt query ':attr(scripts, [test*=vitest])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### What gets selected
+
+Given this dependency graph:
+
+```
+my-app
+├── react@18.2.0
+│   └── loose-envify@1.4.0  ← has scripts.postinstall
+├── typescript@5.3.0         ← has engines.node
+└── vite@5.0.0               ← has engines.node
+```
+
+The query `:attr(engines, [node])` selects:
+
+```
+my-app
+├── react@18.2.0
+│   └── loose-envify@1.4.0
+├── typescript@5.3.0          ✅ has engines.node
+└── vite@5.0.0                ✅ has engines.node
+```
+
+### Combining with combinators
+
+Find direct dependencies that have a `build` script:
+
+<Code
+  code="$ vlt query ':project > :attr(scripts, [build])'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [Attribute Selectors](/cli/selectors/attribute-selectors) —
+  top-level property matching
+- [`:semver()`](/cli/selectors/pseudo-classes/semver) — compare semver
+  values in nested properties

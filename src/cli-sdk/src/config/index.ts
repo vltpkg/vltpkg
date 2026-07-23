@@ -91,8 +91,7 @@ export type PairsAsRecords = ConfigOptionsNoExtras & {
 
 export const pairsToRecords = (
   obj:
-    | NonNullable<ConfigFileData>
-    | OptionsResults<ConfigDefinitions>,
+    NonNullable<ConfigFileData> | OptionsResults<ConfigDefinitions>,
 ): PairsAsRecords => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
@@ -143,7 +142,9 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
 const kRecord = Symbol('parsed key=value record')
 
 export type ConfigDataNoCommand = {
-  [k in keyof OptionsResults<ConfigDefinitions>]?: OptionsResults<ConfigDefinitions>[k]
+  [
+    k in keyof OptionsResults<ConfigDefinitions>
+  ]?: OptionsResults<ConfigDefinitions>[k]
 }
 
 /**
@@ -401,9 +402,9 @@ export class Config {
    * If the config value is not set at all, an empty object is returned.
    */
   getRecord(k: OptListKeys<ConfigData>): RecordString {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const pairs = this.get(k) as
-      | (string[] & { [kRecord]?: RecordString })
-      | undefined
+      (string[] & { [kRecord]?: RecordString }) | undefined
     if (!pairs) return {}
     if (pairs[kRecord]) return pairs[kRecord]
     const kv = pairs.reduce((kv: RecordString, pair) => {
@@ -524,7 +525,7 @@ export class Config {
           }
 
           this.commandValues[cmd] = merge<ConfigData>(
-            this.commandValues[cmd] ?? ({} as ConfigData),
+            this.commandValues[cmd] ?? {},
             opts as ConfigData,
           )
         }
@@ -707,7 +708,7 @@ export class Config {
     if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)
     const b = await a.loadConfigFile()
-    this.#loaded = b.parse(argv) as LoadedConfig
+    this.#loaded = b.parse(argv)
     return this.#loaded
   }
 }

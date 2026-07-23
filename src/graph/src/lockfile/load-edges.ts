@@ -29,9 +29,14 @@ const retrieveNodeFromGraph = (
   graph: GraphLike,
   fromId: string,
   seenNodes?: Map<string, NodeLike>,
-): NodeLike => {
+): NodeLike | undefined => {
   const foundNode = graph.nodes.get(asDepID(fromId))
   if (!foundNode) {
+    // workspace or file nodes may be missing if the folder was removed
+    // while still referenced in the lockfile — skip gracefully
+    if (fromId.startsWith('workspace') || fromId.startsWith('file')) {
+      return undefined
+    }
     throw error('Edge info missing its `from` node', {
       found: {
         nodes: [...graph.nodes].map(([id]) => id),
@@ -86,7 +91,7 @@ export const loadEdges = (
     }
 
     // Use cached node lookup for large graphs, direct lookup for small ones
-    let fromNode: NodeLike
+    let fromNode: NodeLike | undefined
     if (seenNodes) {
       const seen = seenNodes.get(fromId)
       if (seen) {
@@ -103,6 +108,9 @@ export const loadEdges = (
     } else {
       fromNode = retrieveNodeFromGraph(key, value, graph, fromId)
     }
+
+    // skip edges from workspace nodes that no longer exist
+    if (!fromNode) continue
 
     const toId = valRest.substring(vrSplit + 1)
     let toNode: NodeLike | undefined = undefined
@@ -123,11 +131,18 @@ export const loadEdges = (
       }
     }
 
-    // Parse spec once we know the nodes are valid
-    const spec = Spec.parse(specName, valRest.substring(0, vrSplit), {
-      ...options,
-      registry: fromNode.registry,
-    })
+    // Use the merged options directly — they already carry the
+    // correct registry from the lockfile's `options` + caller config.
+    // `fromNode.registry` is not populated yet at this point (the
+    // post-load hydration loop in load.ts sets it *after* edges are
+    // loaded), so overriding here would always inject `undefined`
+    // and silently revert to the default npm registry.
+    // See vltpkg/vltpkg#1580.
+    const spec = Spec.parse(
+      specName,
+      valRest.substring(0, vrSplit),
+      options,
+    )
 
     if (useOptimizations) {
       edgeProcessingQueue.push({

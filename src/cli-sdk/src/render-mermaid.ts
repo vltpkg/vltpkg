@@ -2,6 +2,7 @@ import { writeFile, mkdtemp } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { error } from '@vltpkg/error-cause'
+
 import { renderMermaidSVG } from 'beautiful-mermaid'
 
 export type OutputFormat = 'svg' | 'png'
@@ -58,6 +59,7 @@ export const renderMermaidToPng = async (
   mermaidText: string,
 ): Promise<string> => {
   const svg = renderMermaidSvg(mermaidText)
+
   const { Resvg, initWasm } = await import('@resvg/resvg-wasm')
   const { readFile: rf } = await import('node:fs/promises')
   const { createRequire: cr } = await import('node:module')
@@ -75,5 +77,6 @@ export const renderMermaidToPng = async (
   const dir = await mkdtemp(join(tmpdir(), 'vlt-mermaid-'))
   const outputFile = join(dir, 'graph.png')
   await writeFile(outputFile, pngBuffer)
+
   return outputFile
 }

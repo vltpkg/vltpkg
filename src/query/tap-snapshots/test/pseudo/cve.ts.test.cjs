@@ -29,6 +29,18 @@ Object {
 }
 `
 
+exports[`test/pseudo/cve.ts > TAP > selects packages with a CVE alert > parameterless :cve matches any package with a CVE > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "e",
+  ],
+  "nodes": Array [
+    "e",
+  ],
+}
+`
+
 exports[`test/pseudo/cve.ts > TAP > selects packages with a CVE alert > should not match an unseen CVE ID > must match snapshot 1`] = `
 Object {
   "edges": Array [],

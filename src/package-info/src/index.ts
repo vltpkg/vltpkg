@@ -18,11 +18,11 @@ import type {
   Packument,
   ManifestRegistry,
 } from '@vltpkg/types'
-import { asPackument, isIntegrity } from '@vltpkg/types'
+import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import {
   mkdir,
   readFile,
@@ -77,6 +77,13 @@ export type PackageInfoClientExtractOptions =
   PackageInfoClientRequestOptions & {
     integrity?: Integrity
     resolved?: string
+    /**
+     * When true, indicates that integrity + resolved came from a
+     * lockfile (i.e. they were already verified on first install).
+     * Skips the client-side tarball integrity check.
+     * Defaults to false — fresh installs always verify integrity.
+     */
+    fromLockfile?: boolean
   }
 
 // the maximum duration of a manifest cache file
@@ -136,10 +143,18 @@ export class PackageInfoClient {
   ): Promise<Resolution> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
-    const { from = this.#projectRoot, integrity, resolved } = options
+    const {
+      from = this.#projectRoot,
+      integrity,
+      resolved,
+      fromLockfile = false,
+    } = options
     const f = spec.final
+    // If the caller already provides both integrity and resolved
+    // (from lockfile or prior resolution), skip re-resolving.
+    const alreadyResolved = !!(integrity && resolved)
     const r =
-      integrity && resolved ?
+      alreadyResolved ?
         { resolved, integrity, spec }
       : await this.resolve(spec, options)
 
@@ -183,39 +198,95 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
-        const trustIntegrity =
-          this.#trustedIntegrities.get(r.resolved) === r.integrity
+        const fetchTarball = async (useCache?: false) => {
+          const trustIntegrity =
+            this.#trustedIntegrities.get(r.resolved) === r.integrity
 
-        const response = await this.registryClient.request(
-          r.resolved,
-          {
-            integrity: r.integrity,
-            trustIntegrity,
-          },
-        )
-
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            'failed to fetch tarball',
+          const response = await this.registryClient.request(
+            r.resolved,
             {
-              url: r.resolved,
-              response,
+              integrity: r.integrity,
+              trustIntegrity,
+              ...(useCache === false ? { useCache } : {}),
             },
           )
+
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
+              spec,
+              options,
+              'failed to fetch tarball',
+              {
+                url: r.resolved,
+                response,
+              },
+            )
+          }
+
+          // if it's not trusted already, but valid, start trusting
+          if (
+            !trustIntegrity &&
+            response.checkIntegrity({ spec, url: resolved })
+          ) {
+            this.#trustedIntegrities.set(
+              r.resolved,
+              response.integrity,
+            )
+          }
+
+          const buf = response.buffer()
+
+          // Verify tarball integrity against the manifest's
+          // dist.integrity. This is a supply-chain security measure:
+          // the registry may not validate integrity, so we do it
+          // client-side on every fresh download. Skip when integrity
+          // came from lockfile/cache (it was already verified on
+          // first install).
+          /* c8 ignore start - defense-in-depth: registry client's
+           * checkIntegrity() usually catches mismatches first since
+           * it checks the same gzip bytes. This fires only when the
+           * registry client check is skipped (trustIntegrity=true). */
+          if (r.integrity && !fromLockfile) {
+            const hash = createHash('sha512')
+            hash.update(buf)
+            const computed: Integrity = `sha512-${hash.digest('base64')}`
+            if (computed !== r.integrity) {
+              throw error('Tarball integrity check failed', {
+                code: 'EINTEGRITY',
+                spec,
+                url: r.resolved,
+                wanted: r.integrity,
+                found: computed,
+              })
+            }
+          }
+          /* c8 ignore stop */
+
+          return buf
         }
 
-        // if it's not trusted already, but valid, start trusting
-        if (
-          !trustIntegrity &&
-          response.checkIntegrity({ spec, url: resolved })
-        ) {
-          this.#trustedIntegrities.set(r.resolved, response.integrity)
+        let buf: Buffer
+        try {
+          buf = await fetchTarball()
+        } catch (er) {
+          // On EINTEGRITY, retry once bypassing cache. This handles
+          // transient issues such as corrupted downloads or CDN
+          // inconsistencies that cause the cached tarball to not
+          // match the expected integrity hash.
+          if (
+            er instanceof Error &&
+            'cause' in er &&
+            (er.cause as Record<string, unknown> | undefined)
+              ?.code === 'EINTEGRITY'
+          ) {
+            buf = await fetchTarball(false)
+          } else {
+            throw er
+          }
         }
 
         try {
-          await this.tarPool.unpack(response.buffer(), target)
+          await this.tarPool.unpack(buf, target)
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -451,32 +522,74 @@ export class PackageInfoClient {
           )
         }
 
-        const trustIntegrity =
-          this.#trustedIntegrities.get(tarball) === integrity
+        const fetchTarball = async (useCache?: false) => {
+          const trustIntegrity =
+            this.#trustedIntegrities.get(tarball) === integrity
 
-        const response = await this.registryClient.request(tarball, {
-          ...options,
-          integrity,
-          trustIntegrity,
-        })
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            'failed to fetch tarball',
-            { response, url: tarball },
+          const response = await this.registryClient.request(
+            tarball,
+            {
+              ...options,
+              integrity,
+              trustIntegrity,
+              ...(useCache === false ? { useCache } : {}),
+            },
           )
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
+              spec,
+              options,
+              'failed to fetch tarball',
+              { response, url: tarball },
+            )
+          }
+
+          // if we don't already trust it, but it's valid, start
+          // trusting it
+          if (
+            !trustIntegrity &&
+            response.checkIntegrity({ spec, url: tarball })
+          ) {
+            this.#trustedIntegrities.set(tarball, response.integrity)
+          }
+
+          const buf = response.buffer()
+
+          // Verify tarball integrity against the manifest's
+          // dist.integrity.
+          /* c8 ignore start - defense-in-depth (see extract) */
+          if (integrity) {
+            const hash = createHash('sha512')
+            hash.update(buf)
+            const computed: Integrity = `sha512-${hash.digest('base64')}`
+            if (computed !== integrity) {
+              throw error('Tarball integrity check failed', {
+                code: 'EINTEGRITY',
+                spec,
+                url: tarball,
+                wanted: integrity,
+                found: computed,
+              })
+            }
+          }
+          /* c8 ignore stop */
+
+          return buf
         }
 
-        // if we don't already trust it, but it's valid, start trusting it
-        if (
-          !trustIntegrity &&
-          response.checkIntegrity({ spec, url: tarball })
-        ) {
-          this.#trustedIntegrities.set(tarball, response.integrity)
+        try {
+          return await fetchTarball()
+        } catch (er) {
+          if (
+            er instanceof Error &&
+            'cause' in er &&
+            (er.cause as Record<string, unknown> | undefined)
+              ?.code === 'EINTEGRITY'
+          ) {
+            return await fetchTarball(false)
+          }
+          throw er
         }
-
-        return response.buffer()
       }
 
       case 'git': {
@@ -607,16 +720,6 @@ export class PackageInfoClient {
               options,
             )
         if (!mani) throw this.#resolveError(spec, options)
-        const { integrity, tarball } =
-          mani.dist ?? /* c8 ignore next */ {}
-        if (isIntegrity(integrity) && tarball) {
-          const registryOrigin = new URL(String(f.registry)).origin
-          const tgzOrigin = new URL(tarball).origin
-          // if it comes from the same origin, trust the integrity
-          if (tgzOrigin === registryOrigin) {
-            this.#trustedIntegrities.set(tarball, integrity)
-          }
-        }
 
         // Cache the manifest data
         if (cachePath) {

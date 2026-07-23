@@ -16,6 +16,8 @@ import { cwe } from './pseudo/cwe.ts'
 import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dev } from './pseudo/dev.ts'
+import { diff } from './pseudo/diff.ts'
+import { dist } from './pseudo/dist.ts'
 import { dynamic } from './pseudo/dynamic.ts'
 import { empty } from './pseudo/empty.ts'
 import { entropic } from './pseudo/entropic.ts'
@@ -61,6 +63,7 @@ import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
+import { vulnerable } from './pseudo/vulnerable.ts'
 import { workspace } from './pseudo/workspace.ts'
 
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
@@ -93,6 +96,8 @@ const has = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
           nodes: new Set(state.partial.nodes),
         },
+        diffFiles: state.diffFiles,
+        loose: state.loose,
         hostContexts: state.hostContexts,
         importers: state.importers,
         retries: state.retries,
@@ -174,6 +179,7 @@ const is = async (state: ParserState) => {
           nodes: new Set(),
         },
         current: node,
+        diffFiles: state.diffFiles,
         initial: state.initial,
         loose: true,
         partial: {
@@ -220,7 +226,9 @@ const not = async (state: ParserState) => {
           nodes: new Set(),
         },
         current: node,
+        diffFiles: state.diffFiles,
         initial: state.initial,
+        loose: state.loose,
         partial: {
           nodes: new Set(state.partial.nodes),
           edges: new Set(state.partial.edges),
@@ -305,6 +313,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
     debug,
     deprecated,
     dev,
+    diff,
+    dist,
     dynamic,
     eval: evalParser,
     empty,
@@ -357,6 +367,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
     unpopular,
     unstable,
     v: semver,
+    vuln: vulnerable,
+    vulnerable,
     workspace,
   }),
 )

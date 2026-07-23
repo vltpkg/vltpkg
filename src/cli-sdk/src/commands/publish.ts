@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import {
+  RegistryClient,
+  oidc,
+  registryBase,
+} from '@vltpkg/registry-client'
 import type { CacheEntry } from '@vltpkg/registry-client'
 import { run } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
@@ -8,12 +12,14 @@ import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
 import assert from 'node:assert'
 import { asError } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { dirname, resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
 import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { minimatch } from 'minimatch'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -79,8 +85,7 @@ export type CommandResultSingle = {
 }
 
 export type CommandResult =
-  | CommandResultSingle
-  | CommandResultSingle[]
+  CommandResultSingle | CommandResultSingle[]
 
 export const views = {
   human: results => {
@@ -150,6 +155,17 @@ export const command: CommandFn<CommandResult> = async conf => {
     }
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
+      if (paths?.length) {
+        const matches = paths.some(
+          (p: string) =>
+            workspace.path === p ||
+            workspace.name === p ||
+            workspace.fullpath === p ||
+            resolve(projectRoot, p) === workspace.fullpath ||
+            minimatch(workspace.path, p),
+        )
+        if (!matches) continue
+      }
       locations.push(workspace.fullpath)
     }
   } else {
@@ -172,6 +188,24 @@ export const command: CommandFn<CommandResult> = async conf => {
   return results
 }
 
+type PublishConfig = {
+  directory?: string
+  registry?: string
+  access?: string
+  tag?: string
+}
+
+const getPublishConfig = (
+  manifest: NormalizedManifest,
+): PublishConfig | undefined => {
+  const pc: unknown = (manifest as Record<string, unknown>)
+    .publishConfig
+  if (pc && typeof pc === 'object') {
+    return pc
+  }
+  return undefined
+}
+
 const commandSingle = async (
   location: string,
   conf: LoadedConfig,
@@ -186,14 +220,12 @@ const commandSingle = async (
     error('Package has been marked as private'),
   )
 
-  const {
-    tag,
-    access,
-    registry,
-    'dry-run': dry = false,
-    otp,
-  } = conf.options
-  const registryUrl = new URL(registry)
+  const { 'dry-run': dry = false, otp } = conf.options
+  const publishConfig = getPublishConfig(manifest)
+  const tag = publishConfig?.tag ?? conf.options.tag
+  const access = publishConfig?.access ?? conf.options.access
+  const registry = publishConfig?.registry ?? conf.options.registry
+  const registryUrl = new URL(registryBase(registry))
 
   const runOptions = {
     cwd: manifestDir,
@@ -224,6 +256,11 @@ const commandSingle = async (
     arg0: 'prepare',
   })
 
+  // Re-read the manifest after lifecycle scripts, which may have modified package.json.
+  const updatedManifest = conf.options.packageJson.read(manifestDir, {
+    reload: true,
+  })
+
   const {
     name,
     version,
@@ -233,7 +270,8 @@ const commandSingle = async (
     files,
     integrity,
     shasum,
-  } = await packTarball(manifest, manifestDir, conf)
+    resolvedManifest,
+  } = await packTarball(updatedManifest, manifestDir, conf)
 
   await run({
     ...runOptions,
@@ -248,17 +286,17 @@ const commandSingle = async (
   const publishMetadata = {
     _id: name,
     name,
-    description: manifest.description || '',
+    description: resolvedManifest.description || '',
     'dist-tags': {
       [tag]: version,
     },
     versions: {
       [version]: {
-        ...manifest,
+        ...resolvedManifest,
         _id: `${name}@${version}`,
         _nodeVersion: process.versions.node,
         dist: {
-          ...manifest.dist,
+          ...resolvedManifest.dist,
           integrity,
           shasum,
           tarball: new URL(`${name}/-/${tarballName}`, registryUrl)
@@ -277,6 +315,14 @@ const commandSingle = async (
   }
 
   const rc = new RegistryClient(conf.options)
+
+  // Attempt OIDC token exchange for CI environments (GitHub Actions, GitLab, CircleCI).
+  // This is always optional — failures are silent and won't affect local publishing.
+  await oidc({
+    packageName: name,
+    registry: registryUrl.href,
+  })
+
   const publishUrl = new URL(
     name.startsWith('@') ? name.replace('/', '%2F') : name,
     registryUrl,
@@ -304,8 +350,9 @@ const commandSingle = async (
 
     if (response.statusCode !== 200 && response.statusCode !== 201) {
       let extraMsg = ''
-      // special case 404 errors to provide a better hint to the user
-      if (response.statusCode === 404) {
+      if (response.statusCode === 409) {
+        extraMsg = `.\n⚠️ ${name}@${version} already exists in the registry. Bump the version and try again.`
+      } else if (response.statusCode === 404) {
         extraMsg =
           ".\n⚠️ Make sure you're logged in and have access to publish the package."
       }
@@ -333,5 +380,5 @@ const commandSingle = async (
     size: tarballData.length,
     unpackedSize,
     files,
-  }
+  } as CommandResultSingle
 }

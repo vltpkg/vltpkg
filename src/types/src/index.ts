@@ -56,24 +56,19 @@ export type ConditionalValueObject = {
 }
 
 export type ConditionalValue =
-  | ConditionalValue[]
-  | ConditionalValueObject
-  | string
-  | null
+  ConditionalValue[] | ConditionalValueObject | string | null
 
 export type ExportsSubpaths = {
   [path in '.' | `./${string}`]?: ConditionalValue
 }
 
 export type Exports =
-  | Exclude<ConditionalValue, null>
-  | ExportsSubpaths
+  Exclude<ConditionalValue, null> | ExportsSubpaths
 
 export type Imports = Record<`#${string}`, ConditionalValue>
 
 export type FundingEntry =
-  | string
-  | { url: string; type?: string; [key: string]: JSONField }
+  string | { url: string; type?: string; [key: string]: JSONField }
 export type Funding = FundingEntry | FundingEntry[]
 
 /**
@@ -245,24 +240,30 @@ export const parsePerson = (
       typeof person.email === 'string' ? person.email
       : typeof person.mail === 'string' ? person.mail
       : undefined
+    const url =
+      typeof person.url === 'string' ? person.url : undefined
 
-    if (!name && !email) return undefined
+    if (!name && !email && !url) return undefined
 
     return {
       name,
       email,
+      ...(url ? { url } : {}),
       [kWriteAccess]: writeAccess ?? false,
       [kIsPublisher]: isPublisher ?? false,
     }
   } else if (typeof person === 'string') {
     const NAME_PATTERN = /^([^(<]+)/
     const EMAIL_PATTERN = /<([^<>]+)>/
+    const URL_PATTERN = /\(([^()]+)\)/
     const name = NAME_PATTERN.exec(person)?.[0].trim() || ''
     const email = EMAIL_PATTERN.exec(person)?.[1] || ''
-    if (!name && !email) return undefined
+    const url = URL_PATTERN.exec(person)?.[1] || ''
+    if (!name && !email && !url) return undefined
     return {
       name: name || undefined,
       email: email || undefined,
+      ...(url ? { url } : {}),
       [kWriteAccess]: writeAccess ?? false,
       [kIsPublisher]: isPublisher ?? false,
     }
@@ -283,6 +284,7 @@ export type NormalizedContributors = NormalizedContributorEntry[]
 export type NormalizedContributorEntry = {
   email?: string
   name?: string
+  url?: string
   // in-memory we store those keys as symbols so that they
   // don't get written to user-managed package.json files
   [kWriteAccess]?: boolean
@@ -301,10 +303,15 @@ export const isNormalizedContributorEntry = (
 ): o is NormalizedContributorEntry => {
   return (
     isObject(o) &&
-    typeof o.name === 'string' &&
-    !!o.name &&
-    typeof o.email === 'string' &&
-    !!o.email &&
+    (typeof o.name === 'string' ||
+      typeof o.email === 'string' ||
+      typeof o.url === 'string') &&
+    (typeof o.name === 'undefined' ||
+      (typeof o.name === 'string' && !!o.name)) &&
+    (typeof o.email === 'undefined' ||
+      (typeof o.email === 'string' && !!o.email)) &&
+    (typeof o.url === 'undefined' ||
+      (typeof o.url === 'string' && !!o.url)) &&
     (isBoolean((o as NormalizedContributorEntry)[kWriteAccess]) ||
       isBoolean(o.writeAccess)) &&
     (isBoolean((o as NormalizedContributorEntry)[kIsPublisher]) ||
@@ -474,14 +481,15 @@ const normalizeSingleBug = (bug: unknown): NormalizedBugsEntry[] => {
   } else if (isObject(bug)) {
     if (isNormalizedBugsEntry(bug)) {
       res.push(bug)
-    }
-    const obj = bug as { url?: string; email?: string }
+    } else {
+      const obj = bug as { url?: string; email?: string }
 
-    if (obj.url) {
-      res.push({ type: 'link', url: obj.url })
-    }
-    if (obj.email) {
-      res.push({ type: 'email', email: obj.email })
+      if (obj.url) {
+        res.push({ type: 'link', url: obj.url })
+      }
+      if (obj.email) {
+        res.push({ type: 'email', email: obj.email })
+      }
     }
   }
 
@@ -555,7 +563,7 @@ export const normalizeKeywords = (
   } else if (Array.isArray(keywords)) {
     // If all keywords are already normalized, return them directly
     if (isNormalizedKeywords(keywords)) {
-      return keywords as unknown as NormalizedKeywords
+      return keywords
     }
     // Handle array of strings, filter out empty/invalid entries
     keywordArray = keywords
@@ -1430,11 +1438,7 @@ export type DependencyTypeLong =
  * Unique keys that define different types of dependencies relationship.
  */
 export type DependencyTypeShort =
-  | 'dev'
-  | 'optional'
-  | 'peer'
-  | 'peerOptional'
-  | 'prod'
+  'dev' | 'optional' | 'peer' | 'peerOptional' | 'prod'
 
 /**
  * Unique keys that indicate how a new or updated dependency should be saved

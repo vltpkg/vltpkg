@@ -23,7 +23,7 @@ Parses dependency specifiers into typed `Spec` objects. Used throughout the grap
 - `final` — resolved Spec after alias/subspec unwrapping
 - `registry` — registry URL (for registry type)
 - `namedRegistry` — alias name (e.g., `npm`, `jsr`, `gh`)
-- `scopeRegistry` — URL from scope-registries config
+- `scopeRegistry` — URL from scoped-registries config
 - `subspec` — inner Spec for aliases (`alias@npm:pkg@ver` → subspec is the npm spec)
 - `overridden` — true if spec was swapped by a graph modifier
 - `range` — parsed semver Range (if applicable)
@@ -46,7 +46,7 @@ type SpecOptions = {
   registry?: string              // default: 'https://registry.npmjs.org/'
   registries?: Record<string, string>  // named registries (npm, gh, custom)
   'jsr-registries'?: Record<string, string>
-  'scope-registries'?: Record<string, string>
+  'scoped-registries'?: Record<string, string>
   'git-hosts'?: Record<string, string>  // template: $1/$2/$committish
   'git-host-archives'?: Record<string, string>
   catalog?: Record<string, string>

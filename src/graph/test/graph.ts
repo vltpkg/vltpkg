@@ -2407,3 +2407,140 @@ t.test('removeNode with keepEdges parameter', async t => {
     )
   })
 })
+
+t.test(
+  'placePackage hydrates manifest and integrity on existing nodes',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+
+    const depId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+
+    // Simulate a node loaded from lockfile without manifest or integrity
+    // (this is what happens when loadNodes processes nodes from the
+    // normal lockfile which doesn't store manifest data)
+    const existingNode = graph.addNode(
+      depId,
+      undefined,
+      undefined,
+      'foo',
+      '1.0.0',
+    )
+    t.equal(
+      existingNode.manifest,
+      undefined,
+      'node starts without manifest',
+    )
+    t.equal(
+      existingNode.integrity,
+      undefined,
+      'node starts without integrity',
+    )
+
+    const integrity =
+      'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+    const manifest = normalizeManifest({
+      name: 'foo',
+      version: '1.0.0',
+      dist: {
+        integrity,
+        tarball: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+      },
+    })
+
+    // Place the same package again with manifest data
+    // (this is what happens during ideal graph building when the
+    // manifest is fetched from the registry)
+    const placed = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      manifest,
+    )
+
+    t.equal(placed, existingNode, 'should return the existing node')
+    t.equal(placed?.manifest, manifest, 'manifest should be hydrated')
+    t.equal(
+      placed?.integrity,
+      integrity,
+      'integrity should be hydrated from manifest',
+    )
+    t.ok(
+      graph.manifests.has(depId),
+      'manifest should be stored in graph.manifests',
+    )
+  },
+)
+
+t.test(
+  'placePackage does not clobber existing manifest or integrity',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+
+    const existingIntegrity = 'sha512-EXISTING=='
+    const existingManifest = normalizeManifest({
+      name: 'bar',
+      version: '2.0.0',
+      dist: {
+        integrity: existingIntegrity,
+        tarball: 'https://registry.npmjs.org/bar/-/bar-2.0.0.tgz',
+      },
+    })
+
+    // Create a node WITH manifest and integrity already set
+    const depId = joinDepIDTuple(['registry', '', 'bar@2.0.0'])
+    const existingNode = graph.addNode(depId, existingManifest)
+    existingNode.integrity = existingIntegrity
+
+    const newIntegrity = 'sha512-NEW=='
+    const newManifest = normalizeManifest({
+      name: 'bar',
+      version: '2.0.0',
+      dist: {
+        integrity: newIntegrity,
+        tarball: 'https://registry.npmjs.org/bar/-/bar-2.0.0.tgz',
+      },
+    })
+
+    // Place the same package again with different manifest data
+    const placed = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('bar', '^2.0.0'),
+      newManifest,
+    )
+
+    t.equal(placed, existingNode, 'should return the existing node')
+    t.equal(
+      placed?.manifest,
+      existingManifest,
+      'should NOT clobber existing manifest',
+    )
+    t.equal(
+      placed?.integrity,
+      existingIntegrity,
+      'should NOT clobber existing integrity',
+    )
+  },
+)

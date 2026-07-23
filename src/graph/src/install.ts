@@ -12,7 +12,6 @@ import { getDependencies } from './dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   Dependency,
-  RemoveImportersDependenciesMap,
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { DepID } from '@vltpkg/dep-id'
@@ -136,9 +135,16 @@ export const install = async (
     if (
       importerSpecs.add.modifiedDependencies ||
       importerSpecs.remove.modifiedDependencies ||
-      specChanges.length > 0
+      specChanges.length > 0 ||
+      lockfileGraph.optionsChanged
     ) {
       const details: string[] = []
+
+      if (lockfileGraph.optionsChanged) {
+        details.push(
+          '  Configuration options have changed (e.g. modifiers, registries, catalogs)',
+        )
+      }
 
       if (specChanges.length > 0) {
         details.push(...specChanges)
@@ -201,7 +207,7 @@ export const install = async (
   try {
     const remove = Object.assign(new Map<DepID, Set<string>>(), {
       modifiedDependencies: false,
-    }) as RemoveImportersDependenciesMap
+    })
     const modifiers = GraphModifier.maybeLoad(options)
 
     let act: Graph | undefined = actualLoad({
@@ -231,8 +237,13 @@ export const install = async (
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
     if (options.lockfileOnly) {
-      // Save only the main lockfile, skip all filesystem operations
-      lockfile.save({ graph, modifiers })
+      // Save only the main lockfile, skip all filesystem operations.
+      // Spread `options` so that spec-level config (registry,
+      // scoped-registries, git-hosts, catalogs, etc.) round-trips
+      // through the lockfile - otherwise subsequent installs lose
+      // the configured registry and rewrite node/edge DepIDs back
+      // to the default npm registry. (See vltpkg/vltpkg#1580.)
+      lockfile.save({ ...options, graph, modifiers })
       const saveImportersPackageJson =
         /* c8 ignore next */
         add?.modifiedDependencies || remove.modifiedDependencies ?

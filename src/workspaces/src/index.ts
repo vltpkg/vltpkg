@@ -25,9 +25,7 @@ const isSyntaxError = (err: unknown): boolean => {
     const cause = (err as Error & { cause?: unknown }).cause
     if (cause instanceof SyntaxError) return true
     if (cause && typeof cause === 'object' && 'cause' in cause) {
-      return (
-        (cause as { cause: unknown }).cause instanceof SyntaxError
-      )
+      return cause.cause instanceof SyntaxError
     }
   }
   return false
@@ -66,9 +64,7 @@ export type WorkspaceConfigObject = Record<string, string[]>
  * Allowed datatype in the `workspaces` field of the `vlt.json` file.
  */
 export type WorkspaceConfig =
-  | string[]
-  | WorkspaceConfigObject
-  | string
+  string[] | WorkspaceConfigObject | string
 
 /**
  * Turn a {@link WorkspaceConfig} into a

@@ -1,0 +1,92 @@
+---
+title: ':dist()'
+sidebar:
+  label: ':dist()'
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:dist()` pseudo-class matches packages whose installed version
+corresponds to a specific dist-tag in the registry.
+
+## Syntax
+
+```
+:dist(<tag>)
+```
+
+### Parameters
+
+| Parameter | Description                        | Default    |
+| --------- | ---------------------------------- | ---------- |
+| `tag`     | The dist-tag name to match against | (required) |
+
+## How it works
+
+When a package is published to a registry, it can be associated with
+one or more dist-tags (e.g. `latest`, `nightly`, `beta`). The
+`:dist()` selector fetches the packument for each installed package
+and checks whether the node's installed version matches the version
+pointed to by the given dist-tag.
+
+For example, given a package `foo` with:
+
+```json
+{
+  "dist-tags": {
+    "latest": "1.3.0",
+    "nightly": "1.2.1"
+  }
+}
+```
+
+- If `foo@1.3.0` is installed, `:dist(latest)` will match it.
+- If `foo@1.0.0` is installed, `:dist(latest)` will **not** match it.
+
+## Examples
+
+### Find packages at their latest version
+
+<Code code="vlt query ':dist(latest)'" title="Terminal" lang="bash" />
+
+### Find packages at a pre-release dist-tag
+
+<Code
+  code="vlt query ':dist(nightly)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Exclude nightly-tagged packages
+
+<Code
+  code="vlt query ':not(:dist(nightly))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Find a specific package at a dist-tag
+
+<Code
+  code="vlt query '#foo:dist(latest)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Notes
+
+- Only registry packages are matched. File, git, workspace, and remote
+  dependencies are filtered out since they do not have dist-tags.
+- The selector makes network requests to the registry to fetch
+  dist-tag information. Results depend on the current state of the
+  registry.
+- If a dist-tag does not exist for a package, that package will not
+  match.
+
+## See also
+
+- [`:semver()`](/cli/selectors/pseudo-classes/semver) — match by
+  semver comparison
+- [`:outdated()`](/cli/selectors/pseudo-classes/outdated) — match
+  packages with newer versions available

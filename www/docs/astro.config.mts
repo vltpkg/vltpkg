@@ -1,12 +1,15 @@
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import react from '@astrojs/react'
+import sitemap from '@astrojs/sitemap'
 import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel'
 import { ExpressiveCodeTheme } from '@astrojs/starlight/expressive-code'
 import * as TypedocPlugin from './src/plugins/typedoc.ts'
+import { sitemapAlias } from './src/plugins/sitemap.ts'
 import { readFileSync } from 'node:fs'
 import starlightLinksValidator from 'starlight-links-validator'
+import starlightLlmsTxt from 'starlight-llms-txt'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -18,7 +21,7 @@ if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
 const MIXPANEL_TOKEN = '7853b372fb0f20e238be6d11e53f60fe'
 
 export default defineConfig({
-  site: 'https://docs.vlt.sh',
+  site: 'https://docs.vlt.io',
   trailingSlash: 'never',
   integrations: [
     starlight({
@@ -80,7 +83,27 @@ export default defineConfig({
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
       },
-      plugins: [TypedocPlugin.plugin, starlightLinksValidator()],
+      plugins: [
+        TypedocPlugin.plugin,
+        starlightLinksValidator(),
+        starlightLlmsTxt({
+          projectName: 'vlt',
+          description:
+            'vlt (pronounced /vōlt/) is the platform built for JavaScript and TypeScript.',
+          details: 'Develop. Run. Distribute.',
+          optionalLinks: [
+            {
+              label: 'Source',
+              url: 'https://github.com/vltpkg/vltpkg',
+            },
+            {
+              label: 'npm',
+              url: 'https://www.npmjs.com/package/vlt',
+            },
+          ],
+          rawContent: true,
+        }),
+      ],
       sidebar: [
         {
           label: 'Client',
@@ -101,6 +124,13 @@ export default defineConfig({
     }),
     react(),
     tailwind({ applyBaseStyles: false }),
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: { en: 'en-US' },
+      },
+    }),
+    sitemapAlias(),
   ],
   output: 'static',
   adapter: vercel(),

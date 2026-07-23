@@ -8,9 +8,6 @@ import type { LoadedConfig, RecordPairs } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
-// Type for the CLI config option (includes 'all' for merged config)
-type ConfigOption = 'all' | 'user' | 'project'
-
 export const views: Views = {
   human: results => {
     // Handle string arrays (like list output)
@@ -155,7 +152,7 @@ export const command: CommandFn = async conf => {
 // Enhanced get function that supports multiple keys (falls back to pick behavior)
 const configGet = async (conf: LoadedConfig): Promise<unknown> => {
   const keys = conf.positionals.slice(1)
-  const configOption = conf.get('config') as ConfigOption
+  const configOption = conf.get('config')
 
   // If no keys provided, show all config (like pkg get with no args)
   if (keys.length === 0) {
@@ -196,7 +193,7 @@ const configGet = async (conf: LoadedConfig): Promise<unknown> => {
 // New pick function for getting multiple config values (like vlt pkg pick)
 const configPick = async (conf: LoadedConfig) => {
   const keys = conf.positionals.slice(1)
-  const configOption = conf.get('config') as ConfigOption
+  const configOption = conf.get('config')
 
   // If no keys provided, return entire config object based on --config option (like vlt pkg pick)
   if (keys.length === 0) {
@@ -254,7 +251,7 @@ const configPick = async (conf: LoadedConfig) => {
 
 // Enhanced list function that respects --config option
 const configList = (conf: LoadedConfig) => {
-  const configOption = conf.get('config') as ConfigOption
+  const configOption = conf.get('config')
 
   switch (configOption) {
     case 'all':
@@ -372,8 +369,7 @@ const getProjectConfigList = (): string[] => {
 
 // Get the entire user config object
 const getUserConfigObject = ():
-  | Record<string, unknown>
-  | undefined => {
+  Record<string, unknown> | undefined => {
   try {
     const userConfig = load(
       'config',
@@ -394,7 +390,7 @@ const getUserConfigObject = ():
       /* c8 ignore next */
       return
 
-    return userConfig as Record<string, unknown>
+    return userConfig
   } catch (_err) {
     return
   }
@@ -406,13 +402,12 @@ const getUserConfigValue = (key: string): unknown => {
   if (!userConfig) return
 
   // Use dotProp.get like vlt pkg get does
-  return dotProp.get(userConfig as Record<PropertyKey, unknown>, key)
+  return dotProp.get(userConfig, key)
 }
 
 // Get the entire project config object
 const getProjectConfigObject = ():
-  | Record<string, unknown>
-  | undefined => {
+  Record<string, unknown> | undefined => {
   try {
     const projectConfig = load(
       'config',
@@ -433,7 +428,7 @@ const getProjectConfigObject = ():
       /* c8 ignore next */
       return
 
-    return projectConfig as Record<string, unknown>
+    return projectConfig
   } catch (_err) {
     return
   }
@@ -445,17 +440,14 @@ const getProjectConfigValue = (key: string): unknown => {
   if (!projectConfig) return
 
   // Use dotProp.get like vlt pkg get does
-  return dotProp.get(
-    projectConfig as Record<PropertyKey, unknown>,
-    key,
-  )
+  return dotProp.get(projectConfig, key)
 }
 
 // Helper function to get the effective config option for write operations
 const getWriteConfigOption = (
   conf: LoadedConfig,
 ): 'user' | 'project' => {
-  const configOption = conf.get('config') as ConfigOption
+  const configOption = conf.get('config')
 
   if (configOption === 'all') {
     // For write operations, 'all' defaults to 'project'
@@ -533,12 +525,12 @@ const getSerializableConfig = (
   conf: LoadedConfig,
 ): Record<string, unknown> => {
   // Use the list function which calls recordsToPairs to get a clean config object
-  return list(conf) as Record<string, unknown>
+  return list(conf)
 }
 
 // Location command that shows config file paths
 const configLocation = (conf: LoadedConfig): string => {
-  const configOption = conf.get('config') as ConfigOption
+  const configOption = conf.get('config')
 
   // For location command, default to 'project' when 'all' is specified
   // since there's no single "all" file to show

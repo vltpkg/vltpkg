@@ -14,11 +14,17 @@ import { Agent, RetryAgent } from 'undici'
 import { addHeader } from './add-header.ts'
 import type { Token } from './auth.ts'
 import {
+  clearRuntimeTokens,
   deleteToken,
   getKC,
   getToken,
+  getTokenByURL,
   isToken,
   keychains,
+  normalizeRegistryKey,
+  registryBase,
+  runtimeTokens,
+  setRuntimeToken,
   setToken,
 } from './auth.ts'
 import type { JSONObj } from './cache-entry.ts'
@@ -34,14 +40,25 @@ import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { getEncondedValue } from './string-encoding.ts'
+import { oidc } from './oidc.ts'
+import type { OidcOptions } from './oidc.ts'
 export {
   CacheEntry,
+  clearRuntimeTokens,
   deleteToken,
   getKC,
+  getToken,
+  getTokenByURL,
   isToken,
   keychains,
+  normalizeRegistryKey,
+  oidc,
+  registryBase,
+  runtimeTokens,
+  setRuntimeToken,
   setToken,
   type JSONObj,
+  type OidcOptions,
   type Token,
   type TokenResponse,
   type WebAuthChallenge,
@@ -283,7 +300,8 @@ export class RegistryClient {
 
     const s = tok.replace(/^(Bearer|Basic) /i, '')
 
-    const tokensUrl = new URL('-/npm/v1/tokens', registry)
+    const base = registryBase(registry)
+    const tokensUrl = new URL('-/npm/v1/tokens', base)
     const record = await this.seek<{
       key: string
       token: string
@@ -294,7 +312,7 @@ export class RegistryClient {
     if (record) {
       const { key } = record
       await this.request(
-        new URL(`-/npm/v1/tokens/token/${key}`, registry),
+        new URL(`-/npm/v1/tokens/token/${key}`, base),
         { useCache: false, method: 'DELETE' },
       )
     }
@@ -316,7 +334,7 @@ export class RegistryClient {
     // - hang on the doneUrl until done
     //
     // if that fails: fall back to couchdb login
-    const webLoginURL = new URL('-/v1/login', registry)
+    const webLoginURL = new URL('-/v1/login', registryBase(registry))
     const response = await this.request(webLoginURL, {
       method: 'POST',
       useCache: false,
@@ -415,7 +433,6 @@ export class RegistryClient {
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
     // first, try to get from the cache before making any request.
-    const { origin } = u
     const key = `${method !== 'GET' ? method + ' ' : ''}${u}`
     const buffer =
       useCache ?
@@ -473,7 +490,7 @@ export class RegistryClient {
     options.headers = addHeader(
       options.headers,
       'authorization',
-      await getToken(origin, this.identity),
+      await getTokenByURL(String(u), this.identity),
     )
 
     let response: Dispatcher.ResponseData | null = null
@@ -533,9 +550,15 @@ export class RegistryClient {
   ): Promise<CacheEntry> {
     if (handleCacheHitResponse(response, entry)) return entry
 
+    let consumedBody: string | undefined
     if (response.statusCode === 401) {
-      const repeatRequest = await otplease(this, options, response)
-      if (repeatRequest) return await this.request(url, repeatRequest)
+      const otpResult = await otplease(this, options, response)
+      if (otpResult && 'retry' in otpResult) {
+        return await this.request(url, otpResult.retry)
+      }
+      if (otpResult && 'bodyConsumed' in otpResult) {
+        consumedBody = otpResult.bodyConsumed
+      }
     }
 
     const h: Uint8Array[] = []
@@ -553,6 +576,16 @@ export class RegistryClient {
     }
 
     const { integrity, trustIntegrity } = options
+
+    // When otplease already consumed the body, use its length
+    // instead of the Content-Length header to size the CacheEntry
+    // buffer correctly.
+    const contentLength =
+      consumedBody !== undefined ? consumedBody.length
+      : response.headers['content-length'] ?
+        Number(response.headers['content-length'])
+      : /* c8 ignore next */ undefined
+
     const result = new CacheEntry(
       /* c8 ignore next - should always have a status code */
       response.statusCode || 200,
@@ -562,10 +595,7 @@ export class RegistryClient {
         trustIntegrity,
         'stale-while-revalidate-factor':
           this.staleWhileRevalidateFactor,
-        contentLength:
-          response.headers['content-length'] ?
-            Number(response.headers['content-length'])
-          : /* c8 ignore next */ undefined,
+        contentLength,
       },
     )
 
@@ -574,6 +604,16 @@ export class RegistryClient {
       const [nextURL, nextOptions] = redirect(options, result, url)
       if (nextOptions && nextURL) {
         return await this.request(nextURL, nextOptions)
+      }
+      return result
+    }
+
+    // If otplease already consumed the body (e.g. checking for OTP
+    // prompt on a plain 401), use the text it read rather than trying
+    // to re-read from the already-drained stream.
+    if (consumedBody !== undefined) {
+      if (consumedBody.length > 0) {
+        result.addBody(new TextEncoder().encode(consumedBody))
       }
       return result
     }

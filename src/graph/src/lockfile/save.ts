@@ -28,7 +28,6 @@ import type {
   LockfileEdges,
   LockfileEdgeValue,
   LockfileNode,
-  LockfilePlatform,
 } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
 import { error } from '@vltpkg/error-cause'
@@ -116,7 +115,7 @@ const formatNodes = (
 
     // Always save platform data for optional dependencies if available
     if (node.optional && node.platform) {
-      lockfileNode[7] = node.platform as LockfilePlatform
+      lockfileNode[7] = node.platform
     }
 
     // Save bin data if available
@@ -181,7 +180,7 @@ export const lockfileData = ({
   registries,
   saveManifests,
   saveBuildData,
-  'scope-registries': scopeRegistries,
+  'scoped-registries': scopeRegistries,
   'jsr-registries': jsrRegistries,
   throwOnMissingManifest,
 }: SaveOptions): LockfileData => {
@@ -220,7 +219,7 @@ export const lockfileData = ({
       ...(hasItems(catalog) ? { catalog } : {}),
       ...(hasItems(catalogs) ? { catalogs } : {}),
       ...(hasItems(cleanScopeRegistries) ?
-        { 'scope-registries': cleanScopeRegistries }
+        { 'scoped-registries': cleanScopeRegistries }
       : undefined),
       ...(hasItems(cleanJsrRegistries) ?
         { 'jsr-registries': cleanJsrRegistries }

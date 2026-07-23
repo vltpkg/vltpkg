@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/graph",
   "description": "A library that helps understanding & expressing what happens on an install",
-  "version": "1.0.0-rc.18",
+  "version": "1.0.0-rc.32",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -35,7 +35,6 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
-    "@vltpkg/vlt-json": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
@@ -80,5 +79,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/graph#readme"
 }

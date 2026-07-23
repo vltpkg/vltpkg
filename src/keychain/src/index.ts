@@ -59,6 +59,14 @@ export class Keychain<V extends string = string> {
     return !!this.#data && Object.hasOwn(this.#data, key)
   }
 
+  async keys(): Promise<string[]> {
+    return (await this.#load()).keysSync()
+  }
+
+  keysSync(): string[] {
+    return this.#data ? Object.keys(this.#data) : []
+  }
+
   async #mkdir() {
     await mkdir(dirname(this.#file), {
       recursive: true,

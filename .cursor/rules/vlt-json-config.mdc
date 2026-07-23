@@ -21,7 +21,7 @@ CLI args → project `vlt.json` → user `vlt.json` (XDG config dir) → default
   "catalog": { "typescript": "^5.0.0" },
   "catalogs": { "testing": { "vitest": "^1.0.0" } },
   "registries": { "custom": "https://..." },
-  "scope-registries": { "@myco": "https://..." },
+  "scoped-registries": { "@myco": "https://..." },
   "jsr-registries": { "jsr": "https://npm.jsr.io/" },
   "git-hosts": { "github": "git+ssh://..." },
   "git-host-archives": { "github": "https://..." },

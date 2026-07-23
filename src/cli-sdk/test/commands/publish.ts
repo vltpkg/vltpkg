@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import type { CommandResultSingle } from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, registryBase } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 interface MockResponse {
@@ -26,6 +26,7 @@ interface TestConfig {
     monorepo?:
       | {
           name: string
+          path?: string
           fullpath: string
         }[]
       | null
@@ -277,6 +278,41 @@ t.test('command', async t => {
     )
   })
 
+  t.test('handles 409 conflict for existing version', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
+      statusCode: 409,
+      text: 'Conflict',
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    await t.rejects(
+      command(config),
+      /@test\/package@1\.2\.3 already exists in the registry\. Bump the version and try again/,
+    )
+  })
+
   t.test('uses custom tag when provided', async t => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -479,6 +515,198 @@ t.test('command', async t => {
     t.equal(result.access, 'public')
   })
 
+  t.test('uses publishConfig.tag from manifest', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        publishConfig: {
+          tag: 'next',
+        },
+      }),
+      'index.js': '// test file',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        tag: 'latest',
+      },
+      positionals: ['publish'],
+    })
+
+    const result = (await command(config)) as CommandResultSingle
+    t.equal(result.tag, 'next', 'should use publishConfig.tag')
+  })
+
+  t.test('uses publishConfig.access from manifest', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        publishConfig: {
+          access: 'public',
+        },
+      }),
+      'index.js': '// test file',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    let publishBody: string | undefined
+    const tempRequest = RegistryClient.prototype.request
+    RegistryClient.prototype.request = (async (
+      _url: URL | string,
+      opts?: { body?: string },
+    ) => {
+      publishBody = opts?.body
+      return {
+        statusCode: 201,
+        text: () => '{"ok":true}',
+        json: () => ({ ok: true }),
+        getHeader: () => undefined,
+      }
+    }) as unknown as typeof tempRequest
+    t.teardown(() => {
+      RegistryClient.prototype.request = tempRequest
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    const result = (await command(config)) as CommandResultSingle
+    t.equal(
+      result.access,
+      'public',
+      'should use publishConfig.access',
+    )
+    t.ok(publishBody, 'should have sent a request body')
+    const metadata = JSON.parse(publishBody!)
+    t.equal(
+      metadata.access,
+      'public',
+      'publish metadata should include access from publishConfig',
+    )
+  })
+
+  t.test('uses publishConfig.registry from manifest', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: '1.0.0',
+        publishConfig: {
+          registry: 'https://custom.registry.example.com/',
+        },
+      }),
+      'index.js': '// test file',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    const result = (await command(config)) as CommandResultSingle
+    t.equal(
+      result.registry,
+      'https://custom.registry.example.com',
+      'should use publishConfig.registry',
+    )
+  })
+
+  t.test(
+    'publishConfig takes precedence over config defaults',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: '@test/package',
+          version: '1.2.3',
+          publishConfig: {
+            tag: 'next',
+            access: 'restricted',
+          },
+        }),
+        'index.js': '// test file',
+        'vlt.json': '{}',
+      })
+
+      t.chdir(dir)
+
+      const config = makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          registry: 'https://registry.npmjs.org',
+          tag: 'latest',
+          access: 'public',
+        },
+        positionals: ['publish'],
+      })
+
+      const result = (await command(config)) as CommandResultSingle
+      t.equal(
+        result.tag,
+        'next',
+        'publishConfig.tag takes precedence',
+      )
+      t.equal(
+        result.access,
+        'restricted',
+        'publishConfig.access takes precedence',
+      )
+    },
+  )
+
+  t.test(
+    'falls back to config when publishConfig is absent',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: '@test/package',
+          version: '1.2.3',
+        }),
+        'index.js': '// test file',
+        'vlt.json': '{}',
+      })
+
+      t.chdir(dir)
+
+      const config = makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          registry: 'https://registry.npmjs.org',
+          tag: 'beta',
+          access: 'public',
+        },
+        positionals: ['publish'],
+      })
+
+      const result = (await command(config)) as CommandResultSingle
+      t.equal(result.tag, 'beta', 'should use config tag')
+      t.equal(result.access, 'public', 'should use config access')
+    },
+  )
+
   t.test('does not send access when not explicitly set', async t => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -662,6 +890,8 @@ t.test('publish command with scope', async t => {
             } as MockCacheEntry
           }
         },
+        oidc: async () => undefined,
+        registryBase,
       },
       '../../src/query-host-contexts.ts': {
         createHostContextsMap: async () => new Map(),
@@ -676,10 +906,12 @@ t.test('publish command with scope', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -745,6 +977,8 @@ t.test('publish command with scope', async t => {
             } as MockCacheEntry
           }
         },
+        oidc: async () => undefined,
+        registryBase,
       },
       '../../src/query-host-contexts.ts': {
         createHostContextsMap: async () => new Map(),
@@ -825,6 +1059,7 @@ t.test('publish command with workspace paths', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
         ],
@@ -849,6 +1084,181 @@ t.test('publish command with workspace paths', async t => {
 
     t.equal(results[0]!.name, '@test/a')
     t.equal(results[0]!.version, '1.0.0')
+  })
+})
+
+t.test('publish command workspace filtering modes', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: '@test/a',
+          version: '1.0.0',
+        }),
+        'index.js': 'console.log("a")',
+        'vlt.json': '{}',
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: '@test/b',
+          version: '2.0.0',
+        }),
+        'index.js': 'console.log("b")',
+        'vlt.json': '{}',
+      },
+    },
+  })
+
+  const tempRequest = RegistryClient.prototype.request
+  t.beforeEach(() => {
+    RegistryClient.prototype.request = (async () => {
+      return {
+        statusCode: 201,
+        text: () => '{"ok":true}',
+        json: () => ({ ok: true }),
+        getHeader: () => undefined,
+      } as MockCacheEntry
+    }) as unknown as typeof tempRequest
+  })
+  t.teardown(() => {
+    RegistryClient.prototype.request = tempRequest
+  })
+
+  t.test('filters by workspace name', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: ['@test/a'] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return ['@test/a']
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by workspace fullpath', async t => {
+    const fullpath = resolve(dir, 'packages/a')
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath,
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: [fullpath] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return [fullpath]
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by resolved relative path', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: ['./packages/a'] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return ['./packages/a']
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 1)
+    t.equal(results[0]!.name, '@test/a')
+  })
+
+  t.test('filters by minimatch glob', async t => {
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+        monorepo: [
+          {
+            name: '@test/a',
+            path: 'packages/a',
+            fullpath: resolve(dir, 'packages/a'),
+          },
+          {
+            name: '@test/b',
+            path: 'packages/b',
+            fullpath: resolve(dir, 'packages/b'),
+          },
+        ],
+      },
+      positionals: ['publish'],
+      values: { workspace: ['packages/*'] },
+    })
+    config.get = ((key: unknown) => {
+      if (key === 'workspace') return ['packages/*']
+      return undefined
+    }) as LoadedConfig['get']
+
+    const result = await command(config)
+    const results = result as CommandResultSingle[]
+    t.equal(results.length, 2)
   })
 })
 
@@ -905,10 +1315,12 @@ t.test('publish command with workspace-group', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],
@@ -991,10 +1403,12 @@ t.test('publish command with recursive', async t => {
         monorepo: [
           {
             name: '@test/a',
+            path: 'packages/a',
             fullpath: resolve(dir, 'packages/a'),
           },
           {
             name: '@test/b',
+            path: 'packages/b',
             fullpath: resolve(dir, 'packages/b'),
           },
         ],

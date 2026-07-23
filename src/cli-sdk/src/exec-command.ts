@@ -20,6 +20,7 @@ import type {
   RunResult,
 } from '@vltpkg/run'
 import { Query } from '@vltpkg/query'
+import { createDiffFilesProvider } from './query-diff-files.ts'
 import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -39,10 +40,7 @@ export type MultiRunResult = Record<string, RunResult>
 export type ScriptSet = Record<string, string>
 export type MultiScriptSet = Record<string, ScriptSet>
 export type ExecResult =
-  | RunFGResult
-  | MultiRunResult
-  | ScriptSet
-  | MultiScriptSet
+  RunFGResult | MultiRunResult | ScriptSet | MultiScriptSet
 
 const isScriptSet = (o: unknown): o is ScriptSet => {
   if (!o || typeof o !== 'object') return false
@@ -113,7 +111,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.conf = conf
     this.bg = bg
     this.fg = fg
-    this.view = this.validViewValues.get(conf.values.view) ?? 'human'
     const {
       projectRoot,
       positionals: [arg0, ...args],
@@ -121,6 +118,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.arg0 = arg0
     this.args = args
     this.projectRoot = projectRoot
+    this.view = this.validViewValues.get(conf.values.view) ?? 'human'
   }
 
   #targetCount(): number {
@@ -164,6 +162,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         /* c8 ignore stop */
         securityArchive: undefined,
         hostContexts,
+        diffFiles: createDiffFilesProvider(this.projectRoot),
       })
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,
@@ -325,6 +324,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       arg0,
       args: this.args,
       env: this.env,
+      ignoreMissing:
+        this.conf.get('if-present') ?? this.#defaultIgnoreMissing,
       projectRoot: this.projectRoot,
       packageJson: this.conf.options.packageJson,
       'script-shell':

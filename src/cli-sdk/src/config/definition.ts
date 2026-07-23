@@ -19,12 +19,15 @@ export const defaultEditor = () =>
   : 'vi')
 
 const canonicalCommands = {
+  access: 'access',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',
   ci: 'ci',
   config: 'config',
   create: 'create',
+  deprecate: 'deprecate',
+  'dist-tag': 'dist-tag',
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
@@ -38,6 +41,7 @@ const canonicalCommands = {
   pack: 'pack',
   ping: 'ping',
   pkg: 'pkg',
+  profile: 'profile',
   publish: 'publish',
   query: 'query',
   repo: 'repo',
@@ -46,6 +50,7 @@ const canonicalCommands = {
   skills: 'skills',
   token: 'token',
   uninstall: 'uninstall',
+  unpublish: 'unpublish',
   update: 'update',
   'exec-cache': 'exec-cache',
   version: 'version',
@@ -116,7 +121,7 @@ export const recordFields = [
   'git-hosts',
   'registries',
   'git-host-archives',
-  'scope-registries',
+  'scoped-registries',
   'jsr-registries',
 ] as const
 
@@ -125,32 +130,17 @@ export type RecordField = (typeof recordFields)[number]
 export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
-const stopParsingCommands: Commands[keyof Commands][] = [
-  'create',
-  'run',
-  'run-exec',
-  'exec-local',
-  'exec',
-]
-
-let stopParsing: boolean | undefined = undefined
-
 const j = jack({
   envPrefix: 'VLT',
   allowPositionals: true,
   usage: `vlt [<options>] [<cmd> [<args> ...]]`,
-  stopAtPositionalTest: arg => {
-    if (stopParsing) return true
-    const a = arg as keyof Commands
-    // we stop parsing AFTER the thing, so you can do
-    // vlt run --vlt --configs scriptName --args --for --script
-    // or
-    // vlt exec --vlt --configs command --args --for --command
-    if (stopParsingCommands.includes(commands[a])) {
-      stopParsing = true
-    }
-    return false
-  },
+  // vlt options can appear on either side of the command/script
+  // name. To forward an argument (especially a flag-like one) to
+  // the underlying bin/script without vlt interpreting it, place
+  // it after a `--` terminator, e.g.:
+  //   vlt run scriptName --vlt-flag -- --script-flag --more
+  // Node's `parseArgs` natively treats everything following `--`
+  // as positional, so no special-casing is needed here.
 })
   .heading('vlt')
   .description(
@@ -232,12 +222,12 @@ export const definition = j
                     `,
     },
 
-    'scope-registries': {
+    'scoped-registries': {
       hint: '@scope=url',
       description: `Map package name scopes to registry URLs.
 
                     For example,
-                    \`--scope-registries @acme=https://registry.acme/\`
+                    \`--scoped-registries @acme=https://registry.acme/\`
                     would tell vlt to fetch any packages named
                     \`@acme/...\` from the \`https://registry.acme/\`
                     registry.
@@ -675,6 +665,11 @@ export const definition = j
     'dry-run': {
       description: 'Run command without making any changes',
     },
+    force: {
+      short: 'f',
+      description:
+        'Force potentially dangerous operations, such as unpublishing an entire package.',
+    },
     'expect-lockfile': {
       description:
         'Fail if lockfile is missing or out of date. Used by ci command to enforce lockfile integrity.',
@@ -727,6 +722,20 @@ export const definition = j
       hint: 'path',
       description: `Directory to use for pack and publish operations instead of the current directory.
                     The directory must exist and nothing will be copied to it.`,
+    },
+  })
+
+  .flag({
+    telemetry: {
+      description: `Enable anonymous usage telemetry.
+
+                    vlt collects anonymized usage data to help improve
+                    the tool. No personally identifiable information is
+                    ever sent.
+
+                    Set \`--no-telemetry\` or \`VLT_TELEMETRY=0\` or
+                    \`DO_NOT_TRACK=1\` to opt out.`,
+      default: true,
     },
   })
 

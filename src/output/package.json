@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/output",
   "description": "Generate output from the vlt CLI",
-  "version": "1.0.0-rc.18",
+  "version": "1.0.0-rc.32",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -57,5 +57,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/output#readme"
 }

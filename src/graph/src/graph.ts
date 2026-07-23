@@ -155,6 +155,13 @@ export class Graph implements GraphLike {
   peerContextForkCache = new Map<string, PeerContext>()
 
   /**
+   * Whether the options used to create this graph differ from the
+   * options stored in the lockfile it was loaded from. When true,
+   * the ideal builder must reset edges and rebuild the graph.
+   */
+  optionsChanged = false
+
+  /**
    * Tracks the current peer context index.
    */
   currentPeerContextIndex = 0
@@ -168,7 +175,7 @@ export class Graph implements GraphLike {
       registries: options.registries,
       'git-hosts': options['git-hosts'],
       'git-host-archives': options['git-host-archives'],
-      'scope-registries': options['scope-registries'],
+      'scoped-registries': options['scoped-registries'],
       'jsr-registries': options['jsr-registries'],
       catalog: options.catalog,
       catalogs: options.catalogs,
@@ -445,6 +452,20 @@ export class Graph implements GraphLike {
       toFoundNode.detached = false
       toFoundNode.dev &&= flags.dev
       toFoundNode.optional &&= flags.optional
+
+      // Hydrate manifest and integrity on existing nodes (e.g. loaded
+      // from a lockfile without manifest data).  Without this, nodes
+      // that already have `resolved` set from the lockfile will never
+      // get their integrity populated because `setResolved()` is
+      // skipped when `resolved` is already present.
+      if (manifest) {
+        if (!toFoundNode.manifest) {
+          toFoundNode.manifest = manifest
+          this.manifests.set(toFoundNode.id, manifest)
+        }
+        toFoundNode.integrity ??= manifest.dist?.integrity
+      }
+
       return toFoundNode
     }
 

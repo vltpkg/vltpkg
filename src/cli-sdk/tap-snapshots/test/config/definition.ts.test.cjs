@@ -8,6 +8,7 @@
 exports[`test/config/definition.ts > TAP > commands 1`] = `
 Object {
   "?": "help",
+  "access": "access",
   "add": "install",
   "b": "build",
   "bugs": "bugs",
@@ -16,6 +17,8 @@ Object {
   "ci": "ci",
   "config": "config",
   "create": "create",
+  "deprecate": "deprecate",
+  "dist-tag": "dist-tag",
   "docs": "docs",
   "exec": "exec",
   "exec-cache": "exec-cache",
@@ -34,6 +37,7 @@ Object {
   "pack": "pack",
   "ping": "ping",
   "pkg": "pkg",
+  "profile": "profile",
   "pub": "publish",
   "publish": "publish",
   "q": "query",
@@ -49,6 +53,7 @@ Object {
   "token": "token",
   "u": "update",
   "uninstall": "uninstall",
+  "unpublish": "unpublish",
   "update": "update",
   "version": "version",
   "view": "view",
@@ -179,12 +184,15 @@ Object {
     "hint": "command",
     "type": "string",
     "validOptions": Array [
+      "access",
       "bugs",
       "build",
       "cache",
       "ci",
       "config",
       "create",
+      "deprecate",
+      "dist-tag",
       "docs",
       "exec",
       "exec-local",
@@ -198,6 +206,7 @@ Object {
       "pack",
       "ping",
       "pkg",
+      "profile",
       "publish",
       "query",
       "repo",
@@ -205,6 +214,7 @@ Object {
       "run",
       "token",
       "uninstall",
+      "unpublish",
       "update",
       "exec-cache",
       "version",
@@ -231,6 +241,11 @@ Object {
     "description": "Number of milliseconds before starting first retry",
     "hint": "n",
     "type": "number",
+  },
+  "force": Object {
+    "description": "Force potentially dangerous operations, such as unpublishing an entire package.",
+    "short": "f",
+    "type": "boolean",
   },
   "frozen-lockfile": Object {
     "description": "Fail if lockfile is missing or out of sync with package.json. Prevents any lockfile modifications.",
@@ -415,11 +430,11 @@ Object {
     "short": "s",
     "type": "string",
   },
-  "scope-registries": Object {
+  "scoped-registries": Object {
     "description": String(
       Map package name scopes to registry URLs.
       
-      For example, \`--scope-registries @acme=https://registry.acme/\` would tell vlt to fetch any packages named \`@acme/...\` from the \`https://registry.acme/\` registry.
+      For example, \`--scoped-registries @acme=https://registry.acme/\` would tell vlt to fetch any packages named \`@acme/...\` from the \`https://registry.acme/\` registry.
       
       Note: this way of specifying registries is more ambiguous, compared with using the \`--registries\` field and explicit prefixes, because instead of failing when the configuration is absent, it will instead attempt to fetch from the default registry.
       
@@ -464,6 +479,16 @@ Object {
     "hint": "query",
     "short": "t",
     "type": "string",
+  },
+  "telemetry": Object {
+    "description": String(
+      Enable anonymous usage telemetry.
+      
+      vlt collects anonymized usage data to help improve the tool. No personally identifiable information is ever sent.
+      
+      Set \`--no-telemetry\` or \`VLT_TELEMETRY=0\` or \`DO_NOT_TRACK=1\` to opt out.
+    ),
+    "type": "boolean",
   },
   "version": Object {
     "description": "Print the version",
@@ -548,6 +573,7 @@ Array [
   "--fetch-retry-factor=<n>",
   "--fetch-retry-maxtimeout=<n>",
   "--fetch-retry-mintimeout=<n>",
+  "--force",
   "--frozen-lockfile",
   "--git-host-archives=<name=template>",
   "--git-hosts=<name=template>",
@@ -573,11 +599,12 @@ Array [
   "--save-peer",
   "--save-prod",
   "--scope=<query>",
-  "--scope-registries=<@scope=url>",
+  "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
   "--target=<query>",
+  "--telemetry",
   "--version",
   "--view=<output>",
   "--workspace=<ws>",
@@ -608,6 +635,7 @@ Array [
   "fetch-retry-factor",
   "fetch-retry-maxtimeout",
   "fetch-retry-mintimeout",
+  "force",
   "frozen-lockfile",
   "git-host-archives",
   "git-hosts",
@@ -633,11 +661,12 @@ Array [
   "save-peer",
   "save-prod",
   "scope",
-  "scope-registries",
+  "scoped-registries",
   "script-shell",
   "stale-while-revalidate-factor",
   "tag",
   "target",
+  "telemetry",
   "version",
   "view",
   "workspace",
