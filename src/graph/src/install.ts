@@ -23,11 +23,13 @@ import { lockfile } from './index.ts'
 import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { Monorepo } from '@vltpkg/workspaces'
+import { skills } from './skills.ts'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   cleanInstall?: boolean // Only set by ci command for clean install
   allowScripts: string
+  allowSkills?: string
 }
 
 export const install = async (
@@ -266,6 +268,20 @@ export const install = async (
       remove,
       remover,
     })
+
+    // Link skills if allowSkills is set and not just ':not(*)'
+    if (options.allowSkills && options.allowSkills !== ':not(*)') {
+      try {
+        await skills({
+          ...options,
+          action: 'link',
+          target: options.allowSkills,
+        })
+      } catch (skillsErr) {
+        // Don't fail the install if skills linking fails
+        console.error('Failed to link skills:', skillsErr)
+      }
+    }
 
     return { buildQueue, graph, diff }
   } catch (err) {
