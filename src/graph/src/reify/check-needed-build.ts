@@ -85,7 +85,7 @@ const nodeNeedsBuild = (
     node.id.startsWith('git') || node.importer || !node.inVltStore()
   const runPrepare =
     !!(
-      scripts.prepare || scripts.preprepare || scripts.postprepare
+      (scripts.prepare || scripts.preprepare || scripts.postprepare)
       /* c8 ignore next 2 */
     ) && prepable
   if (runPrepare) return true

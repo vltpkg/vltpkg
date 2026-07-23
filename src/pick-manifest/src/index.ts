@@ -95,7 +95,9 @@ export const LDD_PATH = '/usr/bin/ldd'
  * or undefined (file not readable).
  */
 export const getFamilyFromFilesystem = ():
-  string | null | undefined => {
+  | string
+  | null
+  | undefined => {
   /* c8 ignore start - Linux-only detection */
   try {
     const content = readFileSync(LDD_PATH, 'utf-8')

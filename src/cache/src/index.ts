@@ -23,9 +23,11 @@ export type CacheFetchContext =
   | undefined
 
 export type CacheOptions = {
-  [
-    k in keyof LRUCache.Options<string, Buffer, CacheFetchContext>
-  ]?: LRUCache.Options<string, Buffer, CacheFetchContext>[k]
+  [k in keyof LRUCache.Options<
+    string,
+    Buffer,
+    CacheFetchContext
+  >]?: LRUCache.Options<string, Buffer, CacheFetchContext>[k]
 } & {
   /**
    * fetchMethod may not be provided, because this cache forces its own

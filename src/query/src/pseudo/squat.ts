@@ -19,7 +19,9 @@ import type { PostcssNode } from '@vltpkg/dss-parser'
 export type SquatKinds = '0' | '2' | 'critical' | 'medium' | undefined
 
 export type SquatAlertTypes =
-  'didYouMean' | 'gptDidYouMean' | undefined
+  | 'didYouMean'
+  | 'gptDidYouMean'
+  | undefined
 
 export type SquatComparator = '>' | '<' | '>=' | '<=' | undefined
 

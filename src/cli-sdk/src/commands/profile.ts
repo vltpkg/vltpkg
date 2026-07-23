@@ -44,7 +44,8 @@ export const usage: CommandUsage = () =>
 export type ProfileData = Record<string, JSONField>
 
 export type ProfileResult =
-  ProfileData | { property: string; value: JSONField }
+  | ProfileData
+  | { property: string; value: JSONField }
 
 const stringify = (v: JSONField): string =>
   typeof v === 'string' ? v

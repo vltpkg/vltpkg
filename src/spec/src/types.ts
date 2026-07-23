@@ -29,7 +29,12 @@ export type GitSelectorParsed = {
 }
 
 export type SpecType =
-  'file' | 'git' | 'registry' | 'remote' | 'workspace' | 'catalog'
+  | 'file'
+  | 'git'
+  | 'registry'
+  | 'remote'
+  | 'workspace'
+  | 'catalog'
 
 export type SpecLikeBase = {
   /** the type of spec that this is, ultimately */

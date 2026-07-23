@@ -77,7 +77,11 @@ export const get = async (conf: LoadedConfig) => {
     const record = conf.getRecord(field)
 
     return dotProp.get(record, subKey) as
-      string | number | boolean | string[] | undefined
+      | string
+      | number
+      | boolean
+      | string[]
+      | undefined
   }
 
   // otherwise just get the value directly from the config getter
