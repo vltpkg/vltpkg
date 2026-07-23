@@ -27,7 +27,7 @@ are not published to any registry.
 ### [`www`](./www/)
 
 These are websites that get deployed. Currently only
-[docs.vlt.sh](https://docs.vlt.sh).
+[docs.vlt.io](https://docs.vlt.io).
 
 ## Linting / Formatting
 
