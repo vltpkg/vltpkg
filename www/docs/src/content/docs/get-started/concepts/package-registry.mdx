@@ -1,0 +1,43 @@
+---
+title: Package Registry
+sidebar:
+  label: Package Registry
+  order: 0
+---
+
+Think of a **package registry** as an app store for code.
+
+It is a server that provides the metadata and artifacts for a package
+manager to install.
+
+The most popular package registry is the public npm registry, which
+JavaScript package managers use for the bulk of their content.
+
+## What happens when you run `npm install`
+
+When you run this command in your terminal: `npm install react`
+
+{/* prettier-ignore */}
+```markdown
+Here's what happens behind the scenes:
+Your terminal
+    │
+    │  "Hey registry, I want to use react"
+    │
+    ▼
+registry.npmjs.org  (the public npm registry)
+    │
+    │  "Here's react's metadata + a download link"
+    │
+    ▼
+Your project's node_modules/react/
+    (package downloaded and saved locally)
+```
+
+The registry is just a server that:
+
+1. Stores every version of every published package
+2. Responds to requests like "give me react version 18.2.0"
+3. Authenticates publishers (so only you can update your own packages)
+4. Verifies integrity (checks that the file you downloaded hasn't been
+   tampered with)

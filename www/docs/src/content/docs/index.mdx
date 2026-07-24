@@ -1,74 +1,51 @@
 ---
-title: Documentation
+title: Welcome to vlt
 tableOfContents: false
 sidebar:
-  label: Documentation
+  label: Overview
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import { Code } from '@astrojs/starlight/components'
+import {
+  Code,
+  Tabs,
+  TabItem,
+  Steps,
+} from '@astrojs/starlight/components'
 import { CardGrid, CardGridLink } from '@/components/cards/cards.tsx'
 
-# Documentation
+## Introduction to vlt
 
-VLT delivers the tools and infrastructure developers need to
-streamline package management, scale efficiently, and secure a faster,
-more tailored web experience.
+vlt is the platform built for Javascript registries.
 
-## Getting Started
-
-Learn how to get the VLT client set up in your project.
-
-<Tabs>
-  <TabItem label="npm">
-    <Code code="$ npm i -g vlt" lang="bash" />
-  </TabItem>
-  <TabItem label="pnpm">
-    <Code code="$ pnpm i -g vlt" lang="bash" />
-  </TabItem>
-</Tabs>
-
-> vlt is supported on Node versions 20 or 22 currently.
+Our toolset streamlines package management for a secure, faster,
+developer experience.
 
 ## Explore
 
-Discover the full range of commands and options available in the VLT
-CLI.
-
 <CardGrid>
-  <CardGridLink
-    title="Authentication"
-    description="Setup credentials for multiple registries"
-    href="/cli/auth"
-    icon="Authentication"
-  />
-  <CardGridLink
-    title="Commands"
-    description="The commands you already know, made more powerful"
-    href="/cli/commands"
-    icon="Client"
-  />
-  <CardGridLink
-    title="Configuration"
-    description="Do more, type less with companion binary shortcuts"
-    href="/cli/configuring"
-    icon="Config"
-  />
-  <CardGridLink
-    title="Packages"
-    description="The workspaces that makeup the VLT monorepo"
-    href="/packages"
+ <CardGridLink
+    title="vlt Registries"
+    description="Publishing packages on vlt's registry"
+    href="/registry"
     icon="Package"
   />
-  <CardGridLink
-    title="Dependency Selectors"
-    description="Effortless dependency targeting with selectors"
-    href="/cli/selectors"
-    icon="Query"
-  />
-  <CardGridLink
+
+<CardGridLink
+  title="Migrate to vlt registry using CLI"
+  description="Migrating to vlt from npm, pnpm, bun"
+  href="/cli/migration"
+  icon="Graph"
+/>
+
+<CardGridLink
+  title="CLI"
+  description="vlt CLI extends npm's and provides dependency management superpowers"
+  href="/cli"
+  icon="Client"
+/>
+ <CardGridLink
     title="Security & Malware Detection"
-    description="Identify security risks and malware in dependencies"
+    description="Identify security risks and malware hiding in dependencies"
     href="/cli/security"
     icon="Authentication"
   />

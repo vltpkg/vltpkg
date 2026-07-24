@@ -25,6 +25,10 @@ export default defineConfig({
   trailingSlash: 'never',
   integrations: [
     starlight({
+      editLink: {
+        baseUrl:
+          'https://github.com/vltpkg/vltpkg/edit/main/www/docs/',
+      },
       head: [
         {
           tag: 'script',
@@ -106,17 +110,25 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: 'Get Started',
+          collapsed: true,
+          items: [
+            'get-started/use-cases',
+            {
+              label: 'Concepts',
+              collapsed: true,
+              autogenerate: { directory: 'get-started/concepts' },
+            },
+            'get-started/reference',
+          ],
+        },
+        {
           label: 'Client',
           collapsed: true,
           autogenerate: { directory: 'cli' },
         },
         {
-          label: 'Migration',
-          collapsed: true,
-          autogenerate: { directory: 'migration' },
-        },
-        {
-          label: 'Packages',
+          label: 'API Reference',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
         },

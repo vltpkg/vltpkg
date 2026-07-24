@@ -5,26 +5,20 @@ alwaysApply: false
 ---
 # Documentation Website (`www/docs/`)
 
-Astro/Starlight site → https://docs.vlt.sh
+Refer to [Astro/Starlight](https://docs.vlt.sh) for code blocks, components and front end config.
+
 
 ## Content Structure
 
 ```
 www/docs/src/content/docs/
-├── cli/
-│   ├── index.mdx           # CLI overview
-│   ├── configuring.mdx     # All CLI options/flags
-│   ├── selectors.mdx       # DSS selector reference
-│   ├── workspaces.mdx      # Workspace usage guide
-│   ├── catalogs.mdx        # Catalog protocol guide
-│   ├── registries.mdx      # Multi-registry guide
-│   ├── auth.mdx            # Authentication guide
-│   ├── security.mdx        # Security scanning guide
-│   ├── peer-dependencies.mdx
-│   ├── graph-modifiers.mdx
-│   └── commands/            # Per-command docs
-│       ├── install.mdx, build.mdx, query.mdx, ...
-└── index.mdx
+├── get-started/concepts/   # Core concepts (dependencies, manifests, registries)
+├── migration/              # Migration guides from npm/pnpm/yarn
+├── cli/                    # CLI reference (options, guides)
+│   ├── commands/           # Per-command docs
+│   └── selectors/          # DSS selector reference (pseudo-classes, combinators, etc.)
+├── packages/               # Package API docs (auto-generated)
+└── index.mdx               # Site homepage
 ```
 
 ## Format
@@ -46,7 +40,7 @@ Use `<Code code="..." title="Terminal" lang="bash" />` for command examples.
 
 - Adding/changing CLI options → update `cli/configuring.mdx`
 - Adding/changing commands → update/create `cli/commands/<cmd>.mdx`
-- Adding DSS selectors → update `cli/selectors.mdx`
+- Adding DSS selectors → update `cli/selectors/` (index + new files)
 - Changing install/build behavior → update relevant command + concept docs
 
 ## Dev
