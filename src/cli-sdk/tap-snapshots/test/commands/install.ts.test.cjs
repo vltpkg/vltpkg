@@ -37,6 +37,17 @@ appropriately.
 
       ​--save-dev
 
+    save-exact
+      Save installed packages with exact versions instead of a semver range.
+
+      ​--save-exact
+
+    save-prefix
+      The version prefix to use when saving dependencies (e.g. ^, ~, >=, or
+      empty string).
+
+      ​--save-prefix=<prefix>
+
     save-optional
       Save installed packages to package.json as optionalDependencies.
 

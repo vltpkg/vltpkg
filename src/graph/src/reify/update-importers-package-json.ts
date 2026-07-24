@@ -51,6 +51,16 @@ export type UpdatePackageJsonOptions = {
    * instance used to load these `package.json` files previously.
    */
   packageJson: PackageJson
+  /**
+   * When true, save dependencies with exact versions (e.g. `1.2.3`)
+   * instead of the default semver range operator (e.g. `^1.2.3`).
+   */
+  saveExact?: boolean
+  /**
+   * The prefix to use when saving dependency versions (e.g. `^`, `~`, `>=`, ``).
+   * Defaults to `^` if not specified. Ignored when `saveExact` is true.
+   */
+  savePrefix?: string
 }
 
 const addOrRemoveDeps = (
@@ -58,6 +68,8 @@ const addOrRemoveDeps = (
   graph: Graph,
   addOrRemove?:
     AddImportersDependenciesMap | RemoveImportersDependenciesMap,
+  saveExact?: boolean,
+  savePrefix?: string,
 ): NormalizedManifest | undefined => {
   const node = graph.nodes.get(nodeId)
   if (!node) {
@@ -139,6 +151,8 @@ const addOrRemoveDeps = (
         dep.spec,
         existing,
         n.version,
+        saveExact,
+        savePrefix,
       )
       dependencies[name] = saveValue
       manifestChanged = manifestChanged || saveValue !== existing
@@ -156,6 +170,8 @@ export const updatePackageJson = ({
   graph,
   packageJson,
   remove,
+  saveExact,
+  savePrefix,
 }: UpdatePackageJsonOptions) => {
   const manifestsToUpdate = new Set<NormalizedManifest>()
   const operations = new Set([add, remove])
@@ -166,7 +182,13 @@ export const updatePackageJson = ({
       // that are nested folders from which the user can also add new
       // dependencies to
       for (const nodeId of operation.keys()) {
-        const manifest = addOrRemoveDeps(nodeId, graph, operation)
+        const manifest = addOrRemoveDeps(
+          nodeId,
+          graph,
+          operation,
+          saveExact,
+          savePrefix,
+        )
         if (manifest) {
           manifestsToUpdate.add(manifest)
         }

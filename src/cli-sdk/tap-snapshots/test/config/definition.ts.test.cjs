@@ -410,6 +410,11 @@ Object {
     "short": "D",
     "type": "boolean",
   },
+  "save-exact": Object {
+    "description": "Save installed packages to package.json with an exact version rather than using the default semver range operator (e.g. \`1.2.3\` instead of \`^1.2.3\`).",
+    "short": "E",
+    "type": "boolean",
+  },
   "save-optional": Object {
     "description": "Save installed packages to a package.json file as optionalDependencies",
     "short": "O",
@@ -418,6 +423,10 @@ Object {
   "save-peer": Object {
     "description": "Save installed packages to a package.json file as peerDependencies",
     "type": "boolean",
+  },
+  "save-prefix": Object {
+    "description": "The version prefix to use when saving dependencies to package.json (e.g. \`^\`, \`~\`, \`>=\`, or empty string for exact versions). Defaults to \`^\`. Ignored when \`--save-exact\` is set.",
+    "type": "string",
   },
   "save-prod": Object {
     "description": "Save installed packages into dependencies specifically. This is useful if a package already exists in devDependencies or optionalDependencies, but you want to move it to be a non-optional production dependency.",
@@ -595,8 +604,10 @@ Array [
   "--registries=<name=url>",
   "--registry=<url>",
   "--save-dev",
+  "--save-exact",
   "--save-optional",
   "--save-peer",
+  "--save-prefix=<save-prefix>",
   "--save-prod",
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
@@ -657,8 +668,10 @@ Array [
   "registries",
   "registry",
   "save-dev",
+  "save-exact",
   "save-optional",
   "save-peer",
+  "save-prefix",
   "save-prod",
   "scope",
   "scoped-registries",
