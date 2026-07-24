@@ -76,8 +76,10 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --registries=<name=url>
     --registry=<url>
     --save-dev
+    --save-exact
     --save-optional
     --save-peer
+    --save-prefix=<save-prefix>
     --save-prod
     --scope=<query>
     --scoped-registries=<@scope=url>
@@ -141,8 +143,10 @@ Unknown config option: asdf
     registries
     registry
     save-dev
+    save-exact
     save-optional
     save-peer
+    save-prefix
     save-prod
     scope
     scoped-registries

@@ -96,6 +96,8 @@ export type ReifyOptions = LoadOptions & {
   modifiers?: GraphModifier
   remover: RollbackRemove
   update?: boolean
+  saveExact?: boolean
+  savePrefix?: string
 }
 
 export type ReifyResult = {
@@ -193,6 +195,8 @@ const reify_ = async (
     packageJson,
     scurry,
     allowScripts,
+    saveExact,
+    savePrefix,
   } = options
   const saveImportersPackageJson =
     /* c8 ignore next */
@@ -202,6 +206,8 @@ const reify_ = async (
         remove,
         graph: options.graph,
         packageJson,
+        saveExact,
+        savePrefix,
       })
     : undefined
 

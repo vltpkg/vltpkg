@@ -626,6 +626,12 @@ export const definition = j
       description: `Save installed packages to a package.json file as
                     devDependencies`,
     },
+    'save-exact': {
+      short: 'E',
+      description: `Save installed packages to package.json with an exact
+                    version rather than using the default semver range
+                    operator (e.g. \`1.2.3\` instead of \`^1.2.3\`).`,
+    },
     'save-optional': {
       short: 'O',
       description: `Save installed packages to a package.json file as
@@ -641,6 +647,16 @@ export const definition = j
                     This is useful if a package already exists in
                     devDependencies or optionalDependencies, but you want to
                     move it to be a non-optional production dependency.`,
+    },
+  })
+
+  .opt({
+    'save-prefix': {
+      description: `The version prefix to use when saving dependencies to
+                    package.json (e.g. \`^\`, \`~\`, \`>=\`, or empty string
+                    for exact versions). Defaults to \`^\`.
+                    Ignored when \`--save-exact\` is set.`,
+      default: '^',
     },
   })
 

@@ -37,6 +37,15 @@ export const usage: CommandUsage = () =>
         description:
           'Save installed packages to package.json as devDependencies.',
       },
+      'save-exact': {
+        description:
+          'Save installed packages with exact versions instead of a semver range.',
+      },
+      'save-prefix': {
+        value: '<prefix>',
+        description:
+          'The version prefix to use when saving dependencies (e.g. ^, ~, >=, or empty string).',
+      },
       'save-optional': {
         description:
           'Save installed packages to package.json as optionalDependencies.',
@@ -157,6 +166,8 @@ export const command: CommandFn<InstallResult> = async conf => {
   const frozenLockfile = conf.options['frozen-lockfile']
   const expectLockfile = conf.options['expect-lockfile']
   const lockfileOnly = conf.options['lockfile-only']
+  const saveExact = conf.values['save-exact']
+  const savePrefix = conf.values['save-prefix']
   /* c8 ignore start */
   const allowScripts =
     conf.get('allow-scripts') ?
@@ -171,6 +182,8 @@ export const command: CommandFn<InstallResult> = async conf => {
       expectLockfile,
       allowScripts,
       lockfileOnly,
+      saveExact,
+      savePrefix,
     },
     add,
   )
