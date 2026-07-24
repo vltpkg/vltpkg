@@ -1,0 +1,53 @@
+---
+title: Manifest
+sidebar:
+  label: Manifest
+  order: 2
+---
+
+A **manifest** is the metadata file that describes your package to the
+package manager and registry — its name, version, entry point,
+dependencies, scripts, and more. In Node, this is always
+`package.json`.
+
+## Common manifest fields
+
+| Field                  | Example                      | Purpose                                       |
+| ---------------------- | ---------------------------- | --------------------------------------------- |
+| `name`                 | `"express"`                  | Package name (used in `require()` / `import`) |
+| `version`              | `"4.18.2"`                   | Semver version                                |
+| `type`                 | `"module"` or `"commonjs"`   | Module system                                 |
+| `main` / `exports`     | `"./dist/index.js"`          | Entry point(s)                                |
+| `scripts`              | `{ "start": "node app.js" }` | Runable commands                              |
+| `dependencies`         | `{ "express": "^4.18.0" }`   | Production deps                               |
+| `devDependencies`      | `{ "vitest": "^1.0.0" }`     | Dev-only deps                                 |
+| `peerDependencies`     | `{ "react": "^18.0.0" }`     | Expected host deps                            |
+| `optionalDependencies` | `{ "bufferutil": "^4.0.0" }` | Non-failing deps                              |
+| `engines`              | `{ "node": ">=20" }`         | Runtime requirement                           |
+
+## Example
+
+```json
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
+  }
+}
+```
+
+## vlt.json
+
+vlt also supports its own configuration file (`vlt.json`) for
+workspace configuration, catalogs, and graph modifiers. For more
+details, see [Configuring vlt](/cli/configuring).

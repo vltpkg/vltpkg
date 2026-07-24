@@ -25,6 +25,10 @@ export default defineConfig({
   trailingSlash: 'never',
   integrations: [
     starlight({
+      editLink: {
+        baseUrl:
+          'https://github.com/vltpkg/vltpkg/edit/main/www/docs/',
+      },
       head: [
         {
           tag: 'script',
@@ -107,8 +111,16 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Get Started',
-          collapsed: false,
-          autogenerate: { directory: 'get-started' },
+          collapsed: true,
+          items: [
+            'get-started/use-cases',
+            {
+              label: 'Concepts',
+              collapsed: true,
+              autogenerate: { directory: 'get-started/concepts' },
+            },
+            'get-started/reference',
+          ],
         },
         {
           label: 'Client',
