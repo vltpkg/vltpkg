@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/rollback-remove",
   "description": "Mark paths as removed, then remove them or roll back",
-  "version": "1.0.0-rc.32",
+  "version": "1.0.0-rc.33",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
