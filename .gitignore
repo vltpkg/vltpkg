@@ -83,5 +83,5 @@ knip.d.ts.map
 # eval grader is intentional source, not a build artifact (see /src/**/*.mjs)
 !/src/query/skills/dss-query/evals/grade.mjs
 
-.opencode.jsonc*
-.opencode/*
+**/.opencode/**
+opencode.jsonc
