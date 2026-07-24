@@ -123,7 +123,7 @@ export default defineConfig({
           ],
         },
         {
-          label: 'CLI',
+          label: 'Client',
           collapsed: true,
           autogenerate: { directory: 'cli' },
         },
