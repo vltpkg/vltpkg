@@ -1,0 +1,55 @@
+---
+title: npm interoperability
+sidebar:
+  label: npm interoperability
+  order: 3
+---
+
+Keep your package manager. Point its registry at vlt & nothing else
+about your setup changes: same `package.json`, same `node_modules`,
+same commands.
+
+```bash
+npm config set registry=<your-vlt-registry-url>
+```
+
+vlt's registry speaks the npm registry API, so pnpm, Yarn, & Bun
+switch the same way with their own registry config. You get your
+registry URL when you [sign up](https://www.vlt.io/sign-up).
+
+## What stays the same
+
+vlt serves the same packages as
+[the public npm registry](https://registry.npmjs.org/). Names, semver
+ranges, & `dist-tag`s like `latest` resolve as they do today, &
+installs land in a standard `node_modules`. Your `package.json` stays
+the source of truth.
+
+## Mixing registries
+
+Route a single scope to a private registry & let everything else keep
+resolving publicly, so you don't proxy the whole ecosystem:
+
+```bash
+npm config set @mycompany:registry=<your-vlt-registry-url>
+```
+
+The full set of options, including per-registry auth, is in
+[Working with Named Registries](/cli/registries).
+
+## Prefer the vlt client?
+
+You don't need it to use the registry, but the vlt CLI adds
+[catalogs](/cli/catalogs),
+[Dependency Selector Syntax](/cli/selectors), & safer installs.
+Install it with the tools you already have:
+
+```bash
+npm install vlt@latest -g
+# or
+pnpm i -g vlt
+# or
+curl https://install.vlt.sh
+```
+
+vlt runs on Node 20 & 22.
