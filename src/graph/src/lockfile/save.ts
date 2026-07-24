@@ -82,7 +82,7 @@ const formatNodes = (
         undefined
       : node.location
 
-    if (node.manifest && !node.hasScripts) {
+    if (node.manifest) {
       node.hasScripts = computeHasScripts(node.manifest)
     }
     const flags = getFlagNumFromNode(node)
