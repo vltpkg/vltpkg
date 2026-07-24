@@ -1,0 +1,89 @@
+{
+  "skill_name": "dss-query",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "How do I find outdated direct dependencies of my project root with vlt?",
+      "expected_output": "A vlt query using ':root > :outdated' (optionally with a specifier like major), with a one-line explanation. Concise — query first, no long preamble.",
+      "files": [],
+      "assertions": [
+        "proposes-root-outdated-selector: at least one extracted selector matches /:root\\s*>\\s*:outdated/",
+        "all-selectors-parse: every `vlt query '<sel>'` selector in the answer parses via @vltpkg/dss-parser",
+        "selector-executes-on-fixture-graph: the primary (structural) selector runs through Query.search() against the in-memory fixture graph without throwing",
+        "query-first-style: a fenced code block containing the vlt query appears before any multi-sentence explanation"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Write a DSS query for prod dependencies of my workspaces that have a MIT license.",
+      "expected_output": "A vlt query like ':workspace > :prod[license=MIT]' — workspace anchor, direct-dep combinator, prod filter chained with the [license=MIT] attribute. Must NOT suggest ':license(mit)': the :license() pseudo only accepts category kinds (copyleft, unlicensed, none, ...), so specific license IDs require the attribute form.",
+      "files": [],
+      "assertions": [
+        "uses-license-attribute-form: a selector matches /\\[license\\^?=\\s*['\"]?MIT/i (attribute form for a specific license ID)",
+        "avoids-invalid-license-pseudo: the answer does NOT propose :license(mit) — :license() only accepts category kinds, so this would throw 'Expected a valid license kind'",
+        "workspace-prod-anchored: a selector matches /:workspace\\s*>\\s*:prod/",
+        "all-selectors-parse: every extracted selector parses via @vltpkg/dss-parser"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "What vlt query shows me which packages directly depend on react? I keep writing '#react > *' and getting the wrong thing.",
+      "expected_output": "Inverted-direction query using ':has(> #react)' (dependents), correcting the user's '#react > *' (which selects react's dependencies, not its dependents).",
+      "files": [],
+      "assertions": [
+        "uses-has-inversion: a selector matches /:has\\(\\s*>\\s*(#react|\\[name=react\\])\\s*\\)/",
+        "corrects-direction-mistake: states that '#react > *' selects react's DEPENDENCIES (children), i.e. wrong direction for finding dependents (grader quotes evidence)",
+        "does-not-present-wrong-selector-as-answer: '#react > *' is not offered as the solution",
+        "all-selectors-parse: every extracted selector parses via @vltpkg/dss-parser"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "What does the vlt query ':workspace > :prod:cve(*)' do?",
+      "expected_output": "Left-to-right decomposition: workspaces anchor, direct dependencies, production type, has any CVE. Should mention security selectors hit the network (Socket data).",
+      "files": [],
+      "assertions": [
+        "covers-workspace-anchor: explanation mentions workspaces as the starting set (/workspace/i)",
+        "covers-direct-prod-segment: explanation mentions direct AND production dependencies (/direct/i and /prod/i)",
+        "covers-cve-segment: explanation says it matches packages with any known CVE (/cve/i)",
+        "mentions-security-data-source: notes that :cve() uses Socket security data / a network call (/socket|network/i)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We just got a supply-chain security alert at work. What vlt queries should I run to audit our dependency graph for malware, typosquats, and obfuscated code?",
+      "expected_output": "A supply-chain sweep using threat selectors — e.g. ':malware(critical), :squat, :obfuscated' (union or separate queries). Notes Socket data / network latency. Offers scoping or follow-up queries.",
+      "files": [],
+      "assertions": [
+        "uses-threat-selectors: selectors include :malware AND at least one of :squat / :obfuscated / :suspicious",
+        "all-selectors-parse: every extracted selector parses via @vltpkg/dss-parser",
+        "mentions-security-data-source: notes Socket data / network fetch (/socket|network/i)",
+        "offers-related-queries: at least 2 distinct selectors offered"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Which of my dev dependencies can run shell commands or hit the network? We're locking down CI.",
+      "expected_output": "Capability query composing :dev with :shell and :network — e.g. ':dev:shell, :dev:network' (chained AND, comma OR). Explains capabilities = what the code can do (Socket static analysis).",
+      "files": [],
+      "assertions": [
+        "uses-capability-selectors: a selector chains :dev with :shell or :network (e.g. :dev:shell)",
+        "covers-both-capabilities: both shell and network are queried (union or two queries)",
+        "all-selectors-parse: every extracted selector parses via @vltpkg/dss-parser",
+        "explains-capability-meaning: explains these match what code CAN do / Socket analysis (/socket|static|capab|can /i)"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Before our release I want to check whether any prod deps of our workspaces have high or critical severity vulnerabilities. What's the vlt query?",
+      "expected_output": "Severity-filtered composition anchored at workspaces — e.g. ':workspace > :prod:severity(\">=high\")' (or union of severity(high), severity(critical)). Explains the comparator and mentions Socket/network.",
+      "files": [],
+      "assertions": [
+        "uses-severity-filter: a selector uses :severity(...) or :sev(...)",
+        "anchors-workspace-prod: a selector matches /:workspace\\s*>\\s*:prod/",
+        "all-selectors-parse: every extracted selector parses via @vltpkg/dss-parser",
+        "mentions-security-data-source: notes Socket data / network fetch (/socket|network/i)"
+      ]
+    }
+  ]
+}

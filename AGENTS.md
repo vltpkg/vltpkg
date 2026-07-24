@@ -59,3 +59,30 @@ Update only when changes are intentional:
 - Use existing test fixtures from `test/` dirs
 - Study similar tests in the module for patterns
 - Ensure 100% coverage
+
+## Skill Evals
+
+Agent skills (e.g. `src/query/skills/dss-query`) are evaluated in
+three layers — see `src/query/skills/dss-query/evals/README.md` for
+the full approach:
+
+1. **Content correctness** (deterministic, CI-safe): selectors/claims
+   in the skill docs must parse (`@vltpkg/dss-parser`) and execute
+   against the real engine (`Query.search()` + in-memory fixture
+   graph). No LLM involved.
+2. **Efficacy differential**: with-skill vs baseline subagent runs on
+   the same prompts, graded deterministically (parse/execute/regex —
+   never LLM-as-judge). The skill's value is the _lift_ over baseline
+   (pass rate, style, time, tokens), not its pass rate alone.
+3. **Trigger efficacy**: whether the skill activates from its
+   frontmatter description. Probabilistic — sample repeatedly,
+   monitor, never hard-gate. Headless `claude -p` cannot force skill
+   invocation, so force-load the skill (subagent reads SKILL.md) when
+   measuring layers 1–2.
+
+Rules of thumb:
+
+- Grade with deterministic checks only.
+- Always run a no-skill (or pre-edit snapshot) baseline.
+- Verify any factual claim an assertion encodes against engine source
+  first.
