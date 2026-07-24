@@ -78,9 +78,13 @@ jobs:
         run: |
           # temporarily remove the lockfile so the bootstrap vlt
           # is not tripped up by a newer lockfile format version
-          mv vlt-lock.json vlt-lock.json.bak
+          if [ -f vlt-lock.json ]; then
+            mv vlt-lock.json vlt-lock.json.bak
+          fi
           vlt install
-          mv vlt-lock.json.bak vlt-lock.json
+          if [ -f vlt-lock.json.bak ]; then
+            mv vlt-lock.json.bak vlt-lock.json
+          fi
 
       - name: Build source version of vlt
         run: node --run build:bundle
