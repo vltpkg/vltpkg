@@ -133,9 +133,16 @@ export const install = async (
     if (
       importerSpecs.add.modifiedDependencies ||
       importerSpecs.remove.modifiedDependencies ||
-      specChanges.length > 0
+      specChanges.length > 0 ||
+      lockfileGraph.optionsChanged
     ) {
       const details: string[] = []
+
+      if (lockfileGraph.optionsChanged) {
+        details.push(
+          '  Configuration options have changed (e.g. modifiers, registries, catalogs)',
+        )
+      }
 
       if (specChanges.length > 0) {
         details.push(...specChanges)

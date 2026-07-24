@@ -50,5 +50,9 @@
     "save-fixture": true
   },
   "prettier": "../../.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/infra/smoke-test#readme"
 }

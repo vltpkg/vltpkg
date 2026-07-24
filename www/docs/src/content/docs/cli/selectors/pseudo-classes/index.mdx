@@ -1,8 +1,8 @@
 ---
 title: Pseudo-class Selectors
 sidebar:
-  label: Pseudo-classes
-  order: 4
+  label: Overview
+  order: -1
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components'
@@ -19,6 +19,11 @@ but operate on dependency graph nodes.
     title=":attr()"
     description="Match packages by nested package.json properties"
     href="/cli/selectors/pseudo-classes/attr"
+  />
+  <LinkCard
+    title=":dist()"
+    description="Match packages by registry dist-tag"
+    href="/cli/selectors/pseudo-classes/dist"
   />
   <LinkCard
     title=":has()"
@@ -75,6 +80,16 @@ but operate on dependency graph nodes.
     description="Match packages whose files have changed"
     href="/cli/selectors/pseudo-classes/diff"
   />
+  <LinkCard
+    title=":hostname()"
+    description="Match packages by upstream hostname"
+    href="/cli/selectors/pseudo-classes/hostname"
+  />
+  <LinkCard
+    title=":registry()"
+    description="Match packages by registry configuration name"
+    href="/cli/selectors/pseudo-classes/registry"
+  />
 </CardGrid>
 
 ## Quick reference
@@ -82,6 +97,7 @@ but operate on dependency graph nodes.
 | Selector                                                  | Description              | Example                   |
 | --------------------------------------------------------- | ------------------------ | ------------------------- |
 | [`:attr()`](/cli/selectors/pseudo-classes/attr)           | Nested property match    | `:attr(engines, [node])`  |
+| [`:dist()`](/cli/selectors/pseudo-classes/dist)           | By registry dist-tag     | `:dist(latest)`           |
 | [`:has()`](/cli/selectors/pseudo-classes/has)             | Has matching descendants | `:has(.peer[name=react])` |
 | [`:host()`](/cli/selectors/pseudo-classes/host)           | Switch graph context     | `:host(local) :malware`   |
 | [`:is()`](/cli/selectors/pseudo-classes/is)               | Match any in list        | `:is([name=a], [name=b])` |
@@ -93,6 +109,8 @@ but operate on dependency graph nodes.
 | [`:path()`](/cli/selectors/pseudo-classes/path)           | By file path             | `:path("packages/**")`    |
 | [`:type()`](/cli/selectors/pseudo-classes/type)           | By package type          | `:type(git)`              |
 | [`:diff()`](/cli/selectors/pseudo-classes/diff)           | Changed files            | `:diff(main)`             |
+| [`:hostname()`](/cli/selectors/pseudo-classes/hostname)   | By upstream hostname     | `:hostname(github.com)`   |
+| [`:registry()`](/cli/selectors/pseudo-classes/registry)   | By registry name         | `:registry(npm)`          |
 
 ## See also
 

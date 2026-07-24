@@ -17,6 +17,7 @@ import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dev } from './pseudo/dev.ts'
 import { diff } from './pseudo/diff.ts'
+import { dist } from './pseudo/dist.ts'
 import { dynamic } from './pseudo/dynamic.ts'
 import { empty } from './pseudo/empty.ts'
 import { entropic } from './pseudo/entropic.ts'
@@ -62,6 +63,7 @@ import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
+import { vulnerable } from './pseudo/vulnerable.ts'
 import { workspace } from './pseudo/workspace.ts'
 
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
@@ -312,6 +314,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     deprecated,
     dev,
     diff,
+    dist,
     dynamic,
     eval: evalParser,
     empty,
@@ -364,6 +367,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
     unpopular,
     unstable,
     v: semver,
+    vuln: vulnerable,
+    vulnerable,
     workspace,
   }),
 )

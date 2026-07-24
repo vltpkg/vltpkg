@@ -21,11 +21,11 @@ const products: Section = {
   contents: [
     {
       slug: 'Client',
-      href: 'https://www.vlt.sh/client',
+      href: 'https://vlt.io/open-source/client',
     },
     {
       slug: 'Serverless Registry',
-      href: 'https://www.vlt.sh/serverless-registry',
+      href: 'https://vlt.io/open-source/serverless-registry',
     },
   ],
 }
@@ -35,15 +35,15 @@ const resources: Section = {
   contents: [
     {
       slug: 'Client Docs',
-      href: 'https://docs.vlt.sh',
+      href: 'https://docs.vlt.io',
     },
     {
       slug: 'Pricing',
-      href: 'https://www.vlt.sh/serverless-registry',
+      href: 'https://vlt.io/open-source/serverless-registry',
     },
     {
       slug: 'Brand Kit',
-      href: 'https://www.vlt.sh/brand',
+      href: 'https://www.vlt.io/brand-kit',
     },
   ],
 }
@@ -53,19 +53,19 @@ const company: Section = {
   contents: [
     {
       slug: 'About',
-      href: 'https://www.vlt.sh/company',
+      href: 'https://www.vlt.io/about',
     },
     {
       slug: 'Blog',
-      href: 'https://blog.vlt.sh/',
+      href: 'https://vlt.io/blog',
     },
     {
       slug: 'Privacy',
-      href: 'https://www.vlt.sh/privacy',
+      href: 'https://www.vlt.io/privacy',
     },
     {
       slug: 'Terms',
-      href: 'https://www.vlt.sh/terms',
+      href: 'https://www.vlt.io/terms',
     },
   ],
 }

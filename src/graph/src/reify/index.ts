@@ -135,7 +135,28 @@ export const reify = async (
   const skippable = skipOptionalOnly && !options.update
   const res: ReifyResult = { diff }
   if (!diff.hasChanges() || skippable) {
-    // nothing to do, so just return the diff
+    // Even when there are no changes to reify, ensure lockfiles
+    // exist on disk. This handles the case where a project has no
+    // dependencies (or only workspace importers) but still needs
+    // lockfiles written on the first install.
+    if (
+      !scurry.lstatSync('vlt-lock.json') ||
+      !scurry.lstatSync('node_modules/.vlt-lock.json')
+    ) {
+      saveHidden(options)
+      const lfData = lockfileData(options)
+      saveData(lfData, scurry.resolve('vlt-lock.json'), false)
+    }
+    // Even with no reify changes, report nodes that still need building.
+    // Build state is persisted in the hidden lockfile and loaded into the
+    // actual graph, so check there for pending builds.
+    const pending = [...actual.nodes.values()]
+      .filter(n => n.buildState === 'needed')
+      .map(n => n.id)
+    if (pending.length) {
+      res.buildQueue = pending
+    }
+
     done()
     return res
   }

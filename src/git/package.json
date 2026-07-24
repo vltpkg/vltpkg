@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/git",
   "description": "a util for spawning git from npm CLI contexts",
-  "version": "1.0.0-rc.31",
+  "version": "1.0.0-rc.32",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -64,5 +64,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/git#readme"
 }

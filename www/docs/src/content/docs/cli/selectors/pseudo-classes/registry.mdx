@@ -1,0 +1,67 @@
+---
+title: ':registry()'
+sidebar:
+  label: ':registry()'
+  order: 14
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The `:registry()` pseudo-class matches packages that belong to a
+specific named registry configuration.
+
+## Syntax
+
+```
+:registry(<name>)
+```
+
+### Parameters
+
+| Parameter | Description                                             |
+| --------- | ------------------------------------------------------- |
+| `name`    | The registry configuration alias (e.g. `npm`, `custom`) |
+
+## How it works
+
+Packages are associated with a registry name based on the `registries`
+configuration in your project. The default registry is typically named
+`npm`. Custom registries configured via `--registries` or in
+`vlt.json` can be matched by their alias name.
+
+Only registry-type packages are matched — git, file, and workspace
+packages are excluded.
+
+## Examples
+
+Find all packages from the default npm registry:
+
+<Code
+  code="$ vlt query ':registry(npm)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find packages from a custom registry:
+
+<Code
+  code="$ vlt query ':registry(custom)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Combine with other selectors to find outdated packages from a specific
+registry:
+
+<Code
+  code="$ vlt query ':registry(npm):outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`:hostname()`](/cli/selectors/pseudo-classes/hostname) — match by
+  upstream hostname
+- [`:type()`](/cli/selectors/pseudo-classes/type) — match by package
+  type

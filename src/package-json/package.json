@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/package-json",
   "description": "Manage reading package.json files",
-  "version": "1.0.0-rc.31",
+  "version": "1.0.0-rc.32",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -55,5 +55,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/package-json#readme"
 }

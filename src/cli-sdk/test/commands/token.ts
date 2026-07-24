@@ -106,6 +106,59 @@ t.test('preserves path for path-scoped registry', async t => {
   ])
 })
 
+t.test('alias: ls works like list', async t => {
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      async getToken(): Promise<Token | undefined> {
+        return undefined
+      },
+      RegistryClient: class MockRegistryClient {
+        async scroll<T>(): Promise<T[]> {
+          return [] as T[]
+        }
+      },
+    },
+  })
+
+  const result = await cmd({
+    options: {
+      registry: 'https://registry.npmjs.org/',
+      registries: {},
+      identity: '',
+    },
+    positionals: ['ls'],
+  } as unknown as LoadedConfig)
+
+  t.equal(result?.identity, '')
+  t.equal(result?.registries.length, 1)
+})
+
+t.test('alias: remove works like rm', async t => {
+  const removeLog: string[][] = []
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      async deleteToken(reg: string) {
+        removeLog.push(['delete', reg])
+      },
+    },
+  })
+
+  await cmd({
+    options: { registry: 'https://registry.vlt.javascript/' },
+    positionals: ['remove'],
+  } as LoadedConfig)
+
+  t.strictSame(removeLog, [
+    ['delete', 'https://registry.vlt.javascript'],
+  ])
+})
+
 t.test('invalid token sub command', async t => {
   await t.rejects(
     command({

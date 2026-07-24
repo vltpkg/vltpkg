@@ -1,7 +1,7 @@
 {
   "name": "vlt",
   "description": "The vlt CLI",
-  "version": "1.0.0-rc.31",
+  "version": "1.0.0-rc.32",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -53,6 +53,8 @@
   "publishConfig": {
     "directory": "./.build-publish"
   },
-  "bugs": "https://github.com/vltpkg/vltpkg/issues",
-  "homepage": "https://vlt.sh"
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/infra/cli#readme"
 }

@@ -1,4 +1,5 @@
 .DS_Store
+.claude/**
 .env
 .env.production
 .build-*/
@@ -9,6 +10,8 @@ tmp
 /.turbo
 /docs
 /node_modules
+# install-generated skill mounts (vltpkg/vltpkg#1540)
+/skills
 /scripts/fixtures/
 /results/
 
@@ -67,7 +70,7 @@ tmp
 /www/**/*.d.mts.map
 /www/*/node_modules
 /www/*/scripts/fixtures/
-
+/www/docs/plans/**
 /scripts/*.js
 /scripts/*.js.map
 /scripts/*.d.ts
@@ -76,3 +79,9 @@ knip.js
 knip.js.map
 knip.d.ts
 knip.d.ts.map
+/src/query/skills/dss-query-workspace
+# eval grader is intentional source, not a build artifact (see /src/**/*.mjs)
+!/src/query/skills/dss-query/evals/grade.mjs
+
+**/.opencode/**
+opencode.jsonc

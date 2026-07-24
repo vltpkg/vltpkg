@@ -91,8 +91,7 @@ export type PairsAsRecords = ConfigOptionsNoExtras & {
 
 export const pairsToRecords = (
   obj:
-    | NonNullable<ConfigFileData>
-    | OptionsResults<ConfigDefinitions>,
+    NonNullable<ConfigFileData> | OptionsResults<ConfigDefinitions>,
 ): PairsAsRecords => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
@@ -143,7 +142,9 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
 const kRecord = Symbol('parsed key=value record')
 
 export type ConfigDataNoCommand = {
-  [k in keyof OptionsResults<ConfigDefinitions>]?: OptionsResults<ConfigDefinitions>[k]
+  [
+    k in keyof OptionsResults<ConfigDefinitions>
+  ]?: OptionsResults<ConfigDefinitions>[k]
 }
 
 /**
@@ -403,8 +404,7 @@ export class Config {
   getRecord(k: OptListKeys<ConfigData>): RecordString {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const pairs = this.get(k) as
-      | (string[] & { [kRecord]?: RecordString })
-      | undefined
+      (string[] & { [kRecord]?: RecordString }) | undefined
     if (!pairs) return {}
     if (pairs[kRecord]) return pairs[kRecord]
     const kv = pairs.reduce((kv: RecordString, pair) => {

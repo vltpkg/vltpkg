@@ -1042,4 +1042,485 @@ t.test('lockfile version validation', async t => {
       )
     },
   )
+
+  t.test(
+    'load gracefully skips edges from missing workspace nodes',
+    async t => {
+      const abbrevId = joinDepIDTuple([
+        'registry',
+        '',
+        'abbrev@3.0.1',
+      ])
+      const lockfileData = {
+        lockfileVersion: LOCKFILE_VERSION,
+        options: {},
+        nodes: {
+          [abbrevId]: [0, 'abbrev'],
+        },
+        edges: {
+          [edgeKey(['file', '.'], 'abbrev')]:
+            `prod ^3.0.0 ${abbrevId}`,
+          // edge from a workspace that no longer exists
+          [edgeKey(['workspace', 'packages/removed-ws'], 'abbrev')]:
+            `prod ^3.0.0 ${abbrevId}`,
+        },
+      } as unknown as LockfileData
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          packageJson,
+        },
+        lockfileData,
+      )
+      // root should still have its edge
+      t.ok(
+        graph.mainImporter.edgesOut.has('abbrev'),
+        'root edge to abbrev should be loaded',
+      )
+      // the workspace edge should have been skipped without throwing
+      t.equal(
+        graph.edges.size,
+        1,
+        'only the root edge should exist (workspace edge skipped)',
+      )
+    },
+  )
+})
+
+t.test('optionsChanged detection', async t => {
+  const abbrevId = joinDepIDTuple(['registry', '', 'abbrev@2.0.0'])
+  const baseLockfileData = {
+    lockfileVersion: 1,
+    options: {},
+    nodes: {
+      [abbrevId]: [0, 'abbrev', 'sha512-abc=='],
+    },
+    edges: {
+      [edgeKey(['file', '.'], 'abbrev')]: `prod ^2.0.0 ${abbrevId}`,
+    },
+  } as unknown as LockfileData
+
+  t.test(
+    'optionsChanged is false when lockfile and current options match',
+    async t => {
+      const matchingLockfile: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          registries: {
+            custom: 'http://example.com',
+          },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(matchingLockfile),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+        },
+        matchingLockfile,
+      )
+      t.equal(graph.optionsChanged, false, 'options have not changed')
+    },
+  )
+
+  t.test(
+    'optionsChanged is true when modifiers are added',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(baseLockfileData),
+        'vlt.json': JSON.stringify({
+          modifiers: { '#abbrev': '^3.0.0' },
+        }),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const { GraphModifier } = await import('../../src/modifiers.ts')
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          modifiers,
+        },
+        baseLockfileData,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to new modifiers',
+      )
+    },
+  )
+
+  t.test(
+    'optionsChanged is true when modifiers are changed',
+    async t => {
+      const lockfileWithModifiers: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          modifiers: { '#abbrev': '^2.0.0' },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithModifiers),
+        'vlt.json': JSON.stringify({
+          modifiers: { '#abbrev': '^3.0.0' },
+        }),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const { GraphModifier } = await import('../../src/modifiers.ts')
+      const modifiers = new GraphModifier(configData)
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          modifiers,
+        },
+        lockfileWithModifiers,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to modified modifiers',
+      )
+    },
+  )
+
+  t.test(
+    'optionsChanged is true when registry is changed',
+    async t => {
+      const lockfileWithRegistry: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          registry: 'https://old-registry.example.com/',
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithRegistry),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+        },
+        lockfileWithRegistry,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to registry change',
+      )
+    },
+  )
+
+  t.test(
+    'optionsChanged is true when catalog is changed',
+    async t => {
+      const lockfileWithCatalog: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          catalog: { abbrev: '^1.0.0' },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithCatalog),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          catalog: { abbrev: '^2.0.0' },
+        },
+        lockfileWithCatalog,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to catalog change',
+      )
+    },
+  )
+
+  t.test(
+    'optionsChanged is true when modifiers are removed',
+    async t => {
+      const lockfileWithModifiers: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          modifiers: { '#abbrev': '^2.0.0' },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithModifiers),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+        },
+        lockfileWithModifiers,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to removed modifiers',
+      )
+    },
+  )
+
+  t.test(
+    'optionsChanged detects scoped-registries change',
+    async t => {
+      const lockfileWithScoped: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          'scoped-registries': {
+            '@myorg': 'https://old.example.com/',
+          },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithScoped),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          'scoped-registries': {
+            '@myorg': 'https://new.example.com/',
+          },
+        },
+        lockfileWithScoped,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to scoped-registries change',
+      )
+    },
+  )
+
+  t.test('optionsChanged detects jsr-registries change', async t => {
+    const lockfileWithJsr: LockfileData = {
+      ...baseLockfileData,
+      options: {
+        'jsr-registries': {
+          jsr: 'https://old-jsr.example.com/',
+        },
+      },
+    }
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileWithJsr),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        mainManifest,
+        projectRoot,
+        'jsr-registries': {
+          jsr: 'https://new-jsr.example.com/',
+        },
+      },
+      lockfileWithJsr,
+    )
+    t.equal(
+      graph.optionsChanged,
+      true,
+      'options changed due to jsr-registries change',
+    )
+  })
+
+  t.test('optionsChanged detects git-hosts change', async t => {
+    const lockfileWithGitHosts: LockfileData = {
+      ...baseLockfileData,
+      options: {
+        'git-hosts': {
+          myhost: 'https://old-git.example.com/',
+        },
+      },
+    }
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileWithGitHosts),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        mainManifest,
+        projectRoot,
+        'git-hosts': {
+          myhost: 'https://new-git.example.com/',
+        },
+      },
+      lockfileWithGitHosts,
+    )
+    t.equal(
+      graph.optionsChanged,
+      true,
+      'options changed due to git-hosts change',
+    )
+  })
+
+  t.test(
+    'optionsChanged detects git-host-archives change',
+    async t => {
+      const lockfileWithGHA: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          'git-host-archives': {
+            myhost: 'https://old-archive.example.com/',
+          },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithGHA),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          'git-host-archives': {
+            myhost: 'https://new-archive.example.com/',
+          },
+        },
+        lockfileWithGHA,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to git-host-archives change',
+      )
+    },
+  )
+
+  t.test('optionsChanged detects catalogs change', async t => {
+    const lockfileWithCatalogs: LockfileData = {
+      ...baseLockfileData,
+      options: {
+        catalogs: {
+          testing: { vitest: '^1.0.0' },
+        },
+      },
+    }
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileWithCatalogs),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        mainManifest,
+        projectRoot,
+        catalogs: {
+          testing: { vitest: '^2.0.0' },
+        },
+      },
+      lockfileWithCatalogs,
+    )
+    t.equal(
+      graph.optionsChanged,
+      true,
+      'options changed due to catalogs change',
+    )
+  })
+
+  t.test(
+    'optionsChanged detects non-default registry in current config',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(baseLockfileData),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          registry: 'https://custom-registry.example.com/',
+        },
+        baseLockfileData,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to non-default registry',
+      )
+    },
+  )
+
+  t.test('optionsChanged detects registries change', async t => {
+    const lockfileWithRegistries: LockfileData = {
+      ...baseLockfileData,
+      options: {
+        registries: {
+          custom: 'https://old-custom.example.com/',
+        },
+      },
+    }
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileWithRegistries),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        mainManifest,
+        projectRoot,
+        registries: {
+          ...configData.registries,
+          custom: 'https://new-custom.example.com/',
+        },
+      },
+      lockfileWithRegistries,
+    )
+    t.equal(
+      graph.optionsChanged,
+      true,
+      'options changed due to registries change',
+    )
+  })
 })

@@ -64,9 +64,7 @@ export type WorkspaceConfigObject = Record<string, string[]>
  * Allowed datatype in the `workspaces` field of the `vlt.json` file.
  */
 export type WorkspaceConfig =
-  | string[]
-  | WorkspaceConfigObject
-  | string
+  string[] | WorkspaceConfigObject | string
 
 /**
  * Turn a {@link WorkspaceConfig} into a
