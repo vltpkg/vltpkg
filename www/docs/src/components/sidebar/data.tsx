@@ -27,6 +27,9 @@ const allIcons = {
 export type IconName = keyof typeof allIcons
 
 export const iconMap: Partial<Record<string, IconName>> = {
+  'get started': 'BookOpen',
+  'why vlt': 'Lightbulb',
+  registry: 'Globe',
   overview: 'Home',
   client: 'Client',
   packages: 'Package',
