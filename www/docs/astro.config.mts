@@ -113,6 +113,7 @@ export default defineConfig({
           label: 'Get Started',
           collapsed: true,
           items: [
+            'get-started/why-vlt',
             'get-started/use-cases',
             {
               label: 'Concepts',
@@ -121,6 +122,11 @@ export default defineConfig({
             },
             'get-started/reference',
           ],
+        },
+        {
+          label: 'Registry',
+          collapsed: true,
+          autogenerate: { directory: 'registry' },
         },
         {
           label: 'Client',
