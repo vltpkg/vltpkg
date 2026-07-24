@@ -65,7 +65,10 @@ jobs:
           check-latest: true
 
       - name: Install dependencies
-        run: vlt install
+        run: |
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       - name: Get Previous CLI Version Number
         id: previous-version
@@ -284,7 +287,10 @@ jobs:
           check-latest: true
 
       - name: Install dependencies
-        run: vlt install
+        run: |
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       # TODO: Replace with `vlt ls --scope=":workspace:changed($COMMIT)" --json` or similar
       # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
@@ -387,7 +393,10 @@ jobs:
           check-latest: true
 
       - name: Install dependencies
-        run: vlt install
+        run: |
+          mv vlt-lock.json vlt-lock.json.bak
+          vlt install
+          mv vlt-lock.json.bak vlt-lock.json
 
       - name: Publish
         run: |

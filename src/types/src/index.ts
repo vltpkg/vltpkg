@@ -1554,6 +1554,7 @@ export type NodeLike = {
     libc?: string[] | string
   }
   bins?: Record<string, string>
+  hasScripts?: boolean
   buildState?: 'none' | 'needed' | 'built' | 'failed'
   buildAllowed?: boolean
   buildBlocked?: boolean
