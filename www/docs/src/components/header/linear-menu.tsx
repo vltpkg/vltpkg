@@ -20,20 +20,22 @@ const LinearMenu = () => {
       title: 'Platform',
       children: [
         {
-          icon: 'client',
-          title: 'Client',
-          path: 'https://vlt.io/open-source/client',
+          icon: 'registry',
+          title: 'Registry',
+          path: 'https://www.vlt.io/platform/registry',
         },
         {
-          icon: 'serverless-registry',
-          title: 'Serverless Registry',
-          path: 'https://vlt.io/open-source/serverless-registry',
+          icon: 'security',
+          title: 'Security',
+          path: 'https://www.vlt.io/platform/security',
         },
       ],
     },
-    { title: 'Docs', path: 'https://docs.vlt.io/' },
     { title: 'Blog', path: 'https://vlt.io/blog' },
-    { title: 'Company', path: 'https://vlt.io/about' },
+    {
+      title: 'Community',
+      path: 'https://discord.com/invite/qdbXTqxZzZ',
+    },
   ]
 
   return (
