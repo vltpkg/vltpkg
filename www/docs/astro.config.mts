@@ -131,12 +131,37 @@ export default defineConfig({
         {
           label: 'Client',
           collapsed: true,
-          autogenerate: { directory: 'cli' },
-        },
-        {
-          label: 'API Reference',
-          collapsed: true,
-          autogenerate: { directory: TypedocPlugin.directory },
+          items: [
+            {
+              label: 'selectors',
+              collapsed: true,
+              autogenerate: { directory: 'cli/selectors' },
+            },
+            {
+              label: 'migration',
+              collapsed: true,
+              autogenerate: { directory: 'cli/migration' },
+            },
+            'cli',
+            'cli/configuring',
+            'cli/auth',
+            'cli/registries',
+            'cli/security',
+            'cli/workspaces',
+            'cli/catalogs',
+            'cli/peer-dependencies',
+            'cli/graph-modifiers',
+            {
+              label: 'commands',
+              collapsed: true,
+              autogenerate: { directory: 'cli/commands' },
+            },
+            {
+              label: 'API Reference',
+              collapsed: true,
+              autogenerate: { directory: TypedocPlugin.directory },
+            },
+          ],
         },
       ],
     }),
