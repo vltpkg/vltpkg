@@ -5,54 +5,39 @@ sidebar:
   label: Overview
 ---
 
-import {
-  Code,
-  Tabs,
-  TabItem,
-  Steps,
-} from '@astrojs/starlight/components'
-import { CardGrid, CardGridLink } from '@/components/cards/cards.tsx'
+import { CardGrid, LinkCard } from '@astrojs/starlight/components'
 
 ## Introduction to vlt
 
-vlt (/vōlt/ pronounced "volt") is a platform that delivers the tools
-and infrastructure to meet the challenges of modern Javascript supply
-chain management, so teams can ship and maintain packages more easily.
+vlt (/vōlt/ pronounced "volt") is the platform for Javascript
+packages. It delivers the tools and infrastructure to meet the
+challenges of modern Javascript supply chain management, so teams can
+ship and maintain packages more easily.
 
 [vlt.io](https://vlt.io/onboarding-signup) serves as a drop-in
-replacement for the npm registry. vlt is the platform built for
-Javascript registries.
-
-Our toolset streamlines package management for a secure, faster,
-developer experience.
+replacement for the npm registry.
 
 ## Explore
 
 <CardGrid>
- <CardGridLink
-    title="vlt Registries"
-    description="Publishing packages on vlt's registry"
-    href="/registry"
-    icon="Package"
+  <LinkCard
+    title="Get Started"
+    description="Learn what vlt solves"
+    href="/get-started/why-vlt"
   />
-
-<CardGridLink
-  title="Migrate to vlt registry using CLI"
-  description="Migrating to vlt from npm, pnpm, bun"
-  href="/cli/migration"
-  icon="Graph"
-/>
-
-<CardGridLink
-  title="CLI"
-  description="vlt CLI extends npm's and provides dependency management superpowers"
-  href="/cli"
-  icon="Client"
-/>
- <CardGridLink
+  <LinkCard
+    title="vlt Registries"
+    description="Publish private and scoped packages on vlt's registry"
+    href="/registry"
+  />
+  <LinkCard
+    title="Migrate to vlt registry using CLI"
+    description="Migrating to vlt from npm, pnpm, bun"
+    href="/cli/migration"
+  />
+  <LinkCard
     title="Security & Malware Detection"
     description="Identify security risks and malware hiding in dependencies"
     href="/cli/security"
-    icon="Authentication"
   />
 </CardGrid>

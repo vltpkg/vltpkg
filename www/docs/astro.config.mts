@@ -120,6 +120,9 @@ export default defineConfig({
             },
           ],
           rawContent: false,
+          minify: {
+            customSelectors: ['.expressive-code'],
+          },
         }),
       ],
       sidebar: [
