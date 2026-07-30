@@ -105,7 +105,21 @@ export default defineConfig({
               url: 'https://www.npmjs.com/package/vlt',
             },
           ],
-          rawContent: true,
+          customSets: [
+            {
+              label: 'Registry',
+              description:
+                'Documentation for the vlt registry — publishing, access control, tokens, and dashboard.',
+              paths: ['registry/**'],
+            },
+            {
+              label: 'CLI',
+              description:
+                'vlt CLI reference — commands, configuration, selectors, migration, and security.',
+              paths: ['cli/**'],
+            },
+          ],
+          rawContent: false,
         }),
       ],
       sidebar: [
