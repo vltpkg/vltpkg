@@ -217,7 +217,9 @@ html {
 .sl-markdown-content code {
   @apply overflow-x-auto whitespace-nowrap rounded-sm border-[1px] border-border bg-background px-1 font-medium text-foreground;
 }
-
+.sl-markdown-content img {
+  @apply rounded-sm
+}
 /* ***************************************************** */
 /*                    EXPRESSIVE CODE                    */
 /* ***************************************************** */
