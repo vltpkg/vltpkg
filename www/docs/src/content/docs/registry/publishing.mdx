@@ -1,0 +1,133 @@
+---
+title: Publishing Packages
+sidebar:
+  label: Publishing
+  order: 2
+---
+
+import { Aside, Code } from '@astrojs/starlight/components'
+
+Your account's `main` registry hosts your private packages. Every
+package published to it must be scoped to your account slug — for
+example, an account with the slug `acme` publishes packages named
+`@acme/utils`, `@acme/app`, and so on.
+
+The registry speaks the npm registry protocol, so you can publish with
+the vlt client or with npm.
+
+## Configure your project
+
+Map your account scope to your registry so installs and publishes for
+that scope go to vlt:
+
+<Code
+  code="$ vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/"
+  title="Terminal"
+  lang="bash"
+/>
+
+This stores the mapping in your project's `vlt.json`. See
+[Working with Named Registries](/cli/registries) for the full range of
+registry configuration options.
+
+If you're using npm, the equivalent `.npmrc` entry is:
+
+<Code
+  code="@acme:registry=https://registry.vlt.io/acme/main/"
+  title=".npmrc"
+  lang="ini"
+/>
+
+You'll also need to authenticate — see
+[Authentication & Tokens](/registry/tokens).
+
+## Publish
+
+From your package directory:
+
+<Code code="$ vlt publish" title="Terminal" lang="bash" />
+
+The client packs your package into a tarball and uploads it along with
+its manifest. See the [`vlt publish`](/cli/commands/publish) command
+reference for options like `--tag` and `--publish-directory`.
+
+The registry validates every publish:
+
+- The package name must be scoped to your account (`@acme/...`).
+  Publishes with other names are rejected.
+- The name and version in the request, the manifest, and the tarball's
+  `package.json` must all agree, which protects consumers against
+  manifest confusion.
+- The tarball's integrity hash is recomputed and verified on the
+  server.
+- Tarballs are limited to 100 MB by default.
+
+## Versions are immutable
+
+Exactly one version is published at a time, and once a version is
+published it can never be replaced. Publishing an existing version
+again fails with a conflict error. If you unpublish a version, that
+version number is permanently reserved and cannot be reused — publish
+a new version instead.
+
+## Dist-tags
+
+If you don't specify a tag, a publish updates `latest`. Use a tag to
+publish pre-releases without affecting the default install:
+
+<Code
+  code="$ vlt publish --tag=beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+Tags can only reference versions that exist, and the standard npm
+`dist-tag` endpoints are supported for listing, adding, and removing
+tags.
+
+## Two-factor authentication
+
+By default, accounts require a one-time password (OTP) for publishes
+and other package writes made with a personal token. When the registry
+asks for it, your client opens a browser or prompts for the code from
+your authenticator app.
+
+Service tokens are not subject to the OTP prompt, which is what makes
+unattended publishes from CI possible. Account owners can adjust the
+two-factor requirement in the account's security settings.
+
+## Publishing from CI
+
+Create a **service token** with the `package:write` privilege (see
+[Authentication & Tokens](/registry/tokens)) and provide it to the
+client through the environment:
+
+<Code
+  code={`VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" vlt publish`}
+  title="Terminal"
+  lang="bash"
+/>
+
+See
+[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
+for how token environment variables are named.
+
+<Aside type="note">
+  The vlt registry does not currently support OIDC trusted publishing.
+  Use a service token in CI.
+</Aside>
+
+## Deprecating and unpublishing
+
+Deprecation and unpublish follow the standard npm protocol, so
+`npm deprecate` and `npm unpublish` work against your registry.
+Deprecating a version attaches a warning message that installers
+display; it can be reversed by deprecating again with an empty
+message. Unpublishing removes a version (or an entire package), and as
+noted above, unpublished version numbers can never be reused.
+
+## Package visibility
+
+Visibility is controlled at the account level: packages on a private
+account's `main` registry are readable only by members of that
+account. There is no per-package `--access` setting.

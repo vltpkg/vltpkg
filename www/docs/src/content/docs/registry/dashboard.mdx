@@ -1,0 +1,93 @@
+---
+title: Registries & the Dashboard
+sidebar:
+  label: Registries & the Dashboard
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Every vlt account comes with two registries, created automatically
+when the account is set up:
+
+- **`main`** — your account's private registry, served at
+  `https://registry.vlt.io/<account>/main/`. Packages published here
+  are scoped to your account slug (`@<account>/...`) and readable only
+  by account members. See [Publishing Packages](/registry/publishing).
+- **`npm`** — a secure mirror of the public npm registry, served at
+  `https://registry.vlt.io/<account>/npm/`. It is read-only and
+  populated from `registry.npmjs.org`, giving your installs and CI a
+  consistent, fast source for public packages.
+
+## Accounts and slugs
+
+An account has a display name and a **slug** — a unique, URL-safe
+identifier of 3–63 lowercase letters, numbers, and hyphens, chosen
+during account setup. The slug appears in your registry URLs and in
+your package scope, so pick it carefully.
+
+You can belong to more than one account, and create additional
+accounts — for example, a personal account and one per organization.
+Switch between them with the account switcher in the dashboard
+sidebar.
+
+## Installing through your registries
+
+Point your client's default registry at your npm mirror, and map your
+account scope to your private registry:
+
+<Code
+  code={`$ vlt config set registry=https://registry.vlt.io/acme/npm/
+$ vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/`}
+  title="Terminal"
+  lang="bash"
+/>
+
+The npm equivalent:
+
+<Code
+  code={`registry=https://registry.vlt.io/acme/npm/
+@acme:registry=https://registry.vlt.io/acme/main/`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+With that in place, public packages resolve through your mirror and
+`@acme/...` packages resolve from your private registry. Both
+registries accept the same account token — see
+[Authentication & Tokens](/registry/tokens).
+
+The dashboard's **Setup** page (under Packages) generates these
+instructions for your account, tailored to your package manager.
+
+## Around the dashboard
+
+- **Dashboard** — an onboarding checklist for new accounts, usage at a
+  glance, recent releases on the npm mirror, and your team's recent
+  publishes.
+- **Packages** — browse the npm mirror and your private packages.
+- **Tokens** — create, inspect, and revoke access tokens. See
+  [Authentication & Tokens](/registry/tokens).
+- **Members** — invite people and manage their roles. See
+  [Members & Access Control](/registry/access).
+- **Settings → General** — account avatar, display name, slug, and the
+  account-wide two-factor requirement for package writes.
+- **Settings → Billing** — your plan, included usage (storage +
+  delivery and seats), and invoices.
+
+## Plans
+
+Accounts choose a plan during setup and can change it any time under
+**Settings → Billing**. Plans are billed per seat — every account
+member occupies one — and differ mainly in included storage and
+delivery:
+
+| Plan       | Storage + Delivery | Notes           |
+| ---------- | ------------------ | --------------- |
+| Free       | 2 GB               |                 |
+| Pro        | 10 GB              |                 |
+| Premium    | 50 GB              | 2 seat minimum  |
+| Enterprise | 1 TB               | 10 seat minimum |
+
+See [vlt.io/pricing](https://www.vlt.io/pricing) for current prices
+and the full feature comparison.
