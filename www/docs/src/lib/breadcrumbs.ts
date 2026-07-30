@@ -1,6 +1,7 @@
 import type { Props } from '@astrojs/starlight/props'
 
 type SidebarEntry = Props['sidebar'][number]
+type SidebarGroup = Extract<SidebarEntry, { type: 'group' }>
 
 /** A single segment of the breadcrumb trail. */
 export type Crumb = {
@@ -34,8 +35,6 @@ const CASE_SENSITIVE_DIRS = ['/cli/commands', '/packages']
 /**
  * Whether a path's label must be shown verbatim because it lives
  * under a directory of code identifiers (see CASE_SENSITIVE_DIRS).
- *
- * @param path - Accumulated crumb path, e.g. `/cli/commands/install`.
  */
 const preservesCase = (path: string): boolean =>
   CASE_SENSITIVE_DIRS.some(dir => path.startsWith(`${dir}/`))
@@ -44,8 +43,6 @@ const preservesCase = (path: string): boolean =>
  * Make a raw URL segment presentable: capitalize the first letter
  * and turn hyphens into spaces, e.g. `getting-started` →
  * `Getting started`.
- *
- * @param segment - A single lowercase URL path segment.
  */
 const humanize = (segment: string): string =>
   segment.charAt(0).toUpperCase() +
@@ -61,10 +58,6 @@ const collectHrefs = (entry: SidebarEntry): string[] =>
  * Find the directory path a group of hrefs has in common — the
  * longest shared segment prefix, minus the final segment when the
  * group holds a single page (a page is not a directory).
- *
- * @param hrefs - Normalized hrefs of every link in a sidebar group.
- * @returns The shared path like `/cli/commands`, or `undefined` when
- * the group's links share no common directory.
  */
 const commonDir = (hrefs: string[]): string | undefined => {
   if (hrefs.length === 0) return undefined
@@ -93,14 +86,8 @@ const commonDir = (hrefs: string[]): string | undefined => {
  * (e.g. a "Client" group over `/cli` that also contains the
  * `/packages` API reference). Falls back to the directory shared by
  * every descendant link for groups made up only of subgroups.
- *
- * @param group - A sidebar group entry.
- * @returns The covered path like `/cli`, or `undefined` when the
- * group's links share no common directory.
  */
-const groupDir = (
-  group: Extract<SidebarEntry, { type: 'group' }>,
-): string | undefined => {
+const groupDir = (group: SidebarGroup): string | undefined => {
   const directLinks = group.entries
     .filter(entry => entry.type === 'link')
     .map(entry => normalize(entry.href))
@@ -111,11 +98,6 @@ const groupDir = (
  * Flatten Starlight's resolved sidebar into label lookups: page
  * labels keyed by href, and group labels keyed by the directory
  * their links share (e.g. the "Client" group covering `/cli`).
- *
- * @param entries - Sidebar entries as passed to component overrides
- * via `Astro.props.sidebar`; group entries are walked recursively.
- * @param maps - Accumulator used during recursion.
- * @returns Label maps for both pages and groups.
  */
 const collectLabels = (
   entries: SidebarEntry[],
@@ -149,10 +131,6 @@ const collectLabels = (
  *   sidebar doesn't describe: humanized in prose sections, verbatim
  *   under directories of code identifiers (commands, packages).
  * - Only intermediate segments that exist as real pages are linked.
- *
- * @param pathname - The page's URL path, e.g. `/registry/publishing`.
- * @param sidebar - The resolved sidebar from `Astro.props.sidebar`.
- * @returns Crumbs in root-to-page order, or `[]` when hidden.
  */
 export const getBreadcrumbs = (
   pathname: string,

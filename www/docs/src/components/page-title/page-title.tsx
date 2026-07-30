@@ -1,7 +1,7 @@
 import React from 'react'
 import { ChevronRight } from 'lucide-react'
 import type { Props } from '@astrojs/starlight/props'
-import type { Crumb } from './breadcrumbs.ts'
+import type { Crumb } from '@/lib/breadcrumbs.ts'
 
 /**
  * Page heading for docs pages: an optional breadcrumb trail followed

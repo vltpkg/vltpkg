@@ -41,6 +41,19 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `sidebar.order` (a directory's order is the minimum of its
   children's), which can push subgroups above intro pages. Explicit
   `items` sidesteps this.
+- **`astro check` type-checks every `.ts`/`.mts` in `www/docs`**,
+  including `scripts/` — untyped helper scripts fail the docs build
+  (Vercel and the CI Test job) with implicit-`any` errors, and the
+  root eslint run (`vlr lint:check`) lints them with the strict
+  typescript-eslint rules. Write docs scripts as fully typed
+  TypeScript.
+- Workspace `lint`/`lint:check` scripts are normalized by
+  `vlr fix:pkg` (CI's "Consistent Workspaces" step) — custom commands
+  chained into them get reverted. Add extra checks as their own script
+  key (e.g. `lint:mdx`) and invoke them from the CI Docs step in
+  `.github/workflows/ci.yml`.
+- `/www/**/*.mjs` is gitignored (treated as build output) — name
+  source scripts `.mts`.
 
 ## Development
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Structural lint for authored MDX/Markdown docs content.
  *
@@ -34,28 +33,21 @@ const docsRoot = resolve(
 )
 
 /** A lint problem found in a file. */
-class Problem {
-  /**
-   * @param {string} file - Path of the offending file.
-   * @param {number} line - 1-indexed line number.
-   * @param {string} message - Human-readable description.
-   */
-  constructor(file, line, message) {
-    this.file = file
-    this.line = line
-    this.message = message
-  }
+type Problem = {
+  /** Path of the offending file. */
+  file: string
+  /** 1-indexed line number. */
+  line: number
+  /** Human-readable description. */
+  message: string
 }
 
 /**
  * Recursively collect authored .md/.mdx files under a directory,
  * skipping the generated typedoc tree.
- *
- * @param {string} dir - Directory to walk.
- * @returns {string[]} Absolute file paths.
  */
-const collectFiles = dir => {
-  const files = []
+const collectFiles = (dir: string): string[] => {
+  const files: string[] = []
   for (const name of readdirSync(dir)) {
     const path = join(dir, name)
     if (statSync(path).isDirectory()) {
@@ -68,8 +60,10 @@ const collectFiles = dir => {
   return files
 }
 
-/** Matches an ordered-list marker and captures everything before the
- * item's content, e.g. `1. `, `12) `, or an indented `2.  `. */
+/**
+ * Matches an ordered-list marker and captures everything before the
+ * item's content, e.g. `1. `, `12) `, or an indented `2.  `.
+ */
 const MARKER = /^(\s*)(\d+[.)])(\s+)/
 
 /**
@@ -78,16 +72,12 @@ const MARKER = /^(\s*)(\d+[.)])(\s+)/
  * list-item marker or indented at least as far as the current item's
  * content. Anything shallower (like a component at column 0) becomes
  * a sibling of the `<ol>` and breaks Starlight's Steps contract.
- *
- * @param {string} file - Path used in problem reports.
- * @param {string[]} lines - The file's lines.
- * @returns {Problem[]} Problems found in Steps blocks.
  */
-const checkSteps = (file, lines) => {
-  const problems = []
+const checkSteps = (file: string, lines: string[]): Problem[] => {
+  const problems: Problem[] = []
   let inSteps = false
   let inFence = false
-  let contentIndent = null
+  let contentIndent: number | null = null
 
   lines.forEach((line, idx) => {
     const lineNo = idx + 1
@@ -116,33 +106,31 @@ const checkSteps = (file, lines) => {
 
     const marker = MARKER.exec(line)
     if (marker) {
-      const [, lead, digits, gap] = marker
+      const [, lead = '', digits = '', gap = ''] = marker
       contentIndent = lead.length + digits.length + gap.length
       return
     }
 
     if (contentIndent === null) {
-      problems.push(
-        new Problem(
-          file,
-          lineNo,
+      problems.push({
+        file,
+        line: lineNo,
+        message:
           '<Steps> content must begin with an ordered-list item',
-        ),
-      )
+      })
       return
     }
 
-    const indent = /^\s*/.exec(line)[0].length
+    const indent = (/^\s*/.exec(line)?.[0] ?? '').length
     if (indent < contentIndent) {
-      problems.push(
-        new Problem(
-          file,
-          lineNo,
-          `line is indented ${indent} columns but the current step's ` +
-            `content starts at column ${contentIndent}, so it falls ` +
-            'outside the <Steps> ordered list',
-        ),
-      )
+      problems.push({
+        file,
+        line: lineNo,
+        message:
+          `line is indented ${indent} columns but the current ` +
+          `step's content starts at column ${contentIndent}, so ` +
+          'it falls outside the <Steps> ordered list',
+      })
     }
   })
 
@@ -154,25 +142,20 @@ const checkSteps = (file, lines) => {
  * `[Custom Title]`/`{attrs}`), with content starting on the next
  * line. Prose on the opening line — prettier's collapsed form — is
  * not parsed as an aside.
- *
- * @param {string} file - Path used in problem reports.
- * @param {string[]} lines - The file's lines.
- * @returns {Problem[]} Problems found in aside directives.
  */
-const checkAsides = (file, lines) => {
-  const problems = []
+const checkAsides = (file: string, lines: string[]): Problem[] => {
+  const problems: Problem[] = []
   lines.forEach((line, idx) => {
     if (/^\s*:::[a-z]+\s+\S/.test(line)) {
-      problems.push(
-        new Problem(
-          file,
-          idx + 1,
+      problems.push({
+        file,
+        line: idx + 1,
+        message:
           'aside content must start on the line after the ' +
-            'opening `:::type` marker (this usually means prettier ' +
-            'collapsed the directive — use the <Aside> component ' +
-            'instead)',
-        ),
-      )
+          'opening `:::type` marker (this usually means prettier ' +
+          'collapsed the directive — use the <Aside> component ' +
+          'instead)',
+      })
     }
   })
   return problems
@@ -180,11 +163,8 @@ const checkAsides = (file, lines) => {
 
 /**
  * Lint a single file with every structural check.
- *
- * @param {string} path - Absolute path of the file to lint.
- * @returns {Problem[]} All problems found.
  */
-const lintFile = path => {
+const lintFile = (path: string): Problem[] => {
   const rel = relative(process.cwd(), path)
   const lines = readFileSync(path, 'utf8').split('\n')
   return [...checkSteps(rel, lines), ...checkAsides(rel, lines)]
