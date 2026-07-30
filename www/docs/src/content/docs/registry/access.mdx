@@ -1,8 +1,8 @@
 ---
 title: Members & Access Control
 sidebar:
-  label: Members & Access
-  order: 4
+  label: Membership & Access
+  order: 5
 ---
 
 Access to a vlt account — its registries, packages, tokens, and
@@ -21,7 +21,7 @@ Every member has one of three roles:
 
 The account's creator is its owner. Owners and admins can also create
 **service tokens** for CI and trigger upstream package syncs; members
-cannot.
+can't.
 
 ## Inviting members
 
@@ -29,8 +29,9 @@ Owners and admins invite new members from the **Members** page in the
 dashboard. Invitations are sent by email, assign either the `member`
 or `admin` role, and expire after 7 days if not accepted.
 
-Roles can be changed later from the same page, with two restrictions:
-you cannot change an owner's role, and you cannot change your own.
+Owners and admins can also change an existing member's role between
+`member` and `admin` from the same page. An owner's role can't be
+changed, and no one can change their own role.
 
 ## How permissions are evaluated
 

@@ -1,14 +1,13 @@
 ---
-title: Registries & the Dashboard
+title: Dashboard
 sidebar:
-  label: Registries & the Dashboard
+  label: Dashboard
   order: 1
 ---
 
-import { Code } from '@astrojs/starlight/components'
+import { Aside, Code } from '@astrojs/starlight/components'
 
-Every vlt account comes with two registries, created automatically
-when the account is set up:
+Every vlt account comes by default with two registries:
 
 - **`main`** — your account's private registry, served at
   `https://registry.vlt.io/<account>/main/`. Packages published here
@@ -19,17 +18,21 @@ when the account is set up:
   populated from `registry.npmjs.org`, giving your installs and CI a
   consistent, fast source for public packages.
 
-## Accounts and slugs
+## Accounts
 
 An account has a display name and a **slug** — a unique, URL-safe
-identifier of 3–63 lowercase letters, numbers, and hyphens, chosen
-during account setup. The slug appears in your registry URLs and in
-your package scope, so pick it carefully.
+identifier of lowercase letters, numbers, and hyphens, chosen during
+account setup.
+
+<Aside type="caution">
+  The slug appears in your registry URLs and in your package scope, so
+  pick it carefully.
+</Aside>
 
 You can belong to more than one account, and create additional
-accounts — for example, a personal account and one per organization.
-Switch between them with the account switcher in the dashboard
-sidebar.
+accounts — for example, you can have a personal account and one per
+organization. Switch between them with the account switcher in the
+dashboard sidebar.
 
 ## Installing through your registries
 

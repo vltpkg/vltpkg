@@ -2,10 +2,15 @@
 title: Publishing Packages
 sidebar:
   label: Publishing
-  order: 2
+  order: 3
 ---
 
-import { Aside, Code } from '@astrojs/starlight/components'
+import {
+  Aside,
+  Code,
+  Tabs,
+  TabItem,
+} from '@astrojs/starlight/components'
 
 Your account's `main` registry hosts your private packages. Every
 package published to it must be scoped to your account slug — for
@@ -13,7 +18,8 @@ example, an account with the slug `acme` publishes packages named
 `@acme/utils`, `@acme/app`, and so on.
 
 The registry speaks the npm registry protocol, so you can publish with
-the vlt client or with npm.
+whichever package manager you already use — vlt, npm, pnpm, yarn, or
+bun.
 
 ## Configure your project
 
@@ -39,22 +45,43 @@ If you're using npm, the equivalent `.npmrc` entry is:
 />
 
 You'll also need to authenticate — see
-[Authentication & Tokens](/registry/tokens).
+[Authentication & Tokens](/registry/tokens). The dashboard's **Setup**
+page (under Packages) generates both steps for your account, tailored
+to your package manager.
 
 ## Publish
 
 From your package directory:
 
-<Code code="$ vlt publish" title="Terminal" lang="bash" />
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="$ vlt publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="$ npm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="$ pnpm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="$ yarn npm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="$ bun publish" title="Terminal" lang="bash" />
+  </TabItem>
+</Tabs>
 
-The client packs your package into a tarball and uploads it along with
-its manifest. See the [`vlt publish`](/cli/commands/publish) command
-reference for options like `--tag` and `--publish-directory`.
+Your package manager packs the package into a tarball and uploads it
+along with its manifest. If you're using the vlt client, see the
+[`vlt publish`](/cli/commands/publish) command reference for options
+like `--tag` and `--publish-directory`.
 
 The registry validates every publish:
 
-- The package name must be scoped to your account (`@acme/...`).
-  Publishes with other names are rejected.
+- The package name must be scoped to your account: `@acme/utils`
+  publishes, but an unscoped name like `utils`, or a name under
+  someone else's scope like `@other-team/utils`, is rejected with a
+  `403 Forbidden` error.
 - The name and version in the request, the manifest, and the tarball's
   `package.json` must all agree, which protects consumers against
   manifest confusion.
