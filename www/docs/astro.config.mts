@@ -132,16 +132,6 @@ export default defineConfig({
           label: 'Client',
           collapsed: true,
           items: [
-            {
-              label: 'selectors',
-              collapsed: true,
-              autogenerate: { directory: 'cli/selectors' },
-            },
-            {
-              label: 'migration',
-              collapsed: true,
-              autogenerate: { directory: 'cli/migration' },
-            },
             'cli',
             'cli/configuring',
             'cli/auth',
@@ -152,9 +142,19 @@ export default defineConfig({
             'cli/peer-dependencies',
             'cli/graph-modifiers',
             {
-              label: 'commands',
+              label: 'Commands',
               collapsed: true,
               autogenerate: { directory: 'cli/commands' },
+            },
+            {
+              label: 'Migration',
+              collapsed: true,
+              autogenerate: { directory: 'cli/migration' },
+            },
+            {
+              label: 'Selectors',
+              collapsed: true,
+              autogenerate: { directory: 'cli/selectors' },
             },
             {
               label: 'API Reference',
