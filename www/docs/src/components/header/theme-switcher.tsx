@@ -33,7 +33,7 @@ const storeTheme = (
       resolveTo =
         window.matchMedia('(prefers-color-scheme: dark)').matches ?
           'dark'
-          : 'light'
+        : 'light'
       break
     case 'dark':
       resolveTo = 'dark'
@@ -87,8 +87,8 @@ const ThemeSwitcher = () => {
 
     return (
       theme === 'system' ? <LaptopMinimal {...themeProps} />
-        : theme === 'light' ? <Sun {...themeProps} />
-          : <Moon {...themeProps} />
+      : theme === 'light' ? <Sun {...themeProps} />
+      : <Moon {...themeProps} />
     )
   }
 
@@ -113,7 +113,7 @@ const ThemeSwitcher = () => {
               'relative text-sm font-medium capitalize',
               t.name === theme ?
                 'bg-neutral-200/40 dark:bg-neutral-800/80'
-                : '',
+              : '',
             )}
             key={t.name}>
             {t.name}
