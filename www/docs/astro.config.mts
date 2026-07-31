@@ -128,7 +128,7 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Get Started',
-          collapsed: true,
+          collapsed: false,
           items: [
             'get-started/why-vlt',
             'get-started/use-cases',

@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-import { Aside, Code } from '@astrojs/starlight/components'
+import { Aside, Badge, Code } from '@astrojs/starlight/components'
 
 <img
   src="/images/dashboard.png"
@@ -13,7 +13,19 @@ import { Aside, Code } from '@astrojs/starlight/components'
   style={{ width: '100%', maxWidth: '1200px', height: 'auto' }}
 />
 
-Every vlt account comes by default with two registries:
+## Around the dashboard
+
+- **Dashboard** — an onboarding checklist for new accounts, usage at a
+  glance, recent releases on the npm mirror, and your team's recent
+  publishes.
+- **Packages** — browse the npm mirror and your private packages.
+- **Tokens** — create, inspect, and revoke access tokens. See
+  [Authentication & Tokens](/registry/tokens).
+- **Members** — invite people and manage their roles. See
+  [Members & Access Control](/registry/access).
+- **Settings → General** — account avatar, display name, slug, and the
+  account-wide two-factor requirement for package writes. Every vlt
+  account comes by default with two registries:
 
 - **`main`** — your account's private registry, served at
   `https://registry.vlt.io/<account>/main/`. Packages published here
@@ -45,6 +57,9 @@ dashboard sidebar.
 Point your client's default registry at your npm mirror, and map your
 account scope to your private registry:
 
+<Badge text="Note" variant="tip" /> You don't have to change package
+managers; [find out how](/registry#set-up-your-package-manager)
+
 <Code
   code={`$ vlt config set registry=https://registry.vlt.io/acme/npm/
 $ vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/`}
@@ -61,23 +76,10 @@ The npm equivalent:
   lang="ini"
 />
 
-With that in place, public packages resolve through your mirror and
-`@acme/...` packages resolve from your private registry. Both
+With that in place, public packages will resolve through your mirror
+and `@acme/...` packages resolve from your private registry. Both
 registries accept the same account token — see
 [Authentication & Tokens](/registry/tokens).
 
 The dashboard's **Setup** page (under Packages) generates these
 instructions for your account, tailored to your package manager.
-
-## Around the dashboard
-
-- **Dashboard** — an onboarding checklist for new accounts, usage at a
-  glance, recent releases on the npm mirror, and your team's recent
-  publishes.
-- **Packages** — browse the npm mirror and your private packages.
-- **Tokens** — create, inspect, and revoke access tokens. See
-  [Authentication & Tokens](/registry/tokens).
-- **Members** — invite people and manage their roles. See
-  [Members & Access Control](/registry/access).
-- **Settings → General** — account avatar, display name, slug, and the
-  account-wide two-factor requirement for package writes.
