@@ -97,10 +97,20 @@ const visit = async (
   signal: AbortSignal,
   _path: Node[],
 ): Promise<void> => {
-  // at this point we might have to read the manifest from disk if it's
-  // currently nullish, that could happen in a scenario where the ideal
-  // graph is from a lockfile and there's no actual graph available
-  // to hydrate the manifest data from.
+  // Skip manifest read for nodes that have no lifecycle scripts
+  // (known from the lockfile hasScripts flag). Still need to chmod bins.
+  if (!node.hasScripts && !node.manifest) {
+    // Even without scripts, check for binding.gyp (implicit install)
+    const hasBindingGyp =
+      scurry
+        .lstatSync(join(node.resolvedLocation(scurry), 'binding.gyp'))
+        ?.isFile() ?? false
+    if (!hasBindingGyp) {
+      await binChmod(node, scurry)
+      return
+    }
+  }
+
   node.manifest ??= packageJson.read(node.resolvedLocation(scurry))
   const { manifest } = node
   const { scripts = {} } = manifest
@@ -114,17 +124,12 @@ const visit = async (
     postprepare,
   } = scripts
 
-  // Check for binding.gyp file (npm's implicit install detection)
-  // "If there is a binding.gyp file in the root of your package and you
-  // haven't defined your own install or preinstall scripts, npm will default
-  // the install command to compile using node-gyp via node-gyp rebuild"
   const hasBindingGyp =
     scurry
       .lstatSync(join(node.resolvedLocation(scurry), 'binding.gyp'))
       ?.isFile() ?? false
   const hasImplicitInstall = hasBindingGyp && !install && !preinstall
 
-  // if it has install script or binding.gyp (implicit install), run it
   const runInstall =
     !!(install || preinstall || postinstall) || hasImplicitInstall
   if (runInstall) {
@@ -139,7 +144,6 @@ const visit = async (
     })
   }
 
-  // if it's an importer or git, run prepare
   const prepable =
     node.id.startsWith('git') || node.importer || !node.inVltStore()
   const runPrepare =

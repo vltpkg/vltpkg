@@ -21,6 +21,7 @@ import type { Graph } from './graph.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { GraphModifier } from './modifiers.ts'
+import { computeHasScripts } from './has-scripts.ts'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
@@ -207,6 +208,13 @@ export class Node implements NodeLike {
   bins?: Record<string, string>
 
   /**
+   * True if this package has build-relevant lifecycle scripts
+   * (install, preinstall, postinstall, prepare, preprepare, postprepare).
+   * Set from the lockfile flag or computed from the manifest at save time.
+   */
+  hasScripts = false
+
+  /**
    * True if this node has been built as part of the reify step.
    */
   built = false
@@ -303,6 +311,7 @@ export class Node implements NodeLike {
     }
     this.graph = options.graph as Graph
     this.manifest = manifest
+    if (manifest) this.hasScripts = computeHasScripts(manifest)
 
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version

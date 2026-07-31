@@ -38,31 +38,40 @@ export type LockfileData = {
  * Only lockfiles with matching version are considered valid.
  * Bump when making breaking format changes.
  */
-export const LOCKFILE_VERSION = 1
+export const LOCKFILE_VERSION = 2
 
 export const getFlagNumFromNode = (node: {
   optional?: boolean
   dev?: boolean
-}) =>
-  node.optional && node.dev ? LockfileNodeFlagDevOptional
+  hasScripts?: boolean
+}): LockfileNodeFlags =>
+  ((node.optional && node.dev ? LockfileNodeFlagDevOptional
   : node.optional ? LockfileNodeFlagOptional
   : node.dev ? LockfileNodeFlagDev
-  : LockfileNodeFlagNone
+  : LockfileNodeFlagNone) |
+    (node.hasScripts ?
+      LockfileNodeFlagHasScripts
+    : 0)) as LockfileNodeFlags
 
 export const getBooleanFlagsFromNum = (flags: LockfileNodeFlags) => ({
   dev: !!(flags & LockfileNodeFlagDev),
   optional: !!(flags & LockfileNodeFlagOptional),
+  hasScripts: !!(flags & LockfileNodeFlagHasScripts),
 })
 
 export const LockfileNodeFlagNone = 0
 export const LockfileNodeFlagOptional = 1
 export const LockfileNodeFlagDev = 2
 export const LockfileNodeFlagDevOptional = 3
+export const LockfileNodeFlagHasScripts = 4
 
 /**
- * Bit flags indicating whether a node is optional and/or dev.
+ * Bit flags for node metadata:
+ * - bit 0 (1): optional
+ * - bit 1 (2): dev
+ * - bit 2 (4): hasScripts (install/preinstall/postinstall/prepare/preprepare/postprepare)
  */
-export type LockfileNodeFlags = 0 | 1 | 2 | 3
+export type LockfileNodeFlags = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 /**
  * Build state constants for lockfile nodes

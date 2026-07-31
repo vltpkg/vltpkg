@@ -189,7 +189,7 @@ t.test(
       }),
       // lockfile present but empty/outdated
       'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 1,
+        lockfileVersion: 2,
         options: {},
         nodes: {},
         edges: {},

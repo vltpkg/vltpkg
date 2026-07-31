@@ -11,7 +11,7 @@ Object {
     "~npm~foo@1.2.3 bar": "prod * MISSING",
     "file~_d foo": "optional * ~npm~foo@1.2.3",
   },
-  "lockfileVersion": 1,
+  "lockfileVersion": 2,
   "nodes": Object {
     "~npm~foo@1.2.3": Array [
       0,

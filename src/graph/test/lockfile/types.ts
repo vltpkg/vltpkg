@@ -15,6 +15,7 @@ import {
   LockfileNodeFlagOptional,
   LockfileNodeFlagDev,
   LockfileNodeFlagDevOptional,
+  LockfileNodeFlagHasScripts,
   getBuildStateFromNode,
   getBuildStateFromNum,
   BuildStateNone,
@@ -46,7 +47,7 @@ t.test('lockfile type checks', t => {
 
   // Valid LockfileData
   ld = {
-    lockfileVersion: 1,
+    lockfileVersion: 2,
     options: {},
     nodes: {},
     edges: {},
@@ -63,7 +64,7 @@ t.test('lockfile type checks', t => {
     `prod ^1.0.0 ${otherDepId}` as LockfileEdgeValue
 
   ld = {
-    lockfileVersion: 1,
+    lockfileVersion: 2,
     options: {
       registries: { npm: 'https://registry.npmjs.org/' },
       modifiers: { ':root > #foo': '2.0.0' },
@@ -90,8 +91,9 @@ t.test('lockfile type checks', t => {
   ln
   //@ts-expect-error - flags must be a number
   ln = ['invalid']
-  //@ts-expect-error - flags must be 0-3
-  ln = [5]
+  // flags 0-7 are valid, 8+ are not (verified by LockfileNodeFlags type)
+  ln = [4] // hasScripts flag is valid
+  ln = [7] // all flags combined is valid
 
   // Valid LockfileNode variations
   ln = [0] // minimal
@@ -127,17 +129,19 @@ t.test('lockfile type checks', t => {
   ] // complete
 
   // LockfileNodeFlags type checks
-  //@ts-expect-error - must be 0, 1, 2, or 3
-  let lnf: LockfileNodeFlags = 4
-  lnf
   //@ts-expect-error - must be a number
-  lnf = 'invalid'
+  let lnf: LockfileNodeFlags = 'invalid'
+  lnf
 
   // Valid LockfileNodeFlags
   lnf = 0
   lnf = 1
   lnf = 2
   lnf = 3
+  lnf = 4
+  lnf = 5
+  lnf = 6
+  lnf = 7
 
   // LockfileEdges type checks
   let le: LockfileEdges = {}
@@ -219,28 +223,55 @@ t.test('lockfile flag utilities', t => {
       LockfileNodeFlagDev,
       'dev with explicit optional false',
     )
+    t.equal(
+      getFlagNumFromNode({ hasScripts: true }),
+      LockfileNodeFlagHasScripts,
+      'hasScripts only',
+    )
+    t.equal(
+      getFlagNumFromNode({
+        dev: true,
+        optional: true,
+        hasScripts: true,
+      }),
+      LockfileNodeFlagDevOptional | LockfileNodeFlagHasScripts,
+      'dev, optional, and hasScripts',
+    )
   })
 
   t.test('getBooleanFlagsFromNum', async t => {
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagNone),
-      { dev: false, optional: false },
+      { dev: false, optional: false, hasScripts: false },
       'no flags',
     )
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagOptional),
-      { dev: false, optional: true },
+      { dev: false, optional: true, hasScripts: false },
       'optional only',
     )
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagDev),
-      { dev: true, optional: false },
+      { dev: true, optional: false, hasScripts: false },
       'dev only',
     )
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagDevOptional),
-      { dev: true, optional: true },
+      { dev: true, optional: true, hasScripts: false },
       'dev and optional',
+    )
+    t.strictSame(
+      getBooleanFlagsFromNum(LockfileNodeFlagHasScripts),
+      { dev: false, optional: false, hasScripts: true },
+      'hasScripts only',
+    )
+    t.strictSame(
+      getBooleanFlagsFromNum(
+        (LockfileNodeFlagDevOptional |
+          LockfileNodeFlagHasScripts) as LockfileNodeFlags,
+      ),
+      { dev: true, optional: true, hasScripts: true },
+      'dev, optional, and hasScripts',
     )
   })
 
@@ -249,14 +280,19 @@ t.test('lockfile flag utilities', t => {
     t.equal(LockfileNodeFlagOptional, 1, 'optional flag value')
     t.equal(LockfileNodeFlagDev, 2, 'dev flag value')
     t.equal(LockfileNodeFlagDevOptional, 3, 'dev optional flag value')
+    t.equal(LockfileNodeFlagHasScripts, 4, 'hasScripts flag value')
   })
 
   t.test('roundtrip flag conversion', async t => {
     const testCases = [
-      { dev: false, optional: false },
-      { dev: true, optional: false },
-      { dev: false, optional: true },
-      { dev: true, optional: true },
+      { dev: false, optional: false, hasScripts: false },
+      { dev: true, optional: false, hasScripts: false },
+      { dev: false, optional: true, hasScripts: false },
+      { dev: true, optional: true, hasScripts: false },
+      { dev: false, optional: false, hasScripts: true },
+      { dev: true, optional: false, hasScripts: true },
+      { dev: false, optional: true, hasScripts: true },
+      { dev: true, optional: true, hasScripts: true },
     ]
 
     for (const testCase of testCases) {
@@ -379,7 +415,7 @@ t.test('lockfile type constraints', t => {
     rawManifest,
   ] = validNode
   t.equal(typeof flags, 'number', 'flags is number')
-  t.ok(flags >= 0 && flags <= 3, 'flags in valid range')
+  t.ok(flags >= 0 && flags <= 7, 'flags in valid range')
   t.equal(typeof name, 'string', 'name is string')
   t.equal(typeof integrity, 'string', 'integrity is string')
   t.equal(typeof resolved, 'string', 'resolved is string')
@@ -394,7 +430,7 @@ t.test('lockfile type constraints', t => {
 
   // Test that LockfileData options can include modifiers
   const lockfileWithModifiers: LockfileData = {
-    lockfileVersion: 1,
+    lockfileVersion: 2,
     options: {
       registries: { npm: 'https://registry.npmjs.org/' },
       modifiers: {
@@ -417,7 +453,7 @@ t.test('lockfile type constraints', t => {
 
   // Test that LockfileData options modifiers can be undefined
   const lockfileWithoutModifiers: LockfileData = {
-    lockfileVersion: 1,
+    lockfileVersion: 2,
     options: {
       registries: { npm2: 'https://registry.npmjs.org/' },
       modifiers: undefined,

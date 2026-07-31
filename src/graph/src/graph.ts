@@ -1,3 +1,4 @@
+import { computeHasScripts } from './has-scripts.ts'
 import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
@@ -461,6 +462,7 @@ export class Graph implements GraphLike {
       if (manifest) {
         if (!toFoundNode.manifest) {
           toFoundNode.manifest = manifest
+          toFoundNode.hasScripts = computeHasScripts(manifest)
           this.manifests.set(toFoundNode.id, manifest)
         }
         toFoundNode.integrity ??= manifest.dist?.integrity
