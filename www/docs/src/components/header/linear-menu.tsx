@@ -63,9 +63,9 @@ const MenuGroup = ({ item }: { item: MenuItem }) => {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="flex w-[224px] flex-col gap-1 rounded-[8px] border border-white/10 bg-neutral-900 px-1 py-1 text-foreground shadow-xl shadow-white/5 [&>a]:rounded-[5px]">
+        className="flex w-[224px] flex-col gap-1 rounded-[8px] border border-border bg-background px-1 py-1 text-foreground shadow-xl [&>a]:rounded-[5px]">
         {item.children?.map((child, idx) => (
-          <MenuLink className="text-white" key={idx} item={child} />
+          <MenuLink key={idx} item={child} />
         ))}
       </PopoverContent>
     </Popover>
