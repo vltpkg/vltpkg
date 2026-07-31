@@ -1,0 +1,114 @@
+---
+title: Using Packages
+sidebar:
+  label: Using Packages
+  order: 2
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components'
+
+Once your package manager is
+[set up](/registry#set-up-your-package-manager), your project pulls
+everything through vlt: public packages resolve through your account's
+`npm` mirror, and packages under your account scope (`@acme/...`)
+resolve from your private `main` registry.
+
+## Public packages
+
+Your `npm` registry is a read-only mirror of the public npm registry,
+populated from `registry.npmjs.org`. With your default registry
+pointed at it, installs work exactly as they always have — same
+package names, same versions — while your projects and CI share one
+consistent source.
+
+## Private packages
+
+Packages scoped to your account live in your `main` registry, and the
+scope mapping from setup routes them there automatically. Install them
+like any other dependency:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code
+      code="$ vlt install @acme/utils"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <Code
+      code="$ npm install @acme/utils"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code
+      code="$ pnpm add @acme/utils"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      code="$ yarn add @acme/utils"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="$ bun add @acme/utils" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno">
+    <Code
+      code="$ deno add npm:@acme/utils"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+</Tabs>
+
+Every member of your account can install its packages — see
+[Members & Access Control](/registry/access) for how read access is
+granted.
+
+## Versions and dist-tags
+
+The registry follows standard npm semantics, so version ranges,
+`latest`, and custom dist-tags behave the way you expect:
+
+<Code
+  code="$ vlt install @acme/utils@beta"
+  title="Terminal"
+  lang="bash"
+/>
+
+Deprecation notices set by publishers surface as warnings when a
+deprecated version is installed.
+
+## Installing in CI
+
+Create a **service token** with just the `package:read` privilege — a
+read-only token can install but never publish, no matter where it
+leaks. Provide it through the environment:
+
+<Code
+  code={`VLT_TOKEN_https_registry_vlt_io_acme_npm="<service token>" \\
+VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" \\
+vlt install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+The same token works for both registries because tokens belong to your
+account. See [Authentication & Tokens](/registry/tokens) for creating
+tokens and
+[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
+for how the environment variables are named.
+
+## Browsing packages
+
+The dashboard's **Packages** section lets you browse and search both
+registries: the npm mirror, and your private packages under your
+account. The registry also implements npm's search API, so
+`npm search --registry=...` works against it.

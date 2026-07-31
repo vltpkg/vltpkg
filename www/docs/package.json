@@ -70,6 +70,7 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "lint:mdx": "node --experimental-strip-types --no-warnings ./scripts/lint-mdx.mts",
     "prepare": "astro sync",
     "snap": "true",
     "start": "astro dev",

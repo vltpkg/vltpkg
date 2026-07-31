@@ -1,60 +1,69 @@
 ---
-title: Getting started with the registry
+title: Quick Start
 sidebar:
-  label: Registry
+  label: Quick Start
+  order: 0
 ---
 
-import { Steps } from '@astrojs/starlight/components'
+import {
+  Badge,
+  Steps,
+  Tabs,
+  TabItem,
+} from '@astrojs/starlight/components'
 
 ## Sign Up
 
-To publish a private or public package with vlt, you first have to
+To publish packages to the vlt registry, you first have to
 [sign up](https://www.vlt.io/sign-up).
 
 <Steps>
 
-1. **Create your account**
+1.  **Create your account**
 
-   You can sign up with Github, Google (Gmail) or with an email and
-   password.
+    You can sign up with Github, Google (Gmail) or with an email and
+    password.
 
-   <img
-     src="/images/signin.png"
-     alt="Sign up form on vlt's sign up view with first name and last name fields, and login buttons connecting to Google and Github"
-     className="border-sm"
-     style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
-   />
+    <img
+      src="/images/signin.png"
+      alt="Sign up form on vlt's sign up view with first name and last name fields, and login buttons connecting to Google and Github"
+      className="border-sm"
+      style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
+    />
 
-2. **Verify your email**
+2.  **Verify your email**
 
-   If you signed up with an email and password, check your inbox for a
-   one-time passcode (OTP). Paste it into the verification view to
-   confirm your account.
+    If you signed up with an email and password, check your inbox for
+    a one-time passcode (OTP). Paste it into the verification view to
+    confirm your account.
 
-   <img
-     src="/images/otp-email.png"
-     alt="Screenshot of vlt signup one-time passcode email"
-     className="border-sm"
-     style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
-   />
+    <img
+      src="/images/otp-email.png"
+      alt="Screenshot of vlt signup one-time passcode email"
+      className="border-sm"
+      style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
+    />
 
-3. Set up your account
+3.  Set up your account
 
-   <img
-     src="/images/account-setup.png"
-     alt="Screenshot of vlt account setup view with display name and slug fields, and a grid of plans for user selection"
-     className="border-sm"
-     style={{ width: '100%', height: 'auto' }}
-   />
+    <img
+      src="/images/account-setup.png"
+      alt="Screenshot of vlt account setup view with display name and slug fields, and a grid of plans for user selection"
+      className="border-sm"
+      style={{ width: '100%', height: 'auto' }}
+    />
 
-4. You've signed up! You'll be logged into the Dashboard.
+    <Badge text="Caution" variant="caution" /> The slug appears in
+    your registry URLs and in your package scope, so choose carefully.
 
-   <img
-     src="/images/dashboard.png"
-     alt="Screenshot of vlt Dashboard view displaying left side side navigation where using can browse through registries and account settings"
-     className="border-sm"
-     style={{ width: '100%', height: 'auto' }}
-   />
+4.  You've signed up! You'll be logged into the Dashboard.
+
+    <img
+      src="/images/dashboard.png"
+      alt="Screenshot of vlt Dashboard view displaying left side side navigation where using can browse through registries and account settings"
+      className="border-sm"
+      style={{ width: '100%', height: 'auto' }}
+    />
 
 </Steps>
 
@@ -74,3 +83,344 @@ To publish a private or public package with vlt, you first have to
    />
 
 </Steps>
+
+## Set up your package manager
+
+Once you have an account, connect the package manager you already use
+to your registries. The examples below use `acme` as the account slug
+— replace it with your own, or open the dashboard's **Setup** page
+(under Packages), which generates these instructions for your account.
+
+<Tabs syncKey="pkg-manager">
+
+<TabItem label="vlt">
+
+<Steps>
+
+1. **Set up the vlt.io npm mirror**
+
+   Change your default registry to your vlt.io mirror. This updates
+   your `vlt.json` file to use the mirror for all packages in the
+   current project:
+
+   ```bash
+   vlt config set registry=https://registry.vlt.io/acme/npm/
+   ```
+
+   Then log in to obtain an authentication token:
+
+   ```bash
+   vlt login
+   ```
+
+   Then reinstall your dependencies from the vlt.io mirror:
+
+   ```bash
+   vlt install
+   ```
+
+2. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. To set it up in
+   `vlt.json`, run:
+
+   ```bash
+   vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/
+   ```
+
+   Then obtain an authentication token for your private scope:
+
+   ```bash
+   vlt login --registry=https://registry.vlt.io/acme/main/
+   ```
+
+   Now you can publish and install packages from your private `@acme`
+   scope.
+
+</Steps>
+
+</TabItem>
+
+<TabItem label="npm">
+
+<Steps>
+
+1. **Set up the vlt.io npm mirror**
+
+   Change your default registry to your vlt.io mirror. This updates
+   your `.npmrc` file to use the mirror for all npm packages in the
+   current project:
+
+   ```bash
+   npm config set registry https://registry.vlt.io/acme/npm/ --location=project
+   ```
+
+   Then log in to obtain an authentication token:
+
+   ```bash
+   npm login --registry=https://registry.vlt.io/acme/main/
+   ```
+
+   Then to switch all your dependencies to the vlt.io mirror, delete
+   your `package-lock.json` and `node_modules` folder and reinstall:
+
+   ```bash
+   rm -rf package-lock.json node_modules
+   npm install
+   ```
+
+2. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. To set it up in
+   `.npmrc`, run:
+
+   ```bash
+   npm config set @acme:registry https://registry.vlt.io/acme/main/ --location=project
+   ```
+
+   Then obtain an authentication token for your private scope:
+
+   ```bash
+   npm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
+   ```
+
+   Now you can publish and install packages from your private `@acme`
+   scope.
+
+</Steps>
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+<Steps>
+
+1. **Set up the vlt.io npm mirror**
+
+   Change your default registry to your vlt.io mirror. This updates
+   your `.npmrc` file to use the mirror for all npm packages in the
+   current project:
+
+   ```bash
+   pnpm config set registry https://registry.vlt.io/acme/npm/ --location=project
+   ```
+
+   Then log in to obtain an authentication token:
+
+   ```bash
+   pnpm login
+   ```
+
+   Then to switch all your dependencies to the vlt.io mirror, delete
+   your `pnpm-lock.yaml` and `node_modules` folder and reinstall:
+
+   ```bash
+   rm -rf pnpm-lock.yaml node_modules
+   pnpm install
+   ```
+
+2. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. To set it up in
+   `.npmrc`, run:
+
+   ```bash
+   pnpm config set @acme:registry https://registry.vlt.io/acme/main/ --location=project
+   ```
+
+   Then obtain an authentication token for your private scope:
+
+   ```bash
+   pnpm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
+   ```
+
+   Now you can publish and install packages from your private `@acme`
+   scope.
+
+</Steps>
+
+</TabItem>
+
+<TabItem label="yarn">
+
+These instructions are for yarn 2+ ("Berry"), the version you get from
+`yarn set version berry` or a `packageManager` field in
+`package.json`.
+
+<Steps>
+
+1. **Set up the vlt.io npm mirror**
+
+   Change your default registry to your vlt.io mirror. This updates
+   your project's `.yarnrc.yml` file to use the mirror for all npm
+   packages:
+
+   ```bash
+   yarn config set npmRegistryServer "https://registry.vlt.io/acme/npm/"
+   ```
+
+   Then log in to obtain an authentication token:
+
+   ```bash
+   yarn npm login --web-login --always-auth
+   ```
+
+   Then to switch all your dependencies to the vlt.io mirror, delete
+   your `yarn.lock` and reinstall:
+
+   ```bash
+   rm -rf yarn.lock
+   yarn install
+   ```
+
+2. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. To set it up in
+   `.yarnrc.yml`, run:
+
+   ```bash
+   yarn config set npmScopes.acme.npmRegistryServer "https://registry.vlt.io/acme/main/"
+   yarn config set npmScopes.acme.npmPublishRegistry "https://registry.vlt.io/acme/main/"
+   ```
+
+   Then obtain an authentication token for your private scope:
+
+   ```bash
+   yarn npm login --scope acme --always-auth --web-login
+   ```
+
+   Now you can publish and install packages from your private `@acme`
+   scope.
+
+</Steps>
+
+</TabItem>
+
+<TabItem label="bun">
+
+<Steps>
+
+1. **Get a token**
+
+   To authenticate Bun with your registries, first create an
+   authentication token from your account's
+   [Tokens page](https://www.vlt.io/tokens/acme) and define an
+   environment variable. If you're using a `.env` file, define the
+   token there:
+
+   ```ini
+   VLT_TOKEN=<your token>
+   ```
+
+   You can also add it to your `.bashrc` or `.zshrc`, or export it in
+   your current shell for the duration of your session:
+
+   ```bash
+   export VLT_TOKEN=<your token>
+   ```
+
+2. **Set up the vlt.io npm mirror**
+
+   Create (or edit) `bunfig.toml` in your project root and point the
+   default registry at your vlt.io mirror. Use a `$VLT_TOKEN`
+   placeholder for the token instead of a literal value — bun expands
+   `$VAR` references from the environment at request time, so this
+   file is safe to commit:
+
+   ```toml
+   [install]
+   registry = { url = "https://registry.vlt.io/acme/npm/", token = "$VLT_TOKEN" }
+   ```
+
+   Then to switch all your dependencies to the vlt.io mirror, delete
+   your `bun.lock` and `node_modules` folder and reinstall:
+
+   ```bash
+   rm -rf bun.lock node_modules
+   bun install
+   ```
+
+3. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. Add it under
+   `[install.scopes]` in `bunfig.toml`. vlt.io tokens are scoped to
+   your account rather than to a specific registry, so the same
+   `$VLT_TOKEN` works here too:
+
+   ```toml
+   [install.scopes.acme]
+   url = "https://registry.vlt.io/acme/main/"
+   token = "$VLT_TOKEN"
+   ```
+
+   Now you can publish and install packages from your private `@acme`
+   scope — `bun publish` resolves the registry from the package name's
+   scope automatically.
+
+</Steps>
+
+</TabItem>
+
+<TabItem label="deno">
+
+<Steps>
+
+1. **Set up the vlt.io npm mirror**
+
+   Create (or edit) `.npmrc` in your project root and point the
+   default registry at your vlt.io mirror. Reference the token via
+   `${VLT_TOKEN}` rather than a literal value — deno expands `${VAR}`
+   references in `.npmrc` from the environment, so this file is safe
+   to commit:
+
+   ```bash
+   cat >> .npmrc <<'EOF'
+   registry=https://registry.vlt.io/acme/npm/
+   //registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}
+   EOF
+   ```
+
+   Since there's no `deno login`, create a token from the vlt.io
+   dashboard instead, then put it in a `.env` file (make sure `.env`
+   is in your `.gitignore`):
+
+   ```bash
+   echo "VLT_TOKEN=<your token>" >> .env
+   ```
+
+   Then to switch all your dependencies to the vlt.io mirror, delete
+   your `deno.lock` and `node_modules` folder and reinstall, passing
+   `--env-file` so the token in `.env` is loaded:
+
+   ```bash
+   rm -rf deno.lock node_modules
+   deno install --env-file
+   ```
+
+2. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. Add a scope
+   mapping and a matching auth-token line — the token line's host/path
+   must exactly match the scope's registry URL:
+
+   ```bash
+   cat >> .npmrc <<'EOF'
+   @acme:registry=https://registry.vlt.io/acme/main/
+   //registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
+   EOF
+   ```
+
+   vlt.io tokens are scoped to your account rather than to a specific
+   registry, so the same `VLT_TOKEN` works here too. Now you can
+   install packages from your private `@acme` scope with
+   `deno install --env-file`.
+
+   Note that deno will not let you publish into npm registries, so you
+   will need an alternative tool to publish your private packages in
+   this scope.
+
+</Steps>
+
+</TabItem>
+
+</Tabs>

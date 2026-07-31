@@ -5,18 +5,13 @@ import type { ElementType } from 'react'
 import type { LucideProps } from 'lucide-react'
 
 export const labelMap: Record<string, string> = {
-  packages: 'Internals',
-  cli: 'Client',
+  packages: 'API Reference',
   selectors: 'Selectors',
   'pseudo-classes': 'Pseudo-Classes',
   'pseudo-states': 'Pseudo-States',
 }
 
-export const majorSections = new Set([
-  'registry',
-  'client',
-  'packages',
-])
+export const majorSections = new Set(['get-started', 'registry'])
 
 const allIcons = {
   ...LucideIcons,
@@ -45,7 +40,6 @@ export const iconMap: Partial<Record<string, IconName>> = {
   auth: 'Authentication',
   'query selectors': 'Query',
   catalogs: 'Database',
-  registries: 'Globe',
   selectors: 'Search',
   security: 'Shield',
   workspaces: 'Folder',
@@ -113,7 +107,6 @@ export const iconMap: Partial<Record<string, IconName>> = {
   unzip: 'Archive',
   error: 'AlertCircle',
   'cache-entry': 'Database',
-  dashboard: 'Monitor',
   'project-tools': 'Wrench',
   pool: 'Layers',
   'unpack-request': 'Download',

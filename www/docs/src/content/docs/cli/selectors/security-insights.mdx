@@ -5,15 +5,17 @@ sidebar:
   order: 6
 ---
 
-import { Code } from '@astrojs/starlight/components'
+import { Aside, Code } from '@astrojs/starlight/components'
 
 Security insight selectors rely on data provided by
 [Socket](https://socket.dev/). Using any of these selectors triggers a
 network call to fetch package report data.
 
-:::note Security selectors require fetching data from Socket's API.
-This adds latency to queries — the data is fetched before the query
-runs. Keep this in mind for interactive use. :::
+<Aside type="note">
+  Security selectors require fetching data from Socket's API. This
+  adds latency to queries — the data is fetched before the query runs.
+  Keep this in mind for interactive use.
+</Aside>
 
 ## Malware & threats
 
