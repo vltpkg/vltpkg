@@ -5,7 +5,7 @@
 This is a very light wrapper around undici, optimized for interfacing
 with an npm registry.
 
-**[Cache Unzipped](#cache-unzipped)** ·
+**[Cache Unzipped](#cache-unzipped)** · **[Proxies](#proxies)** ·
 **[Integrity Options](#integrity-options)** · **[Usage](#usage)**
 
 ## Overview
@@ -64,6 +64,19 @@ So,
 
 Thus, the `content-length` response header will _usually_ not match
 the actual byte length of the response body.
+
+## Proxies
+
+If `http_proxy` or `https_proxy` is set in the environment (either
+case), requests are routed through that proxy using undici's
+[`EnvHttpProxyAgent`](https://undici.nodejs.org/#/docs/api/EnvHttpProxyAgent).
+Hosts listed in `no_proxy` are still dialed directly. When neither
+variable is set, the client uses the same plain undici `Agent` it
+always has, so there is no change to the default path.
+
+A proxy that terminates TLS needs its certificate authority to be
+trusted. Point `NODE_EXTRA_CA_CERTS` at the CA file and node will
+trust it for the tunneled connection.
 
 ## Integrity Options
 
