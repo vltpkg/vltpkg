@@ -1,0 +1,62 @@
+---
+title: Members & Access Control
+sidebar:
+  label: Membership & Access
+  order: 5
+---
+
+Access to a vlt account — its registries, packages, tokens, and
+settings — is managed through account membership. Permissions apply
+account-wide: there are no per-package or per-registry access lists.
+
+## Roles
+
+Every member has one of three roles:
+
+| Role       | What it can do                                                              |
+| ---------- | --------------------------------------------------------------------------- |
+| **Owner**  | Everything, including billing, account settings, and member management      |
+| **Admin**  | Same day-to-day capabilities as owner: manage members, tokens, and packages |
+| **Member** | Read and publish packages, and create and revoke their own personal tokens  |
+
+The account's creator is its owner. Owners and admins can also create
+**service tokens** for CI and trigger upstream package syncs; members
+can't.
+
+## Inviting members
+
+Owners and admins invite new members from the **Members** page in the
+dashboard. Invitations are sent by email, assign either the `member`
+or `admin` role, and expire after 7 days if not accepted.
+
+Owners and admins can also change an existing member's role between
+`member` and `admin` from the same page. An owner's role can't be
+changed, and no one can change their own role.
+
+## How permissions are evaluated
+
+Capabilities are expressed as privileges — for example `package:read`,
+`package:write`, `token:create`, `member:write`, `billing:read`. Each
+role maps to a set of privileges, and each token carries its own set
+(see [Authentication & Tokens](/registry/tokens)).
+
+A request is allowed only when **both** the member's role and the
+token grant the required privilege. That means a read-only token is
+safe to hand to CI even if it was created by an owner, and a token can
+never do more than the person who created it.
+
+## Package access
+
+- Members of an account can install from and publish to the account's
+  `main` registry.
+- People outside the account have no access to its private packages.
+- The account's `npm` mirror serves public packages and is readable by
+  any authenticated account member.
+
+## Two-factor enforcement
+
+By default, package writes (publish, deprecate, unpublish, dist-tag
+changes) made with a personal token require a one-time password.
+Owners can toggle this requirement under **Settings → General**.
+Service tokens are exempt, so CI publishes are unaffected — see
+[Publishing — Two-factor authentication](/registry/publishing#two-factor-authentication).

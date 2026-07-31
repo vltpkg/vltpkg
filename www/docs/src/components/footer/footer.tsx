@@ -1,8 +1,6 @@
 import { footerContent } from './content.tsx'
 import { Vlt } from '@/components/icons/icons.ts'
-import { ThemeSwitcher } from './theme-switcher.tsx'
 import { FooterLink } from './footer-link.tsx'
-import { Waitlist } from './waitlist.tsx'
 
 const Footer = () => {
   return (
@@ -34,10 +32,6 @@ const Footer = () => {
             </a>
           </div>
         </div>
-        <section className="flex w-full items-center justify-between pt-4 md:pt-0">
-          <Waitlist />
-          <ThemeSwitcher />
-        </section>
       </div>
     </footer>
   )

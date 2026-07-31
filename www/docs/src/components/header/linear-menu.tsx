@@ -20,20 +20,23 @@ const LinearMenu = () => {
       title: 'Platform',
       children: [
         {
-          icon: 'client',
-          title: 'Client',
-          path: 'https://vlt.io/open-source/client',
+          icon: 'registry',
+          title: 'Registry',
+          path: 'https://www.vlt.io/platform/registry',
         },
         {
-          icon: 'serverless-registry',
-          title: 'Serverless Registry',
-          path: 'https://vlt.io/open-source/serverless-registry',
+          icon: 'security',
+          title: 'Security',
+          path: 'https://www.vlt.io/platform/security',
         },
       ],
     },
-    { title: 'Docs', path: 'https://docs.vlt.io/' },
     { title: 'Blog', path: 'https://vlt.io/blog' },
-    { title: 'Company', path: 'https://vlt.io/about' },
+    {
+      title: 'Community',
+      path: 'https://discord.com/invite/qdbXTqxZzZ',
+    },
+    { title: 'Feedback', path: '/feedback' },
   ]
 
   return (
@@ -61,9 +64,9 @@ const MenuGroup = ({ item }: { item: MenuItem }) => {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="flex w-[224px] flex-col gap-1 rounded-[8px] border border-white/10 bg-neutral-900 px-1 py-1 text-foreground shadow-xl shadow-white/5 [&>a]:rounded-[5px]">
+        className="flex w-[224px] flex-col gap-1 rounded-[8px] border border-border bg-background px-1 py-1 text-foreground shadow-xl [&>a]:rounded-[5px]">
         {item.children?.map((child, idx) => (
-          <MenuLink className="text-white" key={idx} item={child} />
+          <MenuLink key={idx} item={child} />
         ))}
       </PopoverContent>
     </Popover>

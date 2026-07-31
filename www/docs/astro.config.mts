@@ -105,13 +105,30 @@ export default defineConfig({
               url: 'https://www.npmjs.com/package/vlt',
             },
           ],
-          rawContent: true,
+          customSets: [
+            {
+              label: 'Registry',
+              description:
+                'Documentation for the vlt registry — publishing, access control, tokens, and dashboard.',
+              paths: ['registry/**'],
+            },
+            {
+              label: 'CLI',
+              description:
+                'vlt CLI reference — commands, configuration, selectors, migration, and security.',
+              paths: ['cli/**'],
+            },
+          ],
+          rawContent: false,
+          minify: {
+            customSelectors: ['.expressive-code'],
+          },
         }),
       ],
       sidebar: [
         {
           label: 'Get Started',
-          collapsed: true,
+          collapsed: false,
           items: [
             'get-started/why-vlt',
             'get-started/use-cases',
@@ -131,12 +148,37 @@ export default defineConfig({
         {
           label: 'Client',
           collapsed: true,
-          autogenerate: { directory: 'cli' },
-        },
-        {
-          label: 'API Reference',
-          collapsed: true,
-          autogenerate: { directory: TypedocPlugin.directory },
+          items: [
+            'cli',
+            'cli/configuring',
+            'cli/auth',
+            'cli/registries',
+            'cli/security',
+            'cli/workspaces',
+            'cli/catalogs',
+            'cli/peer-dependencies',
+            'cli/graph-modifiers',
+            {
+              label: 'Commands',
+              collapsed: true,
+              autogenerate: { directory: 'cli/commands' },
+            },
+            {
+              label: 'Migration',
+              collapsed: true,
+              autogenerate: { directory: 'cli/migration' },
+            },
+            {
+              label: 'Selectors',
+              collapsed: true,
+              autogenerate: { directory: 'cli/selectors' },
+            },
+            {
+              label: 'API Reference',
+              collapsed: true,
+              autogenerate: { directory: TypedocPlugin.directory },
+            },
+          ],
         },
       ],
     }),

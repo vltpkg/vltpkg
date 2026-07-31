@@ -1,0 +1,116 @@
+---
+title: Authentication & Tokens
+sidebar:
+  label: Authentication & Tokens
+  order: 4
+---
+
+import { Aside, Code } from '@astrojs/starlight/components'
+
+Every request to the vlt registry is authenticated with a bearer
+token. Tokens belong to an **account** — one token works for both of
+the account's registries (`main` and `npm`).
+
+## Log in from the CLI
+
+The registry supports the npm web login flow. Point your client at
+your registry and log in:
+
+<Code
+  code="$ vlt login --registry=https://registry.vlt.io/acme/main/"
+  title="Terminal"
+  lang="bash"
+/>
+
+Your browser opens vlt.io to confirm the login, and the client stores
+the resulting token in the vlt keychain. npm works the same way:
+
+<Code
+  code="$ npm login --auth-type=web --registry=https://registry.vlt.io/acme/main/"
+  title="Terminal"
+  lang="bash"
+/>
+
+See [Authentication](/cli/auth) for everything the vlt client supports
+around credential storage and identities.
+
+## Personal and service tokens
+
+There are two kinds of tokens:
+
+- **Personal tokens** are bound to your user. Writes made with a
+  personal token are subject to the account's two-factor (OTP)
+  requirement. Logging in from the CLI mints a personal token with
+  your full set of privileges.
+- **Service tokens** belong to the account rather than a person. They
+  are meant for CI and automation, and they are not subject to OTP
+  prompts. Creating service tokens requires an owner or admin role.
+
+Tokens start with the `vlt_1_` prefix. The registry stores only a hash
+of each token, so the full value is shown once at creation — copy it
+then.
+
+## Privileges and expiry
+
+Every token carries a set of privileges, such as `package:read`,
+`package:write`, `token:read`, or `member:write`. A request succeeds
+only if **both** the token and the requesting user's account role
+grant the privilege, so a read-only token stays read-only no matter
+who uses it, and a token can never grant more than its creator's own
+role allows.
+
+For example, a CI token that only installs packages needs just
+`package:read`; a publish token needs `package:write` as well.
+
+Tokens can optionally be given an expiration date, after which they
+stop working. Expired and revoked tokens are rejected on every
+request.
+
+## Managing tokens
+
+Create, inspect, and revoke tokens from your account's token settings
+in the [dashboard](https://www.vlt.io/). Members can create and revoke
+their own personal tokens; owners and admins can also manage service
+tokens.
+
+<Aside type="note">
+  The npm `token` CLI subcommands (`npm token list`, `npm token
+  create`) are not supported by the registry endpoints — manage tokens
+  in the dashboard instead.
+</Aside>
+
+## Using tokens in CI
+
+Provide a token through the environment rather than a config file. For
+your account registry, set the `VLT_TOKEN_*` variable derived from the
+registry URL (non-alphanumeric characters become `_`):
+
+<Code
+  code={`VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" vlt install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+See
+[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
+for details, and
+[Publishing — CI](/registry/publishing#publishing-from-ci) for the
+publish workflow.
+
+With npm, use the standard `.npmrc` auth entry, ideally referencing an
+environment variable:
+
+<Code
+  code={`@acme:registry=https://registry.vlt.io/acme/main/
+//registry.vlt.io/acme/main/:_authToken=\${NPM_TOKEN}`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+## Removing credentials
+
+- `vlt logout --registry=...` removes the token from your keychain and
+  asks the registry to revoke it.
+- `vlt token rm` removes a token from your local keychain only.
+- Revoking a token in the dashboard invalidates it everywhere,
+  immediately.

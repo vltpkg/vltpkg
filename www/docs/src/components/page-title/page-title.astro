@@ -1,9 +1,15 @@
 ---
 import type { Props } from '@astrojs/starlight/props'
 import { PageTitle as ReactPageTitle } from './page-title.tsx'
+import { getBreadcrumbs } from '@/lib/breadcrumbs.ts'
+
+const props = Astro.props as Props
+const isHome = Astro.url.pathname === '/'
+const crumbs = getBreadcrumbs(Astro.url.pathname, props.sidebar)
 ---
 
-<ReactPageTitle
-  crumbs={Astro.url.pathname.replace(/^\/|\/$/g, '').split('/')}
-  {...Astro.props}
-/>
+{
+  isHome ?
+    <div class="mt-4" />
+  : <ReactPageTitle crumbs={crumbs} {...props} />
+}
