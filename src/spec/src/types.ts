@@ -7,8 +7,15 @@ export type SpecOptions = {
 export type Scope = `@${string}`
 
 export type SpecOptionsFilled = {
-  /** the registry where a spec should be resolved against */
-  registry: string
+  /**
+   * The registry where a spec should be resolved against.
+   *
+   * There is **no default**. If no registry is configured, registry-type
+   * specs parsed without one will have `spec.registry === undefined`, and
+   * anything that needs to build a registry URL will fail. Named registry
+   * aliases (`npm:`, `gh:`, `jsr:`) and `scoped-registries` are unaffected.
+   */
+  registry?: string
   /** shorthand prefix names for known registries */
   registries: Record<string, string>
   /** shorthand prefix names for known git hosts */

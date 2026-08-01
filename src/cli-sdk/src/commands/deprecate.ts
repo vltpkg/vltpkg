@@ -6,8 +6,11 @@ import { satisfies } from '@vltpkg/semver'
 import { asError } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
+import { requireRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
+
+export const needsRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -88,7 +91,8 @@ export const command: CommandFn<CommandResult> = async conf => {
     })
   }
 
-  const { registry, otp } = conf.options
+  const { otp } = conf.options
+  const registry = requireRegistry(conf)
   const registryUrl = new URL(registry)
 
   // Fetch the current packument

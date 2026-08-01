@@ -10,6 +10,7 @@ import {
 } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
 import { readPassword } from '../read-password.ts'
+import { requireRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -39,6 +40,8 @@ export type TokenListResult = {
   identity: string
   registries: RegistryTokens[]
 }
+
+export const needsRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -186,7 +189,7 @@ const listTokens = async (
 export const command: CommandFn<
   TokenListResult | void
 > = async conf => {
-  const reg = normalizeRegistryKey(conf.options.registry)
+  const reg = normalizeRegistryKey(requireRegistry(conf))
   switch (conf.positionals[0]) {
     case 'ls':
     case 'list': {
@@ -196,7 +199,7 @@ export const command: CommandFn<
       const seen = new Set<string>()
 
       // Always query the default registry first
-      const defaultReg = conf.options.registry
+      const defaultReg = requireRegistry(conf)
       seen.add(normalizeRegistryKey(defaultReg))
       registries.push(
         await listTokens(rc, defaultReg, identity, 'default'),

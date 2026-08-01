@@ -76,7 +76,8 @@ const parseSpec = (
 ): Spec =>
   Spec.parse(name, bareSpec, {
     ...graph.mainImporter.options,
-    registry: fromNode.registry,
+    registry:
+      fromNode.registry ?? graph.mainImporter.options.registry,
   })
 
 /**
@@ -208,7 +209,8 @@ export const checkPeerEdgesCompatible = (
   // Per-call memoization: avoid repeated satisfies() calls with identical args
   const parseOpts = {
     ...graph.mainImporter.options,
-    registry: fromNode.registry,
+    registry:
+      fromNode.registry ?? graph.mainImporter.options.registry,
   }
   const fromLocation = fromNode.location
   const projectRoot = fromNode.projectRoot
@@ -677,7 +679,7 @@ export const startPeerPlacement = (
     // parent node that might have not been parsed yet
     const siblingDeps = getDependencies(fromNode, {
       ...options,
-      registry: fromNode.registry,
+      registry: fromNode.registry ?? options.registry,
     })
     for (const [depName, dep] of siblingDeps) {
       queueMap.set(depName, dep)

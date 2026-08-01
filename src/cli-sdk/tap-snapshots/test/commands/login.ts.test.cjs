@@ -14,11 +14,13 @@ vlt login
 
 Authenticate against a registry, and store the token in the appropriate config file for later use.
 
+There is no default registry, so a registry must either already be configured or be provided with \`--registry=<url>\`. On success the registry is written to the project's \`vlt.json\`.
+
 ## Options
 
 ### registry
 
-Registry URL to authenticate against.
+Registry URL to authenticate against. Saved to vlt.json.
 
 \`\`\`
 --registry=<url>

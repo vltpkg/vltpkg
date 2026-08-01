@@ -18,6 +18,10 @@ const { Spec } = await t.mockImport<typeof import('../src/index.ts')>(
   },
 )
 
+// there is no default registry any more; most of these cases predate
+// that change, so keep exercising them against the npm registry.
+const defaultOptions = { registry: 'https://registry.npmjs.org/' }
+
 t.strictSame(Spec.parseGitSelector(''), [{}])
 
 t.compareOptions = { sort: false }
@@ -158,7 +162,7 @@ t.test('basic parsing tests', t => {
   t.plan(specs.length)
   for (const v of specs) {
     t.test(v, t => {
-      const s = Spec.parse(v)
+      const s = Spec.parse(v, defaultOptions)
       t.matchSnapshot(inspect(s), 'inspect default')
       t.matchSnapshot(
         inspect(s, { colors: true }),
@@ -581,6 +585,7 @@ t.test('try to guess the conventional tarball URL', t => {
     ['x@npm:z@latest'],
   ]
   const options = {
+    ...defaultOptions,
     registries: {
       vlt: 'https://registry.vlt.sh',
     },
@@ -625,10 +630,7 @@ t.test('git path selector must be relative', async t => {
   }
 })
 
-t.test(
-  'spec with registry:undefined uses default registry',
-  async t => {
-    const s = Spec.parse('foo@1.x', { registry: undefined })
-    t.equal(s.registry, 'https://registry.npmjs.org/')
-  },
-)
+t.test('spec with registry:undefined has no registry', async t => {
+  const s = Spec.parse('foo@1.x', { registry: undefined })
+  t.equal(s.registry, undefined)
+})

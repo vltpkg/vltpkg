@@ -30,6 +30,7 @@
     "walk-up-path": "^4.0.0"
   },
   "config": {
+    "registry": "https://registry.npmjs.org/",
     "allow-scripts": "#tailwindcss, #esbuild, #node-pty"
   }
 }

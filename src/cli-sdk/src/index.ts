@@ -9,6 +9,7 @@ import { Config } from './config/index.ts'
 import { outputCommand, stderr, stdout } from './output.ts'
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
+import { missingRegistryError } from './require-registry.ts'
 
 export type {
   Command,
@@ -104,6 +105,9 @@ const run = async () => {
   }
 
   const command = await loadCommand(vlt.command)
+  if (command.needsRegistry && !vlt.options.registry) {
+    throw missingRegistryError()
+  }
   await outputCommand(command, vlt, { start, vltVersion: version })
 }
 

@@ -70,6 +70,7 @@ t.test('super basic reification', async t => {
   const packageJson = new PackageJson()
   const graph = await ideal.build({
     projectRoot,
+    registry: 'https://registry.npmjs.org/',
     packageInfo: mockPackageInfo,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
@@ -78,6 +79,7 @@ t.test('super basic reification', async t => {
   })
   await reify({
     projectRoot,
+    registry: 'https://registry.npmjs.org/',
     packageInfo: mockPackageInfo,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
@@ -101,7 +103,7 @@ t.test('super basic reification', async t => {
 
   const expectLockfileData: LockfileData = {
     lockfileVersion: 1,
-    options: {},
+    options: { registry: 'https://registry.npmjs.org/' },
     nodes: {
       [joinDepIDTuple(['registry', '', 'lodash@4.17.21'])]: [
         0,

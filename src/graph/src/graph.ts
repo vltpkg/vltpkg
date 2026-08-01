@@ -48,9 +48,12 @@ const getResolutionCacheKey = (
   // the unique key should also precise what is the type of the spec,
   // and in the case of a registry, what registry it is from.
   const typePrecisionKey =
-    f.registry ?
+    f.registry || f.type === 'registry' ?
+      // registry-type specs always get a registry segment, even when
+      // no registry is configured, since findResolution trusts cache
+      // hits without re-running satisfies()
       `${cacheKeySeparator}registry` +
-      `${cacheKeySeparator}${f.registry}`
+      `${cacheKeySeparator}${f.registry ?? '<none>'}`
     : f.gitRemote ?
       `${cacheKeySeparator}git` + `${cacheKeySeparator}${f.gitRemote}`
     : `${cacheKeySeparator}${f.type}`

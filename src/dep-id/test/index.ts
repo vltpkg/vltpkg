@@ -1,4 +1,4 @@
-import { defaultRegistry, getOptions, Spec } from '@vltpkg/spec'
+import { getOptions, Spec } from '@vltpkg/spec'
 import type { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
@@ -18,6 +18,9 @@ import {
   splitExtra,
 } from '../src/index.ts'
 import type { DepID } from '../src/index.ts'
+
+// there is no default registry any more; these cases still want one
+const defaultRegistry = 'https://registry.npmjs.org/'
 
 const mani: Manifest = { name: 'manifest-name', version: '1.2.3' }
 t.test('valid specs', t => {
@@ -48,7 +51,10 @@ t.test('valid specs', t => {
     a: 'https://a.example.com/',
     b: 'https://b.example.com/',
   }
-  const options = getOptions({ registries })
+  const options = getOptions({
+    registry: defaultRegistry,
+    registries,
+  })
 
   for (const s of specs) {
     t.test(s, t => {
@@ -144,10 +150,58 @@ t.test('hydrate only', t => {
 
 t.test('hydrate from memoized entry', t => {
   resetCaches()
-  const options = getOptions({})
+  const options = getOptions({ registry: defaultRegistry })
   const id = `${delimiter}${delimiter}x@1.2.3` as DepID
   t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
   t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
+  t.end()
+})
+
+t.test('hydrate with no configured registry', t => {
+  // there is no default registry, so a `~npm~` id is hydrated through
+  // the `npm:` alias instead of as a plain semver spec
+  resetCaches()
+  const options = getOptions({})
+  t.equal(options.registry, undefined, 'no registry filled in')
+  const id = `${delimiter}${delimiter}x@1.2.3` as DepID
+  const spec = hydrate(id, 'x', options)
+  t.equal(String(spec), 'x@npm:x@1.2.3')
+  t.equal(spec.namedRegistry, 'npm')
+  t.ok(spec.subspec, 'gains a subspec')
+  t.equal(
+    spec.final.registry,
+    'https://registry.npmjs.org/',
+    'still resolves against npm via the kept alias',
+  )
+  // round-trips back to the equivalent id, via namedRegistry
+  t.equal(
+    getId(spec, { name: 'x', version: '1.2.3' }),
+    `${delimiter}npm${delimiter}x@1.2.3`,
+  )
+  // and is no longer flagged as a confused package name
+  t.equal(isPackageNameConfused(spec, 'x'), false)
+
+  // with a registry configured, the plain form is preserved
+  resetCaches()
+  const configured = getOptions({ registry: defaultRegistry })
+  t.equal(String(hydrate(id, 'x', configured)), 'x@1.2.3')
+  t.end()
+})
+
+t.test('hydrateTuple with no configured registry', t => {
+  resetCaches()
+  const options = getOptions({})
+  t.equal(
+    String(
+      hydrateTuple(['registry', 'npm', 'x@1.2.3'], 'x', options),
+    ),
+    'x@npm:x@1.2.3',
+  )
+  t.equal(
+    String(hydrateTuple(['registry', '', 'x@1.2.3'], 'x', options)),
+    'x@1.2.3',
+    'an empty registry field stays a plain spec',
+  )
   t.end()
 })
 
