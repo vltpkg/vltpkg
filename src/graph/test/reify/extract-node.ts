@@ -10,6 +10,8 @@ import type { Diff } from '../../src/diff.ts'
 import type { Node } from '../../src/node.ts'
 import { extractNode } from '../../src/reify/extract-node.ts'
 
+const configData = { registry: 'https://registry.npmjs.org/' }
+
 const removed: string[] = []
 const mockRemover = {
   rm: async (path: string) => {
@@ -78,7 +80,7 @@ t.test('successfully extract a node', async t => {
     node,
     scurry,
     mockRemover,
-    getOptions({}),
+    getOptions(configData),
     mockPackageInfo,
     mockDiff,
   )

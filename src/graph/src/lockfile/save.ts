@@ -7,7 +7,6 @@ import {
   defaultGitHosts,
   defaultJsrRegistries,
   defaultRegistries,
-  defaultRegistry,
   defaultScopeRegistries,
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -72,8 +71,11 @@ const formatNodes = (
 
   const res: Record<DepID, LockfileNode> = {}
   for (const node of orderedNodes) {
+    // when no registry is configured, nothing can be reconstructed on
+    // load, so every resolved value has to be persisted
     const customRegistry =
-      node.resolved && registry && !node.resolved.startsWith(registry)
+      node.resolved &&
+      (!registry || !node.resolved.startsWith(registry))
     const resolved = customRegistry ? node.resolved : undefined
     // if it's in a location other than the default, stash that
     const location =
@@ -224,9 +226,7 @@ export const lockfileData = ({
       ...(hasItems(cleanJsrRegistries) ?
         { 'jsr-registries': cleanJsrRegistries }
       : undefined),
-      ...(registry !== undefined && registry !== defaultRegistry ?
-        { registry }
-      : undefined),
+      ...(registry !== undefined ? { registry } : undefined),
       ...(hasItems(cleanRegistries) ?
         { registries: cleanRegistries }
       : undefined),

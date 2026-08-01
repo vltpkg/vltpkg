@@ -11,6 +11,8 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import { styleTextStdout } from '../output.ts'
 export { views } from '../exec-command.ts'
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'exec',

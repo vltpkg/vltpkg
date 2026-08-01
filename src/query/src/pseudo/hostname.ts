@@ -111,7 +111,9 @@ export const hostname = async (state: ParserState) => {
       case 'registry': {
         const registryName = tuple[1]
         const options = getOptions(node.options)
-        // Look up the registry URL from registries map
+        // Look up the registry URL from registries map. There is no
+        // default registry, so a node with an empty registry field and
+        // no configured registry has no hostname, and never matches.
         const registryUrl =
           options.registries[registryName] ?? options.registry
         if (registryUrl) {

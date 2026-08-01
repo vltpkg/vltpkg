@@ -48,6 +48,20 @@ in the XDG config home `vlt/vlt.json` file.
 These are further overridden by any matching `VLT_*` fields in the
 environment, or options specified on the command line.
 
+### The `registry` option has no default
+
+`conf.options.registry` is `string | undefined`. There is no implicit
+`https://registry.npmjs.org/`, so a registry must come from a
+`vlt.json` file, `VLT_REGISTRY`, or `--registry`. Command modules that
+resolve or fetch packages export `needsRegistry = true`, and `run()`
+throws an `ECONFIG` error before invoking them when nothing is
+configured. Inside a command, use the `requireRegistry(conf)` helper
+rather than a non-null assertion.
+
+Note that this only removes the _unnamed_ default. Named registry
+aliases (`npm:`, `gh:`, `jsr:`) and the `@jsr` scope mapping keep
+their built-in URLs.
+
 ## Configuration Definitions and Patterns
 
 All configuration options are defined in `./definition.ts`. See

@@ -2,8 +2,11 @@ import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
+import { requireRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
+
+export const needsRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -112,7 +115,7 @@ const listPackages = async (
     })
   }
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(conf.options.registry)
+  const registryUrl = new URL(requireRegistry(conf))
 
   // Determine who to list for — use entity arg or fall back to scope from package.json
   const scope = entity ?? getDefaultScope(conf)
@@ -143,7 +146,7 @@ const getStatus = async (
     })
   }
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(conf.options.registry)
+  const registryUrl = new URL(requireRegistry(conf))
   const url = new URL(
     `-/package/${encodePkgName(pkg)}/access`,
     registryUrl,
@@ -179,7 +182,7 @@ const setStatus = async (
     })
   }
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(conf.options.registry)
+  const registryUrl = new URL(requireRegistry(conf))
   const url = new URL(
     `-/package/${encodePkgName(pkg)}/access`,
     registryUrl,
@@ -224,7 +227,7 @@ const grant = async (
   const pkgName = pkg ?? getDefaultPkgName(conf)
 
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(conf.options.registry)
+  const registryUrl = new URL(requireRegistry(conf))
   const url = new URL(
     `-/team/${encodeURIComponent(scope)}/${encodeURIComponent(team)}/package`,
     registryUrl,
@@ -270,7 +273,7 @@ const revoke = async (
   const pkgName = pkg ?? getDefaultPkgName(conf)
 
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(conf.options.registry)
+  const registryUrl = new URL(requireRegistry(conf))
   const url = new URL(
     `-/team/${encodeURIComponent(scope)}/${encodeURIComponent(team)}/package`,
     registryUrl,

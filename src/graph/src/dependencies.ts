@@ -199,7 +199,9 @@ export const getDependencies = (
     const depType = shorten(type, name, node.manifest)
     const spec = Spec.parse(name, bareSpec, {
       ...options,
-      registry: node.registry,
+      // fall back to options.registry so deps don't lose the configured
+      // registry when the node itself has none. see vltpkg/vltpkg#1580.
+      registry: node.registry ?? options.registry,
     })
     res.set(name, {
       spec,

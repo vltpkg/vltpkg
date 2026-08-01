@@ -63,7 +63,18 @@ export const satisfiesTuple = (
           return false
         }
         /* c8 ignore stop */
-      } else {
+      } else if (
+        // With no configured registry, a plain registry spec has no
+        // registry of its own, but getTuple() still stamps its DepID with
+        // the `npm` name. Treating that as a mismatch would make
+        // satisfies() contradict getId(), so let it through and fall to
+        // the name/version checks below.
+        !(
+          first === defaultRegistryName &&
+          !spec.registry &&
+          !options.registry
+        )
+      ) {
         let namedRegistry = options.registries[first]
         /* c8 ignore next 3 */
         if (!namedRegistry && first === defaultRegistryName) {

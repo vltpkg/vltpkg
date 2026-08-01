@@ -18,7 +18,7 @@ exports[`test/config/index.ts > TAP > load both configs, project writes over use
   catalog: undefined,
   catalogs: undefined,
   'jsr-registries': { jsr: 'https://npm.jsr.io/' },
-  registry: 'https://registry.npmjs.org/',
+  registry: undefined,
   'scoped-registries': {},
   registries: {
     npm: 'https://registry.npmjs.org/',

@@ -292,6 +292,9 @@ export function pickManifest<T extends Packumentish>(
       range = wanted
     }
   } else {
+    // no options here on purpose: only `range`/`distTag` are read, and
+    // neither depends on the registry. since there is no default
+    // registry, `conventionalRegistryTarball` is simply undefined.
     spec = Spec.parse(`${name}@${wanted}`).final
     range = spec.range
   }

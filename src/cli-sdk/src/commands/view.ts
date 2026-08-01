@@ -13,6 +13,8 @@ import type {
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { ViewOptions, Views } from '../view.ts'
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'view',

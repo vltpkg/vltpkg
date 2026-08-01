@@ -5,7 +5,6 @@ import {
   defaultGitHosts,
   defaultJsrRegistries,
   defaultRegistries,
-  defaultRegistry,
   defaultScopeRegistries,
 } from '@vltpkg/spec'
 import { isRecordStringString } from '@vltpkg/types'
@@ -168,10 +167,7 @@ const buildCurrentOptions = (
     ...(hasItems(cleanJsrRegistries) ?
       { 'jsr-registries': cleanJsrRegistries }
     : undefined),
-    ...((
-      options.registry !== undefined &&
-      options.registry !== defaultRegistry
-    ) ?
+    ...(options.registry !== undefined ?
       { registry: options.registry }
     : undefined),
     ...(hasItems(cleanRegistries) ?

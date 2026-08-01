@@ -187,17 +187,23 @@ export const definition = j
   .opt({
     registry: {
       hint: 'url',
-      default: 'https://registry.npmjs.org/',
       description: `Sets the registry for fetching packages, when no registry
                     is explicitly set on a specifier.
 
                     For example, \`express@latest\` will be resolved by looking
                     up the metadata from this registry.
 
+                    There is **no default**. A registry must be configured in
+                    \`vlt.json\`, with this flag, or via the \`VLT_REGISTRY\`
+                    environment variable. Commands that need a registry fail
+                    with a config error when none is set; \`vlt login\` will
+                    configure one for you.
+
                     Note that alias specifiers starting with \`npm:\` will
-                    still map to \`https://registry.npmjs.org/\` if this is
-                    changed, unless the a new mapping is created via the
-                    \`--registries\` option.
+                    still map to \`https://registry.npmjs.org/\`, unless a new
+                    mapping is created via the \`--registries\` option.
+
+                    See https://docs.vlt.sh/cli
       `,
     },
   })

@@ -1108,6 +1108,9 @@ t.test('optionsChanged detection', async t => {
       const matchingLockfile: LockfileData = {
         ...baseLockfileData,
         options: {
+          // the configured registry is always recorded now that there
+          // is no default to elide it against
+          registry: 'https://registry.npmjs.org/',
           registries: {
             custom: 'http://example.com',
           },

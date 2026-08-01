@@ -248,3 +248,57 @@ t.test('invalid workspace-group', async t => {
   t.equal(exitCode, 1)
   t.matchSnapshot(logs.join('\n'))
 })
+
+t.test('needsRegistry pre-check', async t => {
+  t.test('throws ECONFIG when no registry is configured', async t => {
+    const cwd = t.testdir({
+      'vlt.json': '{}',
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error, config } = await run(t, {
+      argv: ['pkg', 'get'],
+      cwd,
+    })
+    t.equal(error, null, 'exempt commands still run')
+    t.ok(config, 'command was invoked')
+
+    const { error: err2 } = await run(t, { argv: ['ping'], cwd })
+    t.match(
+      err2,
+      { cause: { code: 'ECONFIG' } },
+      'needsRegistry command throws',
+    )
+    t.match(String(err2), /docs\.vlt\.sh\/cli/)
+  })
+
+  t.test('--registry satisfies the check', async t => {
+    const cwd = t.testdir({
+      'vlt.json': '{}',
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error, config } = await run(t, {
+      argv: [
+        'ls',
+        '--registry=https://registry.npmjs.org/',
+        '--view=json',
+      ],
+      cwd,
+    })
+    t.equal(error, null)
+    t.equal(config.options.registry, 'https://registry.npmjs.org/')
+  })
+
+  t.test('vlt.json registry satisfies the check', async t => {
+    const cwd = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: { registry: 'https://registry.npmjs.org/' },
+      }),
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error } = await run(t, {
+      argv: ['ls', '--view=json'],
+      cwd,
+    })
+    t.equal(error, null)
+  })
+})

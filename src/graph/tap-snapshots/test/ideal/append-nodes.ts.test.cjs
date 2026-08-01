@@ -41,7 +41,7 @@ Array [
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
-  options: {},
+  options: { registry: 'https://registry.npmjs.org/' },
   nodes: {
     '~npm~bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
     '~npm~foo@1.0.0': [
@@ -111,13 +111,17 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
     '~a~bar@1.2.3': [
       0,
       'bar',
-      <3 empty items>,
+      <1 empty item>,
+      'https://a.example.com/bar/-/bar-1.2.3.tgz',
+      <1 empty item>,
       { name: 'bar', version: '1.2.3', dependencies: { x: '1.x' } }
     ],
     '~a~x@1.99.99': [
       0,
       'x',
-      <3 empty items>,
+      <1 empty item>,
+      'https://a.example.com/x/-/x-1.99.99.tgz',
+      <1 empty item>,
       {
         name: 'x',
         version: '1.99.99',
@@ -125,17 +129,28 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
         dependencies: { y: '1' }
       }
     ],
-    '~a~y@1.99.99': [ 0, 'y', <3 empty items>, { name: 'y', version: '1.99.99' } ],
+    '~a~y@1.99.99': [
+      0,
+      'y',
+      <1 empty item>,
+      'https://a.example.com/y/-/y-1.99.99.tgz',
+      <1 empty item>,
+      { name: 'y', version: '1.99.99' }
+    ],
     '~b~baz@1.2.3': [
       0,
       'baz',
-      <3 empty items>,
+      <1 empty item>,
+      'https://b.example.com/baz/-/baz-1.2.3.tgz',
+      <1 empty item>,
       { name: 'baz', version: '1.2.3', dependencies: { x: '1.x' } }
     ],
     '~b~x@1.1.1': [
       0,
       'x',
-      <3 empty items>,
+      <1 empty item>,
+      'https://b.example.com/x/-/x-1.1.1.tgz',
+      <1 empty item>,
       {
         name: 'x',
         version: '1.1.1',
@@ -143,7 +158,14 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
         dependencies: { y: '1000' }
       }
     ],
-    '~b~y@1000.0.0': [ 0, 'y', <3 empty items>, { name: 'y', version: '1000.0.0' } ]
+    '~b~y@1000.0.0': [
+      0,
+      'y',
+      <1 empty item>,
+      'https://b.example.com/y/-/y-1000.0.0.tgz',
+      <1 empty item>,
+      { name: 'y', version: '1000.0.0' }
+    ]
   },
   edges: {
     'file~_d bar': 'prod a:bar@1.x ~a~bar@1.2.3',
