@@ -100,8 +100,12 @@ jobs:
 
       - name: Install Dependencies with source of vlt
         run: |
-          # avoid changes from the bootstrap step
+          # avoid changes from the bootstrap step. the released vlt used to
+          # bootstrap rewrites vlt-lock.json with its own idea of what the
+          # options should look like, which would otherwise be attributed to
+          # the source build below.
           ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
           vlt install --view=human
 
@@ -252,8 +256,12 @@ jobs:
 
       - name: Install Dependencies with source of vlt
         run: |
-          # avoid changes from the bootstrap step
+          # avoid changes from the bootstrap step. the released vlt used to
+          # bootstrap rewrites vlt-lock.json with its own idea of what the
+          # options should look like, which would otherwise be attributed to
+          # the source build below.
           ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
           vlt install --view=human
 

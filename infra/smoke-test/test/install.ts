@@ -51,3 +51,16 @@ t.test('no registry configured', async t => {
   t.match(output, 'Missing registry configuration')
   t.match(output, 'https://docs.vlt.sh/cli')
 })
+
+t.test('no registry configured, --help still works', async t => {
+  const { status, output } = await runMultiple(
+    t,
+    ['install', '--help'],
+    {
+      match: ['status'],
+      env: { VLT_REGISTRY: '' },
+    },
+  )
+  t.equal(status, 0, 'exits zero')
+  t.match(output, 'vlt install')
+})

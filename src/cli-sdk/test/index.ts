@@ -271,6 +271,19 @@ t.test('needsRegistry pre-check', async t => {
     t.match(String(err2), /docs\.vlt\.sh\/cli/)
   })
 
+  t.test('--help is not blocked by the check', async t => {
+    const cwd = t.testdir({
+      'vlt.json': '{}',
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error, config } = await run(t, {
+      argv: ['install', '--help'],
+      cwd,
+    })
+    t.equal(error, null, 'usage is printed instead of throwing')
+    t.equal(config.get('help'), true)
+  })
+
   t.test('--registry satisfies the check', async t => {
     const cwd = t.testdir({
       'vlt.json': '{}',
