@@ -214,6 +214,52 @@ t.test('outputCommand', async t => {
     t.equal(errsPrinted[0], sawError, 'printed the error we saw')
   })
 
+  t.test('needsRegistry', async t => {
+    const registryCommand: Command<true> = {
+      async command() {
+        return true
+      },
+      usage: () => ({ usage: () => 'usage' }) as Jack,
+      views: { json: x => x },
+      needsRegistry: true,
+    }
+
+    t.test('ECONFIG when no registry is configured', async t => {
+      errsPrinted.length = 0
+      const { exitCode = 0 } = process
+      const exits = t.capture(process, 'exit').args
+      t.teardown(() => {
+        if (t.passing()) process.exitCode = exitCode
+      })
+      await outputCommand(registryCommand, {
+        values: { view: 'json' },
+        options: {},
+      } as LoadedConfig)
+      t.strictSame(exits(), [[1]])
+      t.equal(process.exitCode, 1)
+      t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
+      t.match(String(errsPrinted[0]), /docs\.vlt\.sh\/cli/)
+    })
+
+    t.test('--help is answered before the check', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(registryCommand, {
+        values: { help: true },
+        options: {},
+      } as LoadedConfig)
+      t.strictSame(logs(), [['usage']], 'usage printed, no error')
+    })
+
+    t.test('runs when a registry is configured', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(registryCommand, {
+        values: { view: 'json' },
+        options: { registry: 'https://registry.npmjs.org/' },
+      } as LoadedConfig)
+      t.strictSame(logs(), [['true']])
+    })
+  })
+
   t.test('view class success', async t => {
     let startCalled = false
     let doneCalled = false
