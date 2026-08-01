@@ -249,42 +249,23 @@ t.test('invalid workspace-group', async t => {
   t.matchSnapshot(logs.join('\n'))
 })
 
-t.test('needsRegistry pre-check', async t => {
-  t.test('throws ECONFIG when no registry is configured', async t => {
+// the `needsRegistry` gate itself lives in outputCommand, which is
+// mocked out here. these cover the config plumbing that feeds it.
+t.test('registry config resolution', async t => {
+  t.test('undefined when nothing is configured', async t => {
     const cwd = t.testdir({
       'vlt.json': '{}',
       'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
     })
     const { error, config } = await run(t, {
-      argv: ['pkg', 'get'],
+      argv: ['ls', '--view=json'],
       cwd,
     })
-    t.equal(error, null, 'exempt commands still run')
-    t.ok(config, 'command was invoked')
-
-    const { error: err2 } = await run(t, { argv: ['ping'], cwd })
-    t.match(
-      err2,
-      { cause: { code: 'ECONFIG' } },
-      'needsRegistry command throws',
-    )
-    t.match(String(err2), /docs\.vlt\.sh\/cli/)
+    t.equal(error, null)
+    t.equal(config.options.registry, undefined)
   })
 
-  t.test('--help is not blocked by the check', async t => {
-    const cwd = t.testdir({
-      'vlt.json': '{}',
-      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
-    })
-    const { error, config } = await run(t, {
-      argv: ['install', '--help'],
-      cwd,
-    })
-    t.equal(error, null, 'usage is printed instead of throwing')
-    t.equal(config.get('help'), true)
-  })
-
-  t.test('--registry satisfies the check', async t => {
+  t.test('--registry', async t => {
     const cwd = t.testdir({
       'vlt.json': '{}',
       'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
@@ -301,17 +282,18 @@ t.test('needsRegistry pre-check', async t => {
     t.equal(config.options.registry, 'https://registry.npmjs.org/')
   })
 
-  t.test('vlt.json registry satisfies the check', async t => {
+  t.test('vlt.json', async t => {
     const cwd = t.testdir({
       'vlt.json': JSON.stringify({
         config: { registry: 'https://registry.npmjs.org/' },
       }),
       'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
     })
-    const { error } = await run(t, {
+    const { error, config } = await run(t, {
       argv: ['ls', '--view=json'],
       cwd,
     })
     t.equal(error, null)
+    t.equal(config.options.registry, 'https://registry.npmjs.org/')
   })
 })

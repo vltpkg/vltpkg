@@ -16,8 +16,8 @@ export const missingRegistryError = (): Error =>
 /**
  * Read `conf.options.registry`, throwing the `ECONFIG` error if it is
  * not set. Commands marked `needsRegistry` are already checked in
- * `run()`, but this keeps the invariant honest for TypeScript and for
- * programmatic callers.
+ * `outputCommand()`, but this keeps the invariant honest for TypeScript
+ * and for programmatic callers.
  */
 export const requireRegistry = (conf: LoadedConfig): string => {
   const { registry } = conf.options
