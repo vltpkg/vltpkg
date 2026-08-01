@@ -105,7 +105,14 @@ const run = async () => {
   }
 
   const command = await loadCommand(vlt.command)
-  if (command.needsRegistry && !vlt.options.registry) {
+  // `--help` is handled inside outputCommand, so let it through. A user
+  // with nothing configured has to be able to read the usage for the
+  // command that the missing-registry error is pointing them at.
+  if (
+    command.needsRegistry &&
+    !vlt.options.registry &&
+    !vlt.get('help')
+  ) {
     throw missingRegistryError()
   }
   await outputCommand(command, vlt, { start, vltVersion: version })
