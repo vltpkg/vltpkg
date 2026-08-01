@@ -14,6 +14,8 @@ import { error } from '@vltpkg/error-cause'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { minimatch } from 'minimatch'
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'pack',

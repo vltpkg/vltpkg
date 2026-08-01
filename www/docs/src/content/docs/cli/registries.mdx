@@ -32,28 +32,70 @@ resolved without using a registry. And obviously, packages referenced
 as a `file://` URL or `workspace:` specifier do not need to be fetched
 from anywhere at all, because they are local on the current machine.
 
-## Setting the Default Registry
+## Setting the Registry
 
-By default, vlt fetches packages from
-[the public npm registry](https://registry.npmjs.org/) at
-`https://registry.npmjs.org/`.
+**vlt has no default registry.** Before running any command that
+resolves or fetches packages, you have to say which registry to use.
+Commands that need one and do not have one fail with a config error:
 
-You can change this by
-[setting the `registry` configuration option](/cli/configuring#--registryurl).
-
-For example, if you wanted instead to fetch pacakges from yarn's DNS
-alias of the public npm registry for some reason, you could do this:
-
-```bash
-vlt config set registry=https://registry.yarnpkg.com
+```
+Config Error: Missing registry configuration. Run 'vlt login --registry=<url>',
+set "registry" in vlt.json, or pass --registry. See https://docs.vlt.sh/cli
 ```
 
-There can be only one default registry, and this is used as the
-fallback for all package registry resolutions. Normally, if an
-internal registry is used as the default registry for all fetches, it
-effectively must serve _all_ packages, meaning it has to be a caching
-proxy, as well as the repository for any of your organization's
-internal code.
+There are three ways to configure it, in increasing order of
+precedence:
+
+1. **A `vlt.json` file**, either in your project or in your user
+   config directory. Either write it by hand:
+
+   ```json
+   {
+     "config": {
+       "registry": "https://registry.npmjs.org/"
+     }
+   }
+   ```
+
+   or set it with the CLI:
+
+   ```bash
+   vlt config set registry=https://registry.npmjs.org/
+   ```
+
+2. **The `VLT_REGISTRY` environment variable**, which is handy in CI:
+
+   ```bash
+   VLT_REGISTRY=https://registry.npmjs.org/ vlt install
+   ```
+
+3. **The `--registry` flag**, for a single command:
+
+   ```bash
+   vlt install --registry=https://registry.npmjs.org/
+   ```
+
+### Bootstrapping with `vlt login`
+
+If you are starting from nothing, `vlt login` is the guided path. It
+authenticates against the registry you give it and then writes that
+registry into your project's `vlt.json`, so subsequent commands are
+already configured:
+
+```bash
+vlt login --registry=https://registry.vlt.io/myorg/
+```
+
+There can be only one registry configured this way, and it is used as
+the fallback for all package registry resolutions. Normally, if an
+internal registry is used for all fetches, it effectively must serve
+_all_ packages, meaning it has to be a caching proxy, as well as the
+repository for any of your organization's internal code.
+
+Note that the named registry aliases (`npm:`, `gh:`, `jsr:`) and the
+`@jsr` scope mapping still have built-in URLs — only the unnamed
+default was removed. `foo@npm:foo@1.2.3` always resolves against
+`https://registry.npmjs.org/`, no matter what `registry` is set to.
 
 ## Named Scope Registries (npm Compatibility)
 

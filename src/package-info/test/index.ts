@@ -1948,3 +1948,15 @@ t.test('path git selector', async t => {
     t.strictSame(found, pkg)
   })
 })
+
+t.test('no registry configured', async t => {
+  // there is no default registry -- both places that build a registry
+  // URL throw ECONFIG rather than a bare `Invalid URL` TypeError
+  const noRegistry = { cache }
+  await t.rejects(packument('abbrev@latest', noRegistry), {
+    cause: { code: 'ECONFIG' },
+  })
+  await t.rejects(manifest('abbrev@2.0.0', noRegistry), {
+    cause: { code: 'ECONFIG' },
+  })
+})

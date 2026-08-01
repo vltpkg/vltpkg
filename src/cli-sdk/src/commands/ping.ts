@@ -1,8 +1,11 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
+import { requireRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
+
+export const needsRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -122,17 +125,16 @@ export const command: CommandFn<CommandResult> = async conf => {
   } else {
     // Ping all configured registries
     const registries = conf.options.registries
+    const defaultRegistry = requireRegistry(conf)
     const results: PingResult[] = []
 
     // Always ping the default registry first
-    results.push(
-      await pingRegistry(rc, conf.options.registry, 'default'),
-    )
+    results.push(await pingRegistry(rc, defaultRegistry, 'default'))
 
     // Then ping all configured registry aliases
     for (const [alias, registry] of Object.entries(registries)) {
       // Skip if it's the same as the default registry
-      if (registry !== conf.options.registry) {
+      if (registry !== defaultRegistry) {
         results.push(await pingRegistry(rc, registry, alias))
       }
     }

@@ -15,7 +15,28 @@ const { usage, command } = await t.mockImport<
 })
 
 t.matchSnapshot(usage().usageMarkdown())
-await command({
-  options: { registry: 'registry' },
-} as LoadedConfig)
-t.equal(loginCalled, 'registry')
+
+t.test('logs in and persists the registry', async t => {
+  const added: [string, Record<string, unknown>][] = []
+  await command({
+    options: { registry: 'registry' },
+    addConfigToFile: async (
+      which: string,
+      values: Record<string, unknown>,
+    ) => {
+      added.push([which, values])
+    },
+  } as unknown as LoadedConfig)
+  t.equal(loginCalled, 'registry')
+  t.strictSame(
+    added,
+    [['project', { registry: 'registry' }]],
+    'writes the registry to the project vlt.json',
+  )
+})
+
+t.test('throws when no registry is configured', async t => {
+  await t.rejects(command({ options: {} } as LoadedConfig), {
+    cause: { code: 'ECONFIG' },
+  })
+})

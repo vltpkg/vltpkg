@@ -20,6 +20,9 @@ import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { minimatch } from 'minimatch'
+import { requireRegistry } from '../require-registry.ts'
+
+export const needsRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -224,7 +227,7 @@ const commandSingle = async (
   const publishConfig = getPublishConfig(manifest)
   const tag = publishConfig?.tag ?? conf.options.tag
   const access = publishConfig?.access ?? conf.options.access
-  const registry = publishConfig?.registry ?? conf.options.registry
+  const registry = publishConfig?.registry ?? requireRegistry(conf)
   const registryUrl = new URL(registryBase(registry))
 
   const runOptions = {

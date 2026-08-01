@@ -7613,7 +7613,6 @@ exports[`test/index.ts > TAP > parse args > no options > no options 1`] = `
   spec: 'foo@^1.0.0',
   name: 'foo',
   bareSpec: '^1.0.0',
-  registry: 'https://registry.npmjs.org/',
   registrySpec: '^1.0.0',
   semver: '^1.0.0',
   range: Range {

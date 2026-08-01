@@ -9,6 +9,7 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -136,6 +137,7 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -158,6 +160,7 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -215,6 +218,7 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -237,6 +241,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -297,6 +302,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save without saveB
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -336,6 +342,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -396,6 +403,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -483,6 +491,7 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -539,6 +548,7 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -602,6 +612,7 @@ Object {
     "registries": Object {
       "custom": "http://example.com",
     },
+    "registry": "https://registry.npmjs.org/",
   },
 }
 `
@@ -623,6 +634,7 @@ Object {
     "registries": Object {
       "custom": "http://example.com",
     },
+    "registry": "https://registry.npmjs.org/",
   },
 }
 `
@@ -644,6 +656,7 @@ Object {
     "registries": Object {
       "custom": "http://example.com",
     },
+    "registry": "https://registry.npmjs.org/",
   },
 }
 `
@@ -665,6 +678,7 @@ Object {
     "registries": Object {
       "custom": "http://example.com",
     },
+    "registry": "https://registry.npmjs.org/",
   },
 }
 `
@@ -676,6 +690,7 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
     "modifiers": {
       ":root > #foo": "2"
     },
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -694,6 +709,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }
@@ -712,6 +728,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
 {
   "lockfileVersion": 1,
   "options": {
+    "registry": "https://registry.npmjs.org/",
     "registries": {
       "custom": "http://example.com"
     }

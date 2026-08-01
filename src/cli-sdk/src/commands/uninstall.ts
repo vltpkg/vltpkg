@@ -13,6 +13,8 @@ export type UninstallResult = {
   graph: Graph
 }
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'uninstall',

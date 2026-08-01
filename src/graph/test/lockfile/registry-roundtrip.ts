@@ -177,3 +177,72 @@ t.test(
     )
   },
 )
+
+t.test('no configured registry', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = new Graph({ projectRoot, mainManifest })
+  t.equal(
+    graph.mainImporter.options.registry,
+    undefined,
+    'no registry is filled in',
+  )
+  graph
+    .placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity: 'sha512-deadbeef==',
+          tarball: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        },
+      },
+    )
+    ?.setResolved()
+
+  save({ graph })
+  const data = JSON.parse(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+  ) as {
+    options: Record<string, unknown>
+    nodes: Record<string, unknown[]>
+  }
+  t.notOk(
+    'registry' in data.options,
+    'no registry recorded in the lockfile',
+  )
+  // nothing can reconstruct the tarball url on load, so it has to be
+  // persisted for every node -- see formatNodes()
+  t.equal(
+    data.nodes['~npm~foo@1.0.0']?.[3],
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+    'resolved is persisted when there is no registry to elide it against',
+  )
+
+  const reloaded = loadVirtual({ projectRoot, mainManifest })
+  t.equal(
+    reloaded.nodes.get('~npm~foo@1.0.0')?.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+    'resolved survives the round-trip',
+  )
+  const first = readFileSync(
+    resolve(projectRoot, 'vlt-lock.json'),
+    'utf8',
+  )
+  save({ graph: reloaded })
+  t.equal(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    first,
+    'second save is byte-identical',
+  )
+})

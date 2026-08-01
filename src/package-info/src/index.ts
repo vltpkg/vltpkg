@@ -89,6 +89,18 @@ export type PackageInfoClientExtractOptions =
 // the maximum duration of a manifest cache file
 const manifestCacheMaxAge = 5 * 60 * 1000
 
+/**
+ * There is no default registry. Anything that needs to build a registry
+ * URL fails with a `ECONFIG` error when none has been configured.
+ */
+const noRegistryError = (spec: Spec) =>
+  error(
+    'No registry configured to resolve this spec. Set "registry" in ' +
+      'vlt.json, pass --registry, or run `vlt login --registry=<url>`. ' +
+      'See https://docs.vlt.sh/cli',
+    { code: 'ECONFIG', spec },
+  )
+
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #projectRoot: string
@@ -427,7 +439,7 @@ export class PackageInfoClient {
       extra += `${delimiter}arch:${options.arch}`
     }
     return encodeURIComponent(
-      `${spec.registry}${delimiter}${spec}${extra}`,
+      `${spec.registry ?? ''}${delimiter}${spec}${extra}`,
     )
   }
 
@@ -475,6 +487,7 @@ export class PackageInfoClient {
     )
     const version =
       hasLeadingRange ? registrySpec.slice(1) : registrySpec
+    if (!registry) throw noRegistryError(spec)
     const pakuURL = new URL(`${name}/${version}`, registry)
     const response = await this.registryClient.request(pakuURL, {
       headers: {
@@ -893,6 +906,7 @@ export class PackageInfoClient {
 
       case 'registry': {
         const { registry, name } = f
+        if (!registry) throw noRegistryError(spec)
         const pakuURL = new URL(name, registry)
         const response = await this.registryClient.request(pakuURL, {
           headers: {

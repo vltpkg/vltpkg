@@ -40,3 +40,14 @@ t.test('tty', { skip: process.platform === 'win32' }, async t => {
   t.match(output, 'extracting files')
   t.equal(status, 0)
 })
+
+t.test('no registry configured', async t => {
+  const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
+    match: ['status'],
+    // unset the registry that run.ts configures by default
+    env: { VLT_REGISTRY: '' },
+  })
+  t.not(status, 0, 'exits non-zero')
+  t.match(output, 'Missing registry configuration')
+  t.match(output, 'https://docs.vlt.sh/cli')
+})

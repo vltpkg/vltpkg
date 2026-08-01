@@ -11,6 +11,10 @@ import {
   currentDefaultRegistryName,
 } from '../src/browser.ts'
 
+// there is no default registry any more; most of these cases predate
+// that change, so keep exercising them against the npm registry.
+const defaultOptions = { registry: 'https://registry.npmjs.org/' }
+
 Object.assign(Spec.prototype, {
   [kCustomInspect](
     _depth?: number,
@@ -181,7 +185,7 @@ t.test('basic parsing tests', t => {
   t.plan(specs.length)
   for (const v of specs) {
     t.test(v, t => {
-      const s = Spec.parse(v)
+      const s = Spec.parse(v, defaultOptions)
       t.matchSnapshot(inspect(s), 'inspect default')
       t.matchSnapshot(
         inspect(s, { colors: true }),
@@ -432,6 +436,58 @@ t.test('parse args', t => {
 
 t.test('getOptions', t => {
   t.matchSnapshot(getOptions({}), 'should get default options')
+  t.end()
+})
+
+t.test('no default registry', t => {
+  t.equal(
+    getOptions({}).registry,
+    undefined,
+    'getOptions does not fill in a registry',
+  )
+  t.equal(
+    getOptions({ registry: 'https://a.com/' }).registry,
+    'https://a.com/',
+    'an explicit registry is preserved',
+  )
+  t.strictSame(
+    getOptions({}).registries,
+    {
+      npm: 'https://registry.npmjs.org/',
+      gh: 'https://npm.pkg.github.com/',
+    },
+    'named registry aliases are kept',
+  )
+
+  const s = Spec.parse('foo@latest', {})
+  t.equal(s.type, 'registry')
+  t.equal(
+    s.registry,
+    undefined,
+    'registry-type spec with no registry',
+  )
+  t.equal(s.conventionalRegistryTarball, undefined)
+
+  const single = Spec.parse('foo@1.2.3', {})
+  t.equal(
+    single.conventionalRegistryTarball,
+    undefined,
+    'cannot guess a tarball url with no registry',
+  )
+
+  t.equal(
+    Spec.parse('foo@npm:foo@1.2.3', {}).final.registry,
+    'https://registry.npmjs.org/',
+    'the npm: alias still resolves',
+  )
+
+  t.equal(
+    Spec.parse('@acme/foo@1.2.3', {
+      'scoped-registries': { '@acme': 'https://acme.example.com/' },
+    }).registry,
+    'https://acme.example.com/',
+    'scoped registries still win',
+  )
   t.end()
 })
 
@@ -694,6 +750,7 @@ t.test('try to guess the conventional tarball URL', t => {
     ['x@npm:z@latest'],
   ]
   const options = {
+    ...defaultOptions,
     registries: {
       vlt: 'https://registry.vlt.sh',
     },
@@ -781,13 +838,10 @@ t.test('git path selector must be relative', async t => {
   }
 })
 
-t.test(
-  'spec with registry:undefined uses default registry',
-  async t => {
-    const s = Spec.parse('foo@1.x', { registry: undefined })
-    t.equal(s.registry, 'https://registry.npmjs.org/')
-  },
-)
+t.test('spec with registry:undefined has no registry', async t => {
+  const s = Spec.parse('foo@1.x', { registry: undefined })
+  t.equal(s.registry, undefined)
+})
 
 t.test('gh: registry support (basic functionality)', async t => {
   // Test that gh: registry is properly configured
