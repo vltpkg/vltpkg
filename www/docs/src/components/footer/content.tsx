@@ -17,17 +17,16 @@ export interface Section {
 }
 
 const products: Section = {
-  title: 'Products',
+  title: 'Platform',
   contents: [
     {
-      slug: 'Client',
-      href: 'https://vlt.io/open-source/client',
+      slug: 'registry',
+      href: 'https://www.vlt.io/platform/registry',
     },
     {
-      slug: 'Serverless Registry',
-      href: 'https://vlt.io/open-source/serverless-registry',
-    },
-  ],
+      slug: 'security',
+      href: 'https://www.vlt.io/platform/security',
+    },],
 }
 
 const resources: Section = {
