@@ -40,11 +40,12 @@ const LinearMenu = () => {
   ]
 
   return (
-    <div className="hidden items-center gap-x-2 rounded-[1rem] bg-white/95 p-2 text-[15px] text-neutral-950 shadow-[0_0_0_1px_theme(colors.black/5%)] backdrop-blur-sm dark:bg-neutral-950/75 dark:text-white dark:shadow-[0_0_0_1px_theme(colors.white/10%)] md:flex">
+    <div className="hidden items-center gap-x-2 rounded-[1rem] bg-white/95 p-2 text-body text-neutral-950  backdrop-blur-sm dark:bg-neutral-950/75 dark:text-white md:flex">
+
       {menuData.map(item =>
         item.children ?
           <MenuGroup key={item.title} item={item} />
-        : <MenuLink key={item.title} item={item} />,
+          : <MenuLink key={item.title} item={item} />,
       )}
     </div>
   )
@@ -75,27 +76,27 @@ const MenuGroup = ({ item }: { item: MenuItem }) => {
 
 const MenuLink = ({
   item,
-  className = '',
+  className,
 }: {
   item: MenuItem
   className?: string
 }) => {
   return !item.path ?
-      <span
-        className={`inline-flex items-center gap-x-3 text-nowrap px-3 py-3 ${className}`}>
-        {item.icon ?
-          <MenuLinkIcon item={item} />
+    <span
+      className={`inline-flex items-center gap-x-3 text-nowrap px-3 py-3 ${className}`}>
+      {item.icon ?
+        <MenuLinkIcon item={item} />
         : null}{' '}
-        {item.title}
-      </span>
+      {item.title}
+    </span>
     : <a
-        href={item.path}
-        className={`text-15 group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-foreground no-underline hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
-        {item.icon ?
-          <MenuLinkIcon item={item} />
+      href={item.path}
+      className={`text-[15px] group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-foreground no-underline hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
+      {item.icon ?
+        <MenuLinkIcon item={item} />
         : null}{' '}
-        {item.title}
-      </a>
+      {item.title}
+    </a>
 }
 
 const MenuLinkIcon = ({ item }: { item: MenuItem }) => {
@@ -103,7 +104,7 @@ const MenuLinkIcon = ({ item }: { item: MenuItem }) => {
     return null
   }
   return (
-    <span className="group-hover:border-white/3 flex size-[1.75rem] flex-shrink-0 items-center justify-center rounded-[6px] border border-black/5 bg-black/5 group-hover:bg-white/15 dark:border-white/10 dark:bg-white/10">
+    <span className="group-hover:border-white/3 flex size-[1.75rem] flex-shrink-0 items-center justify-center rounded-[6px] border border-black/5 bg-black/5 group-hover:bg-white/15 dark:bg-white/10">
       <Icon name={item.icon} className="size-[1rem] text-white" />
     </span>
   )
