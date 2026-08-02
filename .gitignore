@@ -85,3 +85,5 @@ knip.d.ts.map
 
 **/.opencode/**
 opencode.jsonc
+.vercel
+.env*

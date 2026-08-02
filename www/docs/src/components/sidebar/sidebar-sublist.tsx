@@ -55,12 +55,20 @@ const Section = ({
 }) => {
   if (entry.type === 'link') return null
 
+  const key = entry.label.toLowerCase()
+  const iconName = iconMap[key]
+
   return (
     <div className="flex flex-col gap-2">
-      <p className="px-3 text-sm font-medium text-neutral-500">
+      <p className="flex items-center gap-2 px-3 text-sm font-medium text-neutral-500">
+        {iconName && (
+          <span className="flex size-5 items-center justify-center">
+            <Icon name={iconName} className="size-4" />
+          </span>
+        )}
         {entry.label}
       </p>
-      <div>{renderMenu(entry.entries, depth)}</div>
+      <div>{renderMenu(entry.entries, depth + 1)}</div>
     </div>
   )
 }
