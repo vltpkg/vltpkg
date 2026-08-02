@@ -16,6 +16,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            src:
+              - '!www/docs/**'
+              - '!*.md'
+
   pre-check:
     name: Pre-Check
     runs-on: ubuntu-latest
@@ -190,7 +205,8 @@ jobs:
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
-    needs: pre-check
+    needs: [pre-check, changes]
+    if: needs.changes.outputs.src == 'true'
     runs-on: ${{ matrix.platform.os }}
     defaults:
       run:
