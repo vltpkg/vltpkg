@@ -142,7 +142,7 @@ export default defineConfig({
         },
         {
           label: 'Registry',
-          collapsed: true,
+          collapsed: false,
           autogenerate: { directory: 'registry' },
         },
         {

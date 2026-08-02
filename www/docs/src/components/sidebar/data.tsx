@@ -11,7 +11,7 @@ export const labelMap: Record<string, string> = {
   'pseudo-states': 'Pseudo-States',
 }
 
-export const majorSections = new Set(['get-started', 'registry'])
+export const majorSections = new Set(['get-started'])
 
 const allIcons = {
   ...LucideIcons,
