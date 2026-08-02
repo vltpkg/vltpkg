@@ -119,6 +119,16 @@ export default defineConfig({
               paths: ['cli/**'],
             },
           ],
+          /**
+           *only excludes content for llms-small.txt: abridged llm reference
+           */
+          exclude: [
+            'cli/workspaces',
+            'cli/selectors/**',
+            'packages/**',
+            'get-started/reference',
+            'get-started/concepts/**',
+          ],
           rawContent: false,
           minify: {
             customSelectors: ['.expressive-code'],
