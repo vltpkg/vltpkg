@@ -20,13 +20,14 @@ const products: Section = {
   title: 'Platform',
   contents: [
     {
-      slug: 'registry',
+      slug: 'Registry',
       href: 'https://www.vlt.io/platform/registry',
     },
     {
-      slug: 'security',
+      slug: 'Security',
       href: 'https://www.vlt.io/platform/security',
-    },],
+    },
+  ],
 }
 
 const resources: Section = {

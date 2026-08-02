@@ -33,7 +33,7 @@ const storeTheme = (
       resolveTo =
         window.matchMedia('(prefers-color-scheme: dark)').matches ?
           'dark'
-          : 'light'
+        : 'light'
       break
     case 'dark':
       resolveTo = 'dark'
@@ -87,15 +87,15 @@ const ThemeSwitcher = () => {
 
     return (
       theme === 'system' ? <LaptopMinimal {...themeProps} />
-        : theme === 'light' ? <Sun {...themeProps} />
-          : <Moon {...themeProps} />
+      : theme === 'light' ? <Sun {...themeProps} />
+      : <Moon {...themeProps} />
     )
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="group">
-        <button className="w-auto h-[38px] [&>svg]:duration-250 duration-250 inline-flex w-[90px] cursor-default items-center justify-center gap-2 rounded-[8px] bg-transparent px-4 py-1.5 text-body font-medium text-neutral-500 ring-offset-background transition-all hover:bg-neutral-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-neutral-200 data-[state=open]:text-foreground dark:hover:bg-secondary dark:data-[state=open]:bg-secondary [&>svg]:fill-neutral-500 [&>svg]:stroke-neutral-500 [&>svg]:transition-all [&>svg]:hover:fill-foreground [&>svg]:hover:stroke-foreground [&>svg]:data-[state=open]:fill-foreground [&>svg]:data-[state=open]:stroke-foreground">
+        <button className="[&>svg]:duration-250 duration-250 text-body inline-flex h-[38px] w-[90px] w-auto cursor-default items-center justify-center gap-2 rounded-[8px] bg-transparent px-4 py-1.5 font-medium text-neutral-500 ring-offset-background transition-all hover:bg-neutral-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-neutral-200 data-[state=open]:text-foreground dark:hover:bg-secondary dark:data-[state=open]:bg-secondary [&>svg]:fill-neutral-500 [&>svg]:stroke-neutral-500 [&>svg]:transition-all [&>svg]:hover:fill-foreground [&>svg]:hover:stroke-foreground [&>svg]:data-[state=open]:fill-foreground [&>svg]:data-[state=open]:stroke-foreground">
           {renderIcon()}
         </button>
       </DropdownMenuTrigger>
@@ -113,7 +113,7 @@ const ThemeSwitcher = () => {
               'relative text-sm font-medium capitalize',
               t.name === theme ?
                 'bg-neutral-200/40 dark:bg-neutral-800/80'
-                : '',
+              : '',
             )}
             key={t.name}>
             {t.name}
