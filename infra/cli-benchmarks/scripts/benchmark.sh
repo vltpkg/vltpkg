@@ -57,4 +57,20 @@ case "$2" in
 esac
 
 popd
+
+BENCHMARK_FILE="./results/$1/$2/benchmarks.json"
+if ! node --experimental-strip-types --no-warnings \
+    ./infra/benchmark/src/clean-hyperfine-results.ts "$BENCHMARK_FILE"; then
+    echo "Benchmark validation failed. Captured install output follows:"
+    for OUTPUT_FILE in "./results/$1/$2"/vlt-output-*.log; do
+        if [ ! -f "$OUTPUT_FILE" ]; then
+            continue
+        fi
+        echo "::group::$OUTPUT_FILE"
+        sed -n '1,240p' "$OUTPUT_FILE"
+        echo "::endgroup::"
+    done
+    exit 1
+fi
+
 echo "Installation benchmark suite completed successfully!"
