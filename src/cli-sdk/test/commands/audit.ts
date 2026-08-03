@@ -77,7 +77,7 @@ const runCommand = async (
   const output =
     values.view === 'silent' ? undefined
     : values.view === 'human' ?
-      cmd.views.human(res, { colors: values.color })
+      cmd.views.human(res)
     : values.view === 'count' ? cmd.views.count(res)
     : cmd.views.json(res)
   return values.view === 'json' ?

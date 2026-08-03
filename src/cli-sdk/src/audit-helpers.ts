@@ -12,13 +12,15 @@ export const isSecuritySelector = (query: string): boolean =>
  * Build a DSS query string from an audit level.
  */
 export const buildAuditQuery = (level: string): string => {
+  const defaultQuery =
+    ':malware, :vulnerable, :severity(>low), :scripts, :squat'
   const queries: Record<string, string> = {
-    low: ':malware, :vulnerable, :severity(>low), :scripts, :squat',
+    low: defaultQuery,
     moderate: ':malware(>low), :severity(>=medium)',
     high: ':malware(>medium), :severity(>medium)',
     critical: ':malware(critical), :severity(critical)',
   }
-  return queries[level] ?? queries.low
+  return queries[level] ?? defaultQuery
 }
 
 export type AuditPackage = {
