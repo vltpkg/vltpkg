@@ -453,18 +453,30 @@ export const definition = j
     },
   })
 
+   .opt({
+     scope: {
+       short: 's',
+       hint: 'query',
+       description:
+         'Set to filter the scope of an operation using a DSS Query.',
+     },
+     target: {
+       short: 't',
+       hint: 'query',
+       description:
+         'Set to select packages using a DSS Query selector.',
+     },
+   })
+
   .opt({
-    scope: {
-      short: 's',
-      hint: 'query',
-      description:
-        'Set to filter the scope of an operation using a DSS Query.',
-    },
-    target: {
-      short: 't',
-      hint: 'query',
-      description:
-        'Set to select packages using a DSS Query selector.',
+    'audit-level': {
+      hint: 'level',
+      default: 'low',
+      validate: (v: unknown) =>
+        typeof v === 'string' &&
+        ['low', 'moderate', 'high', 'critical'].includes(v),
+      description: `Minimum severity level to report when running
+                    \`vlt audit\`. Defaults to \`low\`.`,
     },
   })
 

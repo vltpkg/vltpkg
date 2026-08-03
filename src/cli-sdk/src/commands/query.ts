@@ -13,6 +13,10 @@ import { createDiffFilesProvider } from '../query-diff-files.ts'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import {
+  aggregateBySeverity,
+  isSecuritySelector,
+} from '../audit-helpers.ts'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
@@ -133,7 +137,42 @@ const validateExpectedResult = (
 export const views = {
   json: jsonOutput,
   mermaid: mermaidOutput,
-  human: humanReadableOutput,
+  human: (
+    result: HumanReadableOutputGraph,
+    opts: { colors?: boolean },
+  ) => {
+    let output = humanReadableOutput(result, opts)
+    const queryString = (result as QueryResult).queryString
+    if (queryString && isSecuritySelector(queryString)) {
+      const summary = aggregateBySeverity(
+        result.nodes,
+        result.importers,
+      )
+      if (summary.total > 0) {
+        const lines = output.split('\n')
+        lines.push('')
+        lines.push(
+          `${summary.total} security issue${summary.total === 1 ? '' : 's'} found`,
+        )
+        const severityOrder = [
+          'critical',
+          'high',
+          'moderate',
+          'low',
+        ] as const
+        for (const severity of severityOrder) {
+          const pkgs = summary.summary[severity]
+          if (pkgs.length === 0) continue
+          lines.push(`  ${severity} (${pkgs.length})`)
+        }
+        lines.push(
+          `${summary.directCount} direct, ${summary.indirectCount} transitive`,
+        )
+        output = lines.join('\n')
+      }
+    }
+    return output
+  },
   count: (result: QueryResult) => result.edges.length,
   svg: MermaidImageView,
   png: MermaidImageView,
