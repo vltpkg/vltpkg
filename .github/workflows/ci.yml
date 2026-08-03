@@ -16,6 +16,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        id: filter
+        with:
+          filters: |
+            src:
+              - '**'
+              - '!www/docs/**'
+              - '!**/*.md'
   pre-check:
     name: Pre-Check
     runs-on: ubuntu-latest
@@ -85,8 +100,12 @@ jobs:
 
       - name: Install Dependencies with source of vlt
         run: |
-          # avoid changes from the bootstrap step
+          # avoid changes from the bootstrap step. the released vlt used to
+          # bootstrap rewrites vlt-lock.json with its own idea of what the
+          # options should look like, which would otherwise be attributed to
+          # the source build below.
           ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
           vlt install --view=human
 
@@ -190,7 +209,8 @@ jobs:
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
-    needs: pre-check
+    needs: [pre-check, changes]
+    if: needs.changes.outputs.src == 'true'
     runs-on: ${{ matrix.platform.os }}
     defaults:
       run:
@@ -236,8 +256,12 @@ jobs:
 
       - name: Install Dependencies with source of vlt
         run: |
-          # avoid changes from the bootstrap step
+          # avoid changes from the bootstrap step. the released vlt used to
+          # bootstrap rewrites vlt-lock.json with its own idea of what the
+          # options should look like, which would otherwise be attributed to
+          # the source build below.
           ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
           # re-install dependencies
           vlt install --view=human
 

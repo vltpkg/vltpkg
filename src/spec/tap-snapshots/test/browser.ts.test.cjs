@@ -7755,7 +7755,7 @@ Object {
   "jsr-registries": Object {
     "jsr": "https://npm.jsr.io/",
   },
-  "registry": "https://registry.npmjs.org/",
+  "registry": undefined,
   "scoped-registries": Object {},
   "git-hosts": Object {
     "github": "git+ssh://git@github.com:$1/$2.git",
@@ -9604,7 +9604,6 @@ exports[`test/browser.ts > TAP > parse args > no options > no options 1`] = `
   spec: 'foo@^1.0.0',
   name: 'foo',
   bareSpec: '^1.0.0',
-  registry: 'https://registry.npmjs.org/',
   registrySpec: '^1.0.0',
   semver: '^1.0.0',
   range: Range {

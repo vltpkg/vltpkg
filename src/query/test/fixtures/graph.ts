@@ -11,6 +11,9 @@ import type {
 import type { SpecLike, SpecOptions } from '@vltpkg/spec/browser'
 
 const specOptions = {
+  // there is no default registry any more, so these fixtures configure
+  // one explicitly
+  registry: 'https://registry.npmjs.org/',
   registries: {
     custom: 'http://example.com',
   },

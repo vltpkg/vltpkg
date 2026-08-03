@@ -2,8 +2,11 @@ import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { commandUsage } from '../config/usage.ts'
+import { requireRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
+
+export const needsRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -136,7 +139,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   }
 
   const rc = new RegistryClient(conf.options)
-  const registry = conf.options.registry
+  const registry = requireRegistry(conf)
 
   switch (sub) {
     case 'add': {

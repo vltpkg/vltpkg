@@ -52,7 +52,7 @@ t.test('Graph', async t => {
   const newNode = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('foo@^1.0.0'),
+    Spec.parse('foo@^1.0.0', configData),
     {
       name: 'foo',
       version: '1.0.0',
@@ -83,13 +83,13 @@ t.test('Graph', async t => {
   const localdep = graph.placePackage(
     newNode,
     'prod',
-    Spec.parse('localdep@file:localdep'),
+    Spec.parse('localdep@file:localdep', configData),
     { name: 'localdep', version: '1.2.3' },
     joinDepIDTuple(['file', 'localdep', newNode.id]),
   )
   t.equal(
     graph.findResolution(
-      Spec.parse('localdep@file:./localdep'),
+      Spec.parse('localdep@file:./localdep', configData),
       newNode,
     ),
     localdep,
@@ -97,21 +97,30 @@ t.test('Graph', async t => {
 
   t.equal(
     graph.findResolution(
-      Spec.parse('bar@npm:foo@1.x'),
+      Spec.parse('bar@npm:foo@1.x', configData),
       graph.mainImporter,
     ),
     newNode,
   )
   t.equal(
-    graph.findResolution(Spec.parse('foo@1.x'), graph.mainImporter),
+    graph.findResolution(
+      Spec.parse('foo@1.x', configData),
+      graph.mainImporter,
+    ),
     newNode,
   )
   t.equal(
-    graph.findResolution(Spec.parse('foo@3.x'), graph.mainImporter),
+    graph.findResolution(
+      Spec.parse('foo@3.x', configData),
+      graph.mainImporter,
+    ),
     undefined,
   )
   t.equal(
-    graph.findResolution(Spec.parse('asdf@1.x'), graph.mainImporter),
+    graph.findResolution(
+      Spec.parse('asdf@1.x', configData),
+      graph.mainImporter,
+    ),
     undefined,
   )
   t.same(
@@ -121,6 +130,22 @@ t.test('Graph', async t => {
       'foo@1.x│registry│https://registry.npmjs.org/│',
     ]),
   )
+  // a registry spec with no configured registry still gets a distinct
+  // registry segment, so it can't collide with a configured one
+  t.equal(
+    graph.findResolution(Spec.parse('foo@1.x'), graph.mainImporter),
+    newNode,
+    'registry-less spec resolves through satisfies()',
+  )
+  t.same(
+    graph.resolutionsReverse.get(newNode),
+    new Set([
+      'foo@^1.0.0│registry│https://registry.npmjs.org/│',
+      'foo@1.x│registry│https://registry.npmjs.org/│',
+      'foo@1.x│registry│<none>│',
+    ]),
+    'registry-less spec gets its own cache key',
+  )
   t.same(graph.nodesByName.get('foo'), new Set([newNode]))
   const fooTwo = graph.addNode(
     undefined,
@@ -128,13 +153,13 @@ t.test('Graph', async t => {
       name: 'foo',
       version: '2.0.0',
     },
-    Spec.parse('foo@^2.0.0'),
+    Spec.parse('foo@^2.0.0', configData),
   )
   t.same(graph.nodesByName.get('foo'), new Set([newNode, fooTwo]))
 
   graph.addEdge(
     'implicit',
-    Spec.parse('foo', '^1.0.0 || 2'),
+    Spec.parse('foo', '^1.0.0 || 2', configData),
     graph.mainImporter,
     newNode,
   )
@@ -150,7 +175,7 @@ t.test('Graph', async t => {
   )
   graph.addEdge(
     'dev',
-    Spec.parse('foo@^1.0.0'),
+    Spec.parse('foo@^1.0.0', configData),
     graph.mainImporter,
     newNode,
   )
@@ -161,7 +186,7 @@ t.test('Graph', async t => {
   )
   graph.addEdge(
     'implicit',
-    Spec.parse('foo@^1.0.1'),
+    Spec.parse('foo@^1.0.1', configData),
     graph.mainImporter,
     newNode,
   )
@@ -180,7 +205,11 @@ t.test('Graph', async t => {
     1,
     'should not allow for adding new edges between same nodes',
   )
-  graph.addEdge('prod', Spec.parse('missing@*'), graph.mainImporter)
+  graph.addEdge(
+    'prod',
+    Spec.parse('missing@*', configData),
+    graph.mainImporter,
+  )
   graph.removeNode(newNode, fooTwo)
   t.same(graph.nodesByName.get('foo'), new Set([fooTwo]))
   graph.removeNode(fooTwo)
@@ -243,7 +272,7 @@ t.test('findResolution respects registries', async t => {
 
   // resolve without registry uses any satisfying node (barA or barB)
   const resAny = graph.findResolution(
-    Spec.parse('bar@1.x'),
+    Spec.parse('bar@1.x', configData),
     graph.mainImporter,
   )
   t.notOk(
@@ -273,7 +302,7 @@ t.test('using placePackage', async t => {
   const foo = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('foo', '^1.0.0'),
+    Spec.parse('foo', '^1.0.0', configData),
     {
       name: 'foo',
       version: '1.0.0',
@@ -284,7 +313,7 @@ t.test('using placePackage', async t => {
   const bar = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('bar', '^1.0.0'),
+    Spec.parse('bar', '^1.0.0', configData),
     {
       name: 'bar',
       version: '1.0.0',
@@ -297,7 +326,7 @@ t.test('using placePackage', async t => {
   const baz = graph.placePackage(
     bar,
     'prod',
-    Spec.parse('baz', '^1.0.0'),
+    Spec.parse('baz', '^1.0.0', configData),
     {
       name: 'baz',
       version: '1.0.0',
@@ -310,12 +339,17 @@ t.test('using placePackage', async t => {
   graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('missing', '^1.0.0'),
+    Spec.parse('missing', '^1.0.0', configData),
   )
-  graph.placePackage(baz, 'prod', Spec.parse('foo', '^1.0.0'), {
-    name: 'foo',
-    version: '1.0.0',
-  })
+  graph.placePackage(
+    baz,
+    'prod',
+    Spec.parse('foo', '^1.0.0', configData),
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+  )
   t.matchSnapshot(inspect(graph, { depth: 3 }), 'the graph')
   const [edge] = baz.edgesIn
   if (!edge) throw new Error('failed to retrieve baz')
@@ -359,7 +393,7 @@ t.test('using placePackage', async t => {
   graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('bar', 'github:foo/bar'),
+    Spec.parse('bar', 'github:foo/bar', configData),
     {
       name: 'bar',
       version: '1.0.0',
@@ -480,7 +514,7 @@ t.test('prevent duplicate edges', async t => {
   graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('foo@*'),
+    Spec.parse('foo@*', configData),
     fooManifest,
   )
   graph.addNode(
@@ -501,19 +535,19 @@ t.test('prevent duplicate edges', async t => {
   if (!fooNode) throw new Error('did not get node added to graph')
   graph.addEdge(
     'prod',
-    Spec.parse('bar@*'),
+    Spec.parse('bar@*', configData),
     fooNode,
     graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0'])),
   )
   graph.addEdge(
     'prod',
-    Spec.parse('bar@*'),
+    Spec.parse('bar@*', configData),
     fooNode,
     graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0'])),
   )
   graph.addEdge(
     'prod',
-    Spec.parse('bar@*'),
+    Spec.parse('bar@*', configData),
     fooNode,
     graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@2.0.0'])),
   )
@@ -522,7 +556,7 @@ t.test('prevent duplicate edges', async t => {
     new Set([
       new Edge(
         'prod',
-        Spec.parse('foo@*'),
+        Spec.parse('foo@*', configData),
         graph.nodes.get(joinDepIDTuple(['file', '.']))!,
         graph.nodes.get(
           joinDepIDTuple(['registry', '', 'foo@1.0.0']),
@@ -530,7 +564,7 @@ t.test('prevent duplicate edges', async t => {
       ),
       new Edge(
         'prod',
-        Spec.parse('bar@*'),
+        Spec.parse('bar@*', configData),
         graph.nodes.get(
           joinDepIDTuple(['registry', '', 'foo@1.0.0']),
         )!,
@@ -555,7 +589,7 @@ t.test('prevent duplicate edges', async t => {
   // create a missing edge to verify it's not a problem
   fooNode.edgesOut.set(
     joinDepIDTuple(['registry', '', 'asdf@1.0.0']),
-    new Edge('prod', Spec.parse('asdf@1'), fooNode),
+    new Edge('prod', Spec.parse('asdf@1', configData), fooNode),
   )
   const collected = graph.gc()
   t.match(
@@ -597,7 +631,7 @@ t.test('in-place edge replacement', async t => {
       name: 'bar',
       version: '1.0.0',
     },
-    Spec.parse('bar@1.0.0'),
+    Spec.parse('bar@1.0.0', configData),
   )
 
   const bar2 = graph.addNode(
@@ -606,11 +640,11 @@ t.test('in-place edge replacement', async t => {
       name: 'bar',
       version: '2.0.0',
     },
-    Spec.parse('bar@2.0.0'),
+    Spec.parse('bar@2.0.0', configData),
   )
 
   // Create an edge from main importer to bar1
-  const spec = Spec.parse('bar@*')
+  const spec = Spec.parse('bar@*', configData)
   const edge = graph.addEdge('prod', spec, graph.mainImporter, bar1)
 
   // Verify initial edge setup is correct
@@ -672,7 +706,7 @@ t.test('garbage collection', async t => {
   const foo = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('foo@*'),
+    Spec.parse('foo@*', configData),
     {
       name: 'foo',
       version: '1.0.0',
@@ -680,7 +714,7 @@ t.test('garbage collection', async t => {
     },
   )
 
-  graph.placePackage(foo!, 'prod', Spec.parse('bar@*'), {
+  graph.placePackage(foo!, 'prod', Spec.parse('bar@*', configData), {
     name: 'bar',
     version: '1.0.0',
   })
@@ -703,7 +737,7 @@ t.test('garbage collection', async t => {
   )
 
   // Create an edge between the disconnected nodes
-  graph.addEdge('prod', Spec.parse('qux@*'), baz, qux)
+  graph.addEdge('prod', Spec.parse('qux@*', configData), baz, qux)
 
   // Check initial state
   t.equal(graph.nodes.size, 5, 'graph initially has 5 nodes')
@@ -813,7 +847,7 @@ t.test('extra parameter for modifiers', async t => {
   const nodeA = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('a@^1.0.0'),
+    Spec.parse('a@^1.0.0', configData),
     {
       name: 'a',
       version: '1.0.0',
@@ -836,7 +870,7 @@ t.test('extra parameter for modifiers', async t => {
   const nodeB = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('b@^1.0.0'),
+    Spec.parse('b@^1.0.0', configData),
     {
       name: 'b',
       version: '1.0.0',
@@ -850,7 +884,7 @@ t.test('extra parameter for modifiers', async t => {
   const nodeC = graph.placePackage(
     nodeA!,
     'prod',
-    Spec.parse('c@^1.0.0'),
+    Spec.parse('c@^1.0.0', configData),
     {
       name: 'c',
       version: '1.0.0',
@@ -932,7 +966,7 @@ t.test('removeEdgeResolution', async t => {
       const fooNode = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('foo@^1.0.0'),
+        Spec.parse('foo@^1.0.0', configData),
         {
           name: 'foo',
           version: '1.0.0',
@@ -983,7 +1017,7 @@ t.test('removeEdgeResolution', async t => {
     // Create an unresolved edge
     const missingEdge = graph.addEdge(
       'prod',
-      Spec.parse('missing@^1.0.0'),
+      Spec.parse('missing@^1.0.0', configData),
       graph.mainImporter,
     )
 
@@ -1009,7 +1043,7 @@ t.test('removeEdgeResolution', async t => {
     const barNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('bar@^1.0.0'),
+      Spec.parse('bar@^1.0.0', configData),
       {
         name: 'bar',
         version: '1.0.0',
@@ -1074,7 +1108,7 @@ t.test('removeEdgeResolution', async t => {
         name: 'samename',
         version: '1.0.0',
       },
-      Spec.parse('samename@1.0.0'),
+      Spec.parse('samename@1.0.0', configData),
     )
 
     const foo2Node = graph.addNode(
@@ -1083,20 +1117,20 @@ t.test('removeEdgeResolution', async t => {
         name: 'samename',
         version: '2.0.0',
       },
-      Spec.parse('samename@2.0.0'),
+      Spec.parse('samename@2.0.0', configData),
     )
 
     // Create edges to both nodes
     const edge1 = graph.addEdge(
       'prod',
-      Spec.parse('samename@^1.0.0'),
+      Spec.parse('samename@^1.0.0', configData),
       graph.mainImporter,
       foo1Node,
     )
 
     const edge2 = graph.addEdge(
       'dev',
-      Spec.parse('samename@^2.0.0'),
+      Spec.parse('samename@^2.0.0', configData),
       graph.mainImporter,
       foo2Node,
     )
@@ -1142,7 +1176,7 @@ t.test('removeEdgeResolution', async t => {
     const bazNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('baz@^1.0.0'),
+      Spec.parse('baz@^1.0.0', configData),
       {
         name: 'baz',
         version: '1.0.0',
@@ -1220,7 +1254,7 @@ t.test('node platform data setting', async t => {
     const node = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('engines-pkg@^1.0.0'),
+      Spec.parse('engines-pkg@^1.0.0', configData),
       normalizeManifest({
         name: 'engines-pkg',
         version: '1.0.0',
@@ -1255,7 +1289,7 @@ t.test('node platform data setting', async t => {
     const node = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('os-string-pkg@^1.0.0'),
+      Spec.parse('os-string-pkg@^1.0.0', configData),
       normalizeManifest({
         name: 'os-string-pkg',
         version: '1.0.0',
@@ -1284,7 +1318,7 @@ t.test('node platform data setting', async t => {
     const node = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('os-array-pkg@^1.0.0'),
+      Spec.parse('os-array-pkg@^1.0.0', configData),
       {
         name: 'os-array-pkg',
         version: '1.0.0',
@@ -1307,7 +1341,7 @@ t.test('node platform data setting', async t => {
       const node = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('cpu-string-pkg@^1.0.0'),
+        Spec.parse('cpu-string-pkg@^1.0.0', configData),
         normalizeManifest({
           name: 'cpu-string-pkg',
           version: '1.0.0',
@@ -1337,7 +1371,7 @@ t.test('node platform data setting', async t => {
     const node = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('cpu-array-pkg@^1.0.0'),
+      Spec.parse('cpu-array-pkg@^1.0.0', configData),
       {
         name: 'cpu-array-pkg',
         version: '1.0.0',
@@ -1360,7 +1394,7 @@ t.test('node platform data setting', async t => {
       const node = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('libc-string-pkg@^1.0.0'),
+        Spec.parse('libc-string-pkg@^1.0.0', configData),
         normalizeManifest({
           name: 'libc-string-pkg',
           version: '1.0.0',
@@ -1396,7 +1430,7 @@ t.test('node platform data setting', async t => {
       const node = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('libc-array-pkg@^1.0.0'),
+        Spec.parse('libc-array-pkg@^1.0.0', configData),
         {
           name: 'libc-array-pkg',
           version: '1.0.0',
@@ -1420,7 +1454,7 @@ t.test('node platform data setting', async t => {
       const node = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('combined-pkg@^1.0.0'),
+        Spec.parse('combined-pkg@^1.0.0', configData),
         normalizeManifest({
           name: 'combined-pkg',
           version: '1.0.0',
@@ -1466,7 +1500,7 @@ t.test('node platform data setting', async t => {
       const node = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('no-platform-pkg@^1.0.0'),
+        Spec.parse('no-platform-pkg@^1.0.0', configData),
         {
           name: 'no-platform-pkg',
           version: '1.0.0',
@@ -1490,7 +1524,7 @@ t.test('node platform data setting', async t => {
       // Create an edge without manifest (missing dependency)
       graph.addEdge(
         'prod',
-        Spec.parse('missing-pkg@^1.0.0'),
+        Spec.parse('missing-pkg@^1.0.0', configData),
         graph.mainImporter,
       )
 
@@ -1506,7 +1540,7 @@ t.test('node platform data setting', async t => {
       const result = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('missing-test-pkg@^1.0.0'),
+        Spec.parse('missing-test-pkg@^1.0.0', configData),
       )
 
       t.equal(
@@ -1521,7 +1555,7 @@ t.test('node platform data setting', async t => {
     const node1 = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('empty-engines-pkg@^1.0.0'),
+      Spec.parse('empty-engines-pkg@^1.0.0', configData),
       normalizeManifest({
         name: 'empty-engines-pkg',
         version: '1.0.0',
@@ -1538,7 +1572,7 @@ t.test('node platform data setting', async t => {
     const node2 = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('empty-array-pkg@^1.0.0'),
+      Spec.parse('empty-array-pkg@^1.0.0', configData),
       normalizeManifest({
         name: 'empty-array-pkg',
         version: '1.0.0',
@@ -1561,7 +1595,7 @@ t.test('node platform data setting', async t => {
       const originalNode = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('reuse-pkg@^1.0.0'),
+        Spec.parse('reuse-pkg@^1.0.0', configData),
         normalizeManifest({
           name: 'reuse-pkg',
           version: '1.0.0',
@@ -1579,7 +1613,7 @@ t.test('node platform data setting', async t => {
       const reusedNode = graph.placePackage(
         graph.mainImporter,
         'dev',
-        Spec.parse('reuse-pkg@^1.0.0'),
+        Spec.parse('reuse-pkg@^1.0.0', configData),
         normalizeManifest({
           name: 'reuse-pkg',
           version: '1.0.0',
@@ -1637,7 +1671,7 @@ t.test('splitExtra and joinExtra integration', async t => {
     const nodeA = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('a@^1.0.0'),
+      Spec.parse('a@^1.0.0', configData),
       {
         name: 'a',
         version: '1.0.0',
@@ -1655,7 +1689,7 @@ t.test('splitExtra and joinExtra integration', async t => {
     const nodeB = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('b@^1.0.0'),
+      Spec.parse('b@^1.0.0', configData),
       {
         name: 'b',
         version: '1.0.0',
@@ -1679,7 +1713,7 @@ t.test('splitExtra and joinExtra integration', async t => {
       const nodeC = graph.placePackage(
         graph.mainImporter,
         'prod',
-        Spec.parse('c@^1.0.0'),
+        Spec.parse('c@^1.0.0', configData),
         {
           name: 'c',
           version: '1.0.0',
@@ -1702,7 +1736,7 @@ t.test('splitExtra and joinExtra integration', async t => {
     const nodeD = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('d@^1.0.0'),
+      Spec.parse('d@^1.0.0', configData),
       {
         name: 'd',
         version: '1.0.0',
@@ -1789,7 +1823,7 @@ t.test('resetEdges method', async t => {
     const fooNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('foo@^1.0.0'),
+      Spec.parse('foo@^1.0.0', configData),
       {
         name: 'foo',
         version: '1.0.0',
@@ -1802,7 +1836,7 @@ t.test('resetEdges method', async t => {
     const barNode = graph.placePackage(
       graph.mainImporter,
       'dev',
-      Spec.parse('bar@^1.0.0'),
+      Spec.parse('bar@^1.0.0', configData),
       {
         name: 'bar',
         version: '1.0.0',
@@ -1812,7 +1846,7 @@ t.test('resetEdges method', async t => {
     const bazNode = graph.placePackage(
       fooNode!,
       'prod',
-      Spec.parse('baz@^2.0.0'),
+      Spec.parse('baz@^2.0.0', configData),
       {
         name: 'baz',
         version: '2.0.0',
@@ -1865,7 +1899,7 @@ t.test('resetEdges method', async t => {
     const alphaNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('alpha@^1.0.0'),
+      Spec.parse('alpha@^1.0.0', configData),
       {
         name: 'alpha',
         version: '1.0.0',
@@ -1885,7 +1919,7 @@ t.test('resetEdges method', async t => {
 
     // Verify resolution works before reset
     const foundBefore = graph.findResolution(
-      Spec.parse('alpha@^1.0.0'),
+      Spec.parse('alpha@^1.0.0', configData),
       graph.mainImporter,
     )
     t.equal(foundBefore, alphaNode, 'resolution works before reset')
@@ -1907,7 +1941,7 @@ t.test('resetEdges method', async t => {
 
     // Verify resolution still works after reset
     const foundAfter = graph.findResolution(
-      Spec.parse('alpha@^1.0.0'),
+      Spec.parse('alpha@^1.0.0', configData),
       graph.mainImporter,
     )
     t.equal(
@@ -1922,7 +1956,7 @@ t.test('resetEdges method', async t => {
     const betaNode1 = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('beta@^1.0.0'),
+      Spec.parse('beta@^1.0.0', configData),
       {
         name: 'beta',
         version: '1.0.0',
@@ -1935,7 +1969,7 @@ t.test('resetEdges method', async t => {
         name: 'beta',
         version: '2.0.0',
       },
-      Spec.parse('beta@2.0.0'),
+      Spec.parse('beta@2.0.0', configData),
     )
 
     // Verify nodesByName before reset
@@ -1966,7 +2000,7 @@ t.test('resetEdges method', async t => {
     const gammaNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('gamma@^1.0.0'),
+      Spec.parse('gamma@^1.0.0', configData),
       {
         name: 'gamma',
         version: '1.0.0',
@@ -1979,7 +2013,7 @@ t.test('resetEdges method', async t => {
     const deltaNode = graph.placePackage(
       gammaNode!,
       'prod',
-      Spec.parse('delta@^1.0.0'),
+      Spec.parse('delta@^1.0.0', configData),
       {
         name: 'delta',
         version: '1.0.0',
@@ -1998,13 +2032,13 @@ t.test('resetEdges method', async t => {
     // Reconstruct graph using existing nodes
     const newEdge1 = graph.addEdge(
       'prod',
-      Spec.parse('gamma@^1.0.0'),
+      Spec.parse('gamma@^1.0.0', configData),
       graph.mainImporter,
       gammaNode,
     )
     const newEdge2 = graph.addEdge(
       'prod',
-      Spec.parse('delta@^1.0.0'),
+      Spec.parse('delta@^1.0.0', configData),
       gammaNode!,
       deltaNode,
     )
@@ -2058,7 +2092,7 @@ t.test('resetEdges method', async t => {
     const epsilonNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('epsilon@^1.0.0'),
+      Spec.parse('epsilon@^1.0.0', configData),
       {
         name: 'epsilon',
         version: '1.0.0',
@@ -2087,7 +2121,7 @@ t.test('resetEdges method', async t => {
 
     // Verify resolution still works with modifier
     const found = graph.findResolution(
-      Spec.parse('epsilon@^1.0.0'),
+      Spec.parse('epsilon@^1.0.0', configData),
       graph.mainImporter,
       ':root > #epsilon',
     )
@@ -2099,7 +2133,7 @@ t.test('resetEdges method', async t => {
     const zetaNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('zeta@^1.0.0'),
+      Spec.parse('zeta@^1.0.0', configData),
       {
         name: 'zeta',
         version: '1.0.0',
@@ -2128,7 +2162,7 @@ t.test('resetEdges method', async t => {
 
     // Verify resolution still works with peerSetHash
     const found = graph.findResolution(
-      Spec.parse('zeta@^1.0.0'),
+      Spec.parse('zeta@^1.0.0', configData),
       graph.mainImporter,
       'peer.peer123',
     )
@@ -2140,7 +2174,7 @@ t.test('resetEdges method', async t => {
     const etaNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('eta@^1.0.0'),
+      Spec.parse('eta@^1.0.0', configData),
       {
         name: 'eta',
         version: '1.0.0',
@@ -2190,7 +2224,7 @@ t.test('removeNode with keepEdges parameter', async t => {
     const fooNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('foo@^1.0.0'),
+      Spec.parse('foo@^1.0.0', configData),
       {
         name: 'foo',
         version: '1.0.0',
@@ -2201,7 +2235,7 @@ t.test('removeNode with keepEdges parameter', async t => {
     const bazNode = graph.placePackage(
       fooNode!,
       'prod',
-      Spec.parse('baz@^1.0.0'),
+      Spec.parse('baz@^1.0.0', configData),
       {
         name: 'baz',
         version: '1.0.0',
@@ -2264,7 +2298,7 @@ t.test('removeNode with keepEdges parameter', async t => {
     const barNode = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('bar@^1.0.0'),
+      Spec.parse('bar@^1.0.0', configData),
       {
         name: 'bar',
         version: '1.0.0',
@@ -2275,7 +2309,7 @@ t.test('removeNode with keepEdges parameter', async t => {
     const quxNode = graph.placePackage(
       barNode!,
       'prod',
-      Spec.parse('qux@^1.0.0'),
+      Spec.parse('qux@^1.0.0', configData),
       {
         name: 'qux',
         version: '1.0.0',
@@ -2349,7 +2383,7 @@ t.test('removeNode with keepEdges parameter', async t => {
         name: 'alpha',
         version: '1.0.0',
       },
-      Spec.parse('alpha@1.0.0'),
+      Spec.parse('alpha@1.0.0', configData),
     )
 
     const replacementNode = graph.addNode(
@@ -2358,13 +2392,13 @@ t.test('removeNode with keepEdges parameter', async t => {
         name: 'alpha',
         version: '1.1.0',
       },
-      Spec.parse('alpha@1.1.0'),
+      Spec.parse('alpha@1.1.0', configData),
     )
 
     // Create edge to alpha node
     const alphaEdge = graph.addEdge(
       'prod',
-      Spec.parse('alpha@^1.0.0'),
+      Spec.parse('alpha@^1.0.0', configData),
       graph.mainImporter,
       alphaNode,
     )
@@ -2464,7 +2498,7 @@ t.test(
     const placed = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('foo', '^1.0.0'),
+      Spec.parse('foo', '^1.0.0', configData),
       manifest,
     )
 
@@ -2527,7 +2561,7 @@ t.test(
     const placed = graph.placePackage(
       graph.mainImporter,
       'prod',
-      Spec.parse('bar', '^2.0.0'),
+      Spec.parse('bar', '^2.0.0', configData),
       newManifest,
     )
 

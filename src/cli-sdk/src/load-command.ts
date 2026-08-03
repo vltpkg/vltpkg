@@ -17,6 +17,12 @@ export type Command<T> = {
   command: CommandFn<T>
   usage: CommandUsage
   views: Views<T>
+  /**
+   * Set to `true` by commands that hit a registry or resolve registry
+   * specs. There is no default registry, so `outputCommand()` fails
+   * early with an `ECONFIG` error when one of these runs unconfigured.
+   */
+  needsRegistry?: boolean
 }
 
 export const loadCommand = async <T>(

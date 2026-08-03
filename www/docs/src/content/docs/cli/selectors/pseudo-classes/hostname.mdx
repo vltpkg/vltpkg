@@ -34,13 +34,18 @@ The selector extracts the hostname from each package's source:
 
 ## Examples
 
-Find all packages from the default npm registry:
+Find all packages served from the public npm registry:
 
 <Code
   code="$ vlt query ':hostname(registry.npmjs.org)'"
   title="Terminal"
   lang="bash"
 />
+
+Note that registry nodes are matched against the resolved registry
+URL. Since vlt has no [default registry](/cli/registries), a node
+whose spec carries no registry has no hostname to compare and will not
+match.
 
 Find packages from GitHub's package registry:
 

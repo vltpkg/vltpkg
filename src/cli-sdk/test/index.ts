@@ -248,3 +248,52 @@ t.test('invalid workspace-group', async t => {
   t.equal(exitCode, 1)
   t.matchSnapshot(logs.join('\n'))
 })
+
+// the `needsRegistry` gate itself lives in outputCommand, which is
+// mocked out here. these cover the config plumbing that feeds it.
+t.test('registry config resolution', async t => {
+  t.test('undefined when nothing is configured', async t => {
+    const cwd = t.testdir({
+      'vlt.json': '{}',
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error, config } = await run(t, {
+      argv: ['ls', '--view=json'],
+      cwd,
+    })
+    t.equal(error, null)
+    t.equal(config.options.registry, undefined)
+  })
+
+  t.test('--registry', async t => {
+    const cwd = t.testdir({
+      'vlt.json': '{}',
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error, config } = await run(t, {
+      argv: [
+        'ls',
+        '--registry=https://registry.npmjs.org/',
+        '--view=json',
+      ],
+      cwd,
+    })
+    t.equal(error, null)
+    t.equal(config.options.registry, 'https://registry.npmjs.org/')
+  })
+
+  t.test('vlt.json', async t => {
+    const cwd = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: { registry: 'https://registry.npmjs.org/' },
+      }),
+      'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+    })
+    const { error, config } = await run(t, {
+      argv: ['ls', '--view=json'],
+      cwd,
+    })
+    t.equal(error, null)
+    t.equal(config.options.registry, 'https://registry.npmjs.org/')
+  })
+})

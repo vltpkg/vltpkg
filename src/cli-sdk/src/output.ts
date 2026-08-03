@@ -8,6 +8,7 @@ import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
+import { missingRegistryError } from './require-registry.ts'
 import type { View, ViewOptions, Views } from './view.ts'
 import { isViewClass } from './view.ts'
 import {
@@ -145,7 +146,7 @@ export const outputCommand = async <T>(
     start: Date.now(),
   },
 ) => {
-  const { usage, views, command } = cliCommand
+  const { usage, views, command, needsRegistry } = cliCommand
 
   const stdoutColor =
     conf.values.color ?? supportsColor(process.stdout)
@@ -182,6 +183,14 @@ export const outputCommand = async <T>(
   const commandName = conf.command
 
   try {
+    // checked here rather than in run() so that the missing-registry
+    // error is rendered, tracked and exited like any other command
+    // error, and so that the `--help` return above still works when
+    // nothing is configured.
+    if (needsRegistry && !conf.options.registry) {
+      throw missingRegistryError()
+    }
+
     const output = await onDone(await command(conf))
 
     const duration_ms = Date.now() - start

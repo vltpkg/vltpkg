@@ -378,7 +378,7 @@ export const generateFullHelp = (colors = false): string => {
       shorts: [],
       long: 'registry',
       args: '<url>',
-      desc: 'Override default registry',
+      desc: 'Set the registry to resolve packages against',
     },
     {
       shorts: ['v'],

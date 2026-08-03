@@ -606,7 +606,9 @@ const processPlacementTasks = async (
             type: shorten(depTypeName, name, manifest),
             spec: Spec.parse(name, bareSpec, {
               ...options,
-              registry: spec.registry,
+              // git/file/remote parents have no spec.registry, so fall
+              // back to the configured one. see vltpkg/vltpkg#1580.
+              registry: spec.registry ?? options.registry,
             }),
           }
           if (depTypeName === 'peerDependencies') {

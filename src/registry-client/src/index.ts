@@ -9,8 +9,8 @@ import { XDG } from '@vltpkg/xdg'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
-import type { Dispatcher } from 'undici'
-import { Agent, RetryAgent } from 'undici'
+import type { Agent, Dispatcher } from 'undici'
+import { RetryAgent } from 'undici'
 import { addHeader } from './add-header.ts'
 import type { Token } from './auth.ts'
 import {
@@ -33,6 +33,7 @@ import { register } from './cache-revalidate.ts'
 import { bun, deno, node } from './env.ts'
 import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
+import { getDispatcher } from './proxy.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 import type { TokenResponse } from './token-response.ts'
@@ -239,7 +240,7 @@ export class RegistryClient {
         }
       },
     })
-    const dispatch = new Agent(agentOptions)
+    const dispatch = getDispatcher(agentOptions)
     this.agent = new RetryAgent(dispatch, {
       maxRetries,
       timeoutFactor,

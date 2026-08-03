@@ -13,6 +13,10 @@ import { Code } from '@astrojs/starlight/components'
   code={`# Install vlt globally
 $ npm install -g vlt
 
+# Configure a registry -- vlt has no default
+
+$ vlt config set registry=https://registry.npmjs.org/
+
 # In your existing project, run:
 
 $ vlt install $ vlt build`} title="Terminal" lang="bash" />
@@ -20,6 +24,29 @@ $ vlt install $ vlt build`} title="Terminal" lang="bash" />
 That's it for basic usage. vlt reads your existing `package.json` and
 resolves dependencies. Below are the details on what's different and
 how to handle specific scenarios.
+
+### First: configure your registry
+
+Unlike npm, **vlt has no default registry**. Commands that resolve or
+fetch packages fail with a config error until one is set:
+
+```
+Config Error: Missing registry configuration. Run 'vlt login --registry=<url>',
+set "registry" in vlt.json, or pass --registry. See https://docs.vlt.sh/cli
+```
+
+To keep npm's behavior, point it at the public npm registry:
+
+<Code
+  code={`$ vlt config set registry=https://registry.npmjs.org/`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Or set it in `vlt.json`, pass `--registry=<url>` per command, or
+export `VLT_REGISTRY`. `vlt login --registry=<url>` also writes the
+registry into your project's `vlt.json` on success. See
+[Registries](/cli/registries).
 
 ---
 

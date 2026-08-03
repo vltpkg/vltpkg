@@ -21,17 +21,17 @@ const shouldRenderSearch =
 
 <div class="flex h-full w-full grow flex-col">
   <header
-    class="sticky top-0 z-[1000] border-b-[1px] border-border/50 backdrop-blur-sm">
+    class="sticky top-0 z-50 w-full max-w-8xl border-b border-transparent bg-white will-change-auto dark:bg-black lg:mx-auto lg:rounded-lg lg:border lg:transition-all lg:ease-out">
     <nav
-      class="mx-auto -mt-1 flex w-full max-w-8xl items-center justify-between px-10 py-4 md:px-6">
+      class="max-lg:gap-3 flex h-14 w-full items-center justify-between px-4 will-change-auto lg:h-12 lg:transition-all lg:ease-out">
       <a
         href="https://www.vlt.io/"
-        class="-mt-[1px] ml-[5px] flex h-[52px] w-auto items-center no-underline">
+        class="-mt-[1px] ml-[5px] flex w-auto items-center no-underline">
         <Logo />
       </a>
 
       <div
-        class="flex w-full items-center justify-end justify-items-end gap-4">
+        class="flex w-full items-end items-center justify-end gap-4">
         {shouldRenderSearch && <Search {...Astro.props} />}
         <MobileSidebar client:load sidebar={sidebar} />
         <LinearMenu client:load />

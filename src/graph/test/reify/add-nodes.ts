@@ -41,7 +41,9 @@ const node = (props: Record<string, any>) => ({
     scurry.cwd.resolve(props.location).fullpath(),
 })
 
-const specOptions = getOptions({})
+const configData = { registry: 'https://registry.npmjs.org/' }
+
+const specOptions = getOptions(configData)
 
 const diff = {
   to: {
@@ -177,7 +179,7 @@ await Promise.all(
     diff,
     scurry,
     mockRemover,
-    getOptions({}),
+    getOptions(configData),
     mockPackageInfo,
   ).map(x => x()),
 )

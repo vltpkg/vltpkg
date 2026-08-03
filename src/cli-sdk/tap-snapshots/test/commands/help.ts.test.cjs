@@ -69,7 +69,7 @@ FLAGS
   -c,    --color                      Enable color output
   -h,    --help                       Print helpful information
          --no-color                   Disable color output
-         --registry  <url>            Override default registry
+         --registry  <url>            Set the registry to resolve packages against
   -v,    --version                    Print the version
   -y,    --yes                        Automatically accept prompts
 

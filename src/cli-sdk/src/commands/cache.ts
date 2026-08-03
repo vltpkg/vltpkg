@@ -103,6 +103,8 @@ const usageDef = {
   },
 } as const satisfies CommandUsageDefinition
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () => commandUsage(usageDef)
 
 export const command: CommandFn<void | CacheMap> = async conf => {

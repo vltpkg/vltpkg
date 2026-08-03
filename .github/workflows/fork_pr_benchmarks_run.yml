@@ -3,6 +3,9 @@ name: Run Benchmarks
 on:
   pull_request:
     types: [opened, reopened, edited, synchronize]
+    paths-ignore:
+      - 'www/docs/**'
+      - '**/*.md'
 
 jobs:
   benchmark_fork_pr_branch:

@@ -7,6 +7,8 @@ import type { InstallResult } from './install.ts'
 
 export type CIResult = Omit<InstallResult, 'buildQueue'>
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'ci',

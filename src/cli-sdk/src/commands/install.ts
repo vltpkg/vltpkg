@@ -26,6 +26,8 @@ export type InstallResult = {
   diff?: Diff
 }
 
+export const needsRegistry = true
+
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'install',

@@ -655,6 +655,29 @@ t.test('getDependencies', async t => {
     },
   )
 
+  t.test(
+    'falls back to options.registry when the node has none',
+    async t => {
+      const manifest: Manifest = {
+        dependencies: { lodash: '^4.17.21' },
+      }
+      const node = createMockNode({ registry: undefined }, manifest)
+      const optionsRegistry = 'https://options.registry.com/'
+      const result = getDependencies(node, {
+        registry: optionsRegistry,
+      })
+      t.strictSame(
+        result.get('lodash')?.spec.registry,
+        optionsRegistry,
+        'uses the configured registry',
+      )
+
+      // and with neither, the spec simply has no registry
+      const none = getDependencies(node, {})
+      t.strictSame(none.get('lodash')?.spec.registry, undefined)
+    },
+  )
+
   t.test('should pass options to spec parsing', async t => {
     const manifest: Manifest = {
       dependencies: {
