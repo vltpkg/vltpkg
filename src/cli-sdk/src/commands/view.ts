@@ -370,7 +370,7 @@ export const command: CommandFn<ViewResult> = async conf => {
 
   // Fetch the full packument (needs time, maintainers) and resolved manifest
   const [packument, resolvedManifest] = await Promise.all([
-    pic.packument(spec, { fullPackument: true }),
+    pic.packument(spec),
     pic.manifest(spec),
   ])
   const manifest = resolvedManifest as Manifest

@@ -66,15 +66,6 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   RegistryClientRequestOptions & {
     /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
     from?: string
-    /**
-     * When true, requests the full packument document from the registry
-     * instead of the abbreviated "corgi" format. Use this when you need
-     * fields like `time`, `maintainers`, or `_rev` that are stripped
-     * from the abbreviated response.
-     *
-     * Defaults to `false` (abbreviated packument for faster installs).
-     */
-    fullPackument?: boolean
   }
 
 export type PackageInfoClientExtractOptions =
@@ -877,12 +868,6 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         if (!registry) throw noRegistryError(spec)
-        // Full packument requests bypass coalescing since they
-        // return different data than the abbreviated format.
-        if (options.fullPackument) {
-          const pakuURL = new URL(name, registry)
-          return this.#fetchPackument(spec, options, pakuURL)
-        }
         const packumentKey = `${registry}${name}`
         const inflight = this.#packumentPromises.get(packumentKey)
         if (inflight) return inflight
@@ -906,12 +891,8 @@ export class PackageInfoClient {
     options: PackageInfoClientRequestOptions,
     pakuURL: URL,
   ): Promise<Packument> {
-    const accept =
-      options.fullPackument ?
-        'application/json'
-      : 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
     const response = await this.registryClient.request(pakuURL, {
-      headers: { accept },
+      headers: { accept: 'application/json' },
     })
     if (response.statusCode !== 200) {
       throw this.#resolveError(
