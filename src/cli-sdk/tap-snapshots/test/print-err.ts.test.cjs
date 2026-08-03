@@ -154,6 +154,51 @@ exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > basic > output no file
 Resolve Error: bloopy doop
 `
 
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-object > file 1`] = `
+Error: missing tarball
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'ERESOLVE',
+    spec: {
+      type: 'registry',
+      spec: 'next@*',
+      toString: [Function: toString]
+    }
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-object > output 1`] = `
+Resolve Error: missing tarball
+  To satisfy: next@*
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-ERESOLVE-spec-object/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-object > output no file 1`] = `
+Resolve Error: missing tarball
+  To satisfy: next@*
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-plain > file 1`] = `
+Error: missing tarball
+    at {STACK_LINE} {
+  [cause]: { code: 'ERESOLVE', spec: { type: 'registry', spec: 'x@1' } }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-plain > output 1`] = `
+Resolve Error: missing tarball
+  To satisfy: { type: 'registry', spec: 'x@1' }
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-ERESOLVE-spec-plain/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-plain > output no file 1`] = `
+Resolve Error: missing tarball
+  To satisfy: { type: 'registry', spec: 'x@1' }
+`
+
 exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > url > file 1`] = `
 Error: bloopy doop
     at {STACK_LINE} {

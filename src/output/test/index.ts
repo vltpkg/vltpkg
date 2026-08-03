@@ -14,6 +14,12 @@ t.test('output', async t => {
   emitter.on('graphStep', stepHandler)
 
   logRequest('https://example.com', 'start')
+  logRequest('https://example.com', 'cache', { method: 'GET' })
+  logRequest('https://example.com', 'complete', {
+    method: 'GET',
+    statusCode: 200,
+    durationMs: 12,
+  })
   graphStep('build')()
 
   emitter.off('request', reqHandler)

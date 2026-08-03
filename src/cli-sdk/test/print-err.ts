@@ -152,6 +152,29 @@ t.test('snapshots', async t => {
         response: { statusCode: 200 },
       }),
     )
+    // a spec-like object with a custom toString (like a Spec) prints
+    // concisely (e.g. `next@*`) rather than dumping its internals.
+    await testErr(
+      t,
+      'spec-object',
+      error('missing tarball', {
+        code: 'ERESOLVE',
+        spec: {
+          type: 'registry',
+          spec: 'next@*',
+          toString: () => 'next@*',
+        },
+      }),
+    )
+    // a plain spec object (no custom toString) falls back to `format`.
+    await testErr(
+      t,
+      'spec-plain',
+      error('missing tarball', {
+        code: 'ERESOLVE',
+        spec: { type: 'registry', spec: 'x@1' },
+      }),
+    )
   })
 
   t.test('ECONFIG', async t => {

@@ -232,7 +232,10 @@ export class PackageInfoClient {
             throw this.#resolveError(
               spec,
               options,
-              'failed to fetch tarball',
+              `Registry returned HTTP ${response.statusCode} when ` +
+                `fetching the tarball for ${spec}. The resolved version ` +
+                `may have been unpublished, or the registry may be ` +
+                `misconfigured or unreachable.`,
               {
                 url: r.resolved,
                 response,
@@ -486,7 +489,9 @@ export class PackageInfoClient {
           throw this.#resolveError(
             spec,
             options,
-            'no dist object found in manifest',
+            `The registry manifest for ${spec} has no "dist" section, ` +
+              `so no tarball can be resolved. The package version may be ` +
+              `malformed or unpublished.`,
           )
 
         const { tarball, integrity } = dist
@@ -494,7 +499,9 @@ export class PackageInfoClient {
           throw this.#resolveError(
             spec,
             options,
-            'no tarball found in manifest.dist',
+            `The registry manifest for ${spec} is missing a tarball URL ` +
+              `(dist.tarball). The package version may be malformed or ` +
+              `unpublished in this registry.`,
           )
         }
 
@@ -515,7 +522,10 @@ export class PackageInfoClient {
             throw this.#resolveError(
               spec,
               options,
-              'failed to fetch tarball',
+              `Registry returned HTTP ${response.statusCode} when ` +
+                `fetching the tarball for ${spec} at ${tarball}. The ` +
+                `version may have been unpublished, or the registry may ` +
+                `be misconfigured or unreachable.`,
               { response, url: tarball },
             )
           }
