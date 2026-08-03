@@ -18,7 +18,7 @@ export const buildAuditQuery = (level: string): string => {
     high: ':malware(>medium), :severity(>medium)',
     critical: ':malware(critical), :severity(critical)',
   }
-  return (queries[level] ?? queries.low) as string
+  return queries[level] ?? queries.low
 }
 
 export type AuditPackage = {
@@ -63,7 +63,7 @@ export const isNodeWithId = (
   typeof o === 'object' &&
   o !== null &&
   'id' in o &&
-  typeof (o as { id: unknown }).id === 'string'
+  typeof (o).id === 'string'
 
 /**
  * Typeguard for objects with an id and insights property.
@@ -162,8 +162,6 @@ export const aggregateBySeverity = (
     if (!isNodeWithInsights(node)) continue
 
     const insights = node.insights
-    if (!insights) continue
-
     const alerts: string[] = []
     let newSeverity: SeverityLevel = 'low'
 
@@ -250,12 +248,7 @@ export const filterAuditResult = (
   return filtered
 }
 
-const severityOrder = [
-  'critical',
-  'high',
-  'moderate',
-  'low',
-] as const
+const severityOrder = ['critical', 'high', 'moderate', 'low'] as const
 
 /**
  * Format audit result as human-readable summary text.

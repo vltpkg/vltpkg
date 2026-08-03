@@ -453,20 +453,20 @@ export const definition = j
     },
   })
 
-   .opt({
-     scope: {
-       short: 's',
-       hint: 'query',
-       description:
-         'Set to filter the scope of an operation using a DSS Query.',
-     },
-     target: {
-       short: 't',
-       hint: 'query',
-       description:
-         'Set to select packages using a DSS Query selector.',
-     },
-   })
+  .opt({
+    scope: {
+      short: 's',
+      hint: 'query',
+      description:
+        'Set to filter the scope of an operation using a DSS Query.',
+    },
+    target: {
+      short: 't',
+      hint: 'query',
+      description:
+        'Set to select packages using a DSS Query selector.',
+    },
+  })
 
   .opt({
     'audit-level': {
