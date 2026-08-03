@@ -155,7 +155,7 @@ export const views = {
         const lines = output.split('\n')
         lines.push('')
         lines.push(
-          `${summary.total} security issue${summary.total === 1 ? '' : 's'} found`,
+          `${summary.total} package${summary.total === 1 ? '' : 's'} with security issues found`,
         )
         for (const { severity, pkgs } of nonEmptySeverityBuckets(
           summary,

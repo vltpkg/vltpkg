@@ -572,7 +572,7 @@ t.test('formatAuditSummary', async t => {
   t.test('returns zero issues message', async t => {
     t.equal(
       formatAuditSummary(makeResult()),
-      'found 0 security issues\n',
+      '0 packages with security issues\n',
     )
   })
 
@@ -593,7 +593,7 @@ t.test('formatAuditSummary', async t => {
       indirectCount: 0,
     })
     const output = formatAuditSummary(result)
-    t.match(output, /^found 1 security issue\n/)
+    t.match(output, /^1 package with security issues\n/)
     t.match(output, /high \(1\)/)
     t.match(output, /pkg-a@1\.0\.0/)
     t.match(output, /malware: high/)
@@ -626,7 +626,7 @@ t.test('formatAuditSummary', async t => {
         indirectCount: 1,
       })
       const output = formatAuditSummary(result)
-      t.match(output, /^found 2 security issues\n/)
+      t.match(output, /^2 packages with security issues\n/)
       t.match(output, /critical \(1\)/)
       t.match(output, /high \(1\)/)
       t.match(output, /1 direct dependency, 1 transitive/)
