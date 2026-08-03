@@ -4,6 +4,7 @@ import {
   buildAuditQuery,
   aggregateBySeverity,
   filterAuditResult,
+  formatAuditSummary,
 } from '../src/audit-helpers.ts'
 
 t.test('isSecuritySelector', async t => {
@@ -122,6 +123,33 @@ t.test('aggregateBySeverity', async t => {
     t.equal(result.total, 3)
   })
 
+  t.test(
+    'groups leveled insights with medium severity as moderate',
+    async t => {
+      const nodes = [
+        {
+          id: 'pkg-medium-id',
+          name: 'pkg-medium',
+          version: '1.0.0',
+          insights: {
+            severity: {
+              critical: false,
+              high: false,
+              medium: true,
+              low: false,
+            },
+          },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.summary.moderate.length, 1)
+      t.match(
+        result.summary.moderate[0]?.alerts[0],
+        /severity: moderate/,
+      )
+    },
+  )
+
   t.test('identifies direct vs transitive dependencies', async t => {
     const directNode = {
       id: 'importer-1',
@@ -191,6 +219,118 @@ t.test('aggregateBySeverity', async t => {
     t.ok(result.summary.critical[0])
     t.match(result.summary.critical[0]!.alerts[0], /squat/)
   })
+
+  t.test('handles squat alerts with medium severity', async t => {
+    const nodes = [
+      {
+        id: 'squat-medium-id',
+        name: 'squat-medium-pkg',
+        version: '1.0.0',
+        insights: { squat: { critical: false, medium: true } },
+      },
+    ]
+    const result = aggregateBySeverity(nodes, importers)
+    t.equal(result.summary.moderate.length, 1)
+    t.ok(result.summary.moderate[0])
+    t.match(result.summary.moderate[0]!.alerts[0], /squat/)
+  })
+
+  t.test(
+    'ignores leveled insights with no severity flags set',
+    async t => {
+      const nodes = [
+        {
+          id: 'clean-id',
+          name: 'clean-pkg',
+          version: '1.0.0',
+          insights: {
+            malware: {
+              critical: false,
+              high: false,
+              medium: false,
+              low: false,
+            },
+          },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.total, 0)
+    },
+  )
+
+  t.test(
+    'ignores squat insights with no severity flags set',
+    async t => {
+      const nodes = [
+        {
+          id: 'clean-squat-id',
+          name: 'clean-squat-pkg',
+          version: '1.0.0',
+          insights: { squat: { critical: false, medium: false } },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.total, 0)
+    },
+  )
+
+  t.test(
+    'accumulates alerts from multiple insight categories on one node',
+    async t => {
+      const nodes = [
+        {
+          id: 'multi-id',
+          name: 'multi-pkg',
+          version: '1.0.0',
+          insights: {
+            malware: {
+              critical: false,
+              high: true,
+              medium: false,
+              low: false,
+            },
+            severity: {
+              critical: true,
+              high: false,
+              medium: false,
+              low: false,
+            },
+            squat: { critical: false, medium: true },
+          },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.total, 1)
+      t.equal(result.summary.critical.length, 1)
+      t.equal(result.summary.high.length, 0)
+      const pkg = result.summary.critical[0]
+      t.ok(pkg)
+      t.equal(pkg!.alerts.length, 3)
+      t.match(pkg!.alerts[0], /malware: high/)
+      t.match(pkg!.alerts[1], /severity: critical/)
+      t.match(pkg!.alerts[2], /squat: moderate/)
+    },
+  )
+
+  t.test('defaults name and version when missing', async t => {
+    const nodes = [
+      {
+        id: 'no-name-id',
+        insights: {
+          malware: {
+            critical: true,
+            high: false,
+            medium: false,
+            low: false,
+          },
+        },
+      },
+    ]
+    const result = aggregateBySeverity(nodes, importers)
+    t.equal(result.summary.critical.length, 1)
+    t.equal(result.summary.critical[0]?.name, 'unknown')
+    t.equal(result.summary.critical[0]?.version, 'unknown')
+  })
 })
 
 t.test('filterAuditResult', async t => {
@@ -237,6 +377,13 @@ t.test('filterAuditResult', async t => {
     t.equal(critical.summary.high.length, 0)
     t.equal(critical.summary.moderate.length, 0)
     t.equal(critical.summary.low.length, 0)
+
+    const low = filterAuditResult(result, 'low')
+    t.equal(low.total, 4)
+    t.equal(low.summary.critical.length, 1)
+    t.equal(low.summary.high.length, 1)
+    t.equal(low.summary.moderate.length, 1)
+    t.equal(low.summary.low.length, 1)
   })
 
   t.test('preserves empty result structure', async t => {
@@ -250,5 +397,103 @@ t.test('filterAuditResult', async t => {
     t.equal(filtered.total, 0)
     t.equal(filtered.directCount, 0)
     t.equal(filtered.indirectCount, 0)
+  })
+})
+
+t.test('formatAuditSummary', async t => {
+  t.test('returns zero issues message', async t => {
+    const result = {
+      summary: { critical: [], high: [], moderate: [], low: [] },
+      total: 0,
+      directCount: 0,
+      indirectCount: 0,
+    }
+    t.equal(formatAuditSummary(result), 'found 0 security issues\n')
+  })
+
+  t.test('formats singular issue and dependency', async t => {
+    const result = {
+      summary: {
+        critical: [],
+        high: [
+          {
+            name: 'pkg-a',
+            version: '1.0.0',
+            alerts: ['malware: high'],
+            direct: true,
+          },
+        ],
+        moderate: [],
+        low: [],
+      },
+      total: 1,
+      directCount: 1,
+      indirectCount: 0,
+    }
+    const output = formatAuditSummary(result)
+    t.match(output, /^found 1 security issue\n/)
+    t.match(output, /high \(1\)/)
+    t.match(output, /pkg-a@1\.0\.0/)
+    t.match(output, /malware: high/)
+    t.match(output, /1 direct dependency, 0 transitive/)
+  })
+
+  t.test(
+    'formats plural issues across multiple severities in order',
+    async t => {
+      const result = {
+        summary: {
+          critical: [
+            {
+              name: 'pkg-c',
+              version: '2.0.0',
+              alerts: ['malware: critical'],
+              direct: false,
+            },
+          ],
+          high: [
+            {
+              name: 'pkg-h',
+              version: '1.0.0',
+              alerts: ['severity: high'],
+              direct: true,
+            },
+          ],
+          moderate: [],
+          low: [],
+        },
+        total: 2,
+        directCount: 1,
+        indirectCount: 1,
+      }
+      const output = formatAuditSummary(result)
+      t.match(output, /^found 2 security issues\n/)
+      t.match(output, /critical \(1\)/)
+      t.match(output, /high \(1\)/)
+      t.match(output, /1 direct dependency, 1 transitive/)
+      t.ok(
+        output.indexOf('critical (1)') < output.indexOf('high (1)'),
+        'critical section renders before high section',
+      )
+    },
+  )
+
+  t.test('pluralizes direct dependencies', async t => {
+    const result = {
+      summary: {
+        critical: [],
+        high: [
+          { name: 'a', version: '1.0.0', alerts: [], direct: true },
+          { name: 'b', version: '1.0.0', alerts: [], direct: true },
+        ],
+        moderate: [],
+        low: [],
+      },
+      total: 2,
+      directCount: 2,
+      indirectCount: 0,
+    }
+    const output = formatAuditSummary(result)
+    t.match(output, /2 direct dependencies, 0 transitive/)
   })
 })
