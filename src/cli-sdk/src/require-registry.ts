@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { defaultRegistries } from '@vltpkg/spec'
 import { selectRegistry } from './select-registry.ts'
 import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
@@ -60,15 +61,36 @@ export const resolveRegistryAlias = (
 }
 
 /**
- * The configured registries the user could act against, when no
- * explicit `--registry` URL is set. Order follows the `registries`
- * config (which preserves insertion order).
+ * The registries the user has actually configured, when no explicit
+ * `--registry` URL is set. Order follows the `registries` config (which
+ * preserves insertion order).
+ *
+ * Built-in defaults (eg `gh`) are excluded so they don't implicitly
+ * satisfy "a registry is configured" for account/auth commands. A
+ * built-in alias the user has overridden to a different URL counts as
+ * configured. Built-in aliases can still be targeted explicitly via
+ * `vlt registry <alias> <cmd>` (which resolves through
+ * {@link resolveRegistryAlias}).
  */
-const gatherCandidates = (conf: LoadedConfig): RegistryCandidate[] =>
-  Object.entries(conf.options.registries).map(([alias, url]) => ({
-    alias,
-    url,
-  }))
+const gatherCandidates = (
+  conf: LoadedConfig,
+): RegistryCandidate[] => {
+  const builtins = defaultRegistries as Record<string, string>
+  return Object.entries(conf.options.registries)
+    .filter(([alias, url]) => builtins[alias] !== url)
+    .map(([alias, url]) => ({ alias, url }))
+}
+
+/**
+ * Whether the current config provides a registry a `needsRegistry`
+ * command could act against without prompting for setup. True when an
+ * explicit `--registry` URL is set or the user has configured at least
+ * one non-default registry alias. Kept consistent with
+ * {@link resolveRegistry} so the pre-command gate never rejects a config
+ * the resolver would otherwise accept or prompt for.
+ */
+export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
+  !!conf.options.registry || gatherCandidates(conf).length > 0
 
 /**
  * Synchronous, non-interactive registry resolution used by

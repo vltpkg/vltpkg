@@ -224,22 +224,29 @@ t.test('outputCommand', async t => {
       needsRegistry: true,
     }
 
-    t.test('ECONFIG when no registry is configured', async t => {
-      errsPrinted.length = 0
-      const { exitCode = 0 } = process
-      const exits = t.capture(process, 'exit').args
-      t.teardown(() => {
-        if (t.passing()) process.exitCode = exitCode
-      })
-      await outputCommand(registryCommand, {
-        values: { view: 'json' },
-        options: {},
-      } as LoadedConfig)
-      t.strictSame(exits(), [[1]])
-      t.equal(process.exitCode, 1)
-      t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
-      t.match(String(errsPrinted[0]), /docs\.vlt\.sh\/cli/)
-    })
+    t.test(
+      'ECONFIG when only built-in defaults are configured',
+      async t => {
+        errsPrinted.length = 0
+        const { exitCode = 0 } = process
+        const exits = t.capture(process, 'exit').args
+        t.teardown(() => {
+          if (t.passing()) process.exitCode = exitCode
+        })
+        // a built-in default (gh) left at its default URL does not
+        // count as the user having configured a registry
+        await outputCommand(registryCommand, {
+          values: { view: 'json' },
+          options: {
+            registries: { gh: 'https://npm.pkg.github.com/' },
+          },
+        } as unknown as LoadedConfig)
+        t.strictSame(exits(), [[1]])
+        t.equal(process.exitCode, 1)
+        t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
+        t.match(String(errsPrinted[0]), /docs\.vlt\.sh\/cli/)
+      },
+    )
 
     t.test('--help is answered before the check', async t => {
       const logs = t.capture(console, 'log').args
@@ -273,6 +280,35 @@ t.test('outputCommand', async t => {
         t.strictSame(logs(), [['true']])
       },
     )
+
+    t.test(
+      'runs when only a non-default alias is configured',
+      async t => {
+        // the default alias (npm) is not configured, but a single
+        // user-configured alias is enough for resolveRegistry to pick
+        const logs = t.capture(console, 'log').args
+        await outputCommand(registryCommand, {
+          values: { view: 'json' },
+          options: {
+            'default-registry-alias': 'npm',
+            registries: { main: 'https://example.com/' },
+          },
+        } as unknown as LoadedConfig)
+        t.strictSame(logs(), [['true']])
+      },
+    )
+
+    t.test('runs when a built-in alias is overridden', async t => {
+      // gh overridden to a non-default URL counts as user-configured
+      const logs = t.capture(console, 'log').args
+      await outputCommand(registryCommand, {
+        values: { view: 'json' },
+        options: {
+          registries: { gh: 'https://custom.example.com/' },
+        },
+      } as unknown as LoadedConfig)
+      t.strictSame(logs(), [['true']])
+    })
   })
 
   t.test('view class success', async t => {
