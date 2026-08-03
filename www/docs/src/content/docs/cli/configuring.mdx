@@ -65,24 +65,26 @@ There is **no default**. A registry must be configured in `vlt.json`,
 with this flag, or via the `VLT_REGISTRY` environment variable.
 Commands that need a registry fail with a config error when none is
 set; [`vlt setup`](/cli/registries#getting-started-with-vlt-setup) or
-[`vlt login`](/cli/commands/login) will configure one for you.
-See [Registries](/cli/registries).
+[`vlt login`](/cli/commands/login) will configure one for you. See
+[Registries](/cli/registries).
 
 Bare specifiers (like `express@latest`) resolve through the
-`--default-registry-alias` (default `npm`) when this scalar is not set.
+`--default-registry-alias` (default `npm`) when this scalar is not
+set.
 
 ### `--default-registry-alias=<name>`
 
 The name of the entry in `--registries` that **bare specifiers** — and
-transitive dependencies without an explicit registry protocol — resolve
-through, when neither a `scoped-registries` entry nor the `--registry`
-scalar applies. Precedence is `scoped-registries` > `--registry` >
-`registries[<default-registry-alias>]`.
+transitive dependencies without an explicit registry protocol —
+resolve through, when neither a `scoped-registries` entry nor the
+`--registry` scalar applies. Precedence is `scoped-registries` >
+`--registry` > `registries[<default-registry-alias>]`.
 
 Defaults to `npm`. The `npm` alias itself has **no built-in URL** — it
 must be configured (for example via
 [`vlt setup`](/cli/registries#getting-started-with-vlt-setup)),
-otherwise bare specs cannot resolve. See [Registries](/cli/registries).
+otherwise bare specs cannot resolve. See
+[Registries](/cli/registries).
 
 ### `--registries=<name=url>`
 
