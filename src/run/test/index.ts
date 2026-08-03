@@ -2,7 +2,12 @@ import { promiseSpawn } from '@vltpkg/promise-spawn'
 import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { exec, isRunResult, run } from '../src/index.ts'
+import {
+  exec,
+  isRunResult,
+  npmConfigUserAgent,
+  run,
+} from '../src/index.ts'
 import * as nodeGypUtils from '../src/node-gyp.ts'
 
 const isPosix = process.platform !== 'win32'
@@ -99,6 +104,7 @@ t.test('run', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'bg',
           npm_lifecycle_script: command,
@@ -107,6 +113,25 @@ t.test('run', async t => {
       },
       stderr: '',
     })
+  })
+
+  t.test('npm_config_user_agent format', async t => {
+    t.match(
+      npmConfigUserAgent,
+      /^vlt\/\d+\.\d+\.\d+ node\/v\d+\.\d+\.\d+ \w+ \w+$/,
+      'npm_config_user_agent matches expected format',
+    )
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'run', cwd, projectRoot, 'bg'],
+      { env: { NODE_OPTIONS } },
+    )
+    const parsed = JSON.parse(result.stdout)
+    t.equal(
+      parsed.stdout.env.npm_config_user_agent,
+      npmConfigUserAgent,
+      'npm_config_user_agent set in lifecycle script env',
+    )
   })
 
   t.test('fg', async t => {
@@ -125,6 +150,7 @@ t.test('run', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'fg',
           npm_lifecycle_script: command,
@@ -371,6 +397,7 @@ t.test('run', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'passprepost',
           npm_lifecycle_script: command,
@@ -747,6 +774,7 @@ t.test('runExec (run)', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'node-package-json-script',
           npm_lifecycle_script: node,
@@ -794,6 +822,7 @@ t.test('runExec (run)', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'node-package-json-script',
           npm_lifecycle_script: node,
@@ -824,6 +853,7 @@ t.test('runExec (run)', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'node-package-json-script',
           npm_lifecycle_script: node,
@@ -872,6 +902,7 @@ t.test('runExec (run)', async t => {
         cwd,
         projectRoot,
         env: {
+          npm_config_user_agent: npmConfigUserAgent,
           npm_package_json: resolve(cwd, 'package.json'),
 
           npm_lifecycle_event: 'node-package-json-script',
