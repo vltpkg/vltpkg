@@ -283,6 +283,34 @@ t.test('aggregateBySeverity', async t => {
     },
   )
 
+  t.test('ignores nodes with malformed or missing data', async t => {
+    const nodes = [
+      // fails isLeveledInsights: missing the "low" key
+      {
+        id: 'malformed-malware-id',
+        insights: {
+          malware: { critical: true, high: false, medium: false },
+        },
+      },
+      // fails isLeveledInsights: non-boolean value
+      {
+        id: 'malformed-severity-id',
+        insights: { severity: { ...leveled(), low: 'yes' } },
+      },
+      // fails isSquatInsights: missing the "medium" key
+      {
+        id: 'malformed-squat-id',
+        insights: { squat: { critical: true } },
+      },
+      // insights is null
+      { id: 'null-insights-id', insights: null },
+      // has insights, but no id
+      { insights: { malware: leveled({ critical: true }) } },
+    ]
+    const result = aggregateBySeverity(nodes, importers)
+    t.equal(result.total, 0)
+  })
+
   t.test(
     'accumulates alerts from multiple insight categories on one node',
     async t => {
