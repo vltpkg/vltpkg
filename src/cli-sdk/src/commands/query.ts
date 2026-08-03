@@ -17,7 +17,7 @@ import {
   aggregateBySeverity,
   isSecurityAuditSelector,
   nonEmptySeverityBuckets,
-  formatDirectTransitiveFooter,
+  formatDependencyBreakdown,
   formatSeverityHeading,
 } from '../audit-helpers.ts'
 import type {
@@ -164,7 +164,7 @@ export const views = {
             `  ${formatSeverityHeading(severity, pkgs.length, opts.colors)}`,
           )
         }
-        lines.push(formatDirectTransitiveFooter(summary))
+        lines.push(formatDependencyBreakdown(summary))
         output = lines.join('\n')
       }
     }

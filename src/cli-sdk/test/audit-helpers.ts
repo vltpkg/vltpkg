@@ -8,7 +8,8 @@ import {
   filterAuditResult,
   formatAuditSummary,
   nonEmptySeverityBuckets,
-  formatDirectTransitiveFooter,
+  formatDependencyBreakdown,
+  categoryCounts,
 } from '../src/audit-helpers.ts'
 import type {
   AuditPackage,
@@ -557,10 +558,48 @@ t.test('nonEmptySeverityBuckets', async t => {
   })
 })
 
-t.test('formatDirectTransitiveFooter', async t => {
+t.test('categoryCounts', async t => {
+  t.test(
+    'counts alerts by category across all severities',
+    async t => {
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          critical: [
+            makePkg({ name: 'a', alerts: ['malware: critical'] }),
+          ],
+          high: [
+            makePkg({
+              name: 'b',
+              alerts: ['severity: high', 'squat: high'],
+            }),
+          ],
+          moderate: [
+            makePkg({ name: 'c', alerts: ['squat: moderate'] }),
+          ],
+        },
+      })
+      t.strictSame(categoryCounts(result), {
+        malware: 1,
+        vulnerable: 1,
+        squat: 2,
+      })
+    },
+  )
+
+  t.test('returns all zeros for an empty result', async t => {
+    t.strictSame(categoryCounts(makeResult()), {
+      malware: 0,
+      vulnerable: 0,
+      squat: 0,
+    })
+  })
+})
+
+t.test('formatDependencyBreakdown', async t => {
   t.test('singularizes a single direct dependency', async t => {
     t.equal(
-      formatDirectTransitiveFooter(
+      formatDependencyBreakdown(
         makeResult({ directCount: 1, indirectCount: 0 }),
       ),
       '1 direct dependency, 0 transitive',
@@ -569,7 +608,7 @@ t.test('formatDirectTransitiveFooter', async t => {
 
   t.test('pluralizes multiple direct dependencies', async t => {
     t.equal(
-      formatDirectTransitiveFooter(
+      formatDependencyBreakdown(
         makeResult({ directCount: 2, indirectCount: 3 }),
       ),
       '2 direct dependencies, 3 transitive',
@@ -603,10 +642,15 @@ t.test('formatAuditSummary', async t => {
     })
     const output = formatAuditSummary(result)
     t.match(output, /^1 package with security issues\n/)
-    t.match(output, /high \(1\)/)
-    t.match(output, /pkg-a@1\.0\.0/)
-    t.match(output, /malware: high/)
+    t.match(output, /^1 malware$/m)
+    t.match(output, /^1 high$/m)
+    t.match(output, /high\s+pkg-a@1\.0\.0\s+malware: high/)
     t.match(output, /1 direct dependency, 0 transitive/)
+    t.ok(
+      output.indexOf('1 direct dependency') <
+        output.indexOf('pkg-a@1.0.0'),
+      'direct/transitive breakdown renders before the rows',
+    )
   })
 
   t.test(
@@ -636,12 +680,14 @@ t.test('formatAuditSummary', async t => {
       })
       const output = formatAuditSummary(result)
       t.match(output, /^2 packages with security issues\n/)
-      t.match(output, /critical \(1\)/)
-      t.match(output, /high \(1\)/)
+      t.match(output, /^1 malware, 1 vulnerable$/m)
+      t.match(output, /^1 critical, 1 high$/m)
+      t.match(output, /critical\s+pkg-c@2\.0\.0\s+malware: critical/)
+      t.match(output, /high\s+pkg-h@1\.0\.0\s+severity: high/)
       t.match(output, /1 direct dependency, 1 transitive/)
       t.ok(
-        output.indexOf('critical (1)') < output.indexOf('high (1)'),
-        'critical section renders before high section',
+        output.indexOf('pkg-c@2.0.0') < output.indexOf('pkg-h@1.0.0'),
+        'critical row renders before high row',
       )
     },
   )
