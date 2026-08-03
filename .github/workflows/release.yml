@@ -75,6 +75,20 @@ jobs:
       # once vlt version supports --no-git-tag-version (see: https://github.com/vltpkg/vltpkg/issues/1514)
       - name: Version CLI Packages
         run: |
+          release_version=""
+          if [[ -f .release-version ]]; then
+            release_version="$(< .release-version)"
+            if ! node --eval "
+              const value = process.argv[1];
+              if (require('semver').valid(value) !== value) process.exit(1);
+            " "$release_version"; then
+              echo "Invalid version in .release-version: $release_version" >&2
+              exit 1
+            fi
+            echo "Using exact version from .release-version: $release_version"
+            rm .release-version
+          fi
+
           bump_prerelease() {
             local current="$1"
             node --eval "
@@ -97,7 +111,18 @@ jobs:
           }
           for pkg in ./infra/cli*/package.json; do
             current=$(jq -r .version "$pkg")
-            new_version=$(bump_prerelease "$current")
+            if [[ -n "$release_version" ]]; then
+              if ! node --eval "
+                const semver = require('semver');
+                if (!semver.gt(process.argv[1], process.argv[2])) process.exit(1);
+              " "$release_version" "$current"; then
+                echo ".release-version must be greater than $current: $release_version" >&2
+                exit 1
+              fi
+              new_version="$release_version"
+            else
+              new_version=$(bump_prerelease "$current")
+            fi
             jq --arg v "$new_version" '.version = $v' "$pkg" > "$pkg.tmp" && mv "$pkg.tmp" "$pkg"
           done
 
