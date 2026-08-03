@@ -227,7 +227,7 @@ t.test('command', async t => {
     // Mock a failure response - need to URL encode the scoped package name
     mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
       statusCode: 403,
-      text: 'Forbidden',
+      text: JSON.stringify({ error: 'Publishing is not allowed' }),
     })
 
     const config = makeTestConfig({
@@ -239,7 +239,10 @@ t.test('command', async t => {
       positionals: ['publish'],
     })
 
-    await t.rejects(command(config), /Failed to publish package/)
+    await t.rejects(
+      command(config),
+      /Failed to publish package: 403 Forbidden — Publishing is not allowed/,
+    )
   })
 
   t.test('handles 404 errors with special message', async t => {

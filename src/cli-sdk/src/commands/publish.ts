@@ -21,6 +21,7 @@ import type { LoadedConfig } from '../config/index.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { minimatch } from 'minimatch'
 import { resolveRegistry } from '../require-registry.ts'
+import { registryErrorMessage } from '../registry-error-message.ts'
 
 export const needsRegistry = true
 
@@ -353,17 +354,20 @@ const commandSingle = async (
     }
 
     if (response.statusCode !== 200 && response.statusCode !== 201) {
-      let extraMsg = ''
+      let advice = ''
       if (response.statusCode === 409) {
-        extraMsg = `.\n⚠️ ${name}@${version} already exists in the registry. Bump the version and try again.`
+        advice = `\n⚠️ ${name}@${version} already exists in the registry. Bump the version and try again.`
       } else if (response.statusCode === 404) {
-        extraMsg =
-          ".\n⚠️ Make sure you're logged in and have access to publish the package."
+        advice =
+          "\n⚠️ Make sure you're logged in and have access to publish the package."
       }
-      throw error(`Failed to publish package${extraMsg}`, {
-        url: publishUrl,
-        response,
-      })
+      throw error(
+        `Failed to publish package: ${registryErrorMessage(response)}${advice}`,
+        {
+          url: publishUrl,
+          response,
+        },
+      )
     }
   }
 
