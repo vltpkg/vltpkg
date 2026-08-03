@@ -67,7 +67,7 @@ export const isNodeWithId = (
   typeof o === 'object' &&
   o !== null &&
   'id' in o &&
-  typeof (o).id === 'string'
+  typeof o.id === 'string'
 
 /**
  * Typeguard for objects with an id and insights property.

@@ -79,19 +79,40 @@ t.test('aggregateBySeverity', async t => {
         id: 'pkg-critical-id',
         name: 'pkg-critical',
         version: '1.0.0',
-        insights: { malware: { critical: true, high: false, medium: false, low: false } },
+        insights: {
+          malware: {
+            critical: true,
+            high: false,
+            medium: false,
+            low: false,
+          },
+        },
       },
       {
         id: 'pkg-high-id',
         name: 'pkg-high',
         version: '2.0.0',
-        insights: { malware: { critical: false, high: true, medium: false, low: false } },
+        insights: {
+          malware: {
+            critical: false,
+            high: true,
+            medium: false,
+            low: false,
+          },
+        },
       },
       {
         id: 'pkg-low-id',
         name: 'pkg-low',
         version: '3.0.0',
-        insights: { severity: { critical: false, high: false, medium: false, low: true } },
+        insights: {
+          severity: {
+            critical: false,
+            high: false,
+            medium: false,
+            low: true,
+          },
+        },
       },
     ]
     const result = aggregateBySeverity(nodes, importers)
@@ -106,13 +127,27 @@ t.test('aggregateBySeverity', async t => {
       id: 'importer-1',
       name: 'direct-pkg',
       version: '1.0.0',
-      insights: { malware: { critical: false, high: true, medium: false, low: false } },
+      insights: {
+        malware: {
+          critical: false,
+          high: true,
+          medium: false,
+          low: false,
+        },
+      },
     }
     const transitiveNode = {
       id: 'other-id',
       name: 'transitive-pkg',
       version: '2.0.0',
-      insights: { malware: { critical: false, high: true, medium: false, low: false } },
+      insights: {
+        malware: {
+          critical: false,
+          high: true,
+          medium: false,
+          low: false,
+        },
+      },
     }
     const result = aggregateBySeverity(
       [directNode, transitiveNode],
@@ -162,12 +197,18 @@ t.test('filterAuditResult', async t => {
   t.test('filters out severities below minimum', async t => {
     const result = {
       summary: {
-        critical: [{ name: 'a', version: '1.0.0', alerts: [], direct: true }],
-        high: [{ name: 'b', version: '1.0.0', alerts: [], direct: false }],
+        critical: [
+          { name: 'a', version: '1.0.0', alerts: [], direct: true },
+        ],
+        high: [
+          { name: 'b', version: '1.0.0', alerts: [], direct: false },
+        ],
         moderate: [
           { name: 'c', version: '1.0.0', alerts: [], direct: true },
         ],
-        low: [{ name: 'd', version: '1.0.0', alerts: [], direct: false }],
+        low: [
+          { name: 'd', version: '1.0.0', alerts: [], direct: false },
+        ],
       },
       total: 4,
       directCount: 2,

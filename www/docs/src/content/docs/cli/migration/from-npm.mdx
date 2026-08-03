@@ -60,29 +60,29 @@ registry into your project's `vlt.json` on success. See
 
 ## Command Mapping
 
-| npm                            | vlt                                     | Notes                                        |
-| ------------------------------ | --------------------------------------- | -------------------------------------------- |
-| `npm install`                  | `vlt install`                           | Does **not** run lifecycle scripts           |
-| `npm install <pkg>`            | `vlt install <pkg>`                     | Same behavior                                |
-| `npm install -D <pkg>`         | `vlt install -D <pkg>`                  | Same flags                                   |
-| `npm uninstall <pkg>`          | `vlt uninstall <pkg>`                   | Aliases: `rm`, `u`                           |
-| `npm run <script>`             | `vlt run <script>`                      | Aliases: `r`, `run-script`                   |
-| `npm test`                     | `vlt run test`                          | No `vlt test` shorthand                      |
-| `npm start`                    | `vlt run start`                         | No `vlt start` shorthand                     |
-| `npx <pkg>`                    | `vlx <pkg>`                             | Run remote packages                          |
-| `npm exec <cmd>`               | `vlt exec <cmd>`                        | Local bins on PATH                           |
-| `npm init`                     | `vlt init`                              | Creates `package.json`                       |
-| `npm pack`                     | `vlt pack`                              |                                              |
-| `npm publish`                  | `vlt publish`                           |                                              |
-| `npm login`                    | `vlt login`                             |                                              |
-| `npm whoami`                   | `vlt whoami`                            |                                              |
-| `npm ls`                       | `vlt list`                              | Alias: `ls`                                  |
-| `npm query`                    | `vlt query`                             | Uses DSS, not CSS selectors                  |
-| `npm ci`                       | `vlt install --expect-lockfile`         | Strict lockfile mode                         |
-| `npm install --ignore-scripts` | `vlt install`                           | Default behavior                             |
-| `npm audit`                    | `vlt audit`                            | Security audit with severity filtering     |
-| `npm config set <key>=<val>`   | `vlt config set <key>=<val>`            | Writes to `vlt.json`                         |
-| `npm overrides`                | [Graph Modifiers](/cli/graph-modifiers) | DSS-based, more precise                      |
+| npm                            | vlt                                     | Notes                                  |
+| ------------------------------ | --------------------------------------- | -------------------------------------- |
+| `npm install`                  | `vlt install`                           | Does **not** run lifecycle scripts     |
+| `npm install <pkg>`            | `vlt install <pkg>`                     | Same behavior                          |
+| `npm install -D <pkg>`         | `vlt install -D <pkg>`                  | Same flags                             |
+| `npm uninstall <pkg>`          | `vlt uninstall <pkg>`                   | Aliases: `rm`, `u`                     |
+| `npm run <script>`             | `vlt run <script>`                      | Aliases: `r`, `run-script`             |
+| `npm test`                     | `vlt run test`                          | No `vlt test` shorthand                |
+| `npm start`                    | `vlt run start`                         | No `vlt start` shorthand               |
+| `npx <pkg>`                    | `vlx <pkg>`                             | Run remote packages                    |
+| `npm exec <cmd>`               | `vlt exec <cmd>`                        | Local bins on PATH                     |
+| `npm init`                     | `vlt init`                              | Creates `package.json`                 |
+| `npm pack`                     | `vlt pack`                              |                                        |
+| `npm publish`                  | `vlt publish`                           |                                        |
+| `npm login`                    | `vlt login`                             |                                        |
+| `npm whoami`                   | `vlt whoami`                            |                                        |
+| `npm ls`                       | `vlt list`                              | Alias: `ls`                            |
+| `npm query`                    | `vlt query`                             | Uses DSS, not CSS selectors            |
+| `npm ci`                       | `vlt install --expect-lockfile`         | Strict lockfile mode                   |
+| `npm install --ignore-scripts` | `vlt install`                           | Default behavior                       |
+| `npm audit`                    | `vlt audit`                             | Security audit with severity filtering |
+| `npm config set <key>=<val>`   | `vlt config set <key>=<val>`            | Writes to `vlt.json`                   |
+| `npm overrides`                | [Graph Modifiers](/cli/graph-modifiers) | DSS-based, more precise                |
 
 ---
 

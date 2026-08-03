@@ -76,8 +76,7 @@ const runCommand = async (
   const res = await cmd.command(config)
   const output =
     values.view === 'silent' ? undefined
-    : values.view === 'human' ?
-      cmd.views.human(res)
+    : values.view === 'human' ? cmd.views.human(res)
     : values.view === 'count' ? cmd.views.count(res)
     : cmd.views.json(res)
   return values.view === 'json' ?
