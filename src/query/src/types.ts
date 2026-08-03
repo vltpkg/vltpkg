@@ -109,7 +109,7 @@ export type Insights = {
   eval?: boolean
   fs?: boolean
   license?: LicenseInsights
-  malware?: MalwareInsights
+  malware?: boolean
   minified?: boolean
   native?: boolean
   network?: boolean
@@ -118,6 +118,7 @@ export type Insights = {
   score?: PackageScore
   scripts?: boolean
   severity?: SeverityInsights
+  vuln?: VulnInsights
   shell?: boolean
   shrinkwrap?: boolean
   squat?: SquatInsights
@@ -149,8 +150,8 @@ export type LeveledInsights = {
   critical: boolean
 }
 
-export type MalwareInsights = LeveledInsights
 export type SeverityInsights = LeveledInsights
+export type VulnInsights = LeveledInsights
 
 export type SquatInsights = {
   medium: boolean

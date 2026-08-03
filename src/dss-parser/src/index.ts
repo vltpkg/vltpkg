@@ -30,12 +30,13 @@ export const unescapeDots = (query: string): string =>
 const pseudoCleanUpNeeded = new Set([
   ':published',
   ':score',
-  ':malware',
   ':severity',
   ':sev',
   ':squat',
   ':semver',
   ':v',
+  ':vuln',
+  ':vulnerable',
 ])
 
 const hasParamsToEscape = (node: Pseudo) =>
