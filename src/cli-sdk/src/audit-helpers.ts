@@ -402,17 +402,19 @@ export const formatAuditSummary = (
   { colors }: { colors?: boolean } = {},
 ): string => {
   if (result.total === 0) {
-    return 'found 0 security issues\n'
+    return '0 packages with security issues\n'
   }
 
   const lines: string[] = []
   lines.push(
-    `found ${result.total} security issue${result.total === 1 ? '' : 's'}`,
+    `${result.total} package${result.total === 1 ? '' : 's'} with security issues`,
   )
   lines.push('')
 
   for (const { severity, pkgs } of nonEmptySeverityBuckets(result)) {
-    lines.push(`  ${formatSeverityHeading(severity, pkgs.length, colors)}`)
+    lines.push(
+      `  ${formatSeverityHeading(severity, pkgs.length, colors)}`,
+    )
     for (const pkg of pkgs) {
       lines.push(`    ${pkg.name}@${pkg.version}`)
       for (const alert of pkg.alerts) {

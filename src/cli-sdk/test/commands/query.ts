@@ -1186,7 +1186,7 @@ t.test('query', async t => {
     )
     t.match(
       malwareSingle,
-      /1 security issue found/,
+      /1 package with security issues found/,
       'a genuine security selector triggers the footer, singular wording for one issue',
     )
     t.match(malwareSingle, /critical \(1\)/)
@@ -1204,7 +1204,7 @@ t.test('query', async t => {
     )
     t.match(
       malwareMultiple,
-      /2 security issues found/,
+      /2 packages with security issues found/,
       'plural wording for more than one issue',
     )
     t.match(malwareMultiple, /critical \(2\)/)

@@ -101,7 +101,7 @@ t.test('audit', async t => {
       values: { view: 'human' },
       options,
     })
-    t.match(result, /found 0 security issues/)
+    t.match(result, /0 packages with security issues/)
   })
 
   t.test('json view returns AuditResult structure', async t => {
