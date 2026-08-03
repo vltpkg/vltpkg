@@ -1925,6 +1925,17 @@ t.test(
   },
 )
 
+t.test('fullPackument bypasses coalescing', async t => {
+  const pi = new PackageInfoClient(options)
+
+  // A fullPackument request should not be coalesced with
+  // abbreviated requests and should return the full document.
+  const paku = await pi.packument('abbrev', {
+    fullPackument: true,
+  })
+  t.strictSame(paku, pakuAbbrev, 'full packument matches')
+})
+
 t.test('no registry configured', async t => {
   // there is no default registry -- both places that build a registry
   // URL throw ECONFIG rather than a bare `Invalid URL` TypeError
