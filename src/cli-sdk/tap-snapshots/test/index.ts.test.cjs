@@ -63,6 +63,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --help
     --identity=<name>
     --if-present
+    --interactive
     --jsr-registries=<name=url>
     --libc=<libc>
     --lockfile-only
@@ -90,6 +91,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --tag=<tag>
     --target=<query>
     --telemetry
+    --update
     --verbose
     --version
     --view=<output>
@@ -133,6 +135,7 @@ Unknown config option: asdf
     help
     identity
     if-present
+    interactive
     jsr-registries
     libc
     lockfile-only
@@ -160,6 +163,7 @@ Unknown config option: asdf
     tag
     target
     telemetry
+    update
     verbose
     version
     view

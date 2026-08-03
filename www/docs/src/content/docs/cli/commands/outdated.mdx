@@ -1,0 +1,147 @@
+---
+title: vlt outdated
+sidebar:
+  label: outdated
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt outdated
+$ vlt outdated [package-names...]
+$ vlt outdated <query>
+$ vlt outdated --update
+$ vlt outdated --interactive"
+  title="Terminal"
+  lang="bash"
+/>
+
+Display a table of installed dependencies that have newer versions
+available in the registry.
+
+Under the hood this uses the vlt Dependency Selector Syntax (the same
+engine that powers [`vlt query`](/cli/commands/query)) with the
+`:outdated` pseudo-selector. A registry request is made for each
+candidate package to determine the **wanted** (highest version matching
+the declared range) and **latest** (the `latest` dist-tag) versions.
+
+Provide package names as positional arguments to limit the report to
+those packages, or pass a DSS query selector to scope the report to an
+arbitrary subset of the dependency graph. By default every dependency of
+the project and its workspaces is checked.
+
+The report highlights the part of each version that changed: **major**
+bumps are shown in red, **minor** in cyan, and **patch** in green.
+
+## Updating
+
+Pass `--update` (`-u`) to upgrade the outdated **direct** dependencies to
+their latest versions. vlt writes the new ranges to `package.json`
+(preserving your existing range operator, e.g. `^` or `~`) and installs
+the updated packages.
+
+<Code code="$ vlt outdated --update" title="Terminal" lang="bash" />
+
+Only direct dependencies declared in a `package.json` can be updated —
+transitive dependencies are reported but never modified.
+
+### Interactive mode
+
+Pass `--interactive` to choose exactly which outdated dependencies to
+update from a prompt before anything is written. Enter a comma-separated
+list of numbers, `all`, or `none`.
+
+<Code
+  code="$ vlt outdated --interactive"
+  title="Terminal"
+  lang="bash"
+/>
+
+### Previewing changes
+
+Combine either flag with `--dry-run` to preview the planned upgrades
+without touching `package.json` or `node_modules`.
+
+<Code
+  code="$ vlt outdated --update --dry-run"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Examples
+
+Show all outdated dependencies
+
+<Code code="$ vlt outdated" title="Terminal" lang="bash" />
+
+Only check the `foo` and `bar` packages
+
+<Code code="$ vlt outdated foo bar" title="Terminal" lang="bash" />
+
+Only check direct dependencies of the project root
+
+<Code
+  code={`$ vlt outdated ':root > *'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Upgrade every outdated direct dependency to its latest version
+
+<Code code="$ vlt outdated --update" title="Terminal" lang="bash" />
+
+Interactively choose which dependencies to update
+
+<Code
+  code="$ vlt outdated --interactive"
+  title="Terminal"
+  lang="bash"
+/>
+
+Output the results as JSON
+
+<Code
+  code="$ vlt outdated --view=json"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Options
+
+### update
+
+Upgrade outdated direct dependencies to their latest versions, writing
+the new ranges to `package.json` and installing them.
+
+```
+--update
+-u
+```
+
+### interactive
+
+Interactively pick which outdated dependencies to update before applying
+the changes. Implies `--update`.
+
+```
+--interactive
+```
+
+### dry-run
+
+With `--update` or `--interactive`, preview the changes without applying
+them.
+
+```
+--dry-run
+```
+
+### view
+
+Output format. Defaults to human-readable or json if no tty.
+
+```
+--view=[human | json]
+```

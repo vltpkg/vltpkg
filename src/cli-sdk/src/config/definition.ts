@@ -725,6 +725,20 @@ export const definition = j
     },
   })
 
+  .flag({
+    update: {
+      short: 'u',
+      description: `When running \`vlt outdated\`, update outdated direct
+                    dependencies to their latest versions, writing the new
+                    ranges to package.json and installing them.`,
+    },
+    interactive: {
+      description: `When running \`vlt outdated\`, interactively choose which
+                    outdated dependencies to update before applying the
+                    changes. Implies \`--update\`.`,
+    },
+  })
+
   .opt({
     'expect-results': {
       hint: 'value',

@@ -334,6 +334,10 @@ Object {
     ),
     "type": "boolean",
   },
+  "interactive": Object {
+    "description": "When running \`vlt outdated\`, interactively choose which outdated dependencies to update before applying the changes. Implies \`--update\`.",
+    "type": "boolean",
+  },
   "jsr-registries": Object {
     "description": String(
       Map alias names to JSR.io registry urls.
@@ -545,6 +549,11 @@ Object {
     ),
     "type": "boolean",
   },
+  "update": Object {
+    "description": "When running \`vlt outdated\`, update outdated direct dependencies to their latest versions, writing the new ranges to package.json and installing them.",
+    "short": "u",
+    "type": "boolean",
+  },
   "verbose": Object {
     "description": "Shorthand for \`--loglevel=verbose\`. Streams each registry request to stderr with its cache/fetch outcome and status code, useful for debugging request behavior.",
     "type": "boolean",
@@ -641,6 +650,7 @@ Array [
   "--help",
   "--identity=<name>",
   "--if-present",
+  "--interactive",
   "--jsr-registries=<name=url>",
   "--libc=<libc>",
   "--lockfile-only",
@@ -668,6 +678,7 @@ Array [
   "--tag=<tag>",
   "--target=<query>",
   "--telemetry",
+  "--update",
   "--verbose",
   "--version",
   "--view=<output>",
@@ -708,6 +719,7 @@ Array [
   "help",
   "identity",
   "if-present",
+  "interactive",
   "jsr-registries",
   "libc",
   "lockfile-only",
@@ -735,6 +747,7 @@ Array [
   "tag",
   "target",
   "telemetry",
+  "update",
   "verbose",
   "version",
   "view",
