@@ -7756,6 +7756,7 @@ Object {
     "jsr": "https://npm.jsr.io/",
   },
   "registry": undefined,
+  "default-registry-alias": "npm",
   "scoped-registries": Object {},
   "git-hosts": Object {
     "github": "git+ssh://git@github.com:$1/$2.git",
@@ -7764,7 +7765,6 @@ Object {
     "gist": "git+ssh://git@gist.github.com/$1.git",
   },
   "registries": Object {
-    "npm": "https://registry.npmjs.org/",
     "gh": "https://npm.pkg.github.com/",
   },
   "git-host-archives": Object {

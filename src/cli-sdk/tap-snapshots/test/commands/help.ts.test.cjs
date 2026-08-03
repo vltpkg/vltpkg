@@ -44,9 +44,12 @@ pub,     publish                     Publish package to registry
 
 q,       query       <selector>      Query for packages in the project
 
+         registry    <alias> <comm...Run an account command against a named registry
          repo        [<spec>]        Open the repository page for a package
 r,       run         <script>        Run a script defined in package.json
 rx,      run-exec    <script>        Run a script &/or fallback to executing a binary
+
+         setup       [<account>]     Configure your vlt.io account registries
 
          token       [add|rm]        Manage authentication tokens
 
@@ -88,6 +91,7 @@ USAGE
 
 COMMON COMMANDS
 
+       setup     [<account>]     Configure your vlt.io account registries
        init                      Initialize a new project
   i,   install   [<package>...]  Install dependencies
   q,   query     <selector>      Query for packages in the project
@@ -96,6 +100,7 @@ COMMON COMMANDS
   x,   exec      <executable>    Execute a package bin
   p,   pkg       <command>       Manage package metadata
   pub, publish                   Publish package to registry
+       registry  <alias> <command>Run an account command against a named registry
  
 COMPANION BINS
 

@@ -1,4 +1,6 @@
 import { error } from '@vltpkg/error-cause'
+import { selectRegistry } from './select-registry.ts'
+import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
 
 /**
@@ -7,20 +9,125 @@ import type { LoadedConfig } from './config/index.ts'
  */
 export const missingRegistryError = (): Error =>
   error(
-    `Missing registry configuration. Run 'vlt login --registry=<url>', ` +
-      `set "registry" in vlt.json, or pass --registry. ` +
-      `See https://docs.vlt.sh/cli`,
+    [
+      'Missing registry configuration.',
+      '',
+      'vlt has no default registry. Run `vlt setup` to get configured.',
+      '',
+      'See https://docs.vlt.sh/cli for other ways to set a registry.',
+    ].join('\n'),
     { code: 'ECONFIG' },
   )
 
 /**
- * Read `conf.options.registry`, throwing the `ECONFIG` error if it is
- * not set. Commands marked `needsRegistry` are already checked in
- * `outputCommand()`, but this keeps the invariant honest for TypeScript
- * and for programmatic callers.
+ * Multiple registries are configured and none was selected. Used in
+ * non-interactive contexts where we cannot prompt and there is no
+ * `default-registry-alias` to fall back to.
  */
-export const requireRegistry = (conf: LoadedConfig): string => {
+export const ambiguousRegistryError = (
+  candidates: RegistryCandidate[],
+): Error =>
+  error(
+    [
+      'Multiple registries are configured; specify which one to use.',
+      '',
+      'Run `vlt registry <alias> <command>` with one of:',
+      ...candidates.map(c => `  ${c.alias} -> ${c.url}`),
+    ].join('\n'),
+    {
+      code: 'ECONFIG',
+      validOptions: candidates.map(c => c.alias),
+    },
+  )
+
+/**
+ * Resolve a named registry alias to its URL, throwing an `ECONFIG`
+ * error (listing the known aliases) when the alias is not configured.
+ */
+export const resolveRegistryAlias = (
+  conf: LoadedConfig,
+  alias: string,
+): string => {
+  const url = conf.options.registries[alias]
+  if (!url) {
+    throw error(`Unknown registry alias: ${alias}`, {
+      code: 'ECONFIG',
+      found: alias,
+      validOptions: Object.keys(conf.options.registries),
+    })
+  }
+  return url
+}
+
+/**
+ * The configured registries the user could act against, when no
+ * explicit `--registry` URL is set. Order follows the `registries`
+ * config (which preserves insertion order).
+ */
+const gatherCandidates = (conf: LoadedConfig): RegistryCandidate[] =>
+  Object.entries(conf.options.registries).map(([alias, url]) => ({
+    alias,
+    url,
+  }))
+
+/**
+ * Synchronous, non-interactive registry resolution used by
+ * programmatic callers. Precedence: explicit alias > `--registry`
+ * scalar > single configured alias > `default-registry-alias`. Throws
+ * when nothing is configured or the choice is ambiguous.
+ */
+export const requireRegistry = (
+  conf: LoadedConfig,
+  alias?: string,
+): string => {
+  if (alias !== undefined) return resolveRegistryAlias(conf, alias)
   const { registry } = conf.options
-  if (!registry) throw missingRegistryError()
-  return registry
+  if (registry) return registry
+  const candidates = gatherCandidates(conf)
+  const [first, second] = candidates
+  if (!first) throw missingRegistryError()
+  if (!second) return first.url
+  const defaultUrl =
+    conf.options.registries[conf.options['default-registry-alias']]
+  if (defaultUrl) return defaultUrl
+  throw ambiguousRegistryError(candidates)
+}
+
+/**
+ * Resolve the registry a command should act against.
+ *
+ * Precedence: explicit `alias` (from `vlt registry <alias> <cmd>`) >
+ * `--registry` URL scalar > the single configured alias. When multiple
+ * aliases are configured and none was chosen, prompt interactively on a
+ * TTY, otherwise fall back to `default-registry-alias`, else error.
+ */
+export const resolveRegistry = async (
+  conf: LoadedConfig,
+  {
+    alias,
+    interactive = process.stdin.isTTY,
+    input,
+    output,
+  }: {
+    alias?: string
+    interactive?: boolean
+    input?: NodeJS.ReadableStream
+    output?: NodeJS.WritableStream
+  } = {},
+): Promise<string> => {
+  if (alias !== undefined) return resolveRegistryAlias(conf, alias)
+  const { registry } = conf.options
+  if (registry) return registry
+  const candidates = gatherCandidates(conf)
+  const [first, second] = candidates
+  if (!first) throw missingRegistryError()
+  if (!second) return first.url
+
+  const defaultAlias = conf.options['default-registry-alias']
+  if (interactive) {
+    return selectRegistry(candidates, { defaultAlias, input, output })
+  }
+  const defaultUrl = conf.options.registries[defaultAlias]
+  if (defaultUrl) return defaultUrl
+  throw ambiguousRegistryError(candidates)
 }

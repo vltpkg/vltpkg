@@ -43,12 +43,14 @@ Object {
   "q": "query",
   "query": "query",
   "r": "run",
+  "registry": "registry",
   "repo": "repo",
   "rm": "uninstall",
   "run": "run",
   "run-exec": "run-exec",
   "run-script": "run",
   "rx": "run-exec",
+  "setup": "setup",
   "show": "view",
   "token": "token",
   "u": "update",
@@ -140,6 +142,15 @@ Object {
     "multiple": true,
     "type": "string",
   },
+  "default-registry-alias": Object {
+    "description": String(
+      The name of the registry alias (a key in \`--registries\`) that bare specifiers (e.g. \`express@latest\`) and transitive dependencies without an explicit registry protocol resolve through, when neither \`--registry\` nor a matching \`--scoped-registries\` entry applies.
+      
+      Defaults to \`npm\`. Note that the \`npm\` alias has **no** built-in URL -- it must be configured (for example via \`vlt setup\`, which points it at your vlt.io registry), otherwise bare specifiers will have no registry to resolve against.
+    ),
+    "hint": "name",
+    "type": "string",
+  },
   "dry-run": Object {
     "description": "Run command without making any changes",
     "type": "boolean",
@@ -209,9 +220,11 @@ Object {
       "profile",
       "publish",
       "query",
+      "registry",
       "repo",
       "run-exec",
       "run",
+      "setup",
       "token",
       "uninstall",
       "unpublish",
@@ -380,7 +393,7 @@ Object {
   },
   "registries": Object {
     "description": String(
-      Specify named registry hosts by their prefix. To set the default registry used for non-namespaced specifiers, use the \`--registry\` option.
+      Specify named registry hosts by their prefix. To choose which alias is used for non-namespaced specifiers, use the \`--default-registry-alias\` option.
       
       Prefixes can be used as a package alias. For example:
       
@@ -388,7 +401,7 @@ Object {
       ​vlt --registries loc=http://reg.local install foo@loc:foo@1.x
       \`\`\`
       
-      By default, the public npm registry is registered to the \`npm:\` prefix. It is not recommended to change this mapping in most cases.
+      There is **no** built-in \`npm\` registry URL; the \`npm\` alias must be configured (e.g. via \`vlt setup\`) before it can be used. The \`gh\` and \`jsr\` aliases have built-in defaults that can be overridden here.
     ),
     "hint": "name=url",
     "multiple": true,
@@ -400,9 +413,7 @@ Object {
       
       For example, \`express@latest\` will be resolved by looking up the metadata from this registry.
       
-      There is **no default**. A registry must be configured in \`vlt.json\`, with this flag, or via the \`VLT_REGISTRY\` environment variable. Commands that need a registry fail with a config error when none is set; \`vlt login\` will configure one for you.
-      
-      Note that alias specifiers starting with \`npm:\` will still map to \`https://registry.npmjs.org/\`, unless a new mapping is created via the \`--registries\` option.
+      There is **no default**. When unset, bare specifiers fall back to the registry alias named by \`--default-registry-alias\` (\`npm\` by default). If that alias is also unconfigured, commands that need a registry fail with a config error. Run \`vlt setup\` (or \`vlt login\`) to configure one.
       
       See https://docs.vlt.sh/cli
     ),
@@ -577,6 +588,7 @@ Array [
   "--color",
   "--config=<all | user | project>",
   "--dashboard-root=<path>",
+  "--default-registry-alias=<name>",
   "--dry-run",
   "--editor=<program>",
   "--expect-lockfile",
@@ -641,6 +653,7 @@ Array [
   "color",
   "config",
   "dashboard-root",
+  "default-registry-alias",
   "dry-run",
   "editor",
   "expect-lockfile",

@@ -50,6 +50,10 @@ const createMockPackageInfo = (
 
 const mockPackageInfo = createMockPackageInfo()
 
+// the `npm` alias is no longer a built-in default; configure it so bare
+// specs resolve and default-registry DepIDs canonicalize to `~npm~...`.
+const registries = { npm: 'https://registry.npmjs.org/' }
+
 t.test('super basic reification', async t => {
   const dir = t.testdir({
     cache: {},
@@ -72,6 +76,7 @@ t.test('super basic reification', async t => {
     projectRoot,
     registry: 'https://registry.npmjs.org/',
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
@@ -81,6 +86,7 @@ t.test('super basic reification', async t => {
     projectRoot,
     registry: 'https://registry.npmjs.org/',
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -103,7 +109,10 @@ t.test('super basic reification', async t => {
 
   const expectLockfileData: LockfileData = {
     lockfileVersion: 1,
-    options: { registry: 'https://registry.npmjs.org/' },
+    options: {
+      registry: 'https://registry.npmjs.org/',
+      registries: { npm: 'https://registry.npmjs.org/' },
+    },
     nodes: {
       [joinDepIDTuple(['registry', '', 'lodash@4.17.21'])]: [
         0,
@@ -170,6 +179,7 @@ t.test('super basic reification', async t => {
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -216,6 +226,7 @@ t.test('super basic reification', async t => {
     add,
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
@@ -241,6 +252,7 @@ t.test('super basic reification', async t => {
     remove,
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
@@ -281,11 +293,13 @@ t.test('reify with a bin', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
+    registries,
     remover: new RollbackRemove(),
   })
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     graph,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
@@ -330,6 +344,7 @@ t.test('failure rolls back', async t => {
   const graph = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -348,6 +363,7 @@ t.test('failure rolls back', async t => {
     reify({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       graph,
       allowScripts: '*',
       packageJson: new PackageJson(),
@@ -397,6 +413,7 @@ t.test('failure of optional node just deletes it', async t => {
 
   const before = actual.load({
     projectRoot,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -404,6 +421,7 @@ t.test('failure of optional node just deletes it', async t => {
   const graph = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -419,6 +437,7 @@ t.test('failure of optional node just deletes it', async t => {
 
   await reify({
     projectRoot,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -442,6 +461,7 @@ t.test('failure of optional node just deletes it', async t => {
 
   const after = actual.load({
     projectRoot,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -534,6 +554,7 @@ t.test('early termination when no changes are needed', async t => {
   const result = await testReify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -600,6 +621,7 @@ t.test('early termination when no changes are needed', async t => {
   await testReify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: scurry2,
     packageJson: new PackageJson(),
@@ -637,6 +659,7 @@ t.test('checkNeededBuild is called during reification', async t => {
   const graph = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
@@ -646,6 +669,7 @@ t.test('checkNeededBuild is called during reification', async t => {
   const result = await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -688,6 +712,7 @@ t.test(
     const graph = await ideal.build({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson,
@@ -697,6 +722,7 @@ t.test(
     const result = await reify({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson: new PackageJson(),
@@ -739,6 +765,7 @@ t.test(
     const graph = await ideal.build({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson,
@@ -749,6 +776,7 @@ t.test(
     const result = await reify({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson: new PackageJson(),
@@ -789,6 +817,7 @@ t.test('allowScripts with query selector :scripts', async t => {
   const graph = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson,
@@ -799,6 +828,7 @@ t.test('allowScripts with query selector :scripts', async t => {
   const result = await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
@@ -854,6 +884,7 @@ t.test(
     const graph = await ideal.build({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson,
@@ -862,6 +893,7 @@ t.test(
     await reify({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
       packageJson: new PackageJson(),
@@ -896,6 +928,7 @@ t.test(
     const result = await reify({
       projectRoot,
       packageInfo: mockPackageInfo,
+      registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: scurry2,
       packageJson: new PackageJson(),
@@ -957,6 +990,7 @@ t.test('reify recreates deleted workspace node_modules', async t => {
   const graph = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo,
     scurry,
     packageJson,
@@ -965,6 +999,7 @@ t.test('reify recreates deleted workspace node_modules', async t => {
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo,
     scurry,
     packageJson: new PackageJson(),
@@ -997,6 +1032,7 @@ t.test('reify recreates deleted workspace node_modules', async t => {
   const graph2 = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: monorepo2,
     scurry: scurry2,
     packageJson: new PackageJson(),
@@ -1005,6 +1041,7 @@ t.test('reify recreates deleted workspace node_modules', async t => {
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     monorepo: monorepo2,
     scurry: scurry2,
     packageJson: new PackageJson(),
@@ -1061,12 +1098,14 @@ t.test('reify with workspace bin script', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     packageInfo: mockPackageInfo,
+    registries,
     remover: new RollbackRemove(),
   })
 
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    registries,
     graph,
     monorepo,
     scurry: new PathScurry(projectRoot),

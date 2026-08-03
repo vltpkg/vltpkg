@@ -480,13 +480,13 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
   {
     "name": "a",
     "fromID": "file~_d",
-    "spec": "a@npm:@myscope/foo@^1.0.0",
+    "spec": "a@github:npm:@myscope/foo@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "~npm~@myscope+foo@1.0.0",
+      "id": "git~github_cnpm_c@myscope+foo@^1.0.0~",
       "name": "@myscope/foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/~npm~@myscope+foo@1.0.0/node_modules/@myscope/foo",
+      "location": "./node_modules/.vlt/git~github_cnpm_c@myscope+foo@^1.0.0~/node_modules/@myscope/foo",
       "importer": false,
       "manifest": {
         "name": "@myscope/foo",

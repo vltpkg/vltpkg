@@ -1109,9 +1109,11 @@ t.test('optionsChanged detection', async t => {
         ...baseLockfileData,
         options: {
           // the configured registry is always recorded now that there
-          // is no default to elide it against
+          // is no default to elide it against; the `npm` alias is also
+          // persisted now that it is no longer a built-in default
           registry: 'https://registry.npmjs.org/',
           registries: {
+            npm: 'https://registry.npmjs.org/',
             custom: 'http://example.com',
           },
         },
@@ -1198,6 +1200,90 @@ t.test('optionsChanged detection', async t => {
         graph.optionsChanged,
         true,
         'options changed due to modified modifiers',
+      )
+    },
+  )
+
+  t.test(
+    'default-registry-alias round-trips without drift',
+    async t => {
+      const lockfileWithAlias: LockfileData = {
+        ...baseLockfileData,
+        // key order must mirror buildCurrentOptions / save.ts
+        // (default-registry-alias before registries) since the drift
+        // check is a JSON string comparison
+        options: {
+          'default-registry-alias': 'internal',
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            internal: 'https://internal.example.com/',
+          },
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithAlias),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          registry: undefined,
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            internal: 'https://internal.example.com/',
+          },
+          'default-registry-alias': 'internal',
+          mainManifest,
+          projectRoot,
+        },
+        lockfileWithAlias,
+      )
+      t.equal(
+        graph.optionsChanged,
+        false,
+        'matching non-default alias does not trip drift',
+      )
+    },
+  )
+
+  t.test(
+    'optionsChanged is true when default-registry-alias is changed',
+    async t => {
+      const lockfileWithAlias: LockfileData = {
+        ...baseLockfileData,
+        options: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            internal: 'https://internal.example.com/',
+          },
+          'default-registry-alias': 'internal',
+        },
+      }
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileWithAlias),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        {
+          ...configData,
+          registry: undefined,
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            internal: 'https://internal.example.com/',
+          },
+          mainManifest,
+          projectRoot,
+        },
+        lockfileWithAlias,
+      )
+      t.equal(
+        graph.optionsChanged,
+        true,
+        'options changed due to default-registry-alias change',
       )
     },
   )

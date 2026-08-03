@@ -5,6 +5,7 @@ import {
   defaultGitHosts,
   defaultJsrRegistries,
   defaultRegistries,
+  defaultRegistryName,
   defaultScopeRegistries,
 } from '@vltpkg/spec'
 import { isRecordStringString } from '@vltpkg/types'
@@ -170,6 +171,12 @@ const buildCurrentOptions = (
     ...(options.registry !== undefined ?
       { registry: options.registry }
     : undefined),
+    ...((
+      options['default-registry-alias'] !== undefined &&
+      options['default-registry-alias'] !== defaultRegistryName
+    ) ?
+      { 'default-registry-alias': options['default-registry-alias'] }
+    : undefined),
     ...(hasItems(cleanRegistries) ?
       { registries: cleanRegistries }
     : undefined),
@@ -221,6 +228,7 @@ export const loadObject = (
     'scoped-registries': scopedRegistriesOption,
     registry,
     registries,
+    'default-registry-alias': defaultRegistryAlias,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
     /* c8 ignore next */
@@ -253,6 +261,8 @@ export const loadObject = (
         { ...options['scoped-registries'], ...scopeRegistries }
       : options['scoped-registries'],
     registry: registry ?? options.registry,
+    'default-registry-alias':
+      defaultRegistryAlias ?? options['default-registry-alias'],
     registries:
       registries ?
         { ...options.registries, ...registries }

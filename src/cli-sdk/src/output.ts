@@ -187,8 +187,14 @@ export const outputCommand = async <T>(
     // error is rendered, tracked and exited like any other command
     // error, and so that the `--help` return above still works when
     // nothing is configured.
-    if (needsRegistry && !conf.options.registry) {
-      throw missingRegistryError()
+    if (needsRegistry) {
+      const alias = conf.options['default-registry-alias']
+      const hasRegistry =
+        !!conf.options.registry ||
+        (!!alias && !!conf.options.registries[alias])
+      if (!hasRegistry) {
+        throw missingRegistryError()
+      }
     }
 
     const output = await onDone(await command(conf))

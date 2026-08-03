@@ -31,11 +31,19 @@ Unlike npm, **vlt has no default registry**. Commands that resolve or
 fetch packages fail with a config error until one is set:
 
 ```
-Config Error: Missing registry configuration. Run 'vlt login --registry=<url>',
-set "registry" in vlt.json, or pass --registry. See https://docs.vlt.sh/cli
+Config Error: Missing registry configuration.
+
+vlt has no default registry. Run `vlt setup` to get configured.
+
+See https://docs.vlt.sh/cli for other ways to set a registry.
 ```
 
-To keep npm's behavior, point it at the public npm registry:
+If you have a vlt.io account, the guided path is
+[`vlt setup`](/cli/registries#getting-started-with-vlt-setup), which
+configures your account's registry aliases for you.
+
+To instead keep npm's behavior, point the registry at the public npm
+registry:
 
 <Code
   code={`$ vlt config set registry=https://registry.npmjs.org/`}

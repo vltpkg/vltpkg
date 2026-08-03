@@ -15,8 +15,7 @@ exports[`test/install.ts > TAP > install > should call build adding new dependen
       Edge spec(abbrev@latest) -dev-> to: Node {
         id: '~npm~abbrev@2.0.0',
         location: './node_modules/.vlt/~npm~abbrev@2.0.0/node_modules/abbrev',
-        dev: true,
-        resolved: 'https://registry.npmjs.org/abbrev/-/abbrev-2.0.0.tgz'
+        dev: true
       }
     ]
   }

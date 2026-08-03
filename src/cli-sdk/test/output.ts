@@ -258,6 +258,21 @@ t.test('outputCommand', async t => {
       } as LoadedConfig)
       t.strictSame(logs(), [['true']])
     })
+
+    t.test(
+      'runs when the default-registry-alias is configured',
+      async t => {
+        const logs = t.capture(console, 'log').args
+        await outputCommand(registryCommand, {
+          values: { view: 'json' },
+          options: {
+            'default-registry-alias': 'npm',
+            registries: { npm: 'https://registry.npmjs.org/' },
+          },
+        } as unknown as LoadedConfig)
+        t.strictSame(logs(), [['true']])
+      },
+    )
   })
 
   t.test('view class success', async t => {

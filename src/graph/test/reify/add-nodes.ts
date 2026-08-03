@@ -41,7 +41,12 @@ const node = (props: Record<string, any>) => ({
     scurry.cwd.resolve(props.location).fullpath(),
 })
 
-const configData = { registry: 'https://registry.npmjs.org/' }
+const configData = {
+  registry: 'https://registry.npmjs.org/',
+  // the `npm` alias is no longer built in; configure it so the default
+  // registry DepID hydrates back to the `npm` alias name
+  registries: { npm: 'https://registry.npmjs.org/' },
+}
 
 const specOptions = getOptions(configData)
 

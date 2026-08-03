@@ -16,6 +16,8 @@ vlt token rm
 
 Manage registry authentication tokens in the vlt keychain.
 
+Target a specific configured registry by alias with \`vlt registry <alias> token <subcommand>\`.
+
 ## Subcommands
 
 ### list

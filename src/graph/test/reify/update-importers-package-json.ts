@@ -14,6 +14,9 @@ import { updatePackageJson } from '../../src/reify/update-importers-package-json
 const specOptions = {
   registry: 'https://registry.npmjs.org',
   registries: {
+    // the `npm` alias is no longer built in; configure it so `npm:`
+    // aliased specs resolve
+    npm: 'https://registry.npmjs.org/',
     custom: 'http://example.com',
   },
 }
@@ -506,7 +509,7 @@ t.test('updatePackageJson', async t => {
 
   await t.test('aliased install from dist-tag', async t => {
     const aliasedMani = { name: 'a', version: '1.0.0' }
-    const aliasedSpec = Spec.parse('b', 'npm:a@latest')
+    const aliasedSpec = Spec.parse('b', 'npm:a@latest', specOptions)
     const aliased = graph.addNode(
       undefined,
       aliasedMani,

@@ -1,6 +1,6 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
-import { requireRegistry } from '../require-registry.ts'
+import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 
 export const needsRegistry = true
@@ -10,7 +10,10 @@ export const usage: CommandUsage = () =>
     command: 'logout',
     usage: [''],
     description: `Log out of the default registry, deleting the token from
-                  the local keychain, as well as destroying it on the server.`,
+                  the local keychain, as well as destroying it on the server.
+
+                  Target a specific configured registry by alias with
+                  \`vlt registry <alias> logout\`.`,
     options: {
       registry: {
         value: '<url>',
@@ -26,5 +29,5 @@ export const usage: CommandUsage = () =>
 
 export const command: CommandFn<void> = async conf => {
   const rc = new RegistryClient(conf.options)
-  await rc.logout(requireRegistry(conf))
+  await rc.logout(await resolveRegistry(conf))
 }

@@ -101,7 +101,11 @@ t.test('ids that satisfy the spec', t => {
     ],
     [Spec.parse('a@file:a'), joinDepIDTuple(['file', './a'])],
     [
-      Spec.parse('a@registry:https://registry.npmjs.org/#a@1.x'),
+      // the `npm` alias is no longer a built-in default; configure it so
+      // the default-registry DepID resolves to the npm registry URL
+      Spec.parse('a@registry:https://registry.npmjs.org/#a@1.x', {
+        registries: { npm: 'https://registry.npmjs.org/' },
+      }),
       joinDepIDTuple(['registry', '', 'a@1.2.3']),
     ],
     [
