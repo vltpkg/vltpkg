@@ -16,7 +16,6 @@ import type {
   Integrity,
   Manifest,
   Packument,
-  ManifestRegistry,
 } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
@@ -455,47 +454,6 @@ export class PackageInfoClient {
     return pathResolve(this.#cachePath, 'package-info', key)
   }
 
-  async #registryManifestRequest(
-    spec: Spec,
-    options: PackageInfoClientRequestOptions,
-  ): Promise<ManifestRegistry> {
-    const { registry, name, registrySpec } = spec.final
-    /* c8 ignore start */
-    if (!spec.range?.isSingle || !registrySpec) {
-      throw this.#resolveError(
-        spec,
-        options,
-        'failed to request manifest',
-        { spec },
-      )
-    }
-    /* c8 ignore stop */
-    const possibleLeadingChars = ['=', '^', '~', 'v']
-    const hasLeadingRange = possibleLeadingChars.some(char =>
-      registrySpec.startsWith(char),
-    )
-    const version =
-      hasLeadingRange ? registrySpec.slice(1) : registrySpec
-    const pakuURL = new URL(`${name}/${version}`, registry)
-    const response = await this.registryClient.request(pakuURL, {
-      headers: {
-        accept: 'application/json',
-      },
-    })
-    if (response.statusCode !== 200) {
-      throw this.#resolveError(
-        spec,
-        options,
-        'failed to fetch manifest',
-        {
-          url: pakuURL,
-          response,
-        },
-      )
-    }
-    return response.json() as ManifestRegistry
-  }
-
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -712,26 +670,11 @@ export class PackageInfoClient {
           }
         }
 
-        // When a pinned spec (e.g. debug@1.0.0) is requested, check if
-        // a full packument fetch is already in-flight for the same
-        // package. If so, extract the manifest from it instead of
-        // making a separate single-version HTTP request.
-        let mani: Manifest | undefined
-        if (spec.range?.isSingle) {
-          const packumentKey = `${f.registry}${f.name}`
-          const inflight = this.#packumentPromises.get(packumentKey)
-          if (inflight) {
-            mani = pickManifest(await inflight, spec, options)
-          } else {
-            mani = await this.#registryManifestRequest(spec, options)
-          }
-        } else {
-          mani = pickManifest(
-            await this.packument(f, options),
-            spec,
-            options,
-          )
-        }
+        const mani = pickManifest(
+          await this.packument(f, options),
+          spec,
+          options,
+        )
         if (!mani) throw this.#resolveError(spec, options)
 
         // Cache the manifest data
