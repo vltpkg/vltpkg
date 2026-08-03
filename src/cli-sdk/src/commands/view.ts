@@ -368,9 +368,9 @@ export const command: CommandFn<ViewResult> = async conf => {
   const spec = Spec.parseArgs(specArg, conf.options)
   const pic = new PackageInfoClient(conf.options)
 
-  // Fetch the packument and resolved manifest
+  // Fetch the full packument (needs time, maintainers) and resolved manifest
   const [packument, resolvedManifest] = await Promise.all([
-    pic.packument(spec),
+    pic.packument(spec, { fullPackument: true }),
     pic.manifest(spec),
   ])
   const manifest = resolvedManifest as Manifest
