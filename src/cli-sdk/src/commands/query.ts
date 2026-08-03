@@ -15,7 +15,9 @@ import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import {
   aggregateBySeverity,
-  isSecuritySelector,
+  isSecurityAuditSelector,
+  nonEmptySeverityBuckets,
+  formatDirectTransitiveFooter,
 } from '../audit-helpers.ts'
 import type {
   HumanReadableOutputGraph,
@@ -143,7 +145,7 @@ export const views = {
   ) => {
     let output = humanReadableOutput(result, opts)
     const queryString = (result as QueryResult).queryString
-    if (queryString && isSecuritySelector(queryString)) {
+    if (queryString && isSecurityAuditSelector(queryString)) {
       const summary = aggregateBySeverity(
         result.nodes,
         result.importers,
@@ -154,20 +156,12 @@ export const views = {
         lines.push(
           `${summary.total} security issue${summary.total === 1 ? '' : 's'} found`,
         )
-        const severityOrder = [
-          'critical',
-          'high',
-          'moderate',
-          'low',
-        ] as const
-        for (const severity of severityOrder) {
-          const pkgs = summary.summary[severity]
-          if (pkgs.length === 0) continue
+        for (const { severity, pkgs } of nonEmptySeverityBuckets(
+          summary,
+        )) {
           lines.push(`  ${severity} (${pkgs.length})`)
         }
-        lines.push(
-          `${summary.directCount} direct, ${summary.indirectCount} transitive`,
-        )
+        lines.push(formatDirectTransitiveFooter(summary))
         output = lines.join('\n')
       }
     }
