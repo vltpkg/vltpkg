@@ -93,7 +93,7 @@ const getAlertLevel = (alert: {
 }
 
 export const isVulnKind = (value?: string): value is VulnKinds =>
-  kinds.has(value as VulnKinds)
+  kinds.has(value)
 
 export const asVulnKind = (value?: string): VulnKinds => {
   if (!isVulnKind(value)) {
