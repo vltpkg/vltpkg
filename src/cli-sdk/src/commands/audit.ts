@@ -7,6 +7,7 @@ import {
   buildAuditQuery,
   aggregateBySeverity,
   filterAuditResult,
+  formatAuditSummary,
   type SeverityLevel,
 } from '../audit-helpers.ts'
 import type { AuditResult } from '../audit-helpers.ts'
@@ -101,45 +102,8 @@ export const command: CommandFn<AuditResult> = async conf => {
 }
 
 export const views = {
-  human: (result: AuditResult, { colors }: { colors?: boolean }) => {
-    if (result.total === 0) {
-      return 'found 0 security issues\n'
-    }
-
-    const lines: string[] = []
-    lines.push(
-      `found ${result.total} security issue${result.total === 1 ? '' : 's'}`,
-    )
-    lines.push('')
-
-    const severityOrder = [
-      'critical',
-      'high',
-      'moderate',
-      'low',
-    ] as const
-    for (const severity of severityOrder) {
-      const pkgs = result.summary[severity]
-      if (pkgs.length === 0) continue
-
-      lines.push(`  ${severity} (${pkgs.length})`)
-      for (const pkg of pkgs) {
-        lines.push(`    ${pkg.name}@${pkg.version}`)
-        for (const alert of pkg.alerts) {
-          lines.push(`      ${alert}`)
-        }
-      }
-      lines.push('')
-    }
-
-    const directWord =
-      result.directCount === 1 ? 'dependency' : 'dependencies'
-    lines.push(
-      `${result.directCount} direct ${directWord}, ${result.indirectCount} transitive`,
-    )
-
-    return lines.join('\n')
-  },
+  human: (result: AuditResult, { colors }: { colors?: boolean }) =>
+    formatAuditSummary(result),
   json: (result: AuditResult) => result,
   count: (result: AuditResult) => result.total,
 }
