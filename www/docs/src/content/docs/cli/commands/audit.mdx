@@ -1,0 +1,57 @@
+---
+title: vlt audit
+sidebar:
+  label: audit
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt audit
+$ vlt audit --audit-level=[low | moderate | high | critical]
+$ vlt audit --view=[human | json | count]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Check installed dependencies for security issues. Provides a summary
+of security findings including malware, vulnerable packages, and
+typosquats.
+
+## Examples
+
+Scan all dependencies for security issues
+
+<Code code="$ vlt audit" title="Terminal" lang="bash" />
+
+Only show high and critical severity issues
+
+<Code
+  code="$ vlt audit --audit-level=high"
+  title="Terminal"
+  lang="bash"
+/>
+
+Output results as JSON
+
+<Code code="$ vlt audit --view=json" title="Terminal" lang="bash" />
+
+## Options
+
+### audit-level
+
+Minimum severity level to report. Defaults to `low`.
+
+```
+--audit-level=[low | moderate | high | critical]
+```
+
+### view
+
+Output format. Defaults to human-readable.
+
+```
+--view=[human | json | count]
+```
