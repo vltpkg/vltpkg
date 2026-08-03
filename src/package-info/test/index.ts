@@ -110,35 +110,37 @@ const server = createServer((req, res) => {
       )
       return res.end(tgzAbbrev)
     }
-    case '/abbrev/2.0.0': {
-      const manifest = pakuAbbrev.versions['2.0.0']
-      const json = JSON.stringify(manifest)
-      res.setHeader('content-type', 'application/json')
-      res.setHeader('content-length', json.length)
-      return res.end(json)
-    }
-    case '/deleted':
-    case '/deleted/1.0.0': {
+    case '/deleted': {
       const json = '{"error": "deleted"}'
       res.setHeader('content-length', json.length)
       res.statusCode = 404
       return res.end(json)
     }
-    case '/no-dist':
-    case '/no-dist/1.2.3': {
+    case '/no-dist': {
       const json = JSON.stringify({
         name: 'no-dist',
-        version: '1.2.3',
+        'dist-tags': { latest: '1.2.3' },
+        versions: {
+          '1.2.3': {
+            name: 'no-dist',
+            version: '1.2.3',
+          },
+        },
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
-    case '/no-tgz':
-    case '/no-tgz/1.2.3': {
+    case '/no-tgz': {
       const json = JSON.stringify({
         name: 'no-tgz',
-        version: '1.2.3',
-        dist: {},
+        'dist-tags': { latest: '1.2.3' },
+        versions: {
+          '1.2.3': {
+            name: 'no-tgz',
+            version: '1.2.3',
+            dist: {},
+          },
+        },
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
@@ -154,17 +156,6 @@ const server = createServer((req, res) => {
               tarball: `${defaultRegistry}missing.tgz`,
             },
           },
-        },
-      })
-      res.setHeader('content-length', json.length)
-      return res.end(json)
-    }
-    case '/missing/1.2.3': {
-      const json = JSON.stringify({
-        name: 'missing',
-        version: '1.2.3',
-        dist: {
-          tarball: `${defaultRegistry}missing.tgz`,
         },
       })
       res.setHeader('content-length', json.length)
@@ -196,19 +187,6 @@ const server = createServer((req, res) => {
       )
       return res.end(corrupted)
     }
-    case '/corrupted/1.0.0': {
-      const json = JSON.stringify({
-        name: 'corrupted',
-        version: '1.0.0',
-        dist: {
-          tarball: `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`,
-          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
-        },
-      })
-      res.setHeader('content-type', 'application/json')
-      res.setHeader('content-length', json.length)
-      return res.end(json)
-    }
     case '/corrupted': {
       const json = JSON.stringify({
         name: 'corrupted',
@@ -239,19 +217,6 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', corrupted.byteLength)
       // NOTE: no 'integrity' header set here
       return res.end(corrupted)
-    }
-    case '/corrupted-no-header/1.0.0': {
-      const json = JSON.stringify({
-        name: 'corrupted-no-header',
-        version: '1.0.0',
-        dist: {
-          tarball: `${defaultRegistry}corrupted-no-header/-/corrupted-no-header-1.0.0.tgz`,
-          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
-        },
-      })
-      res.setHeader('content-type', 'application/json')
-      res.setHeader('content-length', json.length)
-      return res.end(json)
     }
     case '/corrupted-no-header': {
       const json = JSON.stringify({
@@ -299,19 +264,6 @@ const server = createServer((req, res) => {
       )
       return res.end(tgzAbbrev)
     }
-    case '/corrupted-once/1.0.0': {
-      const json = JSON.stringify({
-        name: 'corrupted-once',
-        version: '1.0.0',
-        dist: {
-          tarball: `${defaultRegistry}corrupted-once/-/corrupted-once-1.0.0.tgz`,
-          integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
-        },
-      })
-      res.setHeader('content-type', 'application/json')
-      res.setHeader('content-length', json.length)
-      return res.end(json)
-    }
     case '/corrupted-once': {
       const json = JSON.stringify({
         name: 'corrupted-once',
@@ -336,18 +288,6 @@ const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/octet-stream')
       res.setHeader('content-length', tgzAbbrev.byteLength)
       return res.end(tgzAbbrev)
-    }
-    case '/no-integrity/1.0.0': {
-      const json = JSON.stringify({
-        name: 'no-integrity',
-        version: '1.0.0',
-        dist: {
-          tarball: `${defaultRegistry}no-integrity/-/no-integrity-1.0.0.tgz`,
-        },
-      })
-      res.setHeader('content-type', 'application/json')
-      res.setHeader('content-length', json.length)
-      return res.end(json)
     }
     case '/no-integrity': {
       const json = JSON.stringify({
@@ -658,17 +598,20 @@ t.test('manifest', async t => {
   )
 })
 
-t.test('manifest strips leading semver characters', async t => {
-  // Test that leading characters (=, ^, ~, v) are stripped when using
-  // the registry manifest request shortcut for single version specs
-  for (const prefix of ['=', '^', '~', 'v']) {
-    t.strictSame(
-      await manifest(`abbrev@${prefix}2.0.0`, options),
-      pakuAbbrev.versions['2.0.0'],
-      `${prefix}2.0.0 should strip leading character`,
-    )
-  }
-})
+t.test(
+  'manifest with leading semver characters resolves correctly',
+  async t => {
+    // Test that leading characters (=, ^, ~, v) resolve correctly
+    // through the packument → pickManifest path
+    for (const prefix of ['=', '^', '~', 'v']) {
+      t.strictSame(
+        await manifest(`abbrev@${prefix}2.0.0`, options),
+        pakuAbbrev.versions['2.0.0'],
+        `${prefix}2.0.0 should resolve correctly`,
+      )
+    }
+  },
+)
 
 t.test('resolve', async t => {
   // do this with a consistent client so that we cover the memoizing paths
@@ -1243,11 +1186,10 @@ t.test('manifest must provide actual dist results', async t => {
   await t.rejects(tarball('deleted@latest', options))
   await t.rejects(tarball('no-tgz@latest', options))
   await t.rejects(tarball('no-dist@latest', options))
-  // Test specific version 404 paths with new routing
+  // Pinned specs go through packument → pickManifest too
   await t.rejects(resolve('deleted@1.0.0', options))
   await t.rejects(manifest('deleted@1.0.0', options))
   await t.rejects(tarball('deleted@1.0.0', options))
-  // Test specific version routes for packages without dist
   await t.rejects(resolve('no-tgz@1.2.3', options))
   await t.rejects(tarball('no-tgz@1.2.3', options))
   await t.rejects(resolve('no-dist@1.2.3', options))
@@ -1947,6 +1889,51 @@ t.test('path git selector', async t => {
     found[Symbol.for('indent')] = pkg[Symbol.for('indent')]
     t.strictSame(found, pkg)
   })
+})
+
+t.test(
+  'packument request coalescing avoids duplicate requests',
+  async t => {
+    const pi = new PackageInfoClient(options)
+
+    // Multiple concurrent packument requests for the same package
+    // should be coalesced into a single fetch.
+    const [p1, p2] = await Promise.all([
+      pi.packument('abbrev'),
+      pi.packument('abbrev'),
+    ])
+    t.strictSame(p1, pakuAbbrev, 'first packument matches')
+    t.strictSame(p2, pakuAbbrev, 'second packument matches')
+    t.equal(p1, p2, 'both return the same object (coalesced)')
+
+    // Concurrent manifest requests for the same package also
+    // coalesce via the shared packument() call.
+    const [m1, m2] = await Promise.all([
+      pi.manifest('abbrev@2.0.0'),
+      pi.manifest('abbrev@2'),
+    ])
+    t.strictSame(
+      m1,
+      pakuAbbrev.versions['2.0.0'],
+      'first manifest matches',
+    )
+    t.strictSame(
+      m2,
+      pakuAbbrev.versions['2.0.0'],
+      'second manifest matches',
+    )
+  },
+)
+
+t.test('fullPackument bypasses coalescing', async t => {
+  const pi = new PackageInfoClient(options)
+
+  // A fullPackument request should not be coalesced with
+  // abbreviated requests and should return the full document.
+  const paku = await pi.packument('abbrev', {
+    fullPackument: true,
+  })
+  t.strictSame(paku, pakuAbbrev, 'full packument matches')
 })
 
 t.test('no registry configured', async t => {

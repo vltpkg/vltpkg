@@ -12,12 +12,7 @@ import { RegistryClient } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import type {
-  Integrity,
-  Manifest,
-  Packument,
-  ManifestRegistry,
-} from '@vltpkg/types'
+import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -71,6 +66,15 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   RegistryClientRequestOptions & {
     /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
     from?: string
+    /**
+     * When true, requests the full packument document from the registry
+     * instead of the abbreviated "corgi" format. Use this when you need
+     * fields like `time`, `maintainers`, or `_rev` that are stripped
+     * from the abbreviated response.
+     *
+     * Defaults to `false` (abbreviated packument for faster installs).
+     */
+    fullPackument?: boolean
   }
 
 export type PackageInfoClientExtractOptions =
@@ -112,6 +116,7 @@ export class PackageInfoClient {
   #trustedIntegrities = new Map<string, Integrity>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
+  #packumentPromises = new Map<string, Promise<Packument>>()
 
   get registryClient() {
     if (!this.#registryClient) {
@@ -466,48 +471,6 @@ export class PackageInfoClient {
     return pathResolve(this.#cachePath, 'package-info', key)
   }
 
-  async #registryManifestRequest(
-    spec: Spec,
-    options: PackageInfoClientRequestOptions,
-  ): Promise<ManifestRegistry> {
-    const { registry, name, registrySpec } = spec.final
-    /* c8 ignore start */
-    if (!spec.range?.isSingle || !registrySpec) {
-      throw this.#resolveError(
-        spec,
-        options,
-        'failed to request manifest',
-        { spec },
-      )
-    }
-    /* c8 ignore stop */
-    const possibleLeadingChars = ['=', '^', '~', 'v']
-    const hasLeadingRange = possibleLeadingChars.some(char =>
-      registrySpec.startsWith(char),
-    )
-    const version =
-      hasLeadingRange ? registrySpec.slice(1) : registrySpec
-    if (!registry) throw noRegistryError(spec)
-    const pakuURL = new URL(`${name}/${version}`, registry)
-    const response = await this.registryClient.request(pakuURL, {
-      headers: {
-        accept: 'application/json',
-      },
-    })
-    if (response.statusCode !== 200) {
-      throw this.#resolveError(
-        spec,
-        options,
-        'failed to fetch manifest',
-        {
-          url: pakuURL,
-          response,
-        },
-      )
-    }
-    return response.json() as ManifestRegistry
-  }
-
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -724,14 +687,11 @@ export class PackageInfoClient {
           }
         }
 
-        const mani =
-          spec.range?.isSingle ?
-            await this.#registryManifestRequest(spec, options)
-          : pickManifest(
-              await this.packument(f, options),
-              spec,
-              options,
-            )
+        const mani = pickManifest(
+          await this.packument(f, options),
+          spec,
+          options,
+        )
         if (!mani) throw this.#resolveError(spec, options)
 
         // Cache the manifest data
@@ -907,26 +867,54 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         if (!registry) throw noRegistryError(spec)
-        const pakuURL = new URL(name, registry)
-        const response = await this.registryClient.request(pakuURL, {
-          headers: {
-            accept: 'application/json',
-          },
-        })
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            'failed to fetch packument',
-            {
-              url: pakuURL,
-              response,
-            },
-          )
+        // Full packument requests bypass coalescing since they
+        // return different data than the abbreviated format.
+        if (options.fullPackument) {
+          const pakuURL = new URL(name, registry)
+          return this.#fetchPackument(spec, options, pakuURL)
         }
-        return response.json() as Packument
+        const packumentKey = `${registry}${name}`
+        const inflight = this.#packumentPromises.get(packumentKey)
+        if (inflight) return inflight
+        const pakuURL = new URL(name, registry)
+        const promise = this.#fetchPackument(spec, options, pakuURL)
+        this.#packumentPromises.set(packumentKey, promise)
+        // Clean up once settled so we don't leak memory.
+        // Use .then/.catch instead of .finally to avoid creating
+        // an unhandled rejection from the derived promise.
+        promise.then(
+          () => this.#packumentPromises.delete(packumentKey),
+          () => this.#packumentPromises.delete(packumentKey),
+        )
+        return promise
       }
     }
+  }
+
+  async #fetchPackument(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+    pakuURL: URL,
+  ): Promise<Packument> {
+    const accept =
+      options.fullPackument ?
+        'application/json'
+      : 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
+    const response = await this.registryClient.request(pakuURL, {
+      headers: { accept },
+    })
+    if (response.statusCode !== 200) {
+      throw this.#resolveError(
+        spec,
+        options,
+        'failed to fetch packument',
+        {
+          url: pakuURL,
+          response,
+        },
+      )
+    }
+    return response.json() as Packument
   }
 
   async resolve(
