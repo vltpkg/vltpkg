@@ -382,6 +382,13 @@ export class Config {
 
     Object.assign(this, p)
 
+    // `--verbose` is shorthand for `--loglevel=verbose`. Only apply it
+    // when loglevel is still at its default so an explicit `--loglevel`
+    // always wins.
+    if (p.values.verbose && p.values.loglevel === 'info') {
+      p.values.loglevel = 'verbose'
+    }
+
     /* c8 ignore start - unpossible */
     if (!isParsed(this)) throw error('failed to parse config')
     /* c8 ignore stop */

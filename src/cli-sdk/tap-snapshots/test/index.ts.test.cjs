@@ -66,6 +66,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --jsr-registries=<name=url>
     --libc=<libc>
     --lockfile-only
+    --loglevel=<level>
     --no-bail
     --no-color
     --node-version=<version>
@@ -89,6 +90,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --tag=<tag>
     --target=<query>
     --telemetry
+    --verbose
     --version
     --view=<output>
     --workspace=<ws>
@@ -134,6 +136,7 @@ Unknown config option: asdf
     jsr-registries
     libc
     lockfile-only
+    loglevel
     no-bail
     no-color
     node-version
@@ -157,6 +160,7 @@ Unknown config option: asdf
     tag
     target
     telemetry
+    verbose
     version
     view
     workspace

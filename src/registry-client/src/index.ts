@@ -444,18 +444,19 @@ export class RegistryClient {
 
     const entry = buffer ? CacheEntry.decode(buffer) : undefined
     if (entry?.valid) {
-      logRequest(url, 'cache')
+      logRequest(url, 'cache', { method })
       return entry
     }
 
     if (staleWhileRevalidate && entry?.staleWhileRevalidate && m) {
       // revalidate while returning the stale entry
       register(dirname(this.cache.path()), m, url)
-      logRequest(url, 'stale')
+      logRequest(url, 'stale', { method })
       return entry
     }
 
-    logRequest(url, 'start')
+    logRequest(url, 'start', { method })
+    const requestStart = Date.now()
 
     // either no cache entry, or need to revalidate before use.
     setCacheHeaders(options, entry)
@@ -522,6 +523,16 @@ export class RegistryClient {
       options,
       response,
       entry,
+    )
+
+    logRequest(
+      url,
+      response.statusCode === 304 ? '304' : 'complete',
+      {
+        method,
+        statusCode: response.statusCode,
+        durationMs: Date.now() - requestStart,
+      },
     )
 
     if (result.getHeader('integrity')) {

@@ -1049,6 +1049,45 @@ t.test('read catalogs from config file', async t => {
   )
 })
 
+t.test('--verbose is shorthand for --loglevel=verbose', async t => {
+  const dir = t.testdir({ 'vlt.json': '{}', '.git': {} })
+  t.chdir(dir)
+
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+
+  clearEnv()
+  const def = await Config.load(dir, ['install'], true)
+  t.equal(def.get('loglevel'), 'info', 'defaults to info')
+  t.equal(def.get('verbose'), undefined, 'verbose unset by default')
+
+  clearEnv()
+  const verbose = await Config.load(
+    dir,
+    ['install', '--verbose'],
+    true,
+  )
+  t.equal(verbose.get('verbose'), true)
+  t.equal(
+    verbose.get('loglevel'),
+    'verbose',
+    '--verbose bumps loglevel to verbose',
+  )
+
+  clearEnv()
+  const explicit = await Config.load(
+    dir,
+    ['install', '--verbose', '--loglevel', 'debug'],
+    true,
+  )
+  t.equal(
+    explicit.get('loglevel'),
+    'debug',
+    'explicit --loglevel wins over --verbose',
+  )
+})
+
 t.test('reloadFromDisk method', async t => {
   const projectDir = t.testdir({
     'vlt.json': JSON.stringify({

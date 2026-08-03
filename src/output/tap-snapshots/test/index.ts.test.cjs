@@ -11,6 +11,18 @@ Array [
     "state": "start",
     "url": "https://example.com",
   },
+  Object {
+    "method": "GET",
+    "state": "cache",
+    "url": "https://example.com",
+  },
+  Object {
+    "durationMs": 12,
+    "method": "GET",
+    "state": "complete",
+    "statusCode": 200,
+    "url": "https://example.com",
+  },
 ]
 `
 

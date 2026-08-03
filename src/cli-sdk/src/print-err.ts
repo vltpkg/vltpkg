@@ -32,6 +32,21 @@ const isNonEmptyString = (v: unknown): v is string =>
 const formatURL = (v: unknown, format: Formatter) =>
   v instanceof URL ? v.toString() : /* c8 ignore next */ format(v)
 
+// True when `v` overrides the default `Object.prototype.toString`, i.e.
+// stringifying it yields something meaningful (like a `Spec` → `next@*`)
+// rather than `[object Object]`.
+const hasCustomToString = (
+  v: unknown,
+): v is { toString: () => string } =>
+  isObject(v) && v.toString !== Object.prototype.toString
+
+// Render a value that has a meaningful custom `toString()` (such as a
+// `Spec`, e.g. `next@*`) as a concise string rather than dumping its
+// entire internal structure via util.inspect. Falls back to `format`
+// for plain values/objects.
+const formatToString = (v: unknown, format: Formatter): string =>
+  hasCustomToString(v) ? v.toString() : format(v)
+
 const formatArray = (v: unknown, format: Formatter, joiner = ', ') =>
   Array.isArray(v) ? v.join(joiner) : /* c8 ignore next */ format(v)
 
@@ -208,7 +223,7 @@ const printCode = (
         stderr(indent(`While fetching: ${formatURL(url, format)}`))
       }
       if (spec) {
-        stderr(indent(`To satisfy: ${format(spec)}`))
+        stderr(indent(`To satisfy: ${formatToString(spec, format)}`))
       }
       if (from) {
         stderr(indent(`From: ${format(from)}`))
