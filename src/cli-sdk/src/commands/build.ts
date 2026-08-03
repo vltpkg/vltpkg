@@ -100,7 +100,7 @@ export const command: CommandFn<BuildResult> = async conf => {
     const target =
       targetOption ||
       targetPositional ||
-      ':scripts:not(:built):not(:malware)'
+      ':scripts:not(:built):not(:malware):not(:vuln)'
 
     // Run the build process using the graph build function
     const result = await build({

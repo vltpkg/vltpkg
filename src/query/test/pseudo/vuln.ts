@@ -77,6 +77,21 @@ t.test('selects packages with vulnerability alerts', async t => {
               alerts: [{ type: 'gptAnomaly' }],
             },
           ],
+          [
+            joinDepIDTuple(['file', 'y']),
+            {
+              id: joinDepIDTuple(['file', 'y']),
+              alerts: [
+                {
+                  type: 'deprecated',
+                  severity: 'medium' as const,
+                  category: 'maintenance',
+                  key: 'deprecated',
+                  props: { lastPublish: '2020-01-01' },
+                },
+              ],
+            },
+          ],
         ]),
       ),
       importers: new Set(graph.importers),
@@ -311,6 +326,20 @@ t.test('selects packages with vulnerability alerts', async t => {
     },
   )
 
+  await t.test(
+    'comparator excludes non-vuln alert types',
+    async t => {
+      // @x/y has only a 'deprecated' alert — its type is not in
+      // alertLevelMap and it has no cveId, so it must be skipped
+      // (covers the currentAlertLevel == null continue branch)
+      const res = await vuln(getState(':vuln(">=medium")'))
+      t.notOk(
+        [...res.partial.nodes].some(n => n.name === '@x/y'),
+        'should exclude @x/y which only has a deprecated alert',
+      )
+    },
+  )
+
   await t.test('wrong parameter', async t => {
     await t.rejects(
       vuln(getState(':vuln("")')),
@@ -334,6 +363,143 @@ t.test('selects packages with vulnerability alerts', async t => {
       'should throw an error for out of range number',
     )
   })
+})
+
+t.test('cveId matching', async t => {
+  const getState = (query: string, graph = getSimpleGraph()) => {
+    const ast = parse(query)
+    const current = ast.first.first
+    const state: ParserState = {
+      comment: '',
+      current,
+      initial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      partial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      collect: {
+        edges: new Set(),
+        nodes: new Set(),
+      },
+      cancellable: async () => {},
+      walk: async i => i,
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'a@1.0.0']),
+            {
+              id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
+              alerts: [
+                {
+                  type: 'socketUpstreamVulnerability',
+                  severity: 'high' as const,
+                  category: 'vulnerability',
+                  key: 'upstream-vuln-1',
+                  props: {
+                    lastPublish: '2024-01-01',
+                    cveId: 'CVE-2024-1234' as const,
+                  },
+                },
+              ],
+            },
+          ],
+          [
+            joinDepIDTuple(['registry', '', 'b@1.0.0']),
+            {
+              id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
+              alerts: [
+                {
+                  type: 'socketUpstreamVulnerability',
+                  severity: 'low' as const,
+                  category: 'vulnerability',
+                  key: 'upstream-vuln-2',
+                  props: {
+                    lastPublish: '2024-01-01',
+                    cveId: 'CVE-2024-5678' as const,
+                  },
+                },
+              ],
+            },
+          ],
+          [
+            joinDepIDTuple(['registry', '', 'c@1.0.0']),
+            {
+              id: joinDepIDTuple(['registry', '', 'c@1.0.0']),
+              alerts: [{ type: 'criticalCVE' }],
+            },
+          ],
+        ]),
+      ),
+      importers: new Set(graph.importers),
+      retries: 0,
+      signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
+    }
+    return state
+  }
+
+  await t.test(
+    'parameterless :vuln matches cveId-bearing alerts with severity >= medium',
+    async t => {
+      const res = await vuln(getState(':vuln'))
+      const names = [...res.partial.nodes].map(n => n.name).sort()
+      t.ok(
+        names.includes('a'),
+        'should include a (socketUpstreamVulnerability with high severity cveId)',
+      )
+      t.ok(
+        names.includes('c'),
+        'should include c (criticalCVE)',
+      )
+      t.notOk(
+        names.includes('b'),
+        'should exclude b (socketUpstreamVulnerability with low severity cveId)',
+      )
+    },
+  )
+
+  await t.test(
+    'exact match :vuln(high) matches cveId-bearing alerts by severity',
+    async t => {
+      const res = await vuln(getState(':vuln(high)'))
+      const names = [...res.partial.nodes].map(n => n.name).sort()
+      t.ok(
+        names.includes('a'),
+        'should include a (cveId with high severity)',
+      )
+      t.notOk(
+        names.includes('b'),
+        'should exclude b (cveId with low severity)',
+      )
+      t.notOk(
+        names.includes('c'),
+        'should exclude c (criticalCVE, not high)',
+      )
+    },
+  )
+
+  await t.test(
+    'comparator :vuln(">=high") matches cveId-bearing alerts by severity',
+    async t => {
+      const res = await vuln(getState(':vuln("<=high")'))
+      const names = [...res.partial.nodes].map(n => n.name).sort()
+      t.ok(
+        names.includes('a'),
+        'should include a (cveId with high severity)',
+      )
+      t.ok(
+        names.includes('c'),
+        'should include c (criticalCVE)',
+      )
+      t.notOk(
+        names.includes('b'),
+        'should exclude b (cveId with low severity)',
+      )
+    },
+  )
 })
 
 t.test('missing security archive', async t => {

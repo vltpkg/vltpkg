@@ -118,7 +118,6 @@ export type Insights = {
   score?: PackageScore
   scripts?: boolean
   severity?: SeverityInsights
-  vuln?: VulnInsights
   shell?: boolean
   shrinkwrap?: boolean
   squat?: SquatInsights
@@ -130,6 +129,7 @@ export type Insights = {
   unmaintained?: boolean
   unpopular?: boolean
   unstable?: boolean
+  vuln?: VulnInsights
 }
 
 export type LicenseInsights = {

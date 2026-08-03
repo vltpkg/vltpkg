@@ -26,27 +26,18 @@ export type VulnKinds =
   | 'low'
   | undefined
 
-export type VulnAlertTypes =
-  | 'criticalCVE'
-  | 'cve'
-  | 'potentialVulnerability'
-  | 'gptSecurity'
-  | 'mildCVE'
-  | 'gptAnomaly'
-  | undefined
-
 export type VulnComparator = '>' | '<' | '>=' | '<=' | undefined
 
-// Maps a kind to its primary alert type (used for exact-match lookups)
-const kindsMap = new Map<VulnKinds, VulnAlertTypes>([
-  ['critical', 'criticalCVE'],
-  ['high', 'cve'],
-  ['medium', 'potentialVulnerability'],
-  ['low', 'mildCVE'],
-  ['0', 'criticalCVE'],
-  ['1', 'cve'],
-  ['2', 'potentialVulnerability'],
-  ['3', 'mildCVE'],
+// Valid vulnerability kind names
+const kinds = new Set<string | undefined>([
+  'critical',
+  'high',
+  'medium',
+  'low',
+  '0',
+  '1',
+  '2',
+  '3',
 ])
 
 // Map numerical values to their respective kinds for comparison operations
@@ -72,7 +63,34 @@ const alertLevelMap = new Map<string, number>([
   ['gptAnomaly', 3],
 ])
 
-const kinds = new Set(kindsMap.keys())
+// Maps alert.severity strings to numeric levels for cveId-bearing alerts
+// whose type may not be in alertLevelMap.
+const severityLevelMap = new Map<string, number>([
+  ['critical', 0],
+  ['high', 1],
+  ['medium', 2],
+  ['low', 3],
+])
+
+/**
+ * Returns the severity level for an alert, considering both its type
+ * (via alertLevelMap) and its cveId + severity fields. Alerts with a
+ * cveId are treated as vulnerability alerts even if their type is not
+ * in the closed set.
+ */
+const getAlertLevel = (alert: {
+  type: string
+  severity?: string
+  props?: { cveId?: string }
+}): number | undefined => {
+  const level = alertLevelMap.get(alert.type)
+  if (level != null) return level
+  // Fall back to severity field for alerts carrying a CVE id
+  if (alert.props?.cveId && alert.severity) {
+    return severityLevelMap.get(alert.severity)
+  }
+  return undefined
+}
 
 export const isVulnKind = (value?: string): value is VulnKinds =>
   kinds.has(value as VulnKinds)
@@ -186,10 +204,11 @@ export const vuln = async (state: ParserState) => {
     if (report) {
       if (kind === undefined && comparator === undefined) {
         // Parameterless :vuln - match vuln alerts with severity >= medium
-        // Includes: criticalCVE, cve, potentialVulnerability, gptSecurity
+        // Includes: criticalCVE, cve, potentialVulnerability, gptSecurity,
+        //           and any alert carrying a cveId prop
         // Excludes: mildCVE, gptAnomaly (low severity)
         exclude = !report.alerts.some(alert => {
-          const level = alertLevelMap.get(alert.type)
+          const level = getAlertLevel(alert)
           return level != null && level <= 2
         })
       } else if (comparator) {
@@ -203,7 +222,7 @@ export const vuln = async (state: ParserState) => {
 
         // Check each alert to find any that match our comparison criteria
         for (const alert of report.alerts) {
-          const currentAlertLevel = alertLevelMap.get(alert.type)
+          const currentAlertLevel = getAlertLevel(alert)
           if (currentAlertLevel == null) continue
 
           switch (comparator) {
@@ -234,10 +253,10 @@ export const vuln = async (state: ParserState) => {
         }
       } else {
         // Exact match behavior — also matches gptSecurity/gptAnomaly
-        // at the same level as their mapped kind
+        // at the same level as their mapped kind, and cveId-bearing alerts
         const targetLevel = kindLevelMap.get(kind)
         exclude = !report.alerts.some(alert => {
-          const level = alertLevelMap.get(alert.type)
+          const level = getAlertLevel(alert)
           return level != null && level === targetLevel
         })
       }
