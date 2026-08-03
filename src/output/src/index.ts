@@ -4,12 +4,21 @@ export type Events = {
   request: {
     url: URL | string
     state: 'start' | 'complete' | '304' | 'cache' | 'stale'
+    /** HTTP method for the request, when known. */
+    method?: string
+    /** HTTP status code, set on `complete`/`304` completion events. */
+    statusCode?: number
+    /** Wall-clock duration of the request in ms, set on completion. */
+    durationMs?: number
   }
   graphStep: {
     step: 'build' | 'actual' | 'reify'
     state: 'start' | 'stop'
   }
 }
+
+/** Optional diagnostic details attached to a `request` event. */
+export type RequestDetails = Omit<Events['request'], 'url' | 'state'>
 
 export class OutputEmitter {
   private emitter = new EventEmitter()
@@ -40,8 +49,9 @@ export const emitter = new OutputEmitter()
 export const logRequest = (
   url: URL | string,
   state: Events['request']['state'],
+  details: RequestDetails = {},
 ) => {
-  emitter.emit('request', { url, state })
+  emitter.emit('request', { url, state, ...details })
 }
 
 export const graphStep = (step: Events['graphStep']['step']) => {
